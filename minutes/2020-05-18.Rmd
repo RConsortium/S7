@@ -1,0 +1,52 @@
+# **Minutes 2020-05-18**
+
+**Present**: Michael Lawrence (chair), Hong Ooi, Luke Tierney, Hadley Wickham, Will Landau, Henrik Bengtsson
+
+## Discussion
+
+### Process (ML)
+
+-   Active discussion in GitHub issues: <https://github.com/RConsortium/OOP-WG>
+
+-   Need a little process to finalise discussion. Proposal: original author reads discussion, summarises, and creates a pull request that closes the issue. Any participants in the discussion should be added as reviewers.
+
+-   Once issues are resolved, we can start to move forward on next steps for syntax, implementation, ...
+
+### Do you have a sense for what the system might look like? (HB)
+
+-   Unfortunately don't have a lot of time, but reading and happy to review. how much of an implementation do you have in your head?
+-   **ML**: Quite a bit; but wanted to make sure to step back and make sure we have all the requirements. But yes, have some vision in my head.
+-   **HW**: Have some clear idea in my head; mostly building on top of S3
+
+### Would it look more like S3, S4, or something completely new? (HB)
+
+-   **ML**: one of the main restrictions is to build off existing system
+-   **HW**: one of the advantages is NAMESPACE
+-   **ML**: and that base uses
+-   **LT**: want to be able to define new methods for "[", which means has to be maximally compatible with base.
+
+### Double dispatch (HW/LT)
+
+-   **LT**: no double dispatch in S3. S4 overly ambitious and v hard to maintain. CLOS written be v. smart people and still got things wrong.
+-   **HW**: may need to carve double dispatch into v2.
+-   **HO**: multiple inheritance is falling out of favour (diamond inheritance problem etc). Could we use interface based approach instead?
+
+### Generic "interfaces" (LT)
+
+-   **LT**: need to consider not just generics by themselves, but how they are related.
+-   Related to contracts in eiffel, concepts in C++20, \...
+
+### Message passing OOP (HO)
+
+-   **HO**: should we be considering this? (i.e. R6 and ref classes)
+-   **ML**: currently out of scope
+
+### What are the implications for compiling? (HB)
+
+-   **LT:** compiling currently entirely within functions; one day might be nice to compile across functions/methods etc. Always thinking about how compilation might work. But generally features that are hard to compile are hard for users to understand.
+
+## Action items
+
+-   Continue discussion in issues
+-   Start turning issues into PRs
+-   Feel free to fix minor issues
