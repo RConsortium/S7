@@ -37,7 +37,7 @@ Inheritance lets us define a data taxonomy, and it is often natural to organize 
 
 ## Syntax
 
-Ideally the entire API could be free of side effects and odd conventions, like making the `.` character significant in method names. Direct manipulation of class and generic objects should enable this.
+The entire API should be free of side effects and odd conventions, like making the `.` character significant in method names. Whereas S3 supports implicit method registration based on the name of the method, the new system should require methods to be registered explicitly. Direct manipulation of class and generic objects should enable this.
 
 ## Namespaces
 
