@@ -10,6 +10,7 @@ This page is for brainstorming on the technical requirements for solving our [pr
 1. Namespace management should not be any more complicated than S3 currently
 1. Performance should be competitive with existing solutions
 1. The design should be simple to implement
+1. It should be possible for a package to define a method where the generic and classes are defined outside of the package
 
 ## Compatibility
 
@@ -43,3 +44,6 @@ Ideally the entire API could be free of side effects and odd conventions, like m
 
 The system should support exporting generics and classes. If classes are objects, they can be treated like any other object when exporting and importing symbols. If generics are objects, then it should be simple to export all methods on a generic.  It is not clear whether selective method export is important. One use case would be to hide a method with an internal class in its signature to avoid unnecessary documentation. Perhaps `R CMD check` could ignore methods for unexported classes. There should be no need for explicit method registration.  
 
+## Third party methods
+
+To fully realize the potential of interoperability afforded by functional OOP, with its treating of generics and classes as orthogonal, we should allow packages to extend an externally defined API so that it supports externally defined classes. We acknowledge the potential for conflicts arising from multiple packages defining methods on the same generic and with overlapping signatures, as well as the danger of injecting new behaviors that violate the assumptions of existing method definitions.
