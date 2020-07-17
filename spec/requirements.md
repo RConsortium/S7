@@ -10,6 +10,10 @@ This page is for brainstorming on the technical requirements for solving our [pr
 1. Namespace management should not be any more complicated than S3 currently
 1. Performance should be competitive with existing solutions
 1. The design should be simple to implement
+1. We should aim to facilitate API evolution, particularly as it relates to inter-package dependencies
+1. Methods must include all formal arguments from their generic (not like Julia)
+1. Generics should support `...` in their formal argument lists and methods can append arguments to those lists
+1. Fields should have "public" visibility, and should support encapsulation (implicit getters and setters)
 
 ## Compatibility
 
@@ -43,3 +47,10 @@ Ideally the entire API could be free of side effects and odd conventions, like m
 
 The system should support exporting generics and classes. If classes are objects, they can be treated like any other object when exporting and importing symbols. If generics are objects, then it should be simple to export all methods on a generic.  It is not clear whether selective method export is important. One use case would be to hide a method with an internal class in its signature to avoid unnecessary documentation. Perhaps `R CMD check` could ignore methods for unexported classes. There should be no need for explicit method registration.  
 
+## Formal arguments
+
+The formal arguments of a generic must be present in every method for that generic. This is in contrast to Julia, where methods can have completely different sets of arguments. We favor a fixed set of formal arguments for the sake of consistency and to enable calling code to depend on a minimal set of arguments that are always present. If the generic formal argument list includes `...`, then methods can add their own arguments. The extra arguments are useful for controlling specialized behaviors, as long as the calling code can assume that calling the generic will always dispatch to a method that supports them. In accordance with the LSP, we could explore enforcing that a method only adds arguments to those of a method dispatching on a parent class. This is easiest to conceptualize and would be most useful in the single dispatch case, but we should also be able to develop a set of rules for nested multiple dispatch.
+
+## Field visibility
+
+Functional OOP is incompatible with the notion of private fields, because code does not run in the context of a class, and thus there is no way to accept or deny access to a field. R users also expect and appreciate object transparency. We will consider enabling encapsulation of field access and modification similar to how reference classes allow for defining fields as active bindings.
