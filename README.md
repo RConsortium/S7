@@ -1,6 +1,6 @@
 # Object-oriented Programming Working Group
 
-* [Initial proposoal](proposal/proposal.org)
+* [Initial proposal](proposal/proposal.org)
 * [Requirements brainstorming](spec/requirements.md)
 * [Minutes](minutes/)
 
