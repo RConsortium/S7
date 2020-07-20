@@ -3,6 +3,7 @@ This page is for brainstorming on the technical requirements for solving our [pr
 ## List of requirements
 1. The system should be as compatible as possible with existing systems, particularly S3
 1. Classes should be first class objects, extrinsic from instances
+1. The system should support formal construction, casting, and coercion to create new instances of classes.
 1. It should be convenient to systematically validate an instance
 1. Double dispatch, and possibly general multiple dispatch, should be supported
 1. Inheritance should be as simple as possible, ideally single (other features might compensate for the lack of multiple inheritance)
@@ -22,7 +23,11 @@ It is important for classes to be defined extrinsically from instances, because 
 ## Generics as extended function objects
 
 Generic functions should be represented by a special class of function object that tracks its own method table. This puts generic functions at the same level as classes, which is the essence of functional OOP, and will likely enable more natural syntax in method registration.
- 
+
+## Formal instantiation and type conversion
+
+Class instantiation should happen through a formal constructor. Once created, an object should keep its original class unless subjected to formal casting or formal coercion. The class of an object should be robust and predictable, and direct class assignment (e.g. `class<-()`) should generally be avoided.
+
 ## Systematic validation
 
 Class contracts are often more complicated than a simple list of typed fields. Having a formally supported convention around validating objects is important so that code can make the necessary assumptions about data structures and their content. Otherwise, developers trying to be defensive will resort to ad hoc checks scattered throughout the code.
