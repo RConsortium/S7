@@ -19,6 +19,8 @@ Ideally the new system will be an extension of S3, because S3 is already at the 
 
 It is important for classes to be defined extrinsically from instances, because it makes the data contract more obvious to both developers (reading the code) and users (interacting with objects). S4 represents classes as proper objects; however, typically developers will only refer to the classes by name (string literal) when interacting with the S4 API. Interacting directly with objects instead would likely simplify the API (syntax) and its implementation.
 
+Class objects need to be namespaced so that it's method dispatch still occurs correctly even when multiple packages implement a class with the same (string) name.
+
 ## Generics as extended function objects
 
 Generic functions should be represented by a special class of function object that tracks its own method table. This puts generic functions at the same level as classes, which is the essence of functional OOP, and will likely enable more natural syntax in method registration.
