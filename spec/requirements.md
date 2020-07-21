@@ -11,6 +11,7 @@ This page is for brainstorming on the technical requirements for solving our [pr
 1. Performance should be competitive with existing solutions
 1. The design should be simple to implement
 1. The system should support reflection
+1. The system should support lazy and dynamic registration of classes and methods.
 
 ## Compatibility
 
@@ -48,11 +49,16 @@ The system should support exporting generics and classes. If classes are objects
 
 Given a class and a generic, you should be able to find the appropriate method without calling it. This is important for building tooling around the system.
 
-On the flip side, you should also be able to register a method dynamically at run-time. This is important for:
+## Lazy and dynamic registration
 
-* testing, particularly for doing mocking at the method level. 
-* generics in suggested packages, so method registration can occur when that
-  package is loaded.
-* interface evolution, so you can provide a method for a generic that does not
-  yet exist, in anticipation of a future release.
+On the flip side, you should also be able to register a method lazily/dynamically at run-time. This is important for:
+
+* Generics and classes in suggested packages, so that method registration can 
+  occur when the dependency is loaded.
+
+* Testing, since you may want to define a method only within a test. This is
+  particularly useful whne used to eliminate the need for mocking.
+
+* Interface evolution, so you can provide a method for a generic or class that 
+  does not yet exist, anticipating a future release of a dependency.
 
