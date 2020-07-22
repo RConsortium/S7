@@ -11,6 +11,8 @@ This page is for brainstorming on the technical requirements for solving our [pr
 1. Namespace management should not be any more complicated than S3 currently
 1. Performance should be competitive with existing solutions
 1. The design should be simple to implement
+1. The system should support reflection
+1. The system should support lazy and dynamic registration of classes and methods.
 
 ## Compatibility
 
@@ -47,4 +49,21 @@ Ideally the entire API could be free of side effects and odd conventions, like m
 ## Namespaces
 
 The system should support exporting generics and classes. If classes are objects, they can be treated like any other object when exporting and importing symbols. If generics are objects, then it should be simple to export all methods on a generic.  It is not clear whether selective method export is important. One use case would be to hide a method with an internal class in its signature to avoid unnecessary documentation. Perhaps `R CMD check` could ignore methods for unexported classes. There should be no need for explicit method registration.  
+
+## Reflection and dynamism
+
+Given a class and a generic, you should be able to find the appropriate method without calling it. This is important for building tooling around the system.
+
+## Lazy and dynamic registration
+
+On the flip side, you should also be able to register a method lazily/dynamically at run-time. This is important for:
+
+* Generics and classes in suggested packages, so that method registration can 
+  occur when the dependency is loaded.
+
+* Testing, since you may want to define a method only within a test. This is
+  particularly useful whne used to eliminate the need for mocking.
+
+* Interface evolution, so you can provide a method for a generic or class that 
+  does not yet exist, anticipating a future release of a dependency.
 
