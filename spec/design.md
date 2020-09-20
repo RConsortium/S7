@@ -2,9 +2,11 @@
 ## Object
 
 We define an object in this system as any R object with:
-- A class attribute, a character vector of class names, following S3
-  semantics, with a direct reference to the class object
-- Potentially attributes storing class-dependent property values
+
+- A class attribute, a character vector of class names (for S3 compatibility)
+- A direct reference to the **class object**, retrieved with `classObject()`.
+- Additional attributes storing class-dependent **properties**, accessible
+  with `@`.
 
 ## Class
 
@@ -22,14 +24,14 @@ with the following components:
 The class object inherits from function and acts as a constructor of
 instances of the class. The class definer implements the constructor,
 which takes a custom set of arguments and ultimately delegates to
-`Class$new()`, which accepts any parent instance and property values
+`Class@new()`, which accepts any parent instance and property values
 and returns an instance of the class so initialized. 
 
 For example, a constructor a `Range` class might look like:
 ```{R}
 function(start, end) {
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
-    Range$new(start=start, end=end)
+    Range@new(start=start, end=end)
 }
 ```
 
@@ -81,7 +83,7 @@ way that is compatible with S4. The `prop()` function could be
 implemented as:
 ```{R}
      function(x, name) {
-         properties(class(x))[[name]](x)
+         properties(classObject(x))[[name]](x)
      }
 ```
 
@@ -106,7 +108,7 @@ For example, a `plot()` generic dispatching on `x` could be
 implemented like this:
 ```{R}
 plot <- function(x) {
-    methods(class(x))$plot(x)
+    methods(classObject(x))$plot(x)
 }
 ```
   
@@ -115,18 +117,18 @@ While a `publish()` that publishes an object `x` to a destination
 `y`, dispatching on both arguments, could be:
 ```{R}
 publish <- function(x, y) {
-    methods(class(x))$publish(x, y)
+    methods(classObject(x))$publish(x, y)
 }
 ```
 where `class(x)$publish` returns the pregenerated
 ```{R}
 function(x, y) {
-    methods(class(y))$publish.plot(x, y)
+    methods(classObject(y))$publish.plot(x, y)
 }
 ```
 assuming `x` is a "plot" object.
 
-Alernatively, the generics could just call `UseMethod()`, whiich would
+Alternatively, the generics could just call `UseMethod()`, which would
 gain support for nested dispatch.
 
 # API
@@ -134,8 +136,10 @@ gain support for nested dispatch.
 ## Programmatic
 
 ### Objects
+
  - `classObject(x)`: Get the class object for object `x`.
  - `prop(x, name)`, `prop<-(x, name, value)`: Get and set a property value
+ - `x@name` and `x@name <- value`: Shortcut to get and set property values
 
 ### Classes
 Calling `defineClass()` defines a new class. Its signature:
@@ -177,9 +181,6 @@ the `signature` is a list of class objects.
 
 ## Sugar
 
-### Objects
-	- `@()` and `@<-()` get and set property values, like S4 slots
-	
 ### Classes
 
 One crazy syntax idea for defining a class:
