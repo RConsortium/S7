@@ -19,6 +19,7 @@ with the following components:
 - Method list
   - We are able to assign methods to a class, because we assume single
     and nested (requirement #5) dispatch.
+- Validator
 - Constructor
 - Initializer (not user defined, called by constructor)
 
