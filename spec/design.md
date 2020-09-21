@@ -19,7 +19,8 @@ with the following components:
 - Method list
   - We are able to assign methods to a class, because we assume single
     and nested (requirement #5) dispatch.
-- Initializer
+- Constructor
+- Initializer (not user defined, called by constructor)
 
 The class object inherits from function and acts as a constructor of
 instances of the class. The class definer implements the constructor,
@@ -146,22 +147,54 @@ Calling `defineClass()` defines a new class. Its signature:
 ```{R}
 defineClass <- function(name, parent = object, constructor, init = structure,
                         validity = function(object) { },
-                        slots = NULL)
+                        properties = list())
 ```
+
+where:
+ - `name` is the name of the class
+ - `parent` is the class object for the parent class
+ - `constructor` is an arbitrary function that typically ends with a
+   call to `Class@new()`
+ - `validity` a function that takes the object and returns a vector of
+   error messages, or `NULL` (like the methods package)
+ - `properties` is either:
+   - a character vector mapping property names to types 
+     (converted into Property objects that store their values in attributes) 
+   - or a list of Property objects
+
+The return value is `constructor`, except it is an instance of class
+`Class`, which defines properties that describe the rest of the class.
 
 Example:
 ```{R}
-Child <- defineClass("Child", Parent, function(object, ...) {
-    structure(object, ...)
+Child <- defineClass("Range", Vector, function(start, end) {
+    stopifnot(is.numeric(start), is.numeric(end), end >= start)
+    Range@new(start=start, end=end)
 }, validity = function(object) {
-    if (object@slot2 >= object@slot1)
-        "slot2 must be less than slot1"
-}, slots = c(slot1 = "integer", slot2 = "integer"))
+    if (end < start)
+        "end must be greater than or equal to start"
+}, properties = c(start = "numeric", end = "numeric"))
 ```
+
+### Properties
+
+Calling `defineProperty()` define a new property. It has the
+signature:
+```{R}
+function(name, class, default, accessor)
+```
+
+where:
+ - `name` is the name of the property,
+ - `class` is the class object for the property value,
+ - `default` is the default value of the property on new instances,
+ - `accessor` is a function that gets and sets the property value,
+   such as through attributes on the object, and behaves similar to an
+   active binding function.
 
 ### Generics
 
-Calling `defineGeneric()` defines a new generic, with signature:
+Calling `defineGeneric()` defines a new generic. It has the signature:
 ```{R}
 function(name, FUN, signature) { }
 ```
