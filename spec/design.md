@@ -7,6 +7,7 @@ We define an object in this system as any R object with:
 - A direct reference to the **class object**, retrieved with `classObject()`.
 - Additional attributes storing class-dependent **properties**, accessible
   with `@`.
+- Classes, generics, and methods are created with `newClass()`, `newGeneric()`, and `newMethod()` respectively, and only have impact when assigned.
 
 ## Class
 
@@ -150,12 +151,20 @@ gain support for nested dispatch.
  - `prop(x, name)`, `prop<-(x, name, value)`: Get and set a property value
  - `x@name` and `x@name <- value`: Shortcut to get and set property values
 
+
 ### Classes
-Calling `defineClass()` defines a new class. Its signature:
+
+Calling `newClass()` creates a new class. Its signature:
+
 ```{R}
-defineClass <- function(name, parent = object, constructor, init = structure,
-                        validity = function(object) { },
-                        properties = list())
+defineClass(
+  name, 
+  parent = object, 
+  constructor, 
+  init = structure,
+  validity = function(object) { },
+  properties = list()
+)
 ```
 
 where:
@@ -174,22 +183,32 @@ The return value is `constructor`, except it is an instance of class
 `Class`, which defines properties that describe the rest of the class.
 
 Example:
+
 ```{R}
-Child <- defineClass("Range", Vector, function(start, end) {
+Range <- defineClass("Range", 
+  Vector, 
+  function(start, end) {
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
-    Range@new(start=start, end=end)
-}, validity = function(object) {
-    if (end < start)
-        "end must be greater than or equal to start"
-}, properties = c(start = "numeric", end = "numeric"))
+    Range@new(start = start, end = end)
+  }, 
+  validity = function(object) {
+    if (end < start) {
+      "end must be greater than or equal to start"
+    }
+  }, 
+  properties = c(start = "numeric", end = "numeric")
+)
+
+Range(start = 1, end = 10)
 ```
 
 ### Properties
 
-Calling `defineProperty()` define a new property. It has the
+Calling `newProperty()` define a new property. It has the
 signature:
+
 ```{R}
-function(name, class, default, accessor)
+newProperty(name, class, default, accessor)
 ```
 
 where:
@@ -202,19 +221,22 @@ where:
 
 ### Generics
 
-Calling `defineGeneric()` defines a new generic. It has the signature:
+Calling `newGeneric()` defines a new generic. It has the signature:
+
 ```{R}
-function(name, FUN, signature) { }
+newGeneric(name, FUN, signature)
 ```
+
 The `signature` would default to all of the arguments in
-`formals(FUN)`. The body of `FUN` would resemble S3 and S4
+`formals(FUN)[1]`. The body of `FUN` would resemble S3 and S4
 generics. It might just call `UseMethod()`.
 
 ### Methods
 
-Calling `defineMethod()` defines a new method, with the signature:
+Calling `newMethod()` defines a new method, with the signature:
+
 ```{R}
-function(generic, signature, FUN) { }
+newMethod(generic, FUN, signature)
 ```
 
 The `generic` is the actual generic function object (not its name), and
@@ -242,13 +264,14 @@ generic$Class <- function(x) { }
 In the above, `Class` would be looked up by name in the parent
 frame. A safer and slightly more verbose syntax, which passes the
 actual class object:
+
 ```{R}
-generic[[Class]] <- function(x) { }
+generic[[classObject]] <- function(x) { }
 ```
 
 For multiple (nested) dispatch:
 ```{R}
-generic[[Class1]][[Class2]] <- function(x) { }
+generic[[classObject1]][[classObject2]] <- function(x) { }
 ```
 
 Methods are looked up in the same way (incorporating inheritance).
