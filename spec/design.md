@@ -17,9 +17,6 @@ with the following components:
 - Parent class object
   - Single inheritance (requirement #6)
 - Property list
-- Method list
-  - We are able to assign methods to a class, because we assume single
-    and nested (requirement #5) dispatch.
 - Validator
 - Constructor
 - Initializer (not user defined, called by constructor)
