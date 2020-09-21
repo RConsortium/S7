@@ -45,9 +45,16 @@ Initializing an instance of a class will:
 
 The first two steps would be very similar to calling `structure()`,
 except it would initialize property values through the property system
-(see below). We could allow the user to override the first two steps,
-as one would in the methods package by defining a method on
-`initialize()`.
+(see below). 
+
+The second step, merging property values, is also useful for updating
+an object (immutably, so returning a new object). This corresponds to
+the `methods::initialize()`, which also runs the validator. We would
+separate the (re)initialization from validation. This would allow the
+developer to update the object in controlled situations without
+triggering potentially expensive or redundant validation. If we
+implement initialization through a generic, the developer can
+override it for a particular class.
 
 ### Property
 
