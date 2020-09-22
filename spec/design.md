@@ -224,16 +224,15 @@ Calling `newGeneric()` defines a new generic. It has the signature:
 newGeneric(name, FUN, signature)
 ```
 
-The `signature` would default to all of the arguments in
-`formals(FUN)[1]`. The body of `FUN` would resemble S3 and S4
-generics. It might just call `UseMethod()`.
+The `signature` would default to the first argument, i.e. `formals(FUN)[1]`. 
+The body of `FUN` would resemble S3 and S4 generics. It might just call `UseMethod()`.
 
 ### Methods
 
 Calling `newMethod()` defines a new method, with the signature:
 
 ```{R}
-newMethod(generic, FUN, signature)
+newMethod(generic, signature, FUN)
 ```
 
 The `generic` is the actual generic function object (not its name), and
