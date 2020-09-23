@@ -19,19 +19,18 @@ with the following components:
 - Property list
 - Validator
 - Constructor
-- Initializer (not user defined, called by constructor)
 
 The class object inherits from function and acts as a constructor of
 instances of the class. The class definer implements the constructor,
-which takes a custom set of arguments and ultimately delegates to
-`Class@new()`, which accepts any parent instance and property values
-and returns an instance of the class so initialized. 
+which takes a custom set of arguments and calls `newObject()` to create
+the object.
 
 For example, a constructor a `Range` class might look like:
+
 ```{R}
 function(start, end) {
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
-    Range@new(start=start, end=end)
+    newObject(start = start, end = end)
 }
 ```
 
@@ -168,7 +167,7 @@ where:
  - `name` is the name of the class
  - `parent` is the class object for the parent class
  - `constructor` is an arbitrary function that typically ends with a
-   call to `Class@new()`
+   call to `newObject()`
  - `validity` a function that takes the object and returns a vector of
    error messages, or `NULL` (like the methods package)
  - `properties` is either:
@@ -186,7 +185,7 @@ Range <- defineClass("Range",
   Vector, 
   function(start, end) {
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
-    Range@new(start = start, end = end)
+    newObject(start = start, end = end)
   }, 
   validity = function(object) {
     if (end < start) {
