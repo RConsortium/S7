@@ -263,7 +263,7 @@ method(generic, signature) <- function(x, ...) {}
   character vector. If a character vector is supplied, class objects
   are searched for in the calling frame.
 
-`method<-` will perform method validation ensuring that the method is compatible with the generic. 
+`method<-` will perform method validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same). 
 
 You should only defined a method if you "own" either the generic, or at least one of the classes in the signature. This can not be enforced programmatically (because there's no straightforward defintion of ownership), but will be recommended as best practice.
 
