@@ -106,36 +106,39 @@ Dispatch will be nested, meaning that if there are multiple
 arguments in the generic signature, it will dispatch on the first
 argument, then the second. Nested dispatch is likely easier to
 predict and understand compared to treating all arguments with equal
-precendence. Nested dispatch is also easier to implement
+precedence. Nested dispatch is also easier to implement
 efficiently, because classes would effectively inherit methods, and
 we could implement that inheritance using environments.
 	
 For example, a `plot()` generic dispatching on `x` could be
 implemented like this:
+
 ```{R}
-plot <- function(x) {
-    methods(classObject(x))$plot(x)
+plot <- function(x, ...) {
+    method(plot, classObject(x))(x, ...)
 }
 ```
   
-For multiple dispatch, we could apply the builder pattern. 
 While a `publish()` that publishes an object `x` to a destination
-`y`, dispatching on both arguments, could be:
-```{R}
-publish <- function(x, y) {
-    methods(classObject(x))$publish(x, y)
-}
-```
-where `class(x)$publish` returns the pregenerated
-```{R}
-function(x, y) {
-    methods(classObject(y))$publish.plot(x, y)
-}
-```
-assuming `x` is a "plot" object.
+`y`, could be implemented as:
 
-Alternatively, the generics could just call `UseMethod()`, which would
-gain support for nested dispatch.
+```{R}
+publish <- function(x, y, ...) {
+    sig <- list(classObject(x), classObject(y))
+    method(publish, sig)(x, y, ...)
+}
+```
+
+Because method dispatch is nested, this is presumably equivalent to something like:
+
+```{r}
+publish <- function(x, y, ...) {
+    publish_x <- method(publish, classObject(x))
+    publish_xy <- method(publish_x, classObject(y))
+    
+    publish_xy(x, y, ...)
+}
+```
 
 # API
 
