@@ -89,7 +89,7 @@ way that is compatible with S4. The `prop()` function could be
 implemented as:
 ```{R}
      function(x, name) {
-         properties(classObject(x))[[name]](x)
+         properties(classObject(x))[[name]]
      }
 ```
 
