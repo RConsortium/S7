@@ -250,26 +250,29 @@ MyClass <- Class(slot1 := integer,
 
 ### Methods
 
-Assign the method into the generic, as a member of its dispatch table:
+Methods are defined by calling `method<-(generic, signature, method)`:
 
-```{R}
-generic$Class <- function(x) { }
+```
+method(generic, signature) <- function(x, ...) {} 
 ```
 
-In the above, `Class` would be looked up by name in the parent
-frame. A safer and slightly more verbose syntax, which passes the
-actual class object:
+* `generic` is either a function or a string representing the name of a
+  function which is looked up in the calling frame.
+  
+* `signature` is a single class object, list of class objects, or a 
+  character vector. If a character vector is supplied, class objects
+  are searched for in the calling frame.
 
-```{R}
-generic[[classObject]] <- function(x) { }
+`method<-` will perform method validation ensuring that the method is comptable with the generic.
+
+`method<-` is designed to work at run-time (not just package build-time) so that methods can be defined when suggested packages are loaded later:
+
 ```
-
-For multiple (nested) dispatch:
-```{R}
-generic[[classObject1]][[classObject2]] <- function(x) { }
+whenLoaded("pkg", {
+  method(mean, pkg::A) <- function() 10
+  method(sum, pkg::A) <- function() 5
+})
 ```
-
-Methods are looked up in the same way (incorporating inheritance).
 
 # Compatibility
 
