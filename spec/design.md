@@ -82,6 +82,32 @@ Steps 2 and 3 are similar to calling `structure()`, except that property values 
 
 ### Validation
 
+Objects will be validated on construction and every time a property is modified.
+To temporarily opt-out of validation (e.g. when you need to transition through a temporarily invalid state) the system will provide `eventuallyValid()`:
+
+``` {.r}
+eventuallyValid <- function(object, code) {
+  object$internal_validation_flag <- FALSE
+  out <- code(object)
+  out$internal_validation_flag <- TRUE
+  validate(out)
+}
+```
+
+For example, if you wanted to move a Range object to the right, you could write:
+
+``` {.r}
+move_right <- function(x, y) {
+  eventuallyValid(x, function(x) {
+    x@start <- x@start + y
+    x@end <- x@end + y
+    x
+  })
+}
+```
+
+This ensures that the validation will not trigger if `x@start + y` is greater than `x@end`.
+
 ## Properties
 
 A property is an encapsulated component of the object state that is publicly accessible via a simple syntax.
