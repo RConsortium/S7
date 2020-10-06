@@ -265,7 +265,7 @@ method(generic, signature) <- function(x, ...) {}
 
 `method<-` will perform method validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same). 
 
-You should only defined a method if you "own" either the generic, or at least one of the classes in the signature. This can not be enforced programmatically (because there's no straightforward defintion of ownership), but will be recommended as best practice.
+Documentation will discuss the risks of defining a method when you don't own either the generic or the class.
 
 `method<-` is designed to work at run-time (not just package build-time) so that methods can be defined when suggested packages are loaded later:
 
