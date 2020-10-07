@@ -1,3 +1,9 @@
+---
+editor_options:
+  markdown:
+    mode: gfm
+---
+
 # Design specification
 
 This document presents a broad overview of the system.
@@ -31,7 +37,7 @@ It has the following components:
 
 Each component corresponds to an argument in `defineClass()`:
 
-``` {.r}
+``` r
 defineClass(
   name, 
   parent = object, 
@@ -51,7 +57,7 @@ For convenience:
 
 For example:
 
-``` {.r}
+``` r
 Range <- defineClass("Range", 
   Vector, 
   constructor = function(start, end) {
@@ -101,7 +107,7 @@ Every property definition has a:
 
 Property objects are created by `defineProperty()`:
 
-``` {.r}
+``` r
 newProperty(
   name, 
   class = NULL, 
@@ -125,7 +131,7 @@ For introspection purposes, it knows its name and the names of the arguments in 
 Calling `newGeneric()` defines a new generic.
 It has the signature:
 
-``` {.r}
+``` r
 newGeneric(name, FUN, signature)
 ```
 
@@ -139,7 +145,7 @@ It might just call `UseMethod()`.
 
 Methods are defined by calling `method<-(generic, signature, method)`:
 
-``` {.r}
+``` r
 method(generic, signature) <- function(x, ...) {} 
 ```
 
@@ -154,7 +160,7 @@ Documentation will discuss the risks of defining a method when you don't own eit
 
 `method<-` is designed to work at run-time (not just package build-time) so that methods can be defined when suggested packages are loaded later:
 
-``` {.r}
+``` r
 whenLoaded("pkg", {
   method(mean, pkg::A) <- function() 10
   method(sum, pkg::A) <- function() 5
@@ -169,7 +175,7 @@ Nested dispatch is also easier to implement efficiently, because classes would e
 
 For example, a `plot()` generic dispatching on `x` could be implemented like this:
 
-``` {.r}
+``` r
 plot <- function(x) {
   methods(classObject(x))$plot(x)
 }
@@ -178,7 +184,7 @@ plot <- function(x) {
 For multiple dispatch, we could apply the builder pattern.
 While a `publish()` that publishes an object `x` to a destination `y`, dispatching on both arguments, could be:
 
-``` {.r}
+``` r
 publish <- function(x, y) {
   methods(classObject(x))$publish(x, y)
 }
@@ -186,7 +192,7 @@ publish <- function(x, y) {
 
 where `class(x)$publish` returns the pregenerated
 
-``` {.r}
+``` r
 function(x, y) {
   methods(classObject(y))$publish.plot(x, y)
 }
