@@ -36,10 +36,10 @@ It has the following components:
 
 -   **Properties**, a list of property objects that define object data.
 
-Each component corresponds to an argument in `defineClass()`:
+Each component corresponds to an argument in `newClass()`:
 
 ``` r
-defineClass(
+newClass(
   name, 
   parent = object, 
   constructor = function(...) newObject(...), 
@@ -51,7 +51,7 @@ defineClass(
 For example:
 
 ``` r
-Range <- defineClass("Range", 
+Range <- newClass("Range", 
   Vector, 
   constructor = function(start, end) {
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
@@ -85,7 +85,7 @@ By convention, any argument that takes a class object can instead take the name 
 The name will be used to find the class object in the calling frame.
 
 Similarly, instead of providing a list of property objects, you can instead provide a named character vector.
-For example, `c(name = "character", age = "integer")` is shorthand for `list(defineProperty("name", "character"), defineProperty("age", "integer"))`.
+For example, `c(name = "character", age = "integer")` is shorthand for `list(newProperty("name", "character"), newProperty("age", "integer"))`.
 
 ### Validation
 
@@ -105,7 +105,7 @@ Every property definition has a:
 -   An optional **class**
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
-Property objects are created by `defineProperty()`:
+Property objects are created by `newProperty()`:
 
 ``` r
 newProperty(
