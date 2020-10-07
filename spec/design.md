@@ -18,20 +18,21 @@ We define an object in this system as any R object with:
 
 ## Classes
 
-In accordance with requirement \#2, classes are first class objects.
+Classes are first class objects (Req2).
 A class object is a function which can be called to construct an object of that class.
 It has the following components:
 
 -   **Name**, a human-meaningful descriptor for the class.
     This is used for print method and error messages; it does not identify the class.
 
--   **Parent**, the class object of the parent class (Single inheritance; requirement \#6).
+-   **Parent**, the class object of the parent class.
+    This implies single inheritance (Req6).
 
--   **Constructor**, an user-facing function used to create new objects of this class.
+-   A **constructor**, an user-facing function used to create new objects of this class.
     It always ends with a call to `newObject()` to initialize the class.
     This the function (wrapped appropriately) that represents the class.
 
--   **Validator**, a function that takes the object and returns `NULL` if the object is valid, otherwise a character vector of error messages (like the methods package).
+-   **A validator**, a function that takes the object and returns `NULL` if the object is valid, otherwise a character vector of error messages (like the methods package).
 
 -   **Properties**, a list of property objects that define object data.
 
@@ -46,14 +47,6 @@ defineClass(
   properties = list()
 )
 ```
-
-For convenience:
-
--   `parent` can be a string.
-    This string will be used to look for a class object in the calling frame.
-
--   `properties` can be a named character vector, which will be converted to a formal list of property objects.
-    For example, `c(name = "character", age = "integer")` is shorthand for `list(defineProperty("name", "character"), defineProperty("age", "integer"))`.
 
 For example:
 
@@ -85,6 +78,14 @@ Initializing an instance of a class with `newObject()`:
 4.  Validates the complete object.
 
 Steps 2 and 3 are similar to calling `structure()`, except that property values will be initialized and validated through the property system.
+
+### Shortcuts
+
+By convention, any argument that takes a class object can instead take the name of a class object in string.
+The name will be used to find the class object in the calling frame.
+
+Similarly, instead of providing a list of property objects, you can instead provide a named character vector.
+For example, `c(name = "character", age = "integer")` is shorthand for `list(defineProperty("name", "character"), defineProperty("age", "integer"))`.
 
 ### Validation
 
@@ -139,6 +140,9 @@ The `signature` would default to the first argument, i.e. `formals(FUN)[1]`.
 The body of `FUN` would resemble S3 and S4 generics.
 It might just call `UseMethod()`.
 
+By convention, any argument that takes a generic function, can instead take the name of a generic function supplied as a string.
+The name will be used to find the class object in the calling frame.
+
 ## Methods
 
 ### Creation
@@ -149,10 +153,9 @@ Methods are defined by calling `method<-(generic, signature, method)`:
 method(generic, signature) <- function(x, ...) {} 
 ```
 
--   `generic` is either a function or a string representing the name of a function which is looked up in the calling frame.
+-   `generic` is a generic function.
 
--   `signature` is a single class object, list of class objects, or a character vector.
-    If a character vector is supplied, class objects are searched for in the calling frame.
+-   `signature` is a single class object (single dispatch) or list of class objects (nested dispatch).
 
 `method<-` performs validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same).
 
