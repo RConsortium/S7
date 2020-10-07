@@ -41,9 +41,9 @@ Each component corresponds to an argument in `newClass()`:
 ``` r
 newClass(
   name, 
-  parent = object, 
+  parent = Object, 
   constructor = function(...) newObject(...), 
-  validity = function(object) NULL,
+  validator = function(x) NULL,
   properties = list()
 )
 ```
@@ -57,8 +57,8 @@ Range <- newClass("Range",
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
     newObject(start = start, end = end)
   },
-  validity = function(object) {
-    if (end < start) {
+  validator = function(x) {
+    if (x@end < x@start) {
       "end must be greater than or equal to start"
     }
   }, 
