@@ -96,7 +96,6 @@ Every property definition has a:
 
 -   A **name**, used to label output for humans.
 -   An optional **class**
--   A **default value** that is (itself defaulting to the value class prototype)
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
 Property objects are created by `defineProperty()`:
@@ -105,7 +104,6 @@ Property objects are created by `defineProperty()`:
 newProperty(
   name, 
   class = NULL, 
-  default = NULL, 
   accessor = NULL
 )
 ```
