@@ -82,6 +82,25 @@ Steps 2 and 3 are similar to calling `structure()`, except that property values 
 
 ### Validation
 
+### Unions
+
+A class union represents a list of possible classes.
+It is used in properties to allow a property to be one of a set of classes, and in method dispatch as a convenience for defining a method for multiple classes.
+
+``` {.R}
+ClassUnion <- defineClass("ClassUnion", 
+  properties = list(classes = "list"),
+  validator = function(x) {
+    # Checks that all elements of classes are Class object
+  },
+  constructor = function(...) {
+    classes <- list(...)
+    # look up Class object from any class vectors
+    newObject(classes = classes)
+  }
+)
+```
+
 ## Properties
 
 A property is an encapsulated component of the object state that is publicly accessible via a simple syntax.
@@ -95,7 +114,7 @@ There will be built-in support for emitting deprecation messages.
 Every property definition has a:
 
 -   A **name**, used to label output for humans.
--   An optional **class**
+-   An optional **class** (or class union**)**.
 -   A **default value** that is (itself defaulting to the value class prototype)
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
@@ -145,8 +164,8 @@ method(generic, signature) <- function(x, ...) {}
 
 -   `generic` is either a function or a string representing the name of a function which is looked up in the calling frame.
 
--   `signature` is a single class object, list of class objects, or a character vector.
-    If a character vector is supplied, class objects are searched for in the calling frame.
+-   `signature` is a single class object, a class union, list of class objects/unions, or a character vector.
+    If a character vector, class objects are searched for in the calling frame.
 
 `method<-` performs validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same).
 
