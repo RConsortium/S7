@@ -1,3 +1,9 @@
+---
+editor_options:
+  markdown:
+    mode: gfm
+---
+
 # Design specification
 
 This document presents a broad overview of the system.
@@ -12,54 +18,47 @@ We define an object in this system as any R object with:
 
 ## Classes
 
-In accordance with requirement \#2, classes are first class objects.
+Classes are first class objects (Req2).
 A class object is a function which can be called to construct an object of that class.
 It has the following components:
 
 -   **Name**, a human-meaningful descriptor for the class.
     This is used for print method and error messages; it does not identify the class.
 
--   **Parent**, the class object of the parent class (Single inheritance; requirement \#6).
+-   **Parent**, the class object of the parent class.
+    This implies single inheritance (Req6).
 
--   **Constructor**, an user-facing function used to create new objects of this class.
+-   A **constructor**, an user-facing function used to create new objects of this class.
     It always ends with a call to `newObject()` to initialize the class.
     This the function (wrapped appropriately) that represents the class.
 
--   **Validator**, a function that takes the object and returns `NULL` if the object is valid, otherwise a character vector of error messages (like the methods package).
+-   **A validator**, a function that takes the object and returns `NULL` if the object is valid, otherwise a character vector of error messages (like the methods package).
 
 -   **Properties**, a list of property objects that define object data.
 
-Each component corresponds to an argument in `defineClass()`:
+Each component corresponds to an argument in `newClass()`:
 
-``` {.r}
-defineClass(
+``` r
+newClass(
   name, 
-  parent = object, 
+  parent = Object, 
   constructor = function(...) newObject(...), 
-  validity = function(object) NULL,
+  validator = function(x) NULL,
   properties = list()
 )
 ```
 
-For convenience:
-
--   `parent` can be a string.
-    This string will be used to look for a class object in the calling frame.
-
--   `properties` can be a named character vector, which will be converted to a formal list of property objects.
-    For example, `c(name = "character", age = "integer")` is shorthand for `list(defineProperty("name", "character"), defineProperty("age", "integer"))`.
-
 For example:
 
-``` {.r}
-Range <- defineClass("Range", 
+``` r
+Range <- newClass("Range", 
   Vector, 
   constructor = function(start, end) {
     stopifnot(is.numeric(start), is.numeric(end), end >= start)
     newObject(start = start, end = end)
   },
-  validity = function(object) {
-    if (end < start) {
+  validator = function(x) {
+    if (x@end < x@start) {
       "end must be greater than or equal to start"
     }
   }, 
@@ -80,14 +79,54 @@ Initializing an instance of a class with `newObject()`:
 
 Steps 2 and 3 are similar to calling `structure()`, except that property values will be initialized and validated through the property system.
 
+### Shortcuts
+
+By convention, any argument that takes a class object can instead take the name of a class object in string.
+The name will be used to find the class object in the calling frame.
+
+Similarly, instead of providing a list of property objects, you can instead provide a named character vector.
+For example, `c(name = "character", age = "integer")` is shorthand for `list(newProperty("name", "character"), newProperty("age", "integer"))`.
+
 ### Validation
+
+Objects will be validated on construction and every time a property is modified.
+To temporarily opt-out of validation (e.g. when you need to transition through a temporarily invalid state) the system will provide `eventuallyValid()`:
+
+``` {.r}
+eventuallyValid <- function(object, fun) {
+  object$internal_validation_flag <- FALSE
+  out <- fun(object)
+  out$internal_validation_flag <- TRUE
+  validate(out)
+}
+```
+
+For example, if you wanted to move a Range object to the right, you could write:
+
+``` {.r}
+move_right <- function(x, y) {
+  eventuallyValid(x, function(x) {
+    x@start <- x@start + y
+    x@end <- x@end + y
+    x
+  })
+}
+```
+
+This ensures that the validation will not trigger if `x@start + y` is greater than `x@end`.
+
+The system also provides `implicitlyValid()` for expert use only.
+This is similar to `eventuallyValid()` but does not check for validity at the end.
+This can be used in performance critical areas where you can ascertain that a sequence of operations can never make an valid object invalid[^1](This%20is%20generally%20hard:%20for%20example,%20in%20the%20%60move_right()%60%20example%20above,%20you%20might%20think%20that%20that%20if%20%60x@start%20%3C%20x@end%60%20is%20true%20at%20the%20beginning,%20then%20%60x@start%20+%20y%20%3C%20x@end%20+%20y%60%20will%20still%20be%20true%20at%20the%20end,%20and%20you%20don't%20technically%20need%20to%20re-validate%20the%20object.).
+
+But that's actually not true: if you assume `x@start == 1` and `x@end == 2`, then `x@start + y == x@end + y` (i.e. they're equal!), as soon as `abs(y) > 2e16`, i.e. for very many values of `y`.
 
 ### Unions
 
 A class union represents a list of possible classes.
 It is used in properties to allow a property to be one of a set of classes, and in method dispatch as a convenience for defining a method for multiple classes.
 
-``` {.R}
+``` {.r}
 ClassUnion <- defineClass("ClassUnion", 
   properties = list(classes = "list"),
   validator = function(x) {
@@ -118,13 +157,12 @@ Every property definition has a:
 -   A **default value** that is (itself defaulting to the value class prototype)
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
-Property objects are created by `defineProperty()`:
+Property objects are created by `newProperty()`:
 
-``` {.r}
+``` r
 newProperty(
   name, 
   class = NULL, 
-  default = NULL, 
   accessor = NULL
 )
 ```
@@ -144,7 +182,7 @@ For introspection purposes, it knows its name and the names of the arguments in 
 Calling `newGeneric()` defines a new generic.
 It has the signature:
 
-``` {.r}
+``` r
 newGeneric(name, FUN, signature)
 ```
 
@@ -152,17 +190,20 @@ The `signature` would default to the first argument, i.e. `formals(FUN)[1]`.
 The body of `FUN` would resemble S3 and S4 generics.
 It might just call `UseMethod()`.
 
+By convention, any argument that takes a generic function, can instead take the name of a generic function supplied as a string.
+The name will be used to find the class object in the calling frame.
+
 ## Methods
 
 ### Creation
 
 Methods are defined by calling `method<-(generic, signature, method)`:
 
-``` {.r}
+``` r
 method(generic, signature) <- function(x, ...) {} 
 ```
 
--   `generic` is either a function or a string representing the name of a function which is looked up in the calling frame.
+-   `generic` is a generic function.
 
 -   `signature` is a single class object, a class union, list of class objects/unions, or a character vector.
     If a character vector, class objects are searched for in the calling frame.
@@ -173,7 +214,7 @@ Documentation will discuss the risks of defining a method when you don't own eit
 
 `method<-` is designed to work at run-time (not just package build-time) so that methods can be defined when suggested packages are loaded later:
 
-``` {.r}
+``` r
 whenLoaded("pkg", {
   method(mean, pkg::A) <- function() 10
   method(sum, pkg::A) <- function() 5
@@ -183,35 +224,36 @@ whenLoaded("pkg", {
 ### Dispatch
 
 Dispatch will be nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second.
-Nested dispatch is likely easier to predict and understand compared to treating all arguments with equal precendence.
+Nested dispatch is likely easier to predict and understand compared to treating all arguments with equal precedence.
 Nested dispatch is also easier to implement efficiently, because classes would effectively inherit methods, and we could implement that inheritance using environments.
 
 For example, a `plot()` generic dispatching on `x` could be implemented like this:
 
-``` {.r}
+``` r
 plot <- function(x) {
-  methods(classObject(x))$plot(x)
+  method(plot, classObject(x))(x)
 }
 ```
 
-For multiple dispatch, we could apply the builder pattern.
-While a `publish()` that publishes an object `x` to a destination `y`, dispatching on both arguments, could be:
+While a `publish()` that publishes an object `x` to a destination `y`, dispatching on both arguments, could be implemented as:
 
-``` {.r}
-publish <- function(x, y) {
-  methods(classObject(x))$publish(x, y)
+``` r
+publish <- function(x, y, ...) {
+  sig <- list(classObject(x), classObject(y))
+  method(publish, sig)(x, y, ...)
 }
 ```
 
-where `class(x)$publish` returns the pregenerated
+Because method dispatch is nested, this is presumably equivalent to something like:
 
-``` {.r}
-function(x, y) {
-  methods(classObject(y))$publish.plot(x, y)
+``` r
+publish <- function(x, y, ...) {
+  publish_x <- method(publish, classObject(x))
+  publish_xy <- method(publish_x, classObject(y))
+
+  publish_xy(x, y, ...)
 }
 ```
-
-assuming `x` is a "plot" object.
 
 Alternatively, the generics could just call `UseMethod()`, which would gain support for nested dispatch.
 
