@@ -86,9 +86,9 @@ Objects will be validated on construction and every time a property is modified.
 To temporarily opt-out of validation (e.g. when you need to transition through a temporarily invalid state) the system will provide `eventuallyValid()`:
 
 ``` {.r}
-eventuallyValid <- function(object, code) {
+eventuallyValid <- function(object, fun) {
   object$internal_validation_flag <- FALSE
-  out <- code(object)
+  out <- fun(object)
   out$internal_validation_flag <- TRUE
   validate(out)
 }
@@ -110,8 +110,11 @@ This ensures that the validation will not trigger if `x@start + y` is greater th
 
 The system also provides `implicitlyValid()` for expert use only.
 This is similar to `eventuallyValid()` but does not check for validity at the end.
-This can be used in performance critical areas where you can ascertain that a sequence of operations can never make an valid object invalid.
-For example, in the `move_right()` example above, you can show that if `x@start < x@end` is true at the beginning, then `x@start + y < x@end + y` will still be true at the end, and you don't technically need to re-validate the object.
+This can be used in performance critical areas where you can ascertain that a sequence of operations can never make an valid object invalid[^1].
+
+[^1]: This is generally hard.
+    For example, in the `move_right()` example above, you might think that that if `x@start < x@end` is true at the beginning, then `x@start + y < x@end + y` will still be true at the end, and you don't technically need to re-validate the object.
+    But that's actually not true: if you assume `x@start == 1` and `x@end == 2`, then `x@start + y == x@end + y` (i.e. they're equal!), as soon as `abs(y) > 2e16`, i.e. for very many values of `y`.
 
 ## Properties
 
