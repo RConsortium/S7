@@ -18,12 +18,10 @@ We define an object in this system as any R object with:
 
 ## Classes
 
-Classes are first class objects (Req2).
-A class object is a function which can be called to construct an object of that class.
-It has the following components:
+Classes are first class objects (Req2) with the following components:
 
 -   **Name**, a human-meaningful descriptor for the class.
-    This is used for print method and error messages; it does not identify the class.
+    This is used for the default print method and in error messages; it does not identify the class.
 
 -   **Parent**, the class object of the parent class.
     This implies single inheritance (Req6).
@@ -34,9 +32,10 @@ It has the following components:
 
 -   **A validator**, a function that takes the object and returns `NULL` if the object is valid, otherwise a character vector of error messages (like the methods package).
 
--   **Properties**, a list of property objects that define object data.
+-   **Properties**, a list of property objects (see below) that define the data that objects can possess.
 
-Each component corresponds to an argument in `newClass()`:
+Classes are constructed by supplying these components to a call to `newClass()`.
+`newClass()` returns a class object that can be called to construct an object of that class.
 
 ``` r
 newClass(
@@ -70,29 +69,30 @@ Range(start = 1, end = 10)
 
 ### Initialization
 
-Initializing an instance of a class with `newObject()`:
+The constructor uses `newObject()` to **initialize** a new object.
+This:
 
-1.  Inspects the enclosing scope to find the "active" class.
+1.  Inspects the enclosing scope to find the "current" class.
 2.  Creates the prototype, by either by calling the parent constructor or by creating a base type and adding `class` and `classObject` attributes to it.
 3.  Validates properties then adds to prototype.
 4.  Validates the complete object.
 
-Steps 2 and 3 are similar to calling `structure()`, except that property values will be initialized and validated through the property system.
+Steps 2 and 3 are similar to calling `structure()`, except that property values are initialized and validated through the property system.
 
 ### Shortcuts
 
-By convention, any argument that takes a class object can instead take the name of a class object in string.
-The name will be used to find the class object in the calling frame.
+By convention, any argument that takes a class object can instead take the name of a class object as a string.
+The name will be used to find a class object in the calling frame.
 
 Similarly, instead of providing a list of property objects, you can instead provide a named character vector.
 For example, `c(name = "character", age = "integer")` is shorthand for `list(newProperty("name", "character"), newProperty("age", "integer"))`.
 
 ### Validation
 
-Objects will be validated on construction and every time a property is modified.
-To temporarily opt-out of validation (e.g. when you need to transition through a temporarily invalid state) the system will provide `eventuallyValid()`:
+Objects will be validated on initialization and every time a property is modified.
+To temporarily opt-out of validation (e.g. in order to transition through a temporarily invalid state) the system provides `eventuallyValid()`:
 
-``` {.r}
+``` r
 eventuallyValid <- function(object, fun) {
   object$internal_validation_flag <- FALSE
   out <- fun(object)
@@ -103,7 +103,7 @@ eventuallyValid <- function(object, fun) {
 
 For example, if you wanted to move a Range object to the right, you could write:
 
-``` {.r}
+``` r
 move_right <- function(x, y) {
   eventuallyValid(x, function(x) {
     x@start <- x@start + y
@@ -115,9 +115,9 @@ move_right <- function(x, y) {
 
 This ensures that the validation will not trigger if `x@start + y` is greater than `x@end`.
 
-The system also provides `implicitlyValid()` for expert use only.
+The system also provides `implicitlyValid()` for expert use.
 This is similar to `eventuallyValid()` but does not check for validity at the end.
-This can be used in performance critical areas where you can ascertain that a sequence of operations can never make an valid object invalid.
+This can be used in performance critical code where you can ascertain that a sequence of operations can never make an valid object invalid.
 
 (This can be quite hard: for example, in the `move_right()` example above, you might think that that if `x@start < x@end` is true at the beginning, then `x@start + y < x@end + y` will still be true at the end, and you don't need to re-validate the object.
 But that's not necessarily true: if `x@start == 1`, `x@end == 2`, and `abs(y) > 2e16` then `x@start + y == x@end + y`!)
@@ -127,7 +127,7 @@ But that's not necessarily true: if `x@start == 1`, `x@end == 2`, and `abs(y) > 
 A class union represents a list of possible classes.
 It is used in properties to allow a property to be one of a set of classes, and in method dispatch as a convenience for defining a method for multiple classes.
 
-``` {.r}
+``` r
 ClassUnion <- defineClass("ClassUnion", 
   properties = list(classes = "list"),
   validator = function(x) {
@@ -139,22 +139,24 @@ ClassUnion <- defineClass("ClassUnion",
     newObject(classes = classes)
   }
 )
+
+ClassUnion("character", "NULL")
+ClassUnion(Range, NULL)
 ```
 
 ## Properties
 
-A property is an encapsulated component of the object state that is publicly accessible via a simple syntax.
-The motivation for properties is that R users expect transparency; they want to get to the actual data inside an object and directly manipulate it to get their work done, without worrying about bespoke APIs.
-Properties support typical usage while protecting encapsulation and hiding implementation details.
+Properties store the data needed by an object.
+Properties of an object can be accessed using `@`/`@<-` or `prop()`/`prop<-`.
+Setting the properties of an object always triggers validation.
 
-Compared to S3 attributes, properties are considerably stricter: a class defines the names and types of its properties.
-Compared to S4 slots, properties enable an object to change its internals without breaking existing usage because it can provides a custom accessor that redirects to the new representation.
-There will be built-in support for emitting deprecation messages.
+Properties are less encapsulated than their equivalents in most languages because R users expect transparency and want to get to the actual data inside an object and directly manipulate it to get their work done.
+Properties this support typical usage while still providing some ability to encapsulate data and hide implementation details.
 
 Every property definition has a:
 
 -   A **name**, used to label output for humans.
--   An optional **class** (or class union**)**.
+-   An optional **class** (or class union).
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
 Property objects are created by `newProperty()`:
@@ -167,16 +169,17 @@ newProperty(
 )
 ```
 
-While it would be tempting to support public vs. private scoping on properties, it is not obvious how to support that, because no code is more privileged than any another.
-Nor is it clear whether the package should define the boundary, when packages sometimes define methods on classes defined in other packages and want to take advantage of the internal representation.
-The encapsulation afforded by properties is a good compromise.
+Compared to S3 attributes, properties are considerably stricter: a class defines the names and types of its properties.
+Compared to S4 slots, properties enable an object to change its internals without breaking existing usage because it can provides a custom accessor that redirects to the new representation.
+There will be built-in support for emitting deprecation messages.
 
-Properties of an object can be accessed using `@`/`@<-` or `prop()`/`prop<-`.
-Setting the properties of an object always triggers validation.
+While it would be tempting to support public vs. private scoping on properties, it is not obvious how to do so, because no code is more privileged than any another.
+Nor is it clear whether the package should define the boundary, when packages sometimes define methods on classes defined in other packages and want to take advantage of their internal representations.
+We believe that the encapsulation afforded by properties is a good compromise.
 
 ## Generic
 
-A generic is a function that provides an interface with implementation provided by methods.
+A generic separates function interface from implementation: the generic defines the interface, and methods provide the implementation.
 For introspection purposes, it knows its name and the names of the arguments in its signature (the arguments considered during dispatch).
 
 Calling `newGeneric()` defines a new generic.
@@ -207,11 +210,12 @@ method(generic, signature) <- function(x, ...) {}
 
 -   `signature` is a single class object, a class union, list of class objects/unions, or a character vector.
 
-`method<-` performs validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same).
+-   `method` is a compatible function, i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same.
 
 Documentation will discuss the risks of defining a method when you don't own either the generic or the class.
 
-`method<-` is designed to work at run-time (not just package build-time) so that methods can be defined when suggested packages are loaded later:
+`method<-` is designed to work at run-time (not just package build-time) so that methods can be defined when packages that define classes or generics are loaded after the package that defines the methods.
+This typically occurs when providing methods for generics or classes in suggested packages.
 
 ``` r
 whenLoaded("pkg", {
@@ -222,7 +226,7 @@ whenLoaded("pkg", {
 
 ### Dispatch
 
-Dispatch will be nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second.
+Dispatch is nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second.
 Nested dispatch is likely easier to predict and understand compared to treating all arguments with equal precedence.
 Nested dispatch is also easier to implement efficiently, because classes would effectively inherit methods, and we could implement that inheritance using environments.
 
