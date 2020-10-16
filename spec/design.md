@@ -122,6 +122,25 @@ This can be used in performance critical areas where you can ascertain that a se
 (This can be quite hard: for example, in the `move_right()` example above, you might think that that if `x@start < x@end` is true at the beginning, then `x@start + y < x@end + y` will still be true at the end, and you don't need to re-validate the object.
 But that's not necessarily true: if `x@start == 1`, `x@end == 2`, and `abs(y) > 2e16` then `x@start + y == x@end + y`!)
 
+### Unions
+
+A class union represents a list of possible classes.
+It is used in properties to allow a property to be one of a set of classes, and in method dispatch as a convenience for defining a method for multiple classes.
+
+``` {.r}
+ClassUnion <- defineClass("ClassUnion", 
+  properties = list(classes = "list"),
+  validator = function(x) {
+    # Checks that all elements of classes are Class object
+  },
+  constructor = function(...) {
+    classes <- list(...)
+    # look up Class object from any class vectors
+    newObject(classes = classes)
+  }
+)
+```
+
 ## Properties
 
 A property is an encapsulated component of the object state that is publicly accessible via a simple syntax.
@@ -135,7 +154,7 @@ There will be built-in support for emitting deprecation messages.
 Every property definition has a:
 
 -   A **name**, used to label output for humans.
--   An optional **class**
+-   An optional **class** (or class union**)**.
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
 Property objects are created by `newProperty()`:
@@ -186,7 +205,7 @@ method(generic, signature) <- function(x, ...) {}
 
 -   `generic` is a generic function.
 
--   `signature` is a single class object (single dispatch) or list of class objects (nested dispatch).
+-   `signature` is a single class object, a class union, list of class objects/unions, or a character vector.
 
 `method<-` performs validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same).
 
