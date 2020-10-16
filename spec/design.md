@@ -155,7 +155,6 @@ Every property definition has a:
 
 -   A **name**, used to label output for humans.
 -   An optional **class** (or class union**)**.
--   A **default value** that is (itself defaulting to the value class prototype)
 -   An optional **accessor** function that overrides getting and setting, much like an active binding (by default, the value is stored as attribute, like S3/S4).
 
 Property objects are created by `newProperty()`:
@@ -207,7 +206,6 @@ method(generic, signature) <- function(x, ...) {}
 -   `generic` is a generic function.
 
 -   `signature` is a single class object, a class union, list of class objects/unions, or a character vector.
-    If a character vector, class objects are searched for in the calling frame.
 
 `method<-` performs validation ensuring that the method is compatible with the generic (i.e. all arguments before `...` have the same names in the same order; if the generic doesn't have `...` all arguments must be same).
 
