@@ -117,9 +117,10 @@ This ensures that the validation will not trigger if `x@start + y` is greater th
 
 The system also provides `implicitlyValid()` for expert use only.
 This is similar to `eventuallyValid()` but does not check for validity at the end.
-This can be used in performance critical areas where you can ascertain that a sequence of operations can never make an valid object invalid[^1](This%20is%20generally%20hard:%20for%20example,%20in%20the%20%60move_right()%60%20example%20above,%20you%20might%20think%20that%20that%20if%20%60x@start%20%3C%20x@end%60%20is%20true%20at%20the%20beginning,%20then%20%60x@start%20+%20y%20%3C%20x@end%20+%20y%60%20will%20still%20be%20true%20at%20the%20end,%20and%20you%20don't%20technically%20need%20to%20re-validate%20the%20object.).
+This can be used in performance critical areas where you can ascertain that a sequence of operations can never make an valid object invalid.
 
-But that's actually not true: if you assume `x@start == 1` and `x@end == 2`, then `x@start + y == x@end + y` (i.e. they're equal!), as soon as `abs(y) > 2e16`, i.e. for very many values of `y`.
+(This can be quite hard: for example, in the `move_right()` example above, you might think that that if `x@start < x@end` is true at the beginning, then `x@start + y < x@end + y` will still be true at the end, and you don't need to re-validate the object.
+But that's not necessarily true: if `x@start == 1`, `x@end == 2`, and `abs(y) > 2e16` then `x@start + y == x@end + y`!)
 
 ### Unions
 
