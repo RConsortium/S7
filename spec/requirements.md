@@ -3,6 +3,7 @@ This page is for brainstorming on the technical requirements for solving our [pr
 ## List of requirements
 1. The system should be as compatible as possible with existing systems, particularly S3
 1. Classes should be first class objects, extrinsic from instances
+1. The system should support formal construction, casting, and coercion to create new instances of classes.
 1. It should be convenient to systematically validate an instance
 1. Double dispatch, and possibly general multiple dispatch, should be supported
 1. Inheritance should be as simple as possible, ideally single (other features might compensate for the lack of multiple inheritance)
@@ -11,6 +12,12 @@ This page is for brainstorming on the technical requirements for solving our [pr
 1. Performance should be competitive with existing solutions
 1. The design should be simple to implement
 1. It should be possible for a package to define a method where the generic and classes are defined outside of the package
+1. We should aim to facilitate API evolution, particularly as it relates to inter-package dependencies
+1. Methods must include all formal arguments from their generic (not like Julia)
+1. Generics should support `...` in their formal argument lists and methods can append arguments to those lists
+1. Fields should have "public" visibility, and should support encapsulation (implicit getters and setters)
+1. The system should support reflection
+1. The system should support lazy and dynamic registration of classes and methods.
 
 ## Compatibility
 
@@ -23,7 +30,11 @@ It is important for classes to be defined extrinsically from instances, because 
 ## Generics as extended function objects
 
 Generic functions should be represented by a special class of function object that tracks its own method table. This puts generic functions at the same level as classes, which is the essence of functional OOP, and will likely enable more natural syntax in method registration.
- 
+
+## Formal instantiation and type conversion
+
+Class instantiation should happen through a formal constructor. Once created, an object should keep its original class unless subjected to formal casting or formal coercion. The class of an object should be robust and predictable, and direct class assignment (e.g. `class<-()`) should generally be avoided.
+
 ## Systematic validation
 
 Class contracts are often more complicated than a simple list of typed fields. Having a formally supported convention around validating objects is important so that code can make the necessary assumptions about data structures and their content. Otherwise, developers trying to be defensive will resort to ad hoc checks scattered throughout the code.
@@ -38,7 +49,7 @@ Inheritance lets us define a data taxonomy, and it is often natural to organize 
 
 ## Syntax
 
-Ideally the entire API could be free of side effects and odd conventions, like making the `.` character significant in method names. Direct manipulation of class and generic objects should enable this.
+The entire API should be free of side effects and odd conventions, like making the `.` character significant in method names. Whereas S3 supports implicit method registration based on the name of the method, the new system should require methods to be registered explicitly. Direct manipulation of class and generic objects should enable this.
 
 ## Namespaces
 
@@ -47,3 +58,28 @@ The system should support exporting generics and classes. If classes are objects
 ## Third party methods
 
 To fully realize the potential of interoperability afforded by functional OOP, with its treating of generics and classes as orthogonal, we should allow packages to extend an externally defined API so that it supports externally defined classes. In most cases, a method should only be defined by either the owner of the generic or the owner of the class, but "ownership" is a somewhat nebulous concept. We acknowledge the potential for conflicts arising from multiple packages defining methods on the same generic and with overlapping signatures, as well as the danger of injecting new behaviors that violate the assumptions of existing method definitions.
+
+## Formal arguments
+
+The formal arguments of a generic must be present in every method for that generic. This is in contrast to Julia, where methods can have completely different sets of arguments. We favor a fixed set of formal arguments for the sake of consistency and to enable calling code to depend on a minimal set of arguments that are always present. If the generic formal argument list includes `...`, then methods can add their own arguments. The extra arguments are useful for controlling specialized behaviors, as long as the calling code can assume that calling the generic will always dispatch to a method that handles them in accordance with the documentation. In accordance with the Liskov Substitution Principle, we could explore enforcing that a method only adds arguments to those of a method dispatching on a parent class. This is easiest to conceptualize and would be most useful in the single dispatch case, but we should also be able to develop a set of rules for nested multiple dispatch.
+
+## Field visibility
+
+Functional OOP is incompatible with the notion of private fields, because code does not run in the context of a class, and thus there is no way to accept or deny access to a field. R users also expect and appreciate object transparency. We will consider enabling encapsulation of field access and modification similar to how reference classes allow for defining fields as active bindings.
+
+## Reflection and dynamism
+
+Given a class and a generic, you should be able to find the appropriate method without calling it. This is important for building tooling around the system.
+
+## Lazy and dynamic registration
+
+On the flip side, you should also be able to register a method lazily/dynamically at run-time. This is important for:
+
+* Generics and classes in suggested packages, so that method registration can 
+  occur when the dependency is loaded.
+
+* Testing, since you may want to define a method only within a test. This is
+  particularly useful whne used to eliminate the need for mocking.
+
+* Interface evolution, so you can provide a method for a generic or class that 
+  does not yet exist, anticipating a future release of a dependency.
