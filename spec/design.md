@@ -6,11 +6,12 @@ editor_options:
 
 # Design specification
 
-This document presents a broad overview of the system.
+This document presents a broad overview of the R7 object-oriented programming toolkit.
+(Please note that R7 is a working name and may change in the future.)
 
 ## Objects
 
-We define an object in this system as any R object with:
+We define an R7 object as any R object with:
 
 -   A class object attribute, a reference to the **class object**, and retrieved with `classObject()`.
 -   For S3 compatibility, a class attribute, a character vector of class names.
@@ -18,7 +19,7 @@ We define an object in this system as any R object with:
 
 ## Classes
 
-Classes are first class objects (Req2) with the following components:
+R7 classes are first class objects (Req2) with the following components:
 
 -   **Name**, a human-meaningful descriptor for the class.
     This is used for the default print method and in error messages; it does not identify the class.
@@ -90,7 +91,7 @@ For example, `c(name = "character", age = "integer")` is shorthand for `list(new
 ### Validation
 
 Objects will be validated on initialization and every time a property is modified.
-To temporarily opt-out of validation (e.g. in order to transition through a temporarily invalid state) the system provides `eventuallyValid()`:
+To temporarily opt-out of validation (e.g. in order to transition through a temporarily invalid state), R7 provides `eventuallyValid()`:
 
 ``` r
 eventuallyValid <- function(object, fun) {
@@ -115,7 +116,7 @@ move_right <- function(x, y) {
 
 This ensures that the validation will not trigger if `x@start + y` is greater than `x@end`.
 
-The system also provides `implicitlyValid()` for expert use.
+R7 also provides `implicitlyValid()` for expert use.
 This is similar to `eventuallyValid()` but does not check for validity at the end.
 This can be used in performance critical code where you can ascertain that a sequence of operations can never make an valid object invalid.
 
