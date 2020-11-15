@@ -3,7 +3,7 @@
 * [Initial proposal](proposal/proposal.org)
 * [Requirements brainstorming](spec/requirements.md)
 * [Minutes](minutes/)
-
+* [Code](R/) (this repository is an R package)
 
 ## Workflow
 
