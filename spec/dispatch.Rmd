@@ -1,0 +1,262 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(comment = "#>", collapse = TRUE)
+options(rlang_trace_top_env = rlang::current_env())
+```
+
+# Dispatch
+
+## Single dispatch
+
+### S3
+
+The basic rules of S3 dispatch are simple.
+If object has class attribute `c("a", "b", "c")` then generic `f()` looks for methods in the following order:
+
+-   `f.a()`
+-   `f.b()`
+-   `f.c()`
+-   `f.default()`
+
+If no method is found, it errors.
+
+### R7
+
+R7 will behave the same as S3.
+
+## Method lookup
+
+### S3
+
+Where precisely does `UseMethod()` look for the methods?
+As of R 4.0.0, it looks in the following three places:
+
+-   The method table is a special environment `.__S3MethodsTable__.` found in the environment where the generic is defined.
+
+-   The chain of environments starting at the `parent.frame()` of the call to generic, ending at the global environment.
+
+-   The base environment (i..e. skips the search).
+
+### R7
+
+R7 methods are defined using assignment:
+
+```{r, eval = FALSE}
+method("mean", "numeric") <- function(x) sum(x) / length(x)
+```
+
+Behind the scenes, this acts directly upon the method table, so method lookup for R7 generics never needs to look in the parent frame.
+
+`method<-` is likely to start as a shim around `.S3method()` but we may want to consider a separate `.__R7MethodsTable__.`.
+This could use a new data structure that resolves generic/class ambiguity (e.g. `all.equal.data.frame()`).
+Methods for R7 classes defined on an S3 generics would still use the S3 method table.
+Could consider attaching the method table to the generic, instead of its containing environment.
+
+Method lookup would be cached for performance, so that it is only performed once per class.
+Cached methods would be marked with a special attribute so that they could be flushed whenever a new method for the generic is added.
+
+## Method call frame
+
+### S3
+
+Once the method has been found, it must be called.
+`UseMethod()` does not work like a regular function call but instead:
+
+-   Changes to arguments are ignored.
+
+-   Method can access objects created in generic.
+
+-   The parent frame of the method call is the parent frame of the generic.
+
+These properties are summarised in the following example:
+
+```{r}
+foo <- function(x, y)  {
+  y <- 2
+  z <- 2
+  UseMethod("foo")
+}
+foo.numeric <- function(x, y) {
+  print(parent.frame())
+  c(x = x, y = y, z = z)
+}
+foo(1, 1)
+```
+
+### R7
+
+-   Can we eliminate the special behaviour and make it just like a regular function call?
+    Presumably easier than changing dispatch rules because we'll call a function other than `UseMethod()`.
+
+-   Need to make precise how arguments are passed to the method.
+    `plot()` at least assumes that this works:
+
+    ```{r}
+    foo <- function(x, y)  {
+      UseMethod("foo")
+    }
+    foo.numeric <- function(x, y) {
+      deparse(substitute(x))
+    }
+    x <- 10
+    foo(x)
+    ```
+
+    How does that intersect with assignment within the generic?
+
+## Inheritance
+
+### S3
+
+i.e. how does `NextMethod()` work: currently most state recorded in special variables like `.Generic`, etc.
+
+Can we avoid this confusion:
+
+```{r}
+foo <- function(x)  {
+  UseMethod("foo")
+}
+foo.a <- function(x) {
+  x <- factor("x")
+  NextMethod()
+}
+foo.b <- function(x) {
+  print("In B")
+  print(class(x))
+}
+
+foo(structure(1, class = c("a", "b")))
+```
+
+### S4
+
+Want to avoid this sort of code, where we rely on magic from `callGeneric()` to pass on values from current call.
+
+```{r, eval = FALSE}
+method("mean", "foofy") <- function(x, ..., na.rm = TRUE) {
+  x <- x@values
+  callGeneric()
+}
+```
+
+### R7
+
+Can we require `generic` and `object` arguments to make code easier to reason about?
+
+```{r, eval = FALSE}
+method("mean", "POSIXct") <- function(x) {
+  POSIXct(NextMethod(), tz = attr(x, "tz"))
+}
+# Explicit is nice:
+method("mean", "POSIXct") <- function(x) {
+  POSIXct(NextMethod("mean", x), tz = attr(x, "tz"))
+}
+# But what does this do? Is this just an error?
+method("mean", "POSIXct") <- function(x) {
+  POSIXct(NextMethod("sd", 10), tz = attr(x, "tz"))
+}
+```
+
+## Group generics
+
+### S3
+
+Group generics (`Math`, `Ops`, `Summary`, `Complex`): exist for some internal generics.
+Looked for before final fallback.
+
+```{r}
+sloop::s3_dispatch(sum(Sys.time()))
+```
+
+### R7
+
+Keep as is.
+
+## Double dispatch
+
+### S3
+
+Used by Ops group generic.
+Basic process is find method for first and second arguments.
+Then:
+
+-   If same, ok
+-   If one internal, use other
+-   Otherwise, warn and use internal
+
+### R7
+
+Goal is to use iterated dispatch which implies asymmetry in dispatch order.
+User responsible for ensuring that `x + y` equivalent to `y + x` (types should almost always be the same, but values are likely to be different).
+
+```{r}
+double_dispatch <- function(x, y, generic = "+") {
+  grid <- tidyr::expand_grid(sloop::s3_class(x), sloop::s3_class(y))
+  writeLines(paste0("* ", generic, ".", grid[[1]], ".", grid[[2]]))
+}
+
+ab <- structure(list(), class = c("a", "b"))
+cd <- structure(list(), class = c("c", "d"))
+
+double_dispatch(ab, cd)
+double_dispatch(cd, ab)
+
+double_dispatch(1, 1L)
+```
+
+In vctrs, some question if we will remove inheritance from all double dispatch.
+We have already done so for `vec_ptype2()` and `vec_cast()` because the coercion hierarchy often does not match the class hierarchy.
+May also do for `vec_arith()`.
+
+## Implicit class
+
+### S3
+
+When `UseMethod()` recieves an object without a `class` attribute, it uses the **implicit** class, as provided by `.class2()`.
+This is made up of four rough categories: dimension, type, language, numeric.
+
+```{r}
+# dimension class
+.class2(matrix("a"))
+.class2(array("a"))
+
+# typeof(), with some renaming
+.class2(sum)
+.class2(quote(x))
+
+# language class
+.class2(quote({}))
+# similarly for if, while, for, =, <-, (
+
+# numeric
+.class2(1)
+```
+
+Note that internal generics behave differently, instead immediately falling back to the default default case.
+
+### R7
+
+Suggest defining a new `r7class()` function that returns a simplified implicit class, dropping the language classes.
+
+Dispatch should use the same rules in R and in C.
+(But are there performance implications?)
+
+## Multi-dispatch
+
+### S3
+
+Special dispatch?
+`c()`, `cbind()`, `rbind()` (+ `cbind2()` and `rbind2()`) --- iterated double dispatch.
+Need to describe in more detail so we have a more solid assessment of what R7 might need.ez
+
+-   gitDot-dot-dot dispatch, assumes all have same class
+
+-   vctrs used two pass approach (find type then coerce)
+
+### R7
+
+Initially, don't provide support for user generics that dispatch on `…`?
+Instead suggest people use `Reduce` plus double-dispatch.
