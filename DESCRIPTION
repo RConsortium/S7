@@ -10,7 +10,7 @@ Description: Prototype implementation of an extension to S3 that
 	     dispatch. Represents the output of the Object-oriented Programming
 	     Working Group, sponsored by the R Consortium.
 Version: 0.0.1
-Depends: methods
+Imports: utils
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0)

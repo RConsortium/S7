@@ -1,5 +1,5 @@
 `method` <- function(generic, class) {
-  getS3method(generic, class)
+  utils::getS3method(generic, class)
 }
 
 method_register <- function(generic, class, value) {
