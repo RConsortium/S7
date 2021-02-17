@@ -5,3 +5,4 @@
 ^spec$
 ^proposal$
 ^minutes$
+^codecov\.yml$
