@@ -11,9 +11,9 @@ prop(obj, name)
 
 prop(obj, name) <- value
 
-`@`(obj, name)
+obj@name
 
-\method{@}{object}(obj, name) <- value
+obj@name <- value
 }
 \arguments{
 \item{obj}{An object from a R7 class}

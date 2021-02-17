@@ -19,6 +19,7 @@ prop <- function(obj, name) {
 }
 
 #' @rdname prop
+#' @usage obj@name
 #' @export
 `@` <- function(obj, name) {
   if (!inherits(obj, "object")) {
@@ -30,6 +31,7 @@ prop <- function(obj, name) {
 }
 
 #' @rdname prop
+#' @usage obj@name <- value
 #' @export
 `@<-.object` <- function(obj, name, value) {
   if (!inherits(obj, "object")) {
