@@ -2,3 +2,6 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^\.github$
+^spec$
+^proposal$
+^minutes$
