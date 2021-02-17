@@ -4,10 +4,14 @@ License: MIT
 Title: S3 Extended with S4 Features
 Type: Package
 Author: Henrik Bengtsson, Will Landau, Michael Lawrence, Martin Maechler,
-	Hong Ooi, Luke Tierney, Gabriela de Queiroz, Hadley Wickham 
+	Hong Ooi, Luke Tierney, Gabriela de Queiroz, Hadley Wickham, Jim Hester
 Description: Prototype implementation of an extension to S3 that
 	     provides explicit class definitions and a form of multiple
 	     dispatch. Represents the output of the Object-oriented Programming
 	     Working Group, sponsored by the R Consortium.
 Version: 0.0.1
 Depends: methods
+RoxygenNote: 7.1.1
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
