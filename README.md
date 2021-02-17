@@ -5,6 +5,10 @@
 * [Minutes](minutes/)
 * [Code](R/) (this repository is an R package)
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/jimhester/OOP-WG/workflows/R-CMD-check/badge.svg)](https://github.com/jimhester/OOP-WG/actions)
+<!-- badges: end -->
+
 ## Workflow
 
 * File an issue to discuss the topic and build consensus.

@@ -1,6 +1,6 @@
 Package: R7
 Maintainer: Michael Lawrence <lawrence.michael@gene.com>
-License: MIT
+License: MIT + file LICENSE
 Title: S3 Extended with S4 Features
 Type: Package
 Author: Henrik Bengtsson, Will Landau, Michael Lawrence, Martin Maechler,
