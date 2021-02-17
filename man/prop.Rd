@@ -4,7 +4,6 @@
 \alias{prop}
 \alias{prop<-}
 \alias{@}
-\alias{@<-.object}
 \title{Extract or replace a property}
 \usage{
 prop(obj, name)
@@ -12,8 +11,6 @@ prop(obj, name)
 prop(obj, name) <- value
 
 obj@name
-
-obj@name <- value
 }
 \arguments{
 \item{obj}{An object from a R7 class}

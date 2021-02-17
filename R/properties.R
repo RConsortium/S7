@@ -30,9 +30,7 @@ prop <- function(obj, name) {
   prop(obj, nme)
 }
 
-#' @rdname prop
-#' @usage obj@name <- value
-#' @export
+#' @rawNamespace S3method("@<-",object)
 `@<-.object` <- function(obj, name, value) {
   if (!inherits(obj, "object")) {
     return(base::`@<-`(obj, name))
