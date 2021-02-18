@@ -1,15 +1,15 @@
-r7_class <- function(name, parent = object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+r7_class <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   obj <- constructor
   attr(obj, "name") <- name
   attr(obj, "parent") <- parent
   attr(obj, "properties") <- properties
   attr(obj, "constructor") <- constructor
   attr(obj, "validator") <- validator
-  class(obj) <- c("r7_class", "object")
+  class(obj) <- c("r7_class", "r7_object")
   obj
 }
 
-class_new <- function(name, parent = object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+class_new <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
@@ -29,6 +29,6 @@ validate <- function(obj) {
 
 
 #' @export
-print.r7_class <- function(x, ...) {
+print.r7_object <- function(x, ...) {
   cat(sprintf("r7: <%s>\n", prop(x, "name")))
 }

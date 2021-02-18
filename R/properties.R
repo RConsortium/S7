@@ -22,7 +22,7 @@ prop <- function(obj, name) {
 #' @usage obj@name
 #' @export
 `@` <- function(obj, name) {
-  if (!inherits(obj, "object")) {
+  if (!inherits(obj, "r7_object")) {
     return(base::`@`(obj, name))
   }
 
@@ -30,9 +30,9 @@ prop <- function(obj, name) {
   prop(obj, nme)
 }
 
-#' @rawNamespace S3method("@<-",object)
-`@<-.object` <- function(obj, name, value) {
-  if (!inherits(obj, "object")) {
+#' @rawNamespace S3method("@<-",r7_object)
+`@<-.r7_object` <- function(obj, name, value) {
+  if (!inherits(obj, "r7_object")) {
     return(base::`@<-`(obj, name))
   }
 
