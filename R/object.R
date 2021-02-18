@@ -1,12 +1,21 @@
 object_new <- function(...) {
   class <- object_class(sys.function(-1))
-  obj <- class@parent@constructor()
-  object_class(obj) <- class
 
   args <- list(...)
   nms <- names(args)
+
+  if (".data" %in% nms) {
+    obj <- args[[".data"]]
+  } else {
+    obj <- class@parent@constructor()
+  }
+
+  object_class(obj) <- class
+
   for (i in seq_along(args)) {
-    attr(obj, nms[[i]]) <- args[[i]]
+    if (nms[[i]] != ".data") {
+      attr(obj, nms[[i]]) <- args[[i]]
+    }
   }
 
   validate(obj)
