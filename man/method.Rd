@@ -5,14 +5,14 @@
 \alias{method_register}
 \title{Retrieve or register an r7 method for a generic}
 \usage{
-method(generic, class)
+method(generic, classes)
 
 method_register(generic, class, value)
 }
 \arguments{
 \item{generic}{The generic to retrieve or register}
 
-\item{class}{The class to register the method for}
+\item{class, classes}{The class to register the method for}
 
 \item{value}{The new function to use for the method.}
 }
