@@ -1,15 +1,13 @@
-r7_class <- local({
-  generator <- function(name, parent = object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
-    obj <- constructor
-    attr(obj, "name") <- name
-    attr(obj, "parent") <- parent
-    attr(obj, "properties") <- properties
-    attr(obj, "constructor") <- constructor
-    attr(obj, "validator") <- validator
-    class(obj) <- c("r7_class", "object")
-    obj
-  }
-})
+r7_class <- function(name, parent = object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+  obj <- constructor
+  attr(obj, "name") <- name
+  attr(obj, "parent") <- parent
+  attr(obj, "properties") <- properties
+  attr(obj, "constructor") <- constructor
+  attr(obj, "validator") <- validator
+  class(obj) <- c("r7_class", "object")
+  obj
+}
 
 class_new <- function(name, parent = object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
