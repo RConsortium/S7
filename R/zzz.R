@@ -1,3 +1,41 @@
-r7_object <- class_new("r7_object", parent = NULL, constructor = function() list())
+#' An r7 object
+#' @export
+r7_object <- class_new(
+  name = "r7_object",
+  parent = NULL,
+  constructor = function() list()
+)
+
+#' r7 generics and method objects
+#' @param name,generic The name or generic object of the generic
+#' @param signature The signature of the generic
+#' @param fun The function of the method'
+#' @export
+r7_generic <- class_new(
+  name = "r7_generic",
+  properties = list(name = "character", signature = "list"),
+  parent = "function",
+  constructor = function(name, signature) {
+    fun <- function() NULL
+    formals(fun) <- signature
+    body(fun) <- bquote({
+        method(.(name), object_class(.(arg)))(.(arg))
+      }, list(name = name, arg = as.symbol(names(signature)[[1]]))
+    )
+    environment(fun) = topenv(parent.frame())
+    object_new(name = name, signature = signature, .data = fun)
+  }
+)
+
+#' @rdname r7_generic
+#' @export
+r7_method <- class_new(
+  name = "r7_method",
+  properties = list(generic = r7_generic, signature = "list", fun = "function"),
+  parent = "function",
+  constructor = function(generic, signature, fun) {
+    object_new(generic = generic, signature = signature, .data = fun)
+  }
+)
 
 utils::globalVariables(c("parent", "constructor", "name"))
