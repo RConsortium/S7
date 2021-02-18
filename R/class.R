@@ -1,4 +1,7 @@
 r7_class <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+  if (is.character(parent)) {
+    parent <- get_base_class(parent)
+  }
   obj <- constructor
   attr(obj, "name") <- name
   attr(obj, "parent") <- parent
@@ -30,5 +33,13 @@ validate <- function(obj) {
 
 #' @export
 print.r7_object <- function(x, ...) {
-  cat(sprintf("r7: <%s>\n", prop(x, "name")))
+  cat(sprintf("r7: <%s>\n", object_class(x)@name))
+}
+
+
+get_base_class <- function(name) {
+  switch(name,
+    character = class_new("character", constructor = function() character()),
+    stop("invalid class 'name'", call. = FALSE)
+  )
 }

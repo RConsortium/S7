@@ -1,6 +1,6 @@
 object_new <- function(...) {
   class <- object_class(sys.function(-1))
-  obj <- list()
+  obj <- class@parent@constructor()
   object_class(obj) <- class
 
   args <- list(...)
