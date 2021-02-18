@@ -1,18 +1,21 @@
-Package: R7
-Maintainer: Michael Lawrence <lawrence.michael@gene.com>
-License: MIT + file LICENSE
-Title: S3 Extended with S4 Features
 Type: Package
-Author: Henrik Bengtsson, Will Landau, Michael Lawrence, Martin Maechler,
-	Hong Ooi, Luke Tierney, Gabriela de Queiroz, Hadley Wickham, Jim Hester
-Description: Prototype implementation of an extension to S3 that
-	     provides explicit class definitions and a form of multiple
-	     dispatch. Represents the output of the Object-oriented Programming
-	     Working Group, sponsored by the R Consortium.
+Package: R7
+Title: S3 Extended with S4 Features
 Version: 0.0.1
-Imports: utils
-RoxygenNote: 7.1.1
+Author: Henrik Bengtsson, Will Landau, Michael Lawrence, Martin
+    Maechler, Hong Ooi, Luke Tierney, Gabriela de Queiroz, Hadley Wickham,
+    Jim Hester
+Maintainer: Michael Lawrence <lawrence.michael@gene.com>
+Description: Prototype implementation of an extension to S3 that
+    provides explicit class definitions and a form of multiple dispatch.
+    Represents the output of the Object-oriented Programming Working
+    Group, sponsored by the R Consortium.
+License: MIT + file LICENSE
+Imports: 
+    utils
 Suggests: 
-    testthat (>= 3.0.0),
-    covr
+    covr,
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Encoding: UTF-8
+RoxygenNote: 7.1.1
