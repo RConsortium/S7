@@ -15,27 +15,12 @@ method <- function(generic, signature) {
   }
   signatures <- do.call(paste, c(sep = "-", do.call(expand.grid, signature)))
   for (s in signatures) {
-    fun <- method_get(generic, s, envir = parent.frame())
+    fun <- get_r7_method(generic, s, envir = parent.frame())
     if (!is.null(fun)) {
       return(fun)
     }
   }
   stop(sprintf("No methods found for generic '%s' for classes:\n%s", generic, paste0("- ", signature,  collapse = "\n"), call. = FALSE))
-}
-
-# like method, but returns NULL instead of an error
-method_get <- function(generic, classes, envir) {
-  if (inherits(classes, "r7_class")) {
-    classes <- class_names(classes)
-  }
-
-  i <- 1
-  fun <- get_r7_method(generic, classes[[i]], envir = envir)
-  while(is.null(fun) && i < length(classes)) {
-    i <- i + 1
-    fun <- get_r7_method(generic, classes[[i]], envir = envir)
-  }
-  fun
 }
 
 get_r7_method <- function(generic, class, envir) {
