@@ -40,6 +40,7 @@ print.r7_object <- function(x, ...) {
 get_base_class <- function(name) {
   switch(name,
     "character" = class_new("character", constructor = function() character()),
+    "numeric" = class_new("numeric", constructor = function() numeric()),
     "function" = class_new("function", constructor = function() function() NULL),
     stop(sprintf("invalid class '%s'", name), call. = FALSE)
   )

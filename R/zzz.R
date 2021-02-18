@@ -18,10 +18,9 @@ r7_generic <- class_new(
   constructor = function(name, signature) {
     fun <- function() NULL
     formals(fun) <- signature
-    body(fun) <- bquote({
-        method(.(name), object_class(.(arg)))(.(arg))
-      }, list(name = name, arg = as.symbol(names(signature)[[1]]))
-    )
+    sig_call <- as.call(c(as.symbol("list"), lapply(names(signature), function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
+    method_call <- as.call(c(as.call(c(as.symbol("method"), name, sig_call)), lapply(names(signature), as.symbol)))
+    body(fun) <- method_call
     environment(fun) = topenv(parent.frame())
     object_new(name = name, signature = signature, .data = fun)
   }
