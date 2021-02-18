@@ -39,7 +39,7 @@ class_names <- function(obj) {
   nms <- prop(obj_class, "name")
   parent <- prop(obj_class, "parent")
   while(!is.null(parent)) {
-    nms <- c(prop(parent, "name"), nms)
+    nms <- c(nms, prop(parent, "name"))
     parent <- prop(parent, "parent")
   }
   nms
