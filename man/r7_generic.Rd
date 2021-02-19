@@ -5,7 +5,7 @@
 \alias{r7_method}
 \title{r7 generics and method objects}
 \usage{
-r7_generic(name, signature)
+r7_generic(name, signature, envir = parent.frame())
 
 r7_method(generic, signature, fun)
 }
@@ -13,6 +13,8 @@ r7_method(generic, signature, fun)
 \item{name, generic}{The name or generic object of the generic}
 
 \item{signature}{The signature of the generic}
+
+\item{envir}{The environment to lookup the generic in.}
 
 \item{fun}{The function of the method'}
 }

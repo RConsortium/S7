@@ -3,6 +3,7 @@
 #' @param generic The generic to retrieve or register
 #' @param signature The method signature
 #' @param value The new function to use for the method.
+#' @param envir The environment to lookup the generic in.
 #' @export
 method <- function(generic, signature, envir = parent.frame()) {
   fun <- get(generic, envir = envir)
@@ -29,6 +30,7 @@ find_method_table <- function(classes, table) {
   #.Call(method_, generic, signature, parent.frame())
 
 #' @rdname method
+#' @param envir The environment to lookup the generic in.
 #' @export
 method_register <- function(generic, signature, value, envir = parent.frame()) {
   fun <- get(generic, envir = envir)

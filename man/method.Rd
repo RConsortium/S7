@@ -5,14 +5,16 @@
 \alias{method_register}
 \title{Retrieve or register an r7 method for a generic}
 \usage{
-method(generic, signature)
+method(generic, signature, envir = parent.frame())
 
-method_register(generic, signature, value)
+method_register(generic, signature, value, envir = parent.frame())
 }
 \arguments{
 \item{generic}{The generic to retrieve or register}
 
 \item{signature}{The method signature}
+
+\item{envir}{The environment to lookup the generic in.}
 
 \item{value}{The new function to use for the method.}
 }
