@@ -38,3 +38,5 @@ r7_method <- class_new(
 )
 
 utils::globalVariables(c("parent", "constructor", "name"))
+
+.r7_methods <- new.env(parent = emptyenv())
