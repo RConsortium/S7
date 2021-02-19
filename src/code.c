@@ -84,6 +84,13 @@ SEXP get_r7_method_(SEXP generic, SEXP signatures, SEXP envir) {
     return R_NilValue;
   }
 
+  /* We need to evaluate the table if it is a promise */
+  if (TYPEOF(table) == PROMSXP) {
+    PROTECT(table);
+    table = Rf_eval(table, envir);
+    UNPROTECT(1);
+  }
+
   R_xlen_t n = Rf_xlength(signatures);
 
   const char* generic_str = CHAR(STRING_ELT(generic, 0));
