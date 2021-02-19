@@ -10,17 +10,11 @@ method <- function(generic, signature) {
   }
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "r7_class")) {
-      signature[[i]] <- class_names(signature[[i]])
+      signature[[i]] <- .Call(class_names_, signature[[i]])
     }
   }
-  signatures <- do.call(paste, c(sep = "-", do.call(expand.grid, signature)))
-  for (s in signatures) {
-    fun <- get_r7_method(generic, s, envir = parent.frame())
-    if (!is.null(fun)) {
-      return(fun)
-    }
-  }
-  stop(sprintf("No methods found for generic '%s' for classes:\n%s", generic, paste0("- ", signature,  collapse = "\n"), call. = FALSE))
+  signatures <- .Call(construct_signature_, signature)
+  .Call(get_r7_method_, generic, signatures, parent.frame())
 }
 
 get_r7_method <- function(generic, class, envir) {

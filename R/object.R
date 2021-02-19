@@ -34,7 +34,7 @@ object_class <- function(obj) {
 `object_class<-` <- function(obj, value) {
   attr(obj, "object_class") <- value
 
-  nms <- class_names(obj)
+  nms <- class_names(object_class(obj))
 
   class(obj) <- nms
 
@@ -43,13 +43,14 @@ object_class <- function(obj) {
 }
 
 class_names <- function(obj) {
-  obj_class <- object_class(obj)
+  #obj_class <- object_class(obj)
+  .Call(`class_names_`, obj)
 
-  nms <- prop(obj_class, "name")
-  parent <- prop(obj_class, "parent")
-  while(!is.null(parent)) {
-    nms <- c(nms, prop(parent, "name"))
-    parent <- prop(parent, "parent")
-  }
-  nms
+  #nms <- prop(obj_class, "name")
+  #parent <- prop(obj_class, "parent")
+  #while(!is.null(parent)) {
+    #nms <- c(nms, prop(parent, "name"))
+    #parent <- prop(parent, "parent")
+  #}
+  #nms
 }
