@@ -111,4 +111,15 @@ SEXP get_r7_method_(SEXP generic, SEXP signatures, SEXP envir) {
   return R_NilValue;
 }
 
+SEXP method_(SEXP generic, SEXP signature, SEXP envir) {
+  R_xlen_t signature_len = Rf_xlength(signature);
+  for (R_xlen_t i = 0 ; i < signature_len; ++i) {
+    SET_VECTOR_ELT(signature, i, class_names_(VECTOR_ELT(signature, i)));
+  }
+  SEXP signatures = PROTECT(construct_signature_(signature));
+  SEXP method = get_r7_method_(generic, signatures, envir);
+  UNPROTECT(1);
+  return method;
+}
+
 // stop(sprintf("No methods found for generic '%s' for classes:\n%s", generic, paste0("- ", signature,  collapse = "\n"), call. = FALSE))

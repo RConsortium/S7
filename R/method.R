@@ -5,16 +5,7 @@
 #' @param value The new function to use for the method.
 #' @export
 method <- function(generic, signature) {
-  #if (!is.list(signature)) {
-    #signature <- list(signature)
-  #}
-  for (i in seq_along(signature)) {
-    #if (inherits(signature[[i]], "r7_class")) {
-      signature[[i]] <- .Call(class_names_, signature[[i]])
-    #}
-  }
-  signatures <- .Call(construct_signature_, signature)
-  .Call(get_r7_method_, generic, signatures, parent.frame())
+  .Call(method_, generic, signature, parent.frame())
 }
 
 #' @rdname method
