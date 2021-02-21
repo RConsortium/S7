@@ -5,21 +5,30 @@
 
 /* .Call calls */
 extern SEXP class_names_(SEXP);
+extern SEXP object_class_(SEXP);
 extern SEXP construct_signature_(SEXP);
 extern SEXP get_r7_method_(SEXP, SEXP, SEXP);
 extern SEXP method_(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"class_names_", (DL_FUNC) &class_names_, 1},
-    {"construct_signature_", (DL_FUNC) &construct_signature_, 1},
-    {"get_r7_method_", (DL_FUNC) &get_r7_method_, 3},
+    {"object_class_", (DL_FUNC) &object_class_, 1},
     {"method_", (DL_FUNC) &method_, 3},
     {NULL, NULL, 0}
 };
+
+SEXP r7_methods_sym;
+SEXP parent_sym;
+SEXP name_sym;
+SEXP object_class_sym;
 
 void R_init_R7(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    r7_methods_sym = Rf_install(".r7_methods");
+    parent_sym = Rf_install("parent");
+    name_sym = Rf_install("name");
+    object_class_sym = Rf_install("object_class");
 }
 

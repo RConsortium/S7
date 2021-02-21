@@ -6,28 +6,8 @@
 #' @param envir The environment to lookup the generic in.
 #' @export
 method <- function(generic, signature, envir = parent.frame()) {
-  fun <- get(generic, envir = envir)
-  env <- environment(fun)
-  table <- env[[".r7_methods"]]
-  tbl <- table[[generic]]
-  while(length(signature) > 1) {
-    classes <- .Call(class_names_, signature[[1]])
-    tbl <- find_method_table(classes, tbl)
-    signature <- signature[-1]
-  }
-  classes <- .Call(class_names_, signature[[1]])
-  find_method_table(classes, tbl)
+  .Call(method_, generic, signature, envir);
 }
-
-find_method_table <- function(classes, table) {
-  for (class in classes) {
-    val <- table[[class]]
-    if (!is.null(val)) {
-      return(val)
-    }
-  }
-}
-  #.Call(method_, generic, signature, parent.frame())
 
 #' @rdname method
 #' @param envir The environment to lookup the generic in.
@@ -58,8 +38,4 @@ method_register <- function(generic, signature, value, envir = parent.frame()) {
   }
 
   p_tbl[[signature[[1]]]] <- value
-}
-
-blah <- function(generic) {
-  fun <- get(generic, envir = parent.frame())
 }

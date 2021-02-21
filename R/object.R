@@ -24,11 +24,7 @@ object_new <- function(...) {
 }
 
 object_class <- function(obj) {
-  if (inherits(obj, "r7_class")) {
-    return(obj)
-  }
-
-  attr(obj, "object_class", exact = TRUE)
+  .Call(object_class_, obj)
 }
 
 `object_class<-` <- function(obj, value) {

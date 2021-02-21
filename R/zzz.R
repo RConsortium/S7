@@ -20,7 +20,7 @@ r7_generic <- class_new(
     fun <- function() NULL
     formals(fun) <- signature
     sig_call <- as.call(c(as.symbol("list"), lapply(names(signature), function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
-    method_call <- as.call(c(as.call(c(as.symbol("method"), name, sig_call)), lapply(names(signature), as.symbol)))
+    method_call <- as.call(c(as.call(c(as.symbol("method"), as.symbol(name), sig_call)), lapply(names(signature), as.symbol)))
     body(fun) <- method_call
     environment(fun) <- envir
     object_new(name = name, signature = signature, .data = fun)
