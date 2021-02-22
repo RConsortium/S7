@@ -65,6 +65,21 @@ The dispatch performance should be roughly on par with S3 and S4, though
 as this is implemented in the package there is some overhead due to
 `.Call` vs `.Primitive`.
 
+Dispatch currently uses a `.r7_methods` table defined in the environment
+of the generic. This table is a nested set of hashed environments based
+on the classes of the methods. e.g.
+
+`method(foo, c("character", "numeric"))` method would be stored at
+
+`.r7_methods[["foo"]][["character"]][["numeric"]]`
+
+At each level the search iteratively searches up the class vector for
+the object.
+
+I am not sure caching is really needed, most objects have very short
+class lists and the lookup is fast as each level should have relatively
+few items and we are using hashed environments.
+
 ``` r
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
@@ -96,9 +111,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.25µs   4.89µs   178072.    3.99KB     71.3
-#> 2 foo_s3(x)    3.88µs   4.28µs   176847.        0B      0  
-#> 3 foo_s4(x)    3.92µs   4.34µs   210709.        0B     21.1
+#> 1 foo_r7(x)    4.14µs   4.71µs   196077.    3.99KB     78.5
+#> 2 foo_s3(x)    3.68µs   5.09µs   174480.        0B      0  
+#> 3 foo_s4(x)    3.94µs   4.28µs   215970.        0B     21.6
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
@@ -113,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.56µs  10.61µs    89338.        0B    17.9 
-#> 2 bar_s4(x, y)   8.87µs   9.91µs    95387.        0B     9.54
+#> 1 bar_r7(x, y)   9.18µs  10.25µs    90534.        0B    18.1 
+#> 2 bar_s4(x, y)    8.8µs   9.69µs    97882.        0B     9.79
 ```
 
 ## TODO
@@ -124,8 +139,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
         and retrieved with `object_class()`.
       - [x] - For S3 compatibility, a class attribute, a character
         vector of class names.
-      - [ ] - Additional attributes storing properties defined by the
-        class, accessible with @/prop().
+      - [x] - Additional attributes storing properties defined by the
+        class, accessible with `@/prop()`.
   - Classes
       - [x] - R7 classes are first class objects with the following
           - [x] - `name`, a human-meaningful descriptor for the class.
@@ -211,3 +226,14 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Documentation
       - [ ] - Generate index pages that list the methods for a generic
         or the methods with a particular class in their signature
+
+## Questions
+
+  - Using `@` vs `$` for property access, `@` triggers R CMD check
+    NOTES, needs `utils::globalVariables()`, people are used to using
+    `$` for lists and data.frames
+  - What should `prop()` return if the property doesn’t exist?
+  - Returning NULL / character in validator vs throwing an error?
+  - Opt-out property validation, potentially fatal to performance, maybe
+    default to implicitly off in constructors?
+  - Do we want to allow setting the body of a generic? I would argue no.

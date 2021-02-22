@@ -63,6 +63,16 @@ object_class(x)
 
 The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in the package there is some overhead due to `.Call` vs `.Primitive`.
 
+Dispatch currently uses a `.r7_methods` table defined in the environment of the generic. This table is a nested set of hashed environments based on the classes of the methods. e.g.
+
+`method(foo, c("character", "numeric"))` method would be stored at
+
+`.r7_methods[["foo"]][["character"]][["numeric"]]`
+
+At each level the search iteratively searches up the class vector for the object.
+
+I am not sure caching is really needed, most objects have very short class lists and the lookup is fast as each level should have relatively few items and we are using hashed environments.
+
 ```{r example}
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
@@ -107,7 +117,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 - Objects
   - [x] - A class object attribute, a reference to the class object, and retrieved with `object_class()`.
   - [x] - For S3 compatibility, a class attribute, a character vector of class names.
-  - [ ] - Additional attributes storing properties defined by the class, accessible with @/prop().
+  - [x] - Additional attributes storing properties defined by the class, accessible with `@/prop()`.
 - Classes
   - [x] - R7 classes are first class objects with the following
     - [x] - `name`, a human-meaningful descriptor for the class.
@@ -166,3 +176,11 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
     - [x] - Since the new generics will fallback to S3 dispatch, they should support S4 objects just as S3 generics support them now.
 - Documentation
   - [ ] - Generate index pages that list the methods for a generic or the methods with a particular class in their signature
+
+## Questions
+
+- Using `@` vs `$` for property access, `@` triggers R CMD check NOTES, needs `utils::globalVariables()`, people are used to using `$` for lists and data.frames
+- What should `prop()` return if the property doesn’t exist?
+- Returning NULL / character in validator vs throwing an error?
+- Opt-out property validation, potentially fatal to performance, maybe default to implicitly off in constructors?
+- Do we want to allow setting the body of a generic? I would argue no.
