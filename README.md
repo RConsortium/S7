@@ -10,9 +10,9 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/jimhester/OOP-WG/workflows/R-CMD-check/badge.svg)](https://github.com/jimhester/OOP-WG/actions)
+[![R-CMD-check](https://github.com/RConsortium/OOP-WG/workflows/R-CMD-check/badge.svg)](https://github.com/RConsortium/OOP-WG/actions)
 [![Codecov test
-coverage](https://codecov.io/gh/jimhester/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/jimhester/OOP-WG?branch=master)
+coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
 <!-- badges: end -->
 
 ## Workflow
@@ -111,9 +111,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.14µs   4.71µs   196077.    3.99KB     78.5
-#> 2 foo_s3(x)    3.68µs   5.09µs   174480.        0B      0  
-#> 3 foo_s4(x)    3.94µs   4.28µs   215970.        0B     21.6
+#> 1 foo_r7(x)    4.26µs   4.96µs   187116.    3.99KB     74.9
+#> 2 foo_s3(x)    3.85µs   5.03µs   172341.        0B      0  
+#> 3 foo_s4(x)    3.88µs    4.3µs   205296.        0B     20.5
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
@@ -128,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.18µs  10.25µs    90534.        0B    18.1 
-#> 2 bar_s4(x, y)    8.8µs   9.69µs    97882.        0B     9.79
+#> 1 bar_r7(x, y)   9.18µs   10.5µs    88915.        0B    17.8 
+#> 2 bar_s4(x, y)   9.33µs   10.1µs    94303.        0B     9.43
 ```
 
 ## TODO

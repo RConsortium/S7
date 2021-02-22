@@ -21,8 +21,8 @@ knitr::opts_chunk$set(
 * [Code](R/) (this repository is an R package)
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/jimhester/OOP-WG/workflows/R-CMD-check/badge.svg)](https://github.com/jimhester/OOP-WG/actions)
-[![Codecov test coverage](https://codecov.io/gh/jimhester/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/jimhester/OOP-WG?branch=master)
+[![R-CMD-check](https://github.com/RConsortium/OOP-WG/workflows/R-CMD-check/badge.svg)](https://github.com/RConsortium/OOP-WG/actions)
+[![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
 <!-- badges: end -->
 
 ## Workflow
