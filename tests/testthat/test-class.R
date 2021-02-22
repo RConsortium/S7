@@ -19,3 +19,20 @@ describe("r7_class", {
     expect_type(my_class@properties, "list")
   })
 })
+
+test_that("classes can inherit from base types", {
+  types <- c("logical", "integer", "double", "complex", "character", "raw", "list", "closure")
+  for (type in types) {
+    foo <- class_new("foo", parent = type)
+    obj <- foo()
+    expect_equal(typeof(obj@.data), type)
+  }
+
+  foo <- class_new("foo", parent = "numeric")
+  obj <- foo()
+  expect_equal(typeof(obj@.data), "double")
+
+  foo <- class_new("foo", parent = "function")
+  obj <- foo()
+  expect_equal(typeof(obj@.data), "closure")
+})
