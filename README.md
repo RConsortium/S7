@@ -73,7 +73,7 @@ x <- text("hi")
 y <- number(1)
 
 foo_r7 <- generic_new(name = "foo_r7", signature = alist(x=))
-method_register("foo_r7", "text", function(x) paste0(x, "-foo"))
+method(foo_r7, "text") <- function(x) paste0(x, "-foo")
 
 foo_s3 <- function(x) {
   UseMethod("foo_s3")
@@ -96,13 +96,13 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.47µs   5.01µs   189286.    4.21KB     75.7
-#> 2 foo_s3(x)    3.68µs   5.02µs   174010.        0B      0  
-#> 3 foo_s4(x)    3.73µs   4.19µs   224941.        0B     22.5
+#> 1 foo_r7(x)    4.22µs    5.2µs   186682.    3.99KB     74.7
+#> 2 foo_s3(x)    3.87µs   5.03µs   169026.        0B      0  
+#> 3 foo_s4(x)    4.01µs   4.45µs   174301.        0B     17.4
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
-method_register("bar_r7", list("text", "number"), function(x, y) paste0(x, "-", y, "-bar"))
+method(bar_r7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
 #> [1] "bar_s4"
@@ -113,6 +113,54 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.66µs  10.81µs    87785.        0B     17.6
-#> 2 bar_s4(x, y)   9.04µs   9.94µs    98064.        0B     19.6
+#> 1 bar_r7(x, y)   9.71µs   10.5µs    89157.        0B    17.8 
+#> 2 bar_s4(x, y)   9.29µs   10.3µs    92372.        0B     9.24
 ```
+
+## TODO
+
+  - Objects
+      - [x] - A class object attribute, a reference to the class object,
+        and retrieved with `object_class()`.
+      - [x] - For S3 compatibility, a class attribute, a character
+        vector of class names.
+      - [ ] - Additional attributes storing properties defined by the
+        class, accessible with @/prop().
+  - Classes
+      - [x] - R7 classes are first class objects with the following
+          - [x] - `name`, a human-meaningful descriptor for the class.
+              - [ ] - It does *not* identify the class.
+          - [x] - `parent`, the class object of the parent class.
+          - [x] - A constructor, an user-facing function used to create
+            new objects of this class. It always ends with a call to
+            `object_new()` to initialize the class.
+          - [x] - A validator, a function that takes the object and
+            returns NULL if the object is valid, otherwise a character
+            vector of error messages.
+          - [x] - properties, a list of property objects
+  - Initialization
+  - Shortcuts
+  - Validation
+      - [ ] - valid\_eventually
+      - [ ] - valid\_implicitly
+  - Unions
+      - [ ] - Used in properties to allow a property to be one of a set
+        of classes
+      - [ ] - In method dispatch as a convenience for defining a method
+        for multiple classes
+  - Properties
+      - [x] - Accessed using `prop()` / `prop<-`
+      - [x] - Accessed using `@` / `@<-`
+      - [x] - A name, used to label output
+      - [ ] - A optional class or union
+      - [ ] - An optional accessor function
+      - [ ] - Properties are created with `prop_new()`
+  - Generics
+      - [x] - It knows its name and the names of the arguments in its
+        signature
+      - [x] - Calling `generic_new()` defines a new generic
+      - [ ] - By convention, any argument that takes a generic function,
+        can instead take the name of a generic function supplied as a
+        string
+  - Methods
+      - [ ] -

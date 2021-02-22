@@ -43,7 +43,7 @@ SEXP object_class_(SEXP obj) {
 extern SEXP r7_methods_sym;
 
 /* TODO: handle errors when method is not found */
-SEXP method_(SEXP generic, SEXP signature, SEXP envir) {
+SEXP method_(SEXP generic, SEXP signature) {
   SEXP env = CLOENV(generic);
 
   SEXP table = Rf_findVarInFrame(env, r7_methods_sym);

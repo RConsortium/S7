@@ -17,6 +17,7 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
 #' @param parent The parent class
 #' @param constructor The constructor function
 #' @param validator The validation function
+#' @param properties A list of properties for the class
 #' @export
 class_new <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)

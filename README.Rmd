@@ -71,7 +71,7 @@ x <- text("hi")
 y <- number(1)
 
 foo_r7 <- generic_new(name = "foo_r7", signature = alist(x=))
-method_register("foo_r7", "text", function(x) paste0(x, "-foo"))
+method(foo_r7, "text") <- function(x) paste0(x, "-foo")
 
 foo_s3 <- function(x) {
   UseMethod("foo_s3")
@@ -93,7 +93,7 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
-method_register("bar_r7", list("text", "number"), function(x, y) paste0(x, "-", y, "-bar"))
+method(bar_r7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
 setMethod("bar_s4", c("text", "number"), function(x, y) paste0(x, "-", y, "-bar"))
@@ -101,3 +101,39 @@ setMethod("bar_s4", c("text", "number"), function(x, y) paste0(x, "-", y, "-bar"
 # Measure performance of double dispatch
 bench::mark(bar_r7(x, y), bar_s4(x, y))
 ```
+
+## TODO
+
+- Objects
+  - [x] - A class object attribute, a reference to the class object, and retrieved with `object_class()`.
+  - [x] - For S3 compatibility, a class attribute, a character vector of class names.
+  - [ ] - Additional attributes storing properties defined by the class, accessible with @/prop().
+- Classes
+  - [x] - R7 classes are first class objects with the following
+    - [x] - `name`, a human-meaningful descriptor for the class.
+      - [ ] - It does _not_ identify the class.
+    - [x] - `parent`, the class object of the parent class.
+    - [x] - A constructor, an user-facing function used to create new objects of this class. It always ends with a call to `object_new()` to initialize the class.
+    - [x] - A validator, a function that takes the object and returns NULL if the object is valid, otherwise a character vector of error messages.
+    - [x] - properties, a list of property objects
+- Initialization
+- Shortcuts
+- Validation
+  - [ ] - valid_eventually
+  - [ ] - valid_implicitly
+- Unions
+  - [ ] - Used in properties to allow a property to be one of a set of classes
+  - [ ] - In method dispatch as a convenience for defining a method for multiple classes
+- Properties
+  - [x] - Accessed using `prop()` / `prop<-`
+  - [x] - Accessed using `@` / `@<-`
+  - [x] - A name, used to label output
+  - [ ] - A optional class or union
+  - [ ] - An optional accessor function
+  - [ ] - Properties are created with `prop_new()`
+- Generics
+  - [x] - It knows its name and the names of the arguments in its signature
+  - [x] - Calling `generic_new()` defines a new generic
+  - [ ] - By convention, any argument that takes a generic function, can instead take the name of a generic function supplied as a string
+- Methods
+  - [ ] - 

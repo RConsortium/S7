@@ -20,6 +20,8 @@ class_new(
 \item{constructor}{The constructor function}
 
 \item{validator}{The validation function}
+
+\item{properties}{A list of properties for the class}
 }
 \description{
 Define a new R7 class
