@@ -1,3 +1,6 @@
+#' Initialize a new object
+#' @keywords internal
+#' @export
 object_new <- function(...) {
   class <- object_class(sys.function(-1))
 
@@ -23,6 +26,9 @@ object_new <- function(...) {
   obj
 }
 
+#' Retrieve the r7 class of an object
+#' @param obj The r7 object
+#' @export
 object_class <- function(obj) {
   .Call(object_class_, obj)
 }
@@ -39,14 +45,5 @@ object_class <- function(obj) {
 }
 
 class_names <- function(obj) {
-  #obj_class <- object_class(obj)
-  .Call(`class_names_`, obj)
-
-  #nms <- prop(obj_class, "name")
-  #parent <- prop(obj_class, "parent")
-  #while(!is.null(parent)) {
-    #nms <- c(nms, prop(parent, "name"))
-    #parent <- prop(parent, "parent")
-  #}
-  #nms
+  .Call(class_names_, obj)
 }
