@@ -96,9 +96,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.22µs    5.2µs   186682.    3.99KB     74.7
-#> 2 foo_s3(x)    3.87µs   5.03µs   169026.        0B      0  
-#> 3 foo_s4(x)    4.01µs   4.45µs   174301.        0B     17.4
+#> 1 foo_r7(x)    4.25µs   4.89µs   178072.    3.99KB     71.3
+#> 2 foo_s3(x)    3.88µs   4.28µs   176847.        0B      0  
+#> 3 foo_s4(x)    3.92µs   4.34µs   210709.        0B     21.1
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
@@ -113,8 +113,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.71µs   10.5µs    89157.        0B    17.8 
-#> 2 bar_s4(x, y)   9.29µs   10.3µs    92372.        0B     9.24
+#> 1 bar_r7(x, y)   9.56µs  10.61µs    89338.        0B    17.9 
+#> 2 bar_s4(x, y)   8.87µs   9.91µs    95387.        0B     9.54
 ```
 
 ## TODO
@@ -139,7 +139,20 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
             vector of error messages.
           - [x] - properties, a list of property objects
   - Initialization
+      - [x] - The constructor uses `object_new()` to initialize a new
+        object, this
+          - [x] - Inspects the enclosing scope to find the “current”
+            class.
+          - [ ] - Creates the prototype, by either by calling the parent
+            constructor or by creating a base type and adding class and
+            `object_class()` attributes to it.
+          - [ ] - Validates properties then adds to prototype.
+          - [x] - Validates the complete object.
   - Shortcuts
+      - [ ] - any argument that takes a class object can instead take
+        the name of a class object as a string
+      - [ ] - instead of providing a list of property objects, you can
+        instead provide a named character vector.
   - Validation
       - [ ] - valid\_eventually
       - [ ] - valid\_implicitly
@@ -163,4 +176,38 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
         can instead take the name of a generic function supplied as a
         string
   - Methods
-      - [ ] -
+      - Registration
+          - [x] - Methods are defined by calling method\<-(generic,
+            signature, method):
+          - [ ] - generic is a generic function.
+          - [ ] - signature is a
+              - [ ] - single class object
+              - [ ] - a class union
+              - [ ] - list of class objects/unions
+              - [x] - a character vector.
+              - [ ] - method is a compatible function
+          - [ ] - method\<- is designed to work at run-time
+      - Dispatch
+          - [x] - Dispatch is nested, meaning that if there are multiple
+            arguments in the generic signature, it will dispatch on the
+            first argument, then the second.
+          - [x] - A `plot()` generic dispatching on `x`, e.g. `plot <-
+            function(x) { method(plot, object_class(x))(x) }`
+          - [x] - A `publish()` that publishes an object `x` to a
+            destination `y`, dispatching on both arguments,
+            e.g. `publish <- function(x, y, ...) { method(publish,
+            list(object_class(x), object_class(y)))(x, y, ...) }`
+          - [ ] - `...` is not used for dispatch
+  - Compatibility
+      - S3
+          - [x] - Since the class attribute has the same semantics as
+            S3, S3 dispatch should be fully compatible.
+          - [ ] - The new generics should also be able to handle legacy
+            S3 objects.
+      - S4
+          - [x] - Since the new generics will fallback to S3 dispatch,
+            they should support S4 objects just as S3 generics support
+            them now.
+  - Documentation
+      - [ ] - Generate index pages that list the methods for a generic
+        or the methods with a particular class in their signature
