@@ -6,3 +6,4 @@
 ^proposal$
 ^minutes$
 ^codecov\.yml$
+^README\.Rmd$
