@@ -2,7 +2,7 @@
 #' @export
 r7_object <- class_new(
   name = "r7_object",
-  parent = NULL,
+  parent = character(),
   constructor = function() list()
 )
 
@@ -35,6 +35,34 @@ r7_method <- class_new(
   parent = "function",
   constructor = function(generic, signature, fun) {
     object_new(generic = generic, signature = signature, .data = fun)
+  }
+)
+
+#' Class unions
+#'
+#' A class union represents a list of possible classes. It is used in
+#' properties to allow a property to be one of a set of classes, and in method
+#' dispatch as a convenience for defining a method for multiple classes.
+#' @export
+class_union <- class_new(
+  name = "class_union",
+  properties = list(classes = "list"),
+  validator = function(x) {
+    for (val in x@classes) {
+      if (!inherits(val, "r7_class")) {
+        return(sprintf("All classes in a `class_union` must be R7 classes:\n - '%s' is not an `r7_class`", class(val)[[1]]))
+      }
+    }
+  },
+  constructor = function(...) {
+    classes <- list(...)
+    for (i in seq_along(classes)) {
+      if (is.character(classes[[i]])) {
+        classes[[i]] <- class_get(classes[[i]])
+      }
+    }
+
+    object_new(classes = classes)
   }
 )
 

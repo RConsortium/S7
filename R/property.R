@@ -6,17 +6,30 @@
 #'   automatically checked for validity after the replacement is done.
 #' @export
 property <- function(obj, name) {
+  val <- property_safe(obj, name)
+  if (is.null(val)) {
+    class <- object_class(obj)
+    stop(sprintf("`%s` objects do not have a `%s` property", class@name, name), call. = FALSE)
+  }
+  val
+}
+
+property_safe <- function(obj, name, otherwise = NULL) {
   if (identical(name, ".data")) {
     # Remove properties, return the rest
     props <- properties(obj)
     for (name in names(props)) {
       attr(obj, name) <- NULL
     }
-    class(obj) <- setdiff(class_names(object_class(obj)@parent), "r7_object")
+    class(obj) <- setdiff(class_names(property_safe(object_class(obj), "parent")), "r7_object")
     object_class(obj) <- NULL
     return(obj)
   }
-  attr(obj, name, exact = TRUE)
+  val <- attr(obj, name, exact = TRUE)
+  if (is.null(val)) {
+    return(otherwise)
+  }
+  val
 }
 
 properties <- function(object) {
@@ -24,7 +37,7 @@ properties <- function(object) {
   prop <- list()
   while(!is.null(obj_class)) {
     prop <- c(obj_class@properties, prop)
-    obj_class <- obj_class@parent
+    obj_class <- property_safe(obj_class, "parent")
   }
   prop
 }

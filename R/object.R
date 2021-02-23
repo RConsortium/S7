@@ -46,6 +46,8 @@ object_class <- function(obj) {
   invisible(obj)
 }
 
-class_names <- function(obj) {
-  .Call(class_names_, obj)
+#' @export
+print.r7_object <- function(x, ...) {
+  cat(sprintf("r7: <%s>\n", object_class(x)@name))
 }
+

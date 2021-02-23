@@ -23,12 +23,41 @@ class_new <- function(name, parent = r7_object, constructor = function(...) obje
   r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
+#' Retrive all of the class names for a class
+#'
+#' @param obj The R7 object to query
+#' @return A character vector of all the class names for a given R7 class.
 #' @export
-print.r7_object <- function(x, ...) {
-  cat(sprintf("r7: <%s>\n", object_class(x)@name))
+class_names <- function(obj) {
+  .Call(class_names_, obj)
+}
+
+#' Retrieve the r7 class corresponding to a name
+#'
+#' @param name The name of the r7 class
+#' @param envir The environment to look for the name
+#' @export
+class_get <- function(name, envir = parent.frame()) {
+  class <- get0(name, envir = envir)
+  if (is.null(class)) {
+    stop(sprintf("'%s' must be an R7 class", name), call. = FALSE)
+  }
+
+  if (inherits(class, "r7_class")) {
+    return(class)
+  }
+
+  # TODO: What do we do about existing S3 / S4 classes?
+
+  # otherwise assume this is a base class, so use get_base_class
+  get_base_class(name)
 }
 
 get_base_class <- function(name) {
+  if (length(name) == 0) {
+    return()
+  }
+
   switch(name,
     "logical" = class_new("logical", constructor = function() logical()),
     "integer" = class_new("integer", constructor = function() integer()),

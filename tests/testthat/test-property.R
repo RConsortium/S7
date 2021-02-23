@@ -18,7 +18,7 @@ describe("property", {
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_true(is.null(property(x, "st")))
+    expect_error(property(x, "st"), "`range` objects do not have a `st` property")
   })
   it("retrieves .data", {
     x <- text("hi")
@@ -48,7 +48,7 @@ describe("@", {
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_true(is.null(x@st))
+    expect_error(x@st, "`range` objects do not have a `st` property")
   })
   # TODO: add tests to verify fallback for non-R7 objects
 })
