@@ -111,9 +111,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.13µs   4.86µs   193045.    3.99KB     77.2
-#> 2 foo_s3(x)    3.72µs   5.13µs   174803.        0B      0  
-#> 3 foo_s4(x)    3.85µs   4.29µs   204698.        0B     20.5
+#> 1 foo_r7(x)    4.26µs   5.03µs   188678.    3.99KB     75.5
+#> 2 foo_s3(x)    3.69µs   5.14µs   166493.        0B      0  
+#> 3 foo_s4(x)    3.86µs   4.35µs   210269.        0B     21.0
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
@@ -128,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.18µs   10.4µs    86733.        0B    17.4 
-#> 2 bar_s4(x, y)   9.16µs   10.2µs    95994.        0B     9.60
+#> 1 bar_r7(x, y)   9.74µs   10.6µs    90936.        0B    18.2 
+#> 2 bar_s4(x, y)   9.35µs   10.3µs    93805.        0B     9.38
 ```
 
 ## TODO
@@ -174,7 +174,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Unions
       - [ ] - Used in properties to allow a property to be one of a set
         of classes
-      - [ ] - In method dispatch as a convenience for defining a method
+      - [x] - In method dispatch as a convenience for defining a method
         for multiple classes
   - Properties
       - [x] - Accessed using `property()` / `property<-`
@@ -194,7 +194,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - Registration
           - [x] - Methods are defined by calling method\<-(generic,
             signature, method):
-          - [ ] - generic is a generic function.
+          - [x] - generic is a generic function.
           - [ ] - signature is a
               - [ ] - single class object
               - [ ] - a class union

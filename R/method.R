@@ -11,6 +11,10 @@ method <- function(generic, signature) {
 #' @rdname method
 #' @export
 method_register <- function(generic, signature, value) {
+  if (!is.character(signature) && !inherits(signature, "list")) {
+    signature <- list(signature)
+  }
+
   env <- environment(generic)
   generic_name <- generic@name
 
@@ -26,17 +30,26 @@ method_register <- function(generic, signature, value) {
   }
 
   p_tbl <- gen_tbl
-  while (length(signature) > 1) {
-    tbl <- p_tbl[[signature[[1]]]]
-    if (is.null(tbl)) {
-      tbl <- new.env(hash = TRUE, parent = emptyenv())
-      p_tbl[[signature[[1]]]] <- tbl
+  for (i in seq_along(signature)) {
+    if (inherits(signature[[i]], "class_union")) {
+      for (class in signature[[1]]@classes) {
+        method_register(generic, c(signature[seq_len(i - 1)], class@name), value)
+      }
+      return(invisible(generic))
+    } else if (inherits(signature[[i]], "r7_class")) {
+      signature[[i]] <- signature[[i]]@name
     }
-    signature <- signature[-1]
-    p_tbl <- tbl
+    if (i == length(signature)) {
+      p_tbl[[signature[[i]]]] <- value
+    } else {
+      tbl <- p_tbl[[signature[[i]]]]
+      if (is.null(tbl)) {
+        tbl <- new.env(hash = TRUE, parent = emptyenv())
+        p_tbl[[signature[[i]]]] <- tbl
+      }
+      p_tbl <- tbl
+    }
   }
-
-  p_tbl[[signature[[1]]]] <- value
 
   invisible(generic)
 }

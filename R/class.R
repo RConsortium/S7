@@ -29,8 +29,23 @@ class_new <- function(name, parent = r7_object, constructor = function(...) obje
 #' @return A character vector of all the class names for a given R7 class.
 #' @export
 class_names <- function(obj) {
-  .Call(class_names_, obj)
+  parent <- obj
+  classes <- character()
+  while(!is.null(parent)) {
+    if (inherits(parent, "class_union")) {
+      for (class in parent@classes) {
+        classes <- c(classes, class_names(class))
+      }
+    } else {
+      classes <- c(classes, parent@name)
+    }
+    parent <- property_safe(parent, "parent")
+  }
+  unique(classes, fromLast = TRUE)
 }
+#class_names <- function(obj) {
+  #.Call(class_names_, obj)
+#}
 
 #' Retrieve the r7 class corresponding to a name
 #'

@@ -33,3 +33,33 @@ test_that("inherited multiple dispatch works", {
 
   expect_equal(foo4(text("bar"), number(1)), "bar:1")
 })
+
+test_that("method_register works if you use r7 class objects", {
+  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+  number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+
+  foo5 <- generic_new(name = "foo5", signature = alist(x=, y=))
+  method_register(foo5, list(text, number), function(x, y) paste0(x, ":", y))
+
+  expect_equal(foo5(text("bar"), number(1)), "bar:1")
+})
+
+test_that("method_register works if you pass a bare class", {
+  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+
+  foo6 <- generic_new(name = "foo6", signature = alist(x=))
+  method_register(foo6, text, function(x) paste0("foo-", x))
+
+  expect_equal(foo6(text("bar")), "foo-bar")
+})
+
+test_that("method_register works if you pass a bare class union", {
+  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+  number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+
+  foo7 <- generic_new(name = "foo7", signature = alist(x=))
+  method_register(foo7, class_union(text, number), function(x) paste0("foo-", x))
+
+  expect_equal(foo7(text("bar")), "foo-bar")
+  expect_equal(foo7(number(1)), "foo-1")
+})
