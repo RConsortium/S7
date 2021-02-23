@@ -28,19 +28,19 @@ print.r7_object <- function(x, ...) {
   cat(sprintf("r7: <%s>\n", object_class(x)@name))
 }
 
-
 get_base_class <- function(name) {
   switch(name,
     "logical" = class_new("logical", constructor = function() logical()),
     "integer" = class_new("integer", constructor = function() integer()),
     "double" = ,
     "numeric" = class_new("numeric", constructor = function() numeric()),
-    "complex" = class_new("numeric", constructor = function() complex()),
+    "complex" = class_new("complex", constructor = function() complex()),
     "character" = class_new("character", constructor = function() character()),
     "raw" = class_new("raw", constructor = function() raw()),
-    "list" = class_new("raw", constructor = function() list()),
+    "list" = class_new("list", constructor = function() list()),
     "closure" = ,
     "function" = class_new("function", constructor = function() function() NULL),
+    "NULL" = class_new("NULL", constructor = function() NULL),
     stop(sprintf("invalid class '%s'", name), call. = FALSE)
   )
 }

@@ -20,6 +20,15 @@ describe("property", {
     x <- range(1, 10)
     expect_true(is.null(property(x, "st")))
   })
+  it("retrieves .data", {
+    x <- text("hi")
+    expect_equal(x@.data, "hi")
+  })
+  it("preserves non-property attributes when retrieving .data", {
+    val <- c(foo = "hi", bar = "ho")
+    x <- text(val)
+    expect_equal(x@.data, val)
+  })
 })
 
 describe("property<-", {

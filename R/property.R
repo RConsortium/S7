@@ -7,11 +7,26 @@
 #' @export
 property <- function(obj, name) {
   if (identical(name, ".data")) {
-    obj2 <- obj
-    attributes(obj2) <- NULL
-    return(obj2)
+    # Remove properties, return the rest
+    props <- properties(obj)
+    for (name in names(props)) {
+      attr(obj, name) <- NULL
+    }
+    class(obj) <- setdiff(class_names(object_class(obj)@parent), "r7_object")
+    object_class(obj) <- NULL
+    return(obj)
   }
   attr(obj, name, exact = TRUE)
+}
+
+properties <- function(object) {
+  obj_class <- object_class(object)
+  prop <- list()
+  while(!is.null(obj_class)) {
+    prop <- c(obj_class@properties, prop)
+    obj_class <- obj_class@parent
+  }
+  prop
 }
 
 #' @rdname property

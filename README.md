@@ -40,7 +40,7 @@ range <- class_new("range",
     object_new(start = start, end = end)
   },
   validator = function(x) {
-    if (prop(x, "end") < prop(x, "start")) {
+    if (property(x, "end") < property(x, "start")) {
       "`end` must be greater than or equal to `start`"
     }
   },
@@ -111,9 +111,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.26µs   4.96µs   187116.    3.99KB     74.9
-#> 2 foo_s3(x)    3.85µs   5.03µs   172341.        0B      0  
-#> 3 foo_s4(x)    3.88µs    4.3µs   205296.        0B     20.5
+#> 1 foo_r7(x)    4.13µs   4.86µs   193045.    3.99KB     77.2
+#> 2 foo_s3(x)    3.72µs   5.13µs   174803.        0B      0  
+#> 3 foo_s4(x)    3.85µs   4.29µs   204698.        0B     20.5
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
@@ -128,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.18µs   10.5µs    88915.        0B    17.8 
-#> 2 bar_s4(x, y)   9.33µs   10.1µs    94303.        0B     9.43
+#> 1 bar_r7(x, y)   9.18µs   10.4µs    86733.        0B    17.4 
+#> 2 bar_s4(x, y)   9.16µs   10.2µs    95994.        0B     9.60
 ```
 
 ## TODO
@@ -140,7 +140,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - [x] - For S3 compatibility, a class attribute, a character
         vector of class names.
       - [x] - Additional attributes storing properties defined by the
-        class, accessible with `@/prop()`.
+        class, accessible with `@/property()`.
   - Classes
       - [x] - R7 classes are first class objects with the following
           - [x] - `name`, a human-meaningful descriptor for the class.
@@ -169,15 +169,15 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - [ ] - instead of providing a list of property objects, you can
         instead provide a named character vector.
   - Validation
-      - [ ] - valid\_eventually
-      - [ ] - valid\_implicitly
+      - [x] - valid\_eventually
+      - [x] - valid\_implicitly
   - Unions
       - [ ] - Used in properties to allow a property to be one of a set
         of classes
       - [ ] - In method dispatch as a convenience for defining a method
         for multiple classes
   - Properties
-      - [x] - Accessed using `prop()` / `prop<-`
+      - [x] - Accessed using `property()` / `property<-`
       - [x] - Accessed using `@` / `@<-`
       - [x] - A name, used to label output
       - [ ] - A optional class or union
@@ -232,7 +232,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Using `@` vs `$` for property access, `@` triggers R CMD check
     NOTES, needs `utils::globalVariables()`, people are used to using
     `$` for lists and data.frames
-  - What should `prop()` return if the property doesn’t exist?
+  - What should `property()` return if the property doesn’t exist?
   - Returning NULL / character in validator vs throwing an error?
   - Opt-out property validation, potentially fatal to performance, maybe
     default to implicitly off in constructors?

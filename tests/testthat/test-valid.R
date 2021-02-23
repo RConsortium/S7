@@ -20,6 +20,20 @@ test_that("validate calls the validation function", {
   )
 })
 
+test_that("valid eventually calls the validation function only at the end", {
+  obj <- range(1, 10)
+
+  obj <- valid_eventually(
+    obj,
+    function(x) {
+      x@start <- 11
+      x@start <- 1
+      x
+    })
+
+  expect_error(validate(obj), NA)
+})
+
 test_that("valid implicitly does _not_ call the validation function", {
   obj <- range(1, 10)
 
