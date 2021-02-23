@@ -5,7 +5,7 @@
 #' @param value A replacement value for the parameter. The object is
 #'   automatically checked for validity after the replacement is done.
 #' @export
-prop <- function(obj, name) {
+property <- function(obj, name) {
   if (identical(name, ".data")) {
     obj2 <- obj
     attributes(obj2) <- NULL
@@ -14,9 +14,9 @@ prop <- function(obj, name) {
   attr(obj, name, exact = TRUE)
 }
 
-#' @rdname prop
+#' @rdname property
 #' @export
-`prop<-` <- function(obj, name, value) {
+`property<-` <- function(obj, name, value) {
   if (name == ".data") {
     attrs <- attributes(obj)
     obj <- value
@@ -30,16 +30,17 @@ prop <- function(obj, name) {
   invisible(obj)
 }
 
-#' @rdname prop
+#' @rdname property
 #' @usage obj@name
 #' @export
 `@` <- function(obj, name) {
   if (!inherits(obj, "r7_object")) {
-    return(base::`@`(obj, name))
+    name <- substitute(name)
+    return(do.call(base::`@`,list(obj, name)))
   }
 
   nme <- as.character(substitute(name))
-  prop(obj, nme)
+  property(obj, nme)
 }
 
 #' @rawNamespace S3method("@<-",r7_object)
@@ -49,7 +50,7 @@ prop <- function(obj, name) {
   }
 
   nme <- as.character(substitute(name))
-  prop(obj, nme) <- value
+  property(obj, nme) <- value
 
   invisible(obj)
 }

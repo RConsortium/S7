@@ -12,14 +12,17 @@ object_new <- function(...) {
   } else {
     obj <- class@parent@constructor()
   }
+  attr(obj, ".should_validate") <- FALSE
 
   object_class(obj) <- class
 
   for (i in seq_along(args)) {
     if (nms[[i]] != ".data") {
-      attr(obj, nms[[i]]) <- args[[i]]
+      property(obj, nms[[i]]) <- args[[i]]
     }
   }
+
+  attr(obj, ".should_validate") <- NULL
 
   validate(obj)
 
@@ -39,7 +42,6 @@ object_class <- function(obj) {
   nms <- class_names(object_class(obj))
 
   class(obj) <- nms
-
 
   invisible(obj)
 }

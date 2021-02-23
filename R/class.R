@@ -23,21 +23,6 @@ class_new <- function(name, parent = r7_object, constructor = function(...) obje
   r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
-validate <- function(obj) {
-  obj_class <- object_class(obj)
-  validator <- prop(obj_class, "validator")
-
-  errors <- validator(obj)
-
-  if (length(errors) > 0) {
-    msg <- sprintf("invalid '%s' object:\n%s", prop(obj_class, "name"), paste0("- ", errors, collapse = "\n"))
-    stop(msg, call. = FALSE)
-  }
-
-  invisible(obj)
-}
-
-
 #' @export
 print.r7_object <- function(x, ...) {
   cat(sprintf("r7: <%s>\n", object_class(x)@name))

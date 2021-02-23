@@ -3,31 +3,31 @@ range <- class_new("range",
     object_new(start = start, end = end)
   },
   validator = function(x) {
-    if (prop(x, "end") < prop(x, "start")) {
+    if (property(x, "end") < property(x, "start")) {
       "`end` must be greater than or equal to `start`"
     }
   },
   properties = c(start = "numeric", end = "numeric")
 )
 
-describe("prop", {
+describe("property", {
   it("retrieves the property", {
     x <- range(1, 10)
-    expect_equal(prop(x, "start"), 1)
-    expect_equal(prop(x, "end"), 10)
+    expect_equal(property(x, "start"), 1)
+    expect_equal(property(x, "end"), 10)
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_true(is.null(prop(x, "st")))
+    expect_true(is.null(property(x, "st")))
   })
 })
 
-describe("prop<-", {
+describe("property<-", {
   it("sets the property", {
     x <- range(1, 10)
-    expect_equal(prop(x, "start"), 1)
-    prop(x, "start") <- 2
-    expect_equal(prop(x, "start"), 2)
+    expect_equal(property(x, "start"), 1)
+    property(x, "start") <- 2
+    expect_equal(property(x, "start"), 2)
   })
 })
 

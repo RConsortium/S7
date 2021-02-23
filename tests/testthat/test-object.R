@@ -4,7 +4,7 @@ describe("object_new", {
       object_new(start = start, end = end)
     },
     validator = function(x) {
-      if (prop(x, "end") < prop(x, "start")) {
+      if (property(x, "end") < property(x, "start")) {
         "`end` must be greater than or equal to `start`"
       }
     },
