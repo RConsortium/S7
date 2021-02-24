@@ -37,7 +37,13 @@ SEXP object_class_(SEXP obj) {
     return(obj);
   }
 
-  return Rf_getAttrib(obj, object_class_sym);
+  SEXP val = Rf_getAttrib(obj, object_class_sym);
+
+  if (val != R_NilValue) {
+    return val;
+  }
+
+  return Rf_getAttrib(obj, R_ClassSymbol);
 }
 
 extern SEXP r7_methods_sym;
@@ -57,14 +63,26 @@ SEXP method_(SEXP generic, SEXP signature) {
   for (R_xlen_t i = 0; i < signature_len; ++i) {
     SEXP parent = VECTOR_ELT(signature, i);
 
-    while(parent != R_NilValue) {
-      SEXP class = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(parent, name_sym), 0)));
-      SEXP val = Rf_findVarInFrame(table, class);
-      if (val != R_UnboundValue) {
-        table = val;
-        break;
+    if (Rf_inherits(parent, "r7_class")) {
+      while(parent != R_NilValue) {
+        SEXP class = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(parent, name_sym), 0)));
+        SEXP val = Rf_findVarInFrame(table, class);
+        if (val != R_UnboundValue) {
+          table = val;
+          break;
+        }
+        parent = Rf_getAttrib(parent, parent_sym);
       }
-      parent = Rf_getAttrib(parent, parent_sym);
+    }
+    else {
+      for (R_xlen_t j = 0; j < Rf_xlength(parent); ++j) {
+        SEXP class = Rf_install(CHAR(STRING_ELT(parent, j)));
+        SEXP val = Rf_findVarInFrame(table, class);
+        if (val != R_UnboundValue) {
+          table = val;
+          break;
+        }
+      }
     }
   }
   return table;

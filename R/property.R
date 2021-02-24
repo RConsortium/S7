@@ -69,7 +69,7 @@ properties <- function(object) {
 `@` <- function(obj, name) {
   if (!inherits(obj, "r7_object")) {
     name <- substitute(name)
-    return(do.call(base::`@`,list(obj, name)))
+    return(do.call(base::`@`, list(obj, name)))
   }
 
   nme <- as.character(substitute(name))

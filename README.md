@@ -111,9 +111,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.42µs   5.68µs   173452.    4.01KB     69.4
-#> 2 foo_s3(x)    3.64µs   5.02µs   178866.        0B      0  
-#> 3 foo_s4(x)    3.84µs   4.43µs   206440.        0B     20.6
+#> 1 foo_r7(x)    4.33µs   5.05µs   187019.    4.01KB     74.8
+#> 2 foo_s3(x)    3.72µs   5.14µs   172999.        0B      0  
+#> 3 foo_s4(x)    3.84µs   4.32µs   213779.        0B     21.4
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -128,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  10.01µs   10.9µs    85402.        0B    17.1 
-#> 2 bar_s4(x, y)   9.63µs   10.3µs    90730.        0B     9.07
+#> 1 bar_r7(x, y)   9.66µs  10.63µs    89144.        0B    17.8 
+#> 2 bar_s4(x, y)   9.05µs   9.98µs    89119.        0B     8.91
 ```
 
 ## TODO
@@ -217,7 +217,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - S3
           - [x] - Since the class attribute has the same semantics as
             S3, S3 dispatch should be fully compatible.
-          - [ ] - The new generics should also be able to handle legacy
+          - [x] - The new generics should also be able to handle legacy
             S3 objects.
       - S4
           - [x] - Since the new generics will fallback to S3 dispatch,

@@ -38,8 +38,10 @@ class_names <- function(obj) {
       for (class in parent@classes) {
         classes <- c(classes, class_names(class))
       }
-    } else {
+    } else if (inherits(parent, "r7_class")) {
       classes <- c(classes, parent@name)
+    } else {
+      classes <- c(classes, parent)
     }
     parent <- property_safe(parent, "parent")
   }
