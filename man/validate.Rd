@@ -18,17 +18,17 @@ valid_implicitly(object, fun)
 \item{fun}{A function to call on the object before validation.}
 }
 \description{
-[validate()] calls the validation of an R7 object. This is done
-automatically when creating new objects (at the end of `object_new()`) and
+\code{\link[=validate]{validate()}} calls the validation of an R7 object. This is done
+automatically when creating new objects (at the end of \code{object_new()}) and
 when setting any property.
 }
 \details{
-[valid_eventually()] disables validation of properties, runs a function on
+\code{\link[=valid_eventually]{valid_eventually()}} disables validation of properties, runs a function on
 the object, then validates the object.
 
-[valid_implicitly()] does the same but does not validate the object at the end.
+\code{\link[=valid_implicitly]{valid_implicitly()}} does the same but does not validate the object at the end.
 
-[valid_implicitly()] should only be used rarely in performance critical code
+\code{\link[=valid_implicitly]{valid_implicitly()}} should only be used rarely in performance critical code
 where you are certain a sequence of operations cannot produce an invalid
 object.
 }
