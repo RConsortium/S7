@@ -1,6 +1,6 @@
 r7_class <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
-    parent <- get_base_class(parent)
+    parent <- class_get(parent)
   }
   obj <- constructor
   attr(obj, "name") <- name
@@ -20,6 +20,8 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
 #' @param properties A list of properties for the class
 #' @export
 class_new <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+  environment(constructor) <- topenv(environment(constructor))
+
   r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
@@ -53,11 +55,10 @@ class_names <- function(obj) {
 #' @param envir The environment to look for the name
 #' @export
 class_get <- function(name, envir = parent.frame()) {
-  class <- get0(name, envir = envir)
-  if (is.null(class)) {
-    stop(sprintf("'%s' must be an R7 class", name), call. = FALSE)
+  if (length(name) == 0) {
+    return()
   }
-
+  class <- get0(name, envir = envir)
   if (inherits(class, "r7_class")) {
     return(class)
   }
@@ -69,10 +70,6 @@ class_get <- function(name, envir = parent.frame()) {
 }
 
 get_base_class <- function(name) {
-  if (length(name) == 0) {
-    return()
-  }
-
   switch(name,
     "logical" = class_new("logical", constructor = function() logical()),
     "integer" = class_new("integer", constructor = function() integer()),
