@@ -111,9 +111,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.26µs   5.03µs   188678.    3.99KB     75.5
-#> 2 foo_s3(x)    3.69µs   5.14µs   166493.        0B      0  
-#> 3 foo_s4(x)    3.86µs   4.35µs   210269.        0B     21.0
+#> 1 foo_r7(x)    4.37µs   5.03µs   186777.    3.99KB     74.7
+#> 2 foo_s3(x)    4.13µs    5.2µs   148696.        0B      0  
+#> 3 foo_s4(x)    4.16µs   4.75µs   183306.        0B     18.3
 
 
 bar_r7 <- generic_new("bar_r7", alist(x=, y=))
@@ -128,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.74µs   10.6µs    90936.        0B    18.2 
-#> 2 bar_s4(x, y)   9.35µs   10.3µs    93805.        0B     9.38
+#> 1 bar_r7(x, y)  10.14µs   10.9µs    86809.        0B    17.4 
+#> 2 bar_s4(x, y)   9.57µs   10.5µs    89494.        0B     8.95
 ```
 
 ## TODO
@@ -181,7 +181,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - [x] - Accessed using `@` / `@<-`
       - [x] - A name, used to label output
       - [ ] - A optional class or union
-      - [ ] - An optional accessor function
+      - [x] - An optional accessor function
       - [ ] - Properties are created with `prop_new()`
   - Generics
       - [x] - It knows its name and the names of the arguments in its
@@ -195,12 +195,12 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
           - [x] - Methods are defined by calling method\<-(generic,
             signature, method):
           - [x] - generic is a generic function.
-          - [ ] - signature is a
-              - [ ] - single class object
-              - [ ] - a class union
-              - [ ] - list of class objects/unions
+          - [x] - signature is a
+              - [x] - single class object
+              - [x] - a class union
+              - [x] - list of class objects/unions
               - [x] - a character vector.
-              - [ ] - method is a compatible function
+          - [ ] - method is a compatible function
           - [ ] - method\<- is designed to work at run-time
       - Dispatch
           - [x] - Dispatch is nested, meaning that if there are multiple

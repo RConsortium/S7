@@ -1,5 +1,4 @@
 test_that("methods can be registered for a generic and then called", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
   foo <- generic_new(name = "foo", signature = alist(x=))
   method_register(foo, "text", function(x) paste0("foo-", x@.data))
 
@@ -7,7 +6,6 @@ test_that("methods can be registered for a generic and then called", {
 })
 
 test_that("single inheritance works when searching for methods", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
   foo2 <- generic_new(name = "foo2", signature = alist(x=))
 
   method_register(foo2, "character", function(x) paste0("foo2-", x))
@@ -16,18 +14,12 @@ test_that("single inheritance works when searching for methods", {
 })
 
 test_that("direct multiple dispatch works", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-  number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
-
   foo3 <- generic_new(name = "foo3", signature = alist(x=, y=))
   method_register(foo3, list("text", "number"), function(x, y) paste0(x, y))
   expect_equal(foo3(text("bar"), number(1)), "bar1")
 })
 
 test_that("inherited multiple dispatch works", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-  number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
-
   foo4 <- generic_new(name = "foo4", signature = alist(x=, y=))
   method_register(foo4, list("character", "numeric"), function(x, y) paste0(x, ":", y))
 
@@ -35,9 +27,6 @@ test_that("inherited multiple dispatch works", {
 })
 
 test_that("method_register works if you use r7 class objects", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-  number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
-
   foo5 <- generic_new(name = "foo5", signature = alist(x=, y=))
   method_register(foo5, list(text, number), function(x, y) paste0(x, ":", y))
 
@@ -45,8 +34,6 @@ test_that("method_register works if you use r7 class objects", {
 })
 
 test_that("method_register works if you pass a bare class", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-
   foo6 <- generic_new(name = "foo6", signature = alist(x=))
   method_register(foo6, text, function(x) paste0("foo-", x))
 
@@ -54,9 +41,6 @@ test_that("method_register works if you pass a bare class", {
 })
 
 test_that("method_register works if you pass a bare class union", {
-  text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-  number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
-
   foo7 <- generic_new(name = "foo7", signature = alist(x=))
   method_register(foo7, class_union(text, number), function(x) paste0("foo-", x))
 

@@ -16,10 +16,12 @@ object_new <- function(...) {
 
   object_class(obj) <- class
 
-  for (i in seq_along(args)) {
-    if (nms[[i]] != ".data") {
-      property(obj, nms[[i]]) <- args[[i]]
-    }
+  props <- properties(obj)
+
+  to_set <- intersect(nms, names(props))
+
+  for (nme in to_set) {
+    property(obj, nme) <- args[[nme]]
   }
 
   attr(obj, ".should_validate") <- NULL

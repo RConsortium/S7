@@ -1,14 +1,3 @@
-range <- class_new("range",
-  constructor = function(start, end) {
-    object_new(start = start, end = end)
-  },
-  validator = function(x) {
-    if (property(x, "end") < property(x, "start")) {
-      "`end` must be greater than or equal to `start`"
-    }
-  },
-  properties = c(start = "numeric", end = "numeric")
-)
 test_that("validate calls the validation function", {
   obj <- range(1, 10)
   # Use attr to set the property

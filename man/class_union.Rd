@@ -6,6 +6,10 @@
 \usage{
 class_union(...)
 }
+\arguments{
+\item{...}{The classes to include in the union, either looked up by named or
+by passing the `r7_class` objects directly.}
+}
 \description{
 A class union represents a list of possible classes. It is used in
 properties to allow a property to be one of a set of classes, and in method

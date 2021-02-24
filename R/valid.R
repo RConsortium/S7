@@ -4,15 +4,16 @@
 #' automatically when creating new objects (at the end of `object_new()`) and
 #' when setting any property.
 #'
-#' [valid_eventually()] disables validation of properties until the expression
-#' in `expr` is completed, then validates the object. [valid_implicitly()]
-#' does the same but does not validate the object at the end.
+#' [valid_eventually()] disables validation of properties, runs a function on
+#' the object, then validates the object.
+#'
+#' [valid_implicitly()] does the same but does not validate the object at the end.
 #'
 #' [valid_implicitly()] should only be used rarely in performance critical code
 #' where you are certain a sequence of operations cannot produce an invalid
 #' object.
 #' @param object An R7 object
-#' @param expr An R expression
+#' @param fun A function to call on the object before validation.
 validate <- function(object) {
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))

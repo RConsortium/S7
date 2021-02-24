@@ -11,6 +11,11 @@ property <- function(obj, name) {
     class <- object_class(obj)
     stop(sprintf("`%s` objects do not have a `%s` property", class@name, name), call. = FALSE)
   }
+
+  if (inherits(val, "accessor")) {
+    return(val(obj))
+  }
+
   val
 }
 

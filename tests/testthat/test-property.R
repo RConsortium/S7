@@ -1,13 +1,13 @@
 range <- class_new("range",
   constructor = function(start, end) {
-    object_new(start = start, end = end)
+    object_new(start = start, end = end, length = accessor(function(x) x@end - x@start))
   },
   validator = function(x) {
     if (property(x, "end") < property(x, "start")) {
       "`end` must be greater than or equal to `start`"
     }
   },
-  properties = c(start = "numeric", end = "numeric")
+  properties = c(start = "numeric", end = "numeric", length = "accessor")
 )
 
 describe("property", {
@@ -60,4 +60,9 @@ describe("@<-", {
     x@start <- 2
     expect_equal(x@start, 2)
   })
+})
+
+test_that("properties can be accessor functions", {
+  x <- range(1, 10)
+  expect_equal(x@length, 10 - 1)
 })

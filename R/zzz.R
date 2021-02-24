@@ -43,6 +43,8 @@ r7_method <- class_new(
 #' A class union represents a list of possible classes. It is used in
 #' properties to allow a property to be one of a set of classes, and in method
 #' dispatch as a convenience for defining a method for multiple classes.
+#' @param ... The classes to include in the union, either looked up by named or
+#'   by passing the `r7_class` objects directly.
 #' @export
 class_union <- class_new(
   name = "class_union",
@@ -66,4 +68,6 @@ class_union <- class_new(
   }
 )
 
-utils::globalVariables(c("parent", "constructor", "name"))
+accessor <- class_new("accessor", parent = "function", constructor = function(fun) object_new(.data = fun))
+
+utils::globalVariables(c("parent", "constructor", "name", "classes"))

@@ -15,7 +15,7 @@ valid_implicitly(object, fun)
 \arguments{
 \item{object}{An R7 object}
 
-\item{expr}{An R expression}
+\item{fun}{A function to call on the object before validation.}
 }
 \description{
 [validate()] calls the validation of an R7 object. This is done
@@ -23,9 +23,10 @@ automatically when creating new objects (at the end of `object_new()`) and
 when setting any property.
 }
 \details{
-[valid_eventually()] disables validation of properties until the expression
-in `expr` is completed, then validates the object. [valid_implicitly()]
-does the same but does not validate the object at the end.
+[valid_eventually()] disables validation of properties, runs a function on
+the object, then validates the object.
+
+[valid_implicitly()] does the same but does not validate the object at the end.
 
 [valid_implicitly()] should only be used rarely in performance critical code
 where you are certain a sequence of operations cannot produce an invalid

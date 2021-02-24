@@ -146,7 +146,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - [x] - Accessed using `@` / `@<-`
   - [x] - A name, used to label output
   - [ ] - A optional class or union
-  - [ ] - An optional accessor function
+  - [x] - An optional accessor function
   - [ ] - Properties are created with `prop_new()`
 - Generics
   - [x] - It knows its name and the names of the arguments in its signature
@@ -156,12 +156,12 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Registration
     - [x] - Methods are defined by calling method<-(generic, signature, method):
     - [x] - generic is a generic function.
-    - [ ] - signature is a
-      - [ ] - single class object
-      - [ ] - a class union
-      - [ ] - list of class objects/unions
+    - [x] - signature is a
+      - [x] - single class object
+      - [x] - a class union
+      - [x] - list of class objects/unions
       - [x] - a character vector.
-      - [ ] - method is a compatible function
+    - [ ] - method is a compatible function
     - [ ] - method<- is designed to work at run-time
   - Dispatch
     - [x] - Dispatch is nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second.
