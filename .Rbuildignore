@@ -7,3 +7,4 @@
 ^minutes$
 ^codecov\.yml$
 ^README\.Rmd$
+^script\.R$
