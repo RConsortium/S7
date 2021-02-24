@@ -4,12 +4,14 @@
 \alias{generic_new}
 \title{Define a new generic}
 \usage{
-generic_new(name, signature)
+generic_new(name, signature = NULL, fun = NULL)
 }
 \arguments{
 \item{name}{The name or generic object of the generic}
 
 \item{signature}{The signature of the generic}
+
+\item{fun}{The function to use as the body of the generic.}
 }
 \description{
 Define a new generic
