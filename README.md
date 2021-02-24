@@ -87,7 +87,7 @@ number <- class_new("number", parent = "numeric", constructor = function(x) obje
 x <- text("hi")
 y <- number(1)
 
-foo_r7 <- generic_new(name = "foo_r7", signature = alist(x=))
+foo_r7 <- generic_new(name = "foo_r7", signature = "x")
 method(foo_r7, "text") <- function(x) paste0(x, "-foo")
 
 foo_s3 <- function(x) {
@@ -111,12 +111,12 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.37µs   5.03µs   186777.    3.99KB     74.7
-#> 2 foo_s3(x)    4.13µs    5.2µs   148696.        0B      0  
-#> 3 foo_s4(x)    4.16µs   4.75µs   183306.        0B     18.3
+#> 1 foo_r7(x)    4.42µs   5.68µs   173452.    4.01KB     69.4
+#> 2 foo_s3(x)    3.64µs   5.02µs   178866.        0B      0  
+#> 3 foo_s4(x)    3.84µs   4.43µs   206440.        0B     20.6
 
 
-bar_r7 <- generic_new("bar_r7", alist(x=, y=))
+bar_r7 <- generic_new("bar_r7", c("x", "y"))
 method(bar_r7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
@@ -128,8 +128,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  10.14µs   10.9µs    86809.        0B    17.4 
-#> 2 bar_s4(x, y)   9.57µs   10.5µs    89494.        0B     8.95
+#> 1 bar_r7(x, y)  10.01µs   10.9µs    85402.        0B    17.1 
+#> 2 bar_s4(x, y)   9.63µs   10.3µs    90730.        0B     9.07
 ```
 
 ## TODO
@@ -229,11 +229,4 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 
 ## Questions
 
-  - Using `@` vs `$` for property access, `@` triggers R CMD check
-    NOTES, needs `utils::globalVariables()`, people are used to using
-    `$` for lists and data.frames
-  - What should `property()` return if the property doesn’t exist?
   - Returning NULL / character in validator vs throwing an error?
-  - Opt-out property validation, potentially fatal to performance, maybe
-    default to implicitly off in constructors?
-  - Do we want to allow setting the body of a generic? I would argue no.

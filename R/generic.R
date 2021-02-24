@@ -9,11 +9,28 @@ generic_new <- function(name, signature = NULL, fun = NULL) {
   if (is.null(signature)) {
     signature <- formals(fun)[1]
   }
+  signature <- normalize_signature(signature)
+
   if (is.null(fun)) {
     fun <- generic_generate(name, signature, envir = parent.frame())
   }
 
   r7_generic(name = name, signature, fun = fun)
+}
+
+normalize_signature <- function(signature, envir = parent.frame()) {
+  if (!is_named(signature)) {
+    if (!is.character(signature)) {
+      stop("`signature` must either be named types or an unnamed character vector of argument names", call. = FALSE)
+    }
+    out <- vector("list", length(signature))
+    for (i in seq_along(out)) {
+      out[[i]] <- quote(expr =)
+    }
+    names(out) <- signature
+    return(out)
+  }
+  as.list(signature)
 }
 
 #' Generate the body of a generic function
