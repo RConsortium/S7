@@ -13,10 +13,10 @@ r7_object <- class_new(
 #' @export
 r7_generic <- class_new(
   name = "r7_generic",
-  properties = list(name = "character", signature = "list"),
+  properties = list(name = "character", methods = "environment", signature = "list"),
   parent = "function",
   constructor = function(name, signature, fun) {
-    object_new(name = name, signature = signature, .data = fun)
+    object_new(name = name, signature = signature, methods = new.env(parent = emptyenv(), hash = TRUE), .data = fun)
   }
 )
 
@@ -63,4 +63,4 @@ class_union <- class_new(
 
 accessor <- class_new("accessor", parent = "function", constructor = function(fun) object_new(.data = fun))
 
-utils::globalVariables(c("parent", "constructor", "name", "classes"))
+utils::globalVariables(c("parent", "constructor", "name", "classes", "methods"))

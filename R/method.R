@@ -15,21 +15,10 @@ method_register <- function(generic, signature, value) {
     signature <- list(signature)
   }
 
-  env <- environment(generic)
   generic_name <- generic@name
 
-  table <- env[[".r7_methods"]]
-  if (is.null(table)) {
-    table <- new.env(hash = TRUE, parent = emptyenv())
-    env[[".r7_methods"]] <- table
-  }
-  gen_tbl <- table[[generic_name]]
-  if (is.null(gen_tbl)) {
-    gen_tbl <- new.env(hash = TRUE, parent = emptyenv())
-    table[[generic_name]] <- gen_tbl
-  }
+  p_tbl <- generic@methods
 
-  p_tbl <- gen_tbl
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "class_union")) {
       for (class in signature[[1]]@classes) {

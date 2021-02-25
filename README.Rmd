@@ -63,11 +63,11 @@ object_class(x)
 
 The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in the package there is some overhead due to `.Call` vs `.Primitive`.
 
-Dispatch currently uses a `.r7_methods` table defined in the environment of the generic. This table is a nested set of hashed environments based on the classes of the methods. e.g.
+Dispatch uses a table stored in the `methods` property of the generic. This table is a nested set of hashed environments based on the classes of the methods. e.g.
 
 `method(foo, c("character", "numeric"))` method would be stored at
 
-`.r7_methods[["foo"]][["character"]][["numeric"]]`
+`foo@methods[["character"]][["numeric"]]`
 
 At each level the search iteratively searches up the class vector for the object.
 

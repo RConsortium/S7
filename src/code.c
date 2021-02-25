@@ -50,13 +50,7 @@ extern SEXP r7_methods_sym;
 
 /* TODO: handle errors when method is not found */
 SEXP method_(SEXP generic, SEXP signature) {
-  SEXP env = CLOENV(generic);
-
-  SEXP table = Rf_findVarInFrame(env, r7_methods_sym);
-
-  SEXP generic_sym = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(generic, name_sym), 0)));
-
-  table = Rf_findVarInFrame(table, generic_sym);
+  SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
 
   R_xlen_t signature_len = Rf_xlength(signature);
 
