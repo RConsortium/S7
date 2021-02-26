@@ -168,6 +168,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
     - [x] - A `plot()` generic dispatching on `x`, e.g. ` plot <- function(x) { method(plot, object_class(x))(x) }`
     - [x] - A `publish()` that publishes an object `x` to a destination `y`, dispatching on both arguments, e.g. `publish <- function(x, y, ...) { method(publish, list(object_class(x), object_class(y)))(x, y, ...) }`
     - [ ] - `...` is not used for dispatch
+    - [x] - R7 generics can dispatch with S3 objects
+    - [x] - R7 generics can dispatch with S4 objects
 - Compatibility
   - S3
     - [x] - Since the class attribute has the same semantics as S3, S3 dispatch should be fully compatible.
@@ -178,5 +180,4 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - [ ] - Generate index pages that list the methods for a generic or the methods with a particular class in their signature
 
 ## Questions
-
 - Returning NULL / character in validator vs throwing an error?

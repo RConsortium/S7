@@ -29,11 +29,6 @@ coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg
 
 ``` r
 library(R7)
-#> 
-#> Attaching package: 'R7'
-#> The following object is masked from 'package:base':
-#> 
-#>     @
 
 range <- class_new("range",
   constructor = function(start, end) {
@@ -111,9 +106,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.36µs    4.9µs   193864.    4.01KB     77.6
-#> 2 foo_s3(x)    3.77µs   4.15µs   183820.        0B     18.4
-#> 3 foo_s4(x)    4.12µs   4.49µs   214713.        0B      0
+#> 1 foo_r7(x)    4.27µs   4.88µs   179945.    4.01KB     72.0
+#> 2 foo_s3(x)    3.69µs   4.03µs   191558.        0B     19.2
+#> 3 foo_s4(x)    3.89µs   4.45µs   205303.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -128,8 +123,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.99µs     11µs    81844.        0B     16.4
-#> 2 bar_s4(x, y)   9.38µs   10.3µs    93054.        0B     18.6
+#> 1 bar_r7(x, y)   9.52µs   10.6µs    87778.        0B     8.78
+#> 2 bar_s4(x, y)   8.95µs   9.83µs    95793.        0B    19.2
 ```
 
 ## TODO
@@ -213,6 +208,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
             e.g. `publish <- function(x, y, ...) { method(publish,
             list(object_class(x), object_class(y)))(x, y, ...) }`
           - [ ] - `...` is not used for dispatch
+          - [x] - R7 generics can dispatch with S3 objects
+          - [x] - R7 generics can dispatch with S4 objects
   - Compatibility
       - S3
           - [x] - Since the class attribute has the same semantics as

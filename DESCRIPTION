@@ -34,6 +34,7 @@ Description: Prototype implementation of an extension to S3 that
     Group, sponsored by the R Consortium.
 License: MIT + file LICENSE
 Suggests: 
+    methods,
     covr,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

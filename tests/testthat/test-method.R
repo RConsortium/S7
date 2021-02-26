@@ -26,14 +26,27 @@ test_that("inherited multiple dispatch works", {
   expect_equal(foo4(text("bar"), number(1)), "bar:1")
 })
 
-test_that("method dispatch works for R3 objects", {
+test_that("method dispatch works for S3 objects", {
   foo <- generic_new(name = "foo", signature = "x")
 
-  my_obj <- structure("hi", class = "my_s3")
+  obj <- structure("hi", class = "my_s3")
 
   method_register(foo, "my_s3", function(x) paste0("foo-", x))
 
-  expect_equal(foo(my_obj), "foo-hi")
+  expect_equal(foo(obj), "foo-hi")
+})
+
+test_that("method dispatch works for S3 objects", {
+  skip_if_not(requireNamespace("methods"))
+
+  Range <- setClass("Range", slots = c(start = "numeric", end = "numeric"))
+  obj <- Range(start = 1, end = 10)
+
+  foo <- generic_new(name = "foo", signature = "x")
+
+  method_register(foo, "Range", function(x) paste0("foo-", x@start, "-", x@end))
+
+  expect_equal(foo(obj), "foo-1-10")
 })
 
 test_that("method_register works if you use r7 class objects", {

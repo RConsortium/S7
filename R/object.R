@@ -35,6 +35,10 @@ object_new <- function(...) {
 #' @param obj The r7 object
 #' @export
 object_class <- function(obj) {
+  if (isS4(obj)) {
+    return(methods::extends(class(obj)))
+  }
+
   .Call(object_class_, obj)
 }
 
