@@ -63,4 +63,9 @@ class_union <- class_new(
 
 accessor <- class_new("accessor", parent = "function", constructor = function(fun) object_new(.data = fun))
 
-utils::globalVariables(c("parent", "constructor", "name", "classes", "methods"))
+global_variables(c("name", "parent", "properties", "constructor", "validator"))
+
+.onAttach <- function(libname, pkgname) {
+  env <- as.environment(paste0("package:", pkgname))
+  env[[".conflicts.OK"]] <- TRUE
+}

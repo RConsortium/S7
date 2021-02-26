@@ -9,6 +9,8 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
   attr(obj, "constructor") <- constructor
   attr(obj, "validator") <- validator
   class(obj) <- c("r7_class", "r7_object")
+
+  global_variables(names(properties))
   obj
 }
 
