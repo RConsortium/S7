@@ -28,9 +28,15 @@ normalize_signature <- function(signature, envir = parent.frame()) {
       out[[i]] <- quote(expr =)
     }
     names(out) <- signature
-    return(out)
+    signature <- out
   }
-  as.list(signature)
+  signature <- as.list(signature)
+
+  # add ... to the signature if it isn't already there
+  if (!("..." %in% names(signature))) {
+    signature[["..."]] <- quote(expr = )
+  }
+  signature
 }
 
 #' Generate the body of a generic function
@@ -43,8 +49,10 @@ normalize_signature <- function(signature, envir = parent.frame()) {
 generic_generate <- function(name, signature, envir = parent.frame()) {
   fun <- function() NULL
   formals(fun) <- signature
-  sig_call <- as.call(c(as.symbol("list"), lapply(names(signature), function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
-  method_call <- as.call(c(as.call(c(as.symbol("method"), as.symbol(name), sig_call)), lapply(names(signature), as.symbol)))
+  class_args <- setdiff(names(signature), "...")
+  call_args <- names(signature)
+  sig_call <- as.call(c(as.symbol("list"), lapply(class_args, function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
+  method_call <- as.call(c(as.call(c(as.symbol("method"), as.symbol(name), sig_call)), lapply(call_args, as.symbol)))
   body(fun) <- method_call
   environment(fun) <- envir
   fun

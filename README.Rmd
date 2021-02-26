@@ -73,7 +73,7 @@ At each level the search iteratively searches up the class vector for the object
 
 I am not sure caching is really needed, most objects have very short class lists and the lookup is fast as each level should have relatively few items and we are using hashed environments.
 
-```{r example}
+```{r performance, cache = FALSE}
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
 
@@ -167,7 +167,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
     - [x] - Dispatch is nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second.
     - [x] - A `plot()` generic dispatching on `x`, e.g. ` plot <- function(x) { method(plot, object_class(x))(x) }`
     - [x] - A `publish()` that publishes an object `x` to a destination `y`, dispatching on both arguments, e.g. `publish <- function(x, y, ...) { method(publish, list(object_class(x), object_class(y)))(x, y, ...) }`
-    - [ ] - `...` is not used for dispatch
+    - [x] - `...` is not used for dispatch
+    - [x] - R7 generics can dispatch with base type objects
     - [x] - R7 generics can dispatch with S3 objects
     - [x] - R7 generics can dispatch with S4 objects
 - Compatibility

@@ -14,6 +14,8 @@ object_new <- function(...) {
   }
   attr(obj, ".should_validate") <- FALSE
 
+  class(obj) <- "r7_object"
+
   object_class(obj) <- class
 
   props <- properties(obj)
@@ -35,11 +37,17 @@ object_new <- function(...) {
 #' @param obj The r7 object
 #' @export
 object_class <- function(obj) {
+  if (inherits(obj, "r7_class")) {
+    return(obj)
+  }
+  if (inherits(obj, "r7_object")) {
+    return(attr(obj, "object_class"))
+  }
   if (isS4(obj)) {
     return(methods::extends(class(obj)))
   }
 
-  .Call(object_class_, obj)
+  class(obj)
 }
 
 `object_class<-` <- function(obj, value) {

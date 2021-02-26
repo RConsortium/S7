@@ -106,9 +106,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.27µs   4.88µs   179945.    4.01KB     72.0
-#> 2 foo_s3(x)    3.69µs   4.03µs   191558.        0B     19.2
-#> 3 foo_s4(x)    3.89µs   4.45µs   205303.        0B      0
+#> 1 foo_r7(x)     4.8µs   5.83µs   164754.    4.01KB     82.4
+#> 2 foo_s3(x)    3.71µs   4.14µs   187439.        0B     18.7
+#> 3 foo_s4(x)    3.91µs   4.34µs   216225.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -123,8 +123,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   9.52µs   10.6µs    87778.        0B     8.78
-#> 2 bar_s4(x, y)   8.95µs   9.83µs    95793.        0B    19.2
+#> 1 bar_r7(x, y)  10.64µs  11.43µs    81966.        0B     16.4
+#> 2 bar_s4(x, y)   9.12µs   9.99µs    93786.        0B     18.8
 ```
 
 ## TODO
@@ -207,7 +207,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
             destination `y`, dispatching on both arguments,
             e.g. `publish <- function(x, y, ...) { method(publish,
             list(object_class(x), object_class(y)))(x, y, ...) }`
-          - [ ] - `...` is not used for dispatch
+          - [x] - `...` is not used for dispatch
+          - [x] - R7 generics can dispatch with base type objects
           - [x] - R7 generics can dispatch with S3 objects
           - [x] - R7 generics can dispatch with S4 objects
   - Compatibility

@@ -5,5 +5,13 @@ test_that("normalize_signature errors appropriately", {
 })
 
 test_that("normalize_signature works with unnamed character vectors", {
-  expect_equal(normalize_signature(c("x", "y")), alist(x=, y=))
+  expect_equal(normalize_signature(c("x", "y")), alist(x=, y=, ...=))
+})
+
+test_that("generics pass ... to methods, and methods can define additional arguments", {
+  foo <- generic_new(name = "foo", signature = "x")
+  method_register(foo, "character", function(x, sep = "-") paste0("foo", sep, x))
+
+  expect_equal(foo("bar"), "foo-bar")
+  expect_equal(foo("bar", sep = "/"), "foo/bar")
 })
