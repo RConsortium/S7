@@ -9,6 +9,14 @@ is_named <- function (x) {
   TRUE
 }
 
+has_names <- function(x) {
+  nms <- names(x)
+  if (is.null(nms)) {
+    return(rep(FALSE, length(x)))
+  }
+  !(is.na(nms) | nms == "")
+}
+
 global_variables <- function(names) {
   env <- topenv(parent.frame())
   if (exists(".__global__", envir = env) && bindingIsLocked(".__global__", env = env)) {
@@ -19,3 +27,6 @@ global_variables <- function(names) {
   current <- unique(c(current, names))
   assign(".__global__", current, envir = env)
 }
+
+vlapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
+vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)

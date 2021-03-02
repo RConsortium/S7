@@ -35,7 +35,7 @@ knitr::opts_chunk$set(
 
 ## Example
 
-```{r}
+```{r error = TRUE}
 library(R7)
 
 range <- class_new("range",
@@ -47,7 +47,14 @@ range <- class_new("range",
       "`end` must be greater than or equal to `start`"
     }
   },
-  properties = c(start = "numeric", end = "numeric")
+  properties = list(
+    start = "numeric",
+    end = "numeric",
+    property_new(
+      name = "length",
+      accessor = function(x) x@end - x@start
+    )
+  )
 )
 
 x <- range(start = 1, end = 10)
@@ -55,6 +62,12 @@ x <- range(start = 1, end = 10)
 x@start
 
 x@end
+
+# assigning properties verifies the class
+x@end <- "foo"
+
+# assigning properties runs the validator
+x@end <- 0
 
 object_class(x)
 ```
@@ -121,7 +134,6 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 - Classes
   - [x] - R7 classes are first class objects with the following
     - [x] - `name`, a human-meaningful descriptor for the class.
-      - [ ] - It does _not_ identify the class.
     - [x] - `parent`, the class object of the parent class.
     - [x] - A constructor, an user-facing function used to create new objects of this class. It always ends with a call to `object_new()` to initialize the class.
     - [x] - A validator, a function that takes the object and returns NULL if the object is valid, otherwise a character vector of error messages.
@@ -130,11 +142,11 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - [x] - The constructor uses `object_new()` to initialize a new object, this
     - [x] - Inspects the enclosing scope to find the "current" class.
     - [ ] - Creates the prototype, by either by calling the parent constructor or by creating a base type and adding class and `object_class()` attributes to it.
-    - [ ] - Validates properties then adds to prototype.
+    - [x] - Validates properties then adds to prototype.
     - [x] - Validates the complete object.
 - Shortcuts
   - [ ] - any argument that takes a class object can instead take the name of a class object as a string
-  - [ ] - instead of providing a list of property objects, you can instead provide a named character vector.
+  - [x] - instead of providing a list of property objects, you can instead provide a named character vector.
 - Validation
   - [x] - valid_eventually
   - [x] - valid_implicitly
@@ -181,4 +193,5 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - [ ] - Generate index pages that list the methods for a generic or the methods with a particular class in their signature
 
 ## Questions
-- Returning NULL / character in validator vs throwing an error?
+- how will `method_next()` work with nested multiple dispatch? How do we know which argument you want the next method for?
+- If a type has only properties, what is the base type? R7 currently using VECSXP, S4 uses S4SXP

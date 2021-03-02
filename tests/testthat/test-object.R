@@ -17,4 +17,11 @@ describe("object_new", {
     y <- text("foo")
     expect_equal(y@.data, "foo")
   })
+
+  it("errors if given an invalid property", {
+    expect_error(
+      range(1, "foo"),
+      "must be of class"
+    )
+  })
 })

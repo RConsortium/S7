@@ -39,19 +39,35 @@ range <- class_new("range",
       "`end` must be greater than or equal to `start`"
     }
   },
-  properties = c(start = "numeric", end = "numeric")
+  properties = list(
+    start = "numeric",
+    end = "numeric",
+    property_new(
+      name = "length",
+      accessor = function(x) x@end - x@start
+    )
+  )
 )
+#> Error in property_new(name = "length", accessor = function(x) x@end - : could not find function "property_new"
 
 x <- range(start = 1, end = 10)
 
 x@start
-#> [1] 1
+#> Error in do.call(base::`@`, list(obj, name)): trying to get slot "start" from an object of a basic class ("numeric") with no slots
 
 x@end
-#> [1] 10
+#> Error in do.call(base::`@`, list(obj, name)): trying to get slot "end" from an object of a basic class ("numeric") with no slots
+
+# assigning properties verifies the class
+x@end <- "foo"
+#> Error in (function (cl, name, valueClass) : 'end' is not a slot in class "numeric"
+
+# assigning properties runs the validator
+x@end <- 0
+#> Error in (function (cl, name, valueClass) : 'end' is not a slot in class "numeric"
 
 object_class(x)
-#> r7: <range>
+#> [1] "numeric"
 ```
 
 ## Performance
@@ -106,9 +122,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)     4.8µs   5.83µs   164754.    4.01KB     82.4
-#> 2 foo_s3(x)    3.71µs   4.14µs   187439.        0B     18.7
-#> 3 foo_s4(x)    3.91µs   4.34µs   216225.        0B      0
+#> 1 foo_r7(x)    4.87µs   5.95µs   165301.    4.01KB     82.7
+#> 2 foo_s3(x)    3.75µs   4.21µs   185584.        0B     18.6
+#> 3 foo_s4(x)    3.96µs   4.53µs   198679.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -123,8 +139,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  10.64µs  11.43µs    81966.        0B     16.4
-#> 2 bar_s4(x, y)   9.12µs   9.99µs    93786.        0B     18.8
+#> 1 bar_r7(x, y)  11.02µs   11.8µs    78953.        0B    15.8 
+#> 2 bar_s4(x, y)   9.29µs     10µs    91187.        0B     9.12
 ```
 
 ## TODO
@@ -139,7 +155,6 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Classes
       - [x] - R7 classes are first class objects with the following
           - [x] - `name`, a human-meaningful descriptor for the class.
-              - [ ] - It does *not* identify the class.
           - [x] - `parent`, the class object of the parent class.
           - [x] - A constructor, an user-facing function used to create
             new objects of this class. It always ends with a call to
@@ -156,12 +171,12 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
           - [ ] - Creates the prototype, by either by calling the parent
             constructor or by creating a base type and adding class and
             `object_class()` attributes to it.
-          - [ ] - Validates properties then adds to prototype.
+          - [x] - Validates properties then adds to prototype.
           - [x] - Validates the complete object.
   - Shortcuts
       - [ ] - any argument that takes a class object can instead take
         the name of a class object as a string
-      - [ ] - instead of providing a list of property objects, you can
+      - [x] - instead of providing a list of property objects, you can
         instead provide a named character vector.
   - Validation
       - [x] - valid\_eventually
@@ -227,4 +242,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 
 ## Questions
 
-  - Returning NULL / character in validator vs throwing an error?
+  - how will `method_next()` work with nested multiple dispatch? How do
+    we know which argument you want the next method for?
+  - If a type has only properties, what is the base type? R7 currently
+    using VECSXP, S4 uses S4SXP

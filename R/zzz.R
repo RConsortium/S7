@@ -24,7 +24,7 @@ r7_generic <- class_new(
 #' @export
 r7_method <- class_new(
   name = "r7_method",
-  properties = list(generic = r7_generic, signature = "list", fun = "function"),
+  properties = list(generic = "r7_generic", signature = "list", fun = "function"),
   parent = "function",
   constructor = function(generic, signature, fun) {
     object_new(generic = generic, signature = signature, .data = fun)

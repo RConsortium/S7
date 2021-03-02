@@ -10,6 +10,6 @@ range <- class_new("range",
       "`end` must be greater than or equal to `start`"
     }
   },
-  properties = c(start = "numeric", end = "numeric", length = "accessor")
+  properties = list(start = "numeric", end = "numeric", property_new(name = "length", accessor = function(x) x@end - x@start))
 )
 

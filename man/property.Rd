@@ -2,11 +2,14 @@
 % Please edit documentation in R/property.R
 \name{property}
 \alias{property}
+\alias{property_safely}
 \alias{property<-}
 \alias{@}
 \title{Extract or replace a property}
 \usage{
 property(obj, name)
+
+property_safely(obj, name)
 
 property(obj, name) <- value
 
@@ -21,5 +24,9 @@ obj@name
 automatically checked for validity after the replacement is done.}
 }
 \description{
-Extract or replace a property
+\itemize{
+\item \code{\link[=property]{property()}} or the shorthand \code{@} extracts a given property, throwing an error if the property doesn't exist for that object.
+\item \code{\link[=property_safely]{property_safely()}} returns \code{NULL} if a property doesn't exist, rather than throwing an error.
+\item \link{property()<-} assigns a new value for a given property.
+}
 }

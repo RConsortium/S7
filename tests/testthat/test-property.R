@@ -1,15 +1,3 @@
-range <- class_new("range",
-  constructor = function(start, end) {
-    object_new(start = start, end = end, length = accessor(function(x) x@end - x@start))
-  },
-  validator = function(x) {
-    if (property(x, "end") < property(x, "start")) {
-      "`end` must be greater than or equal to `start`"
-    }
-  },
-  properties = c(start = "numeric", end = "numeric", length = "accessor")
-)
-
 describe("property", {
   it("retrieves the property", {
     x <- range(1, 10)
@@ -37,6 +25,13 @@ describe("property<-", {
     expect_equal(property(x, "start"), 1)
     property(x, "start") <- 2
     expect_equal(property(x, "start"), 2)
+  })
+  it("errors if the value does not match the correct class", {
+    x <- range(1, 10)
+    expect_error(
+      property(x, "start") <- "foo",
+      "must be of class"
+    )
   })
 })
 

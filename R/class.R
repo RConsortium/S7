@@ -5,7 +5,7 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
   obj <- constructor
   attr(obj, "name") <- name
   attr(obj, "parent") <- parent
-  attr(obj, "properties") <- properties
+  attr(obj, "properties") <- as_properties(properties)
   attr(obj, "constructor") <- constructor
   attr(obj, "validator") <- validator
   class(obj) <- c("r7_class", "r7_object")
@@ -45,7 +45,7 @@ class_names <- function(obj) {
     } else {
       classes <- c(classes, parent)
     }
-    parent <- property_safe(parent, "parent")
+    parent <- property_safely(parent, "parent")
   }
   unique(classes, fromLast = TRUE)
 }
