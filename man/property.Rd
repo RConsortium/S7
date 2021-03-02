@@ -25,8 +25,8 @@ automatically checked for validity after the replacement is done.}
 }
 \description{
 \itemize{
-\item \code{\link[=property]{property()}} or the shorthand \code{@} extracts a given property, throwing an error if the property doesn't exist for that object.
-\item \code{\link[=property_safely]{property_safely()}} returns \code{NULL} if a property doesn't exist, rather than throwing an error.
-\item \link{property()<-} assigns a new value for a given property.
+\item \link{property} or the shorthand \code{@} extracts a given property, throwing an error if the property doesn't exist for that object.
+\item \link{property_safely} returns \code{NULL} if a property doesn't exist, rather than throwing an error.
+\item \link{property<-} assigns a new value for a given property.
 }
 }

@@ -1,4 +1,8 @@
 property_new <- function(name, class = NULL, accessor = NULL) {
+  if (!is.null(accessor) && is.null(class)) {
+    class <- "function"
+  }
+
   out <- list(name = name, class = class, accessor = accessor)
   class(out) <- "r7_property"
 
