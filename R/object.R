@@ -8,56 +8,56 @@ object_new <- function(...) {
   nms <- names(args)
 
   if (".data" %in% nms) {
-    obj <- args[[".data"]]
+    object <- args[[".data"]]
   } else {
-    obj <- class@parent@constructor()
+    object <- class@parent@constructor()
   }
-  attr(obj, ".should_validate") <- FALSE
+  attr(object, ".should_validate") <- FALSE
 
-  class(obj) <- "r7_object"
+  class(object) <- "r7_object"
 
-  object_class(obj) <- class
+  object_class(object) <- class
 
-  props <- properties(obj)
+  props <- properties(object)
 
   to_set <- intersect(nms, names(props))
 
   for (nme in to_set) {
-    property(obj, nme) <- args[[nme]]
+    property(object, nme) <- args[[nme]]
   }
 
-  attr(obj, ".should_validate") <- NULL
+  attr(object, ".should_validate") <- NULL
 
-  validate(obj)
+  validate(object)
 
-  obj
+  object
 }
 
 #' Retrieve the r7 class of an object
-#' @param obj The r7 object
+#' @param object The r7 object
 #' @export
-object_class <- function(obj) {
-  if (inherits(obj, "r7_class")) {
-    return(obj)
+object_class <- function(object) {
+  if (inherits(object, "r7_class")) {
+    return(object)
   }
-  if (inherits(obj, "r7_object")) {
-    return(attr(obj, "object_class"))
+  if (inherits(object, "r7_object")) {
+    return(attr(object, "object_class"))
   }
-  if (isS4(obj)) {
-    return(methods::extends(class(obj)))
+  if (isS4(object)) {
+    return(methods::extends(class(object)))
   }
 
-  class(obj)
+  class(object)
 }
 
-`object_class<-` <- function(obj, value) {
-  attr(obj, "object_class") <- value
+`object_class<-` <- function(object, value) {
+  attr(object, "object_class") <- value
 
-  nms <- class_names(object_class(obj))
+  nms <- class_names(object_class(object))
 
-  class(obj) <- nms
+  class(object) <- nms
 
-  invisible(obj)
+  invisible(object)
 }
 
 #' @export

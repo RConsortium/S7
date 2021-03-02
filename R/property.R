@@ -1,3 +1,9 @@
+#' Define a new property
+#'
+#' @param name The name of the property
+#' @param class The class of the property
+#' @param accessor The accessor use to retrieve the property (if any)
+#' @export
 property_new <- function(name, class = NULL, accessor = NULL) {
   if (!is.null(accessor) && is.null(class)) {
     class <- "function"
@@ -14,20 +20,20 @@ property_new <- function(name, class = NULL, accessor = NULL) {
 #' - [property] or the shorthand `@` extracts a given property, throwing an error if the property doesn't exist for that object.
 #' - [property_safely] returns `NULL` if a property doesn't exist, rather than throwing an error.
 #' - [property<-] assigns a new value for a given property.
-#' @param obj An object from a R7 class
+#' @param object An object from a R7 class
 #' @param name The name of the parameter as a character. No partial matching is done.
 #' @param value A replacement value for the parameter. The object is
 #'   automatically checked for validity after the replacement is done.
 #' @export
-property <- function(obj, name) {
-  val <- property_safely(obj, name)
+property <- function(object, name) {
+  val <- property_safely(object, name)
   if (is.null(val)) {
-    class <- object_class(obj)
+    class <- object_class(object)
     stop(sprintf("`%s` objects do not have a `%s` property", class@name, name), call. = FALSE)
   }
 
   if (inherits(val, "r7_accessor")) {
-    return(val(obj))
+    return(val(object))
   }
 
   val
@@ -35,18 +41,18 @@ property <- function(obj, name) {
 
 #' @rdname property
 #' @export
-property_safely <- function(obj, name) {
+property_safely <- function(object, name) {
   if (identical(name, ".data")) {
     # Remove properties, return the rest
-    props <- properties(obj)
+    props <- properties(object)
     for (name in names(props)) {
-      attr(obj, name) <- NULL
+      attr(object, name) <- NULL
     }
-    class(obj) <- setdiff(class_names(property_safely(object_class(obj), "parent")), "r7_object")
-    object_class(obj) <- NULL
-    return(obj)
+    class(object) <- setdiff(class_names(property_safely(object_class(object), "parent")), "r7_object")
+    object_class(object) <- NULL
+    return(object)
   }
-  val <- attr(obj, name, exact = TRUE)
+  val <- attr(object, name, exact = TRUE)
   if (is.null(val)) {
     return(NULL)
   }
@@ -66,13 +72,13 @@ properties <- function(object) {
 
 #' @rdname property
 #' @export
-`property<-` <- function(obj, name, value) {
+`property<-` <- function(object, name, value) {
   if (name == ".data") {
-    attrs <- attributes(obj)
-    obj <- value
-    attributes(obj) <- attrs
+    attrs <- attributes(object)
+    object <- value
+    attributes(object) <- attrs
   } else {
-    prop <- properties(obj)[[name]]
+    prop <- properties(object)[[name]]
     if (!is.null(prop[["accessor"]])) {
       class(value) <- union("r7_accessor", class(value))
     } else {
@@ -82,37 +88,37 @@ properties <- function(object) {
       }
     }
 
-    attr(obj, name) <- value
+    attr(object, name) <- value
   }
 
-  validate(obj)
+  validate(object)
 
-  invisible(obj)
+  invisible(object)
 }
 
 #' @rdname property
-#' @usage obj@name
+#' @usage object@name
 #' @export
-`@` <- function(obj, name) {
-  if (!inherits(obj, "r7_object")) {
+`@` <- function(object, name) {
+  if (!inherits(object, "r7_object")) {
     name <- substitute(name)
-    return(do.call(base::`@`, list(obj, name)))
+    return(do.call(base::`@`, list(object, name)))
   }
 
   nme <- as.character(substitute(name))
-  property(obj, nme)
+  property(object, nme)
 }
 
 #' @rawNamespace S3method("@<-",r7_object)
-`@<-.r7_object` <- function(obj, name, value) {
-  if (!inherits(obj, "r7_object")) {
-    return(base::`@<-`(obj, name))
+`@<-.r7_object` <- function(object, name, value) {
+  if (!inherits(object, "r7_object")) {
+    return(base::`@<-`(object, name))
   }
 
   nme <- as.character(substitute(name))
-  property(obj, nme) <- value
+  property(object, nme) <- value
 
-  invisible(obj)
+  invisible(object)
 }
 
 as_properties <- function(x) {

@@ -7,16 +7,16 @@
 \alias{@}
 \title{Extract or replace a property}
 \usage{
-property(obj, name)
+property(object, name)
 
-property_safely(obj, name)
+property_safely(object, name)
 
-property(obj, name) <- value
+property(object, name) <- value
 
-obj@name
+object@name
 }
 \arguments{
-\item{obj}{An object from a R7 class}
+\item{object}{An object from a R7 class}
 
 \item{name}{The name of the parameter as a character. No partial matching is done.}
 

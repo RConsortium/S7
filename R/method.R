@@ -5,12 +5,17 @@
 #' @param value The new function to use for the method.
 #' @export
 method <- function(generic, signature) {
+  # This slows down the method dispatch too much
+  #generic <- as_generic(generic)
+
   .Call(method_, generic, signature);
 }
 
 #' @rdname method
 #' @export
 method_register <- function(generic, signature, value) {
+  generic <- as_generic(generic)
+
   if (!is.character(signature) && !inherits(signature, "list")) {
     signature <- list(signature)
   }
@@ -47,4 +52,16 @@ method_register <- function(generic, signature, value) {
 #' @export
 `method<-` <- function(generic, signature, value) {
   method_register(generic, signature, value)
+}
+
+as_generic <- function(generic) {
+  if (length(generic) == 1 && is.character(generic)) {
+    generic <- match.fun(generic)
+  }
+
+  if (!inherits(generic, "r7_generic")) {
+    stop("`generic` must be a 'r7_generic':\n- `generic` is a '", class(generic)[[1]], "'", call. = FALSE)
+  }
+
+  generic
 }

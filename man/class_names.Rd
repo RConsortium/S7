@@ -4,10 +4,10 @@
 \alias{class_names}
 \title{Retrive all of the class names for a class}
 \usage{
-class_names(obj)
+class_names(object)
 }
 \arguments{
-\item{obj}{The R7 object to query}
+\item{object}{The R7 object to query}
 }
 \value{
 A character vector of all the class names for a given R7 class.

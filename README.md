@@ -48,26 +48,30 @@ range <- class_new("range",
     )
   )
 )
-#> Error in property_new(name = "length", accessor = function(x) x@end - : could not find function "property_new"
 
 x <- range(start = 1, end = 10)
 
 x@start
-#> Error in do.call(base::`@`, list(obj, name)): trying to get slot "start" from an object of a basic class ("numeric") with no slots
+#> [1] 1
 
 x@end
-#> Error in do.call(base::`@`, list(obj, name)): trying to get slot "end" from an object of a basic class ("numeric") with no slots
+#> [1] 10
 
 # assigning properties verifies the class
 x@end <- "foo"
-#> Error in (function (cl, name, valueClass) : 'end' is not a slot in class "numeric"
+#> Error: `value` must be of class 'numeric':
+#> - `value` is of class 'character'
 
 # assigning properties runs the validator
 x@end <- 0
-#> Error in (function (cl, name, valueClass) : 'end' is not a slot in class "numeric"
+#> Error: invalid 'range' object:
+#> - `end` must be greater than or equal to `start`
 
 object_class(x)
-#> [1] "numeric"
+#> r7: <range>
+#> | start:   <numeric>
+#> | end:     <numeric>
+#> | length: <function>
 ```
 
 ## Performance
@@ -122,9 +126,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    4.87µs   5.95µs   165301.    4.01KB     82.7
-#> 2 foo_s3(x)    3.75µs   4.21µs   185584.        0B     18.6
-#> 3 foo_s4(x)    3.96µs   4.53µs   198679.        0B      0
+#> 1 foo_r7(x)    5.45µs   6.46µs   152420.    4.01KB     76.2
+#> 2 foo_s3(x)    3.64µs   4.14µs   189881.        0B     19.0
+#> 3 foo_s4(x)    4.07µs   4.55µs   196882.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -139,8 +143,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.02µs   11.8µs    78953.        0B    15.8 
-#> 2 bar_s4(x, y)   9.29µs     10µs    91187.        0B     9.12
+#> 1 bar_r7(x, y)  10.72µs   12.1µs    77755.        0B     15.6
+#> 2 bar_s4(x, y)   9.25µs   10.2µs    92116.        0B     18.4
 ```
 
 ## TODO
@@ -242,7 +246,15 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 
 ## Questions
 
+  - Best way to support `subsutitue()` calls in methods? We need to
+    evaluate the argument promises to do the dispatch, but we want to
+    pass the un-evaluated promise to the call?
+  - on-load method registration
   - how will `method_next()` work with nested multiple dispatch? How do
     we know which argument you want the next method for?
   - If a type has only properties, what is the base type? R7 currently
     using VECSXP, S4 uses S4SXP
+  - `method_register()` vs `method()<-`, the latter while nice has
+    drawbacks
+      - can’t use `method("foo")<-`
+      - can’t use `method(otherpkg::foo)<-`

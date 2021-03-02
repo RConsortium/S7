@@ -2,16 +2,16 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
   if (is.character(parent)) {
     parent <- class_get(parent)
   }
-  obj <- constructor
-  attr(obj, "name") <- name
-  attr(obj, "parent") <- parent
-  attr(obj, "properties") <- as_properties(properties)
-  attr(obj, "constructor") <- constructor
-  attr(obj, "validator") <- validator
-  class(obj) <- c("r7_class", "r7_object")
+  object <- constructor
+  attr(object, "name") <- name
+  attr(object, "parent") <- parent
+  attr(object, "properties") <- as_properties(properties)
+  attr(object, "constructor") <- constructor
+  attr(object, "validator") <- validator
+  class(object) <- c("r7_class", "r7_object")
 
   global_variables(names(properties))
-  obj
+  object
 }
 
 #' Define a new R7 class
@@ -29,11 +29,11 @@ class_new <- function(name, parent = r7_object, constructor = function(...) obje
 
 #' Retrive all of the class names for a class
 #'
-#' @param obj The R7 object to query
+#' @param object The R7 object to query
 #' @return A character vector of all the class names for a given R7 class.
 #' @export
-class_names <- function(obj) {
-  parent <- obj
+class_names <- function(object) {
+  parent <- object
   classes <- character()
   while(!is.null(parent)) {
     if (inherits(parent, "class_union")) {
@@ -49,9 +49,6 @@ class_names <- function(obj) {
   }
   unique(classes, fromLast = TRUE)
 }
-#class_names <- function(obj) {
-  #.Call(class_names_, obj)
-#}
 
 #' Retrieve the r7 class corresponding to a name
 #'

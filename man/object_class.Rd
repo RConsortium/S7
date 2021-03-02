@@ -4,10 +4,10 @@
 \alias{object_class}
 \title{Retrieve the r7 class of an object}
 \usage{
-object_class(obj)
+object_class(object)
 }
 \arguments{
-\item{obj}{The r7 object}
+\item{object}{The r7 object}
 }
 \description{
 Retrieve the r7 class of an object
