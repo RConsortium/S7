@@ -8,7 +8,26 @@ method <- function(generic, signature) {
   # This slows down the method dispatch too much
   #generic <- as_generic(generic)
 
-  .Call(method_, generic, signature);
+  out <- .Call(method_, generic, signature)
+  if(is.null(out)) {
+    # If no R7 method is found, see if there are any S3 methods registered
+    if (inherits(generic, "r7_generic")) {
+      generic <- generic@name
+    } else {
+      generic <- as.character(substitute(generic))
+    }
+
+    out <- getS3method(generic, signature[[1]][[1]], optional = TRUE)
+
+    # If no method found check if the generic has a default method
+    out <- getS3method(generic, "default", optional = TRUE)
+  }
+
+  if (is.null(out)) {
+    stop(sprintf("No methods found for generic '%s' for classes:\n%s", generic, paste0("- ", signature,  collapse = "\n"), call. = FALSE))
+  }
+
+  out
 }
 
 #' @rdname method

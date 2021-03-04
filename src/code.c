@@ -50,6 +50,10 @@ extern SEXP r7_methods_sym;
 
 /* TODO: handle errors when method is not found */
 SEXP method_(SEXP generic, SEXP signature) {
+  if (!Rf_inherits(generic, "r7_generic")) {
+    return R_NilValue;
+  }
+
   SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
 
   R_xlen_t signature_len = Rf_xlength(signature);

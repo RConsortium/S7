@@ -187,12 +187,16 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - S3
     - [x] - Since the class attribute has the same semantics as S3, S3 dispatch should be fully compatible.
     - [x] - The new generics should also be able to handle legacy S3 objects.
+    - [x] - `R7::method()` falls back to single argument S3 dispatch if the R7 dispatch fails.
   - S4
     - [x] - Since the new generics will fallback to S3 dispatch, they should support S4 objects just as S3 generics support them now.
 - Documentation
   - [ ] - Generate index pages that list the methods for a generic or the methods with a particular class in their signature
 
 ## Questions
+- What should happen if you call `method_register()` on a S3 generic?
+  1. Create a new R7 generic out of the S3 generic?
+  2. Just register the R7 object using registerS3method?
 - Best way to support `subsutitue()` calls in methods? We need to evaluate the argument promises to do the dispatch, but we want to pass the un-evaluated promise to the call?
 - on-load method registration
 - how will `method_next()` work with nested multiple dispatch? How do we know which argument you want the next method for?
