@@ -27,6 +27,9 @@ r7_method <- class_new(
   properties = list(generic = "r7_generic", signature = "list", fun = "function"),
   parent = "function",
   constructor = function(generic, signature, fun) {
+    if (is.character(signature)) {
+      signature <- list(signature)
+    }
     object_new(generic = generic, signature = signature, .data = fun)
   }
 )

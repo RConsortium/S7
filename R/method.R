@@ -30,6 +30,21 @@ method <- function(generic, signature) {
   out
 }
 
+#' Retrieve the next applicable method after the current one
+#'
+#' @export
+method_next <- function(generic, signature, previous_classes = NULL, previous_methods) {
+  if (length(signature) > 1) {
+    stop("method_next doesn't currently work with multiple dispatch", call. = FALSE)
+  }
+  if (is.null(previous_classes)) {
+    previous_classes <- vcapply(previous_methods, function(x) x@signature[[1]])
+  }
+
+  signature[[1]] <- setdiff(class_names(signature[[1]]), previous_classes)
+  method(generic, signature)
+}
+
 #' @rdname method
 #' @export
 method_register <- function(generic, signature, value) {
@@ -37,6 +52,10 @@ method_register <- function(generic, signature, value) {
 
   if (!is.character(signature) && !inherits(signature, "list")) {
     signature <- list(signature)
+  }
+
+  if (!inherits(value, "r7_method")) {
+    value <- r7_method(generic, signature, value)
   }
 
   generic_name <- generic@name

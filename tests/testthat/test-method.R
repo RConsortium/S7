@@ -70,3 +70,18 @@ test_that("method_register works if you pass a bare class union", {
   expect_equal(foo7(text("bar")), "foo-bar")
   expect_equal(foo7(number(1)), "foo-1")
 })
+
+test_that("method_next works", {
+  foo <- generic_new("foo", "x")
+
+  method_register(foo, "text", function(x) {
+    x@.data <- paste0("foo-", x@.data)
+    method_next(foo, list(object_class(x)), "text")(x)
+  })
+
+  method_register(foo, "character", function(x) {
+    as.character(x)
+  })
+
+  expect_equal(foo(text("hi")), "foo-hi")
+})
