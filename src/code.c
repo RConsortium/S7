@@ -48,41 +48,33 @@ SEXP object_class_(SEXP obj) {
 
 extern SEXP r7_methods_sym;
 
+SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore) {
+  if (signature_itr >= Rf_xlength(signature)) {
+    return R_NilValue;
+  }
+
+  SEXP classes = VECTOR_ELT(signature, signature_itr);
+
+  for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
+    SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
+    SEXP val = Rf_findVarInFrame(table, klass);
+    if (TYPEOF(val) == ENVSXP) {
+      val = method_internal(val, signature, signature_itr + 1, ignore);
+    }
+    if (TYPEOF(val) == CLOSXP && R_compute_identical(val, ignore, 16) == FALSE) {
+      return val;
+    }
+  }
+  return R_NilValue;
+}
+
 /* TODO: handle errors when method is not found */
-SEXP method_(SEXP generic, SEXP signature) {
+SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
   if (!Rf_inherits(generic, "r7_generic")) {
     return R_NilValue;
   }
 
   SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
 
-  R_xlen_t signature_len = Rf_xlength(signature);
-
-  for (R_xlen_t i = 0; i < signature_len; ++i) {
-    SEXP parent = VECTOR_ELT(signature, i);
-
-    if (Rf_inherits(parent, "r7_class")) {
-      while(parent != R_NilValue) {
-        SEXP class = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(parent, name_sym), 0)));
-        SEXP val = Rf_findVarInFrame(table, class);
-        if (val != R_UnboundValue) {
-          table = val;
-          break;
-        }
-        parent = Rf_getAttrib(parent, parent_sym);
-      }
-    }
-    else {
-      for (R_xlen_t j = 0; j < Rf_xlength(parent); ++j) {
-        SEXP class = Rf_install(CHAR(STRING_ELT(parent, j)));
-        SEXP val = Rf_findVarInFrame(table, class);
-        if (val != R_UnboundValue) {
-          table = val;
-          break;
-        }
-      }
-    }
-  }
-  return table;
+  return method_internal(table, signature, 0, ignore);
 }
-// stop(sprintf("No methods found for generic '%s' for classes:\n%s", generic, paste0("- ", signature,  collapse = "\n"), call. = FALSE))

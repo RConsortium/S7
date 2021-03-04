@@ -6,12 +6,12 @@
 /* .Call calls */
 extern SEXP class_names_(SEXP);
 extern SEXP object_class_(SEXP);
-extern SEXP method_(SEXP, SEXP);
+extern SEXP method_(SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"class_names_", (DL_FUNC) &class_names_, 1},
     {"object_class_", (DL_FUNC) &object_class_, 1},
-    {"method_", (DL_FUNC) &method_, 2},
+    {"method_", (DL_FUNC) &method_, 3},
     {NULL, NULL, 0}
 };
 

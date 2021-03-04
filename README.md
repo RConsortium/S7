@@ -126,9 +126,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.13µs   6.88µs   140473.    27.1KB     70.3
-#> 2 foo_s3(x)    3.81µs   4.11µs   195253.        0B     19.5
-#> 3 foo_s4(x)    4.09µs   4.49µs   209208.        0B      0
+#> 1 foo_r7(x)   23.66µs  26.07µs    35199.    46.4KB    113. 
+#> 2 foo_s3(x)    3.64µs   4.17µs   184808.        0B     18.5
+#> 3 foo_s4(x)    4.03µs   4.41µs   213399.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -143,8 +143,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.19µs     12µs    78372.        0B     15.7
-#> 2 bar_s4(x, y)   9.22µs   10.3µs    91889.        0B     18.4
+#> 1 bar_r7(x, y)   44.6µs   51.8µs    18610.        0B    22.9 
+#> 2 bar_s4(x, y)   9.09µs   10.1µs    94231.        0B     9.42
 ```
 
 ## TODO
@@ -236,8 +236,9 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
             S3, S3 dispatch should be fully compatible.
           - [x] - The new generics should also be able to handle legacy
             S3 objects.
-          - [x] - `R7::method()` falls back to single argument S3
-            dispatch if the R7 dispatch fails.
+          - [x] - `method()` falls back to single argument S3 dispatch
+            if the R7 dispatch fails.
+          - [ ] - `method()` uses S3 group generics as well
       - S4
           - [x] - Since the new generics will fallback to S3 dispatch,
             they should support S4 objects just as S3 generics support
@@ -254,11 +255,9 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Best way to support `subsutitue()` calls in methods? We need to
     evaluate the argument promises to do the dispatch, but we want to
     pass the un-evaluated promise to the call?
-  - on-load method registration
-  - how will `method_next()` work with nested multiple dispatch? How do
-    we know which argument you want the next method for?
   - If a type has only properties, what is the base type? R7 currently
     using VECSXP, S4 uses S4SXP
   - `method_new()` vs `method()<-`, the latter while nice has drawbacks
       - can’t use `method("foo")<-`
       - can’t use `method(otherpkg::foo)<-`
+  - Should methods be able to introspect themselves from inside a call?

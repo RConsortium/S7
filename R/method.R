@@ -2,21 +2,30 @@
 #'
 #' @param generic The generic to retrieve or register
 #' @param signature The method signature
+#' @param ignore An optional function to ignore during method lookup
 #' @param value The new function to use for the method.
 #' @importFrom utils getS3method
 #' @export
 method <- function(generic, signature) {
+  method_impl(generic, signature, ignore = NULL)
+}
+
+method_impl <- function(generic, signature, ignore) {
   # This slows down the method dispatch too much
   #generic <- as_generic(generic)
 
-  out <- .Call(method_, generic, signature)
+  signature <- lapply(signature, class_names)
+  out <- .Call(method_, generic, signature, ignore)
   if(is.null(out)) {
     # If no R7 method is found, see if there are any S3 methods registered
     if (inherits(generic, "r7_generic")) {
+      args <- generic@signature
       generic <- generic@name
     } else {
       generic <- as.character(substitute(generic))
+      args <- args(formals(match.fun(generic)))
     }
+    args <- args[names(args) != "..."]
 
     out <- getS3method(generic, signature[[1]][[1]], optional = TRUE)
 
@@ -25,7 +34,7 @@ method <- function(generic, signature) {
   }
 
   if (is.null(out)) {
-    stop(sprintf("No methods found for generic '%s' for classes:\n%s", generic, paste0("- ", signature,  collapse = "\n"), call. = FALSE))
+    stop(sprintf("No methods found for generic '%s' with classes:\n%s", generic, paste0("- ", names(args), ": ", vcapply(signature, paste0, collapse = ", "), collapse = "\n"), call. = FALSE))
   }
 
   out
@@ -36,27 +45,9 @@ method <- function(generic, signature) {
 #' @inheritParams method
 #' @param current_method The class of the current method
 #' @export
-method_next <- function(generic, signature, current_method) {
-  if (length(signature) > 1) {
-    stop("method_next doesn't currently work with multiple dispatch", call. = FALSE)
-  }
-  if (!is.character(signature[[1]])) {
-    signature[[1]] <- class_names(signature[[1]])
-  }
-
-  start <- match(current_method, signature[[1]])
-  if (length(start) == 0) {
-    stop(sprintf("`current_method` must exist in `signature`:\n- `current_method`: '%s'", current_method), call. = FALSE)
-  }
-
-  if (start == length(signature[[1]])) {
-    stop("`generic` has no more methods", call. = FALSE)
-    # TODO: print signature here?
-  }
-
-  signature[[1]] <- signature[[1]][seq(start + 1, length(signature[[1]]))]
-
-  method(generic, signature)
+method_next <- function(generic, signature) {
+  current_method <- sys.function(sys.parent(1))
+  method_impl(generic, signature, ignore = current_method)
 }
 
 #' @rdname method

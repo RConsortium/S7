@@ -12,4 +12,3 @@ range <- class_new("range",
   },
   properties = list(start = "numeric", end = "numeric", property_new(name = "length", accessor = function(x) x@end - x@start))
 )
-

@@ -199,9 +199,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   1. Create a new R7 generic out of the S3 generic?
   2. Just register the R7 object using registerS3method?
 - Best way to support `subsutitue()` calls in methods? We need to evaluate the argument promises to do the dispatch, but we want to pass the un-evaluated promise to the call?
-- on-load method registration
-- how will `method_next()` work with nested multiple dispatch? How do we know which argument you want the next method for?
 - If a type has only properties, what is the base type? R7 currently using VECSXP, S4 uses S4SXP
 - `method_new()` vs `method()<-`, the latter while nice has drawbacks
   - can't use `method("foo")<-`
   - can't use `method(otherpkg::foo)<-`
+- Should methods be able to introspect themselves from inside a call?
