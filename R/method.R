@@ -14,7 +14,6 @@ method_impl <- function(generic, signature, ignore) {
   # This slows down the method dispatch too much
   #generic <- as_generic(generic)
 
-  signature <- lapply(signature, class_names)
   out <- .Call(method_, generic, signature, ignore)
   if(is.null(out)) {
     # If no R7 method is found, see if there are any S3 methods registered

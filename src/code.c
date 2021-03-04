@@ -55,14 +55,28 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
 
   SEXP classes = VECTOR_ELT(signature, signature_itr);
 
-  for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
-    SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
-    SEXP val = Rf_findVarInFrame(table, klass);
-    if (TYPEOF(val) == ENVSXP) {
-      val = method_internal(val, signature, signature_itr + 1, ignore);
+  if (Rf_inherits(classes, "r7_class")) {
+    while(classes != R_NilValue) {
+      SEXP klass = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(classes, name_sym), 0)));
+      SEXP val = Rf_findVarInFrame(table, klass);
+      if (TYPEOF(val) == ENVSXP) {
+        val = method_internal(val, signature, signature_itr + 1, ignore);
+      }
+      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || R_compute_identical(val, ignore, 16) == FALSE)) {
+        return val;
+      }
+      classes = Rf_getAttrib(classes, parent_sym);
     }
-    if (TYPEOF(val) == CLOSXP && R_compute_identical(val, ignore, 16) == FALSE) {
-      return val;
+  } else {
+    for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
+      SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
+      SEXP val = Rf_findVarInFrame(table, klass);
+      if (TYPEOF(val) == ENVSXP) {
+        val = method_internal(val, signature, signature_itr + 1, ignore);
+      }
+      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || R_compute_identical(val, ignore, 16) == FALSE)) {
+        return val;
+      }
     }
   }
   return R_NilValue;

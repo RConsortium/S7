@@ -126,9 +126,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)   23.66µs  26.07µs    35199.    46.4KB    113. 
-#> 2 foo_s3(x)    3.64µs   4.17µs   184808.        0B     18.5
-#> 3 foo_s4(x)    4.03µs   4.41µs   213399.        0B      0
+#> 1 foo_r7(x)     5.7µs   7.39µs   136026.    43.8KB     81.7
+#> 2 foo_s3(x)    3.79µs   4.14µs   179210.        0B     17.9
+#> 3 foo_s4(x)    3.89µs   4.33µs   213451.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -143,8 +143,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)   44.6µs   51.8µs    18610.        0B    22.9 
-#> 2 bar_s4(x, y)   9.09µs   10.1µs    94231.        0B     9.42
+#> 1 bar_r7(x, y)  11.16µs   12.8µs    74081.        0B    14.8 
+#> 2 bar_s4(x, y)   9.14µs   9.97µs    96146.        0B     9.62
 ```
 
 ## TODO
