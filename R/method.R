@@ -3,6 +3,7 @@
 #' @param generic The generic to retrieve or register
 #' @param signature The method signature
 #' @param value The new function to use for the method.
+#' @importFrom utils getS3method
 #' @export
 method <- function(generic, signature) {
   # This slows down the method dispatch too much
@@ -32,6 +33,9 @@ method <- function(generic, signature) {
 
 #' Retrieve the next applicable method after the current one
 #'
+#' @inheritParams method
+#' @param previous_classes The previous method classes as a character
+#' @param previous_methods The previous methods
 #' @export
 method_next <- function(generic, signature, previous_classes = NULL, previous_methods) {
   if (length(signature) > 1) {

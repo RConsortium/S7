@@ -6,6 +6,15 @@
 \usage{
 method_next(generic, signature, previous_classes = NULL, previous_methods)
 }
+\arguments{
+\item{generic}{The generic to retrieve or register}
+
+\item{signature}{The method signature}
+
+\item{previous_classes}{The previous method classes as a character}
+
+\item{previous_methods}{The previous methods}
+}
 \description{
 Retrieve the next applicable method after the current one
 }

@@ -33,6 +33,8 @@ Description: Prototype implementation of an extension to S3 that
     Represents the output of the Object-oriented Programming Working
     Group, sponsored by the R Consortium.
 License: MIT + file LICENSE
+Imports:
+    utils
 Suggests: 
     methods,
     covr,
