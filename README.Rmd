@@ -187,7 +187,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - S3
     - [x] - Since the class attribute has the same semantics as S3, S3 dispatch should be fully compatible.
     - [x] - The new generics should also be able to handle legacy S3 objects.
-    - [x] - `R7::method()` falls back to single argument S3 dispatch if the R7 dispatch fails.
+    - [x] - `method()` falls back to single argument S3 dispatch if the R7 dispatch fails.
+    - [ ] - `method()` uses S3 group generics as well
   - S4
     - [x] - Since the new generics will fallback to S3 dispatch, they should support S4 objects just as S3 generics support them now.
 - Documentation

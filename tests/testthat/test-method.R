@@ -76,7 +76,7 @@ test_that("method_next works", {
 
   method_new(foo, "text", function(x) {
     x@.data <- paste0("foo-", x@.data)
-    method_next(foo, list(object_class(x)), "text")(x)
+    method_next(foo, list(object_class(x)), current_method = "text")(x)
   })
 
   method_new(foo, "character", function(x) {

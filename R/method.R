@@ -34,18 +34,28 @@ method <- function(generic, signature) {
 #' Retrieve the next applicable method after the current one
 #'
 #' @inheritParams method
-#' @param previous_classes The previous method classes as a character
-#' @param previous_methods The previous methods
+#' @param current_method The class of the current method
 #' @export
-method_next <- function(generic, signature, previous_classes = NULL, previous_methods) {
+method_next <- function(generic, signature, current_method) {
   if (length(signature) > 1) {
     stop("method_next doesn't currently work with multiple dispatch", call. = FALSE)
   }
-  if (is.null(previous_classes)) {
-    previous_classes <- vcapply(previous_methods, function(x) x@signature[[1]])
+  if (!is.character(signature[[1]])) {
+    signature[[1]] <- class_names(signature[[1]])
   }
 
-  signature[[1]] <- setdiff(class_names(signature[[1]]), previous_classes)
+  start <- match(current_method, signature[[1]])
+  if (length(start) == 0) {
+    stop(sprintf("`current_method` must exist in `signature`:\n- `current_method`: '%s'", current_method), call. = FALSE)
+  }
+
+  if (start == length(signature[[1]])) {
+    stop("`generic` has no more methods", call. = FALSE)
+    # TODO: print signature here?
+  }
+
+  signature[[1]] <- signature[[1]][seq(start + 1, length(signature[[1]]))]
+
   method(generic, signature)
 }
 
