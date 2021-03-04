@@ -94,9 +94,15 @@ test_that("method_next works for double dispatch", {
     method_next(foo, list(object_class(x), object_class(y)))(x, y)
   })
 
+  method_new(foo, list("character", "number"), function(x, y) {
+    y@.data <- y + 1
+    x@.data <- paste0(x@.data, "-", y@.data)
+    method_next(foo, list(object_class(x), object_class(y)))(x, y)
+  })
+
   method_new(foo, list("character", "numeric"), function(x, y) {
     as.character(x@.data)
   })
 
-  expect_equal(foo(text("hi"), number(1)), "foo-hi-1")
+  expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
 })

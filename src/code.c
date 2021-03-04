@@ -48,6 +48,15 @@ SEXP object_class_(SEXP obj) {
 
 extern SEXP r7_methods_sym;
 
+Rboolean should_ignore(SEXP value, SEXP ignore) {
+  for (R_xlen_t i = 0; i < Rf_xlength(ignore); ++i) {
+    if (R_compute_identical(value, VECTOR_ELT(ignore, i), 16) == TRUE) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
 SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore) {
   if (signature_itr >= Rf_xlength(signature)) {
     return R_NilValue;
@@ -62,7 +71,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
       if (TYPEOF(val) == ENVSXP) {
         val = method_internal(val, signature, signature_itr + 1, ignore);
       }
-      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || R_compute_identical(val, ignore, 16) == FALSE)) {
+      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
         return val;
       }
       classes = Rf_getAttrib(classes, parent_sym);
@@ -74,7 +83,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
       if (TYPEOF(val) == ENVSXP) {
         val = method_internal(val, signature, signature_itr + 1, ignore);
       }
-      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || R_compute_identical(val, ignore, 16) == FALSE)) {
+      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
         return val;
       }
     }

@@ -46,7 +46,16 @@ method_impl <- function(generic, signature, ignore) {
 #' @export
 method_next <- function(generic, signature) {
   current_method <- sys.function(sys.parent(1))
-  method_impl(generic, signature, ignore = current_method)
+
+  methods <- list()
+  i <- 1
+  while (!inherits(current_method, "r7_generic")) {
+    methods <- c(methods, current_method)
+    i <- i + 1
+    current_method <- sys.function(sys.parent(i))
+  }
+
+  method_impl(generic, signature, ignore = methods)
 }
 
 #' @rdname method
