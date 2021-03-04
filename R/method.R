@@ -51,7 +51,7 @@ method_next <- function(generic, signature, previous_classes = NULL, previous_me
 
 #' @rdname method
 #' @export
-method_register <- function(generic, signature, value) {
+method_new <- function(generic, signature, value) {
   generic <- as_generic(generic)
 
   if (!is.character(signature) && !inherits(signature, "list")) {
@@ -69,7 +69,7 @@ method_register <- function(generic, signature, value) {
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "class_union")) {
       for (class in signature[[1]]@classes) {
-        method_register(generic, c(signature[seq_len(i - 1)], class@name), value)
+        method_new(generic, c(signature[seq_len(i - 1)], class@name), value)
       }
       return(invisible(generic))
     } else if (inherits(signature[[i]], "r7_class")) {
@@ -93,7 +93,7 @@ method_register <- function(generic, signature, value) {
 #' @rdname method
 #' @export
 `method<-` <- function(generic, signature, value) {
-  method_register(generic, signature, value)
+  method_new(generic, signature, value)
 }
 
 as_generic <- function(generic) {

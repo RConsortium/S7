@@ -2,13 +2,13 @@
 % Please edit documentation in R/method.R
 \name{method}
 \alias{method}
-\alias{method_register}
+\alias{method_new}
 \alias{method<-}
 \title{Retrieve or register an r7 method for a generic}
 \usage{
 method(generic, signature)
 
-method_register(generic, signature, value)
+method_new(generic, signature, value)
 
 method(generic, signature) <- value
 }

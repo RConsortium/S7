@@ -1,6 +1,6 @@
 test_that("methods can be registered for a generic and then called", {
   foo <- generic_new(name = "foo", signature = alist(x=))
-  method_register(foo, "text", function(x) paste0("foo-", x@.data))
+  method_new(foo, "text", function(x) paste0("foo-", x@.data))
 
   expect_equal(foo(text("bar")), "foo-bar")
 })
@@ -8,20 +8,20 @@ test_that("methods can be registered for a generic and then called", {
 test_that("single inheritance works when searching for methods", {
   foo2 <- generic_new(name = "foo2", signature = alist(x=))
 
-  method_register(foo2, "character", function(x) paste0("foo2-", x))
+  method_new(foo2, "character", function(x) paste0("foo2-", x))
 
   expect_equal(foo2(text("bar")), "foo2-bar")
 })
 
 test_that("direct multiple dispatch works", {
   foo3 <- generic_new(name = "foo3", signature = alist(x=, y=))
-  method_register(foo3, list("text", "number"), function(x, y) paste0(x, y))
+  method_new(foo3, list("text", "number"), function(x, y) paste0(x, y))
   expect_equal(foo3(text("bar"), number(1)), "bar1")
 })
 
 test_that("inherited multiple dispatch works", {
   foo4 <- generic_new(name = "foo4", signature = alist(x=, y=))
-  method_register(foo4, list("character", "numeric"), function(x, y) paste0(x, ":", y))
+  method_new(foo4, list("character", "numeric"), function(x, y) paste0(x, ":", y))
 
   expect_equal(foo4(text("bar"), number(1)), "bar:1")
 })
@@ -31,7 +31,7 @@ test_that("method dispatch works for S3 objects", {
 
   obj <- structure("hi", class = "my_s3")
 
-  method_register(foo, "my_s3", function(x) paste0("foo-", x))
+  method_new(foo, "my_s3", function(x) paste0("foo-", x))
 
   expect_equal(foo(obj), "foo-hi")
 })
@@ -44,28 +44,28 @@ test_that("method dispatch works for S3 objects", {
 
   foo <- generic_new(name = "foo", signature = "x")
 
-  method_register(foo, "Range", function(x) paste0("foo-", x@start, "-", x@end))
+  method_new(foo, "Range", function(x) paste0("foo-", x@start, "-", x@end))
 
   expect_equal(foo(obj), "foo-1-10")
 })
 
-test_that("method_register works if you use r7 class objects", {
+test_that("method_new works if you use r7 class objects", {
   foo5 <- generic_new(name = "foo5", signature = alist(x=, y=))
-  method_register(foo5, list(text, number), function(x, y) paste0(x, ":", y))
+  method_new(foo5, list(text, number), function(x, y) paste0(x, ":", y))
 
   expect_equal(foo5(text("bar"), number(1)), "bar:1")
 })
 
-test_that("method_register works if you pass a bare class", {
+test_that("method_new works if you pass a bare class", {
   foo6 <- generic_new(name = "foo6", signature = alist(x=))
-  method_register(foo6, text, function(x) paste0("foo-", x))
+  method_new(foo6, text, function(x) paste0("foo-", x))
 
   expect_equal(foo6(text("bar")), "foo-bar")
 })
 
-test_that("method_register works if you pass a bare class union", {
+test_that("method_new works if you pass a bare class union", {
   foo7 <- generic_new(name = "foo7", signature = alist(x=))
-  method_register(foo7, class_union(text, number), function(x) paste0("foo-", x))
+  method_new(foo7, class_union(text, number), function(x) paste0("foo-", x))
 
   expect_equal(foo7(text("bar")), "foo-bar")
   expect_equal(foo7(number(1)), "foo-1")
@@ -74,12 +74,12 @@ test_that("method_register works if you pass a bare class union", {
 test_that("method_next works", {
   foo <- generic_new("foo", "x")
 
-  method_register(foo, "text", function(x) {
+  method_new(foo, "text", function(x) {
     x@.data <- paste0("foo-", x@.data)
     method_next(foo, list(object_class(x)), "text")(x)
   })
 
-  method_register(foo, "character", function(x) {
+  method_new(foo, "character", function(x) {
     as.character(x)
   })
 
