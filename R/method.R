@@ -2,7 +2,6 @@
 #'
 #' @param generic The generic to retrieve or register
 #' @param signature The method signature
-#' @param ignore An optional function to ignore during method lookup
 #' @param value The new function to use for the method.
 #' @importFrom utils getS3method
 #' @export
@@ -42,7 +41,6 @@ method_impl <- function(generic, signature, ignore) {
 #' Retrieve the next applicable method after the current one
 #'
 #' @inheritParams method
-#' @param current_method The class of the current method
 #' @export
 method_next <- function(generic, signature) {
   current_method <- sys.function(sys.parent(1))
@@ -58,9 +56,60 @@ method_next <- function(generic, signature) {
   method_impl(generic, signature, ignore = methods)
 }
 
+#' Register R7 methods
+#'
+#' When registering methods for R7 generics defined in other packages you must
+#' put `method_register()` in your packages [.onLoad] function.
+#'
+#' @importFrom utils getFromNamespace packageName
+#' @export
+method_register <- function() {
+  package <- packageName(parent.frame())
+  tbl <- asNamespace(package)[[".__S3MethodsTable__."]][[".r7_methods"]]
+  for (x in tbl) {
+    if (isNamespaceLoaded(x$package)) {
+      ns <- asNamespace(x$package)
+      method_new(getFromNamespace(x$generic, ns), x$signature, x$value)
+    } else {
+      setHook(packageEvent(x$package, "onLoad"), local({x <- x
+        function(...) {
+        #cat("called onLoad for", x$generic, "in", x$package, "\n", file = "/tmp/log", append = TRUE)
+        ns <- asNamespace(x$package)
+        method_new(getFromNamespace(x$generic, ns), x$signature, x$value)
+      }}))
+    }
+  }
+}
+
 #' @rdname method
 #' @export
 method_new <- function(generic, signature, value) {
+  if (is.character(generic)) {
+    if (!length(generic) == 1) {
+      stop("`generic` must be a generic function or a length 1 character vector", call. = FALSE)
+    }
+
+    pieces <- strsplit(generic, "::")[[1]]
+    if (length(pieces) == 2) {
+      package <- pieces[[1]]
+      generic <- pieces[[2]]
+      # Get current package, if any
+      current_package <- packageName(parent.frame())
+      #cat("registering for", current_package, package, generic, "\n", file = "/tmp/log", append = TRUE)
+      if (!is.null(current_package)) {
+        tbl <- asNamespace(current_package)[[".__S3MethodsTable__."]]
+        if (is.null(tbl[[".r7_methods"]])) {
+          tbl[[".r7_methods"]] <- list()
+        }
+        tbl[[".r7_methods"]] <- append(tbl[[".r7_methods"]], list(list(generic = generic, package = package, signature = signature, value = value)))
+        #cat(format(tbl[[".r7_methods"]]), file = "/tmp/log", append = TRUE)
+
+        return(invisible())
+      }
+      generic <- getFromNamespace(generic, asNamespace(package))
+    }
+  }
+
   generic <- as_generic(generic)
 
   if (!is.character(signature) && !inherits(signature, "list")) {
@@ -74,6 +123,7 @@ method_new <- function(generic, signature, value) {
   generic_name <- generic@name
 
   p_tbl <- generic@methods
+  cat(generic_name, format(p_tbl), "\n", file = "/tmp/log", append = TRUE)
 
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "class_union")) {

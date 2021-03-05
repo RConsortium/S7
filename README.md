@@ -126,9 +126,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)     5.7µs   7.39µs   136026.    43.8KB     81.7
-#> 2 foo_s3(x)    3.79µs   4.14µs   179210.        0B     17.9
-#> 3 foo_s4(x)    3.89µs   4.33µs   213451.        0B      0
+#> 1 foo_r7(x)    5.62µs   7.86µs   127777.    43.8KB     76.7
+#> 2 foo_s3(x)     3.8µs   4.21µs   173228.        0B     17.3
+#> 3 foo_s4(x)    4.07µs   4.51µs   211767.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -143,8 +143,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.16µs   12.8µs    74081.        0B    14.8 
-#> 2 bar_s4(x, y)   9.14µs   9.97µs    96146.        0B     9.62
+#> 1 bar_r7(x, y)  11.59µs   12.5µs    76225.        0B    15.2 
+#> 2 bar_s4(x, y)   9.14µs   10.1µs    92044.        0B     9.21
 ```
 
 ## TODO
@@ -215,7 +215,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
               - [x] - list of class objects/unions
               - [x] - a character vector.
           - [ ] - method is a compatible function
-          - [ ] - method\<- is designed to work at run-time
+          - [x] - `method_new` is designed to work at run-time
       - Dispatch
           - [x] - Dispatch is nested, meaning that if there are multiple
             arguments in the generic signature, it will dispatch on the
@@ -230,6 +230,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
           - [x] - R7 generics can dispatch with base type objects
           - [x] - R7 generics can dispatch with S3 objects
           - [x] - R7 generics can dispatch with S4 objects
+          - [x] - `method_next()` can dispatch on multiple arguments,
+            avoiding methods that have already been called.
   - Compatibility
       - S3
           - [x] - Since the class attribute has the same semantics as
@@ -260,4 +262,15 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - `method_new()` vs `method()<-`, the latter while nice has drawbacks
       - can’t use `method("foo")<-`
       - can’t use `method(otherpkg::foo)<-`
-  - Should methods be able to introspect themselves from inside a call?
+
+## Potential names
+
+  - r7 - one downside to this is why 7, if people aren’t aware of RC and
+    R6. (Though 3 + 4 = 7 is nice as well)
+  - r4 - R’s version of S4, released in R version 4?
+  - oo
+  - moor - method based object oriented R
+  - goop - generic function OOP
+  - mm - multi-methods
+  - mr - multi-methods for r
+  - mrs - multi-methods for r and s

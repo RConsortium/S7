@@ -1,0 +1,19 @@
+Package: t2
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.0.9000
+Authors@R: 
+    c(person(given = "Jim",
+             family = "Hester",
+             role = c("aut", "cre"),
+             email = "james.f.hester@gmail.com",
+             comment = c(ORCID = "0000-0002-2739-7082")),
+      person(given = "RStudio",
+             role = c("cph", "fnd")))
+Description: What the package does (one paragraph).
+Imports: R7, t0
+Suggests: t1
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1

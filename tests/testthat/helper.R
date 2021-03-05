@@ -12,3 +12,26 @@ range <- class_new("range",
   },
   properties = list(start = "numeric", end = "numeric", property_new(name = "length", accessor = function(x) x@end - x@start))
 )
+
+quick_install <- function(package) {
+  for (p in package) {
+    install.packages(p, repos = NULL, type = "source", quiet = FALSE,
+      INSTALL_opts = paste(collapse = " ", c(
+          "--data-compress=none",
+          "--no-byte-compile",
+          "--no-data",
+          "--no-demo",
+          "--no-docs",
+          "--no-help",
+          "--no-help",
+          "--no-html",
+          "--no-libs",
+          "--no-lock",
+          "--no-staged-install",
+          "--no-test-load",
+          "--use-vanilla",
+          NULL)
+      )
+    )
+  }
+}

@@ -4,14 +4,12 @@
 \alias{method_next}
 \title{Retrieve the next applicable method after the current one}
 \usage{
-method_next(generic, signature, current_method)
+method_next(generic, signature)
 }
 \arguments{
 \item{generic}{The generic to retrieve or register}
 
 \item{signature}{The method signature}
-
-\item{current_method}{The class of the current method}
 }
 \description{
 Retrieve the next applicable method after the current one

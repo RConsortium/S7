@@ -106,3 +106,38 @@ test_that("method_next works for double dispatch", {
 
   expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
 })
+
+test_that("method_new errors if given a length > 1 character vector", {
+  foo <- generic_new("foo", "x")
+
+  expect_error(
+    method_new(c("foo", "bar"), "x", function(x) x),
+    "must be a generic function or a length 1 character vector"
+  )
+})
+
+test_that("method_new works with both hard and soft dependencies", {
+  tmp_lib <- tempfile()
+  dir.create(tmp_lib)
+  old_libpaths <- .libPaths()
+  .libPaths(c(tmp_lib, old_libpaths))
+  on.exit({
+    .libPaths(old_libpaths)
+    detach("package:t2", unload = TRUE)
+    detach("package:t1", unload = TRUE)
+    detach("package:t0", unload = TRUE)
+    unlink(tmp_lib, recursive = TRUE)
+  })
+
+  quick_install(test_path(c("t0", "t1", "t2")))
+
+  library("t2")
+
+  # t2 has a soft dependency on t1
+  library("t1")
+  expect_equal(foo("blah", 1), "foo-blah-1")
+
+  # t2 has a hard dependency on t0
+  library("t0")
+  expect_equal(bar("blah", 1), "bar-blah-1")
+})
