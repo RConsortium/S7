@@ -17,6 +17,12 @@ describe("property", {
     x <- text(val)
     expect_equal(x@.data, val)
   })
+  it("lets you set .data", {
+    val <- c(foo = "hi", bar = "ho")
+    x <- text("foo")
+    x@.data <- "bar"
+    expect_equal(x@.data, "bar")
+  })
 })
 
 describe("property<-", {
@@ -45,7 +51,10 @@ describe("@", {
     x <- range(1, 10)
     expect_error(x@st, "`range` objects do not have a `st` property")
   })
-  # TODO: add tests to verify fallback for non-R7 objects
+  it("falls back to `base::@` for non-R7 objects", {
+    x <- "foo"
+    expect_error(x@blah, "trying to get slot")
+  })
 })
 
 describe("@<-", {
@@ -54,6 +63,10 @@ describe("@<-", {
     expect_equal(x@start, 1)
     x@start <- 2
     expect_equal(x@start, 2)
+  })
+  it("falls back to `base::@` for non-R7 objects", {
+    x <- "foo"
+    expect_error(x@blah <- "bar", "is not a slot in class")
   })
 })
 

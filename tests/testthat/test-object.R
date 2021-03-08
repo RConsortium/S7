@@ -25,3 +25,13 @@ describe("object_new", {
     )
   })
 })
+
+test_that("printing r7 objects work", {
+  x <- range(1, 10)
+
+  expect_snapshot(print(x))
+})
+
+test_that("printing r7 classes work", {
+  expect_snapshot(range)
+})

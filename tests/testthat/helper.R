@@ -15,7 +15,7 @@ range <- class_new("range",
 
 quick_install <- function(package) {
   for (p in package) {
-    install.packages(p, repos = NULL, type = "source", quiet = FALSE,
+    install.packages(p, repos = NULL, type = "source", quiet = TRUE,
       INSTALL_opts = paste(collapse = " ", c(
           "--data-compress=none",
           "--no-byte-compile",
