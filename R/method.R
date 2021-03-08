@@ -14,14 +14,14 @@ method_impl <- function(generic, signature, ignore) {
   #generic <- as_generic(generic)
 
   out <- .Call(method_, generic, signature, ignore)
-  if(is.null(out)) {
+  if (is.null(out)) {
     # If no R7 method is found, see if there are any S3 methods registered
     if (inherits(generic, "r7_generic")) {
       args <- generic@signature
       generic <- generic@name
     } else {
-      generic <- as.character(substitute(generic))
-      args <- args(formals(match.fun(generic)))
+      generic <- find_function_name(generic, topenv(environment(generic)))
+      args <- args(formals(generic))
     }
     args <- args[names(args) != "..."]
 
@@ -36,6 +36,16 @@ method_impl <- function(generic, signature, ignore) {
   }
 
   out
+}
+
+find_function_name <- function(x, env) {
+  nms <- ls(env, all.names = TRUE, sorted = FALSE)
+  for (name in nms) {
+    if (identical(get0(name, envir = env, mode = "function", inherits = FALSE), x)) {
+      return(name)
+    }
+  }
+  return(NULL)
 }
 
 #' Retrieve the next applicable method after the current one

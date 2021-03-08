@@ -1,3 +1,19 @@
+test_that("method will fall back to S3 generics if no R7 generic is defined", {
+  expect_equal(
+    method(print, list("text")),
+    base::print.default
+  )
+})
+
+test_that("method errors if no method is defined for that class", {
+  foo <- generic_new(name = "foo", signature = alist(x=))
+
+  expect_error(
+    method(foo, list("blah")),
+    "No methods found for generic 'foo'"
+  )
+})
+
 test_that("methods can be registered for a generic and then called", {
   foo <- generic_new(name = "foo", signature = alist(x=))
   method_new(foo, "text", function(x) paste0("foo-", x@.data))
