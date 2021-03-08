@@ -83,7 +83,6 @@ method_register <- function() {
     } else {
       setHook(packageEvent(x$package, "onLoad"), local({x <- x
         function(...) {
-        #cat("called onLoad for", x$generic, "in", x$package, "\n", file = "/tmp/log", append = TRUE)
         ns <- asNamespace(x$package)
         method_new(getFromNamespace(x$generic, ns), x$signature, x$value)
       }}))
@@ -105,14 +104,12 @@ method_new <- function(generic, signature, value) {
       generic <- pieces[[2]]
       # Get current package, if any
       current_package <- packageName(parent.frame())
-      #cat("registering for", current_package, package, generic, "\n", file = "/tmp/log", append = TRUE)
       if (!is.null(current_package)) {
         tbl <- asNamespace(current_package)[[".__S3MethodsTable__."]]
         if (is.null(tbl[[".r7_methods"]])) {
           tbl[[".r7_methods"]] <- list()
         }
         tbl[[".r7_methods"]] <- append(tbl[[".r7_methods"]], list(list(generic = generic, package = package, signature = signature, value = value)))
-        #cat(format(tbl[[".r7_methods"]]), file = "/tmp/log", append = TRUE)
 
         return(invisible())
       }
@@ -133,7 +130,6 @@ method_new <- function(generic, signature, value) {
   generic_name <- generic@name
 
   p_tbl <- generic@methods
-  cat(generic_name, format(p_tbl), "\n", file = "/tmp/log", append = TRUE)
 
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "class_union")) {
