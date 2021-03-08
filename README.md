@@ -8,6 +8,9 @@
   - [Minutes](minutes/)
   - [Code](R/) (this repository is an R package)
 
+These ideas have been implemented in the R7 package, hosted in this
+repository.
+
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/RConsortium/OOP-WG/workflows/R-CMD-check/badge.svg)](https://github.com/RConsortium/OOP-WG/actions)
@@ -51,7 +54,7 @@ x@end
 x@length
 #> [1] 9
 
-# assigning properties verifies the class
+# assigning properties verifies the class matches the class of the value
 x@end <- "foo"
 #> Error: `value` must be of class 'numeric':
 #> - `value` is of class 'character'
@@ -61,12 +64,14 @@ x@end <- 0
 #> Error: invalid 'range' object:
 #> - `end` must be greater than or equal to `start`
 
+# Print methods for both r7_class objects
 object_class(x)
 #> r7: <range>
 #> | start:  <numeric>
 #> | end:    <numeric>
 #> | length: <numeric>
 
+# As well as normal r7_objects
 x
 #> r7: <range>
 #> | start:   1
@@ -120,9 +125,8 @@ of the methods. e.g.
 At each level the search iteratively searches up the class vector for
 the object.
 
-I am not sure caching is really needed, most objects have very short
-class lists and the lookup is fast as each level should have relatively
-few items and we are using hashed environments.
+A potential optimization is caching based on the class names, but lookup
+should be fast even without this.
 
 ``` r
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
@@ -155,9 +159,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    6.04µs   7.25µs   133403.        0B     80.1
-#> 2 foo_s3(x)    3.87µs   4.41µs   190484.        0B     19.1
-#> 3 foo_s4(x)    4.01µs   4.39µs   209498.        0B      0
+#> 1 foo_r7(x)    5.89µs    7.6µs   129073.        0B     77.5
+#> 2 foo_s3(x)    3.91µs   4.33µs   176389.        0B     17.6
+#> 3 foo_s4(x)    4.15µs   4.62µs   198141.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -172,8 +176,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.69µs   12.9µs    73195.        0B    14.6 
-#> 2 bar_s4(x, y)   9.36µs   10.2µs    89931.        0B     8.99
+#> 1 bar_r7(x, y)  11.21µs  12.65µs    75203.        0B    15.0 
+#> 2 bar_s4(x, y)   9.05µs   9.93µs    97095.        0B     9.71
 ```
 
 ## Questions
@@ -192,15 +196,18 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 
 ## Potential names
 
-  - R7 - one downside to this is why 7, if people aren’t aware of RC and
-    R6. (Though 3 + 4 = 7 is nice as well), should it be capitalized?
+  - R7, r7 - one downside to this is why 7, if people aren’t aware of RC
+    and R6. (Though 3 + 4 = 7 is nice as well), should it be
+    capitalized?
   - r4 - R’s version of S4, released in R version 4?
-  - oo
+  - oo - object oriented
   - moor - method based object oriented R
   - goop - generic function OOP
   - mm - multi-methods
-  - mr - multi-methods for r
-  - mrs - multi-methods for r and s
+  - mr - methods for r
+  - mrs - methods for r and s
+  - mmr - multi-methods for r
+  - mmrs - multi-methods for r and s
 
 ## Design workflow
 
