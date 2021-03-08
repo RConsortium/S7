@@ -25,15 +25,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
 <!-- badges: end -->
 
-## Workflow
-
-* File an issue to discuss the topic and build consensus.
-* Once consensus has been reached, the issue author should create a pull 
-  request that summarises the discussion in the appropriate `.md` file,
-  and request review from all folks who participated the issue discussion.
-* Once all participants have accepted the PR, the original author merges.
-
-## Example
+## Classes and objects
 
 ```{r error = TRUE}
 library(R7)
@@ -75,6 +67,33 @@ x@end <- 0
 object_class(x)
 
 x
+```
+
+## Generics and methods
+
+```{r}
+text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+
+foo <- generic_new(name = "foo", signature = c("x", "y"))
+
+method_new(foo, list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+
+method_new(foo, list("text", "number"), function(x, y) {
+  res <- method_next(foo, list(object_class(x), object_class(y)))(x, y)
+  paste0("2 ", res)
+})
+
+foo(text("hi"), number(42))
+```
+
+### Load time registration
+```{r eval = FALSE}
+.onLoad <- function(libname, pkgname) {
+  R7::method_register()
+}
+
+method_new("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
 ```
 
 ## Performance
@@ -129,6 +148,36 @@ setMethod("bar_s4", c("text", "number"), function(x, y) paste0(x, "-", y, "-bar"
 # Measure performance of double dispatch
 bench::mark(bar_r7(x, y), bar_s4(x, y))
 ```
+
+## Questions
+
+- What should happen if you call `method_new()` on a S3 generic?
+  1. Should we create a new R7 generic out of the S3 generic?
+  2. Or just register the R7 object using `registerS3method()`?
+- Best way to support `substitute()` calls in methods? We need to evaluate the argument promises to do the dispatch, but we want to pass the un-evaluated promise to the call?
+- If a type has only properties, what is the base type? R7 currently using VECSXP, S4 uses S4SXP
+- `method_new()` vs `method()<-`, the latter while nice has drawbacks
+  - can't use `method("foo")<-`
+  - can't use `method(otherpkg::foo)<-`
+
+## Potential names
+
+- R7 - one downside to this is why 7, if people aren't aware of RC and R6. (Though 3 + 4 = 7 is nice as well), should it be capitalized?
+- r4 - R's version of S4, released in R version 4?
+- oo
+- moor - method based object oriented R
+- goop - generic function OOP
+- mm - multi-methods
+- mr - multi-methods for r
+- mrs - multi-methods for r and s
+
+## Design workflow
+
+* File an issue to discuss the topic and build consensus.
+* Once consensus has been reached, the issue author should create a pull 
+  request that summarises the discussion in the appropriate `.md` file,
+  and request review from all folks who participated the issue discussion.
+* Once all participants have accepted the PR, the original author merges.
 
 ## TODO
 
@@ -199,23 +248,3 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
     - [x] - Since the new generics will fallback to S3 dispatch, they should support S4 objects just as S3 generics support them now.
 - Documentation
   - [ ] - Generate index pages that list the methods for a generic or the methods with a particular class in their signature
-
-## Questions
-- What should happen if you call `method_new()` on a S3 generic?
-  1. Create a new R7 generic out of the S3 generic?
-  2. Just register the R7 object using registerS3method?
-- Best way to support `subsutitue()` calls in methods? We need to evaluate the argument promises to do the dispatch, but we want to pass the un-evaluated promise to the call?
-- If a type has only properties, what is the base type? R7 currently using VECSXP, S4 uses S4SXP
-- `method_new()` vs `method()<-`, the latter while nice has drawbacks
-  - can't use `method("foo")<-`
-  - can't use `method(otherpkg::foo)<-`
-
-## Potential names
-- r7 - one downside to this is why 7, if people aren't aware of RC and R6. (Though 3 + 4 = 7 is nice as well)
-- r4 - R's version of S4, released in R version 4?
-- oo
-- moor - method based object oriented R
-- goop - generic function OOP
-- mm - multi-methods
-- mr - multi-methods for r
-- mrs - multi-methods for r and s

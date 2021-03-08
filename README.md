@@ -15,17 +15,7 @@
 coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
 <!-- badges: end -->
 
-## Workflow
-
-  - File an issue to discuss the topic and build consensus.
-  - Once consensus has been reached, the issue author should create a
-    pull request that summarises the discussion in the appropriate `.md`
-    file, and request review from all folks who participated the issue
-    discussion.
-  - Once all participants have accepted the PR, the original author
-    merges.
-
-## Example
+## Classes and objects
 
 ``` r
 library(R7)
@@ -84,6 +74,35 @@ x
 #> | length:  9
 ```
 
+## Generics and methods
+
+``` r
+text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+
+foo <- generic_new(name = "foo", signature = c("x", "y"))
+
+method_new(foo, list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+
+method_new(foo, list("text", "number"), function(x, y) {
+  res <- method_next(foo, list(object_class(x), object_class(y)))(x, y)
+  paste0("2 ", res)
+})
+
+foo(text("hi"), number(42))
+#> [1] "2 foo-hi: 42"
+```
+
+### Load time registration
+
+``` r
+.onLoad <- function(libname, pkgname) {
+  R7::method_register()
+}
+
+method_new("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+```
+
 ## Performance
 
 The dispatch performance should be roughly on par with S3 and S4, though
@@ -136,9 +155,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.89µs   7.57µs   132083.    45.6KB     66.1
-#> 2 foo_s3(x)    3.74µs   4.08µs   187342.        0B     18.7
-#> 3 foo_s4(x)    3.94µs   4.36µs   208469.        0B      0
+#> 1 foo_r7(x)    6.04µs   7.25µs   133403.        0B     80.1
+#> 2 foo_s3(x)    3.87µs   4.41µs   190484.        0B     19.1
+#> 3 foo_s4(x)    4.01µs   4.39µs   209498.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -153,9 +172,45 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.52µs  12.63µs    75320.        0B     15.1
-#> 2 bar_s4(x, y)   8.94µs   9.82µs    97063.        0B     19.4
+#> 1 bar_r7(x, y)  11.69µs   12.9µs    73195.        0B    14.6 
+#> 2 bar_s4(x, y)   9.36µs   10.2µs    89931.        0B     8.99
 ```
+
+## Questions
+
+  - What should happen if you call `method_new()` on a S3 generic?
+    1.  Should we create a new R7 generic out of the S3 generic?
+    2.  Or just register the R7 object using `registerS3method()`?
+  - Best way to support `substitute()` calls in methods? We need to
+    evaluate the argument promises to do the dispatch, but we want to
+    pass the un-evaluated promise to the call?
+  - If a type has only properties, what is the base type? R7 currently
+    using VECSXP, S4 uses S4SXP
+  - `method_new()` vs `method()<-`, the latter while nice has drawbacks
+      - can’t use `method("foo")<-`
+      - can’t use `method(otherpkg::foo)<-`
+
+## Potential names
+
+  - R7 - one downside to this is why 7, if people aren’t aware of RC and
+    R6. (Though 3 + 4 = 7 is nice as well), should it be capitalized?
+  - r4 - R’s version of S4, released in R version 4?
+  - oo
+  - moor - method based object oriented R
+  - goop - generic function OOP
+  - mm - multi-methods
+  - mr - multi-methods for r
+  - mrs - multi-methods for r and s
+
+## Design workflow
+
+  - File an issue to discuss the topic and build consensus.
+  - Once consensus has been reached, the issue author should create a
+    pull request that summarises the discussion in the appropriate `.md`
+    file, and request review from all folks who participated the issue
+    discussion.
+  - Once all participants have accepted the PR, the original author
+    merges.
 
 ## TODO
 
@@ -258,29 +313,3 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - Documentation
       - [ ] - Generate index pages that list the methods for a generic
         or the methods with a particular class in their signature
-
-## Questions
-
-  - What should happen if you call `method_new()` on a S3 generic?
-    1.  Create a new R7 generic out of the S3 generic?
-    2.  Just register the R7 object using registerS3method?
-  - Best way to support `subsutitue()` calls in methods? We need to
-    evaluate the argument promises to do the dispatch, but we want to
-    pass the un-evaluated promise to the call?
-  - If a type has only properties, what is the base type? R7 currently
-    using VECSXP, S4 uses S4SXP
-  - `method_new()` vs `method()<-`, the latter while nice has drawbacks
-      - can’t use `method("foo")<-`
-      - can’t use `method(otherpkg::foo)<-`
-
-## Potential names
-
-  - r7 - one downside to this is why 7, if people aren’t aware of RC and
-    R6. (Though 3 + 4 = 7 is nice as well)
-  - r4 - R’s version of S4, released in R version 4?
-  - oo
-  - moor - method based object oriented R
-  - goop - generic function OOP
-  - mm - multi-methods
-  - mr - multi-methods for r
-  - mrs - multi-methods for r and s
