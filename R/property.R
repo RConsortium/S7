@@ -5,10 +5,6 @@
 #' @param accessor The accessor use to retrieve the property (if any)
 #' @export
 property_new <- function(name, class = NULL, accessor = NULL) {
-  if (!is.null(accessor) && is.null(class)) {
-    class <- "function"
-  }
-
   out <- list(name = name, class = class, accessor = accessor)
   class(out) <- "r7_property"
 
@@ -29,11 +25,16 @@ property <- function(object, name) {
   val <- property_safely(object, name)
   if (is.null(val)) {
     class <- object_class(object)
-    stop(sprintf("`%s` objects do not have a `%s` property", class@name, name), call. = FALSE)
-  }
 
-  if (inherits(val, "r7_accessor")) {
-    return(val(object))
+    prop <- class@properties[[name]]
+    if (!is.null(prop$accessor)) {
+      res <- prop$accessor(object)
+      if (!is.null(prop$class) && !inherits(res, prop$class)) {
+        stop(sprintf("%s@%s must be of type %s:\n- %s@%s is of type '%s'", class@name, prop$class, class@name, prop$class), call. = FALSE)
+      }
+      return(res)
+    }
+    stop(sprintf("`%s` objects do not have a `%s` property", class@name, name), call. = FALSE)
   }
 
   val
@@ -52,11 +53,7 @@ property_safely <- function(object, name) {
     object_class(object) <- NULL
     return(object)
   }
-  val <- attr(object, name, exact = TRUE)
-  if (is.null(val)) {
-    return(NULL)
-  }
-  val
+  attr(object, name, exact = TRUE)
 }
 
 properties <- function(object) {
@@ -133,7 +130,7 @@ as_properties <- function(x) {
     stop("`x` must be a list of 'r7_property' objects or named characters", call. = FALSE)
   }
 
-  x[named_chars] <- mapply(property_new, name = x[named_chars], class = x[named_chars], USE.NAMES = TRUE, SIMPLIFY = FALSE)
+  x[named_chars] <- mapply(property_new, name = names(x)[named_chars], class = x[named_chars], USE.NAMES = TRUE, SIMPLIFY = FALSE)
 
   names(x)[!named_chars] <- vcapply(x[!named_chars], function(x) x[["name"]])
 

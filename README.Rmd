@@ -52,6 +52,7 @@ range <- class_new("range",
     end = "numeric",
     property_new(
       name = "length",
+      class = "numeric",
       accessor = function(x) x@end - x@start
     )
   )
@@ -63,6 +64,8 @@ x@start
 
 x@end
 
+x@length
+
 # assigning properties verifies the class
 x@end <- "foo"
 
@@ -70,6 +73,8 @@ x@end <- "foo"
 x@end <- 0
 
 object_class(x)
+
+x
 ```
 
 ## Performance

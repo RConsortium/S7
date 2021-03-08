@@ -14,7 +14,7 @@
       range
     Output
       r7: <range>
-      | start:   <numeric>
-      | end:     <numeric>
-      | length: <function>
+      | start:  <numeric>
+      | end:    <numeric>
+      | length: <numeric>
 

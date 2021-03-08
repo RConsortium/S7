@@ -64,8 +64,6 @@ class_union <- class_new(
   }
 )
 
-accessor <- class_new("accessor", parent = "function", constructor = function(fun) object_new(.data = fun))
-
 global_variables(c("name", "parent", "properties", "constructor", "validator"))
 
 .onAttach <- function(libname, pkgname) {

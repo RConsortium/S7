@@ -44,6 +44,7 @@ range <- class_new("range",
     end = "numeric",
     property_new(
       name = "length",
+      class = "numeric",
       accessor = function(x) x@end - x@start
     )
   )
@@ -57,6 +58,9 @@ x@start
 x@end
 #> [1] 10
 
+x@length
+#> [1] 9
+
 # assigning properties verifies the class
 x@end <- "foo"
 #> Error: `value` must be of class 'numeric':
@@ -69,9 +73,15 @@ x@end <- 0
 
 object_class(x)
 #> r7: <range>
-#> | start:   <numeric>
-#> | end:     <numeric>
-#> | length: <function>
+#> | start:  <numeric>
+#> | end:    <numeric>
+#> | length: <numeric>
+
+x
+#> r7: <range>
+#> | start:   1
+#> | end:    10
+#> | length:  9
 ```
 
 ## Performance
@@ -126,9 +136,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.62µs   7.86µs   127777.    43.8KB     76.7
-#> 2 foo_s3(x)     3.8µs   4.21µs   173228.        0B     17.3
-#> 3 foo_s4(x)    4.07µs   4.51µs   211767.        0B      0
+#> 1 foo_r7(x)    5.89µs   7.57µs   132083.    45.6KB     66.1
+#> 2 foo_s3(x)    3.74µs   4.08µs   187342.        0B     18.7
+#> 3 foo_s4(x)    3.94µs   4.36µs   208469.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -143,8 +153,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.59µs   12.5µs    76225.        0B    15.2 
-#> 2 bar_s4(x, y)   9.14µs   10.1µs    92044.        0B     9.21
+#> 1 bar_r7(x, y)  11.52µs  12.63µs    75320.        0B     15.1
+#> 2 bar_s4(x, y)   8.94µs   9.82µs    97063.        0B     19.4
 ```
 
 ## TODO
