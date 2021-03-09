@@ -84,5 +84,5 @@ print.r7_class <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("r7: <%s>\n%s", object_class(x)@name, prop_fmt), sep = "")
+  cat(sprintf("r7_class: <%s>\n%s", object_class(x)@name, prop_fmt), sep = "")
 }

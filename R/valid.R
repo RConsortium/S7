@@ -25,7 +25,7 @@ validate <- function(object) {
   errors <- validator(object)
 
   if (length(errors) > 0) {
-    msg <- sprintf("invalid '%s' object:\n%s", property(obj_class, "name"), paste0("- ", errors, collapse = "\n"))
+    msg <- sprintf("Invalid <%s> object:\n%s", obj_class@name, paste0("- ", errors, collapse = "\n"))
     stop(msg, call. = FALSE)
   }
 

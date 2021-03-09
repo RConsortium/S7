@@ -38,7 +38,7 @@ range <- class_new("range",
     object_new(start = start, end = end)
   },
   validator = function(x) {
-    if (property(x, "end") < property(x, "start")) {
+    if (x@end < x@start) {
       "`end` must be greater than or equal to `start`"
     }
   },
@@ -61,6 +61,8 @@ x@end
 
 x@length
 
+x@middle
+
 # assigning properties verifies the class matches the class of the value
 x@end <- "foo"
 
@@ -72,6 +74,13 @@ object_class(x)
 
 # As well as normal r7_objects
 x
+
+# Use `.data` to refer to and retrieve the base data type, properties are
+# automatically removed, but non-property attributes (such as names) are retained.
+
+text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+
+str(text(c(foo = "bar"))@.data)
 ```
 
 ## Generics and methods
@@ -170,6 +179,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 - R7, r7 - one downside to this is why 7, if people aren't aware of RC and R6. (Though 3 + 4 = 7 is nice as well), should it be capitalized?
 - r4 - R's version of S4, released in R version 4?
 - oo - object oriented
+- oop - object oriented programming
 - moor - method based object oriented R
 - goop - generic function OOP
 - mm - multi-methods

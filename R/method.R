@@ -32,7 +32,7 @@ method_impl <- function(generic, signature, ignore) {
   }
 
   if (is.null(out)) {
-    stop(sprintf("No methods found for generic '%s' with classes:\n%s", generic, paste0("- ", names(args), ": ", vcapply(signature, paste0, collapse = ", "), collapse = "\n"), call. = FALSE))
+    stop(sprintf("Can't find method for generic '%s' with arguments of type:\n%s", generic, paste0("- ", names(args), ": ", vcapply(signature, paste0, collapse = ", "), collapse = "\n"), call. = FALSE))
   }
 
   out

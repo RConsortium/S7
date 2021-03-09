@@ -48,7 +48,7 @@ class_union <- class_new(
   validator = function(x) {
     for (val in x@classes) {
       if (!inherits(val, "r7_class")) {
-        return(sprintf("All classes in a `class_union` must be R7 classes:\n - '%s' is not an `r7_class`", class(val)[[1]]))
+        return(sprintf("All classes in a <class_union> must be R7 classes:\n - <%s> is not an <r7_class>", class(val)[[1]]))
       }
     }
   },

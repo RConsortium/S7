@@ -83,6 +83,6 @@ get_base_class <- function(name) {
     "closure" = ,
     "function" = class_new("function", constructor = function() function() NULL),
     "NULL" = class_new("NULL", constructor = function() NULL),
-    stop(sprintf("invalid class '%s'", name), call. = FALSE)
+    stop(sprintf("Invalid class <%s>", name), call. = FALSE)
   )
 }

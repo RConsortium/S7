@@ -13,7 +13,7 @@
     Code
       range
     Output
-      r7: <range>
+      r7_class: <range>
       | start:  <numeric>
       | end:    <numeric>
       | length: <numeric>

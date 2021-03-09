@@ -30,11 +30,11 @@ property <- function(object, name) {
     if (!is.null(prop$accessor)) {
       res <- prop$accessor(object)
       if (!is.null(prop$class) && !inherits(res, prop$class)) {
-        stop(sprintf("%s@%s must be of type %s:\n- %s@%s is of type '%s'", class@name, prop$class, class@name, prop$class), call. = FALSE)
+        stop(sprintf("%s@%s must be of type <%s>:\n- %s@%s is of type <%s>", class@name, prop$class, class@name, prop$class), call. = FALSE)
       }
       return(res)
     }
-    stop(sprintf("`%s` objects do not have a `%s` property", class@name, name), call. = FALSE)
+    stop(sprintf("Can't find property '%s' in <%s>", name, class@name), call. = FALSE)
   }
 
   val
@@ -81,7 +81,7 @@ properties <- function(object) {
     } else {
       if (length(prop[["class"]]) > 0 &&
         !inherits(value, prop[["class"]])) {
-        stop(sprintf("`value` must be of class '%s':\n- `value` is of class '%s'", prop[["class"]][[1]], class(value)[[1]]), call. = FALSE)
+        stop(sprintf("`value` must be of class <%s>:\n- `value` is of class <%s>", prop[["class"]][[1]], class(value)[[1]]), call. = FALSE)
       }
     }
 

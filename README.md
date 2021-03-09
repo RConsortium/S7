@@ -28,7 +28,7 @@ range <- class_new("range",
     object_new(start = start, end = end)
   },
   validator = function(x) {
-    if (property(x, "end") < property(x, "start")) {
+    if (x@end < x@start) {
       "`end` must be greater than or equal to `start`"
     }
   },
@@ -54,19 +54,22 @@ x@end
 x@length
 #> [1] 9
 
+x@middle
+#> Error: Can't find property 'middle' in <range>
+
 # assigning properties verifies the class matches the class of the value
 x@end <- "foo"
-#> Error: `value` must be of class 'numeric':
-#> - `value` is of class 'character'
+#> Error: `value` must be of class <numeric>:
+#> - `value` is of class <character>
 
 # assigning properties runs the validator
 x@end <- 0
-#> Error: invalid 'range' object:
+#> Error: invalid <range> object:
 #> - `end` must be greater than or equal to `start`
 
 # Print methods for both r7_class objects
 object_class(x)
-#> r7: <range>
+#> r7_class: <range>
 #> | start:  <numeric>
 #> | end:    <numeric>
 #> | length: <numeric>
@@ -77,6 +80,15 @@ x
 #> | start:   1
 #> | end:    10
 #> | length:  9
+
+# Use `.data` to refer to and retrieve the base data type, properties are
+# automatically removed, but non-property attributes (such as names) are retained.
+
+text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+
+str(text(c(foo = "bar"))@.data)
+#>  Named chr "bar"
+#>  - attr(*, "names")= chr "foo"
 ```
 
 ## Generics and methods
@@ -159,9 +171,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.89µs    7.6µs   129073.        0B     77.5
-#> 2 foo_s3(x)    3.91µs   4.33µs   176389.        0B     17.6
-#> 3 foo_s4(x)    4.15µs   4.62µs   198141.        0B      0
+#> 1 foo_r7(x)    5.59µs   8.28µs   120901.        0B     12.1
+#> 2 foo_s3(x)    3.85µs   4.25µs   217100.        0B     21.7
+#> 3 foo_s4(x)    3.87µs    4.3µs   213849.        0B      0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -176,8 +188,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.21µs  12.65µs    75203.        0B    15.0 
-#> 2 bar_s4(x, y)   9.05µs   9.93µs    97095.        0B     9.71
+#> 1 bar_r7(x, y)  11.47µs  12.64µs    72994.        0B     21.9
+#> 2 bar_s4(x, y)   9.13µs   9.95µs    96303.        0B     19.3
 ```
 
 ## Questions
@@ -201,6 +213,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
     capitalized?
   - r4 - R’s version of S4, released in R version 4?
   - oo - object oriented
+  - oop - object oriented programming
   - moor - method based object oriented R
   - goop - generic function OOP
   - mm - multi-methods

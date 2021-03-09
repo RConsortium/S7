@@ -10,7 +10,7 @@ test_that("method errors if no method is defined for that class", {
 
   expect_error(
     method(foo, list("blah")),
-    "No methods found for generic 'foo'"
+    "Can't find method for generic 'foo'"
   )
 })
 
