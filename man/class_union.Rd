@@ -8,7 +8,7 @@ class_union(...)
 }
 \arguments{
 \item{...}{The classes to include in the union, either looked up by named or
-by passing the \code{r7_class} objects directly.}
+by passing the \code{R7_class} objects directly.}
 }
 \description{
 A class union represents a list of possible classes. It is used in

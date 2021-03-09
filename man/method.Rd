@@ -4,7 +4,7 @@
 \alias{method}
 \alias{method_new}
 \alias{method<-}
-\title{Retrieve or register an r7 method for a generic}
+\title{Retrieve or register an R7 method for a generic}
 \usage{
 method(generic, signature)
 
@@ -20,5 +20,5 @@ method(generic, signature) <- value
 \item{value}{The new function to use for the method.}
 }
 \description{
-Retrieve or register an r7 method for a generic
+Retrieve or register an R7 method for a generic
 }

@@ -14,7 +14,7 @@ object_new <- function(...) {
   }
   attr(object, ".should_validate") <- FALSE
 
-  class(object) <- "r7_object"
+  class(object) <- "R7_object"
 
   object_class(object) <- class
 
@@ -33,14 +33,14 @@ object_new <- function(...) {
   object
 }
 
-#' Retrieve the r7 class of an object
-#' @param object The r7 object
+#' Retrieve the R7 class of an object
+#' @param object The R7 object
 #' @export
 object_class <- function(object) {
-  if (inherits(object, "r7_class")) {
+  if (inherits(object, "R7_class")) {
     return(object)
   }
-  if (inherits(object, "r7_object")) {
+  if (inherits(object, "R7_object")) {
     return(attr(object, "object_class"))
   }
   if (isS4(object)) {
@@ -61,7 +61,7 @@ object_class <- function(object) {
 }
 
 #' @export
-print.r7_object <- function(x, ...) {
+print.R7_object <- function(x, ...) {
   props <- properties(x)
   if (length(props) > 0) {
     values <- lapply(names(props), function(xx) property(x, xx))
@@ -71,5 +71,5 @@ print.r7_object <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("r7: <%s>\n%s", object_class(x)@name, prop_fmt), sep = "")
+  cat(sprintf("<R7_object> <%s>\n%s", object_class(x)@name, prop_fmt), sep = "")
 }

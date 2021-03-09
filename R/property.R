@@ -11,7 +11,7 @@
 #' @export
 property_new <- function(name, class = NULL, getter = NULL, setter = NULL) {
   out <- list(name = name, class = class, getter = getter, setter = setter)
-  class(out) <- "r7_property"
+  class(out) <- "R7_property"
 
   out
 }
@@ -55,7 +55,7 @@ property_safely <- function(object, name) {
     for (name in names(props)) {
       attr(object, name) <- NULL
     }
-    class(object) <- setdiff(class_names(property_safely(object_class(object), "parent")), "r7_object")
+    class(object) <- setdiff(class_names(property_safely(object_class(object), "parent")), "R7_object")
     object_class(object) <- NULL
     return(object)
   }
@@ -104,7 +104,10 @@ properties <- function(object) {
 #' @usage object@name
 #' @export
 `@` <- function(object, name) {
-  if (!inherits(object, "r7_object")) {
+  if (!inherits(object, "R7_object")) {
+    if (is.null(object)) {
+      return()
+    }
     name <- substitute(name)
     return(do.call(base::`@`, list(object, name)))
   }
@@ -113,9 +116,9 @@ properties <- function(object) {
   property(object, nme)
 }
 
-#' @rawNamespace S3method("@<-",r7_object)
-`@<-.r7_object` <- function(object, name, value) {
-  if (!inherits(object, "r7_object")) {
+#' @rawNamespace S3method("@<-",R7_object)
+`@<-.R7_object` <- function(object, name, value) {
+  if (!inherits(object, "R7_object")) {
     return(base::`@<-`(object, name))
   }
 
@@ -131,10 +134,10 @@ as_properties <- function(x) {
   }
 
   named_chars <- vlapply(x, is.character) & has_names(x)
-  r7_properties <- vlapply(x, inherits, "r7_property")
+  R7_properties <- vlapply(x, inherits, "R7_property")
 
-  if (!all(named_chars | r7_properties)) {
-    stop("`x` must be a list of 'r7_property' objects or named characters", call. = FALSE)
+  if (!all(named_chars | R7_properties)) {
+    stop("`x` must be a list of 'R7_property' objects or named characters", call. = FALSE)
   }
 
   x[named_chars] <- mapply(property_new, name = names(x)[named_chars], class = x[named_chars], USE.NAMES = TRUE, SIMPLIFY = FALSE)

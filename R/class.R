@@ -1,4 +1,4 @@
-r7_class <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+R7_class <- function(name, parent = R7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
     parent <- class_get(parent)
   }
@@ -8,7 +8,7 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
   attr(object, "properties") <- as_properties(properties)
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
-  class(object) <- c("r7_class", "r7_object")
+  class(object) <- c("R7_class", "R7_object")
 
   global_variables(names(properties))
   object
@@ -21,10 +21,10 @@ r7_class <- function(name, parent = r7_object, constructor = function(...) objec
 #' @param validator The validation function
 #' @param properties A list of properties for the class
 #' @export
-class_new <- function(name, parent = r7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+class_new <- function(name, parent = R7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
   environment(constructor) <- topenv(environment(constructor))
 
-  r7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
+  R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
 #' Retrive all of the class names for a class
@@ -40,7 +40,7 @@ class_names <- function(object) {
       for (class in parent@classes) {
         classes <- c(classes, class_names(class))
       }
-    } else if (inherits(parent, "r7_class")) {
+    } else if (inherits(parent, "R7_class")) {
       classes <- c(classes, parent@name)
     } else {
       classes <- c(classes, parent)
@@ -50,9 +50,9 @@ class_names <- function(object) {
   unique(classes, fromLast = TRUE)
 }
 
-#' Retrieve the r7 class corresponding to a name
+#' Retrieve the R7 class corresponding to a name
 #'
-#' @param name The name of the r7 class
+#' @param name The name of the R7 class
 #' @param envir The environment to look for the name
 #' @export
 class_get <- function(name, envir = parent.frame()) {
@@ -60,7 +60,7 @@ class_get <- function(name, envir = parent.frame()) {
     return()
   }
   class <- get0(name, envir = envir)
-  if (inherits(class, "r7_class")) {
+  if (inherits(class, "R7_class")) {
     return(class)
   }
 
@@ -88,14 +88,14 @@ get_base_class <- function(name) {
 }
 
 #' @export
-print.r7_class <- function(x, ...) {
+print.R7_class <- function(x, ...) {
   props <- properties(x)
   if (length(props) > 0) {
     prop_names <- format(names(props))
     prop_types <- format(paste0("<", vcapply(props, function(xx) xx[["class"]] %||% ""), ">"), justify = "right")
-    prop_fmt <- paste0(paste0("@", prop_names, " ", prop_types, collapse = "\n"), "\n")
+    prop_fmt <- paste0(paste0(" $", prop_names, " ", prop_types, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("r7_class: <%s>\n%s", object_class(x)@name, prop_fmt), sep = "")
+  cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, property_safely(x, "parent")@name %||% "NULL", prop_fmt), sep = "")
 }

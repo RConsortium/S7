@@ -1,4 +1,4 @@
-#' Retrieve or register an r7 method for a generic
+#' Retrieve or register an R7 method for a generic
 #'
 #' @param generic The generic to retrieve or register
 #' @param signature The method signature
@@ -16,7 +16,7 @@ method_impl <- function(generic, signature, ignore) {
   out <- .Call(method_, generic, signature, ignore)
   if (is.null(out)) {
     # If no R7 method is found, see if there are any S3 methods registered
-    if (inherits(generic, "r7_generic")) {
+    if (inherits(generic, "R7_generic")) {
       args <- generic@signature
       generic <- generic@name
     } else {
@@ -57,7 +57,7 @@ method_next <- function(generic, signature) {
 
   methods <- list()
   i <- 1
-  while (!inherits(current_method, "r7_generic")) {
+  while (!inherits(current_method, "R7_generic")) {
     methods <- c(methods, current_method)
     i <- i + 1
     current_method <- sys.function(sys.parent(i))
@@ -75,7 +75,7 @@ method_next <- function(generic, signature) {
 #' @export
 method_register <- function() {
   package <- packageName(parent.frame())
-  tbl <- asNamespace(package)[[".__S3MethodsTable__."]][[".r7_methods"]]
+  tbl <- asNamespace(package)[[".__S3MethodsTable__."]][[".R7_methods"]]
   for (x in tbl) {
     if (isNamespaceLoaded(x$package)) {
       ns <- asNamespace(x$package)
@@ -106,10 +106,10 @@ method_new <- function(generic, signature, value) {
       current_package <- packageName(parent.frame())
       if (!is.null(current_package)) {
         tbl <- asNamespace(current_package)[[".__S3MethodsTable__."]]
-        if (is.null(tbl[[".r7_methods"]])) {
-          tbl[[".r7_methods"]] <- list()
+        if (is.null(tbl[[".R7_methods"]])) {
+          tbl[[".R7_methods"]] <- list()
         }
-        tbl[[".r7_methods"]] <- append(tbl[[".r7_methods"]], list(list(generic = generic, package = package, signature = signature, value = value)))
+        tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic, package = package, signature = signature, value = value)))
 
         return(invisible())
       }
@@ -123,8 +123,8 @@ method_new <- function(generic, signature, value) {
     signature <- list(signature)
   }
 
-  if (!inherits(value, "r7_method")) {
-    value <- r7_method(generic, signature, value)
+  if (!inherits(value, "R7_method")) {
+    value <- R7_method(generic, signature, value)
   }
 
   generic_name <- generic@name
@@ -137,7 +137,7 @@ method_new <- function(generic, signature, value) {
         method_new(generic, c(signature[seq_len(i - 1)], class@name), value)
       }
       return(invisible(generic))
-    } else if (inherits(signature[[i]], "r7_class")) {
+    } else if (inherits(signature[[i]], "R7_class")) {
       signature[[i]] <- signature[[i]]@name
     }
     if (i == length(signature)) {
@@ -166,8 +166,8 @@ as_generic <- function(generic) {
     generic <- match.fun(generic)
   }
 
-  if (!inherits(generic, "r7_generic")) {
-    stop("`generic` must be a 'r7_generic':\n- `generic` is a '", class(generic)[[1]], "'", call. = FALSE)
+  if (!inherits(generic, "R7_generic")) {
+    stop("`generic` must be a 'R7_generic':\n- `generic` is a '", class(generic)[[1]], "'", call. = FALSE)
   }
 
   generic

@@ -2,15 +2,15 @@
 % Please edit documentation in R/class.R
 \name{class_get}
 \alias{class_get}
-\title{Retrieve the r7 class corresponding to a name}
+\title{Retrieve the R7 class corresponding to a name}
 \usage{
 class_get(name, envir = parent.frame())
 }
 \arguments{
-\item{name}{The name of the r7 class}
+\item{name}{The name of the R7 class}
 
 \item{envir}{The environment to look for the name}
 }
 \description{
-Retrieve the r7 class corresponding to a name
+Retrieve the R7 class corresponding to a name
 }

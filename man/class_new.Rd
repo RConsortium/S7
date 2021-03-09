@@ -6,7 +6,7 @@
 \usage{
 class_new(
   name,
-  parent = r7_object,
+  parent = R7_object,
   constructor = function(...) object_new(...),
   validator = function(x) NULL,
   properties = list()

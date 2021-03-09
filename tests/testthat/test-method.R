@@ -65,7 +65,7 @@ test_that("method dispatch works for S3 objects", {
   expect_equal(foo(obj), "foo-1-10")
 })
 
-test_that("method_new works if you use r7 class objects", {
+test_that("method_new works if you use R7 class objects", {
   foo5 <- generic_new(name = "foo5", signature = alist(x=, y=))
   method_new(foo5, list(text, number), function(x, y) paste0(x, ":", y))
 

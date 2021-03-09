@@ -2,13 +2,13 @@
 % Please edit documentation in R/object.R
 \name{object_class}
 \alias{object_class}
-\title{Retrieve the r7 class of an object}
+\title{Retrieve the R7 class of an object}
 \usage{
 object_class(object)
 }
 \arguments{
-\item{object}{The r7 object}
+\item{object}{The R7 object}
 }
 \description{
-Retrieve the r7 class of an object
+Retrieve the R7 class of an object
 }

@@ -21,7 +21,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
 
   SEXP classes = VECTOR_ELT(signature, signature_itr);
 
-  if (Rf_inherits(classes, "r7_class")) {
+  if (Rf_inherits(classes, "R7_class")) {
     while(classes != R_NilValue) {
       SEXP klass = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(classes, name_sym), 0)));
       SEXP val = Rf_findVarInFrame(table, klass);
@@ -50,7 +50,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
 
 /* TODO: handle errors when method is not found */
 SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
-  if (!Rf_inherits(generic, "r7_generic")) {
+  if (!Rf_inherits(generic, "R7_generic")) {
     return R_NilValue;
   }
 

@@ -1,20 +1,23 @@
-# printing r7 objects work
+# printing R7 objects work
 
     Code
       print(x)
     Output
-      r7: <range>
+      <R7_object> <range>
       @start   1
       @end    10
       @length  9
 
-# printing r7 classes work
+# printing R7 classes work
 
     Code
       range
     Output
-      r7_class: <range>
-      @start  <numeric>
-      @end    <numeric>
-      @length <numeric>
+      <R7_class>
+      @name range
+      @parent <R7_object>
+      @properties
+       $start  <numeric>
+       $end    <numeric>
+       $length <numeric>
 

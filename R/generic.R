@@ -1,6 +1,6 @@
 #' Define a new generic
 #'
-#' @inheritParams r7_generic
+#' @inheritParams R7_generic
 #' @export
 generic_new <- function(name, signature = NULL, fun = NULL) {
   if (is.null(signature) && is.null(fun)) {
@@ -15,7 +15,7 @@ generic_new <- function(name, signature = NULL, fun = NULL) {
     fun <- generic_generate(name, signature, envir = parent.frame())
   }
 
-  r7_generic(name = name, signature, fun = fun)
+  R7_generic(name = name, signature, fun = fun)
 }
 
 normalize_signature <- function(signature, envir = parent.frame()) {

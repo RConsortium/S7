@@ -1,18 +1,18 @@
-#' An r7 object
+#' An R7 object
 #' @export
-r7_object <- class_new(
-  name = "r7_object",
+R7_object <- class_new(
+  name = "R7_object",
   parent = character(),
   constructor = function() list()
 )
 
-#' r7 generics and method objects
+#' R7 generics and method objects
 #' @param name,generic The name or generic object of the generic
 #' @param signature The signature of the generic
 #' @param fun The function to use as the body of the generic.
 #' @export
-r7_generic <- class_new(
-  name = "r7_generic",
+R7_generic <- class_new(
+  name = "R7_generic",
   properties = list(name = "character", methods = "environment", signature = "list"),
   parent = "function",
   constructor = function(name, signature, fun) {
@@ -20,11 +20,11 @@ r7_generic <- class_new(
   }
 )
 
-#' @rdname r7_generic
+#' @rdname R7_generic
 #' @export
-r7_method <- class_new(
-  name = "r7_method",
-  properties = list(generic = "r7_generic", signature = "list", fun = "function"),
+R7_method <- class_new(
+  name = "R7_method",
+  properties = list(generic = "R7_generic", signature = "list", fun = "function"),
   parent = "function",
   constructor = function(generic, signature, fun) {
     if (is.character(signature)) {
@@ -40,15 +40,15 @@ r7_method <- class_new(
 #' properties to allow a property to be one of a set of classes, and in method
 #' dispatch as a convenience for defining a method for multiple classes.
 #' @param ... The classes to include in the union, either looked up by named or
-#'   by passing the `r7_class` objects directly.
+#'   by passing the `R7_class` objects directly.
 #' @export
 class_union <- class_new(
   name = "class_union",
   properties = list(classes = "list"),
   validator = function(x) {
     for (val in x@classes) {
-      if (!inherits(val, "r7_class")) {
-        return(sprintf("All classes in a <class_union> must be R7 classes:\n - <%s> is not an <r7_class>", class(val)[[1]]))
+      if (!inherits(val, "R7_class")) {
+        return(sprintf("All classes in a <class_union> must be R7 classes:\n - <%s> is not an <R7_class>", class(val)[[1]]))
       }
     }
   },

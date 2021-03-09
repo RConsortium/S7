@@ -77,16 +77,16 @@ x@end <- 0
 #> Error: Invalid <range> object:
 #> - `end` must be greater than or equal to `start`
 
-# Print methods for both r7_class objects
+# Print methods for both R7_class objects
 object_class(x)
-#> r7_class: <range>
+#> <R7_class> <range>
 #> @start  <numeric>
 #> @end    <numeric>
 #> @length <numeric>
 
-# As well as normal r7_objects
+# As well as normal R7_objects
 x
-#> r7: <range>
+#> <R7_object> <range>
 #> @start  1
 #> @end    6
 #> @length 5
@@ -178,8 +178,8 @@ number <- class_new("number", parent = "numeric", constructor = function(x) obje
 x <- text("hi")
 y <- number(1)
 
-foo_r7 <- generic_new(name = "foo_r7", signature = "x")
-method(foo_r7, "text") <- function(x) paste0(x, "-foo")
+foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+method(foo_R7, "text") <- function(x) paste0(x, "-foo")
 
 foo_s3 <- function(x) {
   UseMethod("foo_s3")
@@ -190,37 +190,37 @@ foo_s3.text <- function(x) {
 }
 
 library(methods)
-setOldClass(c("number", "numeric", "r7_object"))
-setOldClass(c("text", "character", "r7_object"))
+setOldClass(c("number", "numeric", "R7_object"))
+setOldClass(c("text", "character", "R7_object"))
 
 setGeneric("foo_s4", function(x) standardGeneric("foo_s4"))
 #> [1] "foo_s4"
 setMethod("foo_s4", c("text"), function(x) paste0(x, "-foo"))
 
 # Measure performance of single dispatch
-bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
+bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.77µs   7.72µs   122675.        0B     12.3
-#> 2 foo_s3(x)     3.9µs   4.28µs   223478.        0B     22.3
-#> 3 foo_s4(x)    3.97µs   4.48µs   209599.        0B     21.0
+#> 1 foo_R7(x)    5.48µs   7.95µs   124145.        0B     12.4
+#> 2 foo_s3(x)    3.76µs   4.18µs   224788.        0B     22.5
+#> 3 foo_s4(x)    3.92µs   4.49µs   204384.        0B     20.4
 
 
-bar_r7 <- generic_new("bar_r7", c("x", "y"))
-method(bar_r7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
+bar_R7 <- generic_new("bar_R7", c("x", "y"))
+method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
 #> [1] "bar_s4"
 setMethod("bar_s4", c("text", "number"), function(x, y) paste0(x, "-", y, "-bar"))
 
 # Measure performance of double dispatch
-bench::mark(bar_r7(x, y), bar_s4(x, y))
+bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.58µs   12.9µs    74069.        0B     22.2
-#> 2 bar_s4(x, y)   9.29µs   10.3µs    91795.        0B     18.4
+#> 1 bar_R7(x, y)  11.26µs  12.35µs    76432.        0B     22.9
+#> 2 bar_s4(x, y)   8.88µs   9.84µs    98637.        0B     19.7
 ```
 
 ## Questions
