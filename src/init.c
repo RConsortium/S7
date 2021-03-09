@@ -4,12 +4,12 @@
 #include <R_ext/Rdynload.h>
 
 /* .Call calls */
-extern SEXP class_names_(SEXP);
-extern SEXP object_class_(SEXP);
 extern SEXP method_(SEXP, SEXP, SEXP);
+extern SEXP R7_object_();
 
 static const R_CallMethodDef CallEntries[] = {
     {"method_", (DL_FUNC) &method_, 3},
+    {"R7_object_", (DL_FUNC) &R7_object_, 0},
     {NULL, NULL, 0}
 };
 

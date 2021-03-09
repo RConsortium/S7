@@ -194,14 +194,13 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 ## Questions
 
 - Best way to support `substitute()` calls in methods? We need to evaluate the argument promises to do the dispatch, but we want to pass the un-evaluated promise to the call?
-- If a type has only properties, what is the base type? R7 currently using VECSXP, S4 uses S4SXP
-- Should we remove `method()<-`, We can't do the following
+- Should we remove `method()<-`, We can't do the following, really want to keep this syntax if possible.
   - can't use `method("foo")<-`
   - can't use `method(otherpkg::foo)<-`
   - can't use `method("otherpkg::foo")<-`
 - What should happen if you call `method_new()` on a S3 generic?
   1. Should we create a new R7 generic out of the S3 generic?
-  2. Or just register the R7 object using `registerS3method()`?
+  2. Or just register the R7 object using `registerS3method()`? ++
 
 ## Design workflow
 

@@ -2,8 +2,12 @@
 #' @export
 R7_object <- class_new(
   name = "R7_object",
-  parent = character(),
-  constructor = function() list()
+  parent = NULL,
+  constructor = function() {
+     out <- .Call(R7_object_)
+     class(out) <- "R7_object"
+     out
+  }
 )
 
 #' R7 generics and method objects

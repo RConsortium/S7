@@ -58,3 +58,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
 
   return method_internal(table, signature, 0, ignore);
 }
+
+SEXP R7_object_() {
+  return Rf_allocSExp(DOTSXP);
+}

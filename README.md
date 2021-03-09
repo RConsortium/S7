@@ -205,9 +205,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    6.07µs      8µs   108718.        0B     10.9
-#> 2 foo_s3(x)    4.14µs   5.13µs   188245.        0B     18.8
-#> 3 foo_s4(x)    4.62µs   5.09µs   177001.        0B     17.7
+#> 1 foo_R7(x)    5.74µs   8.62µs   117261.        0B     11.7
+#> 2 foo_s3(x)    3.83µs   4.19µs   217581.        0B     21.8
+#> 3 foo_s4(x)       4µs    4.4µs   216754.        0B     21.7
 
 
 bar_R7 <- generic_new("bar_R7", c("x", "y"))
@@ -222,8 +222,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  12.14µs   15.2µs    64897.        0B     19.5
-#> 2 bar_s4(x, y)   9.76µs   11.7µs    81298.        0B     16.3
+#> 1 bar_R7(x, y)  11.62µs   12.7µs    74092.        0B     22.2
+#> 2 bar_s4(x, y)   9.79µs   10.8µs    79660.        0B     15.9
 ```
 
 ## Questions
@@ -231,15 +231,14 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
   - Best way to support `substitute()` calls in methods? We need to
     evaluate the argument promises to do the dispatch, but we want to
     pass the un-evaluated promise to the call?
-  - If a type has only properties, what is the base type? R7 currently
-    using VECSXP, S4 uses S4SXP
-  - Should we remove `method()<-`, We can’t do the following
+  - Should we remove `method()<-`, We can’t do the following, really
+    want to keep this syntax if possible.
       - can’t use `method("foo")<-`
       - can’t use `method(otherpkg::foo)<-`
       - can’t use `method("otherpkg::foo")<-`
   - What should happen if you call `method_new()` on a S3 generic?
     1.  Should we create a new R7 generic out of the S3 generic?
-    2.  Or just register the R7 object using `registerS3method()`?
+    2.  Or just register the R7 object using `registerS3method()`? ++
 
 ## Design workflow
 

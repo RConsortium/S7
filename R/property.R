@@ -29,16 +29,6 @@ property_new <- function(name, class = NULL, getter = NULL, setter = NULL) {
 property <- function(object, name) {
   val <- property_safely(object, name)
   if (is.null(val)) {
-    prop <- properties(object)[[name]]
-    if (!is.null(prop$getter)) {
-      res <- prop$getter(object)
-      if (!is.null(prop$class) && !inherits(res, prop$class)) {
-        class <- object_class(object)
-        stop(sprintf("%s@%s must be of type <%s>:\n- %s@%s is of type <%s>", class@name, prop$class, class@name, prop$class), call. = FALSE)
-      }
-      return(res)
-    }
-
     class <- object_class(object)
     stop(sprintf("Can't find property '%s' in <%s>", name, class@name), call. = FALSE)
   }
@@ -55,19 +45,26 @@ property_safely <- function(object, name) {
     for (name in names(props)) {
       attr(object, name) <- NULL
     }
-    class(object) <- setdiff(class_names(property_safely(object_class(object), "parent")), "R7_object")
+    class(object) <- setdiff(class_names(attr(object_class(object), "parent", exact = TRUE)), "R7_object")
     object_class(object) <- NULL
     return(object)
   }
-  attr(object, name, exact = TRUE)
+  val <- attr(object, name, exact = TRUE)
+  if (is.null(val)) {
+    prop <- properties(object)[[name]]
+    if (!is.null(prop$getter)) {
+      val <- prop$getter(object)
+    }
+  }
+  val
 }
 
 properties <- function(object) {
   obj_class <- object_class(object)
   prop <- list()
   while(!is.null(obj_class)) {
-    prop <- c(obj_class@properties, prop)
-    obj_class <- property_safely(obj_class, "parent")
+    prop <- c(attr(obj_class, "properties"), prop)
+    obj_class <- attr(obj_class, "parent", exact = TRUE)
   }
 
   prop
