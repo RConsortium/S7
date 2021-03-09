@@ -71,13 +71,17 @@ properties <- function(object) {
 }
 
 #' @rdname property
+#' @param check If `TRUE`, check that `value` is of the correct type and run
+#'   [validate()] on the object before returning.
 #' @export
-`property<-` <- function(object, name, value) {
+`property<-` <- function(object, name, check = TRUE, value) {
   if (name == ".data") {
     attrs <- attributes(object)
     object <- value
     attributes(object) <- attrs
-    validate(object)
+    if (isTRUE(check)) {
+      validate(object)
+    }
     return(invisible(object))
   }
 
@@ -85,14 +89,16 @@ properties <- function(object) {
   if (!is.null(prop$setter)) {
     object <- prop$setter(object, value)
   } else {
-    if (length(prop[["class"]]) > 0 &&
+    if (isTRUE(check) && length(prop[["class"]]) > 0 &&
       !inherits(value, prop[["class"]])) {
       stop(sprintf("`value` must be of class <%s>:\n- `value` is of class <%s>", prop[["class"]][[1]], class(value)[[1]]), call. = FALSE)
     }
     attr(object, name) <- value
   }
 
-  validate(object)
+  if (isTRUE(check)) {
+    validate(object)
+  }
 
   invisible(object)
 }

@@ -39,6 +39,11 @@ describe("property<-", {
       "must be of class"
     )
   })
+  it("does not run the check or validation functions if check = FALSE", {
+    x <- range(1, 10)
+    property(x, "end", check = FALSE) <- "foo"
+    expect_equal(x@end, "foo")
+  })
 })
 
 describe("@", {
@@ -80,3 +85,4 @@ test_that("properties can be setter functions", {
   x@length <- 5
   expect_equal(x@length, 5)
 })
+

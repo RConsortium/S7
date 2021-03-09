@@ -11,7 +11,7 @@ property(object, name)
 
 property_safely(object, name)
 
-property(object, name) <- value
+property(object, name, check = TRUE) <- value
 
 object@name
 }
@@ -19,6 +19,9 @@ object@name
 \item{object}{An object from a R7 class}
 
 \item{name}{The name of the parameter as a character. No partial matching is done.}
+
+\item{check}{If \code{TRUE}, check that \code{value} is of the correct type and run
+\code{\link[=validate]{validate()}} on the object before returning.}
 
 \item{value}{A replacement value for the parameter. The object is
 automatically checked for validity after the replacement is done.}
