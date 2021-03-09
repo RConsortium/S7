@@ -20,6 +20,7 @@ validate <- function(object) {
   }
 
   obj_class <- object_class(object)
+
   validator <- property(obj_class, "validator")
 
   errors <- validator(object)

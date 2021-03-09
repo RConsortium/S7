@@ -6,7 +6,7 @@ range <- class_new("range",
     object_new(start = start, end = end)
   },
   validator = function(x) {
-    if (property(x, "end") < property(x, "start")) {
+    if (x@end < x@start) {
       "`end` must be greater than or equal to `start`"
     }
   },
@@ -16,7 +16,11 @@ range <- class_new("range",
     property_new(
       name = "length",
       class = "numeric",
-      accessor = function(x) x@end - x@start
+      getter = function(x) x@end - x@start,
+      setter = function(x, value) {
+        x@end <- x@start + value
+        x
+      }
     )
   )
 )
@@ -42,4 +46,16 @@ quick_install <- function(package) {
       )
     )
   }
+}
+
+quick_test <- function() {
+  identical(Sys.getenv("R_TESTTHAT_QUICK", "false"), "true")
+}
+
+quick_test_disable <- function() {
+  Sys.setenv("R_TESTTHAT_QUICK" = "false")
+}
+
+quick_test_enable <- function() {
+  Sys.setenv("R_TESTTHAT_QUICK" = "true")
 }

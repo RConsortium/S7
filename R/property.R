@@ -2,10 +2,15 @@
 #'
 #' @param name The name of the property
 #' @param class The class of the property
-#' @param accessor The accessor use to retrieve the property (if any)
+#' @param getter An optional function used to get the value. The function
+#'   should take the object as its sole argument and return the value. If the
+#'   property has a `class` the class of the value is validated.
+#' @param setter An optional function used to set the value. The function
+#'   should take the object and new value as its two parameters and return the
+#'   modified object. The value is _not_ automatically checked.
 #' @export
-property_new <- function(name, class = NULL, accessor = NULL) {
-  out <- list(name = name, class = class, accessor = accessor)
+property_new <- function(name, class = NULL, getter = NULL, setter = NULL) {
+  out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "r7_property"
 
   out
@@ -24,16 +29,17 @@ property_new <- function(name, class = NULL, accessor = NULL) {
 property <- function(object, name) {
   val <- property_safely(object, name)
   if (is.null(val)) {
-    class <- object_class(object)
-
-    prop <- class@properties[[name]]
-    if (!is.null(prop$accessor)) {
-      res <- prop$accessor(object)
+    prop <- properties(object)[[name]]
+    if (!is.null(prop$getter)) {
+      res <- prop$getter(object)
       if (!is.null(prop$class) && !inherits(res, prop$class)) {
+        class <- object_class(object)
         stop(sprintf("%s@%s must be of type <%s>:\n- %s@%s is of type <%s>", class@name, prop$class, class@name, prop$class), call. = FALSE)
       }
       return(res)
     }
+
+    class <- object_class(object)
     stop(sprintf("Can't find property '%s' in <%s>", name, class@name), call. = FALSE)
   }
 
@@ -74,17 +80,18 @@ properties <- function(object) {
     attrs <- attributes(object)
     object <- value
     attributes(object) <- attrs
-  } else {
-    prop <- properties(object)[[name]]
-    if (!is.null(prop[["accessor"]])) {
-      class(value) <- union("r7_accessor", class(value))
-    } else {
-      if (length(prop[["class"]]) > 0 &&
-        !inherits(value, prop[["class"]])) {
-        stop(sprintf("`value` must be of class <%s>:\n- `value` is of class <%s>", prop[["class"]][[1]], class(value)[[1]]), call. = FALSE)
-      }
-    }
+    validate(object)
+    return(invisible(object))
+  }
 
+  prop <- properties(object)[[name]]
+  if (!is.null(prop$setter)) {
+    object <- prop$setter(object, value)
+  } else {
+    if (length(prop[["class"]]) > 0 &&
+      !inherits(value, prop[["class"]])) {
+      stop(sprintf("`value` must be of class <%s>:\n- `value` is of class <%s>", prop[["class"]][[1]], class(value)[[1]]), call. = FALSE)
+    }
     attr(object, name) <- value
   }
 

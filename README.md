@@ -38,7 +38,11 @@ range <- class_new("range",
     property_new(
       name = "length",
       class = "numeric",
-      accessor = function(x) x@end - x@start
+      getter = function(x) x@end - x@start,
+      setter = function(x, value) {
+        x@end <- x@start + value
+        x
+      }
     )
   )
 )
@@ -54,6 +58,12 @@ x@end
 x@length
 #> [1] 9
 
+x@length <- 5
+
+x@length
+#> [1] 5
+
+# incorrect properties throws an error
 x@middle
 #> Error: Can't find property 'middle' in <range>
 
@@ -64,7 +74,7 @@ x@end <- "foo"
 
 # assigning properties runs the validator
 x@end <- 0
-#> Error: invalid <range> object:
+#> Error: Invalid <range> object:
 #> - `end` must be greater than or equal to `start`
 
 # Print methods for both r7_class objects
@@ -77,16 +87,18 @@ object_class(x)
 # As well as normal r7_objects
 x
 #> r7: <range>
-#> | start:   1
-#> | end:    10
-#> | length:  9
+#> | start:  1
+#> | end:    6
+#> | length: 5
 
 # Use `.data` to refer to and retrieve the base data type, properties are
 # automatically removed, but non-property attributes (such as names) are retained.
 
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 
-str(text(c(foo = "bar"))@.data)
+y <- text(c(foo = "bar"))
+
+str(y@.data)
 #>  Named chr "bar"
 #>  - attr(*, "names")= chr "foo"
 ```
@@ -100,25 +112,25 @@ number <- class_new("number", parent = "numeric", constructor = function(x) obje
 foo <- generic_new(name = "foo", signature = c("x", "y"))
 
 method_new(foo, list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
-
-method_new(foo, list("text", "number"), function(x, y) {
-  res <- method_next(foo, list(object_class(x), object_class(y)))(x, y)
-  paste0("2 ", res)
-})
-
-foo(text("hi"), number(42))
-#> [1] "2 foo-hi: 42"
 ```
+
+method\_new(foo, list(“text”, “number”), function(x, y) { res \<-
+method\_next(foo, list(object\_class(x), object\_class(y)))(x, y)
+paste0(“2”, res) })
+
+foo(text(“hi”), number(42))
+
+```` 
 
 ### Load time registration
 
-``` r
+```r
 .onLoad <- function(libname, pkgname) {
   R7::method_register()
 }
 
 method_new("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
-```
+````
 
 ## Performance
 
@@ -171,9 +183,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.59µs   8.28µs   120901.        0B     12.1
-#> 2 foo_s3(x)    3.85µs   4.25µs   217100.        0B     21.7
-#> 3 foo_s4(x)    3.87µs    4.3µs   213849.        0B      0
+#> 1 foo_r7(x)    5.83µs   7.76µs   117158.    45.7KB     35.2
+#> 2 foo_s3(x)    3.95µs   4.31µs   218447.        0B     21.8
+#> 3 foo_s4(x)       4µs   4.46µs   213130.        0B     21.3
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -188,8 +200,8 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.47µs  12.64µs    72994.        0B     21.9
-#> 2 bar_s4(x, y)   9.13µs   9.95µs    96303.        0B     19.3
+#> 1 bar_r7(x, y)  11.81µs   12.7µs    75347.        0B     22.6
+#> 2 bar_s4(x, y)   9.17µs   10.1µs    93856.        0B     18.8
 ```
 
 ## Questions
@@ -280,7 +292,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - [x] - Accessed using `@` / `@<-`
       - [x] - A name, used to label output
       - [ ] - A optional class or union
-      - [x] - An optional accessor function
+      - [x] - An optional accessor functions, both getter and setters
       - [ ] - Properties are created with `prop_new()`
   - Generics
       - [x] - It knows its name and the names of the arguments in its
@@ -301,6 +313,9 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
               - [x] - a character vector.
           - [ ] - method is a compatible function
           - [x] - `method_new` is designed to work at run-time
+              - [ ] - `method_new` should optionally take a package
+                version, so the method is only registered if the package
+                is newer than the version.
       - Dispatch
           - [x] - Dispatch is nested, meaning that if there are multiple
             arguments in the generic signature, it will dispatch on the

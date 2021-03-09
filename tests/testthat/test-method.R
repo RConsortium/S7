@@ -134,6 +134,7 @@ test_that("method_new errors if given a length > 1 character vector", {
 
 test_that("method_new works with both hard and soft dependencies", {
   skip_on_os("windows")
+  skip_if(quick_test())
 
   tmp_lib <- tempfile()
   dir.create(tmp_lib)

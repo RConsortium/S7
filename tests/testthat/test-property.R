@@ -70,7 +70,13 @@ describe("@<-", {
   })
 })
 
-test_that("properties can be accessor functions", {
+test_that("properties can be getter functions", {
   x <- range(1, 10)
   expect_equal(x@length, 10 - 1)
+})
+
+test_that("properties can be setter functions", {
+  x <- range(1, 10)
+  x@length <- 5
+  expect_equal(x@length, 5)
 })

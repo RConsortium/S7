@@ -48,7 +48,11 @@ range <- class_new("range",
     property_new(
       name = "length",
       class = "numeric",
-      accessor = function(x) x@end - x@start
+      getter = function(x) x@end - x@start,
+      setter = function(x, value) {
+        x@end <- x@start + value
+        x
+      }
     )
   )
 )
@@ -61,6 +65,11 @@ x@end
 
 x@length
 
+x@length <- 5
+
+x@length
+
+# incorrect properties throws an error
 x@middle
 
 # assigning properties verifies the class matches the class of the value
@@ -80,7 +89,9 @@ x
 
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 
-str(text(c(foo = "bar"))@.data)
+y <- text(c(foo = "bar"))
+
+str(y@.data)
 ```
 
 ## Generics and methods
@@ -92,6 +103,7 @@ number <- class_new("number", parent = "numeric", constructor = function(x) obje
 foo <- generic_new(name = "foo", signature = c("x", "y"))
 
 method_new(foo, list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+```
 
 method_new(foo, list("text", "number"), function(x, y) {
   res <- method_next(foo, list(object_class(x), object_class(y)))(x, y)
@@ -229,7 +241,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
   - [x] - Accessed using `@` / `@<-`
   - [x] - A name, used to label output
   - [ ] - A optional class or union
-  - [x] - An optional accessor function
+  - [x] - An optional accessor functions, both getter and setters
   - [ ] - Properties are created with `prop_new()`
 - Generics
   - [x] - It knows its name and the names of the arguments in its signature
@@ -246,6 +258,7 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
       - [x] - a character vector.
     - [ ] - method is a compatible function
     - [x] - `method_new` is designed to work at run-time
+      - [ ] - `method_new` should optionally take a package version, so the method is only registered if the package is newer than the version.
   - Dispatch
     - [x] - Dispatch is nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second.
     - [x] - A `plot()` generic dispatching on `x`, e.g. ` plot <- function(x) { method(plot, object_class(x))(x) }`

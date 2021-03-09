@@ -4,14 +4,20 @@
 \alias{property_new}
 \title{Define a new property}
 \usage{
-property_new(name, class = NULL, accessor = NULL)
+property_new(name, class = NULL, getter = NULL, setter = NULL)
 }
 \arguments{
 \item{name}{The name of the property}
 
 \item{class}{The class of the property}
 
-\item{accessor}{The accessor use to retrieve the property (if any)}
+\item{getter}{An optional function used to get the value. The function
+should take the object as its sole argument and return the value. If the
+property has a \code{class} the class of the value is validated.}
+
+\item{setter}{An optional function used to set the value. The function
+should take the object and new value as its two parameters and return the
+modified object. The value is \emph{not} automatically checked.}
 }
 \description{
 Define a new property
