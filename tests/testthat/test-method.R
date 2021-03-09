@@ -92,7 +92,7 @@ test_that("method_next works for single dispatch", {
 
   method_new(foo, "text", function(x) {
     x@.data <- paste0("foo-", x@.data)
-    method_next(foo, list(object_class(x)))(x)
+    method_next()(x)
   })
 
   method_new(foo, "character", function(x) {
@@ -107,13 +107,13 @@ test_that("method_next works for double dispatch", {
 
   method_new(foo, list("text", "number"), function(x, y) {
     x@.data <- paste0("foo-", x@.data, "-", y@.data)
-    method_next(foo, list(object_class(x), object_class(y)))(x, y)
+    method_next()(x, y)
   })
 
   method_new(foo, list("character", "number"), function(x, y) {
     y@.data <- y + 1
     x@.data <- paste0(x@.data, "-", y@.data)
-    method_next(foo, list(object_class(x), object_class(y)))(x, y)
+    method_next()(x, y)
   })
 
   method_new(foo, list("character", "numeric"), function(x, y) {

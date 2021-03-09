@@ -52,7 +52,7 @@ find_function_name <- function(x, env) {
 #'
 #' @inheritParams method
 #' @export
-method_next <- function(generic, signature) {
+method_next <- function() {
   current_method <- sys.function(sys.parent(1))
 
   methods <- list()
@@ -62,6 +62,9 @@ method_next <- function(generic, signature) {
     i <- i + 1
     current_method <- sys.function(sys.parent(i))
   }
+
+  generic <- current_method
+  signature <- eval(generic_generate_signature_call(generic@signature), parent.frame())
 
   method_impl(generic, signature, ignore = methods)
 }

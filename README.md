@@ -136,7 +136,7 @@ bar(text("hi"), number(42))
 
 ``` r
 method_new(bar, list("text", "number"), function(x, y) {
-  res <- method_next(bar, list(object_class(x), object_class(y)))(x, y)
+  res <- method_next()(x, y)
   paste0("2 ", res)
 })
 
@@ -205,9 +205,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    5.74µs   8.62µs   117261.        0B     11.7
-#> 2 foo_s3(x)    3.83µs   4.19µs   217581.        0B     21.8
-#> 3 foo_s4(x)       4µs    4.4µs   216754.        0B     21.7
+#> 1 foo_R7(x)    5.72µs   9.21µs   109192.        0B     10.9
+#> 2 foo_s3(x)    3.74µs   4.21µs   219922.        0B     22.0
+#> 3 foo_s4(x)    4.01µs   4.45µs   211960.        0B     21.2
 
 
 bar_R7 <- generic_new("bar_R7", c("x", "y"))
@@ -222,8 +222,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  11.62µs   12.7µs    74092.        0B     22.2
-#> 2 bar_s4(x, y)   9.79µs   10.8µs    79660.        0B     15.9
+#> 1 bar_R7(x, y)  11.74µs   12.9µs    73655.        0B     22.1
+#> 2 bar_s4(x, y)   9.79µs   10.5µs    90872.        0B     18.2
 ```
 
 ## Questions

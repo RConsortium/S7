@@ -122,7 +122,7 @@ bar(text("hi"), number(42))
 
 ```{r}
 method_new(bar, list("text", "number"), function(x, y) {
-  res <- method_next(bar, list(object_class(x), object_class(y)))(x, y)
+  res <- method_next()(x, y)
   paste0("2 ", res)
 })
 

@@ -49,11 +49,18 @@ normalize_signature <- function(signature, envir = parent.frame()) {
 generic_generate <- function(name, signature, envir = parent.frame()) {
   fun <- function() NULL
   formals(fun) <- signature
-  class_args <- setdiff(names(signature), "...")
+
+  sig_call <- generic_generate_signature_call(signature)
   call_args <- names(signature)
-  sig_call <- as.call(c(as.symbol("list"), lapply(class_args, function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
   method_call <- as.call(c(as.call(c(as.symbol("method"), as.symbol(name), sig_call)), lapply(call_args, as.symbol)))
+
   body(fun) <- method_call
   environment(fun) <- envir
   fun
+}
+
+generic_generate_signature_call <- function(signature) {
+  class_args <- setdiff(names(signature), "...")
+  call_args <- names(signature)
+  as.call(c(as.symbol("list"), lapply(class_args, function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
 }
