@@ -80,16 +80,16 @@ x@end <- 0
 # Print methods for both r7_class objects
 object_class(x)
 #> r7_class: <range>
-#> | start:  <numeric>
-#> | end:    <numeric>
-#> | length: <numeric>
+#> @start  <numeric>
+#> @end    <numeric>
+#> @length <numeric>
 
 # As well as normal r7_objects
 x
 #> r7: <range>
-#> | start:  1
-#> | end:    6
-#> | length: 5
+#> @start  1
+#> @end    6
+#> @length 5
 
 # Use `.data` to refer to and retrieve the base data type, properties are
 # automatically removed, but non-property attributes (such as names) are retained.
@@ -107,30 +107,49 @@ str(y@.data)
 
 ``` r
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
 
-foo <- generic_new(name = "foo", signature = c("x", "y"))
+foo <- generic_new(name = "foo", signature = "x")
 
-method_new(foo, list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+method_new(foo, list("text"), function(x) paste0("foo-", x))
+
+foo(text("hi"))
+#> [1] "foo-hi"
 ```
 
-method\_new(foo, list(“text”, “number”), function(x, y) { res \<-
-method\_next(foo, list(object\_class(x), object\_class(y)))(x, y)
-paste0(“2”, res) })
+## Multiple dispatch
 
-foo(text(“hi”), number(42))
+``` r
+number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
 
-```` 
+bar <- generic_new(name = "bar", signature = c("x", "y"))
+
+method_new(bar, list("character", "numeric"), function(x, y) paste0("foo-", x, ":", y))
+
+bar(text("hi"), number(42))
+#> [1] "foo-hi:42"
+```
+
+## Calling the next method
+
+``` r
+method_new(bar, list("text", "number"), function(x, y) {
+  res <- method_next(bar, list(object_class(x), object_class(y)))(x, y)
+  paste0("2 ", res)
+})
+
+bar(text("hi"), number(42))
+#> [1] "2 foo-hi:42"
+```
 
 ### Load time registration
 
-```r
+``` r
 .onLoad <- function(libname, pkgname) {
   R7::method_register()
 }
 
 method_new("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
-````
+```
 
 ## Performance
 
@@ -183,9 +202,9 @@ bench::mark(foo_r7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_r7(x)    5.83µs   7.76µs   117158.    45.7KB     35.2
-#> 2 foo_s3(x)    3.95µs   4.31µs   218447.        0B     21.8
-#> 3 foo_s4(x)       4µs   4.46µs   213130.        0B     21.3
+#> 1 foo_r7(x)    5.77µs   7.72µs   122675.        0B     12.3
+#> 2 foo_s3(x)     3.9µs   4.28µs   223478.        0B     22.3
+#> 3 foo_s4(x)    3.97µs   4.48µs   209599.        0B     21.0
 
 
 bar_r7 <- generic_new("bar_r7", c("x", "y"))
@@ -200,39 +219,24 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_r7(x, y)  11.81µs   12.7µs    75347.        0B     22.6
-#> 2 bar_s4(x, y)   9.17µs   10.1µs    93856.        0B     18.8
+#> 1 bar_r7(x, y)  11.58µs   12.9µs    74069.        0B     22.2
+#> 2 bar_s4(x, y)   9.29µs   10.3µs    91795.        0B     18.4
 ```
 
 ## Questions
 
-  - What should happen if you call `method_new()` on a S3 generic?
-    1.  Should we create a new R7 generic out of the S3 generic?
-    2.  Or just register the R7 object using `registerS3method()`?
   - Best way to support `substitute()` calls in methods? We need to
     evaluate the argument promises to do the dispatch, but we want to
     pass the un-evaluated promise to the call?
   - If a type has only properties, what is the base type? R7 currently
     using VECSXP, S4 uses S4SXP
-  - `method_new()` vs `method()<-`, the latter while nice has drawbacks
+  - Should we remove `method()<-`, We can’t do the following
       - can’t use `method("foo")<-`
       - can’t use `method(otherpkg::foo)<-`
-
-## Potential names
-
-  - R7, r7 - one downside to this is why 7, if people aren’t aware of RC
-    and R6. (Though 3 + 4 = 7 is nice as well), should it be
-    capitalized?
-  - r4 - R’s version of S4, released in R version 4?
-  - oo - object oriented
-  - oop - object oriented programming
-  - moor - method based object oriented R
-  - goop - generic function OOP
-  - mm - multi-methods
-  - mr - methods for r
-  - mrs - methods for r and s
-  - mmr - multi-methods for r
-  - mmrs - multi-methods for r and s
+      - can’t use `method("otherpkg::foo")<-`
+  - What should happen if you call `method_new()` on a S3 generic?
+    1.  Should we create a new R7 generic out of the S3 generic?
+    2.  Or just register the R7 object using `registerS3method()`?
 
 ## Design workflow
 
@@ -316,6 +320,10 @@ bench::mark(bar_r7(x, y), bar_s4(x, y))
               - [ ] - `method_new` should optionally take a package
                 version, so the method is only registered if the package
                 is newer than the version.
+          - [ ] - Can define methods where one of the arguments is
+            missing
+          - [ ] - Can define methods where one of the arguments has any
+            type
       - Dispatch
           - [x] - Dispatch is nested, meaning that if there are multiple
             arguments in the generic signature, it will dispatch on the

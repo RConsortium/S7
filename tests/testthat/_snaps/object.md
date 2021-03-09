@@ -4,9 +4,9 @@
       print(x)
     Output
       r7: <range>
-      | start:   1
-      | end:    10
-      | length:  9
+      @start   1
+      @end    10
+      @length  9
 
 # printing r7 classes work
 
@@ -14,7 +14,7 @@
       range
     Output
       r7_class: <range>
-      | start:  <numeric>
-      | end:    <numeric>
-      | length: <numeric>
+      @start  <numeric>
+      @end    <numeric>
+      @length <numeric>
 
