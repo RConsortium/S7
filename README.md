@@ -79,10 +79,13 @@ x@end <- 0
 
 # Print methods for both R7_class objects
 object_class(x)
-#> <R7_class> <range>
-#> @start  <numeric>
-#> @end    <numeric>
-#> @length <numeric>
+#> <R7_class>
+#> @name range
+#> @parent <R7_object>
+#> @properties
+#>  $start  <numeric>
+#>  $end    <numeric>
+#>  $length <numeric>
 
 # As well as normal R7_objects
 x
@@ -202,9 +205,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    5.48µs   7.95µs   124145.        0B     12.4
-#> 2 foo_s3(x)    3.76µs   4.18µs   224788.        0B     22.5
-#> 3 foo_s4(x)    3.92µs   4.49µs   204384.        0B     20.4
+#> 1 foo_R7(x)    6.07µs      8µs   108718.        0B     10.9
+#> 2 foo_s3(x)    4.14µs   5.13µs   188245.        0B     18.8
+#> 3 foo_s4(x)    4.62µs   5.09µs   177001.        0B     17.7
 
 
 bar_R7 <- generic_new("bar_R7", c("x", "y"))
@@ -219,8 +222,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  11.26µs  12.35µs    76432.        0B     22.9
-#> 2 bar_s4(x, y)   8.88µs   9.84µs    98637.        0B     19.7
+#> 1 bar_R7(x, y)  12.14µs   15.2µs    64897.        0B     19.5
+#> 2 bar_s4(x, y)   9.76µs   11.7µs    81298.        0B     16.3
 ```
 
 ## Questions
