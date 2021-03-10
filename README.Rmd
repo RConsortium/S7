@@ -150,8 +150,6 @@ Dispatch uses a table stored in the `methods` property of the generic. This tabl
 
 At each level the search iteratively searches up the class vector for the object.
 
-A potential optimization is caching based on the class names, but lookup should be fast even without this.
-
 ```{r performance, cache = FALSE}
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
@@ -189,6 +187,58 @@ setMethod("bar_s4", c("text", "number"), function(x, y) paste0(x, "-", y, "-bar"
 
 # Measure performance of double dispatch
 bench::mark(bar_R7(x, y), bar_s4(x, y))
+```
+
+A potential optimization is caching based on the class names, but lookup should be fast without this.
+
+The following benchmark generates a class heiarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hiearchy vs the time to dispatch on the last class.
+
+We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.
+
+```{r performance-2, message = FALSE, R.options = list(width = 120), cache = TRUE}
+library(R7)
+
+gen_character <- function (n, min = 5, max = 25, values = c(letters, LETTERS, 0:9)) {
+  lengths <- sample(min:max, replace = TRUE, size = n)
+  values <- sample(values, sum(lengths), replace = TRUE)
+  starts <- c(1, cumsum(lengths)[-n] + 1)
+  ends <- cumsum(lengths)
+  mapply(function(start, end) paste0(values[start:end], collapse=""), starts, ends)
+}
+
+bench::press(
+  num_classes = c(3, 5, 10, 50, 100),
+  class_size = c(15, 100),
+  {
+    # Construct a class hierarchy with that number of classes
+    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    parent <- text
+    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    for (x in classes) {
+      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
+      parent <- get(x)
+    }
+
+    # Get the last defined class
+    cls <- classes[num_classes]
+
+    # Construct an object of that class
+    x <- do.call(cls, list("hi"))
+
+    # Define a generic and a method for the last class (best case scenario)
+    foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+    method(foo_R7, cls) <- function(x) paste0(x, "-foo")
+
+    # Define a generic and a method for the first class (worst case scenario)
+    foo2_R7 <- generic_new(name = "foo2_R7", signature = "x")
+    method(foo2_R7, "R7_object") <- function(x) paste0(x, "-foo")
+
+    bench::mark(
+      best = foo_R7(x),
+      worst = foo2_R7(x)
+    )
+  }
+)
 ```
 
 ## Questions

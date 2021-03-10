@@ -171,9 +171,6 @@ of the methods. e.g.
 At each level the search iteratively searches up the class vector for
 the object.
 
-A potential optimization is caching based on the class names, but lookup
-should be fast even without this.
-
 ``` r
 text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
 number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
@@ -205,9 +202,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    5.72µs   9.21µs   109192.        0B     10.9
-#> 2 foo_s3(x)    3.74µs   4.21µs   219922.        0B     22.0
-#> 3 foo_s4(x)    4.01µs   4.45µs   211960.        0B     21.2
+#> 1 foo_R7(x)    5.65µs   7.57µs   120070.        0B     12.0
+#> 2 foo_s3(x)    3.77µs   4.13µs   232953.        0B     23.3
+#> 3 foo_s4(x)    4.06µs   4.49µs   212812.        0B     21.3
 
 
 bar_R7 <- generic_new("bar_R7", c("x", "y"))
@@ -222,8 +219,89 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  11.74µs   12.9µs    73655.        0B     22.1
-#> 2 bar_s4(x, y)   9.79µs   10.5µs    90872.        0B     18.2
+#> 1 bar_R7(x, y)   11.7µs   12.9µs    74184.        0B     22.3
+#> 2 bar_s4(x, y)    9.1µs   10.1µs    95679.        0B     19.1
+```
+
+A potential optimization is caching based on the class names, but lookup
+should be fast without this.
+
+The following benchmark generates a class heiarchy of different levels
+and lengths of class names and compares the time to dispatch on the
+first class in the hiearchy vs the time to dispatch on the last class.
+
+We find that even in very extreme cases (e.g. 100 deep heirachy 100 of
+character class names) the overhead is reasonable, and for more
+reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the
+overhead is basically negligible.
+
+``` r
+library(R7)
+
+gen_character <- function (n, min = 5, max = 25, values = c(letters, LETTERS, 0:9)) {
+  lengths <- sample(min:max, replace = TRUE, size = n)
+  values <- sample(values, sum(lengths), replace = TRUE)
+  starts <- c(1, cumsum(lengths)[-n] + 1)
+  ends <- cumsum(lengths)
+  mapply(function(start, end) paste0(values[start:end], collapse=""), starts, ends)
+}
+
+bench::press(
+  num_classes = c(3, 5, 10, 50, 100),
+  class_size = c(15, 100),
+  {
+    # Construct a class hierarchy with that number of classes
+    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    parent <- text
+    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    for (x in classes) {
+      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
+      parent <- get(x)
+    }
+
+    # Get the last defined class
+    cls <- classes[num_classes]
+
+    # Construct an object of that class
+    x <- do.call(cls, list("hi"))
+
+    # Define a generic and a method for the last class (best case scenario)
+    foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+    method(foo_R7, cls) <- function(x) paste0(x, "-foo")
+
+    # Define a generic and a method for the first class (worst case scenario)
+    foo2_R7 <- generic_new(name = "foo2_R7", signature = "x")
+    method(foo2_R7, "R7_object") <- function(x) paste0(x, "-foo")
+
+    bench::mark(
+      best = foo_R7(x),
+      worst = foo2_R7(x)
+    )
+  }
+)
+#> # A tibble: 20 x 8
+#>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
+#>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#>  1 best                 3         15   6.03µs    6.7µs   138516.        0B    27.7 
+#>  2 worst                3         15   6.54µs    7.6µs   120565.        0B    12.1 
+#>  3 best                 5         15   6.04µs   6.75µs   139634.        0B    27.9 
+#>  4 worst                5         15   6.54µs   7.12µs   135616.        0B    13.6 
+#>  5 best                10         15   6.11µs    6.9µs   135694.        0B    27.1 
+#>  6 worst               10         15   6.96µs    7.7µs   125702.        0B    25.1 
+#>  7 best                50         15   6.73µs   7.45µs   129541.        0B    13.0 
+#>  8 worst               50         15  10.45µs  11.35µs    83628.        0B    16.7 
+#>  9 best               100         15   7.62µs   8.27µs   116397.        0B    23.3 
+#> 10 worst              100         15  15.25µs  15.86µs    60721.        0B    12.1 
+#> 11 best                 3        100   5.98µs   6.59µs   138674.        0B    13.9 
+#> 12 worst                3        100   6.54µs   7.24µs   129774.        0B    26.0 
+#> 13 best                 5        100   6.04µs   6.58µs   140463.        0B    28.1 
+#> 14 worst                5        100   6.84µs   7.77µs   123389.        0B    12.3 
+#> 15 best                10        100   6.19µs    6.8µs   134769.        0B    27.0 
+#> 16 worst               10        100   7.72µs   8.65µs   112936.        0B    22.6 
+#> 17 best                50        100   6.65µs   7.34µs   127350.        0B    12.7 
+#> 18 worst               50        100  13.25µs  14.24µs    67187.        0B    13.4 
+#> 19 best               100        100   7.36µs   8.12µs   118002.        0B    23.6 
+#> 20 worst              100        100  20.78µs  21.58µs    44207.        0B     4.42
 ```
 
 ## Questions
