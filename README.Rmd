@@ -122,7 +122,7 @@ bar(text("hi"), number(42))
 
 ```{r}
 new_method(bar, list("text", "number"), function(x, y) {
-  res <- method_next()(x, y)
+  res <- next_method()(x, y)
   paste0("2 ", res)
 })
 
@@ -361,7 +361,7 @@ bench::press(
     - [x] - R7 generics can dispatch with base type objects
     - [x] - R7 generics can dispatch with S3 objects
     - [x] - R7 generics can dispatch with S4 objects
-    - [x] - `method_next()` can dispatch on multiple arguments, avoiding methods that have already been called.
+    - [x] - `next_method()` can dispatch on multiple arguments, avoiding methods that have already been called.
 - Compatibility
   - S3
     - [x] - Since the class attribute has the same semantics as S3, S3 dispatch should be fully compatible.

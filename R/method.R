@@ -51,7 +51,7 @@ find_function_name <- function(x, env) {
 #' Retrieve the next applicable method after the current one
 #'
 #' @export
-method_next <- function() {
+next_method <- function() {
   current_method <- sys.function(sys.parent(1))
 
   methods <- list()

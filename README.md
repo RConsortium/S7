@@ -136,7 +136,7 @@ bar(text("hi"), number(42))
 
 ``` r
 new_method(bar, list("text", "number"), function(x, y) {
-  res <- method_next()(x, y)
+  res <- next_method()(x, y)
   paste0("2 ", res)
 })
 
@@ -202,9 +202,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    5.48µs   8.22µs   126723.        0B     12.7
-#> 2 foo_s3(x)    3.69µs    4.1µs   235591.        0B     23.6
-#> 3 foo_s4(x)    3.96µs   4.42µs   197384.        0B     19.7
+#> 1 foo_R7(x)    5.71µs   8.26µs   120994.        0B     12.1
+#> 2 foo_s3(x)    3.79µs   4.25µs   223514.        0B     22.4
+#> 3 foo_s4(x)       4µs   4.42µs   218990.        0B     21.9
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
@@ -218,8 +218,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  11.54µs   12.8µs    75679.        0B     22.7
-#> 2 bar_s4(x, y)   9.11µs     10µs    92862.        0B     18.6
+#> 1 bar_R7(x, y)  11.64µs   12.7µs    72906.        0B     21.9
+#> 2 bar_s4(x, y)   9.12µs   10.1µs    91415.        0B     18.3
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -481,7 +481,7 @@ bench::press(
           - [x] - R7 generics can dispatch with base type objects
           - [x] - R7 generics can dispatch with S3 objects
           - [x] - R7 generics can dispatch with S4 objects
-          - [x] - `method_next()` can dispatch on multiple arguments,
+          - [x] - `next_method()` can dispatch on multiple arguments,
             avoiding methods that have already been called.
   - Compatibility
       - S3

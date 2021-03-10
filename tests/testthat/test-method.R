@@ -87,12 +87,12 @@ test_that("new_method works if you pass a bare class union", {
   expect_equal(foo7(number(1)), "foo-1")
 })
 
-test_that("method_next works for single dispatch", {
+test_that("next_method works for single dispatch", {
   foo <- new_generic("foo", "x")
 
   new_method(foo, "text", function(x) {
     x@.data <- paste0("foo-", x@.data)
-    method_next()(x)
+    next_method()(x)
   })
 
   new_method(foo, "character", function(x) {
@@ -102,18 +102,18 @@ test_that("method_next works for single dispatch", {
   expect_equal(foo(text("hi")), "foo-hi")
 })
 
-test_that("method_next works for double dispatch", {
+test_that("next_method works for double dispatch", {
   foo <- new_generic("foo", c("x", "y"))
 
   new_method(foo, list("text", "number"), function(x, y) {
     x@.data <- paste0("foo-", x@.data, "-", y@.data)
-    method_next()(x, y)
+    next_method()(x, y)
   })
 
   new_method(foo, list("character", "number"), function(x, y) {
     y@.data <- y + 1
     x@.data <- paste0(x@.data, "-", y@.data)
-    method_next()(x, y)
+    next_method()(x, y)
   })
 
   new_method(foo, list("character", "numeric"), function(x, y) {
