@@ -202,10 +202,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    5.65µs   7.57µs   120070.        0B     12.0
-#> 2 foo_s3(x)    3.77µs   4.13µs   232953.        0B     23.3
-#> 3 foo_s4(x)    4.06µs   4.49µs   212812.        0B     21.3
-
+#> 1 foo_R7(x)    5.97µs   8.76µs   115512.        0B     11.6
+#> 2 foo_s3(x)    3.91µs   4.32µs   210119.        0B     21.0
+#> 3 foo_s4(x)    4.03µs   4.49µs   201600.        0B     20.2
 
 bar_R7 <- generic_new("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
@@ -219,8 +218,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)   11.7µs   12.9µs    74184.        0B     22.3
-#> 2 bar_s4(x, y)    9.1µs   10.1µs    95679.        0B     19.1
+#> 1 bar_R7(x, y)  12.36µs   15.3µs    65846.        0B     19.8
+#> 2 bar_s4(x, y)   9.61µs   10.9µs    85140.        0B     17.0
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -260,7 +259,7 @@ bench::press(
     }
 
     # Get the last defined class
-    cls <- classes[num_classes]
+    cls <- parent
 
     # Construct an object of that class
     x <- do.call(cls, list("hi"))
@@ -271,7 +270,7 @@ bench::press(
 
     # Define a generic and a method for the first class (worst case scenario)
     foo2_R7 <- generic_new(name = "foo2_R7", signature = "x")
-    method(foo2_R7, "R7_object") <- function(x) paste0(x, "-foo")
+    method(foo2_R7, R7_object) <- function(x) paste0(x, "-foo")
 
     bench::mark(
       best = foo_R7(x),
@@ -282,26 +281,88 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   6.03µs    6.7µs   138516.        0B    27.7 
-#>  2 worst                3         15   6.54µs    7.6µs   120565.        0B    12.1 
-#>  3 best                 5         15   6.04µs   6.75µs   139634.        0B    27.9 
-#>  4 worst                5         15   6.54µs   7.12µs   135616.        0B    13.6 
-#>  5 best                10         15   6.11µs    6.9µs   135694.        0B    27.1 
-#>  6 worst               10         15   6.96µs    7.7µs   125702.        0B    25.1 
-#>  7 best                50         15   6.73µs   7.45µs   129541.        0B    13.0 
-#>  8 worst               50         15  10.45µs  11.35µs    83628.        0B    16.7 
-#>  9 best               100         15   7.62µs   8.27µs   116397.        0B    23.3 
-#> 10 worst              100         15  15.25µs  15.86µs    60721.        0B    12.1 
-#> 11 best                 3        100   5.98µs   6.59µs   138674.        0B    13.9 
-#> 12 worst                3        100   6.54µs   7.24µs   129774.        0B    26.0 
-#> 13 best                 5        100   6.04µs   6.58µs   140463.        0B    28.1 
-#> 14 worst                5        100   6.84µs   7.77µs   123389.        0B    12.3 
-#> 15 best                10        100   6.19µs    6.8µs   134769.        0B    27.0 
-#> 16 worst               10        100   7.72µs   8.65µs   112936.        0B    22.6 
-#> 17 best                50        100   6.65µs   7.34µs   127350.        0B    12.7 
-#> 18 worst               50        100  13.25µs  14.24µs    67187.        0B    13.4 
-#> 19 best               100        100   7.36µs   8.12µs   118002.        0B    23.6 
-#> 20 worst              100        100  20.78µs  21.58µs    44207.        0B     4.42
+#>  1 best                 3         15    6.4µs   7.62µs   128108.        0B    25.6 
+#>  2 worst                3         15   6.71µs    8.4µs   119461.        0B    11.9 
+#>  3 best                 5         15   6.54µs    8.1µs   120687.        0B    24.1 
+#>  4 worst                5         15   7.33µs   8.64µs   108336.        0B    10.8 
+#>  5 best                10         15   6.46µs   8.05µs   120115.        0B    24.0 
+#>  6 worst               10         15   7.44µs    8.1µs   105869.        0B    21.2 
+#>  7 best                50         15   7.38µs   8.17µs   111123.        0B    11.1 
+#>  8 worst               50         15  11.17µs  12.05µs    77646.        0B    15.5 
+#>  9 best               100         15   8.03µs   8.74µs   104572.        0B    20.9 
+#> 10 worst              100         15  15.88µs  16.82µs    55421.        0B    11.1 
+#> 11 best                 3        100   6.49µs   7.92µs   122183.        0B    12.2 
+#> 12 worst                3        100   6.99µs   8.61µs   115842.        0B    23.2 
+#> 13 best                 5        100   6.79µs   8.05µs   113270.        0B    22.7 
+#> 14 worst                5        100   7.25µs   9.44µs   104523.        0B    10.5 
+#> 15 best                10        100   6.75µs    7.5µs   119261.        0B    23.9 
+#> 16 worst               10        100   8.07µs   9.55µs    99423.        0B    19.9 
+#> 17 best                50        100   7.22µs   8.66µs   112672.        0B    11.3 
+#> 18 worst               50        100  14.28µs  15.37µs    60045.        0B    12.0 
+#> 19 best               100        100   8.01µs   8.88µs   103941.        0B    20.8 
+#> 20 worst              100        100  22.52µs  24.05µs    37205.        0B     3.72
+```
+
+And the same benchmark using double-dispatch vs single dispatch
+
+``` r
+bench::press(
+  num_classes = c(3, 5, 10, 50, 100),
+  class_size = c(15, 100),
+  {
+    # Construct a class hierarchy with that number of classes
+    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    parent <- text
+    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    for (x in classes) {
+      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
+      parent <- get(x)
+    }
+
+    # Get the last defined class
+    cls <- parent
+
+    # Construct an object of that class
+    x <- do.call(cls, list("hi"))
+    y <- do.call(cls, list("ho"))
+
+    # Define a generic and a method for the last class (best case scenario)
+    foo_R7 <- generic_new(name = "foo_R7", signature = c("x", "y"))
+    method(foo_R7, list(cls, cls)) <- function(x, y) paste0(x, y, "-foo")
+
+    # Define a generic and a method for the first class (worst case scenario)
+    foo2_R7 <- generic_new(name = "foo2_R7", signature = c("x", "y"))
+    method(foo2_R7, list(R7_object, R7_object)) <- function(x, y) paste0(x, y, "-foo")
+
+    bench::mark(
+      best = foo_R7(x, y),
+      worst = foo2_R7(x, y)
+    )
+  }
+)
+#> # A tibble: 20 x 8
+#>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
+#>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#>  1 best                 3         15   7.94µs   9.94µs    99304.        0B    19.9 
+#>  2 worst                3         15   8.35µs  10.57µs    96043.        0B    28.8 
+#>  3 best                 5         15   7.92µs   9.97µs    99115.        0B    19.8 
+#>  4 worst                5         15   8.93µs  10.98µs    90284.        0B    18.1 
+#>  5 best                10         15   7.92µs   9.94µs    98710.        0B    29.6 
+#>  6 worst               10         15   9.58µs  11.93µs    83590.        0B    16.7 
+#>  7 best                50         15   9.34µs  10.98µs    86442.        0B    17.3 
+#>  8 worst               50         15  17.53µs  18.63µs    48850.        0B    14.7 
+#>  9 best               100         15   10.9µs  12.64µs    73649.        0B    14.7 
+#> 10 worst              100         15  28.04µs  29.67µs    31080.        0B     9.33
+#> 11 best                 3        100   7.85µs   9.87µs   100076.        0B    20.0 
+#> 12 worst                3        100   8.89µs  10.92µs    90573.        0B    18.1 
+#> 13 best                 5        100   8.18µs  10.39µs    93604.        0B    28.1 
+#> 14 worst                5        100   9.59µs     12µs    82921.        0B    16.6 
+#> 15 best                10        100   8.34µs  10.29µs    95143.        0B    19.0 
+#> 16 worst               10        100  11.14µs  12.74µs    74153.        0B    22.3 
+#> 17 best                50        100    9.2µs  11.34µs    87691.        0B    17.5 
+#> 18 worst               50        100   24.4µs  25.67µs    36345.        0B    10.9 
+#> 19 best               100        100  10.77µs  13.41µs    74689.        0B    14.9 
+#> 20 worst              100        100   40.7µs  42.28µs    21972.        0B     4.40
 ```
 
 ## Questions

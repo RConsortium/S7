@@ -178,7 +178,6 @@ setMethod("foo_s4", c("text"), function(x) paste0(x, "-foo"))
 # Measure performance of single dispatch
 bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 
-
 bar_R7 <- generic_new("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
@@ -195,7 +194,7 @@ The following benchmark generates a class heiarchy of different levels and lengt
 
 We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.
 
-```{r performance-2, message = FALSE, R.options = list(width = 120), cache = TRUE}
+```{r performance-3, message = FALSE, R.options = list(width = 120), cache = TRUE}
 library(R7)
 
 gen_character <- function (n, min = 5, max = 25, values = c(letters, LETTERS, 0:9)) {
@@ -220,7 +219,7 @@ bench::press(
     }
 
     # Get the last defined class
-    cls <- classes[num_classes]
+    cls <- parent
 
     # Construct an object of that class
     x <- do.call(cls, list("hi"))
@@ -231,11 +230,50 @@ bench::press(
 
     # Define a generic and a method for the first class (worst case scenario)
     foo2_R7 <- generic_new(name = "foo2_R7", signature = "x")
-    method(foo2_R7, "R7_object") <- function(x) paste0(x, "-foo")
+    method(foo2_R7, R7_object) <- function(x) paste0(x, "-foo")
 
     bench::mark(
       best = foo_R7(x),
       worst = foo2_R7(x)
+    )
+  }
+)
+```
+
+And the same benchmark using double-dispatch vs single dispatch
+
+```{r performance-2, message = FALSE, R.options = list(width = 120), cache = TRUE}
+bench::press(
+  num_classes = c(3, 5, 10, 50, 100),
+  class_size = c(15, 100),
+  {
+    # Construct a class hierarchy with that number of classes
+    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    parent <- text
+    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    for (x in classes) {
+      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
+      parent <- get(x)
+    }
+
+    # Get the last defined class
+    cls <- parent
+
+    # Construct an object of that class
+    x <- do.call(cls, list("hi"))
+    y <- do.call(cls, list("ho"))
+
+    # Define a generic and a method for the last class (best case scenario)
+    foo_R7 <- generic_new(name = "foo_R7", signature = c("x", "y"))
+    method(foo_R7, list(cls, cls)) <- function(x, y) paste0(x, y, "-foo")
+
+    # Define a generic and a method for the first class (worst case scenario)
+    foo2_R7 <- generic_new(name = "foo2_R7", signature = c("x", "y"))
+    method(foo2_R7, list(R7_object, R7_object)) <- function(x, y) paste0(x, y, "-foo")
+
+    bench::mark(
+      best = foo_R7(x, y),
+      worst = foo2_R7(x, y)
     )
   }
 )
