@@ -19,7 +19,7 @@ valid_implicitly(object, fun)
 }
 \description{
 \code{\link[=validate]{validate()}} calls the validation of an R7 object. This is done
-automatically when creating new objects (at the end of \code{object_new()}) and
+automatically when creating new objects (at the end of \link{new_object}) and
 when setting any property.
 }
 \details{

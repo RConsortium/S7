@@ -1,7 +1,7 @@
 #' Initialize a new object
 #' @keywords internal
 #' @export
-object_new <- function(...) {
+new_object <- function(...) {
   class <- object_class(sys.function(-1))
 
   args <- list(...)

@@ -14,5 +14,5 @@ generic_generate(name, signature, envir = parent.frame())
 \item{envir}{environment to use as the enclosing environment of the generated generic}
 }
 \description{
-This is used as the default to \code{generic_new}
+This is used as the default to \link{new_generic}
 }

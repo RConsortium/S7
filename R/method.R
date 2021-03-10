@@ -50,7 +50,6 @@ find_function_name <- function(x, env) {
 
 #' Retrieve the next applicable method after the current one
 #'
-#' @inheritParams method
 #' @export
 method_next <- function() {
   current_method <- sys.function(sys.parent(1))
@@ -82,12 +81,12 @@ method_register <- function() {
   for (x in tbl) {
     if (isNamespaceLoaded(x$package)) {
       ns <- asNamespace(x$package)
-      method_new(getFromNamespace(x$generic, ns), x$signature, x$value)
+      new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
     } else {
       setHook(packageEvent(x$package, "onLoad"), local({x <- x
         function(...) {
         ns <- asNamespace(x$package)
-        method_new(getFromNamespace(x$generic, ns), x$signature, x$value)
+        new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
       }}))
     }
   }
@@ -95,7 +94,7 @@ method_register <- function() {
 
 #' @rdname method
 #' @export
-method_new <- function(generic, signature, value) {
+new_method <- function(generic, signature, value) {
   if (is.character(generic)) {
     if (!length(generic) == 1) {
       stop("`generic` must be a generic function or a length 1 character vector", call. = FALSE)
@@ -137,7 +136,7 @@ method_new <- function(generic, signature, value) {
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "class_union")) {
       for (class in signature[[1]]@classes) {
-        method_new(generic, c(signature[seq_len(i - 1)], class@name), value)
+        new_method(generic, c(signature[seq_len(i - 1)], class@name), value)
       }
       return(invisible(generic))
     } else if (inherits(signature[[i]], "R7_class")) {
@@ -161,7 +160,7 @@ method_new <- function(generic, signature, value) {
 #' @rdname method
 #' @export
 `method<-` <- function(generic, signature, value) {
-  method_new(generic, signature, value)
+  new_method(generic, signature, value)
 }
 
 as_generic <- function(generic) {

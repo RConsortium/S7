@@ -33,9 +33,9 @@ These ideas have been implemented in the R7 package, hosted in this repository.
 ```{r error = TRUE}
 library(R7)
 
-range <- class_new("range",
+range <- new_class("range",
   constructor = function(start, end) {
-    object_new(start = start, end = end)
+    new_object(start = start, end = end)
   },
   validator = function(x) {
     if (x@end < x@start) {
@@ -45,7 +45,7 @@ range <- class_new("range",
   properties = list(
     start = "numeric",
     end = "numeric",
-    property_new(
+    new_property(
       name = "length",
       class = "numeric",
       getter = function(x) x@end - x@start,
@@ -87,7 +87,7 @@ x
 # Use `.data` to refer to and retrieve the base data type, properties are
 # automatically removed, but non-property attributes (such as names) are retained.
 
-text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
 
 y <- text(c(foo = "bar"))
 
@@ -97,11 +97,11 @@ str(y@.data)
 ## Generics and methods
 
 ```{r}
-text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
 
-foo <- generic_new(name = "foo", signature = "x")
+foo <- new_generic(name = "foo", signature = "x")
 
-method_new(foo, list("text"), function(x) paste0("foo-", x))
+new_method(foo, list("text"), function(x) paste0("foo-", x))
 
 foo(text("hi"))
 ```
@@ -109,11 +109,11 @@ foo(text("hi"))
 ## Multiple dispatch
 
 ```{r}
-number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
-bar <- generic_new(name = "bar", signature = c("x", "y"))
+bar <- new_generic(name = "bar", signature = c("x", "y"))
 
-method_new(bar, list("character", "numeric"), function(x, y) paste0("foo-", x, ":", y))
+new_method(bar, list("character", "numeric"), function(x, y) paste0("foo-", x, ":", y))
 
 bar(text("hi"), number(42))
 ```
@@ -121,7 +121,7 @@ bar(text("hi"), number(42))
 ## Calling the next method
 
 ```{r}
-method_new(bar, list("text", "number"), function(x, y) {
+new_method(bar, list("text", "number"), function(x, y) {
   res <- method_next()(x, y)
   paste0("2 ", res)
 })
@@ -135,7 +135,7 @@ bar(text("hi"), number(42))
   R7::method_register()
 }
 
-method_new("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+new_method("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
 ```
 
 ## Performance
@@ -151,13 +151,13 @@ Dispatch uses a table stored in the `methods` property of the generic. This tabl
 At each level the search iteratively searches up the class vector for the object.
 
 ```{r performance, cache = FALSE}
-text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
 x <- text("hi")
 y <- number(1)
 
-foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+foo_R7 <- new_generic(name = "foo_R7", signature = "x")
 method(foo_R7, "text") <- function(x) paste0(x, "-foo")
 
 foo_s3 <- function(x) {
@@ -178,7 +178,7 @@ setMethod("foo_s4", c("text"), function(x) paste0(x, "-foo"))
 # Measure performance of single dispatch
 bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 
-bar_R7 <- generic_new("bar_R7", c("x", "y"))
+bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
@@ -194,7 +194,7 @@ The following benchmark generates a class heiarchy of different levels and lengt
 
 We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.
 
-```{r performance-3, message = FALSE, R.options = list(width = 120), cache = TRUE}
+```{r performance-2, message = FALSE, R.options = list(width = 120), cache = TRUE}
 library(R7)
 
 gen_character <- function (n, min = 5, max = 25, values = c(letters, LETTERS, 0:9)) {
@@ -210,12 +210,13 @@ bench::press(
   class_size = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
     classes <- gen_character(num_classes, min = class_size, max = class_size)
+    env <- new.env()
     for (x in classes) {
-      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
-      parent <- get(x)
+      assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
+      parent <- get(x, env)
     }
 
     # Get the last defined class
@@ -225,11 +226,11 @@ bench::press(
     x <- do.call(cls, list("hi"))
 
     # Define a generic and a method for the last class (best case scenario)
-    foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+    foo_R7 <- new_generic(name = "foo_R7", signature = "x")
     method(foo_R7, cls) <- function(x) paste0(x, "-foo")
 
     # Define a generic and a method for the first class (worst case scenario)
-    foo2_R7 <- generic_new(name = "foo2_R7", signature = "x")
+    foo2_R7 <- new_generic(name = "foo2_R7", signature = "x")
     method(foo2_R7, R7_object) <- function(x) paste0(x, "-foo")
 
     bench::mark(
@@ -242,18 +243,19 @@ bench::press(
 
 And the same benchmark using double-dispatch vs single dispatch
 
-```{r performance-2, message = FALSE, R.options = list(width = 120), cache = TRUE}
+```{r performance-3, message = FALSE, R.options = list(width = 120), cache = TRUE}
 bench::press(
   num_classes = c(3, 5, 10, 50, 100),
   class_size = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
     classes <- gen_character(num_classes, min = class_size, max = class_size)
+    env <- new.env()
     for (x in classes) {
-      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
-      parent <- get(x)
+      assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
+      parent <- get(x, env)
     }
 
     # Get the last defined class
@@ -264,11 +266,11 @@ bench::press(
     y <- do.call(cls, list("ho"))
 
     # Define a generic and a method for the last class (best case scenario)
-    foo_R7 <- generic_new(name = "foo_R7", signature = c("x", "y"))
+    foo_R7 <- new_generic(name = "foo_R7", signature = c("x", "y"))
     method(foo_R7, list(cls, cls)) <- function(x, y) paste0(x, y, "-foo")
 
     # Define a generic and a method for the first class (worst case scenario)
-    foo2_R7 <- generic_new(name = "foo2_R7", signature = c("x", "y"))
+    foo2_R7 <- new_generic(name = "foo2_R7", signature = c("x", "y"))
     method(foo2_R7, list(R7_object, R7_object)) <- function(x, y) paste0(x, y, "-foo")
 
     bench::mark(
@@ -286,7 +288,7 @@ bench::press(
   - can't use `method("foo")<-`
   - can't use `method(otherpkg::foo)<-`
   - can't use `method("otherpkg::foo")<-`
-- What should happen if you call `method_new()` on a S3 generic?
+- What should happen if you call `new_method()` on a S3 generic?
   1. Should we create a new R7 generic out of the S3 generic?
   2. Or just register the R7 object using `registerS3method()`? ++
 
@@ -308,11 +310,11 @@ bench::press(
   - [x] - R7 classes are first class objects with the following
     - [x] - `name`, a human-meaningful descriptor for the class.
     - [x] - `parent`, the class object of the parent class.
-    - [x] - A constructor, an user-facing function used to create new objects of this class. It always ends with a call to `object_new()` to initialize the class.
+    - [x] - A constructor, an user-facing function used to create new objects of this class. It always ends with a call to `new_object()` to initialize the class.
     - [x] - A validator, a function that takes the object and returns NULL if the object is valid, otherwise a character vector of error messages.
     - [x] - properties, a list of property objects
 - Initialization
-  - [x] - The constructor uses `object_new()` to initialize a new object, this
+  - [x] - The constructor uses `new_object()` to initialize a new object, this
     - [x] - Inspects the enclosing scope to find the "current" class.
     - [ ] - Creates the prototype, by either by calling the parent constructor or by creating a base type and adding class and `object_class()` attributes to it.
     - [x] - Validates properties then adds to prototype.
@@ -332,10 +334,10 @@ bench::press(
   - [x] - A name, used to label output
   - [ ] - A optional class or union
   - [x] - An optional accessor functions, both getter and setters
-  - [ ] - Properties are created with `prop_new()`
+  - [ ] - Properties are created with `new_prop()`
 - Generics
   - [x] - It knows its name and the names of the arguments in its signature
-  - [x] - Calling `generic_new()` defines a new generic
+  - [x] - Calling `new_generic()` defines a new generic
   - [ ] - By convention, any argument that takes a generic function, can instead take the name of a generic function supplied as a string
 - Methods
   - Registration
@@ -347,8 +349,8 @@ bench::press(
       - [x] - list of class objects/unions
       - [x] - a character vector.
     - [ ] - method is a compatible function
-    - [x] - `method_new` is designed to work at run-time
-      - [ ] - `method_new` should optionally take a package version, so the method is only registered if the package is newer than the version.
+    - [x] - `new_method` is designed to work at run-time
+      - [ ] - `new_method` should optionally take a package version, so the method is only registered if the package is newer than the version.
     - [ ] - Can define methods where one of the arguments is missing
     - [ ] - Can define methods where one of the arguments has any type
   - Dispatch

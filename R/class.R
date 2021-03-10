@@ -1,4 +1,4 @@
-R7_class <- function(name, parent = R7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+R7_class <- function(name, parent = R7_object, constructor = function(...) new_object(...), validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
     parent <- class_get(parent)
   }
@@ -21,7 +21,7 @@ R7_class <- function(name, parent = R7_object, constructor = function(...) objec
 #' @param validator The validation function
 #' @param properties A list of properties for the class
 #' @export
-class_new <- function(name, parent = R7_object, constructor = function(...) object_new(...), validator = function(x) NULL, properties = list()) {
+new_class <- function(name, parent = R7_object, constructor = function(...) new_object(...), validator = function(x) NULL, properties = list()) {
   environment(constructor) <- topenv(environment(constructor))
 
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
@@ -72,17 +72,17 @@ class_get <- function(name, envir = parent.frame()) {
 
 get_base_class <- function(name) {
   switch(name,
-    "logical" = class_new("logical", constructor = function() logical()),
-    "integer" = class_new("integer", constructor = function() integer()),
+    "logical" = new_class("logical", constructor = function() logical()),
+    "integer" = new_class("integer", constructor = function() integer()),
     "double" = ,
-    "numeric" = class_new("numeric", constructor = function() numeric()),
-    "complex" = class_new("complex", constructor = function() complex()),
-    "character" = class_new("character", constructor = function() character()),
-    "raw" = class_new("raw", constructor = function() raw()),
-    "list" = class_new("list", constructor = function() list()),
+    "numeric" = new_class("numeric", constructor = function() numeric()),
+    "complex" = new_class("complex", constructor = function() complex()),
+    "character" = new_class("character", constructor = function() character()),
+    "raw" = new_class("raw", constructor = function() raw()),
+    "list" = new_class("list", constructor = function() list()),
     "closure" = ,
-    "function" = class_new("function", constructor = function() function() NULL),
-    "NULL" = class_new("NULL", constructor = function() NULL),
+    "function" = new_class("function", constructor = function() function() NULL),
+    "NULL" = new_class("NULL", constructor = function() NULL),
     stop(sprintf("Invalid class <%s>", name), call. = FALSE)
   )
 }

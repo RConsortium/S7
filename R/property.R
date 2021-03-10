@@ -9,7 +9,7 @@
 #'   should take the object and new value as its two parameters and return the
 #'   modified object. The value is _not_ automatically checked.
 #' @export
-property_new <- function(name, class = NULL, getter = NULL, setter = NULL) {
+new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
   out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "R7_property"
 
@@ -143,7 +143,7 @@ as_properties <- function(x) {
     stop("`x` must be a list of 'R7_property' objects or named characters", call. = FALSE)
   }
 
-  x[named_chars] <- mapply(property_new, name = names(x)[named_chars], class = x[named_chars], USE.NAMES = TRUE, SIMPLIFY = FALSE)
+  x[named_chars] <- mapply(new_property, name = names(x)[named_chars], class = x[named_chars], USE.NAMES = TRUE, SIMPLIFY = FALSE)
 
   names(x)[!named_chars] <- vcapply(x[!named_chars], function(x) x[["name"]])
 

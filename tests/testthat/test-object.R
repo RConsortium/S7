@@ -1,4 +1,4 @@
-describe("object_new", {
+describe("new_object", {
   it("can instantiate a new object with properties", {
     x <- range(start = 1, end = 10)
     expect_equal(x@start, 1)

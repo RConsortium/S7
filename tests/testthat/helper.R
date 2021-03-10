@@ -1,9 +1,9 @@
-text <- class_new("text", parent = "character", constructor = function(text = character()) object_new(.data = text))
-number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+text <- new_class("text", parent = "character", constructor = function(text = character()) new_object(.data = text))
+number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
-range <- class_new("range",
+range <- new_class("range",
   constructor = function(start, end) {
-    object_new(start = start, end = end)
+    new_object(start = start, end = end)
   },
   validator = function(x) {
     if (x@end < x@start) {
@@ -13,7 +13,7 @@ range <- class_new("range",
   properties = list(
     start = "numeric",
     end = "numeric",
-    property_new(
+    new_property(
       name = "length",
       class = "numeric",
       getter = function(x) x@end - x@start,

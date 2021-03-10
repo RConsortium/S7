@@ -1,6 +1,6 @@
 #' An R7 object
 #' @export
-R7_object <- class_new(
+R7_object <- new_class(
   name = "R7_object",
   parent = NULL,
   constructor = function() {
@@ -15,18 +15,18 @@ R7_object <- class_new(
 #' @param signature The signature of the generic
 #' @param fun The function to use as the body of the generic.
 #' @export
-R7_generic <- class_new(
+R7_generic <- new_class(
   name = "R7_generic",
   properties = list(name = "character", methods = "environment", signature = "list"),
   parent = "function",
   constructor = function(name, signature, fun) {
-    object_new(name = name, signature = signature, methods = new.env(parent = emptyenv(), hash = TRUE), .data = fun)
+    new_object(name = name, signature = signature, methods = new.env(parent = emptyenv(), hash = TRUE), .data = fun)
   }
 )
 
 #' @rdname R7_generic
 #' @export
-R7_method <- class_new(
+R7_method <- new_class(
   name = "R7_method",
   properties = list(generic = "R7_generic", signature = "list", fun = "function"),
   parent = "function",
@@ -34,7 +34,7 @@ R7_method <- class_new(
     if (is.character(signature)) {
       signature <- list(signature)
     }
-    object_new(generic = generic, signature = signature, .data = fun)
+    new_object(generic = generic, signature = signature, .data = fun)
   }
 )
 
@@ -46,7 +46,7 @@ R7_method <- class_new(
 #' @param ... The classes to include in the union, either looked up by named or
 #'   by passing the `R7_class` objects directly.
 #' @export
-class_union <- class_new(
+class_union <- new_class(
   name = "class_union",
   properties = list(classes = "list"),
   validator = function(x) {
@@ -64,7 +64,7 @@ class_union <- class_new(
       }
     }
 
-    object_new(classes = classes)
+    new_object(classes = classes)
   }
 )
 

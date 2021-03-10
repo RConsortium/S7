@@ -1,7 +1,7 @@
 #' Validation of R7 objects
 #'
 #' [validate()] calls the validation of an R7 object. This is done
-#' automatically when creating new objects (at the end of `object_new()`) and
+#' automatically when creating new objects (at the end of [new_object]) and
 #' when setting any property.
 #'
 #' [valid_eventually()] disables validation of properties, runs a function on

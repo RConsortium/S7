@@ -23,9 +23,9 @@ coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg
 ``` r
 library(R7)
 
-range <- class_new("range",
+range <- new_class("range",
   constructor = function(start, end) {
-    object_new(start = start, end = end)
+    new_object(start = start, end = end)
   },
   validator = function(x) {
     if (x@end < x@start) {
@@ -35,7 +35,7 @@ range <- class_new("range",
   properties = list(
     start = "numeric",
     end = "numeric",
-    property_new(
+    new_property(
       name = "length",
       class = "numeric",
       getter = function(x) x@end - x@start,
@@ -97,7 +97,7 @@ x
 # Use `.data` to refer to and retrieve the base data type, properties are
 # automatically removed, but non-property attributes (such as names) are retained.
 
-text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
 
 y <- text(c(foo = "bar"))
 
@@ -109,11 +109,11 @@ str(y@.data)
 ## Generics and methods
 
 ``` r
-text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
 
-foo <- generic_new(name = "foo", signature = "x")
+foo <- new_generic(name = "foo", signature = "x")
 
-method_new(foo, list("text"), function(x) paste0("foo-", x))
+new_method(foo, list("text"), function(x) paste0("foo-", x))
 
 foo(text("hi"))
 #> [1] "foo-hi"
@@ -122,11 +122,11 @@ foo(text("hi"))
 ## Multiple dispatch
 
 ``` r
-number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
-bar <- generic_new(name = "bar", signature = c("x", "y"))
+bar <- new_generic(name = "bar", signature = c("x", "y"))
 
-method_new(bar, list("character", "numeric"), function(x, y) paste0("foo-", x, ":", y))
+new_method(bar, list("character", "numeric"), function(x, y) paste0("foo-", x, ":", y))
 
 bar(text("hi"), number(42))
 #> [1] "foo-hi:42"
@@ -135,7 +135,7 @@ bar(text("hi"), number(42))
 ## Calling the next method
 
 ``` r
-method_new(bar, list("text", "number"), function(x, y) {
+new_method(bar, list("text", "number"), function(x, y) {
   res <- method_next()(x, y)
   paste0("2 ", res)
 })
@@ -151,7 +151,7 @@ bar(text("hi"), number(42))
   R7::method_register()
 }
 
-method_new("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+new_method("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
 ```
 
 ## Performance
@@ -172,13 +172,13 @@ At each level the search iteratively searches up the class vector for
 the object.
 
 ``` r
-text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
-number <- class_new("number", parent = "numeric", constructor = function(x) object_new(.data = x))
+text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
 x <- text("hi")
 y <- number(1)
 
-foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+foo_R7 <- new_generic(name = "foo_R7", signature = "x")
 method(foo_R7, "text") <- function(x) paste0(x, "-foo")
 
 foo_s3 <- function(x) {
@@ -202,11 +202,11 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    5.97µs   8.76µs   115512.        0B     11.6
-#> 2 foo_s3(x)    3.91µs   4.32µs   210119.        0B     21.0
-#> 3 foo_s4(x)    4.03µs   4.49µs   201600.        0B     20.2
+#> 1 foo_R7(x)    5.48µs   8.22µs   126723.        0B     12.7
+#> 2 foo_s3(x)    3.69µs    4.1µs   235591.        0B     23.6
+#> 3 foo_s4(x)    3.96µs   4.42µs   197384.        0B     19.7
 
-bar_R7 <- generic_new("bar_R7", c("x", "y"))
+bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
@@ -218,8 +218,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  12.36µs   15.3µs    65846.        0B     19.8
-#> 2 bar_s4(x, y)   9.61µs   10.9µs    85140.        0B     17.0
+#> 1 bar_R7(x, y)  11.54µs   12.8µs    75679.        0B     22.7
+#> 2 bar_s4(x, y)   9.11µs     10µs    92862.        0B     18.6
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -250,12 +250,13 @@ bench::press(
   class_size = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
     classes <- gen_character(num_classes, min = class_size, max = class_size)
+    env <- new.env()
     for (x in classes) {
-      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
-      parent <- get(x)
+      assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
+      parent <- get(x, env)
     }
 
     # Get the last defined class
@@ -265,11 +266,11 @@ bench::press(
     x <- do.call(cls, list("hi"))
 
     # Define a generic and a method for the last class (best case scenario)
-    foo_R7 <- generic_new(name = "foo_R7", signature = "x")
+    foo_R7 <- new_generic(name = "foo_R7", signature = "x")
     method(foo_R7, cls) <- function(x) paste0(x, "-foo")
 
     # Define a generic and a method for the first class (worst case scenario)
-    foo2_R7 <- generic_new(name = "foo2_R7", signature = "x")
+    foo2_R7 <- new_generic(name = "foo2_R7", signature = "x")
     method(foo2_R7, R7_object) <- function(x) paste0(x, "-foo")
 
     bench::mark(
@@ -281,26 +282,26 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15    6.4µs   7.62µs   128108.        0B    25.6 
-#>  2 worst                3         15   6.71µs    8.4µs   119461.        0B    11.9 
-#>  3 best                 5         15   6.54µs    8.1µs   120687.        0B    24.1 
-#>  4 worst                5         15   7.33µs   8.64µs   108336.        0B    10.8 
-#>  5 best                10         15   6.46µs   8.05µs   120115.        0B    24.0 
-#>  6 worst               10         15   7.44µs    8.1µs   105869.        0B    21.2 
-#>  7 best                50         15   7.38µs   8.17µs   111123.        0B    11.1 
-#>  8 worst               50         15  11.17µs  12.05µs    77646.        0B    15.5 
-#>  9 best               100         15   8.03µs   8.74µs   104572.        0B    20.9 
-#> 10 worst              100         15  15.88µs  16.82µs    55421.        0B    11.1 
-#> 11 best                 3        100   6.49µs   7.92µs   122183.        0B    12.2 
-#> 12 worst                3        100   6.99µs   8.61µs   115842.        0B    23.2 
-#> 13 best                 5        100   6.79µs   8.05µs   113270.        0B    22.7 
-#> 14 worst                5        100   7.25µs   9.44µs   104523.        0B    10.5 
-#> 15 best                10        100   6.75µs    7.5µs   119261.        0B    23.9 
-#> 16 worst               10        100   8.07µs   9.55µs    99423.        0B    19.9 
-#> 17 best                50        100   7.22µs   8.66µs   112672.        0B    11.3 
-#> 18 worst               50        100  14.28µs  15.37µs    60045.        0B    12.0 
-#> 19 best               100        100   8.01µs   8.88µs   103941.        0B    20.8 
-#> 20 worst              100        100  22.52µs  24.05µs    37205.        0B     3.72
+#>  1 best                 3         15   5.94µs   6.62µs   142882.        0B    28.6 
+#>  2 worst                3         15    6.2µs   6.92µs   131908.        0B    13.2 
+#>  3 best                 5         15   5.95µs   6.52µs   142426.        0B    28.5 
+#>  4 worst                5         15   6.43µs   6.99µs   135547.        0B    13.6 
+#>  5 best                10         15   5.87µs   6.61µs   143445.        0B    28.7 
+#>  6 worst               10         15   6.92µs   7.47µs   126018.        0B    25.2 
+#>  7 best                50         15    6.6µs   7.38µs   126654.        0B    12.7 
+#>  8 worst               50         15  11.19µs  12.04µs    79051.        0B    15.8 
+#>  9 best               100         15   7.22µs   8.02µs   121267.        0B    24.3 
+#> 10 worst              100         15  14.84µs  15.93µs    58613.        0B    11.7 
+#> 11 best                 3        100   5.96µs   6.73µs   139165.        0B    13.9 
+#> 12 worst                3        100   6.35µs   7.05µs   131023.        0B    26.2 
+#> 13 best                 5        100   5.95µs   6.52µs   146662.        0B    29.3 
+#> 14 worst                5        100   6.72µs   7.35µs   130532.        0B    13.1 
+#> 15 best                10        100   5.94µs    6.7µs   131544.        0B    26.3 
+#> 16 worst               10        100   7.31µs   8.03µs   110261.        0B    22.1 
+#> 17 best                50        100   6.65µs   7.27µs   131982.        0B    13.2 
+#> 18 worst               50        100  14.04µs  15.23µs    61833.        0B    12.4 
+#> 19 best               100        100   7.33µs   7.96µs   120968.        0B    24.2 
+#> 20 worst              100        100  20.34µs  21.25µs    44794.        0B     4.48
 ```
 
 And the same benchmark using double-dispatch vs single dispatch
@@ -311,12 +312,13 @@ bench::press(
   class_size = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- class_new("text", parent = "character", constructor = function(text) object_new(.data = text))
+    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
     classes <- gen_character(num_classes, min = class_size, max = class_size)
+    env <- new.env()
     for (x in classes) {
-      assign(x, class_new(x, parent = parent, constructor = function(text) object_new(.data = text)))
-      parent <- get(x)
+      assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
+      parent <- get(x, env)
     }
 
     # Get the last defined class
@@ -327,11 +329,11 @@ bench::press(
     y <- do.call(cls, list("ho"))
 
     # Define a generic and a method for the last class (best case scenario)
-    foo_R7 <- generic_new(name = "foo_R7", signature = c("x", "y"))
+    foo_R7 <- new_generic(name = "foo_R7", signature = c("x", "y"))
     method(foo_R7, list(cls, cls)) <- function(x, y) paste0(x, y, "-foo")
 
     # Define a generic and a method for the first class (worst case scenario)
-    foo2_R7 <- generic_new(name = "foo2_R7", signature = c("x", "y"))
+    foo2_R7 <- new_generic(name = "foo2_R7", signature = c("x", "y"))
     method(foo2_R7, list(R7_object, R7_object)) <- function(x, y) paste0(x, y, "-foo")
 
     bench::mark(
@@ -343,26 +345,26 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   7.94µs   9.94µs    99304.        0B    19.9 
-#>  2 worst                3         15   8.35µs  10.57µs    96043.        0B    28.8 
-#>  3 best                 5         15   7.92µs   9.97µs    99115.        0B    19.8 
-#>  4 worst                5         15   8.93µs  10.98µs    90284.        0B    18.1 
-#>  5 best                10         15   7.92µs   9.94µs    98710.        0B    29.6 
-#>  6 worst               10         15   9.58µs  11.93µs    83590.        0B    16.7 
-#>  7 best                50         15   9.34µs  10.98µs    86442.        0B    17.3 
-#>  8 worst               50         15  17.53µs  18.63µs    48850.        0B    14.7 
-#>  9 best               100         15   10.9µs  12.64µs    73649.        0B    14.7 
-#> 10 worst              100         15  28.04µs  29.67µs    31080.        0B     9.33
-#> 11 best                 3        100   7.85µs   9.87µs   100076.        0B    20.0 
-#> 12 worst                3        100   8.89µs  10.92µs    90573.        0B    18.1 
-#> 13 best                 5        100   8.18µs  10.39µs    93604.        0B    28.1 
-#> 14 worst                5        100   9.59µs     12µs    82921.        0B    16.6 
-#> 15 best                10        100   8.34µs  10.29µs    95143.        0B    19.0 
-#> 16 worst               10        100  11.14µs  12.74µs    74153.        0B    22.3 
-#> 17 best                50        100    9.2µs  11.34µs    87691.        0B    17.5 
-#> 18 worst               50        100   24.4µs  25.67µs    36345.        0B    10.9 
-#> 19 best               100        100  10.77µs  13.41µs    74689.        0B    14.9 
-#> 20 worst              100        100   40.7µs  42.28µs    21972.        0B     4.40
+#>  1 best                 3         15   7.14µs    8.4µs   112246.        0B    22.5 
+#>  2 worst                3         15   7.81µs   8.86µs   108952.        0B    32.7 
+#>  3 best                 5         15   7.52µs   8.32µs   115419.        0B    23.1 
+#>  4 worst                5         15   8.12µs    9.1µs   106850.        0B    21.4 
+#>  5 best                10         15   7.36µs   8.46µs   111582.        0B    33.5 
+#>  6 worst               10         15   9.16µs  10.16µs    94405.        0B    18.9 
+#>  7 best                50         15   8.55µs   9.55µs   101181.        0B    20.2 
+#>  8 worst               50         15  15.86µs  17.29µs    54884.        0B    16.5 
+#>  9 best               100         15  10.59µs  11.65µs    78424.        0B    15.7 
+#> 10 worst              100         15   26.8µs  28.02µs    33901.        0B    10.2 
+#> 11 best                 3        100   7.67µs   8.48µs   112811.        0B    22.6 
+#> 12 worst                3        100   8.18µs   9.15µs   105268.        0B    21.1 
+#> 13 best                 5        100    7.1µs   8.92µs   110153.        0B    33.1 
+#> 14 worst                5        100   8.73µs   9.63µs    95827.        0B    19.2 
+#> 15 best                10        100    7.8µs   8.86µs   105201.        0B    21.0 
+#> 16 worst               10        100  10.33µs  11.68µs    80261.        0B    24.1 
+#> 17 best                50        100   8.73µs   9.69µs    92572.        0B    18.5 
+#> 18 worst               50        100  21.35µs  22.98µs    42629.        0B    12.8 
+#> 19 best               100        100  10.25µs  11.33µs    81406.        0B    16.3 
+#> 20 worst              100        100  37.85µs  39.81µs    23756.        0B     4.75
 ```
 
 ## Questions
@@ -375,7 +377,7 @@ bench::press(
       - can’t use `method("foo")<-`
       - can’t use `method(otherpkg::foo)<-`
       - can’t use `method("otherpkg::foo")<-`
-  - What should happen if you call `method_new()` on a S3 generic?
+  - What should happen if you call `new_method()` on a S3 generic?
     1.  Should we create a new R7 generic out of the S3 generic?
     2.  Or just register the R7 object using `registerS3method()`? ++
 
@@ -404,13 +406,13 @@ bench::press(
           - [x] - `parent`, the class object of the parent class.
           - [x] - A constructor, an user-facing function used to create
             new objects of this class. It always ends with a call to
-            `object_new()` to initialize the class.
+            `new_object()` to initialize the class.
           - [x] - A validator, a function that takes the object and
             returns NULL if the object is valid, otherwise a character
             vector of error messages.
           - [x] - properties, a list of property objects
   - Initialization
-      - [x] - The constructor uses `object_new()` to initialize a new
+      - [x] - The constructor uses `new_object()` to initialize a new
         object, this
           - [x] - Inspects the enclosing scope to find the “current”
             class.
@@ -438,11 +440,11 @@ bench::press(
       - [x] - A name, used to label output
       - [ ] - A optional class or union
       - [x] - An optional accessor functions, both getter and setters
-      - [ ] - Properties are created with `prop_new()`
+      - [ ] - Properties are created with `new_prop()`
   - Generics
       - [x] - It knows its name and the names of the arguments in its
         signature
-      - [x] - Calling `generic_new()` defines a new generic
+      - [x] - Calling `new_generic()` defines a new generic
       - [ ] - By convention, any argument that takes a generic function,
         can instead take the name of a generic function supplied as a
         string
@@ -457,8 +459,8 @@ bench::press(
               - [x] - list of class objects/unions
               - [x] - a character vector.
           - [ ] - method is a compatible function
-          - [x] - `method_new` is designed to work at run-time
-              - [ ] - `method_new` should optionally take a package
+          - [x] - `new_method` is designed to work at run-time
+              - [ ] - `new_method` should optionally take a package
                 version, so the method is only registered if the package
                 is newer than the version.
           - [ ] - Can define methods where one of the arguments is

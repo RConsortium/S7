@@ -2,9 +2,9 @@
 #'
 #' @inheritParams R7_generic
 #' @export
-generic_new <- function(name, signature = NULL, fun = NULL) {
+new_generic <- function(name, signature = NULL, fun = NULL) {
   if (is.null(signature) && is.null(fun)) {
-    stop("Must call `generic_new()` with either `signature` or `fun`", call. = FALSE)
+    stop("Must call `new_generic()` with either `signature` or `fun`", call. = FALSE)
   }
   if (is.null(signature)) {
     signature <- formals(fun)[1]
@@ -41,7 +41,7 @@ normalize_signature <- function(signature, envir = parent.frame()) {
 
 #' Generate the body of a generic function
 #'
-#' This is used as the default to `generic_new`
+#' This is used as the default to [new_generic]
 #' @param name of the generic
 #' @param signature signature of the generic
 #' @param envir environment to use as the enclosing environment of the generated generic
