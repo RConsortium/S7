@@ -108,6 +108,7 @@ SEXP method_call_(SEXP generic, SEXP envir) {
 
   SEXP m = method_(generic, signature_classes, R_NilValue);
 
+  /* TODO: provide a real call object for the first argument, so error messages work properly */
   SEXP res = Rf_applyClosure(R_NilValue, m, CDR(prom_args), envir, R_NilValue);
   UNPROTECT(n_protect);
 
