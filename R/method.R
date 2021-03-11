@@ -178,5 +178,5 @@ as_generic <- function(generic) {
 #' Lookup the R7 method for the current generic and call it.
 #' @export
 method_call <- function() {
-  .Call(method_call_, sys.function(sys.parent(1)), parent.frame())
+  .Call(method_call_, sys.call(sys.parent(1)), sys.function(sys.parent(1)), parent.frame())
 }
