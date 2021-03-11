@@ -144,6 +144,31 @@ bar(text("hi"), number(42))
 #> [1] "2 foo-hi:42"
 ```
 
+## Non-standard evaluation
+
+``` r
+subset2 <- new_generic(name = "subset", signature = "x")
+new_method(subset2, "data.frame", function(x, subset = NULL, select = NULL, drop = FALSE) {
+  e <- substitute(subset)
+  r <- eval(e, x, parent.frame())
+  r <- r & !is.na(r)
+  nl <- as.list(seq_along(x))
+  names(nl) <- names(x)
+  vars <- eval(substitute(select), nl, parent.frame())
+  x[r, vars, drop = drop]
+})
+
+subset2(mtcars, hp > 200, c(wt, qsec))
+#>                        wt  qsec
+#> Duster 360          3.570 15.84
+#> Cadillac Fleetwood  5.250 17.98
+#> Lincoln Continental 5.424 17.82
+#> Chrysler Imperial   5.345 17.42
+#> Camaro Z28          3.840 15.41
+#> Ford Pantera L      3.170 14.50
+#> Maserati Bora       3.570 14.60
+```
+
 ### Load time registration
 
 ``` r
@@ -202,9 +227,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    9.23µs  10.29µs    82334.        0B     16.5
-#> 2 foo_s3(x)     3.7µs   4.05µs   231642.        0B     23.2
-#> 3 foo_s4(x)    3.97µs   4.63µs   198669.        0B     19.9
+#> 1 foo_R7(x)    9.44µs  12.33µs    74709.        0B     14.9
+#> 2 foo_s3(x)    3.91µs   4.34µs   205689.        0B      0  
+#> 3 foo_s4(x)    4.07µs   4.49µs   203423.        0B     20.3
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
@@ -218,8 +243,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  15.83µs   17.2µs    55768.        0B     27.9
-#> 2 bar_s4(x, y)   9.24µs   10.6µs    88119.        0B     17.6
+#> 1 bar_R7(x, y)  15.69µs   18.2µs    52515.        0B     26.3
+#> 2 bar_s4(x, y)   9.51µs   11.3µs    85786.        0B     17.2
 ```
 
 A potential optimization is caching based on the class names, but lookup
