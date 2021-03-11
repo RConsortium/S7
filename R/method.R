@@ -134,7 +134,7 @@ new_method <- function(generic, signature, value) {
   p_tbl <- generic@methods
 
   for (i in seq_along(signature)) {
-    if (inherits(signature[[i]], "class_union")) {
+    if (inherits(signature[[i]], "R7_union")) {
       for (class in signature[[1]]@classes) {
         new_method(generic, c(signature[seq_len(i - 1)], class@name), value)
       }

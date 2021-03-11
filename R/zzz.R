@@ -46,13 +46,13 @@ R7_method <- new_class(
 #' @param ... The classes to include in the union, either looked up by named or
 #'   by passing the `R7_class` objects directly.
 #' @export
-class_union <- new_class(
-  name = "class_union",
+R7_union <- new_class(
+  name = "R7_union",
   properties = list(classes = "list"),
   validator = function(x) {
     for (val in x@classes) {
       if (!inherits(val, "R7_class")) {
-        return(sprintf("All classes in a <class_union> must be R7 classes:\n - <%s> is not an <R7_class>", class(val)[[1]]))
+        return(sprintf("All classes in an <R7_union> must be R7 classes:\n - <%s> is not an <R7_class>", class(val)[[1]]))
       }
     }
   },
@@ -67,6 +67,10 @@ class_union <- new_class(
     new_object(classes = classes)
   }
 )
+
+#' @rdname R7_union
+#' @export
+new_union <- R7_union
 
 global_variables(c("name", "parent", "properties", "constructor", "validator"))
 

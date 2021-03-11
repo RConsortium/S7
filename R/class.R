@@ -36,7 +36,7 @@ class_names <- function(object) {
   parent <- object
   classes <- character()
   while(!is.null(parent)) {
-    if (inherits(parent, "class_union")) {
+    if (inherits(parent, "R7_union")) {
       for (class in parent@classes) {
         classes <- c(classes, class_names(class))
       }

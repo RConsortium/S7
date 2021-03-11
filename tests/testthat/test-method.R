@@ -81,7 +81,7 @@ test_that("new_method works if you pass a bare class", {
 
 test_that("new_method works if you pass a bare class union", {
   foo7 <- new_generic(name = "foo7", signature = alist(x=))
-  new_method(foo7, class_union(text, number), function(x) paste0("foo-", x))
+  new_method(foo7, new_union(text, number), function(x) paste0("foo-", x))
 
   expect_equal(foo7(text("bar")), "foo-bar")
   expect_equal(foo7(number(1)), "foo-1")
