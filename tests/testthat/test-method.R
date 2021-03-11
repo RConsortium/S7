@@ -132,6 +132,25 @@ test_that("new_method errors if given a length > 1 character vector", {
   )
 })
 
+test_that("substitute() works for single dispatch method calls like S3", {
+  foo <- new_generic("foo", "x")
+
+  new_method(foo, "character", function(x) substitute(x))
+
+  bar <- "blah"
+  expect_equal(foo(bar), as.symbol("bar"))
+})
+
+test_that("substitute() works for multiple dispatch method calls like S3", {
+  foo <- new_generic("foo", c("x", "y"))
+
+  new_method(foo, "character", function(x, y) c(substitute(x), substitute(y)))
+
+  bar <- "blah"
+  baz <- "bloo"
+  expect_equal(foo(bar, baz), c(as.symbol("bar"), as.symbol("baz")))
+})
+
 test_that("new_method works with both hard and soft dependencies", {
   skip_on_os("windows")
   skip_if(quick_test())

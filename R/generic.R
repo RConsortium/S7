@@ -12,7 +12,9 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
   signature <- normalize_signature(signature)
 
   if (is.null(fun)) {
-    fun <- generic_generate(name, signature, envir = parent.frame())
+    fun <- function() method_call()
+    formals(fun) <- signature
+    environment(fun) <- topenv(environment())
   }
 
   R7_generic(name = name, signature, fun = fun)
