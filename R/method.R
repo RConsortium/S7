@@ -83,11 +83,16 @@ method_register <- function() {
       ns <- asNamespace(x$package)
       new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
     } else {
-      setHook(packageEvent(x$package, "onLoad"), local({x <- x
-        function(...) {
-        ns <- asNamespace(x$package)
-        new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
-      }}))
+      setHook(packageEvent(x$package, "onLoad"),
+        local({x <- x
+          function(...) {
+            ns <- asNamespace(x$package)
+            if (is.null(x$version) || getNamespaceVersion(ns) >= x$version) {
+              new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
+            }
+          }
+        })
+      )
     }
   }
 }
@@ -95,28 +100,21 @@ method_register <- function() {
 #' @rdname method
 #' @export
 new_method <- function(generic, signature, value) {
-  if (is.character(generic)) {
-    if (!length(generic) == 1) {
-      stop("`generic` must be a generic function or a length 1 character vector", call. = FALSE)
-    }
-
-    pieces <- strsplit(generic, "::")[[1]]
-    if (length(pieces) == 2) {
-      package <- pieces[[1]]
-      generic <- pieces[[2]]
-      # Get current package, if any
-      current_package <- packageName(parent.frame())
-      if (!is.null(current_package)) {
-        tbl <- asNamespace(current_package)[[".__S3MethodsTable__."]]
-        if (is.null(tbl[[".R7_methods"]])) {
-          tbl[[".R7_methods"]] <- list()
-        }
-        tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic, package = package, signature = signature, value = value)))
-
-        return(invisible())
+  if (inherits(generic, "R7_external_generic")) {
+    package <- generic$package
+    generic <- generic$generic
+    # Get current package, if any
+    current_package <- packageName(parent.frame())
+    if (!is.null(current_package)) {
+      tbl <- asNamespace(current_package)[[".__S3MethodsTable__."]]
+      if (is.null(tbl[[".R7_methods"]])) {
+        tbl[[".R7_methods"]] <- list()
       }
-      generic <- getFromNamespace(generic, asNamespace(package))
+      tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic$generic, package = generic$package, signature = signature, value = value, version = generic$version)))
+
+      return(invisible())
     }
+    generic <- getFromNamespace(generic, asNamespace(package))
   }
 
   generic <- as_generic(generic)

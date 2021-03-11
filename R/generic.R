@@ -1,5 +1,10 @@
 #' Define a new generic
 #'
+#' Use `new_generic` to define a new generic for a package.
+#' If you need to reference a generic in another package either import the generic into your
+#' package's namespace or use `new_external_generic` to declare it as an
+#' external generic and add a `method_register()` call to your `.onLoad`
+#' function.
 #' @inheritParams R7_generic
 #' @export
 new_generic <- function(name, signature = NULL, fun = NULL) {
@@ -18,6 +23,22 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
   }
 
   R7_generic(name = name, signature, fun = fun)
+}
+
+#' @rdname new_generic
+#' @param package The package the external generic is defined in.
+#' @param version An optional version the package must meet for the method to be registered.
+#' @export
+new_external_generic <- function(package, generic, signature, version = NULL) {
+  out <- list(
+    package = package,
+    generic = generic,
+    signature = signature,
+    version = version
+  )
+
+  class(out) <- "R7_external_generic"
+  out
 }
 
 normalize_signature <- function(signature, envir = parent.frame()) {

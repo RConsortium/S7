@@ -123,15 +123,6 @@ test_that("next_method works for double dispatch", {
   expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
 })
 
-test_that("new_method errors if given a length > 1 character vector", {
-  foo <- new_generic("foo", "x")
-
-  expect_error(
-    new_method(c("foo", "bar"), "x", function(x) x),
-    "must be a generic function or a length 1 character vector"
-  )
-})
-
 test_that("substitute() works for single dispatch method calls like S3", {
   foo <- new_generic("foo", "x")
 

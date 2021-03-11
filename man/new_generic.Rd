@@ -2,9 +2,12 @@
 % Please edit documentation in R/generic.R
 \name{new_generic}
 \alias{new_generic}
+\alias{new_external_generic}
 \title{Define a new generic}
 \usage{
 new_generic(name, signature = NULL, fun = NULL)
+
+new_external_generic(package, generic, signature, version = NULL)
 }
 \arguments{
 \item{name}{The name or generic object of the generic}
@@ -12,7 +15,17 @@ new_generic(name, signature = NULL, fun = NULL)
 \item{signature}{The signature of the generic}
 
 \item{fun}{The function to use as the body of the generic.}
+
+\item{package}{The package the external generic is defined in.}
+
+\item{generic}{The name or generic object of the generic}
+
+\item{version}{An optional version the package must meet for the method to be registered.}
 }
 \description{
-Define a new generic
+Use \code{new_generic} to define a new generic for a package.
+If you need to reference a generic in another package either import the generic into your
+package's namespace or use \code{new_external_generic} to declare it as an
+external generic and add a \code{method_register()} call to your \code{.onLoad}
+function.
 }

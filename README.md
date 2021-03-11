@@ -227,9 +227,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    9.44µs  12.33µs    74709.        0B     14.9
-#> 2 foo_s3(x)    3.91µs   4.34µs   205689.        0B      0  
-#> 3 foo_s4(x)    4.07µs   4.49µs   203423.        0B     20.3
+#> 1 foo_R7(x)   10.61µs  12.43µs    67604.        0B     20.3
+#> 2 foo_s3(x)    3.84µs   4.23µs   224416.        0B     22.4
+#> 3 foo_s4(x)    3.95µs   4.55µs   206524.        0B     20.7
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
@@ -243,8 +243,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  15.69µs   18.2µs    52515.        0B     26.3
-#> 2 bar_s4(x, y)   9.51µs   11.3µs    85786.        0B     17.2
+#> 1 bar_R7(x, y)  16.58µs   20.9µs    47132.        0B     28.3
+#> 2 bar_s4(x, y)   9.59µs   11.7µs    85311.        0B     17.1
 ```
 
 A potential optimization is caching based on the class names, but lookup
