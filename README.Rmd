@@ -362,6 +362,7 @@ bench::press(
     - [x] - R7 generics can dispatch with S3 objects
     - [x] - R7 generics can dispatch with S4 objects
     - [x] - `next_method()` can dispatch on multiple arguments, avoiding methods that have already been called.
+    - [x] - Generics forward promises to methods, so methods can use non-standard evaluation.
 - Compatibility
   - S3
     - [x] - Since the class attribute has the same semantics as S3, S3 dispatch should be fully compatible.
