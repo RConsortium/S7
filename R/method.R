@@ -2,7 +2,7 @@
 #'
 #' @param generic The generic to retrieve or register
 #' @param signature The method signature
-#' @param value The new function to use for the method.
+#' @param method,value The new function to use as the method.
 #' @importFrom utils getS3method
 #' @export
 method <- function(generic, signature) {
@@ -97,9 +97,36 @@ method_register <- function() {
   }
 }
 
+arg_to_string <- function(arg) {
+  if (is.na(names(arg)[[1]])) {
+    return("does not exist")
+  }
+  sprintf("is `%s = %s`", names(arg), deparse(arg[[1]]))
+}
+
+method_compatible <- function(method, generic) {
+  generic_formals <- formals(generic)
+  method_formals <- formals(method)
+
+  for (i in seq_len(length(generic_formals) - 1)) {
+    if (!identical(generic_formals[i], method_formals[i])) {
+      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- Argument %i in generic %s\n- Argument %i in method %s", generic@name, i, arg_to_string(generic_formals[i]), i, arg_to_string(method_formals[i])), call. = FALSE)
+    }
+  }
+
+  if ("..." %in% names(generic_formals) && !"..." %in% names(method_formals)) {
+      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- `generic` has `...`\n- `method` does not have `...`", generic@name), call. = FALSE)
+  }
+
+  if (!"..." %in% names(generic_formals) && "..." %in% names(method_formals)) {
+      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- `generic` does not have `...`\n- `method` has `...`", generic@name), call. = FALSE)
+  }
+  TRUE
+}
+
 #' @rdname method
 #' @export
-new_method <- function(generic, signature, value) {
+new_method <- function(generic, signature, method) {
   if (inherits(generic, "R7_external_generic")) {
     package <- generic$package
     generic <- generic$generic
@@ -110,7 +137,7 @@ new_method <- function(generic, signature, value) {
       if (is.null(tbl[[".R7_methods"]])) {
         tbl[[".R7_methods"]] <- list()
       }
-      tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic$generic, package = generic$package, signature = signature, value = value, version = generic$version)))
+      tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic$generic, package = generic$package, signature = signature, method = method, version = generic$version)))
 
       return(invisible())
     }
@@ -119,12 +146,14 @@ new_method <- function(generic, signature, value) {
 
   generic <- as_generic(generic)
 
+  method_compatible(method, generic)
+
   if (!is.character(signature) && !inherits(signature, "list")) {
     signature <- list(signature)
   }
 
-  if (!inherits(value, "R7_method")) {
-    value <- R7_method(generic, signature, value)
+  if (!inherits(method, "R7_method")) {
+    method <- R7_method(generic, signature, method)
   }
 
   generic_name <- generic@name
@@ -134,14 +163,14 @@ new_method <- function(generic, signature, value) {
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "R7_union")) {
       for (class in signature[[1]]@classes) {
-        new_method(generic, c(signature[seq_len(i - 1)], class@name), value)
+        new_method(generic, c(signature[seq_len(i - 1)], class@name), method)
       }
       return(invisible(generic))
     } else if (inherits(signature[[i]], "R7_class")) {
       signature[[i]] <- signature[[i]]@name
     }
     if (i == length(signature)) {
-      p_tbl[[signature[[i]]]] <- value
+      p_tbl[[signature[[i]]]] <- method
     } else {
       tbl <- p_tbl[[signature[[i]]]]
       if (is.null(tbl)) {

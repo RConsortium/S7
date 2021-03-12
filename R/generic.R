@@ -13,8 +13,9 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
   }
   if (is.null(signature)) {
     signature <- formals(fun)[1]
+  } else {
+    signature <- normalize_signature(signature)
   }
-  signature <- normalize_signature(signature)
 
   if (is.null(fun)) {
     fun <- function() method_call()
@@ -60,26 +61,6 @@ normalize_signature <- function(signature, envir = parent.frame()) {
     signature[["..."]] <- quote(expr = )
   }
   signature
-}
-
-#' Generate the body of a generic function
-#'
-#' This is used as the default to [new_generic]
-#' @param name of the generic
-#' @param signature signature of the generic
-#' @param envir environment to use as the enclosing environment of the generated generic
-#' @export
-generic_generate <- function(name, signature, envir = parent.frame()) {
-  fun <- function() NULL
-  formals(fun) <- signature
-
-  sig_call <- generic_generate_signature_call(signature)
-  call_args <- names(signature)
-  method_call <- as.call(c(as.call(c(as.symbol("method"), as.symbol(name), sig_call)), lapply(call_args, as.symbol)))
-
-  body(fun) <- method_call
-  environment(fun) <- envir
-  fun
 }
 
 generic_generate_signature_call <- function(signature) {

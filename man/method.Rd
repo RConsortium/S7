@@ -8,7 +8,7 @@
 \usage{
 method(generic, signature)
 
-new_method(generic, signature, value)
+new_method(generic, signature, method)
 
 method(generic, signature) <- value
 }
@@ -17,7 +17,7 @@ method(generic, signature) <- value
 
 \item{signature}{The method signature}
 
-\item{value}{The new function to use for the method.}
+\item{method, value}{The new function to use as the method.}
 }
 \description{
 Retrieve or register an R7 method for a generic

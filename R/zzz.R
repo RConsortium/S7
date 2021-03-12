@@ -17,7 +17,7 @@ R7_object <- new_class(
 #' @export
 R7_generic <- new_class(
   name = "R7_generic",
-  properties = list(name = "character", methods = "environment", signature = "list"),
+  properties = list(name = "character", methods = "environment", signature = new_property(name = "signature", getter = function(x) formals(x@.data))),
   parent = "function",
   constructor = function(name, signature, fun) {
     new_object(name = name, signature = signature, methods = new.env(parent = emptyenv(), hash = TRUE), .data = fun)

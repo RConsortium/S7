@@ -113,7 +113,7 @@ text <- new_class("text", parent = "character", constructor = function(text) new
 
 foo <- new_generic(name = "foo", signature = "x")
 
-new_method(foo, list("text"), function(x) paste0("foo-", x))
+method(foo, "text") <- function(x, ...) paste0("foo-", x)
 
 foo(text("hi"))
 #> [1] "foo-hi"
@@ -126,7 +126,7 @@ number <- new_class("number", parent = "numeric", constructor = function(x) new_
 
 bar <- new_generic(name = "bar", signature = c("x", "y"))
 
-new_method(bar, list("character", "numeric"), function(x, y) paste0("foo-", x, ":", y))
+method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":", y)
 
 bar(text("hi"), number(42))
 #> [1] "foo-hi:42"
@@ -135,10 +135,10 @@ bar(text("hi"), number(42))
 ## Calling the next method
 
 ``` r
-new_method(bar, list("text", "number"), function(x, y) {
+method(bar, list("text", "number")) <- function(x, y, ...) {
   res <- next_method()(x, y)
   paste0("2 ", res)
-})
+}
 
 bar(text("hi"), number(42))
 #> [1] "2 foo-hi:42"
@@ -148,7 +148,8 @@ bar(text("hi"), number(42))
 
 ``` r
 subset2 <- new_generic(name = "subset", signature = "x")
-new_method(subset2, "data.frame", function(x, subset = NULL, select = NULL, drop = FALSE) {
+
+method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)
   r <- eval(e, x, parent.frame())
   r <- r & !is.na(r)
@@ -156,7 +157,7 @@ new_method(subset2, "data.frame", function(x, subset = NULL, select = NULL, drop
   names(nl) <- names(x)
   vars <- eval(substitute(select), nl, parent.frame())
   x[r, vars, drop = drop]
-})
+}
 
 subset2(mtcars, hp > 200, c(wt, qsec))
 #>                        wt  qsec
@@ -176,7 +177,9 @@ subset2(mtcars, hp > 200, c(wt, qsec))
   R7::method_register()
 }
 
-new_method("pkg1::foo", list("text", "numeric"), function(x, y) paste0("foo-", x, ": ", y))
+foo <- new_external_method("pkg1", "foo", c("x", "y"))
+
+method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ": ", y)
 ```
 
 ## Performance
@@ -204,13 +207,13 @@ x <- text("hi")
 y <- number(1)
 
 foo_R7 <- new_generic(name = "foo_R7", signature = "x")
-method(foo_R7, "text") <- function(x) paste0(x, "-foo")
+method(foo_R7, "text") <- function(x, ...) paste0(x, "-foo")
 
-foo_s3 <- function(x) {
+foo_s3 <- function(x, ...) {
   UseMethod("foo_s3")
 }
 
-foo_s3.text <- function(x) {
+foo_s3.text <- function(x, ...) {
   paste0(x, "-foo")
 }
 
@@ -218,33 +221,33 @@ library(methods)
 setOldClass(c("number", "numeric", "R7_object"))
 setOldClass(c("text", "character", "R7_object"))
 
-setGeneric("foo_s4", function(x) standardGeneric("foo_s4"))
+setGeneric("foo_s4", function(x, ...) standardGeneric("foo_s4"))
 #> [1] "foo_s4"
-setMethod("foo_s4", c("text"), function(x) paste0(x, "-foo"))
+setMethod("foo_s4", c("text"), function(x, ...) paste0(x, "-foo"))
 
 # Measure performance of single dispatch
 bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)   10.61µs  12.43µs    67604.        0B     20.3
-#> 2 foo_s3(x)    3.84µs   4.23µs   224416.        0B     22.4
-#> 3 foo_s4(x)    3.95µs   4.55µs   206524.        0B     20.7
+#> 1 foo_R7(x)   10.54µs  11.93µs    71901.        0B     21.6
+#> 2 foo_s3(x)    3.86µs   4.33µs   213029.        0B     21.3
+#> 3 foo_s4(x)    4.14µs   4.54µs   199037.        0B     19.9
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
-method(bar_R7, list("text", "number")) <- function(x, y) paste0(x, "-", y, "-bar")
+method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
 
-setGeneric("bar_s4", function(x, y) standardGeneric("bar_s4"))
+setGeneric("bar_s4", function(x, y, ...) standardGeneric("bar_s4"))
 #> [1] "bar_s4"
-setMethod("bar_s4", c("text", "number"), function(x, y) paste0(x, "-", y, "-bar"))
+setMethod("bar_s4", c("text", "number"), function(x, y, ...) paste0(x, "-", y, "-bar"))
 
 # Measure performance of double dispatch
 bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  16.58µs   20.9µs    47132.        0B     28.3
-#> 2 bar_s4(x, y)   9.59µs   11.7µs    85311.        0B     17.1
+#> 1 bar_R7(x, y)  16.88µs   20.9µs    48174.        0B     28.9
+#> 2 bar_s4(x, y)   9.21µs   10.2µs    89434.        0B     17.9
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -292,11 +295,11 @@ bench::press(
 
     # Define a generic and a method for the last class (best case scenario)
     foo_R7 <- new_generic(name = "foo_R7", signature = "x")
-    method(foo_R7, cls) <- function(x) paste0(x, "-foo")
+    method(foo_R7, cls) <- function(x, ...) paste0(x, "-foo")
 
     # Define a generic and a method for the first class (worst case scenario)
     foo2_R7 <- new_generic(name = "foo2_R7", signature = "x")
-    method(foo2_R7, R7_object) <- function(x) paste0(x, "-foo")
+    method(foo2_R7, R7_object) <- function(x, ...) paste0(x, "-foo")
 
     bench::mark(
       best = foo_R7(x),
@@ -307,26 +310,26 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   5.94µs   6.62µs   142882.        0B    28.6 
-#>  2 worst                3         15    6.2µs   6.92µs   131908.        0B    13.2 
-#>  3 best                 5         15   5.95µs   6.52µs   142426.        0B    28.5 
-#>  4 worst                5         15   6.43µs   6.99µs   135547.        0B    13.6 
-#>  5 best                10         15   5.87µs   6.61µs   143445.        0B    28.7 
-#>  6 worst               10         15   6.92µs   7.47µs   126018.        0B    25.2 
-#>  7 best                50         15    6.6µs   7.38µs   126654.        0B    12.7 
-#>  8 worst               50         15  11.19µs  12.04µs    79051.        0B    15.8 
-#>  9 best               100         15   7.22µs   8.02µs   121267.        0B    24.3 
-#> 10 worst              100         15  14.84µs  15.93µs    58613.        0B    11.7 
-#> 11 best                 3        100   5.96µs   6.73µs   139165.        0B    13.9 
-#> 12 worst                3        100   6.35µs   7.05µs   131023.        0B    26.2 
-#> 13 best                 5        100   5.95µs   6.52µs   146662.        0B    29.3 
-#> 14 worst                5        100   6.72µs   7.35µs   130532.        0B    13.1 
-#> 15 best                10        100   5.94µs    6.7µs   131544.        0B    26.3 
-#> 16 worst               10        100   7.31µs   8.03µs   110261.        0B    22.1 
-#> 17 best                50        100   6.65µs   7.27µs   131982.        0B    13.2 
-#> 18 worst               50        100  14.04µs  15.23µs    61833.        0B    12.4 
-#> 19 best               100        100   7.33µs   7.96µs   120968.        0B    24.2 
-#> 20 worst              100        100  20.34µs  21.25µs    44794.        0B     4.48
+#>  1 best                 3         15   10.8µs   13.8µs    72880.        0B     29.2
+#>  2 worst                3         15   11.4µs     14µs    70691.        0B     28.3
+#>  3 best                 5         15   10.9µs   13.6µs    73608.        0B     36.8
+#>  4 worst                5         15   11.8µs   14.8µs    67578.        0B     27.0
+#>  5 best                10         15     11µs     14µs    71009.        0B     35.5
+#>  6 worst               10         15     12µs   14.7µs    68087.        0B     27.2
+#>  7 best                50         15   11.7µs   14.4µs    68187.        0B     27.3
+#>  8 worst               50         15   15.2µs   17.5µs    53756.        0B     26.9
+#>  9 best               100         15   12.5µs   15.1µs    64971.        0B     26.0
+#> 10 worst              100         15   20.6µs   22.8µs    40876.        0B     20.4
+#> 11 best                 3        100   11.1µs   12.9µs    71552.        0B     28.6
+#> 12 worst                3        100   11.6µs   14.8µs    67898.        0B     34.0
+#> 13 best                 5        100   10.9µs   12.8µs    72892.        0B     29.2
+#> 14 worst                5        100   11.8µs   15.1µs    65296.        0B     32.7
+#> 15 best                10        100   10.8µs     14µs    71540.        0B     28.6
+#> 16 worst               10        100   12.5µs   15.5µs    64452.        0B     32.2
+#> 17 best                50        100   11.6µs   14.7µs    67919.        0B     27.2
+#> 18 worst               50        100   19.2µs   20.7µs    44553.        0B     22.3
+#> 19 best               100        100   12.2µs   13.8µs    67301.        0B     26.9
+#> 20 worst              100        100   26.8µs   28.6µs    32879.        0B     13.2
 ```
 
 And the same benchmark using double-dispatch vs single dispatch
@@ -355,11 +358,11 @@ bench::press(
 
     # Define a generic and a method for the last class (best case scenario)
     foo_R7 <- new_generic(name = "foo_R7", signature = c("x", "y"))
-    method(foo_R7, list(cls, cls)) <- function(x, y) paste0(x, y, "-foo")
+    method(foo_R7, list(cls, cls)) <- function(x, y, ...) paste0(x, y, "-foo")
 
     # Define a generic and a method for the first class (worst case scenario)
     foo2_R7 <- new_generic(name = "foo2_R7", signature = c("x", "y"))
-    method(foo2_R7, list(R7_object, R7_object)) <- function(x, y) paste0(x, y, "-foo")
+    method(foo2_R7, list(R7_object, R7_object)) <- function(x, y, ...) paste0(x, y, "-foo")
 
     bench::mark(
       best = foo_R7(x, y),
@@ -370,41 +373,33 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   7.14µs    8.4µs   112246.        0B    22.5 
-#>  2 worst                3         15   7.81µs   8.86µs   108952.        0B    32.7 
-#>  3 best                 5         15   7.52µs   8.32µs   115419.        0B    23.1 
-#>  4 worst                5         15   8.12µs    9.1µs   106850.        0B    21.4 
-#>  5 best                10         15   7.36µs   8.46µs   111582.        0B    33.5 
-#>  6 worst               10         15   9.16µs  10.16µs    94405.        0B    18.9 
-#>  7 best                50         15   8.55µs   9.55µs   101181.        0B    20.2 
-#>  8 worst               50         15  15.86µs  17.29µs    54884.        0B    16.5 
-#>  9 best               100         15  10.59µs  11.65µs    78424.        0B    15.7 
-#> 10 worst              100         15   26.8µs  28.02µs    33901.        0B    10.2 
-#> 11 best                 3        100   7.67µs   8.48µs   112811.        0B    22.6 
-#> 12 worst                3        100   8.18µs   9.15µs   105268.        0B    21.1 
-#> 13 best                 5        100    7.1µs   8.92µs   110153.        0B    33.1 
-#> 14 worst                5        100   8.73µs   9.63µs    95827.        0B    19.2 
-#> 15 best                10        100    7.8µs   8.86µs   105201.        0B    21.0 
-#> 16 worst               10        100  10.33µs  11.68µs    80261.        0B    24.1 
-#> 17 best                50        100   8.73µs   9.69µs    92572.        0B    18.5 
-#> 18 worst               50        100  21.35µs  22.98µs    42629.        0B    12.8 
-#> 19 best               100        100  10.25µs  11.33µs    81406.        0B    16.3 
-#> 20 worst              100        100  37.85µs  39.81µs    23756.        0B     4.75
+#>  1 best                 3         15     12µs   13.1µs    66958.        0B     33.5
+#>  2 worst                3         15   12.6µs   13.9µs    68537.        0B     34.3
+#>  3 best                 5         15   12.2µs   14.1µs    63603.        0B     31.8
+#>  4 worst                5         15   12.9µs   14.8µs    63997.        0B     32.0
+#>  5 best                10         15   12.4µs   14.1µs    66616.        0B     33.3
+#>  6 worst               10         15   13.6µs   15.3µs    61847.        0B     37.1
+#>  7 best                50         15   13.5µs   15.4µs    59086.        0B     29.6
+#>  8 worst               50         15   20.8µs   22.6µs    40679.        0B     20.3
+#>  9 best               100         15   14.9µs   16.4µs    56384.        0B     28.2
+#> 10 worst              100         15     30µs   31.7µs    29964.        0B     15.0
+#> 11 best                 3        100   12.1µs     14µs    67321.        0B     33.7
+#> 12 worst                3        100     13µs   14.9µs    63766.        0B     31.9
+#> 13 best                 5        100   12.2µs   14.4µs    65893.        0B     33.0
+#> 14 worst                5        100   13.4µs   14.7µs    64461.        0B     32.2
+#> 15 best                10        100   12.4µs   14.2µs    66325.        0B     33.2
+#> 16 worst               10        100   14.7µs   16.7µs    56766.        0B     34.1
+#> 17 best                50        100   13.3µs   14.9µs    62334.        0B     31.2
+#> 18 worst               50        100   25.8µs   27.4µs    34295.        0B     17.2
+#> 19 best               100        100   15.2µs   17.3µs    54679.        0B     32.8
+#> 20 worst              100        100   44.2µs   46.3µs    20144.        0B     10.2
 ```
 
 ## Questions
 
-  - Best way to support `substitute()` calls in methods? We need to
-    evaluate the argument promises to do the dispatch, but we want to
-    pass the un-evaluated promise to the call?
-  - Should we remove `method()<-`, We can’t do the following, really
-    want to keep this syntax if possible.
-      - can’t use `method("foo")<-`
-      - can’t use `method(otherpkg::foo)<-`
-      - can’t use `method("otherpkg::foo")<-`
   - What should happen if you call `new_method()` on a S3 generic?
     1.  Should we create a new R7 generic out of the S3 generic?
-    2.  Or just register the R7 object using `registerS3method()`? ++
+    2.  Or just register the R7 object using `registerS3method()`?
 
 ## Design workflow
 
@@ -483,9 +478,9 @@ bench::press(
               - [x] - a class union
               - [x] - list of class objects/unions
               - [x] - a character vector.
-          - [ ] - method is a compatible function
+          - [x] - method is a compatible function
           - [x] - `new_method` is designed to work at run-time
-              - [ ] - `new_method` should optionally take a package
+              - [x] - `new_method` should optionally take a package
                 version, so the method is only registered if the package
                 is newer than the version.
           - [ ] - Can define methods where one of the arguments is
