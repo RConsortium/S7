@@ -35,3 +35,32 @@ test_that("printing R7 objects work", {
 test_that("printing R7 classes work", {
   expect_snapshot(range)
 })
+
+test_that("object_class returns itself for R7_class objects", {
+  text <- new_class("text", parent = "character")
+
+  expect_equal(object_class(text), text)
+})
+
+test_that("object_class returns the object class property for R7_object objects", {
+  text <- new_class("text", parent = "character")
+
+  obj <- text("hi")
+
+  expect_equal(object_class(obj), obj@object_class)
+})
+
+test_that("object_class returns class for basic types", {
+  expect_equal(object_class("foo"), "character")
+})
+
+test_that("object_class returns class for S3 types", {
+  foo <- structure(list(), class = "foo")
+  expect_equal(object_class(foo), "foo")
+})
+
+test_that("object_class returns the class for S4 types", {
+  foo <- methods::setClass("foo", representation = "character")
+  obj <- foo("hi")
+  expect_equal(object_class(obj), methods::extends(class(obj)))
+})

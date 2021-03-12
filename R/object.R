@@ -37,17 +37,7 @@ new_object <- function(...) {
 #' @param object The R7 object
 #' @export
 object_class <- function(object) {
-  if (inherits(object, "R7_class")) {
-    return(object)
-  }
-  if (inherits(object, "R7_object")) {
-    return(attr(object, "object_class"))
-  }
-  if (isS4(object)) {
-    return(methods::extends(class(object)))
-  }
-
-  class(object)
+  .Call(object_class_, object, parent.frame())
 }
 
 `object_class<-` <- function(object, value) {

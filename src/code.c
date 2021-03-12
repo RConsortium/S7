@@ -48,6 +48,44 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
   return R_NilValue;
 }
 
+SEXP get_class(SEXP object, SEXP envir) {
+    static SEXP fun = NULL;
+    if (fun == NULL) {
+      fun = Rf_findVarInFrame(R_BaseEnv, Rf_install("class"));
+    }
+    SEXP call = PROTECT(Rf_lang2(fun, object));
+    SEXP res = Rf_eval(call, envir);
+    UNPROTECT(1);
+    return res;
+}
+
+SEXP object_class_(SEXP object, SEXP envir) {
+  if (Rf_inherits(object, "R7_class")) {
+    return object;
+  }
+
+  if (Rf_inherits(object, "R7_object")) {
+    return Rf_getAttrib(object, Rf_install("object_class"));
+  }
+
+  SEXP klass = get_class(object, envir);
+
+    // We need to call `methods::extends(class(object))` for S4 objects, so use the S3 klass value we just obtained.
+  if (IS_S4_OBJECT(object)) {
+    static SEXP methods_extends_fun = NULL;
+    if (methods_extends_fun == NULL) {
+      SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("methods"));
+      methods_extends_fun = Rf_findVarInFrame(ns, Rf_install("extends"));
+    }
+    SEXP methods_extends_call = PROTECT(Rf_lang2(methods_extends_fun, klass));
+    SEXP res = Rf_eval(methods_extends_call, envir);
+    UNPROTECT(1);
+    return res;
+  }
+
+  return klass;
+}
+
 /* TODO: handle errors when method is not found */
 SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
   if (!Rf_inherits(generic, "R7_generic")) {
@@ -65,13 +103,6 @@ SEXP R7_object_() {
 
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
-
-  // Lookup the R7::object_class function
-  static SEXP object_class_fun = NULL;
-  if (object_class_fun == NULL) {
-    SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
-    object_class_fun = Rf_findVarInFrame(ns, Rf_install("object_class"));
-  }
 
   // Get the names to dispatch on from the generic signature
   SEXP gen_signature_args = Rf_getAttrib(Rf_getAttrib(generic, Rf_install("signature")), R_NamesSymbol);
@@ -119,13 +150,12 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
 
       // We need to call `R7::object_class()`, as not every object has a class
       // attribute, some are created dynamically.
-      SEXP object_class_call = PROTECT(Rf_lang2(object_class_fun, val));
-      SEXP klass = PROTECT(Rf_eval(object_class_call, envir));
+      SEXP klass = PROTECT(object_class_(val, envir));
 
       // Now that we have the classes for the argument we can add them to the signature classes
       SET_VECTOR_ELT(signature_classes, i, klass);
 
-      UNPROTECT(4);
+      UNPROTECT(3);
     }
     // but the bytecode compiler sometimes inlines literals, which we handle
     // here
