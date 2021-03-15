@@ -153,7 +153,7 @@ subset2(mtcars, hp > 200, c(wt, qsec))
   R7::method_register()
 }
 
-foo <- new_external_method("pkg1", "foo", c("x", "y"))
+foo <- new_external_generic("pkg1", "foo")
 
 method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ": ", y)
 ```

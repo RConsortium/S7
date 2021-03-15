@@ -177,7 +177,7 @@ subset2(mtcars, hp > 200, c(wt, qsec))
   R7::method_register()
 }
 
-foo <- new_external_method("pkg1", "foo", c("x", "y"))
+foo <- new_external_generic("pkg1", "foo")
 
 method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ": ", y)
 ```
@@ -230,9 +230,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    8.59µs    9.8µs    83717.        0B     16.7
-#> 2 foo_s3(x)    3.87µs    4.3µs   206928.        0B     20.7
-#> 3 foo_s4(x)    4.38µs    4.7µs   205280.        0B     20.5
+#> 1 foo_R7(x)    8.67µs   9.63µs    84752.        0B     17.0
+#> 2 foo_s3(x)    3.87µs   4.33µs   208784.        0B     20.9
+#> 3 foo_s4(x)    4.32µs   4.74µs   200500.        0B     20.1
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
@@ -246,8 +246,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  14.15µs   15.4µs    61584.        0B     30.8
-#> 2 bar_s4(x, y)   9.37µs   10.5µs    88670.        0B     17.7
+#> 1 bar_R7(x, y)  14.47µs   16.3µs    57083.        0B     28.6
+#> 2 bar_s4(x, y)   9.73µs   11.5µs    83005.        0B     16.6
 ```
 
 A potential optimization is caching based on the class names, but lookup

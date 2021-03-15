@@ -30,11 +30,10 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
 #' @param package The package the external generic is defined in.
 #' @param version An optional version the package must meet for the method to be registered.
 #' @export
-new_external_generic <- function(package, generic, signature, version = NULL) {
+new_external_generic <- function(package, generic, version = NULL) {
   out <- list(
     package = package,
     generic = generic,
-    signature = signature,
     version = version
   )
 

@@ -1,8 +1,8 @@
-foo <- R7::new_external_generic("t1", "foo", list("character", "numeric"))
+foo <- R7::new_external_generic("t1", "foo")
 
 R7::method(foo, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, "-", y)
 
-bar <- R7::new_external_generic("t0", "bar", list("character", "numeric"))
+bar <- R7::new_external_generic("t0", "bar")
 
 R7::method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("bar-", x, "-", y)
 

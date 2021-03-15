@@ -7,7 +7,7 @@
 \usage{
 new_generic(name, signature = NULL, fun = NULL)
 
-new_external_generic(package, generic, signature, version = NULL)
+new_external_generic(package, generic, version = NULL)
 }
 \arguments{
 \item{name}{The name or generic object of the generic}
