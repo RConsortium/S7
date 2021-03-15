@@ -92,7 +92,8 @@ properties <- function(object) {
     if (isTRUE(check) && length(prop[["class"]]) > 0) {
       classes <- setdiff(class_names(prop[["class"]]), "R7_object")
       if (!inherits(value, classes)) {
-        stop(sprintf("`value` must be of class %s:\n- `value` is of class <%s>", fmt_classes(classes), class(value)[[1]]), call. = FALSE)
+        obj_cls <- object_class(object)
+        stop(sprintf("%s@%s must be of class %s:\n- `value` is of class <%s>", fmt_classes(obj_cls@name), name, fmt_classes(classes), class(value)[[1]]), call. = FALSE)
       }
     }
     attr(object, name) <- value
