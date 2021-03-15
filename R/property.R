@@ -30,7 +30,7 @@ property <- function(object, name) {
   val <- property_safely(object, name)
   if (is.null(val)) {
     class <- object_class(object)
-    stop(sprintf("Can't find property '%s' in <%s>", name, class@name), call. = FALSE)
+    stop(sprintf("Can't find property %s@%s", fmt_classes(class@name), name), call. = FALSE)
   }
 
   val

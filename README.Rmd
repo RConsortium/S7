@@ -39,7 +39,7 @@ range <- new_class("range",
   },
   validator = function(x) {
     if (x@end < x@start) {
-      "`end` must be greater than or equal to `start`"
+      "<range>@end must be greater than or equal to <range>@start"
     }
   },
   properties = list(
@@ -147,7 +147,7 @@ method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop 
 subset2(mtcars, hp > 200, c(wt, qsec))
 ```
 
-### Load time registration
+### External generics
 ```{r eval = FALSE}
 .onLoad <- function(libname, pkgname) {
   R7::method_register()
@@ -227,12 +227,12 @@ gen_character <- function (n, min = 5, max = 25, values = c(letters, LETTERS, 0:
 
 bench::press(
   num_classes = c(3, 5, 10, 50, 100),
-  class_size = c(15, 100),
+  class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
     text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
-    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
       assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
@@ -261,17 +261,17 @@ bench::press(
 )
 ```
 
-And the same benchmark using double-dispatch vs single dispatch
+And the same benchmark using double-dispatch
 
 ```{r performance-3, message = FALSE, R.options = list(width = 120), cache = TRUE}
 bench::press(
   num_classes = c(3, 5, 10, 50, 100),
-  class_size = c(15, 100),
+  class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
     text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
-    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
       assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)

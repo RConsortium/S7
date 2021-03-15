@@ -6,7 +6,7 @@ describe("property", {
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_error(property(x, "st"), "Can't find property 'st' in <range>")
+    expect_snapshot_error(property(x, "st"))
   })
   it("retrieves .data", {
     x <- text("hi")
@@ -54,7 +54,7 @@ describe("@", {
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_error(x@st, "Can't find property 'st' in <range>")
+    expect_snapshot_error(x@st)
   })
   it("falls back to `base::@` for non-R7 objects", {
     x <- "foo"

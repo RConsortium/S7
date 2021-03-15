@@ -29,7 +29,7 @@ range <- new_class("range",
   },
   validator = function(x) {
     if (x@end < x@start) {
-      "`end` must be greater than or equal to `start`"
+      "<range>@end must be greater than or equal to <range>@start"
     }
   },
   properties = list(
@@ -65,17 +65,17 @@ x@length
 
 # incorrect properties throws an error
 x@middle
-#> Error: Can't find property 'middle' in <range>
+#> Error: Can't find property <range>@middle
 
 # assigning properties verifies the class matches the class of the value
 x@end <- "foo"
-#> Error: `value` must be of class <numeric>:
+#> Error: <range>@end must be of class <numeric>:
 #> - `value` is of class <character>
 
 # assigning properties runs the validator
 x@end <- 0
 #> Error: Invalid <range> object:
-#> - `end` must be greater than or equal to `start`
+#> - <range>@end must be greater than or equal to <range>@start
 
 # Print methods for both R7_class objects
 object_class(x)
@@ -170,7 +170,7 @@ subset2(mtcars, hp > 200, c(wt, qsec))
 #> Maserati Bora       3.570 14.60
 ```
 
-### Load time registration
+### External generics
 
 ``` r
 .onLoad <- function(libname, pkgname) {
@@ -230,9 +230,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    8.67µs   9.63µs    84752.        0B     17.0
-#> 2 foo_s3(x)    3.87µs   4.33µs   208784.        0B     20.9
-#> 3 foo_s4(x)    4.32µs   4.74µs   200500.        0B     20.1
+#> 1 foo_R7(x)     8.5µs  10.39µs    84735.        0B     17.0
+#> 2 foo_s3(x)     3.8µs   4.22µs   223028.        0B     22.3
+#> 3 foo_s4(x)    4.26µs   4.72µs   200283.        0B     20.0
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
@@ -246,8 +246,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  14.47µs   16.3µs    57083.        0B     28.6
-#> 2 bar_s4(x, y)   9.73µs   11.5µs    83005.        0B     16.6
+#> 1 bar_R7(x, y)  14.21µs   15.7µs    60508.        0B     30.3
+#> 2 bar_s4(x, y)   9.54µs   10.6µs    89368.        0B     17.9
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -275,12 +275,12 @@ gen_character <- function (n, min = 5, max = 25, values = c(letters, LETTERS, 0:
 
 bench::press(
   num_classes = c(3, 5, 10, 50, 100),
-  class_size = c(15, 100),
+  class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
     text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
-    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
       assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
@@ -308,41 +308,41 @@ bench::press(
   }
 )
 #> # A tibble: 20 x 8
-#>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
-#>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   9.91µs   12.4µs    80813.        0B     24.3
-#>  2 worst                3         15  10.17µs     12µs    80288.        0B     32.1
-#>  3 best                 5         15   9.91µs   12.7µs    76523.        0B     30.6
-#>  4 worst                5         15  10.54µs   12.4µs    78195.        0B     31.3
-#>  5 best                10         15   9.89µs   12.5µs    78052.        0B     31.2
-#>  6 worst               10         15  11.01µs   13.3µs    74023.        0B     29.6
-#>  7 best                50         15  10.03µs   11.8µs    81389.        0B     32.6
-#>  8 worst               50         15  14.29µs   15.6µs    59115.        0B     23.7
-#>  9 best               100         15   10.8µs   12.5µs    77170.        0B     30.9
-#> 10 worst              100         15  18.07µs   20.1µs    47337.        0B     18.9
-#> 11 best                 3        100   9.82µs   11.3µs    84505.        0B     33.8
-#> 12 worst                3        100  10.23µs   12.8µs    76000.        0B     30.4
-#> 13 best                 5        100   10.2µs   11.7µs    80082.        0B     32.0
-#> 14 worst                5        100  10.99µs   13.8µs    72780.        0B     29.1
-#> 15 best                10        100  10.14µs   12.8µs    78083.        0B     31.2
-#> 16 worst               10        100  11.85µs   13.2µs    70176.        0B     28.1
-#> 17 best                50        100  10.42µs   12.5µs    77965.        0B     31.2
-#> 18 worst               50        100  16.82µs   18.5µs    51479.        0B     20.6
-#> 19 best               100        100  10.27µs   12.6µs    77110.        0B     30.9
-#> 20 worst              100        100   24.2µs   26.1µs    36342.        0B     14.5
+#>    expression num_classes class_nchar      min   median `itr/sec` mem_alloc `gc/sec`
+#>    <bch:expr>       <dbl>       <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#>  1 best                 3          15   8.62µs   10.9µs    91862.        0B     36.8
+#>  2 worst                3          15   9.03µs   11.3µs    88546.        0B     35.4
+#>  3 best                 5          15   8.84µs   10.3µs    91116.        0B     36.5
+#>  4 worst                5          15   9.35µs   10.5µs    90944.        0B     36.4
+#>  5 best                10          15   8.98µs   11.1µs    89742.        0B     35.9
+#>  6 worst               10          15   9.65µs   11.9µs    82342.        0B     24.7
+#>  7 best                50          15   9.15µs   11.4µs    87054.        0B     34.8
+#>  8 worst               50          15  13.01µs   14.7µs    64879.        0B     26.0
+#>  9 best               100          15   9.34µs   11.1µs    86467.        0B     34.6
+#> 10 worst              100          15  17.02µs   18.8µs    50694.        0B     20.3
+#> 11 best                 3         100   8.64µs   10.6µs    93073.        0B     37.2
+#> 12 worst                3         100   9.36µs   11.7µs    85594.        0B     34.3
+#> 13 best                 5         100   8.81µs   11.3µs    87928.        0B     35.2
+#> 14 worst                5         100   9.96µs   11.8µs    82845.        0B     33.2
+#> 15 best                10         100   9.05µs   11.3µs    87958.        0B     35.2
+#> 16 worst               10         100  10.58µs   13.4µs    72944.        0B     21.9
+#> 17 best                50         100   9.19µs   11.4µs    86818.        0B     26.1
+#> 18 worst               50         100  15.89µs   17.9µs    52961.        0B     21.2
+#> 19 best               100         100    9.7µs   12.3µs    81904.        0B     32.8
+#> 20 worst              100         100  24.17µs   26.2µs    35199.        0B     14.1
 ```
 
-And the same benchmark using double-dispatch vs single dispatch
+And the same benchmark using double-dispatch
 
 ``` r
 bench::press(
   num_classes = c(3, 5, 10, 50, 100),
-  class_size = c(15, 100),
+  class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
     text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
     parent <- text
-    classes <- gen_character(num_classes, min = class_size, max = class_size)
+    classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
       assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
@@ -371,28 +371,28 @@ bench::press(
   }
 )
 #> # A tibble: 20 x 8
-#>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
-#>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   10.2µs   11.5µs    80091.        0B     32.0
-#>  2 worst                3         15     11µs   11.7µs    81925.        0B     32.8
-#>  3 best                 5         15   10.3µs   11.5µs    77925.        0B     39.0
-#>  4 worst                5         15   11.1µs   11.9µs    81456.        0B     32.6
-#>  5 best                10         15   10.7µs   11.7µs    79036.        0B     31.6
-#>  6 worst               10         15   12.2µs   13.4µs    70143.        0B     28.1
-#>  7 best                50         15     11µs   11.8µs    80724.        0B     40.4
-#>  8 worst               50         15   18.3µs   19.5µs    47408.        0B     19.0
-#>  9 best               100         15   11.7µs   12.8µs    73903.        0B     29.6
-#> 10 worst              100         15   27.1µs   28.8µs    32861.        0B     16.4
-#> 11 best                 3        100   10.6µs   11.6µs    81519.        0B     32.6
-#> 12 worst                3        100   11.6µs   12.5µs    75169.        0B     30.1
-#> 13 best                 5        100   10.7µs   11.9µs    80362.        0B     40.2
-#> 14 worst                5        100   12.1µs   13.1µs    70882.        0B     28.4
-#> 15 best                10        100   10.6µs     12µs    78126.        0B     31.3
-#> 16 worst               10        100   13.9µs     15µs    63313.        0B     31.7
-#> 17 best                50        100   11.4µs     13µs    72297.        0B     28.9
-#> 18 worst               50        100   23.6µs   25.2µs    37711.        0B     18.9
-#> 19 best               100        100   12.1µs   13.4µs    70365.        0B     28.2
-#> 20 worst              100        100     37µs   39.2µs    23647.        0B     11.8
+#>    expression num_classes class_nchar      min   median `itr/sec` mem_alloc `gc/sec`
+#>    <bch:expr>       <dbl>       <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
+#>  1 best                 3          15   9.62µs  11.72µs    81712.        0B    32.7 
+#>  2 worst                3          15    9.6µs  10.32µs    91606.        0B    36.7 
+#>  3 best                 5          15   9.18µs   9.77µs    97699.        0B    39.1 
+#>  4 worst                5          15   9.98µs  10.74µs    90485.        0B    36.2 
+#>  5 best                10          15   9.32µs  10.01µs    92839.        0B    37.2 
+#>  6 worst               10          15  10.75µs   11.8µs    81703.        0B    32.7 
+#>  7 best                50          15  10.21µs   11.1µs    86549.        0B    34.6 
+#>  8 worst               50          15  17.12µs  18.44µs    52067.        0B    20.8 
+#>  9 best               100          15  10.56µs   11.8µs    81407.        0B    32.6 
+#> 10 worst              100          15  24.53µs  26.03µs    36629.        0B    14.7 
+#> 11 best                 3         100   9.27µs  10.43µs    91396.        0B    45.7 
+#> 12 worst                3         100  10.32µs  11.43µs    83567.        0B    33.4 
+#> 13 best                 5         100   9.51µs  10.55µs    90847.        0B    36.4 
+#> 14 worst                5         100  10.56µs  11.86µs    80953.        0B    32.4 
+#> 15 best                10         100   9.54µs  10.64µs    88915.        0B    35.6 
+#> 16 worst               10         100  12.25µs  13.61µs    70435.        0B    28.2 
+#> 17 best                50         100  10.27µs  11.39µs    83964.        0B    33.6 
+#> 18 worst               50         100  23.38µs  25.02µs    38013.        0B    15.2 
+#> 19 best               100         100  10.85µs   11.8µs    80367.        0B    32.2 
+#> 20 worst              100         100  37.28µs  38.79µs    24552.        0B     9.82
 ```
 
 ## Questions
