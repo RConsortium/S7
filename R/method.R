@@ -78,7 +78,7 @@ method_register <- function() {
   for (x in tbl) {
     if (isNamespaceLoaded(x$package)) {
       ns <- asNamespace(x$package)
-      new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
+      new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
     } else {
       setHook(packageEvent(x$package, "onLoad"),
         local({
@@ -86,7 +86,7 @@ method_register <- function() {
           function(...) {
             ns <- asNamespace(x$package)
             if (is.null(x$version) || getNamespaceVersion(ns) >= x$version) {
-              new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
+              new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
             }
           }
         })
@@ -123,19 +123,15 @@ method_compatible <- function(method, generic) {
 }
 
 #' @rdname method
+#' @param package The package to register the method in, only used for soft
+#'   dependencies. The default `NULL` looks up the package based on the parent
+#'   frame.
 #' @export
-new_method <- function(generic, signature, method) {
-  if (!is.character(signature) && !inherits(signature, "list")) {
-    signature <- list(signature)
-  }
-
+new_method <- function(generic, signature, method, package = NULL) {
   if (inherits(generic, "R7_external_generic")) {
-    package <- generic$package
-    generic <- generic$generic
     # Get current package, if any
-    current_package <- packageName(parent.frame())
-    if (!is.null(current_package)) {
-      tbl <- asNamespace(current_package)[[".__S3MethodsTable__."]]
+    if (!is.null(package)) {
+      tbl <- asNamespace(package)[[".__S3MethodsTable__."]]
       if (is.null(tbl[[".R7_methods"]])) {
         tbl[[".R7_methods"]] <- list()
       }
@@ -143,12 +139,16 @@ new_method <- function(generic, signature, method) {
 
       return(invisible())
     }
-    generic <- getFromNamespace(generic, asNamespace(package))
+    generic <- getFromNamespace(generic$generic, asNamespace(generic$package))
   }
 
   generic <- as_generic(generic)
 
   method_compatible(method, generic)
+
+  if (!is.character(signature) && !inherits(signature, "list")) {
+    signature <- list(signature)
+  }
 
   if (!inherits(method, "R7_method")) {
     method <- R7_method(generic, signature, method)
@@ -158,9 +158,10 @@ new_method <- function(generic, signature, method) {
 
   p_tbl <- generic@methods
 
+
   for (i in seq_along(signature)) {
     if (inherits(signature[[i]], "R7_union")) {
-      for (class in signature[[1]]@classes) {
+      for (class in signature[[i]]@classes) {
         new_method(generic, c(signature[seq_len(i - 1)], class@name), method)
       }
       return(invisible(generic))
@@ -185,7 +186,7 @@ new_method <- function(generic, signature, method) {
 #' @rdname method
 #' @export
 `method<-` <- function(generic, signature, value) {
-  new_method(generic, signature, value)
+  new_method(generic, signature, value, package = packageName(parent.frame()))
 }
 
 as_generic <- function(generic) {

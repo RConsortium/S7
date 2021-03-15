@@ -8,7 +8,7 @@
 \usage{
 method(generic, signature)
 
-new_method(generic, signature, method)
+new_method(generic, signature, method, package = NULL)
 
 method(generic, signature) <- value
 }
@@ -18,6 +18,10 @@ method(generic, signature) <- value
 \item{signature}{The method signature}
 
 \item{method, value}{The new function to use as the method.}
+
+\item{package}{The package to register the method in, only used for soft
+dependencies. The default \code{NULL} looks up the package based on the parent
+frame.}
 }
 \description{
 Retrieve or register an R7 method for a generic

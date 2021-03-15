@@ -184,6 +184,11 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   // Now that we have retrieved all the classes, we can look up what method to call.
   SEXP m = method_(generic, signature_classes, R_NilValue);
 
+  // If no method found, throw an error
+  if (m == R_NilValue) {
+    Rf_errorcall(R_NilValue, "No method found!");
+  }
+
   // And then actually call it.
   SEXP res = Rf_applyClosure(call, m, args, envir, R_NilValue);
 
