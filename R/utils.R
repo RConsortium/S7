@@ -31,3 +31,7 @@ global_variables <- function(names) {
 vlapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
 vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
 `%||%` <- function(x, y) if (length(x) == 0 || (length(x) == 1 && !nzchar(x))) y else x
+
+fmt_classes <- function(classes, collapse = ", ") {
+  paste0("<", classes, ">", collapse = collapse)
+}

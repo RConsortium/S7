@@ -230,9 +230,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)   10.54µs  11.93µs    71901.        0B     21.6
-#> 2 foo_s3(x)    3.86µs   4.33µs   213029.        0B     21.3
-#> 3 foo_s4(x)    4.14µs   4.54µs   199037.        0B     19.9
+#> 1 foo_R7(x)     8.6µs   9.99µs    83611.        0B     16.7
+#> 2 foo_s3(x)    3.87µs   4.31µs   213838.        0B     21.4
+#> 3 foo_s4(x)    3.98µs    4.6µs   207822.        0B     20.8
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
@@ -246,8 +246,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  16.88µs   20.9µs    48174.        0B     28.9
-#> 2 bar_s4(x, y)   9.21µs   10.2µs    89434.        0B     17.9
+#> 1 bar_R7(x, y)  14.41µs   17.4µs    57804.        0B     28.9
+#> 2 bar_s4(x, y)   9.48µs   10.9µs    87914.        0B     17.6
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -310,26 +310,26 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15   10.8µs   13.8µs    72880.        0B     29.2
-#>  2 worst                3         15   11.4µs     14µs    70691.        0B     28.3
-#>  3 best                 5         15   10.9µs   13.6µs    73608.        0B     36.8
-#>  4 worst                5         15   11.8µs   14.8µs    67578.        0B     27.0
-#>  5 best                10         15     11µs     14µs    71009.        0B     35.5
-#>  6 worst               10         15     12µs   14.7µs    68087.        0B     27.2
-#>  7 best                50         15   11.7µs   14.4µs    68187.        0B     27.3
-#>  8 worst               50         15   15.2µs   17.5µs    53756.        0B     26.9
-#>  9 best               100         15   12.5µs   15.1µs    64971.        0B     26.0
-#> 10 worst              100         15   20.6µs   22.8µs    40876.        0B     20.4
-#> 11 best                 3        100   11.1µs   12.9µs    71552.        0B     28.6
-#> 12 worst                3        100   11.6µs   14.8µs    67898.        0B     34.0
-#> 13 best                 5        100   10.9µs   12.8µs    72892.        0B     29.2
-#> 14 worst                5        100   11.8µs   15.1µs    65296.        0B     32.7
-#> 15 best                10        100   10.8µs     14µs    71540.        0B     28.6
-#> 16 worst               10        100   12.5µs   15.5µs    64452.        0B     32.2
-#> 17 best                50        100   11.6µs   14.7µs    67919.        0B     27.2
-#> 18 worst               50        100   19.2µs   20.7µs    44553.        0B     22.3
-#> 19 best               100        100   12.2µs   13.8µs    67301.        0B     26.9
-#> 20 worst              100        100   26.8µs   28.6µs    32879.        0B     13.2
+#>  1 best                 3         15   9.91µs   12.4µs    80813.        0B     24.3
+#>  2 worst                3         15  10.17µs     12µs    80288.        0B     32.1
+#>  3 best                 5         15   9.91µs   12.7µs    76523.        0B     30.6
+#>  4 worst                5         15  10.54µs   12.4µs    78195.        0B     31.3
+#>  5 best                10         15   9.89µs   12.5µs    78052.        0B     31.2
+#>  6 worst               10         15  11.01µs   13.3µs    74023.        0B     29.6
+#>  7 best                50         15  10.03µs   11.8µs    81389.        0B     32.6
+#>  8 worst               50         15  14.29µs   15.6µs    59115.        0B     23.7
+#>  9 best               100         15   10.8µs   12.5µs    77170.        0B     30.9
+#> 10 worst              100         15  18.07µs   20.1µs    47337.        0B     18.9
+#> 11 best                 3        100   9.82µs   11.3µs    84505.        0B     33.8
+#> 12 worst                3        100  10.23µs   12.8µs    76000.        0B     30.4
+#> 13 best                 5        100   10.2µs   11.7µs    80082.        0B     32.0
+#> 14 worst                5        100  10.99µs   13.8µs    72780.        0B     29.1
+#> 15 best                10        100  10.14µs   12.8µs    78083.        0B     31.2
+#> 16 worst               10        100  11.85µs   13.2µs    70176.        0B     28.1
+#> 17 best                50        100  10.42µs   12.5µs    77965.        0B     31.2
+#> 18 worst               50        100  16.82µs   18.5µs    51479.        0B     20.6
+#> 19 best               100        100  10.27µs   12.6µs    77110.        0B     30.9
+#> 20 worst              100        100   24.2µs   26.1µs    36342.        0B     14.5
 ```
 
 And the same benchmark using double-dispatch vs single dispatch
@@ -373,26 +373,26 @@ bench::press(
 #> # A tibble: 20 x 8
 #>    expression num_classes class_size      min   median `itr/sec` mem_alloc `gc/sec`
 #>    <bch:expr>       <dbl>      <dbl> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#>  1 best                 3         15     12µs   13.1µs    66958.        0B     33.5
-#>  2 worst                3         15   12.6µs   13.9µs    68537.        0B     34.3
-#>  3 best                 5         15   12.2µs   14.1µs    63603.        0B     31.8
-#>  4 worst                5         15   12.9µs   14.8µs    63997.        0B     32.0
-#>  5 best                10         15   12.4µs   14.1µs    66616.        0B     33.3
-#>  6 worst               10         15   13.6µs   15.3µs    61847.        0B     37.1
-#>  7 best                50         15   13.5µs   15.4µs    59086.        0B     29.6
-#>  8 worst               50         15   20.8µs   22.6µs    40679.        0B     20.3
-#>  9 best               100         15   14.9µs   16.4µs    56384.        0B     28.2
-#> 10 worst              100         15     30µs   31.7µs    29964.        0B     15.0
-#> 11 best                 3        100   12.1µs     14µs    67321.        0B     33.7
-#> 12 worst                3        100     13µs   14.9µs    63766.        0B     31.9
-#> 13 best                 5        100   12.2µs   14.4µs    65893.        0B     33.0
-#> 14 worst                5        100   13.4µs   14.7µs    64461.        0B     32.2
-#> 15 best                10        100   12.4µs   14.2µs    66325.        0B     33.2
-#> 16 worst               10        100   14.7µs   16.7µs    56766.        0B     34.1
-#> 17 best                50        100   13.3µs   14.9µs    62334.        0B     31.2
-#> 18 worst               50        100   25.8µs   27.4µs    34295.        0B     17.2
-#> 19 best               100        100   15.2µs   17.3µs    54679.        0B     32.8
-#> 20 worst              100        100   44.2µs   46.3µs    20144.        0B     10.2
+#>  1 best                 3         15   10.2µs   11.5µs    80091.        0B     32.0
+#>  2 worst                3         15     11µs   11.7µs    81925.        0B     32.8
+#>  3 best                 5         15   10.3µs   11.5µs    77925.        0B     39.0
+#>  4 worst                5         15   11.1µs   11.9µs    81456.        0B     32.6
+#>  5 best                10         15   10.7µs   11.7µs    79036.        0B     31.6
+#>  6 worst               10         15   12.2µs   13.4µs    70143.        0B     28.1
+#>  7 best                50         15     11µs   11.8µs    80724.        0B     40.4
+#>  8 worst               50         15   18.3µs   19.5µs    47408.        0B     19.0
+#>  9 best               100         15   11.7µs   12.8µs    73903.        0B     29.6
+#> 10 worst              100         15   27.1µs   28.8µs    32861.        0B     16.4
+#> 11 best                 3        100   10.6µs   11.6µs    81519.        0B     32.6
+#> 12 worst                3        100   11.6µs   12.5µs    75169.        0B     30.1
+#> 13 best                 5        100   10.7µs   11.9µs    80362.        0B     40.2
+#> 14 worst                5        100   12.1µs   13.1µs    70882.        0B     28.4
+#> 15 best                10        100   10.6µs     12µs    78126.        0B     31.3
+#> 16 worst               10        100   13.9µs     15µs    63313.        0B     31.7
+#> 17 best                50        100   11.4µs     13µs    72297.        0B     28.9
+#> 18 worst               50        100   23.6µs   25.2µs    37711.        0B     18.9
+#> 19 best               100        100   12.1µs   13.4µs    70365.        0B     28.2
+#> 20 worst              100        100     37µs   39.2µs    23647.        0B     11.8
 ```
 
 ## Questions
@@ -450,7 +450,7 @@ bench::press(
       - [x] - valid\_eventually
       - [x] - valid\_implicitly
   - Unions
-      - [ ] - Used in properties to allow a property to be one of a set
+      - [x] - Used in properties to allow a property to be one of a set
         of classes
       - [x] - In method dispatch as a convenience for defining a method
         for multiple classes

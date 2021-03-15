@@ -84,7 +84,8 @@ method_register <- function() {
       new_method(getFromNamespace(x$generic, ns), x$signature, x$value)
     } else {
       setHook(packageEvent(x$package, "onLoad"),
-        local({x <- x
+        local({
+          x <- x
           function(...) {
             ns <- asNamespace(x$package)
             if (is.null(x$version) || getNamespaceVersion(ns) >= x$version) {
@@ -127,6 +128,10 @@ method_compatible <- function(method, generic) {
 #' @rdname method
 #' @export
 new_method <- function(generic, signature, method) {
+  if (!is.character(signature) && !inherits(signature, "list")) {
+    signature <- list(signature)
+  }
+
   if (inherits(generic, "R7_external_generic")) {
     package <- generic$package
     generic <- generic$generic
@@ -147,10 +152,6 @@ new_method <- function(generic, signature, method) {
   generic <- as_generic(generic)
 
   method_compatible(method, generic)
-
-  if (!is.character(signature) && !inherits(signature, "list")) {
-    signature <- list(signature)
-  }
 
   if (!inherits(method, "R7_method")) {
     method <- R7_method(generic, signature, method)

@@ -341,7 +341,7 @@ bench::press(
   - [x] - valid_eventually
   - [x] - valid_implicitly
 - Unions
-  - [ ] - Used in properties to allow a property to be one of a set of classes
+  - [x] - Used in properties to allow a property to be one of a set of classes
   - [x] - In method dispatch as a convenience for defining a method for multiple classes
 - Properties
   - [x] - Accessed using `property()` / `property<-`

@@ -36,3 +36,12 @@ test_that("classes can inherit from base types", {
   obj <- foo()
   expect_equal(typeof(obj@.data), "closure")
 })
+
+test_that("classes can use unions in properties", {
+  my_class <- new_class("my_class", properties = list(new_property(name = "name", new_union("character", "factor"))))
+
+  expect_equal(my_class(name = "foo")@name, "foo")
+  expect_equal(my_class(name = factor("foo"))@name, factor("foo"))
+
+  expect_snapshot_error(my_class(name = 1))
+})
