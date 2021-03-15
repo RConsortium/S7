@@ -347,9 +347,9 @@ bench::press(
   - [x] - Accessed using `property()` / `property<-`
   - [x] - Accessed using `@` / `@<-`
   - [x] - A name, used to label output
-  - [ ] - A optional class or union
+  - [x] - A optional class or union
   - [x] - An optional accessor functions, both getter and setters
-  - [ ] - Properties are created with `new_prop()`
+  - [x] - Properties are created with `new_property()`
 - Generics
   - [x] - It knows its name and the names of the arguments in its signature
   - [x] - Calling `new_generic()` defines a new generic

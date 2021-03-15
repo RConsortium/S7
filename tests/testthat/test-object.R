@@ -1,10 +1,23 @@
-describe("new_object", {
-  it("can instantiate a new object with properties", {
+test_that("normal R7 objects have a class object attribute that is retrieved with `object_class()`", {
+    x <- range(1, 10)
+    obj_cls <- attr(x, "object_class")
+    expect_equal(object_class(x), obj_cls)
+})
+
+test_that("normal R7 objects also for S3 compatibility, a class attribute, a character vector of class names", {
+    x <- range(1, 10)
+    cls <- attr(x, "class")
+    expect_equal(class(x), cls)
+    expect_equal(cls, c("range", "R7_object"))
+})
+
+test_that("Additional attributes storing properties defined by the class, accessible with `@/property()`", {
     x <- range(start = 1, end = 10)
     expect_equal(x@start, 1)
     expect_equal(x@end, 10)
-  })
+})
 
+describe("new_object", {
   it("checks new objects for validity", {
     expect_error(range(start = 10, end = 1), "`end` must be greater than or equal to `start`")
   })

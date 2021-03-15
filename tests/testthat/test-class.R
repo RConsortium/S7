@@ -3,6 +3,9 @@ describe("R7_class", {
   it("has a character name", {
     expect_type(my_class@name, "character")
   })
+  it("has a parent", {
+    expect_s3_class(my_class@parent, "R7_class")
+  })
   it("is an instance of R7_class and object", {
     expect_equal(class(my_class), c("R7_class", "R7_object"))
   })

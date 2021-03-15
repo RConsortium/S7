@@ -230,9 +230,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)     8.6µs   9.99µs    83611.        0B     16.7
-#> 2 foo_s3(x)    3.87µs   4.31µs   213838.        0B     21.4
-#> 3 foo_s4(x)    3.98µs    4.6µs   207822.        0B     20.8
+#> 1 foo_R7(x)    8.59µs    9.8µs    83717.        0B     16.7
+#> 2 foo_s3(x)    3.87µs    4.3µs   206928.        0B     20.7
+#> 3 foo_s4(x)    4.38µs    4.7µs   205280.        0B     20.5
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
@@ -246,8 +246,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  14.41µs   17.4µs    57804.        0B     28.9
-#> 2 bar_s4(x, y)   9.48µs   10.9µs    87914.        0B     17.6
+#> 1 bar_R7(x, y)  14.15µs   15.4µs    61584.        0B     30.8
+#> 2 bar_s4(x, y)   9.37µs   10.5µs    88670.        0B     17.7
 ```
 
 A potential optimization is caching based on the class names, but lookup
@@ -458,9 +458,9 @@ bench::press(
       - [x] - Accessed using `property()` / `property<-`
       - [x] - Accessed using `@` / `@<-`
       - [x] - A name, used to label output
-      - [ ] - A optional class or union
+      - [x] - A optional class or union
       - [x] - An optional accessor functions, both getter and setters
-      - [ ] - Properties are created with `new_prop()`
+      - [x] - Properties are created with `new_property()`
   - Generics
       - [x] - It knows its name and the names of the arguments in its
         signature

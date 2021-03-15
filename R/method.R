@@ -10,9 +10,6 @@ method <- function(generic, signature) {
 }
 
 method_impl <- function(generic, signature, ignore) {
-  # This slows down the method dispatch too much
-  #generic <- as_generic(generic)
-
   out <- .Call(method_, generic, signature, ignore)
   if (is.null(out)) {
     # If no R7 method is found, see if there are any S3 methods registered
@@ -45,7 +42,7 @@ find_function_name <- function(x, env) {
       return(name)
     }
   }
-  return(NULL)
+  NULL
 }
 
 #' Retrieve the next applicable method after the current one
