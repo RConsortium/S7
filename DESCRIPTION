@@ -47,3 +47,4 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
+URL: https://RConsortium.github.io/OOP-WG, https://rconsortium.github.io/OOP-WG

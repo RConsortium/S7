@@ -9,3 +9,6 @@
 ^README\.Rmd$
 ^script\.R$
 ^README_cache$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
