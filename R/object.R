@@ -2,7 +2,7 @@
 #' @keywords internal
 #' @export
 new_object <- function(.data = NULL, ...) {
-  class <- object_class(sys.function(-1))
+  obj_cls <- object_class(sys.function(-1))
 
   args <- list(...)
   nms <- names(args)
@@ -10,20 +10,20 @@ new_object <- function(.data = NULL, ...) {
   if (!is.null(.data)) {
     object <- .data
   } else {
-    object <- class@parent@constructor()
+    object <- obj_cls@parent@constructor()
   }
   attr(object, ".should_validate") <- FALSE
 
   class(object) <- "R7_object"
 
-  object_class(object) <- class
+  object_class(object) <- obj_cls
 
   props <- properties(object)
 
   to_set <- intersect(nms, names(props))
 
   for (nme in to_set) {
-    property(object, nme) <- args[[nme]]
+    property(object, nme, check = FALSE) <- args[[nme]]
   }
 
   attr(object, ".should_validate") <- NULL
@@ -61,5 +61,5 @@ print.R7_object <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("<R7_object> <%s>\n%s", object_class(x)@name, prop_fmt), sep = "")
+  cat(sprintf("%s\n%s", fmt_classes(class_names(x)), prop_fmt), sep = "")
 }

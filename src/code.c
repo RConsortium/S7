@@ -98,7 +98,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
 }
 
 SEXP R7_object_() {
-  return Rf_allocSExp(DOTSXP);
+  return Rf_allocSExp(S4SXP);
 }
 
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {

@@ -21,6 +21,7 @@ base_classes[["factor"]] <- new_class("factor", constructor = function(x = facto
 base_classes[["raw"]] <- new_class("raw", constructor = function(x = raw()) new_object(x))
 base_classes[["function"]] <- new_class("function", constructor = function(x = function() NULL) new_object(x))
 base_classes[["list"]] <- new_class("list", constructor = function(x = list()) new_object(x))
+base_classes[["data.frame"]] <- new_class("data.frame", constructor = function(x = data.frame()) new_object(x))
 base_classes[["NULL"]] <- new_class("NULL", constructor = function(x = NULL) new_object(x))
 
 #' R7 generics and method objects

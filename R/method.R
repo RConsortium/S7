@@ -103,8 +103,13 @@ arg_to_string <- function(arg) {
 }
 
 method_compatible <- function(method, generic) {
-  generic_formals <- formals(generic)
+  generic_formals <- suppressWarnings(formals(args(generic)))
   method_formals <- formals(method)
+
+  # This can happen for some primitive functions such as `[`
+  if (length(generic_formals) == 0) {
+    return()
+  }
 
   for (i in seq_len(length(generic_formals) - 1)) {
     if (!identical(generic_formals[i], method_formals[i])) {
@@ -142,16 +147,24 @@ new_method <- function(generic, signature, method, package = NULL) {
     generic <- getFromNamespace(generic$generic, asNamespace(generic$package))
   }
 
-  generic <- as_generic(generic)
-
-  method_compatible(method, generic)
-
   if (!is.character(signature) && !inherits(signature, "list")) {
     signature <- list(signature)
   }
 
+  generic <- as_generic(generic)
+
+  method_compatible(method, generic)
+
   if (!inherits(method, "R7_method")) {
     method <- R7_method(generic, signature, method)
+  }
+
+  if (inherits(generic, "S3_generic")) {
+    if (inherits(signature[[1]], "R7_class")) {
+      signature[[1]] <- signature[[1]]@name
+    }
+    registerS3method(attr(generic, "name"), signature[[1]], method, envir = parent.frame())
+    return(invisible(generic))
   }
 
   generic_name <- generic@name
@@ -189,13 +202,23 @@ new_method <- function(generic, signature, method, package = NULL) {
   new_method(generic, signature, value, package = packageName(parent.frame()))
 }
 
+find_generic_name <- function(generic) {
+  env <- environment(generic) %||% baseenv()
+  for (nme in names(env)) {
+    if (identical(x, env[[nme]])) {
+      return(nme)
+    }
+  }
+}
+
 as_generic <- function(generic) {
   if (length(generic) == 1 && is.character(generic)) {
-    generic <- match.fun(generic)
+    fun <- match.fun(generic)
+    generic <- fun
   }
-
   if (!inherits(generic, "R7_generic")) {
-    stop("`generic` must be a 'R7_generic':\n- `generic` is a '", class(generic)[[1]], "'", call. = FALSE)
+    attr(generic, "name") <- find_generic_name(generic)
+    class(generic) <- "S3_generic"
   }
 
   generic

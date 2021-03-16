@@ -39,7 +39,7 @@ class_names <- function(object) {
         classes <- c(classes, class_names(class))
       }
     } else if (inherits(parent, "R7_class")) {
-      classes <- c(classes, parent@name)
+      classes <- c(classes, parent@name, "R7_object")
     } else {
       classes <- c(classes, parent)
     }
