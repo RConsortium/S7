@@ -3,7 +3,7 @@ pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   case_studies: case_studies.html
-last_built: 2021-03-16T20:06Z
+last_built: 2021-03-16T20:23Z
 urls:
   reference: https://RConsortium.github.io/OOP-WG/reference
   article: https://RConsortium.github.io/OOP-WG/articles
