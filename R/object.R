@@ -23,7 +23,7 @@ new_object <- function(.data = NULL, ...) {
   to_set <- intersect(nms, names(props))
 
   for (nme in to_set) {
-    property(object, nme, check = FALSE) <- args[[nme]]
+    property(object, nme) <- args[[nme]]
   }
 
   attr(object, ".should_validate") <- NULL
@@ -61,5 +61,5 @@ print.R7_object <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("%s\n%s", fmt_classes(class_names(x)), prop_fmt), sep = "")
+  cat(sprintf("%s\n%s", fmt_classes(class(x), collapse = " "), prop_fmt), sep = "")
 }

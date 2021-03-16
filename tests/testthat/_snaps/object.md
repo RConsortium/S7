@@ -3,7 +3,7 @@
     Code
       print(x)
     Output
-      <R7_object> <range>
+      <range> <R7_object>
       @start   1
       @end    10
       @length  9
