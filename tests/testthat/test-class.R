@@ -24,7 +24,7 @@ describe("R7_class", {
 })
 
 test_that("classes can inherit from base types", {
-  types <- c("logical", "integer", "double", "complex", "character", "raw", "list", "closure")
+  types <- c("logical", "integer", "double", "complex", "character", "raw", "list")
   for (type in types) {
     foo <- new_class("foo", parent = type, constructor = function(...) new_object(...))
     obj <- foo()

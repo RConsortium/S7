@@ -4,7 +4,7 @@
 \alias{new_object}
 \title{Initialize a new object}
 \usage{
-new_object(...)
+new_object(.data = NULL, ...)
 }
 \description{
 Initialize a new object

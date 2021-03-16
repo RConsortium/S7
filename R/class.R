@@ -1,4 +1,4 @@
-R7_class <- function(name, parent = R7_object, constructor = function(...) new_object(...), validator = function(x) NULL, properties = list()) {
+R7_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
     parent <- class_get(parent)
   }
@@ -21,9 +21,7 @@ R7_class <- function(name, parent = R7_object, constructor = function(...) new_o
 #' @param validator The validation function
 #' @param properties A list of properties for the class
 #' @export
-new_class <- function(name, parent = R7_object, constructor = function(...) new_object(...), validator = function(x) NULL, properties = list()) {
-  environment(constructor) <- topenv(environment(constructor))
-
+new_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
@@ -67,25 +65,7 @@ class_get <- function(name, envir = parent.frame()) {
   # TODO: What do we do about existing S3 / S4 classes?
 
   # otherwise assume this is a base class, so use get_base_class
-  get_base_class(name)
-}
-
-get_base_class <- function(name) {
-  switch(name,
-    "logical" = new_class("logical", constructor = function() logical()),
-    "integer" = new_class("integer", constructor = function() integer()),
-    "double" = ,
-    "numeric" = new_class("numeric", constructor = function() numeric()),
-    "complex" = new_class("complex", constructor = function() complex()),
-    "character" = new_class("character", constructor = function() character()),
-    "factor" = new_class("factor", constructor = function() factor()),
-    "raw" = new_class("raw", constructor = function() raw()),
-    "list" = new_class("list", constructor = function() list()),
-    "closure" = ,
-    "function" = new_class("function", constructor = function() function() NULL),
-    "NULL" = new_class("NULL", constructor = function() NULL),
-    stop(sprintf("Invalid class <%s>", name), call. = FALSE)
-  )
+  base_classes[[name]]
 }
 
 #' @export

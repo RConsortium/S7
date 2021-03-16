@@ -101,9 +101,8 @@ text <- new_class("text", parent = "character", constructor = function(text) new
 
 y <- text(c(foo = "bar"))
 
-str(y@.data)
-#>  Named chr "bar"
-#>  - attr(*, "names")= chr "foo"
+names(y@.data)
+#> [1] "foo"
 ```
 
 ## Generics and methods
@@ -230,9 +229,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)     8.5µs  10.39µs    84735.        0B     17.0
-#> 2 foo_s3(x)     3.8µs   4.22µs   223028.        0B     22.3
-#> 3 foo_s4(x)    4.26µs   4.72µs   200283.        0B     20.0
+#> 1 foo_R7(x)    8.73µs  10.04µs    79858.        0B     16.0
+#> 2 foo_s3(x)    4.03µs   4.44µs   218175.        0B      0  
+#> 3 foo_s4(x)    4.22µs    4.6µs   200374.        0B     20.0
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
@@ -246,8 +245,8 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  14.21µs   15.7µs    60508.        0B     30.3
-#> 2 bar_s4(x, y)   9.54µs   10.6µs    89368.        0B     17.9
+#> 1 bar_R7(x, y)  14.11µs   15.7µs    59301.        0B     29.7
+#> 2 bar_s4(x, y)   9.39µs   10.8µs    85471.        0B     17.1
 ```
 
 A potential optimization is caching based on the class names, but lookup

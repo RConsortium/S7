@@ -10,6 +10,19 @@ R7_object <- new_class(
   }
 )
 
+base_classes <- new.env(parent = emptyenv())
+base_classes[["logical"]] <- new_class("logical", constructor = function(x = logical()) new_object(x))
+base_classes[["integer"]] <- new_class("integer", constructor = function(x = integer()) new_object(x))
+base_classes[["double"]] <- new_class("double", constructor = function(x = double()) new_object(x))
+base_classes[["numeric"]] <- new_class("numeric", constructor = function(x = numeric()) new_object(x))
+base_classes[["complex"]] <- new_class("complex", constructor = function(x = complex()) new_object(x))
+base_classes[["character"]] <- new_class("character", constructor = function(x = character()) new_object(x))
+base_classes[["factor"]] <- new_class("factor", constructor = function(x = factor()) new_object(x))
+base_classes[["raw"]] <- new_class("raw", constructor = function(x = raw()) new_object(x))
+base_classes[["function"]] <- new_class("function", constructor = function(x = function() NULL) new_object(x))
+base_classes[["list"]] <- new_class("list", constructor = function(x = list()) new_object(x))
+base_classes[["NULL"]] <- new_class("NULL", constructor = function(x = NULL) new_object(x))
+
 #' R7 generics and method objects
 #' @param name,generic The name or generic object of the generic
 #' @param signature The signature of the generic
@@ -71,6 +84,7 @@ R7_union <- new_class(
 #' @rdname R7_union
 #' @export
 new_union <- R7_union
+
 
 global_variables(c("name", "parent", "properties", "constructor", "validator"))
 

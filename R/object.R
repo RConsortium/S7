@@ -1,14 +1,14 @@
 #' Initialize a new object
 #' @keywords internal
 #' @export
-new_object <- function(...) {
+new_object <- function(.data = NULL, ...) {
   class <- object_class(sys.function(-1))
 
   args <- list(...)
   nms <- names(args)
 
-  if (".data" %in% nms) {
-    object <- args[[".data"]]
+  if (!is.null(.data)) {
+    object <- .data
   } else {
     object <- class@parent@constructor()
   }

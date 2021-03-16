@@ -45,8 +45,9 @@ property_safely <- function(object, name) {
     for (name in names(props)) {
       attr(object, name) <- NULL
     }
-    class(object) <- setdiff(class_names(attr(object_class(object), "parent", exact = TRUE)), "R7_object")
-    object_class(object) <- NULL
+    obj_cls <- object_class(object)
+    class(object) <- setdiff(class_names(obj_cls@parent), obj_cls@name)
+    object_class(object) <- object_class(obj_cls@parent)
     return(object)
   }
   val <- attr(object, name, exact = TRUE)

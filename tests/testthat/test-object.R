@@ -25,10 +25,10 @@ describe("new_object", {
 
   it("can instantiate a new object that inherits from a basic type", {
     x <- text()
-    expect_equal(x@.data, character())
+    expect_equal(x@.data, class_get("character")())
 
     y <- text("foo")
-    expect_equal(y@.data, "foo")
+    expect_equal(y@.data, class_get("character")("foo"))
   })
 
   it("errors if given an invalid property", {
@@ -36,6 +36,15 @@ describe("new_object", {
       range(1, "foo"),
       "must be of class"
     )
+  })
+
+  it("can use the parent constructor to instantiate objects", {
+    text2 <- new_class("text2", parent = "character")
+    my_class <- new_class("my_class", parent = text2, properties = c("name" = "character"), constructor = function(x, name) new_object(text2(x), name = name))
+
+    obj <- my_class("foo", "bar")
+
+    expect_equal(obj@.data, text2("foo"))
   })
 })
 

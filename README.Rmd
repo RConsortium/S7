@@ -91,7 +91,7 @@ text <- new_class("text", parent = "character", constructor = function(text) new
 
 y <- text(c(foo = "bar"))
 
-str(y@.data)
+names(y@.data)
 ```
 
 ## Generics and methods

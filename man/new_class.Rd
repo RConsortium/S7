@@ -7,7 +7,7 @@
 new_class(
   name,
   parent = R7_object,
-  constructor = function(...) new_object(...),
+  constructor = function(.data = NULL, ...) new_object(.data, ...),
   validator = function(x) NULL,
   properties = list()
 )
