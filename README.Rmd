@@ -108,6 +108,13 @@ foo(text("hi"))
 
 ## Multiple dispatch
 
+Multiple dispatch uses a table stored in the `methods` property of the generic.
+This table is a nested set of hashed environments based on the classes of the methods. e.g.
+
+For `method(foo, c("character", "numeric"))` the method would be stored at `foo@methods[["character"]][["numeric"]]`.
+
+At each level the search iteratively searches along objects class vector.
+
 ```{r}
 number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
@@ -120,6 +127,10 @@ bar(text("hi"), number(42))
 
 ## Calling the next method
 
+`next_method()` is used to call the next method for the arguments.
+This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
+This ensures you cannot call the same method twice.
+
 ```{r}
 method(bar, list("text", "number")) <- function(x, y, ...) {
   res <- next_method()(x, y)
@@ -130,6 +141,8 @@ bar(text("hi"), number(42))
 ```
 
 ## Non-standard evaluation
+
+`method_call()` retains promises for dispatch arguments in basically the same way as `UseMethod()`, so non-standard evaluation works basically the same as S3.
 
 ```{r}
 subset2 <- new_generic(name = "subset", signature = "x")
@@ -148,6 +161,10 @@ subset2(mtcars, hp > 200, c(wt, qsec))
 ```
 
 ### External generics
+
+If you want to define methods for R7 generics defined in another package you can use `new_extrenal_generic` to declare the external generic, then add `R7::method_register()` to the `.onLoad` function in your package.
+`method_register()` will automatically setup on-load hooks for 'soft' dependencies in `Suggests` so the method will be added when the dependency is eventually loaded.
+
 ```{r eval = FALSE}
 .onLoad <- function(libname, pkgname) {
   R7::method_register()
@@ -160,15 +177,7 @@ method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":
 
 ## Performance
 
-The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in the package there is some overhead due to `.Call` vs `.Primitive`.
-
-Dispatch uses a table stored in the `methods` property of the generic. This table is a nested set of hashed environments based on the classes of the methods. e.g.
-
-`method(foo, c("character", "numeric"))` method would be stored at
-
-`foo@methods[["character"]][["numeric"]]`
-
-At each level the search iteratively searches up the class vector for the object.
+The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in a package there is some overhead due to `.Call` vs `.Primitive`.
 
 ```{r performance, cache = FALSE}
 text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
@@ -210,7 +219,7 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 
 A potential optimization is caching based on the class names, but lookup should be fast without this.
 
-The following benchmark generates a class heiarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hiearchy vs the time to dispatch on the last class.
+The following benchmark generates a class hierarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hiearchy vs the time to dispatch on the last class.
 
 We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.
 
@@ -300,12 +309,6 @@ bench::press(
   }
 )
 ```
-
-## Questions
-
-- What should happen if you call `new_method()` on a S3 generic?
-  1. Should we create a new R7 generic out of the S3 generic?
-  2. Or just register the R7 object using `registerS3method()`?
 
 ## Design workflow
 

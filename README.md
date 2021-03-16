@@ -89,7 +89,7 @@ object_class(x)
 
 # As well as normal R7_objects
 x
-#> <R7_object> <range>
+#> <range> <R7_object>
 #> @start  1
 #> @end    6
 #> @length 5
@@ -120,6 +120,16 @@ foo(text("hi"))
 
 ## Multiple dispatch
 
+Multiple dispatch uses a table stored in the `methods` property of the
+generic. This table is a nested set of hashed environments based on the
+classes of the methods. e.g.
+
+For `method(foo, c("character", "numeric"))` the method would be stored
+at `foo@methods[["character"]][["numeric"]]`.
+
+At each level the search iteratively searches along objects class
+vector.
+
 ``` r
 number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
@@ -133,6 +143,11 @@ bar(text("hi"), number(42))
 
 ## Calling the next method
 
+`next_method()` is used to call the next method for the arguments. This
+works by looking up the call stack and retrieving R7 methods which have
+already been called, then doing a method search with those methods
+excluded. This ensures you cannot call the same method twice.
+
 ``` r
 method(bar, list("text", "number")) <- function(x, y, ...) {
   res <- next_method()(x, y)
@@ -144,6 +159,10 @@ bar(text("hi"), number(42))
 ```
 
 ## Non-standard evaluation
+
+`method_call()` retains promises for dispatch arguments in basically the
+same way as `UseMethod()`, so non-standard evaluation works basically
+the same as S3.
 
 ``` r
 subset2 <- new_generic(name = "subset", signature = "x")
@@ -171,6 +190,13 @@ subset2(mtcars, hp > 200, c(wt, qsec))
 
 ### External generics
 
+If you want to define methods for R7 generics defined in another package
+you can use `new_extrenal_generic` to declare the external generic, then
+add `R7::method_register()` to the `.onLoad` function in your package.
+`method_register()` will automatically setup on-load hooks for ‘soft’
+dependencies in `Suggests` so the method will be added when the
+dependency is eventually loaded.
+
 ``` r
 .onLoad <- function(libname, pkgname) {
   R7::method_register()
@@ -184,19 +210,8 @@ method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":
 ## Performance
 
 The dispatch performance should be roughly on par with S3 and S4, though
-as this is implemented in the package there is some overhead due to
+as this is implemented in a package there is some overhead due to
 `.Call` vs `.Primitive`.
-
-Dispatch uses a table stored in the `methods` property of the generic.
-This table is a nested set of hashed environments based on the classes
-of the methods. e.g.
-
-`method(foo, c("character", "numeric"))` method would be stored at
-
-`foo@methods[["character"]][["numeric"]]`
-
-At each level the search iteratively searches up the class vector for
-the object.
 
 ``` r
 text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
@@ -229,9 +244,9 @@ bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 #> # A tibble: 3 x 6
 #>   expression      min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr> <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 foo_R7(x)    8.73µs  10.04µs    79858.        0B     16.0
-#> 2 foo_s3(x)    4.03µs   4.44µs   218175.        0B      0  
-#> 3 foo_s4(x)    4.22µs    4.6µs   200374.        0B     20.0
+#> 1 foo_R7(x)    8.44µs   9.96µs    84525.        0B     16.9
+#> 2 foo_s3(x)    3.89µs   4.32µs   217952.        0B      0  
+#> 3 foo_s4(x)    4.19µs   4.65µs   194853.        0B     19.5
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
@@ -245,14 +260,14 @@ bench::mark(bar_R7(x, y), bar_s4(x, y))
 #> # A tibble: 2 x 6
 #>   expression        min   median `itr/sec` mem_alloc `gc/sec`
 #>   <bch:expr>   <bch:tm> <bch:tm>     <dbl> <bch:byt>    <dbl>
-#> 1 bar_R7(x, y)  14.11µs   15.7µs    59301.        0B     29.7
-#> 2 bar_s4(x, y)   9.39µs   10.8µs    85471.        0B     17.1
+#> 1 bar_R7(x, y)  14.01µs   15.5µs    60005.        0B     30.0
+#> 2 bar_s4(x, y)   9.79µs   10.6µs    87628.        0B     17.5
 ```
 
 A potential optimization is caching based on the class names, but lookup
 should be fast without this.
 
-The following benchmark generates a class heiarchy of different levels
+The following benchmark generates a class hierarchy of different levels
 and lengths of class names and compares the time to dispatch on the
 first class in the hiearchy vs the time to dispatch on the last class.
 
@@ -393,12 +408,6 @@ bench::press(
 #> 19 best               100         100  10.85µs   11.8µs    80367.        0B    32.2 
 #> 20 worst              100         100  37.28µs  38.79µs    24552.        0B     9.82
 ```
-
-## Questions
-
-  - What should happen if you call `new_method()` on a S3 generic?
-    1.  Should we create a new R7 generic out of the S3 generic?
-    2.  Or just register the R7 object using `registerS3method()`?
 
 ## Design workflow
 
