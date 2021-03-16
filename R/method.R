@@ -205,7 +205,7 @@ new_method <- function(generic, signature, method, package = NULL) {
 find_generic_name <- function(generic) {
   env <- environment(generic) %||% baseenv()
   for (nme in names(env)) {
-    if (identical(x, env[[nme]])) {
+    if (identical(generic, env[[nme]])) {
       return(nme)
     }
   }

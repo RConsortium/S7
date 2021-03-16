@@ -1,0 +1,133 @@
+---
+title: "case_studies"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{case_studies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(R7)
+```
+
+## Case Study - Annotated Data Frame
+
+This case study implements a hazy imitation of a SummarizedExperiment class used widely in the Bioconductor community.
+
+This `annotated_df` class is a normal R `data.frame` with two additional properties
+- `rows` which holds a `data.frame` containing data about the _rows_ of the data.
+- `columns` which holds a `data.frame` containing data about the _columns_ of the data.
+
+The validator function automatically ensures consistency between the size of the data and the size of the corresponding `rows` and `columns`.
+In particular the number of rows of the `rows` property matches the number of rows of the data, and the number of rows of the `columns` property matches the number of columns of the data.
+
+Here is the definition of the class.
+```{r}
+annotated_df <- new_class("annotated_df",
+  parent = class_get("data.frame"),
+  properties = list(
+    rows = "data.frame",
+    columns = "data.frame"
+    ),
+  validator = function(object) {
+    if (nrow(object) != nrow(object@rows)) {
+      "`nrow(<annotated_df>@rows)` must be equal to nrow(<annotated_df>)"
+    } else if (ncol(object) != nrow(object@columns)) {
+      "`nrow(<annotated_df>@columns)` must be equal to ncol(<annotated_df>)"
+    }
+  },
+  constructor = function(data, rows, columns) {
+    new_object(data, rows = rows, columns = columns)
+  }
+)
+```
+
+The print method tells us this is a R7 class and gives us the types for the properties in the class.
+
+```{r}
+annotated_df
+```
+
+To instantiate an instance of `annotated_df` we first need to get some data to put in it. As an example we will use the mtcars dataset. This requires some manipulation to get the `rows` and `columns` data in the right formats.
+
+```{r}
+mt <- mtcars[seq(1, 32, 4), ]
+
+splits <- strsplit(rownames(mt), " ")
+
+rownames(mt) <- NULL
+
+vcapply <- function(VALUE, FUN, ...) vapply(VALUE, FUN, character(1), ...)
+
+row_info <- data.frame(
+  make = vcapply(splits, head, 1),
+  model = vcapply(splits, function(x) paste0(tail(x, -1), collapse = " "))
+)
+
+col_desc <- c(
+  "mpg" = "Miles/(US) gallon",
+  "cyl" = "Number of cylinders",
+  "disp" = "Displacement (cu.in.)",
+  "hp" = "Gross horsepower",
+  "drat" = "Rear axle ratio",
+  "wt" = "Weight (1000 lbs)",
+  "qsec" = "1/4 mile time",
+  "vs" = "Engine (0 = V-shaped, 1 = straight)",
+  "am" = "Transmission (0 = automatic, 1 = manual)",
+  "gear" = "Number of forward gears",
+  "carb" = "Number of carburetors"
+)
+
+col_info <- data.frame(name = names(col_desc), description = col_desc, row.names = NULL)
+
+```
+
+We can then create an instance using the constructor function.
+
+```{r}
+obj <- annotated_df(mt, row_info, col_info)
+obj
+
+obj@rows
+
+obj@columns
+```
+
+We next define a `R7_subset` generic function, and then a R7 method for that function, taking integer arguments for the rows and columns.
+The subsets the individual components appropriately and then returns a new `annotated_df` object with them.
+
+```{r}
+subset_R7 <- new_generic("R7_subset", c("object", "row", "column"))
+
+new_method(subset_R7, list(annotated_df, "integer", "integer"), function(object, row, column, ...) {
+  data <- object@.data[row, column]
+  rows <- object@rows[row, ]
+  columns <-  object@columns[column, ]
+  annotated_df(data, rows, columns)
+})
+```
+
+When we subset using this function we can see the consistency is retained for our data components.
+
+```{r}
+obj2 <- subset_R7(obj, 1:3, 1:5)
+
+obj2
+
+obj2@rows
+
+obj2@columns
+```
+
+The validation function is automatically run if you try and change a property, which ensures class integrity.
+```{r, error = TRUE}
+obj2@rows <- obj2@rows[1:2, ]
+```
