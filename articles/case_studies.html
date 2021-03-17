@@ -97,14 +97,78 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://RConsortium.github.io/OOP-WG">R7</a></span><span class="op">)</span></code></pre></div>
-<div id="case-study---annotated-data-frame" class="section level2">
+<div id="person-class" class="section level2">
 <h2 class="hasAnchor">
-<a href="#case-study---annotated-data-frame" class="anchor"></a>Case Study - Annotated Data Frame</h2>
+<a href="#person-class" class="anchor"></a>Person class</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Person"</span>,
+  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
+    name <span class="op">=</span> <span class="st">"character"</span>,
+    <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
+      name <span class="op">=</span> <span class="st">"age"</span>,
+      class <span class="op">=</span> <span class="st">"numeric"</span>,
+      setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span>
+        <span class="va">object</span><span class="op">@</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span>
+        <span class="va">object</span>
+      <span class="op">}</span>
+    <span class="op">)</span>
+  <span class="op">)</span>,
+  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>
+    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">name</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">age</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
+      <span class="st">"@name and @age must be the same length"</span>
+    <span class="op">}</span>
+  <span class="op">}</span>,
+  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">name</span>, <span class="va">age</span> <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">{</span>
+    <span class="va">age</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">age</span><span class="op">)</span>
+    <span class="fu"><a href="../reference/new_object.html">new_object</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">name</span>, age <span class="op">=</span> <span class="va">age</span><span class="op">)</span>
+  <span class="op">}</span>
+<span class="op">)</span>
+
+<span class="va">jane</span> <span class="op">&lt;-</span> <span class="fu">Person</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Jane Doe"</span><span class="op">)</span>
+
+<span class="va">jane</span><span class="op">@</span><span class="va">name</span>
+<span class="co">#&gt; [1] "Jane Doe"</span>
+
+<span class="va">jane</span><span class="op">@</span><span class="va">age</span>
+<span class="co">#&gt; [1] NA</span></code></pre></div>
+<p>We can modify objects after creation by assigning to a property. Unlike in S4 the validity is automatically checked on assignment, not just on object creation.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">jane</span><span class="op">@</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="fl">40L</span>
+
+<span class="va">jane</span><span class="op">@</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>
+<span class="co">#&gt; Error: Invalid &lt;Person&gt; object:</span>
+<span class="co">#&gt; - @name and @age must be the same length</span></code></pre></div>
+<p>Classes can inherit from a parent class with <code>parent</code> and contain properties that are of complex classes.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">Employee</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Employee"</span>,
+  parent <span class="op">=</span> <span class="va">Person</span>,
+  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>boss <span class="op">=</span> <span class="st">"Person"</span><span class="op">)</span>,
+  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span>, <span class="va">boss</span><span class="op">)</span> <span class="op">{</span>
+    <span class="fu"><a href="../reference/new_object.html">new_object</a></span><span class="op">(</span><span class="fu">Person</span><span class="op">(</span><span class="va">...</span><span class="op">)</span>, boss <span class="op">=</span> <span class="va">boss</span><span class="op">)</span>
+  <span class="op">}</span>
+<span class="op">)</span>
+
+<span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Employee</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"John Smith"</span>, age <span class="op">=</span> <span class="fl">30</span>, boss <span class="op">=</span> <span class="va">jane</span><span class="op">)</span>
+
+<span class="va">x</span><span class="op">@</span><span class="va">name</span>
+<span class="co">#&gt; [1] "John Smith"</span>
+
+<span class="va">x</span><span class="op">@</span><span class="va">age</span>
+<span class="co">#&gt; [1] 30</span>
+
+<span class="va">x</span><span class="op">@</span><span class="va">boss</span>
+<span class="co">#&gt; &lt;Person&gt; &lt;R7_object&gt;</span>
+<span class="co">#&gt; @name Jane Doe</span>
+<span class="co">#&gt; @age        40</span></code></pre></div>
+</div>
+<div id="annotated-data-frame" class="section level2">
+<h2 class="hasAnchor">
+<a href="#annotated-data-frame" class="anchor"></a>Annotated Data Frame</h2>
 <p>This case study implements a hazy imitation of a SummarizedExperiment class used widely in the Bioconductor community.</p>
 <p>This <code>annotated_df</code> class is a normal R <code>data.frame</code> with two additional properties - <code>rows</code> which holds a <code>data.frame</code> containing data about the <em>rows</em> of the data. - <code>columns</code> which holds a <code>data.frame</code> containing data about the <em>columns</em> of the data.</p>
 <p>The validator function automatically ensures consistency between the size of the data and the size of the corresponding <code>rows</code> and <code>columns</code>. In particular the number of rows of the <code>rows</code> property matches the number of rows of the data, and the number of rows of the <code>columns</code> property matches the number of columns of the data.</p>
 <p>Here is the definition of the class.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">annotated_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"annotated_df"</span>,
   parent <span class="op">=</span> <span class="fu"><a href="../reference/class_get.html">class_get</a></span><span class="op">(</span><span class="st">"data.frame"</span><span class="op">)</span>,
   properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>
@@ -113,9 +177,9 @@
     <span class="op">)</span>,
   validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>
     <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">rows</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-      <span class="st">"`nrow(&lt;annotated_df&gt;@rows)` must be equal to nrow(&lt;annotated_df&gt;)"</span>
+      <span class="st">"`nrow(&lt;annotated_df&gt;@rows)` must be equal to `nrow(&lt;annotated_df&gt;)`"</span>
     <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">ncol</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">columns</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-      <span class="st">"`nrow(&lt;annotated_df&gt;@columns)` must be equal to ncol(&lt;annotated_df&gt;)"</span>
+      <span class="st">"`nrow(&lt;annotated_df&gt;@columns)` must be equal to `ncol(&lt;annotated_df&gt;)`"</span>
     <span class="op">}</span>
   <span class="op">}</span>,
   constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">rows</span>, <span class="va">columns</span><span class="op">)</span> <span class="op">{</span>
@@ -123,7 +187,7 @@
   <span class="op">}</span>
 <span class="op">)</span></code></pre></div>
 <p>The print method tells us this is a R7 class and gives us the types for the properties in the class.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">annotated_df</span>
 <span class="co">#&gt; &lt;R7_class&gt;</span>
 <span class="co">#&gt; @name annotated_df</span>
@@ -132,7 +196,7 @@
 <span class="co">#&gt;  $rows    &lt;data.frame&gt;</span>
 <span class="co">#&gt;  $columns &lt;data.frame&gt;</span></code></pre></div>
 <p>To instantiate an instance of <code>annotated_df</code> we first need to get some data to put in it. As an example we will use the mtcars dataset. This requires some manipulation to get the <code>rows</code> and <code>columns</code> data in the right formats.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mt</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">32</span>, <span class="fl">4</span><span class="op">)</span>, <span class="op">]</span>
 
 <span class="va">splits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html">strsplit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span><span class="op">(</span><span class="va">mt</span><span class="op">)</span>, <span class="st">" "</span><span class="op">)</span>
@@ -162,7 +226,7 @@
 
 <span class="va">col_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">col_desc</span><span class="op">)</span>, description <span class="op">=</span> <span class="va">col_desc</span>, row.names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
 <p>We can then create an instance using the constructor function.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu">annotated_df</span><span class="op">(</span><span class="va">mt</span>, <span class="va">row_info</span>, <span class="va">col_info</span><span class="op">)</span>
 <span class="va">obj</span>
 <span class="co">#&gt;    mpg cyl  disp  hp drat    wt  qsec vs am gear carb</span>
@@ -200,7 +264,7 @@
 <span class="co">#&gt; 10 gear                  Number of forward gears</span>
 <span class="co">#&gt; 11 carb                    Number of carburetors</span></code></pre></div>
 <p>We next define a <code>R7_subset</code> generic function, and then a R7 method for that function, taking integer arguments for the rows and columns. The subsets the individual components appropriately and then returns a new <code>annotated_df</code> object with them.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">subset_R7</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"R7_subset"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"object"</span>, <span class="st">"row"</span>, <span class="st">"column"</span><span class="op">)</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">subset_R7</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="va">annotated_df</span>, <span class="st">"integer"</span>, <span class="st">"integer"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">row</span>, <span class="va">column</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span>
@@ -210,7 +274,7 @@
   <span class="fu">annotated_df</span><span class="op">(</span><span class="va">data</span>, <span class="va">rows</span>, <span class="va">columns</span><span class="op">)</span>
 <span class="op">}</span></code></pre></div>
 <p>When we subset using this function we can see the consistency is retained for our data components.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">obj2</span> <span class="op">&lt;-</span> <span class="fu">subset_R7</span><span class="op">(</span><span class="va">obj</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>
 
 <span class="va">obj2</span>
@@ -233,10 +297,10 @@
 <span class="co">#&gt; 4   hp      Gross horsepower</span>
 <span class="co">#&gt; 5 drat       Rear axle ratio</span></code></pre></div>
 <p>The validation function is automatically run if you try and change a property, which ensures class integrity.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">obj2</span><span class="op">@</span><span class="va">rows</span> <span class="op">&lt;-</span> <span class="va">obj2</span><span class="op">@</span><span class="va">rows</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="op">]</span>
 <span class="co">#&gt; Error: Invalid &lt;annotated_df&gt; object:</span>
-<span class="co">#&gt; - `nrow(&lt;annotated_df&gt;@rows)` must be equal to nrow(&lt;annotated_df&gt;)</span></code></pre></div>
+<span class="co">#&gt; - `nrow(&lt;annotated_df&gt;@rows)` must be equal to `nrow(&lt;annotated_df&gt;)`</span></code></pre></div>
 </div>
   </div>
 
