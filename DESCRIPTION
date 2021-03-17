@@ -38,6 +38,7 @@ Imports:
 Suggests: 
     methods,
     covr,
+    bench,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown
