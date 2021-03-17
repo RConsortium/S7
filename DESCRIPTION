@@ -26,7 +26,7 @@ Authors@R:
       person(given = "Jim",
              family = "Hester",
              role = c("aut", "cre"),
-             email = "james.f.hester@gmail.com",
+             email = "jim.hester@rstudio.com",
              comment = c(ORCID = "0000-0002-2739-7082")))
 Description: Prototype implementation of an extension to S3 that
     provides explicit class definitions and a form of multiple dispatch.
