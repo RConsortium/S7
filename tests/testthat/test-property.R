@@ -86,3 +86,23 @@ test_that("properties can be setter functions", {
   expect_equal(x@length, 5)
 })
 
+test_that("property setters can set themselves", {
+  foo <- new_class("foo",
+    properties = list(
+      new_property(
+        name = "bar",
+        class = "character",
+        setter = function(object, value) {
+          object@bar <- paste0(value, "-bar")
+          object
+        }
+      )
+    )
+  )
+
+  x <- foo()
+
+  x@bar <- "foo"
+
+  expect_equal(x@bar, "foo-bar")
+})

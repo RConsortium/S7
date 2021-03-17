@@ -75,37 +75,44 @@ properties <- function(object) {
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
 #' @export
-`property<-` <- function(object, name, check = TRUE, value) {
-  if (name == ".data") {
-    attrs <- attributes(object)
-    object <- value
-    attributes(object) <- attrs
+`property<-` <- local({
+  # This flag is used to avoid infinate loops if you are assigning a property from a setter function
+  setter_property <- NULL
+
+  function(object, name, check = TRUE, value) {
+    if (name == ".data") {
+      attrs <- attributes(object)
+      object <- value
+      attributes(object) <- attrs
+      if (isTRUE(check)) {
+        validate(object)
+      }
+      return(invisible(object))
+    }
+
+    prop <- properties(object)[[name]]
+    if (!is.null(prop$setter) && !identical(setter_property, name)) {
+      setter_property <<- name
+      object <- prop$setter(object, value)
+      setter_property <<- NULL
+    } else {
+      if (isTRUE(check) && length(prop[["class"]]) > 0) {
+        classes <- setdiff(class_names(prop[["class"]]), "R7_object")
+        if (!inherits(value, classes)) {
+          obj_cls <- object_class(object)
+          stop(sprintf("%s@%s must be of class %s:\n- `value` is of class <%s>", fmt_classes(obj_cls@name), name, fmt_classes(classes), class(value)[[1]]), call. = FALSE)
+        }
+      }
+      attr(object, name) <- value
+    }
+
     if (isTRUE(check)) {
       validate(object)
     }
-    return(invisible(object))
-  }
 
-  prop <- properties(object)[[name]]
-  if (!is.null(prop$setter)) {
-    object <- prop$setter(object, value)
-  } else {
-    if (isTRUE(check) && length(prop[["class"]]) > 0) {
-      classes <- setdiff(class_names(prop[["class"]]), "R7_object")
-      if (!inherits(value, classes)) {
-        obj_cls <- object_class(object)
-        stop(sprintf("%s@%s must be of class %s:\n- `value` is of class <%s>", fmt_classes(obj_cls@name), name, fmt_classes(classes), class(value)[[1]]), call. = FALSE)
-      }
-    }
-    attr(object, name) <- value
+    invisible(object)
   }
-
-  if (isTRUE(check)) {
-    validate(object)
-  }
-
-  invisible(object)
-}
+})
 
 #' @rdname property
 #' @usage object@name
