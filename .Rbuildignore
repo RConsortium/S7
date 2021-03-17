@@ -10,5 +10,6 @@
 ^script\.R$
 ^README_cache$
 ^_pkgdown\.yml$
+^vignettes/[^/]+_cache$
 ^docs$
 ^pkgdown$

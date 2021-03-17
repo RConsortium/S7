@@ -10,9 +10,9 @@ new_object <- function(.data = NULL, ...) {
 
   if (!is.null(.data)) {
     # Verify .data satisfies the parent class
-    class_name <- class_names(obj_cls@parent)[[1]]
-    if (!identical(class_name, "R7_object") && !inherits(.data, class_name)) {
-      stop(sprintf("`.data` must be a %s\n-`.data` is of type %s", fmt_classes(class_name), fmt_classes(class(.data)[[1]])), call. = FALSE)
+    cls_nms <- class_names(obj_cls@parent)
+    if (!identical(cls_nms, "R7_object") && !inherits(.data, cls_nms)) {
+      stop(sprintf("`.data` must be a %s\n-`.data` is of type %s", fmt_classes(cls_nms), fmt_classes(class(.data)[[1]])), call. = FALSE)
     }
     object <- .data
   } else {
