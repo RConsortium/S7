@@ -7,7 +7,13 @@ new_object <- function(.data = NULL, ...) {
   args <- list(...)
   nms <- names(args)
 
+
   if (!is.null(.data)) {
+    # Verify .data satisfies the parent class
+    class_name <- class_names(obj_cls@parent)[[1]]
+    if (!identical(class_name, "R7_object") && !inherits(.data, class_name)) {
+      stop(sprintf("`.data` must be a %s\n-`.data` is of type %s", fmt_classes(class_name), fmt_classes(class(.data)[[1]])), call. = FALSE)
+    }
     object <- .data
   } else {
     object <- obj_cls@parent@constructor()
@@ -21,6 +27,7 @@ new_object <- function(.data = NULL, ...) {
   props <- properties(object)
 
   to_set <- intersect(nms, names(props))
+  # TODO: error if not all arguments are names of properties, likely a typo
 
   for (nme in to_set) {
     property(object, nme) <- args[[nme]]
@@ -56,7 +63,7 @@ print.R7_object <- function(x, ...) {
   if (length(props) > 0) {
     values <- lapply(names(props), function(xx) property(x, xx))
     prop_names <- format(names(props))
-    prop_values <- format(vcapply(names(props), function(name) format(property(x, name))), justify = "right")
+    prop_values <- format(vcapply(names(props), function(name) paste0(format(property(x, name)), collapse = "\n")), justify = "right")
     prop_fmt <- paste0(paste0("@", prop_names, " ", prop_values, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""

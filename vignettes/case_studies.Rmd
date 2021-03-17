@@ -18,7 +18,69 @@ knitr::opts_chunk$set(
 library(R7)
 ```
 
-## Case Study - Annotated Data Frame
+## Person class
+
+```{r}
+Person <- new_class("Person",
+  properties = list(
+    name = "character",
+    new_property(
+      name = "age",
+      class = "numeric",
+      setter = function(object, value) {
+        object@age <- as.numeric(value)
+        object
+      }
+    )
+  ),
+  validator = function(object) {
+    if (length(object@name) != length(object@age)) {
+      "@name and @age must be the same length"
+    }
+  },
+  constructor = function(name, age = NA) {
+    age <- as.numeric(age)
+    new_object(name = name, age = age)
+  }
+)
+
+jane <- Person(name = "Jane Doe")
+
+jane@name
+
+jane@age
+```
+
+We can modify objects after creation by assigning to a property.
+Unlike in S4 the validity is automatically checked on assignment, not just on object creation.
+
+```{r, error = TRUE}
+jane@age <- 40L
+
+jane@age <- 1:10
+```
+
+Classes can inherit from a parent class with `parent` and contain properties that are of complex classes.
+
+```{r}
+Employee <- new_class("Employee",
+  parent = Person,
+  properties = list(boss = "Person"),
+  constructor = function(..., boss) {
+    new_object(Person(...), boss = boss)
+  }
+)
+
+x <- Employee(name = "John Smith", age = 30, boss = jane)
+
+x@name
+
+x@age
+
+x@boss
+```
+
+## Annotated Data Frame
 
 This case study implements a hazy imitation of a SummarizedExperiment class used widely in the Bioconductor community.
 
@@ -39,9 +101,9 @@ annotated_df <- new_class("annotated_df",
     ),
   validator = function(object) {
     if (nrow(object) != nrow(object@rows)) {
-      "`nrow(<annotated_df>@rows)` must be equal to nrow(<annotated_df>)"
+      "`nrow(<annotated_df>@rows)` must be equal to `nrow(<annotated_df>)`"
     } else if (ncol(object) != nrow(object@columns)) {
-      "`nrow(<annotated_df>@columns)` must be equal to ncol(<annotated_df>)"
+      "`nrow(<annotated_df>@columns)` must be equal to `ncol(<annotated_df>)`"
     }
   },
   constructor = function(data, rows, columns) {

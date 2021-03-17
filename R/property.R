@@ -93,8 +93,8 @@ properties <- function(object) {
     prop <- properties(object)[[name]]
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
+      on.exit(setter_property <<- NULL, add = TRUE)
       object <- prop$setter(object, value)
-      setter_property <<- NULL
     } else {
       if (isTRUE(check) && length(prop[["class"]]) > 0) {
         classes <- setdiff(class_names(prop[["class"]]), "R7_object")

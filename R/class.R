@@ -1,6 +1,9 @@
 R7_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
-    parent <- class_get(parent)
+    parent_obj <- class_get(parent)
+    if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
+      parent <- parent_obj
+    }
   }
   object <- constructor
   attr(object, "name") <- name
