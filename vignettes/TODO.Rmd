@@ -47,6 +47,7 @@ knitr::opts_chunk$set(
   - [x] - A optional class or union
   - [x] - An optional accessor functions, both getter and setters
   - [x] - Properties are created with `new_property()`
+  - [ ] - If a properties define a getter it should not be writable unless there is an explicit setter.
 - Generics
   - [x] - It knows its name and the names of the arguments in its signature
   - [x] - Calling `new_generic()` defines a new generic

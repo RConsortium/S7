@@ -1,5 +1,5 @@
 ---
-title: "case_studies"
+title: "Case Studies"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{case_studies}
@@ -20,27 +20,38 @@ library(R7)
 
 ## Person class
 
+This case study demonstrates creating basic classes with accessors functions, inheritance and composition.
+
 ```{r}
 Person <- new_class("Person",
   properties = list(
     name = "character",
     new_property(
+      name = "birthdate",
+      class = "Date",
+      setter = function(object, value) {
+        object@birthdate <- as.Date(value)
+        object
+      }
+    ),
+    new_property(
       name = "age",
       class = "numeric",
-      setter = function(object, value) {
-        object@age <- as.numeric(value)
-        object
+      getter = function(object) {
+        # This is not correct because of leap years,
+        # see https://stackoverflow.com/questions/3611314/calculate-ages-in-r/25450756#25450756 for a correct implementation.
+        as.double(Sys.Date() - object@birthdate) %/% 365
       }
     )
   ),
   validator = function(object) {
-    if (length(object@name) != length(object@age)) {
-      "@name and @age must be the same length"
+    if (length(object@name) != length(object@birthdate)) {
+      "@name and @birthdate must be the same length"
     }
   },
-  constructor = function(name, age = NA) {
-    age <- as.numeric(age)
-    new_object(name = name, age = age)
+  constructor = function(name, birthdate = NA) {
+    birthdate <- as.Date(birthdate)
+    new_object(name = name, birthdate = birthdate)
   }
 )
 
@@ -55,9 +66,11 @@ We can modify objects after creation by assigning to a property.
 Unlike in S4 the validity is automatically checked on assignment, not just on object creation.
 
 ```{r, error = TRUE}
-jane@age <- 40L
+jane@birthdate <- "1982-03-04"
 
-jane@age <- 1:10
+jane@age
+
+jane@birthdate <- as.Date(c("2001-01-01", "2002-02-02"))
 ```
 
 Classes can inherit from a parent class with `parent` and contain properties that are of complex classes.
@@ -71,7 +84,7 @@ Employee <- new_class("Employee",
   }
 )
 
-x <- Employee(name = "John Smith", age = 30, boss = jane)
+x <- Employee(name = "John Smith", birthdate = "1992-10-11", boss = jane)
 
 x@name
 
@@ -82,7 +95,7 @@ x@boss
 
 ## Annotated Data Frame
 
-This case study implements a hazy imitation of a SummarizedExperiment class used widely in the Bioconductor community.
+This case study implements a very basic imitation of a SummarizedExperiment class used widely in the Bioconductor community.
 
 This `annotated_df` class is a normal R `data.frame` with two additional properties
 - `rows` which holds a `data.frame` containing data about the _rows_ of the data.
