@@ -107,10 +107,10 @@ In particular the number of rows of the `rows` property matches the number of ro
 Here is the definition of the class.
 ```{r}
 annotated_df <- new_class("annotated_df",
-  parent = class_get("data.frame"),
+  parent = c("tbl_df", "tbl", "data.frame"),
   properties = list(
-    rows = "data.frame",
-    columns = "data.frame"
+    rows = "tbl",
+    columns = "tbl"
     ),
   validator = function(object) {
     if (nrow(object) != nrow(object@rows)) {
@@ -138,11 +138,11 @@ mt <- mtcars[seq(1, 32, 4), ]
 
 splits <- strsplit(rownames(mt), " ")
 
-rownames(mt) <- NULL
+mt <- tibble::as_tibble(mt)
 
 vcapply <- function(VALUE, FUN, ...) vapply(VALUE, FUN, character(1), ...)
 
-row_info <- data.frame(
+row_info <- tibble::tibble(
   make = vcapply(splits, head, 1),
   model = vcapply(splits, function(x) paste0(tail(x, -1), collapse = " "))
 )
@@ -161,7 +161,7 @@ col_desc <- c(
   "carb" = "Number of carburetors"
 )
 
-col_info <- data.frame(name = names(col_desc), description = col_desc, row.names = NULL)
+col_info <- tibble::tibble(name = names(col_desc), description = col_desc)
 
 ```
 

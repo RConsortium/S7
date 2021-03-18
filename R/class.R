@@ -57,7 +57,7 @@ class_names <- function(object) {
 #' @param envir The environment to look for the name
 #' @export
 class_get <- function(name, envir = parent.frame()) {
-  if (length(name) == 0) {
+  if (length(name) != 1) {
     return()
   }
   class <- get0(name, envir = envir)
@@ -81,5 +81,9 @@ print.R7_class <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, property_safely(x, "parent")@name %||% "NULL", prop_fmt), sep = "")
+  parent <- x@parent
+
+  parent <- property_safely(parent, "name") %||% parent
+
+  cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, parent, prop_fmt), sep = "")
 }

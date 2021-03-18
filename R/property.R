@@ -39,6 +39,9 @@ property <- function(object, name) {
 #' @rdname property
 #' @export
 property_safely <- function(object, name) {
+  if (!inherits(object, "R7_object")) {
+    return(NULL)
+  }
   if (identical(name, ".data")) {
     # Remove properties, return the rest
     props <- properties(object)

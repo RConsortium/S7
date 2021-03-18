@@ -40,6 +40,7 @@ Suggests:
     covr,
     bench,
     testthat (>= 3.0.0),
+    tibble,
     knitr,
     rmarkdown
 Config/testthat/edition: 3
