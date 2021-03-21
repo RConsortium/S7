@@ -114,6 +114,6 @@ This is important for:
 -   Generics and classes in suggested packages, so that method registration can occur when the dependency is loaded.
 
 -   Testing, since you may want to define a method only within a test.
-    This is particularly useful whne used to eliminate the need for mocking.
+    This is particularly useful when used to eliminate the need for mocking.
 
 -   Interface evolution, so you can provide a method for a generic or class that does not yet exist, anticipating a future release of a dependency.
