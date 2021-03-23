@@ -165,7 +165,7 @@ same way as `UseMethod()`, so non-standard evaluation works basically
 the same as S3.
 
 ``` r
-subset2 <- new_generic(name = "subset", signature = "x")
+subset2 <- new_generic(name = "subset2", signature = "x")
 
 method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)
