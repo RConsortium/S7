@@ -109,8 +109,8 @@ Here is the definition of the class.
 annotated_df <- new_class("annotated_df",
   parent = c("tbl_df", "tbl", "data.frame"),
   properties = list(
-    rows = "tbl",
-    columns = "tbl"
+    rows = c("tbl_df", "tbl", "data.frame"),
+    columns = c("tbl_df", "tbl", "data.frame")
     ),
   validator = function(object) {
     if (nrow(object) != nrow(object@rows)) {
