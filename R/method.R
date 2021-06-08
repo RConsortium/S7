@@ -6,6 +6,7 @@
 #' @importFrom utils getS3method
 #' @export
 method <- function(generic, signature) {
+  signature <- as(signature, "list")
   method_impl(generic, signature, ignore = NULL)
 }
 
