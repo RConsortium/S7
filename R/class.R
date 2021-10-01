@@ -65,10 +65,11 @@ class_get <- function(name, envir = parent.frame()) {
     return(class)
   }
 
-  # TODO: What do we do about existing S3 / S4 classes?
+  ## TODO: What do we do about existing S3 / S4 classes?
 
-  # otherwise assume this is a base class, so use get_base_class
-  base_classes[[name]]
+  ## otherwise assume this is a base class, so use get_base_class
+  #base_classes[[name]]
+  stop(name)
 }
 
 #' @export

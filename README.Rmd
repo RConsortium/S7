@@ -43,11 +43,11 @@ range <- new_class("range",
     }
   },
   properties = list(
-    start = "numeric",
-    end = "numeric",
+    start = num,
+    end = num,
     new_property(
       name = "length",
-      class = "numeric",
+      class = num,
       getter = function(x) x@end - x@start,
       setter = function(x, value) {
         x@end <- x@start + value
@@ -87,7 +87,7 @@ x
 # Use `.data` to refer to and retrieve the base data type, properties are
 # automatically removed, but non-property attributes (such as names) are retained.
 
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+text <- new_class("text", parent = chr, constructor = function(text) new_object(.data = text))
 
 y <- text(c(foo = "bar"))
 
@@ -97,7 +97,7 @@ names(y@.data)
 ## Generics and methods
 
 ```{r}
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+text <- new_class("text", parent = chr, constructor = function(text) new_object(.data = text))
 
 foo <- new_generic(name = "foo", signature = "x")
 
@@ -116,11 +116,11 @@ For `method(foo, c("character", "numeric"))` the method would be stored at `foo@
 At each level the search iteratively searches along objects class vector.
 
 ```{r}
-number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
+number <- new_class("number", parent = num, constructor = function(x) new_object(.data = x))
 
 bar <- new_generic(name = "bar", signature = c("x", "y"))
 
-method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":", y)
+method(bar, list(chr, num)) <- function(x, y, ...) paste0("foo-", x, ":", y)
 
 bar(text("hi"), number(42))
 ```
@@ -132,7 +132,7 @@ This works by looking up the call stack and retrieving R7 methods which have alr
 This ensures you cannot call the same method twice.
 
 ```{r}
-method(bar, list("text", "number")) <- function(x, y, ...) {
+method(bar, list(text, num)) <- function(x, y, ...) {
   res <- next_method()(x, y)
   paste0("2 ", res)
 }
@@ -147,7 +147,7 @@ bar(text("hi"), number(42))
 ```{r}
 subset2 <- new_generic(name = "subset2", signature = "x")
 
-method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
+method(subset2, df) <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)
   r <- eval(e, x, parent.frame())
   r <- r & !is.na(r)
@@ -172,7 +172,7 @@ If you want to define methods for R7 generics defined in another package you can
 
 foo <- new_external_generic("pkg1", "foo")
 
-method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ": ", y)
+method(foo, list(text, num)) <- function(x, y, ...) paste0("foo-", x, ": ", y)
 ```
 
 ## Design workflow

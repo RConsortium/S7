@@ -24,7 +24,7 @@ test_that("methods can be registered for a generic and then called", {
 test_that("single inheritance works when searching for methods", {
   foo2 <- new_generic(name = "foo2", signature = alist(x=))
 
-  new_method(foo2, "character", function(x, ...) paste0("foo2-", x))
+  new_method(foo2, chr, function(x, ...) paste0("foo2-", x))
 
   expect_equal(foo2(text("bar")), "foo2-bar")
 })
@@ -37,7 +37,7 @@ test_that("direct multiple dispatch works", {
 
 test_that("inherited multiple dispatch works", {
   foo4 <- new_generic(name = "foo4", signature = alist(x=, y=))
-  new_method(foo4, list("character", "numeric"), function(x, y, ...) paste0(x, ":", y))
+  new_method(foo4, list(chr, num), function(x, y, ...) paste0(x, ":", y))
 
   expect_equal(foo4(text("bar"), number(1)), "bar:1")
 })
@@ -52,7 +52,7 @@ test_that("method dispatch works for S3 objects", {
   expect_equal(foo(obj), "foo-hi")
 })
 
-test_that("method dispatch works for S3 objects", {
+test_that("method dispatch works for S4 objects", {
   skip_if_not(requireNamespace("methods"))
 
   Range <- setClass("Range", slots = c(start = "numeric", end = "numeric"))
@@ -95,7 +95,7 @@ test_that("next_method works for single dispatch", {
     next_method()(x)
   })
 
-  new_method(foo, "character", function(x, ...) {
+  new_method(foo, chr, function(x, ...) {
     as.character(x)
   })
 
@@ -105,18 +105,18 @@ test_that("next_method works for single dispatch", {
 test_that("next_method works for double dispatch", {
   foo <- new_generic("foo", c("x", "y"))
 
-  new_method(foo, list("text", "number"), function(x, y, ...) {
+  new_method(foo, list(text, number), function(x, y, ...) {
     x@.data <- paste0("foo-", x@.data, "-", y@.data)
     next_method()(x, y)
   })
 
-  new_method(foo, list("character", "number"), function(x, y, ...) {
+  new_method(foo, list(chr, number), function(x, y, ...) {
     y@.data <- y + 1
     x@.data <- paste0(x@.data, "-", y@.data)
     next_method()(x, y)
   })
 
-  new_method(foo, list("character", "numeric"), function(x, y, ...) {
+  new_method(foo, list(chr, num), function(x, y, ...) {
     as.character(x@.data)
   })
 
@@ -126,7 +126,7 @@ test_that("next_method works for double dispatch", {
 test_that("substitute() works for single dispatch method calls like S3", {
   foo <- new_generic("foo", "x")
 
-  new_method(foo, "character", function(x, ...) substitute(x))
+  new_method(foo, chr, function(x, ...) substitute(x))
 
   bar <- "blah"
   expect_equal(foo(bar), as.symbol("bar"))
@@ -135,7 +135,7 @@ test_that("substitute() works for single dispatch method calls like S3", {
 test_that("substitute() works for multiple dispatch method calls like S3", {
   foo <- new_generic("foo", c("x", "y"))
 
-  new_method(foo, "character", function(x, y, ...) c(substitute(x), substitute(y)))
+  new_method(foo, chr, function(x, y, ...) c(substitute(x), substitute(y)))
 
   bar <- "blah"
   baz <- "bloo"

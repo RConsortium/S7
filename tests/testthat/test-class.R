@@ -24,25 +24,26 @@ describe("R7_class", {
 })
 
 test_that("classes can inherit from base types", {
-  types <- c("logical", "integer", "complex", "character", "raw", "list")
-  for (type in types) {
-    f <- match.fun(type)
+  types <- list(logical = lgl, integer = int, complex = cpl, character = chr, raw = raw, list = lst)
+  for (i in seq_along(types)) {
+    f <- match.fun(names(types)[[i]])
+    type <- types[[i]]
     foo <- new_class("foo", parent = type, constructor = function(x = f()) new_object(x))
     obj <- foo()
-    expect_equal(typeof(obj@.data), type)
+    expect_equal(typeof(obj@.data), names(types)[[i]])
   }
 
-  foo <- new_class("foo", parent = "numeric", constructor = function(x = numeric()) new_object(x))
+  foo <- new_class("foo", parent = num, constructor = function(x = numeric()) new_object(x))
   obj <- foo()
   expect_equal(typeof(obj@.data), "double")
 
-  foo <- new_class("foo", parent = "function", constructor = function(x = function() NULL, ...) new_object(x))
+  foo <- new_class("foo", parent = fn, constructor = function(x = function() NULL, ...) new_object(x))
   obj <- foo()
   expect_equal(typeof(obj@.data), "closure")
 })
 
 test_that("classes can use unions in properties", {
-  my_class <- new_class("my_class", properties = list(new_property(name = "name", new_union("character", "factor"))))
+  my_class <- new_class("my_class", properties = list(new_property(name = "name", new_union(chr, fct))))
 
   expect_equal(my_class(name = "foo")@name, "foo")
   expect_equal(my_class(name = factor("foo"))@name, factor("foo"))
