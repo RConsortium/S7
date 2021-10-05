@@ -25,7 +25,7 @@ This case study demonstrates creating basic classes with accessors functions, in
 ```{r}
 Person <- new_class("Person",
   properties = list(
-    name = "character",
+    name = chr,
     new_property(
       name = "birthdate",
       class = "Date",
@@ -36,7 +36,7 @@ Person <- new_class("Person",
     ),
     new_property(
       name = "age",
-      class = "numeric",
+      class = num,
       getter = function(object) {
         # This is not correct because of leap years,
         # see https://stackoverflow.com/questions/3611314/calculate-ages-in-r/25450756#25450756 for a correct implementation.
@@ -78,7 +78,7 @@ Classes can inherit from a parent class with `parent` and contain properties tha
 ```{r}
 Employee <- new_class("Employee",
   parent = Person,
-  properties = list(boss = "Person"),
+  properties = list(boss = Person),
   constructor = function(..., boss) {
     new_object(Person(...), boss = boss)
   }
@@ -127,9 +127,9 @@ annotated_df <- new_class("annotated_df",
 
 The print method tells us this is a R7 class and gives us the types for the properties in the class.
 
-```{r}
-annotated_df
-```
+<!--```{r}-->
+<!--annotated_df-->
+<!--```-->
 
 To instantiate an instance of `annotated_df` we first need to get some data to put in it. As an example we will use the mtcars dataset. This requires some manipulation to get the `rows` and `columns` data in the right formats.
 

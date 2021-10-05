@@ -150,7 +150,7 @@ as_properties <- function(x) {
     return(x)
   }
 
-  named_chars <- vlapply(x, inherits, "R7_class") & has_names(x)
+  named_chars <- (vlapply(x, inherits, "R7_class") | vlapply(x, is.character)) & has_names(x)
   R7_properties <- vlapply(x, inherits, "R7_property")
 
   if (!all(named_chars | R7_properties)) {

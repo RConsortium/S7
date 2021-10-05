@@ -21,8 +21,8 @@ library(R7)
 The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in a package there is some overhead due to `.Call` vs `.Primitive`.
 
 ```{r performance, cache = FALSE}
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
-number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
+text <- new_class("text", parent = chr, constructor = function(text) new_object(.data = text))
+number <- new_class("number", parent = num, constructor = function(x) new_object(.data = x))
 
 x <- text("hi")
 y <- number(1)
@@ -80,7 +80,7 @@ bench::press(
   class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+    text <- new_class("text", parent = chr, constructor = function(text) new_object(.data = text))
     parent <- text
     classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
@@ -119,7 +119,7 @@ bench::press(
   class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+    text <- new_class("text", parent = chr, constructor = function(text) new_object(.data = text))
     parent <- text
     classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()

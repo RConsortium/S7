@@ -27,17 +27,54 @@ R7_union <- NULL
 #' @export
 new_union <- NULL
 
+#' R7 base classes
+#' @param x default value for the object.
+#' @rdname R7_base
+#' @export
 lgl <- NULL
+
+#' @rdname R7_base
+#' @export
 int <- NULL
+
+#' @rdname R7_base
+#' @export
 dbl <- NULL
+
+#' @rdname R7_base
+#' @export
 num <- NULL
+
+#' @rdname R7_base
+#' @export
 cpl <- NULL
+
+#' @rdname R7_base
+#' @export
 chr <- NULL
+
+#' @rdname R7_base
+#' @export
 fct <- NULL
+
+#' @rdname R7_base
+#' @export
 raw <- NULL
+
+#' @rdname R7_base
+#' @export
 fn <- NULL
+
+#' @rdname R7_base
+#' @export
 lst <- NULL
+
+#' @rdname R7_base
+#' @export
 df <- NULL
+
+#' @rdname R7_base
+#' @export
 env <- NULL
 
 .onLoad <- function(...) {
