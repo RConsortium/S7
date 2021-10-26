@@ -229,9 +229,3 @@ as_generic <- function(generic) {
 method_call <- function() {
   .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
 }
-
-#' @export
-str.R7_object <- function(object, ...) {
-  cat("R7_object\n")
-  str(attributes(object), ...)
-}
