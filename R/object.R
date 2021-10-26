@@ -70,3 +70,12 @@ print.R7_object <- function(x, ...) {
   }
   cat(sprintf("%s\n%s", fmt_classes(class(x), collapse = " "), prop_fmt), sep = "")
 }
+
+#' @export
+str.R7_object <- function(object, ...) {
+  cat(" <R7_object>\n")
+  if (typeof(object) != "S4") {
+    str(unclass(object), ...)
+  }
+  str(attributes(object), ...)
+}

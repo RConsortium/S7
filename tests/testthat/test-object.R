@@ -58,6 +58,20 @@ test_that("printing R7 classes work", {
   expect_snapshot(range)
 })
 
+test_that("str with R7 objects work", {
+  x <- range(1, 10)
+  expect_snapshot(str(x), transform = scrub_src_references)
+})
+
+test_that("str with R7 objects of base classes work", {
+  y <- number(1)
+  expect_snapshot(str(y), transform = scrub_src_references)
+})
+
+test_that("str R7 classes work", {
+  expect_snapshot(str(range), transform = scrub_src_references)
+})
+
 test_that("object_class returns itself for R7_class objects", {
   text <- new_class("text", parent = "character")
 
