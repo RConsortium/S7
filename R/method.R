@@ -224,6 +224,12 @@ as_generic <- function(generic) {
   generic
 }
 
+method_error <- function(generic, signatures) {
+  args <- setdiff(names(generic@signature), "...")
+  types <- paste0("- ", args, ": ", vcapply(signatures, paste0, collapse = ", "), collapse = "\n")
+  stop(sprintf("No method found for generic `%s()` with types:\n%s", generic@name, types), call. = FALSE)
+}
+
 #' Lookup the R7 method for the current generic and call it.
 #' @export
 method_call <- function() {
