@@ -8,9 +8,8 @@ test_that("method will fall back to S3 generics if no R7 generic is defined", {
 test_that("method errors if no method is defined for that class", {
   foo <- new_generic("foo", signature = alist(x=))
 
-  expect_error(
-    method(foo, list("blah")),
-    "Can't find method for generic 'foo'"
+  expect_snapshot_error(
+    method(foo, list("blah"))
   )
 })
 
@@ -282,5 +281,25 @@ test_that("method compatible verifies that if a generic does not have dots the m
       function(x, ...) x,
       foo
     )
+  )
+})
+
+test_that("method lookup fails with an informative message for single classes", {
+  foo <- new_generic(name="foo", signature = c("x", "y"))
+  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  expect_snapshot_error(
+    foo(TRUE, list())
+  )
+
+  expect_snapshot_error(
+    foo(TRUE)
+  )
+})
+
+test_that("method lookup fails with an informative message for multiple classes", {
+  foo <- new_generic(name="foo", signature = c("x", "y"))
+  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  expect_snapshot_error(
+    foo(tibble::tibble(), .POSIXct(double()))
   )
 })
