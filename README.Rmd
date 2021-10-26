@@ -99,7 +99,7 @@ names(y@.data)
 ```{r}
 text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
 
-foo <- new_generic(name = "foo", signature = "x")
+foo <- new_generic("foo", signature = "x")
 
 method(foo, "text") <- function(x, ...) paste0("foo-", x)
 
@@ -118,7 +118,7 @@ At each level the search iteratively searches along objects class vector.
 ```{r}
 number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
-bar <- new_generic(name = "bar", signature = c("x", "y"))
+bar <- new_generic("bar", signature = c("x", "y"))
 
 method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":", y)
 
@@ -145,7 +145,7 @@ bar(text("hi"), number(42))
 `method_call()` retains promises for dispatch arguments in basically the same way as `UseMethod()`, so non-standard evaluation works basically the same as S3.
 
 ```{r}
-subset2 <- new_generic(name = "subset2", signature = "x")
+subset2 <- new_generic("subset2", signature = "x")
 
 method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)
