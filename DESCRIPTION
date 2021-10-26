@@ -47,7 +47,7 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
 URL: https://RConsortium.github.io/OOP-WG, https://rconsortium.github.io/OOP-WG
 BugReports: https://github.com/RConsortium/OOP-WG/issues

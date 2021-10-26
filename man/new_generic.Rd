@@ -23,7 +23,12 @@ new_external_generic(package, generic, version = NULL)
 \item{version}{An optional version the package must meet for the method to be registered.}
 }
 \description{
-Use \code{new_generic} to define a new generic for a package.
+Use \code{new_generic()} to create a new generic, then \link{method<-} to add methods
+to it.
+
+See \code{\link[=new_external_generic]{new_external_generic()}} if you need to define a method for a generic
+in another package without taking a strong dependency on it.
+
 If you need to reference a generic in another package either import the generic into your
 package's namespace or use \code{new_external_generic} to declare it as an
 external generic and add a \code{method_register()} call to your \code{.onLoad}
