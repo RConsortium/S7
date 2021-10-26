@@ -107,7 +107,9 @@ void R7_method_error(SEXP generic, SEXP signature, SEXP envir) {
       SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
       R7_method_error_fun = Rf_findVarInFrame(ns, Rf_install("method_error"));
     }
-    SEXP R7_method_error_call = PROTECT(Rf_lang3(R7_method_error_fun, generic, signature));
+    SEXP name = Rf_getAttrib(generic, Rf_install("name"));
+    SEXP args = Rf_getAttrib(Rf_getAttrib(generic, Rf_install("signature")), R_NamesSymbol);
+    SEXP R7_method_error_call = PROTECT(Rf_lang4(R7_method_error_fun, name, args, signature));
     Rf_eval(R7_method_error_call, envir);
 }
 
