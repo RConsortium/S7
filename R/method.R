@@ -6,6 +6,9 @@
 #' @importFrom utils getS3method
 #' @export
 method <- function(generic, signature) {
+  if (!is.list(signature)) {
+    signature <- list(signature)
+  }
   method_impl(generic, signature, ignore = NULL)
 }
 

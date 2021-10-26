@@ -5,6 +5,13 @@ test_that("method will fall back to S3 generics if no R7 generic is defined", {
   )
 })
 
+test_that("method will accept a character vector (#71)", {
+  expect_equal(
+    method(print, "text"),
+    base::print.default
+  )
+})
+
 test_that("method errors if no method is defined for that class", {
   foo <- new_generic(name = "foo", signature = alist(x=))
 
