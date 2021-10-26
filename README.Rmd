@@ -149,7 +149,9 @@ subset2 <- new_generic(name = "subset2", signature = "x")
 
 method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)
-  r <- eval(e, x, parent.frame())
+  # Unlike S3, R7 creates a frame for the generic, so we need to
+  # go one extra level up to get to the user's evaluation environment
+  r <- eval(e, x, parent.frame(2))
   r <- r & !is.na(r)
   nl <- as.list(seq_along(x))
   names(nl) <- names(x)

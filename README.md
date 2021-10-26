@@ -3,10 +3,10 @@
 
 # Object-oriented Programming Working Group
 
-  - [Initial proposal](proposal/proposal.org)
-  - [Requirements brainstorming](spec/requirements.md)
-  - [Minutes](minutes/)
-  - [Code](R/) (this repository is an R package)
+-   [Initial proposal](proposal/proposal.org)
+-   [Requirements brainstorming](spec/requirements.md)
+-   [Minutes](minutes/)
+-   [Code](R/) (this repository is an R package)
 
 These ideas have been implemented in the R7 package, hosted in this
 repository.
@@ -169,7 +169,9 @@ subset2 <- new_generic(name = "subset2", signature = "x")
 
 method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)
-  r <- eval(e, x, parent.frame())
+  # Unlike S3, R7 creates a frame for the generic, so we need to
+  # go one extra level up to get to the user's evaluation environment
+  r <- eval(e, x, parent.frame(2))
   r <- r & !is.na(r)
   nl <- as.list(seq_along(x))
   names(nl) <- names(x)
@@ -209,10 +211,10 @@ method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":
 
 ## Design workflow
 
-  - File an issue to discuss the topic and build consensus.
-  - Once consensus has been reached, the issue author should create a
+-   File an issue to discuss the topic and build consensus.
+-   Once consensus has been reached, the issue author should create a
     pull request that summarises the discussion in the appropriate `.md`
     file, and request review from all folks who participated the issue
     discussion.
-  - Once all participants have accepted the PR, the original author
+-   Once all participants have accepted the PR, the original author
     merges.
