@@ -76,7 +76,7 @@ print.R7_class <- function(x, ...) {
   props <- properties(x)
   if (length(props) > 0) {
     prop_names <- format(names(props))
-    prop_types <- format(paste0("<", vcapply(props, function(xx) xx[["class"]] %||% ""), ">"), justify = "right")
+    prop_types <- format(paste0("<", vcapply(props, function(xx) xx[["class"]][[1]] %||% ""), ">"), justify = "right")
     prop_fmt <- paste0(paste0(" $", prop_names, " ", prop_types, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""
