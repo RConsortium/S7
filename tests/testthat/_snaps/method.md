@@ -1,3 +1,19 @@
+# method errors on invalid inputs
+
+    `signature` must be a list of <R7_class> or a <character>:
+    - `signature[1]`: is <numeric>
+
+---
+
+    `signature` must be a list of <R7_class> or a <character>:
+    - `signature[1]`: is <numeric>
+
+---
+
+    `signature` must be a list of <R7_class> or a <character>:
+    - `signature[1]`: is <logical>
+    - `signature[2]`: is <logical>
+
 # method_compatible throws errors if the functions are not compatible
 
     `method` must be consistent with <R7_generic> foo.

@@ -12,6 +12,19 @@ test_that("method will accept a character vector (#71)", {
   )
 })
 
+test_that("method errors on invalid inputs", {
+  expect_snapshot_error(
+    method(print, 1)
+  )
+  expect_snapshot_error(
+    method(print, list(1))
+  )
+
+  expect_snapshot_error(
+    method(print, list(TRUE, FALSE))
+  )
+})
+
 test_that("method errors if no method is defined for that class", {
   foo <- new_generic(name = "foo", signature = alist(x=))
 
