@@ -58,14 +58,12 @@ test_that("printing R7 classes work", {
   expect_snapshot(range)
 })
 
-test_that("str with R7 objects work", {
-  x <- range(1, 10)
-  expect_snapshot(str(x), transform = scrub_src_references)
+test_that("str with simple R7 objects work", {
+  expect_snapshot(str(range(1, 2)), transform = scrub_src_references)
 })
 
 test_that("str with R7 objects of base classes work", {
-  y <- number(1)
-  expect_snapshot(str(y), transform = scrub_src_references)
+  expect_snapshot(str(list(text("b"), number(50))), transform = scrub_src_references)
 })
 
 test_that("str R7 classes work", {

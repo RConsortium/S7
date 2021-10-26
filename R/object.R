@@ -72,10 +72,18 @@ print.R7_object <- function(x, ...) {
 }
 
 #' @export
-str.R7_object <- function(object, ...) {
-  cat(" <R7_object>\n")
+str.R7_object <- function(object, ..., nest.lev = 0) {
+  cat(" <", paste0(class(object), collapse = "/"), "> ", sep = "")
+
   if (typeof(object) != "S4") {
-    str(unclass(object), ...)
+    bare <- unclass(object)
+    attr(bare, "object_class") <- NULL
+  } else {
+    bare <- attributes(object)
+    bare$class <- NULL
+    bare$object_class <- NULL
   }
-  str(attributes(object), ...)
+  str(bare, ..., nest.lev = nest.lev + 1)
 }
+
+
