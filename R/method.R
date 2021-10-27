@@ -65,12 +65,8 @@ next_method <- function() {
   method_impl(generic, signature, ignore = methods)
 }
 
-#' Register R7 methods
-#'
-#' When registering methods for R7 generics defined in other packages you must
-#' put `method_register()` in your packages [.onLoad] function.
-#'
 #' @importFrom utils getFromNamespace packageName
+#' @rdname new_external_generic
 #' @export
 method_register <- function() {
   package <- packageName(parent.frame())
