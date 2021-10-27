@@ -75,3 +75,14 @@ generic_generate_signature_call <- function(signature) {
   call_args <- names(signature)
   as.call(c(as.symbol("list"), lapply(class_args, function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
 }
+
+#' @export
+print.R7_generic <- function(x, ...) {
+  ms <- methods(x)
+  indexes <- seq_along(ms)
+  method_signatures <- vcapply(ms, function(x) paste0('"', x@signature, '"', collapse = ", "))
+
+  msg <- paste0(sprintf("%s: method(%s, list(%s))", indexes, x@name, method_signatures), collapse = "\n")
+
+  cat(sprintf("<R7_generic> with %i methods:\n%s", length(ms), msg), sep = "")
+}
