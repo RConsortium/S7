@@ -12,7 +12,7 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
     stop("Must call `new_generic()` with either `signature` or `fun`", call. = FALSE)
   }
   if (is.null(signature)) {
-    signature <- formals(fun)[1]
+    signature <- guess_signature(fun)
   } else {
     signature <- normalize_signature(signature)
   }
@@ -40,6 +40,14 @@ new_external_generic <- function(package, generic, version = NULL) {
   class(out) <- "R7_external_generic"
   out
 }
+
+
+guess_signature <- function(fun) {
+  formals <- formals(fun)
+  is_required <- vlapply(formals, identical, quote(expr = ))
+  setdiff(names(formals[is_required]), "...")
+}
+
 
 normalize_signature <- function(signature, envir = parent.frame()) {
   if (!is_named(signature)) {
