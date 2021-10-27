@@ -29,7 +29,7 @@ method_impl <- function(generic, signature, ignore) {
   }
 
   if (is.null(out)) {
-    stop(sprintf("Can't find method for generic '%s' with arguments of type:\n%s", generic, paste0("- ", names(args), ": ", vcapply(signature, paste0, collapse = ", "), collapse = "\n"), call. = FALSE))
+    method_lookup_error(generic, names(args), signature)
   }
 
   out
@@ -222,6 +222,12 @@ as_generic <- function(generic) {
   }
 
   generic
+}
+
+method_lookup_error <- function(name, args, signatures) {
+  args <- setdiff(args, "...")
+  types <- paste0("- ", args, ": ", vcapply(signatures, fmt_classes), collapse = "\n")
+  stop(sprintf("Can't find method for generic `%s()` with classes:\n%s", name, types), call. = FALSE)
 }
 
 #' Lookup the R7 method for the current generic and call it.

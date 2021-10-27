@@ -6,23 +6,22 @@ test_that("method will fall back to S3 generics if no R7 generic is defined", {
 })
 
 test_that("method errors if no method is defined for that class", {
-  foo <- new_generic(name = "foo", signature = alist(x=))
+  foo <- new_generic("foo", signature = alist(x=))
 
-  expect_error(
-    method(foo, list("blah")),
-    "Can't find method for generic 'foo'"
+  expect_snapshot_error(
+    method(foo, list("blah"))
   )
 })
 
 test_that("methods can be registered for a generic and then called", {
-  foo <- new_generic(name = "foo", signature = alist(x=))
+  foo <- new_generic("foo", signature = alist(x=))
   new_method(foo, "text", function(x, ...) paste0("foo-", x@.data))
 
   expect_equal(foo(text("bar")), "foo-bar")
 })
 
 test_that("single inheritance works when searching for methods", {
-  foo2 <- new_generic(name = "foo2", signature = alist(x=))
+  foo2 <- new_generic("foo2", signature = alist(x=))
 
   new_method(foo2, "character", function(x, ...) paste0("foo2-", x))
 
@@ -30,20 +29,20 @@ test_that("single inheritance works when searching for methods", {
 })
 
 test_that("direct multiple dispatch works", {
-  foo3 <- new_generic(name = "foo3", signature = alist(x=, y=))
+  foo3 <- new_generic("foo3", signature = alist(x=, y=))
   new_method(foo3, list("text", "number"), function(x, y, ...) paste0(x, y))
   expect_equal(foo3(text("bar"), number(1)), "bar1")
 })
 
 test_that("inherited multiple dispatch works", {
-  foo4 <- new_generic(name = "foo4", signature = alist(x=, y=))
+  foo4 <- new_generic("foo4", signature = alist(x=, y=))
   new_method(foo4, list("character", "numeric"), function(x, y, ...) paste0(x, ":", y))
 
   expect_equal(foo4(text("bar"), number(1)), "bar:1")
 })
 
 test_that("method dispatch works for S3 objects", {
-  foo <- new_generic(name = "foo", signature = "x")
+  foo <- new_generic("foo", signature = "x")
 
   obj <- structure("hi", class = "my_s3")
 
@@ -58,7 +57,7 @@ test_that("method dispatch works for S3 objects", {
   Range <- setClass("Range", slots = c(start = "numeric", end = "numeric"))
   obj <- Range(start = 1, end = 10)
 
-  foo <- new_generic(name = "foo", signature = "x")
+  foo <- new_generic("foo", signature = "x")
 
   new_method(foo, "Range", function(x, ...) paste0("foo-", x@start, "-", x@end))
 
@@ -66,21 +65,21 @@ test_that("method dispatch works for S3 objects", {
 })
 
 test_that("new_method works if you use R7 class objects", {
-  foo5 <- new_generic(name = "foo5", signature = alist(x=, y=))
+  foo5 <- new_generic("foo5", signature = alist(x=, y=))
   new_method(foo5, list(text, number), function(x, y, ...) paste0(x, ":", y))
 
   expect_equal(foo5(text("bar"), number(1)), "bar:1")
 })
 
 test_that("new_method works if you pass a bare class", {
-  foo6 <- new_generic(name = "foo6", signature = alist(x=))
+  foo6 <- new_generic("foo6", signature = alist(x=))
   new_method(foo6, text, function(x, ...) paste0("foo-", x))
 
   expect_equal(foo6(text("bar")), "foo-bar")
 })
 
 test_that("new_method works if you pass a bare class union", {
-  foo7 <- new_generic(name = "foo7", signature = alist(x=))
+  foo7 <- new_generic("foo7", signature = alist(x=))
   new_method(foo7, new_union(text, number), function(x, ...) paste0("foo-", x))
 
   expect_equal(foo7(text("bar")), "foo-bar")
@@ -282,5 +281,25 @@ test_that("method compatible verifies that if a generic does not have dots the m
       function(x, ...) x,
       foo
     )
+  )
+})
+
+test_that("method lookup fails with an informative message for single classes", {
+  foo <- new_generic(name="foo", signature = c("x", "y"))
+  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  expect_snapshot_error(
+    foo(TRUE, list())
+  )
+
+  expect_snapshot_error(
+    foo(TRUE)
+  )
+})
+
+test_that("method lookup fails with an informative message for multiple classes", {
+  foo <- new_generic(name="foo", signature = c("x", "y"))
+  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  expect_snapshot_error(
+    foo(tibble::tibble(), .POSIXct(double()))
   )
 })
