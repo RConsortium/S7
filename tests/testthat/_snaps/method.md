@@ -79,3 +79,14 @@
     - x: <tbl_df>, <tbl>, <data.frame>
     - y: <POSIXct>, <POSIXt>
 
+# R7_method printing
+
+    Code
+      method(foo, list("character", "integer"))
+    Output
+      <R7_method>
+      method(foo, list("character", "integer"))
+      function (x, y, ...) 
+      paste0("bar:", x, y)
+      <environment: 0x0>
+
