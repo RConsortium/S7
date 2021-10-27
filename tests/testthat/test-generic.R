@@ -23,3 +23,11 @@ test_that("generics pass ... to methods, and methods can define additional argum
   expect_equal(foo(text("bar")), "foo-bar")
   expect_equal(foo(text("bar"), sep = "/"), "foo/bar")
 })
+
+test_that("guesses signature from required arguments", {
+  expect_equal(guess_signature(function() {}), NULL)
+  expect_equal(guess_signature(function(x) {}), "x")
+  expect_equal(guess_signature(function(x, y) {}), c("x", "y"))
+  expect_equal(guess_signature(function(x, y, ...) {}), c("x", "y"))
+  expect_equal(guess_signature(function(x, ..., y = 1) {}), "x")
+})
