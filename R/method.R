@@ -6,7 +6,29 @@
 #' @importFrom utils getS3method
 #' @export
 method <- function(generic, signature) {
+  signature <- as_signature(signature)
+
   method_impl(generic, signature, ignore = NULL)
+}
+
+as_signature <- function(signature) {
+  if (!is.list(signature)) {
+    signature <- list(signature)
+  }
+  is_valid_signature <- vlapply(signature, function(x) inherits(x, "R7_class") | inherits(x, "character"))
+  if (all(is_valid_signature)) {
+    return(signature)
+  }
+
+  invalid_indexes <- which(!is_valid_signature)
+  invalid_classes <- vcapply(signature[!is_valid_signature], function(x) fmt_classes(class(x)))
+
+  stop(
+    "`signature` must be a list of <R7_class> or a <character>:\n",
+    paste0(collapse = "\n",
+      sprintf("- `signature[%s]`: is %s", invalid_indexes, invalid_classes)
+    ),
+  call. = FALSE)
 }
 
 method_impl <- function(generic, signature, ignore) {

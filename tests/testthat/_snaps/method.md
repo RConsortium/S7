@@ -1,3 +1,19 @@
+# method errors on invalid inputs
+
+    `signature` must be a list of <R7_class> or a <character>:
+    - `signature[1]`: is <numeric>
+
+---
+
+    `signature` must be a list of <R7_class> or a <character>:
+    - `signature[1]`: is <numeric>
+
+---
+
+    `signature` must be a list of <R7_class> or a <character>:
+    - `signature[1]`: is <logical>
+    - `signature[2]`: is <logical>
+
 # method errors if no method is defined for that class
 
     Can't find method for generic `foo()` with classes:
