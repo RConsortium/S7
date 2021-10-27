@@ -59,3 +59,7 @@ quick_test_disable <- function() {
 quick_test_enable <- function() {
   Sys.setenv("R_TESTTHAT_QUICK" = "true")
 }
+
+scrub_src_references <- function(x) {
+  grep("attr[(][*], \"srcref|srcfile\"[)]|..[$] srcref ", x, invert = TRUE, value = TRUE)
+}
