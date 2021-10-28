@@ -1,1 +1,30 @@
 url: https://RConsortium.github.io/OOP-WG
+
+reference:
+- title: Key functions
+  contents:
+  - new_class
+  - new_external_generic
+  - new_generic
+  - new_property
+  - new_union
+  - method<-
+
+- title: Introspection
+  contents:
+  - class_get
+  - class_names
+  - object_class
+  - method
+  - property
+  - validate
+
+- title: Method dispatch
+  contents:
+  - next_method
+  - method_call
+
+- title: Internal classes
+  contents:
+  - R7_generic
+  - R7_object
