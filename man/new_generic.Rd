@@ -11,7 +11,7 @@ new_generic(name, signature = NULL, fun = NULL)
 that you assign it to.}
 
 \item{signature}{A character vector providing the names of arguments to
-dispatch on.}
+dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
 
 \item{fun}{An optional specification of the generic, which must call
 \code{method_call()} to dispatch to methods. This is usually generated
