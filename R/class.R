@@ -81,9 +81,8 @@ print.R7_class <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  parent <- x@parent
-
-  parent <- property_safely(parent, "name") %||% parent
+  parent <- property_safely(x, "parent")
+  parent <- property_safely(parent, "name") %||% parent %||% ""
 
   cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, parent, prop_fmt), sep = "")
 }
