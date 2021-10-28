@@ -35,3 +35,18 @@ vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(
 fmt_classes <- function(classes, collapse = ", ") {
   paste0("<", classes, ">", collapse = collapse)
 }
+
+collapse <- function(x, by) {
+  paste(x, collapse = by)
+}
+
+method_signature <- function(signature) {
+  format_signature <- function(x) {
+    if (inherits(x, "R7_class")) {
+      x@name
+    } else {
+      sprintf('"%s"', x)
+    }
+  }
+  collapse(vcapply(signature, format_signature), by = ", ")
+}
