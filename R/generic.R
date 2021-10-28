@@ -8,7 +8,7 @@
 #' @param name The name of the generic. This should be the same as the object
 #'   that you assign it to.
 #' @param signature A character vector providing the names of arguments to
-#'   dispatch on.
+#'   dispatch on. If omitted, defaults to the required arguments of `fun`.
 #' @param fun An optional specification of the generic, which must call
 #'  `method_call()` to dispatch to methods. This is usually generated
 #'  automatically from the `signature`, but you may want to supply it if
