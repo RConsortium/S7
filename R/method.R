@@ -1,10 +1,40 @@
 #' Retrieve or register an R7 method for a generic
 #'
-#' @param generic The generic to retrieve or register
-#' @param signature The method signature
-#' @param method,value The new function to use as the method.
+#' @description
+#' Generics partition a function into interface (a generic) and implementation
+#' (many methods). `method<-` allows you to register a method, an
+#' implementation for a specified class signature, with a generic.
+#'
+#' `method()` retrieves a method for a given signature. You typically should
+#' not need this function because calling the generic will automatically
+#' dispatch to the correct method.
+#'
+#' @param generic A generic function.
+#' @param signature A method signature, a list of R7 class constructors
+#'   (produced by [new_class()]) or names of S3 or S4 classes.
+#' @param value A function that implements the generic specification for the
+#'   given `signature`. The arguments must be compatible with the generic.
 #' @importFrom utils getS3method
 #' @export
+#' @examples
+#' # Create a generic
+#' bizarro <- new_generic("bizarro", signature = "x")
+#' # Register some methods
+#' method(bizarro, "numeric") <- function(x, ...) rev(x)
+#' method(bizarro, "factor") <- function(x, ...) {
+#'   levels(x) <- rev(levels(x))
+#'   x
+#' }
+#' method(bizarro, "data.frame") <- function(x, ...) {
+#'   x[] <- lapply(x, bizarro)
+#'   rev(x)
+#' }
+#'
+#' bizarro(1:10)
+#'
+#' # Retrieve a method
+#' method(bizarro, list("numeric"))
+#' method(bizarro, list("numeric"))
 method <- function(generic, signature) {
   signature <- as_signature(signature)
 
@@ -149,11 +179,6 @@ method_compatible <- function(method, generic) {
   TRUE
 }
 
-#' @rdname method
-#' @param package The package to register the method in, only used for soft
-#'   dependencies. The default `NULL` looks up the package based on the parent
-#'   frame.
-#' @export
 new_method <- function(generic, signature, method, package = NULL) {
   if (inherits(generic, "R7_external_generic")) {
     # Get current package, if any
@@ -218,7 +243,9 @@ new_method <- function(generic, signature, method, package = NULL) {
   invisible(generic)
 }
 
+
 #' @rdname method
+#'
 #' @export
 `method<-` <- function(generic, signature, value) {
   new_method(generic, signature, value, package = packageName(parent.frame()))
