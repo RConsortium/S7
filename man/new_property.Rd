@@ -7,9 +7,10 @@
 new_property(name, class = NULL, getter = NULL, setter = NULL)
 }
 \arguments{
-\item{name}{The name of the property}
+\item{name}{Property name, primarily used for error messages.}
 
-\item{class}{The class of the property}
+\item{class}{If specified, any values must be one of these classes
+(or \link[=new_union]{class union}).}
 
 \item{getter}{An optional function used to get the value. The function
 should take the object as its sole argument and return the value. If the
@@ -20,5 +21,47 @@ should take the object and new value as its two parameters and return the
 modified object. The value is \emph{not} automatically checked.}
 }
 \description{
-Define a new property
+A property defines a named component of an object. Properties are
+typically used to store (meta) data about an object, and are often
+limited to a data of a specific \code{class}.
+
+By specifying a \code{getter} and/or \code{setter}, you can make the property
+"dynamic" so that it's computed when accessed or has some non-standard
+behaviour when modified.
+}
+\examples{
+# Simple properties store data inside an object
+pizza <- new_class("pizza", properties = list(
+  new_property("slices", "numeric")
+))
+my_pizza <- pizza(slices = 6)
+my_pizza@slices
+my_pizza@slices <- 5
+my_pizza@slices
+
+# Dynamic properties can compute on demand
+clock <- new_class("clock", properties = list(
+  new_property("now", getter = function(x) Sys.time())
+))
+my_clock <- clock()
+my_clock@now; Sys.sleep(1)
+my_clock@now
+
+# These can be useful if you want to deprecate a property
+person <- new_class("person", properties = list(
+  first_name = "character",
+  new_property(
+     "firstName",
+     getter = function(x) {
+       warning("@first_name is deprecated; please use @firstName instead")
+       x@first_name
+     },
+     setter = function(x, value) {
+       warning("@first_name is deprecated; please use @firstName instead")
+       x@first_name <- value
+     }
+   )
+))
+hadley <- person(first_name = "Hadley")
+hadley@firstName
 }

@@ -5,7 +5,7 @@
 \alias{property_safely}
 \alias{property<-}
 \alias{@}
-\title{Extract or replace a property}
+\title{Get or set value of a property}
 \usage{
 property(object, name)
 
@@ -18,7 +18,8 @@ object@name
 \arguments{
 \item{object}{An object from a R7 class}
 
-\item{name}{The name of the parameter as a character. No partial matching is done.}
+\item{name}{The name of the parameter as a character. Partial matching
+is not performed.}
 
 \item{check}{If \code{TRUE}, check that \code{value} is of the correct type and run
 \code{\link[=validate]{validate()}} on the object before returning.}
@@ -28,8 +29,26 @@ automatically checked for validity after the replacement is done.}
 }
 \description{
 \itemize{
-\item \link{property} or the shorthand \code{@} extracts a given property, throwing an error if the property doesn't exist for that object.
-\item \link{property_safely} returns \code{NULL} if a property doesn't exist, rather than throwing an error.
-\item \link{property<-} assigns a new value for a given property.
+\item \link{property} and \code{@}, gets the value of the given property, throwing an
+error if the property doesn't exist for that object.
+\item \link{property_safely} returns \code{NULL} if a property doesn't exist,
+rather than throwing an error.
+\item \link{property<-} and \verb{@<-} set a new value for the given property.
 }
+}
+\examples{
+horse <- new_class("horse", properties = list(
+  name = "character",
+  colour = "character",
+  height = "numeric"
+))
+lexington <- horse(colour = "bay", height = 15)
+lexington@colour
+property(lexington, "colour")
+
+lexington@height <- 14
+property(lexington, "height") <- 15
+
+try(property(lexington, "age"))
+property_safely(lexington, "age")
 }
