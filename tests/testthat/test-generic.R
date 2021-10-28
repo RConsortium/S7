@@ -31,3 +31,21 @@ test_that("guesses signature from required arguments", {
   expect_equal(guess_signature(function(x, y, ...) {}), c("x", "y"))
   expect_equal(guess_signature(function(x, ..., y = 1) {}), "x")
 })
+
+test_that("R7_generic printing", {
+  foo <- new_generic(name = "foo", signature = c("x", "y", "z"))
+  method(foo, list("character", text, "character")) <- function(x, y, z, ...) 1
+  method(foo, list("character", "integer", "character")) <- function(x, y, z, ...) 2
+  method(foo, list("character", "integer", "logical")) <- function(x, y, z, ...) 3
+
+  expect_snapshot(
+    foo
+  )
+})
+
+test_that("R7_generic printing with long / many arguments", {
+  foo <- new_generic(name = "foo", signature = letters)
+  expect_snapshot(
+    foo
+  )
+})

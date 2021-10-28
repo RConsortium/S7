@@ -323,3 +323,12 @@ test_that("method lookup fails with an informative message for multiple classes"
     foo(tibble::tibble(), .POSIXct(double()))
   )
 })
+
+test_that("R7_method printing", {
+  foo <- new_generic(name="foo", signature = c("x", "y"))
+  method(foo, list(text, "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  expect_snapshot(
+    method(foo, list(text, "integer")),
+    transform = scrub_environment
+  )
+})

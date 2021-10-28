@@ -63,3 +63,7 @@ quick_test_enable <- function() {
 scrub_src_references <- function(x) {
   grep("attr[(][*], \"srcref|srcfile\"[)]|..[$] srcref ", x, invert = TRUE, value = TRUE)
 }
+
+scrub_environment <- function(x) {
+  gsub("environment: 0x[0-9a-f]+", "environment: 0x0", x)
+}
