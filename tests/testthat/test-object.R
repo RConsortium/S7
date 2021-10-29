@@ -22,7 +22,6 @@ describe("new_object", {
     expect_error(range(start = 10, end = 1), "`end` must be greater than or equal to `start`")
   })
 
-
   it("can instantiate a new object that inherits from a basic type", {
     x <- text()
     expect_equal(x@.data, class_get("character")())
@@ -37,6 +36,17 @@ describe("new_object", {
       "must be of class"
     )
   })
+
+  it("checks are arguments are properties", {
+    expect_snapshot(error = TRUE, {
+      foo <- new_class("foo")
+      foo(1)
+      foo(1, 2)
+      foo(x = 1)
+      foo(x = 1, y = 2)
+    })
+  })
+
 
   it("can use the parent constructor to instantiate objects", {
     text2 <- new_class("text2", parent = "character")
