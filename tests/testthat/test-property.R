@@ -57,8 +57,10 @@ describe("@", {
     expect_snapshot_error(x@st)
   })
   it("falls back to `base::@` for non-R7 objects", {
-    x <- "foo"
-    expect_error(x@blah, "trying to get slot")
+    expect_snapshot(error = TRUE, {
+      "foo"@blah
+      NULL@blah
+    })
   })
 })
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class.R
 \name{new_class}
 \alias{new_class}
-\title{Define a new R7 class}
+\title{Create a new R7 class}
 \usage{
 new_class(
   name,
@@ -13,16 +13,67 @@ new_class(
 )
 }
 \arguments{
-\item{name}{The name of the class}
+\item{name}{The name of the class, as a string.}
 
-\item{parent}{The parent class}
+\item{parent}{The parent class. Either a string or (better) an object
+constructor.}
 
-\item{constructor}{The constructor function}
+\item{constructor}{The constructor function. This is optional, unless
+you want to control which properties can be set on constructor.}
 
-\item{validator}{The validation function}
+\item{validator}{A function used to determine whether or not an object
+is valid. This is called automatically after construction, and
+whenever any property is set. It should return \code{NULL} if the object is
+valid, and otherwise return a character vector of problems.}
 
-\item{properties}{A list of properties for the class}
+\item{properties}{A list specifying the properties (data) that
+every object of the class will possess. Each property can either be
+a named string (specifying the class), or a call to \code{\link[=new_property]{new_property()}},
+allowing greater flexibility.}
+}
+\value{
+A object constructor, a function that can be used to create objects
+of the given class.
 }
 \description{
-Define a new R7 class
+A class specifies the properties (data) that each of its objects will
+possess. The class, and its parent, determines which method will be used
+when an object is passed to a generic.
+}
+\examples{
+# Create an class that represents a range using a numeric start and end
+range <- new_class("range",
+  properties = list(
+    start = "numeric",
+    end = "numeric"
+  )
+)
+r <- range(start = 10, end = 20)
+r
+# get and set properties with @
+r@start
+r@end <- 40
+r@end
+
+# Use a validator to ensure that start and end are both length 1,
+# and that start is < end
+range <- new_class("range",
+  properties = list(
+    start = "numeric",
+    end = "numeric"
+  ),
+  validator = function(x) {
+    if (length(x@start) != 1) {
+      "@start must be a single number"
+    } else if (length(x@end) != 1) {
+      "@end must be a single number"
+    } else if (x@end < x@start) {
+      "@end must be great than or equal to @start"
+    }
+  }
+)
+try(range(start = c(10, 15), end = 20))
+try(range(start = 20, end = 10))
+# Type validation is performed automatically R7
+try(range(start = "hello", end = 20))
 }

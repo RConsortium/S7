@@ -1,7 +1,17 @@
 #' Define a new property
 #'
-#' @param name The name of the property
-#' @param class The class of the property
+#' @description
+#' A property defines a named component of an object. Properties are
+#' typically used to store (meta) data about an object, and are often
+#' limited to a data of a specific `class`.
+#'
+#' By specifying a `getter` and/or `setter`, you can make the property
+#' "dynamic" so that it's computed when accessed or has some non-standard
+#' behaviour when modified.
+#'
+#' @param name Property name, primarily used for error messages.
+#' @param class If specified, any values must be one of these classes
+#'   (or [class union][new_union]).
 #' @param getter An optional function used to get the value. The function
 #'   should take the object as its sole argument and return the value. If the
 #'   property has a `class` the class of the value is validated.
@@ -9,6 +19,41 @@
 #'   should take the object and new value as its two parameters and return the
 #'   modified object. The value is _not_ automatically checked.
 #' @export
+#' @examples
+#' # Simple properties store data inside an object
+#' pizza <- new_class("pizza", properties = list(
+#'   new_property("slices", "numeric")
+#' ))
+#' my_pizza <- pizza(slices = 6)
+#' my_pizza@slices
+#' my_pizza@slices <- 5
+#' my_pizza@slices
+#'
+#' # Dynamic properties can compute on demand
+#' clock <- new_class("clock", properties = list(
+#'   new_property("now", getter = function(x) Sys.time())
+#' ))
+#' my_clock <- clock()
+#' my_clock@now; Sys.sleep(1)
+#' my_clock@now
+#'
+#' # These can be useful if you want to deprecate a property
+#' person <- new_class("person", properties = list(
+#'   first_name = "character",
+#'   new_property(
+#'      "firstName",
+#'      getter = function(x) {
+#'        warning("@first_name is deprecated; please use @firstName instead")
+#'        x@first_name
+#'      },
+#'      setter = function(x, value) {
+#'        warning("@first_name is deprecated; please use @firstName instead")
+#'        x@first_name <- value
+#'      }
+#'    )
+#' ))
+#' hadley <- person(first_name = "Hadley")
+#' hadley@firstName
 new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
   out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "R7_property"
@@ -16,17 +61,36 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
   out
 }
 
-#' Extract or replace a property
+#' Get or set value of a property
 #'
-#' - [property] or the shorthand `@` extracts a given property, throwing an error if the property doesn't exist for that object.
-#' - [property_safely] returns `NULL` if a property doesn't exist, rather than throwing an error.
-#' - [property<-] assigns a new value for a given property.
+#' - [property] and `@`, gets the value of the given property, throwing an
+#'   error if the property doesn't exist for that object.
+#' - [property_safely] returns `NULL` if a property doesn't exist,
+#'   rather than throwing an error.
+#' - [property<-] and `@<-` set a new value for the given property.
+#'
 #' @param object An object from a R7 class
-#' @param name The name of the parameter as a character. No partial matching is done.
+#' @param name The name of the parameter as a character. Partial matching
+#'   is not performed.
 #' @param value A replacement value for the parameter. The object is
 #'   automatically checked for validity after the replacement is done.
 #' @export
-property <- function(object, name) {
+#' @examples
+#' horse <- new_class("horse", properties = list(
+#'   name = "character",
+#'   colour = "character",
+#'   height = "numeric"
+#' ))
+#' lexington <- horse(colour = "bay", height = 15)
+#' lexington@colour
+#' property(lexington, "colour")
+#'
+#' lexington@height <- 14
+#' property(lexington, "height") <- 15
+#'
+#' try(property(lexington, "age"))
+#' property_safely(lexington, "age")
+ property <- function(object, name) {
   val <- property_safely(object, name)
   if (is.null(val)) {
     class <- object_class(object)
@@ -121,24 +185,17 @@ properties <- function(object) {
 #' @usage object@name
 #' @export
 `@` <- function(object, name) {
-  if (!inherits(object, "R7_object")) {
-    if (is.null(object)) {
-      return()
-    }
+  if (inherits(object, "R7_object")) {
+    name <- as.character(substitute(name))
+    property(object, name)
+  } else {
     name <- substitute(name)
-    return(do.call(base::`@`, list(object, name)))
+    do.call(base::`@`, list(object, name))
   }
-
-  nme <- as.character(substitute(name))
-  property(object, nme)
 }
 
 #' @rawNamespace S3method("@<-",R7_object)
 `@<-.R7_object` <- function(object, name, value) {
-  if (!inherits(object, "R7_object")) {
-    return(base::`@<-`(object, name))
-  }
-
   nme <- as.character(substitute(name))
   property(object, nme) <- value
 
