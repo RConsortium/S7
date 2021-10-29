@@ -24,7 +24,16 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
 #' @param validator The validation function
 #' @param properties A list of properties for the class
 #' @export
-new_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
+new_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
+
+  if (is.null(constructor)) {
+    if (identical(parent, R7_object)) {
+      constructor <- function(...) new_object(.data = NULL, ...)
+    } else {
+      constructor <- function(.data = NULL, ...) new_object(.data, ...)
+    }
+  }
+
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
