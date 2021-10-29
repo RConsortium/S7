@@ -185,24 +185,17 @@ properties <- function(object) {
 #' @usage object@name
 #' @export
 `@` <- function(object, name) {
-  if (!inherits(object, "R7_object")) {
-    if (is.null(object)) {
-      return()
-    }
+  if (inherits(object, "R7_object")) {
+    name <- as.character(substitute(name))
+    property(object, name)
+  } else {
     name <- substitute(name)
-    return(do.call(base::`@`, list(object, name)))
+    do.call(base::`@`, list(object, name))
   }
-
-  nme <- as.character(substitute(name))
-  property(object, nme)
 }
 
 #' @rawNamespace S3method("@<-",R7_object)
 `@<-.R7_object` <- function(object, name, value) {
-  if (!inherits(object, "R7_object")) {
-    return(base::`@<-`(object, name))
-  }
-
   nme <- as.character(substitute(name))
   property(object, nme) <- value
 
