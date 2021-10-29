@@ -42,9 +42,11 @@ method(bizarro, "data.frame") <- function(x, ...) {
   rev(x)
 }
 
+# Using a generic calls the methods automatically
 bizarro(1:10)
 
-# Retrieve a method to inspect its implementation
+# But it can be useful to explicitly retrieve a method in order to
+# inspect its implementation
 method(bizarro, list("numeric"))
 method(bizarro, list("factor"))
 }
