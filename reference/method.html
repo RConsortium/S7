@@ -194,14 +194,14 @@ given <code>signature</code>. The arguments must be compatible with the generic.
 </div><div class='output co'>#&gt; &lt;R7_method&gt; method(bizarro, list("numeric"))
 #&gt; function (x, ...) 
 #&gt; rev(x)
-#&gt; &lt;environment: 0x7fd4134e24e0&gt;</div><div class='input'><span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>"factor"</span><span class='op'>)</span><span class='op'>)</span>
+#&gt; &lt;environment: 0x7fde9e0f4f60&gt;</div><div class='input'><span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>"factor"</span><span class='op'>)</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; &lt;R7_method&gt; method(bizarro, list("factor"))
 #&gt; function (x, ...) 
 #&gt; {
 #&gt;     levels(x) &lt;- rev(levels(x))
 #&gt;     x
 #&gt; }
-#&gt; &lt;environment: 0x7fd4134e24e0&gt;</div></pre>
+#&gt; &lt;environment: 0x7fde9e0f4f60&gt;</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
