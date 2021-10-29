@@ -2,30 +2,54 @@
 % Please edit documentation in R/generic.R
 \name{new_generic}
 \alias{new_generic}
-\alias{new_external_generic}
 \title{Define a new generic}
 \usage{
 new_generic(name, signature = NULL, fun = NULL)
-
-new_external_generic(package, generic, version = NULL)
 }
 \arguments{
-\item{name}{The name or generic object of the generic}
+\item{name}{The name of the generic. This should be the same as the object
+that you assign it to.}
 
-\item{signature}{The signature of the generic}
+\item{signature}{A character vector providing the names of arguments to
+dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
 
-\item{fun}{The function to use as the body of the generic.}
-
-\item{package}{The package the external generic is defined in.}
-
-\item{generic}{The name or generic object of the generic}
-
-\item{version}{An optional version the package must meet for the method to be registered.}
+\item{fun}{An optional specification of the generic, which must call
+\code{method_call()} to dispatch to methods. This is usually generated
+automatically from the \code{signature}, but you may want to supply it if
+you want to add additional required arguments, or perform some standardised
+computation in the generic.}
 }
 \description{
-Use \code{new_generic} to define a new generic for a package.
-If you need to reference a generic in another package either import the generic into your
-package's namespace or use \code{new_external_generic} to declare it as an
-external generic and add a \code{method_register()} call to your \code{.onLoad}
-function.
+A generic function uses different implementations depending on the class
+of one or more arguments (the \code{signature}). Create a new generic with
+\code{new_generic()} then use \link{method<-} to add methods to it.
+}
+\examples{
+# A simple generic with methods for some base types and S3 classes
+type_of <- new_generic("type_of", signature = "x")
+method(type_of, "character") <- function(x, ...) "A character vector"
+method(type_of, "data.frame") <- function(x, ...) "A data frame"
+method(type_of, "function") <- function(x, ...) "A function"
+
+type_of(mtcars)
+type_of(letters)
+type_of(mean)
+
+# If you want to require methods implement additional arguments, supply
+# them after ... in the call
+mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
+   method_call()
+})
+method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
+  sum(x) / length(x)
+}
+method(mean2, "character") <- function(x, ...) {stop("Not supported")}
+
+}
+\seealso{
+\code{\link[=new_external_generic]{new_external_generic()}} to define a method for a generic
+in another package without taking a strong dependency on it.
 }

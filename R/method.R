@@ -42,6 +42,18 @@ method <- function(generic, signature) {
   method_impl(generic, signature, ignore = NULL)
 }
 
+methods <- function(generic) {
+  get_all_methods(generic@methods, character())
+}
+
+get_all_methods <- function(x, signature) {
+  if(!is.environment(x)) {
+    return(x)
+  }
+
+  unlist(lapply(names(x), function(class) get_all_methods(x[[class]], c(signature, class))), recursive = FALSE)
+}
+
 as_signature <- function(signature) {
   if (!is.list(signature)) {
     signature <- list(signature)
@@ -118,12 +130,8 @@ next_method <- function() {
   method_impl(generic, signature, ignore = methods)
 }
 
-#' Register R7 methods
-#'
-#' When registering methods for R7 generics defined in other packages you must
-#' put `method_register()` in your packages [.onLoad] function.
-#'
 #' @importFrom utils getFromNamespace packageName
+#' @rdname new_external_generic
 #' @export
 method_register <- function() {
   package <- packageName(parent.frame())
@@ -284,4 +292,16 @@ method_lookup_error <- function(name, args, signatures) {
 #' @export
 method_call <- function() {
   .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
+}
+
+#' @export
+print.R7_method <- function(x, ...) {
+  method_signature <- method_signature(x@signature)
+
+  msg <- sprintf("method(%s, list(%s))", x@generic@name, method_signature)
+
+  attributes(x) <- NULL
+
+  cat("<R7_method> ", msg, "\n", sep = "")
+  print(x)
 }

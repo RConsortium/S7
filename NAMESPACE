@@ -2,6 +2,8 @@
 
 S3method("@<-",R7_object)
 S3method(print,R7_class)
+S3method(print,R7_generic)
+S3method(print,R7_method)
 S3method(print,R7_object)
 S3method(str,R7_object)
 export("@")

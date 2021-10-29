@@ -2,7 +2,7 @@
 title: "Case Studies"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{case_studies}
+  %\VignetteIndexEntry{Case Studies}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

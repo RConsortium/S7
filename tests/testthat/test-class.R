@@ -21,6 +21,9 @@ describe("R7_class", {
   it("has a list of properties", {
     expect_type(my_class@properties, "list")
   })
+  it("can be printed", {
+    expect_snapshot(my_class)
+  })
 })
 
 test_that("classes can inherit from base types", {
