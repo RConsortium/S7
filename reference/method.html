@@ -40,7 +40,13 @@
 
 
 <meta property="og:title" content="Retrieve or register an R7 method for a generic — method" />
-<meta property="og:description" content="Retrieve or register an R7 method for a generic" />
+<meta property="og:description" content="Generics partition a function into interface (a generic) and implementation
+(many methods). method&amp;lt;- allows you to register a method, an
+implementation for a specified class signature, with a generic.
+method() retrieves a method for a given signature. You typically shouldn't
+need this function while programming, because calling the generic will
+automatically dispatch to the correct method, but it's often useful
+interactively in order to see the implementation of a specific method." />
 
 
 
@@ -132,12 +138,16 @@
     </div>
 
     <div class="ref-description">
-    <p>Retrieve or register an R7 method for a generic</p>
+    <p>Generics partition a function into interface (a generic) and implementation
+(many methods). <code>method&lt;-</code> allows you to register a method, an
+implementation for a specified class signature, with a generic.</p>
+<p><code>method()</code> retrieves a method for a given signature. You typically shouldn't
+need this function while programming, because calling the generic will
+automatically dispatch to the correct method, but it's often useful
+interactively in order to see the implementation of a specific method.</p>
     </div>
 
     <pre class="usage"><span class='fu'>method</span><span class='op'>(</span><span class='va'>generic</span>, <span class='va'>signature</span><span class='op'>)</span>
-
-<span class='fu'>new_method</span><span class='op'>(</span><span class='va'>generic</span>, <span class='va'>signature</span>, <span class='va'>method</span>, package <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>
 
 <span class='fu'>method</span><span class='op'>(</span><span class='va'>generic</span>, <span class='va'>signature</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='va'>value</span></pre>
 
@@ -146,25 +156,52 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>generic</th>
-      <td><p>The generic to retrieve or register</p></td>
+      <td><p>A generic function.</p></td>
     </tr>
     <tr>
       <th>signature</th>
-      <td><p>The method signature</p></td>
+      <td><p>A method signature, a list of R7 class constructors
+(produced by <code><a href='new_class.html'>new_class()</a></code>) or names of S3 or S4 classes.</p></td>
     </tr>
     <tr>
-      <th>method, value</th>
-      <td><p>The new function to use as the method.</p></td>
-    </tr>
-    <tr>
-      <th>package</th>
-      <td><p>The package to register the method in, only used for soft
-dependencies. The default <code>NULL</code> looks up the package based on the parent
-frame.</p></td>
+      <th>value</th>
+      <td><p>A function that implements the generic specification for the
+given <code>signature</code>. The arguments must be compatible with the generic.</p></td>
     </tr>
     </table>
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Create a generic</span>
+<span class='va'>bizarro</span> <span class='op'>&lt;-</span> <span class='fu'><a href='new_generic.html'>new_generic</a></span><span class='op'>(</span><span class='st'>"bizarro"</span>, signature <span class='op'>=</span> <span class='st'>"x"</span><span class='op'>)</span>
+<span class='co'># Register some methods</span>
+<span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='st'>"numeric"</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/rev.html'>rev</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
+<span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='st'>"factor"</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/levels.html'>levels</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/rev.html'>rev</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/levels.html'>levels</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span>
+  <span class='va'>x</span>
+<span class='op'>}</span>
+<span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='st'>"data.frame"</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span> <span class='op'>{</span>
+  <span class='va'>x</span><span class='op'>[</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/lapply.html'>lapply</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>bizarro</span><span class='op'>)</span>
+  <span class='fu'><a href='https://rdrr.io/r/base/rev.html'>rev</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+<span class='co'># Using a generic calls the methods automatically</span>
+<span class='fu'>bizarro</span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] 1</div><div class='input'>
+<span class='co'># But it can be useful to explicitly retrieve a method in order to</span>
+<span class='co'># inspect its implementation</span>
+<span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>"numeric"</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; &lt;R7_method&gt; method(bizarro, list("numeric"))
+#&gt; function (x, ...) 
+#&gt; rev(x)
+#&gt; &lt;environment: 0x7fd4134e24e0&gt;</div><div class='input'><span class='fu'>method</span><span class='op'>(</span><span class='va'>bizarro</span>, <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span><span class='st'>"factor"</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; &lt;R7_method&gt; method(bizarro, list("factor"))
+#&gt; function (x, ...) 
+#&gt; {
+#&gt;     levels(x) &lt;- rev(levels(x))
+#&gt;     x
+#&gt; }
+#&gt; &lt;environment: 0x7fd4134e24e0&gt;</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

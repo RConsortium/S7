@@ -139,7 +139,7 @@
     <tbody>
       <tr>
         <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
+          <h2 id="section-key-functions" class="hasAnchor"><a href="#section-key-functions" class="anchor"></a>Key functions</h2>
           <p class="section-desc"></p>
         </th>
       </tr>
@@ -151,10 +151,53 @@
       <tr>
         
         <td>
+          <p><code><a href="new_class.html">new_class()</a></code> </p>
+        </td>
+        <td><p>Create a new R7 class</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="new_external_generic.html">new_external_generic()</a></code> <code><a href="new_external_generic.html">method_register()</a></code> </p>
+        </td>
+        <td><p>Generics in suggested packages</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="new_generic.html">new_generic()</a></code> </p>
+        </td>
+        <td><p>Define a new generic</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="new_property.html">new_property()</a></code> </p>
+        </td>
+        <td><p>Define a new property</p></td>
+      </tr><tr>
+        
+        <td>
           <p><code><a href="R7_union.html">R7_union()</a></code> <code><a href="R7_union.html">new_union()</a></code> </p>
         </td>
         <td><p>Class unions</p></td>
       </tr><tr>
+        
+        <td>
+          <p><code><a href="method.html">method()</a></code> <code><a href="method.html">`method&lt;-`()</a></code> </p>
+        </td>
+        <td><p>Retrieve or register an R7 method for a generic</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-introspection" class="hasAnchor"><a href="#section-introspection" class="anchor"></a>Introspection</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="class_get.html">class_get()</a></code> </p>
@@ -169,40 +212,41 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="method.html">method()</a></code> <code><a href="method.html">new_method()</a></code> <code><a href="method.html">`method&lt;-`()</a></code> </p>
+          <p><code><a href="object_class.html">object_class()</a></code> </p>
+        </td>
+        <td><p>Retrieve the R7 class of an object</p></td>
+      </tr><tr>
+        
+        <td>
+          <p><code><a href="method.html">method()</a></code> <code><a href="method.html">`method&lt;-`()</a></code> </p>
         </td>
         <td><p>Retrieve or register an R7 method for a generic</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="method_call.html">method_call()</a></code> </p>
+          <p><code><a href="property.html">property()</a></code> <code><a href="property.html">property_safely()</a></code> <code><a href="property.html">`property&lt;-`()</a></code> <code><a href="property.html">`@`()</a></code> </p>
         </td>
-        <td><p>Lookup the R7 method for the current generic and call it.</p></td>
+        <td><p>Get or set value of a property</p></td>
       </tr><tr>
         
         <td>
-          <p><code><a href="method_register.html">method_register()</a></code> </p>
+          <p><code><a href="validate.html">validate()</a></code> <code><a href="validate.html">valid_eventually()</a></code> <code><a href="validate.html">valid_implicitly()</a></code> </p>
         </td>
-        <td><p>Register R7 methods</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="new_class.html">new_class()</a></code> </p>
-        </td>
-        <td><p>Define a new R7 class</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="new_generic.html">new_generic()</a></code> <code><a href="new_generic.html">new_external_generic()</a></code> </p>
-        </td>
-        <td><p>Define a new generic</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="new_property.html">new_property()</a></code> </p>
-        </td>
-        <td><p>Define a new property</p></td>
-      </tr><tr>
+        <td><p>Validation of R7 objects</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-method-dispatch" class="hasAnchor"><a href="#section-method-dispatch" class="anchor"></a>Method dispatch</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="next_method.html">next_method()</a></code> </p>
@@ -211,16 +255,23 @@
       </tr><tr>
         
         <td>
-          <p><code><a href="object_class.html">object_class()</a></code> </p>
+          <p><code><a href="method_call.html">method_call()</a></code> </p>
         </td>
-        <td><p>Retrieve the R7 class of an object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="property.html">property()</a></code> <code><a href="property.html">property_safely()</a></code> <code><a href="property.html">`property&lt;-`()</a></code> <code><a href="property.html">`@`()</a></code> </p>
-        </td>
-        <td><p>Extract or replace a property</p></td>
-      </tr><tr>
+        <td><p>Lookup the R7 method for the current generic and call it.</p></td>
+      </tr>
+    </tbody><tbody>
+      <tr>
+        <th colspan="2">
+          <h2 id="section-internal-classes" class="hasAnchor"><a href="#section-internal-classes" class="anchor"></a>Internal classes</h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr>
+      
+      
+    </tbody><tbody>
+      
+      
+      <tr>
         
         <td>
           <p><code><a href="r7_generic.html">R7_generic()</a></code> <code><a href="r7_generic.html">R7_method()</a></code> </p>
@@ -232,12 +283,6 @@
           <p><code><a href="r7_object.html">R7_object()</a></code> </p>
         </td>
         <td><p>An R7 object</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="validate.html">validate()</a></code> <code><a href="validate.html">valid_eventually()</a></code> <code><a href="validate.html">valid_implicitly()</a></code> </p>
-        </td>
-        <td><p>Validation of R7 objects</p></td>
       </tr>
     </tbody>
     </table>

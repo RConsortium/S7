@@ -40,7 +40,12 @@
 
 
 <meta property="og:title" content="Define a new property — new_property" />
-<meta property="og:description" content="Define a new property" />
+<meta property="og:description" content="A property defines a named component of an object. Properties are
+typically used to store (meta) data about an object, and are often
+limited to a data of a specific class.
+By specifying a getter and/or setter, you can make the property
+&quot;dynamic&quot; so that it's computed when accessed or has some non-standard
+behaviour when modified." />
 
 
 
@@ -132,7 +137,12 @@
     </div>
 
     <div class="ref-description">
-    <p>Define a new property</p>
+    <p>A property defines a named component of an object. Properties are
+typically used to store (meta) data about an object, and are often
+limited to a data of a specific <code>class</code>.</p>
+<p>By specifying a <code>getter</code> and/or <code>setter</code>, you can make the property
+"dynamic" so that it's computed when accessed or has some non-standard
+behaviour when modified.</p>
     </div>
 
     <pre class="usage"><span class='fu'>new_property</span><span class='op'>(</span><span class='va'>name</span>, class <span class='op'>=</span> <span class='cn'>NULL</span>, getter <span class='op'>=</span> <span class='cn'>NULL</span>, setter <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
@@ -142,11 +152,12 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>name</th>
-      <td><p>The name of the property</p></td>
+      <td><p>Property name, primarily used for error messages.</p></td>
     </tr>
     <tr>
       <th>class</th>
-      <td><p>The class of the property</p></td>
+      <td><p>If specified, any values must be one of these classes
+(or <a href='R7_union.html'>class union</a>).</p></td>
     </tr>
     <tr>
       <th>getter</th>
@@ -163,6 +174,42 @@ modified object. The value is <em>not</em> automatically checked.</p></td>
     </table>
 
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='co'># Simple properties store data inside an object</span>
+<span class='va'>pizza</span> <span class='op'>&lt;-</span> <span class='fu'><a href='new_class.html'>new_class</a></span><span class='op'>(</span><span class='st'>"pizza"</span>, properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+  <span class='fu'>new_property</span><span class='op'>(</span><span class='st'>"slices"</span>, <span class='st'>"numeric"</span><span class='op'>)</span>
+<span class='op'>)</span><span class='op'>)</span>
+<span class='va'>my_pizza</span> <span class='op'>&lt;-</span> <span class='fu'>pizza</span><span class='op'>(</span>slices <span class='op'>=</span> <span class='fl'>6</span><span class='op'>)</span>
+<span class='va'>my_pizza</span><span class='op'>@</span><span class='va'>slices</span>
+</div><div class='output co'>#&gt; [1] 6</div><div class='input'><span class='va'>my_pizza</span><span class='op'>@</span><span class='va'>slices</span> <span class='op'>&lt;-</span> <span class='fl'>5</span>
+<span class='va'>my_pizza</span><span class='op'>@</span><span class='va'>slices</span>
+</div><div class='output co'>#&gt; [1] 5</div><div class='input'>
+<span class='co'># Dynamic properties can compute on demand</span>
+<span class='va'>clock</span> <span class='op'>&lt;-</span> <span class='fu'><a href='new_class.html'>new_class</a></span><span class='op'>(</span><span class='st'>"clock"</span>, properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+  <span class='fu'>new_property</span><span class='op'>(</span><span class='st'>"now"</span>, getter <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/Sys.time.html'>Sys.time</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+<span class='op'>)</span><span class='op'>)</span>
+<span class='va'>my_clock</span> <span class='op'>&lt;-</span> <span class='fu'>clock</span><span class='op'>(</span><span class='op'>)</span>
+<span class='va'>my_clock</span><span class='op'>@</span><span class='va'>now</span>; <span class='fu'><a href='https://rdrr.io/r/base/Sys.sleep.html'>Sys.sleep</a></span><span class='op'>(</span><span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] "2021-10-29 14:35:46 UTC"</div><div class='input'><span class='va'>my_clock</span><span class='op'>@</span><span class='va'>now</span>
+</div><div class='output co'>#&gt; [1] "2021-10-29 14:35:47 UTC"</div><div class='input'>
+<span class='co'># These can be useful if you want to deprecate a property</span>
+<span class='va'>person</span> <span class='op'>&lt;-</span> <span class='fu'><a href='new_class.html'>new_class</a></span><span class='op'>(</span><span class='st'>"person"</span>, properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
+  first_name <span class='op'>=</span> <span class='st'>"character"</span>,
+  <span class='fu'>new_property</span><span class='op'>(</span>
+     <span class='st'>"firstName"</span>,
+     getter <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span>
+       <span class='kw'><a href='https://rdrr.io/r/base/warning.html'>warning</a></span><span class='op'>(</span><span class='st'>"@first_name is deprecated; please use @firstName instead"</span><span class='op'>)</span>
+       <span class='va'>x</span><span class='op'>@</span><span class='va'>first_name</span>
+     <span class='op'>}</span>,
+     setter <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>value</span><span class='op'>)</span> <span class='op'>{</span>
+       <span class='kw'><a href='https://rdrr.io/r/base/warning.html'>warning</a></span><span class='op'>(</span><span class='st'>"@first_name is deprecated; please use @firstName instead"</span><span class='op'>)</span>
+       <span class='va'>x</span><span class='op'>@</span><span class='va'>first_name</span> <span class='op'>&lt;-</span> <span class='va'>value</span>
+     <span class='op'>}</span>
+   <span class='op'>)</span>
+<span class='op'>)</span><span class='op'>)</span>
+<span class='va'>hadley</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/utils/person.html'>person</a></span><span class='op'>(</span>first_name <span class='op'>=</span> <span class='st'>"Hadley"</span><span class='op'>)</span>
+<span class='va'>hadley</span><span class='op'>@</span><span class='va'>firstName</span>
+</div><div class='output co'>#&gt; <span class='warning'>Warning: @first_name is deprecated; please use @firstName instead</span></div><div class='output co'>#&gt; [1] "Hadley"</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
