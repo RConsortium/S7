@@ -63,11 +63,11 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 
 #' Get or set value of a property
 #'
-#' - [property] and `@`, gets the value of the given property, throwing an
+#' - `prop()` and `@`, gets the value of the given property, throwing an
 #'   error if the property doesn't exist for that object.
-#' - [property_safely] returns `NULL` if a property doesn't exist,
+#' - `prop_safely()` returns `NULL` if a property doesn't exist,
 #'   rather than throwing an error.
-#' - [property<-] and `@<-` set a new value for the given property.
+#' - `prop<-` and `@<-` set a new value for the given property.
 #'
 #' @param object An object from a R7 class
 #' @param name The name of the parameter as a character. Partial matching
@@ -83,14 +83,14 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 #' ))
 #' lexington <- horse(colour = "bay", height = 15)
 #' lexington@colour
-#' property(lexington, "colour")
+#' prop(lexington, "colour")
 #'
 #' lexington@height <- 14
-#' property(lexington, "height") <- 15
+#' prop(lexington, "height") <- 15
 #'
-#' try(property(lexington, "age"))
+#' try(prop(lexington, "age"))
 #' property_safely(lexington, "age")
- property <- function(object, name) {
+ prop <- function(object, name) {
   val <- property_safely(object, name)
   if (is.null(val)) {
     class <- object_class(object)
@@ -100,7 +100,7 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
   val
 }
 
-#' @rdname property
+#' @rdname prop
 #' @export
 property_safely <- function(object, name) {
   if (!inherits(object, "R7_object")) {
@@ -138,11 +138,11 @@ properties <- function(object) {
   prop
 }
 
-#' @rdname property
+#' @rdname prop
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
 #' @export
-`property<-` <- local({
+`prop<-` <- local({
   # This flag is used to avoid infinate loops if you are assigning a property from a setter function
   setter_property <- NULL
 
@@ -181,13 +181,13 @@ properties <- function(object) {
   }
 })
 
-#' @rdname property
+#' @rdname prop
 #' @usage object@name
 #' @export
 `@` <- function(object, name) {
   if (inherits(object, "R7_object")) {
     name <- as.character(substitute(name))
-    property(object, name)
+    prop(object, name)
   } else {
     name <- substitute(name)
     do.call(base::`@`, list(object, name))
@@ -197,7 +197,7 @@ properties <- function(object) {
 #' @rawNamespace S3method("@<-",R7_object)
 `@<-.R7_object` <- function(object, name, value) {
   nme <- as.character(substitute(name))
-  property(object, nme) <- value
+  prop(object, nme) <- value
 
   invisible(object)
 }

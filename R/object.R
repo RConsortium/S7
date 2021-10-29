@@ -30,7 +30,7 @@ new_object <- function(.data = NULL, ...) {
   # TODO: error if not all arguments are names of properties, likely a typo
 
   for (nme in to_set) {
-    property(object, nme) <- args[[nme]]
+    prop(object, nme) <- args[[nme]]
   }
 
   attr(object, ".should_validate") <- NULL
@@ -61,9 +61,9 @@ object_class <- function(object) {
 print.R7_object <- function(x, ...) {
   props <- properties(x)
   if (length(props) > 0) {
-    values <- lapply(names(props), function(xx) property(x, xx))
+    values <- lapply(names(props), function(xx) prop(x, xx))
     prop_names <- format(names(props))
-    prop_values <- format(vcapply(names(props), function(name) paste0(format(property(x, name)), collapse = "\n")), justify = "right")
+    prop_values <- format(vcapply(names(props), function(name) paste0(format(prop(x, name)), collapse = "\n")), justify = "right")
     prop_fmt <- paste0(paste0("@", prop_names, " ", prop_values, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""

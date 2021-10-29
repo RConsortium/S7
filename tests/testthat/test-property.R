@@ -1,12 +1,12 @@
-describe("property", {
+describe("prop", {
   it("retrieves the property", {
     x <- range(1, 10)
-    expect_equal(property(x, "start"), 1)
-    expect_equal(property(x, "end"), 10)
+    expect_equal(prop(x, "start"), 1)
+    expect_equal(prop(x, "end"), 10)
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_snapshot_error(property(x, "st"))
+    expect_snapshot_error(prop(x, "st"))
   })
   it("retrieves .data", {
     x <- text("hi")
@@ -25,23 +25,23 @@ describe("property", {
   })
 })
 
-describe("property<-", {
+describe("prop<-", {
   it("sets the property", {
     x <- range(1, 10)
-    expect_equal(property(x, "start"), 1)
-    property(x, "start") <- 2
-    expect_equal(property(x, "start"), 2)
+    expect_equal(prop(x, "start"), 1)
+    prop(x, "start") <- 2
+    expect_equal(prop(x, "start"), 2)
   })
   it("errors if the value does not match the correct class", {
     x <- range(1, 10)
     expect_error(
-      property(x, "start") <- "foo",
+      prop(x, "start") <- "foo",
       "must be of class"
     )
   })
   it("does not run the check or validation functions if check = FALSE", {
     x <- range(1, 10)
-    property(x, "end", check = FALSE) <- "foo"
+    prop(x, "end", check = FALSE) <- "foo"
     expect_equal(x@end, "foo")
   })
 })
