@@ -2,27 +2,51 @@
 % Please edit documentation in R/method.R
 \name{method}
 \alias{method}
-\alias{new_method}
 \alias{method<-}
 \title{Retrieve or register an R7 method for a generic}
 \usage{
 method(generic, signature)
 
-new_method(generic, signature, method, package = NULL)
-
 method(generic, signature) <- value
 }
 \arguments{
-\item{generic}{The generic to retrieve or register}
+\item{generic}{A generic function.}
 
-\item{signature}{The method signature}
+\item{signature}{A method signature, a list of R7 class constructors
+(produced by \code{\link[=new_class]{new_class()}}) or names of S3 or S4 classes.}
 
-\item{method, value}{The new function to use as the method.}
-
-\item{package}{The package to register the method in, only used for soft
-dependencies. The default \code{NULL} looks up the package based on the parent
-frame.}
+\item{value}{A function that implements the generic specification for the
+given \code{signature}. The arguments must be compatible with the generic.}
 }
 \description{
-Retrieve or register an R7 method for a generic
+Generics partition a function into interface (a generic) and implementation
+(many methods). \verb{method<-} allows you to register a method, an
+implementation for a specified class signature, with a generic.
+
+\code{method()} retrieves a method for a given signature. You typically shouldn't
+need this function while programming, because calling the generic will
+automatically dispatch to the correct method, but it's often useful
+interactively in order to see the implementation of a specific method.
+}
+\examples{
+# Create a generic
+bizarro <- new_generic("bizarro", signature = "x")
+# Register some methods
+method(bizarro, "numeric") <- function(x, ...) rev(x)
+method(bizarro, "factor") <- function(x, ...) {
+  levels(x) <- rev(levels(x))
+  x
+}
+method(bizarro, "data.frame") <- function(x, ...) {
+  x[] <- lapply(x, bizarro)
+  rev(x)
+}
+
+# Using a generic calls the methods automatically
+bizarro(1)
+
+# But it can be useful to explicitly retrieve a method in order to
+# inspect its implementation
+method(bizarro, list("numeric"))
+method(bizarro, list("factor"))
 }
