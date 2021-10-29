@@ -23,9 +23,10 @@ Generics partition a function into interface (a generic) and implementation
 (many methods). \verb{method<-} allows you to register a method, an
 implementation for a specified class signature, with a generic.
 
-\code{method()} retrieves a method for a given signature. You typically should
-not need this function because calling the generic will automatically
-dispatch to the correct method.
+\code{method()} retrieves a method for a given signature. You typically shouldn't
+need this function while programming, because calling the generic will
+automatically dispatch to the correct method, but it's often useful
+interactively in order to see the implementation of a specific method.
 }
 \examples{
 # Create a generic
@@ -41,5 +42,9 @@ method(bizarro, "data.frame") <- function(x, ...) {
   rev(x)
 }
 
+bizarro(1:10)
 
+# Retrieve a method to inspect its implementation
+method(bizarro, list("numeric"))
+method(bizarro, list("factor"))
 }

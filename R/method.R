@@ -5,9 +5,10 @@
 #' (many methods). `method<-` allows you to register a method, an
 #' implementation for a specified class signature, with a generic.
 #'
-#' `method()` retrieves a method for a given signature. You typically should
-#' not need this function because calling the generic will automatically
-#' dispatch to the correct method.
+#' `method()` retrieves a method for a given signature. You typically shouldn't
+#' need this function while programming, because calling the generic will
+#' automatically dispatch to the correct method, but it's often useful
+#' interactively in order to see the implementation of a specific method.
 #'
 #' @param generic A generic function.
 #' @param signature A method signature, a list of R7 class constructors
@@ -32,9 +33,9 @@
 #'
 #' bizarro(1:10)
 #'
-#' # Retrieve a method
+#' # Retrieve a method to inspect its implementation
 #' method(bizarro, list("numeric"))
-#' method(bizarro, list("numeric"))
+#' method(bizarro, list("factor"))
 method <- function(generic, signature) {
   signature <- as_signature(signature)
 
