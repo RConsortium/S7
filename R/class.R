@@ -73,7 +73,7 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
 #' )
 #' try(range(start = c(10, 15), end = 20))
 #' try(range(start = 20, end = 10))
-#' # Type validation is performed automatically R7
+#' # Type validation is performed automatically in R7
 #' try(range(start = "hello", end = 20))
 new_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
 

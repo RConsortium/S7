@@ -74,6 +74,6 @@ range <- new_class("range",
 )
 try(range(start = c(10, 15), end = 20))
 try(range(start = 20, end = 10))
-# Type validation is performed automatically R7
+# Type validation is performed automatically in R7
 try(range(start = "hello", end = 20))
 }
