@@ -119,7 +119,7 @@
       getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>
         <span class="co"># This is not correct because of leap years,</span>
         <span class="co"># see https://stackoverflow.com/questions/3611314/calculate-ages-in-r/25450756#25450756 for a correct implementation.</span>
-        <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">object</span><span class="op">@</span><span class="va">birthdate</span><span class="op">)</span> <span class="op">%/%</span> <span class="fl">365</span>
+        <span class="fu"><a href="https://rdrr.io/r/base/double.html">as.double</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html">Sys.Date</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">object</span><span class="op">@</span><span class="va">birthdate</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html">%/%</a></span> <span class="fl">365</span>
       <span class="op">}</span>
     <span class="op">)</span>
   <span class="op">)</span>,

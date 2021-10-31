@@ -186,47 +186,53 @@ allowing greater flexibility.</p></td>
 of the given class.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># Create an class that represents a range using a numeric start and end</span>
-<span class='va'>range</span> <span class='op'>&lt;-</span> <span class='fu'>new_class</span><span class='op'>(</span><span class='st'>"range"</span>,
-  properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
-    start <span class='op'>=</span> <span class='st'>"numeric"</span>,
-    end <span class='op'>=</span> <span class='st'>"numeric"</span>
-  <span class='op'>)</span>
-<span class='op'>)</span>
-<span class='va'>r</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='fl'>10</span>, end <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span>
-<span class='va'>r</span>
-</div><div class='output co'>#&gt; &lt;range&gt; &lt;R7_object&gt;
-#&gt; @start 10
-#&gt; @end   20</div><div class='input'><span class='co'># get and set properties with @</span>
-<span class='va'>r</span><span class='op'>@</span><span class='va'>start</span>
-</div><div class='output co'>#&gt; [1] 10</div><div class='input'><span class='va'>r</span><span class='op'>@</span><span class='va'>end</span> <span class='op'>&lt;-</span> <span class='fl'>40</span>
-<span class='va'>r</span><span class='op'>@</span><span class='va'>end</span>
-</div><div class='output co'>#&gt; [1] 40</div><div class='input'>
-<span class='co'># Use a validator to ensure that start and end are both length 1,</span>
-<span class='co'># and that start is &lt; end</span>
-<span class='va'>range</span> <span class='op'>&lt;-</span> <span class='fu'>new_class</span><span class='op'>(</span><span class='st'>"range"</span>,
-  properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>
-    start <span class='op'>=</span> <span class='st'>"numeric"</span>,
-    end <span class='op'>=</span> <span class='st'>"numeric"</span>
-  <span class='op'>)</span>,
-  validator <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span>
-    <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>@</span><span class='va'>start</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
-      <span class='st'>"@start must be a single number"</span>
-    <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>@</span><span class='va'>end</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
-      <span class='st'>"@end must be a single number"</span>
-    <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='va'>x</span><span class='op'>@</span><span class='va'>end</span> <span class='op'>&lt;</span> <span class='va'>x</span><span class='op'>@</span><span class='va'>start</span><span class='op'>)</span> <span class='op'>{</span>
-      <span class='st'>"@end must be great than or equal to @start"</span>
-    <span class='op'>}</span>
-  <span class='op'>}</span>
-<span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/try.html'>try</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>15</span><span class='op'>)</span>, end <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Error : Invalid &lt;range&gt; object:
-#&gt; - @start must be a single number</div><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/try.html'>try</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='fl'>20</span>, end <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Error : Invalid &lt;range&gt; object:
-#&gt; - @end must be great than or equal to @start</div><div class='input'><span class='co'># Type validation is performed automatically R7</span>
-<span class='kw'><a href='https://rdrr.io/r/base/try.html'>try</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='st'>"hello"</span>, end <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Error : &lt;range&gt;@start must be of class &lt;numeric&gt;:
-#&gt; - `value` is of class &lt;character&gt;</div></pre>
+    <pre class="examples"><span class='r-in'><span class='co'># Create an class that represents a range using a numeric start and end</span></span>
+<span class='r-in'><span class='va'>range</span> <span class='op'>&lt;-</span> <span class='fu'>new_class</span><span class='op'>(</span><span class='st'>"range"</span>,</span>
+<span class='r-in'>  properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span></span>
+<span class='r-in'>    start <span class='op'>=</span> <span class='st'>"numeric"</span>,</span>
+<span class='r-in'>    end <span class='op'>=</span> <span class='st'>"numeric"</span></span>
+<span class='r-in'>  <span class='op'>)</span></span>
+<span class='r-in'><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>r</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='fl'>10</span>, end <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>r</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> &lt;range&gt; &lt;R7_object&gt;</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> @start 10</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> @end   20</span>
+<span class='r-in'><span class='co'># get and set properties with @</span></span>
+<span class='r-in'><span class='va'>r</span><span class='op'>@</span><span class='va'>start</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 10</span>
+<span class='r-in'><span class='va'>r</span><span class='op'>@</span><span class='va'>end</span> <span class='op'>&lt;-</span> <span class='fl'>40</span></span>
+<span class='r-in'><span class='va'>r</span><span class='op'>@</span><span class='va'>end</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 40</span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># Use a validator to ensure that start and end are both length 1,</span></span>
+<span class='r-in'><span class='co'># and that start is &lt; end</span></span>
+<span class='r-in'><span class='va'>range</span> <span class='op'>&lt;-</span> <span class='fu'>new_class</span><span class='op'>(</span><span class='st'>"range"</span>,</span>
+<span class='r-in'>  properties <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span></span>
+<span class='r-in'>    start <span class='op'>=</span> <span class='st'>"numeric"</span>,</span>
+<span class='r-in'>    end <span class='op'>=</span> <span class='st'>"numeric"</span></span>
+<span class='r-in'>  <span class='op'>)</span>,</span>
+<span class='r-in'>  validator <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'>    <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>@</span><span class='va'>start</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'>      <span class='st'>"@start must be a single number"</span></span>
+<span class='r-in'>    <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>@</span><span class='va'>end</span><span class='op'>)</span> <span class='op'>!=</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'>      <span class='st'>"@end must be a single number"</span></span>
+<span class='r-in'>    <span class='op'>}</span> <span class='kw'>else</span> <span class='kw'>if</span> <span class='op'>(</span><span class='va'>x</span><span class='op'>@</span><span class='va'>end</span> <span class='op'>&lt;</span> <span class='va'>x</span><span class='op'>@</span><span class='va'>start</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'>      <span class='st'>"@end must be great than or equal to @start"</span></span>
+<span class='r-in'>    <span class='op'>}</span></span>
+<span class='r-in'>  <span class='op'>}</span></span>
+<span class='r-in'><span class='op'>)</span></span>
+<span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/try.html'>try</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>15</span><span class='op'>)</span>, end <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Error : Invalid &lt;range&gt; object:</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> - @start must be a single number</span>
+<span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/try.html'>try</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='fl'>20</span>, end <span class='op'>=</span> <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Error : Invalid &lt;range&gt; object:</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> - @end must be great than or equal to @start</span>
+<span class='r-in'><span class='co'># Type validation is performed automatically in R7</span></span>
+<span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/try.html'>try</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span>start <span class='op'>=</span> <span class='st'>"hello"</span>, end <span class='op'>=</span> <span class='fl'>20</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Error : &lt;range&gt;@start must be of class &lt;numeric&gt;:</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> - `value` is of class &lt;character&gt;</span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
