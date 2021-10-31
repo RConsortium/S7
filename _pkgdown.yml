@@ -4,11 +4,11 @@ reference:
 - title: Key functions
   contents:
   - new_class
-  - new_external_generic
   - new_generic
+  - method<-
   - new_property
   - new_union
-  - method<-
+  - new_external_generic
 
 - title: Introspection
   contents:
@@ -26,5 +26,5 @@ reference:
 
 - title: Internal classes
   contents:
-  - R7_generic
   - R7_object
+  - R7_generic
