@@ -43,17 +43,18 @@
 #'   new_property(
 #'      "firstName",
 #'      getter = function(x) {
-#'        warning("@first_name is deprecated; please use @firstName instead")
+#'        warning("@firstName is deprecated; please use @first_name instead")
 #'        x@first_name
 #'      },
 #'      setter = function(x, value) {
-#'        warning("@first_name is deprecated; please use @firstName instead")
+#'        warning("@firstName is deprecated; please use @first_name instead")
 #'        x@first_name <- value
 #'      }
 #'    )
 #' ))
 #' hadley <- person(first_name = "Hadley")
 #' hadley@firstName
+#' hadley@first_name
 new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
   out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "R7_property"
