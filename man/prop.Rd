@@ -3,6 +3,9 @@
 \name{prop}
 \alias{prop}
 \alias{property_safely}
+\alias{prop_names}
+\alias{props}
+\alias{prop_exists}
 \alias{prop<-}
 \alias{@}
 \title{Get or set value of a property}
@@ -10,6 +13,12 @@
 prop(object, name)
 
 property_safely(object, name)
+
+prop_names(object)
+
+props(object)
+
+prop_exists(object, name)
 
 prop(object, name, check = TRUE) <- value
 
@@ -34,6 +43,9 @@ error if the property doesn't exist for that object.
 \item \code{prop_safely()} returns \code{NULL} if a property doesn't exist,
 rather than throwing an error.
 \item \verb{prop<-} and \verb{@<-} set a new value for the given property.
+\item \code{props()} returns a list of all properties
+\item \code{prop_names()} returns the names of the properties
+\item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
 }
 }
 \examples{

@@ -77,6 +77,32 @@ describe("@<-", {
   })
 })
 
+test_that("can access properties en masse", {
+  foo <- new_class("foo", properties = list(x = "numeric", y = "numeric"))
+  x <- foo(x = 1, y = 2)
+  expect_equal(prop_names(x), c("x", "y"))
+  expect_equal(props(x), list(x = 1, y = 2))
+  expect_true(prop_exists(x, "x"))
+  expect_true(prop_exists(x, "y"))
+  expect_false(prop_exists(x, "z"))
+})
+
+test_that("and works with property-less object", {
+  x <- new_class("x")()
+  expect_equal(prop_names(x), character())
+  expect_equal(props(x), list())
+  expect_equal(prop_exists(x, "y"), FALSE)
+})
+
+test_that("properties ignore attributes", {
+  x <- new_class("x")()
+  attr(x, "extra") <- 1
+
+  expect_equal(prop_names(x), character())
+  expect_equal(props(x), list())
+  expect_false(prop_exists(x, "extra"))
+})
+
 test_that("properties can be getter functions", {
   x <- range(1, 10)
   expect_equal(x@length, 10 - 1)

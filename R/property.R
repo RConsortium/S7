@@ -68,6 +68,9 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 #' - `prop_safely()` returns `NULL` if a property doesn't exist,
 #'   rather than throwing an error.
 #' - `prop<-` and `@<-` set a new value for the given property.
+#' - `props()` returns a list of all properties
+#' - `prop_names()` returns the names of the properties
+#' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
 #'
 #' @param object An object from a R7 class
 #' @param name The name of the parameter as a character. Partial matching
@@ -127,12 +130,39 @@ property_safely <- function(object, name) {
   val
 }
 
+#' @rdname prop
+#' @export
+prop_names <- function(object) {
+  names(properties(object))
+}
+
+#' @rdname prop
+#' @export
+props <- function(object) {
+  prop_names <- prop_names(object)
+  if (length(prop_names) == 0) {
+    list()
+  } else {
+    attributes(object)[prop_names]
+  }
+}
+
+#' @rdname prop
+#' @export
+prop_exists <- function(object, name) {
+  name %in% prop_names(object)
+}
+
 properties <- function(object) {
   obj_class <- object_class(object)
   prop <- list()
   while(!is.null(obj_class)) {
     prop <- c(attr(obj_class, "properties"), prop)
     obj_class <- attr(obj_class, "parent", exact = TRUE)
+  }
+
+  if (length(prop) == 0) {
+    names(prop) <- character()
   }
 
   prop
