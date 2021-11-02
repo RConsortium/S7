@@ -25,7 +25,6 @@ new_object <- function(.data = NULL, ...) {
     )
   }
 
-
   if (!is.null(.data)) {
     # Verify .data satisfies the parent class
     cls_nms <- class_names(obj_cls@parent)
@@ -69,7 +68,7 @@ object_class <- function(object) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  props <- properties(x)
+  props <- props(x)
   if (length(props) > 0) {
     values <- lapply(names(props), function(xx) prop(x, xx))
     prop_names <- format(names(props))

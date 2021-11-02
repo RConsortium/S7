@@ -95,35 +95,46 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 #' try(prop(lexington, "age"))
 #' prop_safely(lexington, "age")
 prop <- function(object, name) {
-  val <- prop_safely(object, name)
-  if (is.null(val)) {
+  if (!inherits(object, "R7_object")) {
+    stop("`object` is not an <R7_object>")
+  } else if (!prop_exists(object, name)) {
     class <- object_class(object)
-    stop(sprintf("Can't find property %s@%s", fmt_classes(class@name), name), call. = FALSE)
+    stop(sprintf("Can't find property %s@%s", fmt_classes(attr(class, "name")), name))
+  } else {
+    prop_val(object, name)
   }
-
-  val
 }
 
 #' @rdname prop
 #' @export
 prop_safely <- function(object, name) {
   if (!inherits(object, "R7_object")) {
-    return(NULL)
+    NULL
+  } else if (!prop_exists(object, name)) {
+    NULL
+  } else {
+    prop_val(object, name)
   }
+}
+
+# Internal helper that assumes the property exists
+prop_val <- function(object, name) {
   if (identical(name, ".data")) {
     # Remove properties, return the rest
-    props <- properties(object)
-    for (name in names(props)) {
+    for (name in prop_names(object)) {
       attr(object, name) <- NULL
     }
+
     obj_cls <- object_class(object)
     class(object) <- setdiff(class_names(obj_cls@parent), obj_cls@name)
     object_class(object) <- object_class(obj_cls@parent)
+
     return(object)
   }
+
   val <- attr(object, name, exact = TRUE)
   if (is.null(val)) {
-    prop <- properties(object)[[name]]
+    prop <- prop_obj(object, name)
     if (!is.null(prop$getter)) {
       val <- prop$getter(object)
     }
@@ -131,12 +142,29 @@ prop_safely <- function(object, name) {
   val
 }
 
+# Get underlying property object from class
+prop_obj <- function(object, name) {
+  class <- object_class(object)
+  attr(class, "properties")[[name]]
+}
+
 #' @rdname prop
 #' @export
 prop_names <- function(object) {
-  names(properties(object))
+  if (inherits(object, "R7_class")) {
+    names(attributes(object))
+  } else {
+    class <- object_class(object)
+    props <- attr(class, "properties", exact = TRUE)
+    if (length(props) == 0) {
+      character()
+    } else {
+      names(props)
+    }
+  }
 }
 
+#' @importFrom stats setNames
 #' @rdname prop
 #' @export
 props <- function(object) {
@@ -144,29 +172,18 @@ props <- function(object) {
   if (length(prop_names) == 0) {
     list()
   } else {
-    attributes(object)[prop_names]
+    setNames(lapply(prop_names, prop_safely, object = object), prop_names)
   }
 }
 
 #' @rdname prop
 #' @export
 prop_exists <- function(object, name) {
-  name %in% prop_names(object)
-}
-
-properties <- function(object) {
-  obj_class <- object_class(object)
-  prop <- list()
-  while(!is.null(obj_class)) {
-    prop <- c(attr(obj_class, "properties"), prop)
-    obj_class <- attr(obj_class, "parent", exact = TRUE)
+  if (identical(name, ".data")) {
+    !identical(object, R7_object)
+  } else {
+    name %in% prop_names(object)
   }
-
-  if (length(prop) == 0) {
-    names(prop) <- character()
-  }
-
-  prop
 }
 
 #' @rdname prop
@@ -188,7 +205,7 @@ properties <- function(object) {
       return(invisible(object))
     }
 
-    prop <- properties(object)[[name]]
+    prop <- prop_obj(object, name)
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
       on.exit(setter_property <<- NULL, add = TRUE)
@@ -235,7 +252,7 @@ properties <- function(object) {
 
 as_properties <- function(x) {
   if (length(x) == 0) {
-    return(x)
+    return(list())
   }
 
   named_chars <- vlapply(x, is.character) & has_names(x)

@@ -1,3 +1,4 @@
+#' @importFrom utils modifyList
 R7_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
     parent_obj <- class_get(parent)
@@ -5,10 +6,17 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
       parent <- parent_obj
     }
   }
+
+  # Combine properties from parent, overriding as needed
+  properties <- modifyList(
+    attr(parent, "properties", exact = TRUE) %||% list(),
+    as_properties(properties)
+  )
+
   object <- constructor
   attr(object, "name") <- name
   attr(object, "parent") <- parent
-  attr(object, "properties") <- as_properties(properties)
+  attr(object, "properties") <- properties
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("R7_class", "R7_object")
@@ -132,7 +140,7 @@ class_get <- function(name, envir = parent.frame()) {
 
 #' @export
 print.R7_class <- function(x, ...) {
-  props <- properties(x)
+  props <- x@properties
   if (length(props) > 0) {
     prop_names <- format(names(props))
     prop_types <- format(paste0("<", vcapply(props, function(xx) xx[["class"]][[1]] %||% ""), ">"), justify = "right")

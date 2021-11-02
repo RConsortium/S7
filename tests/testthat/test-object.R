@@ -47,13 +47,26 @@ describe("new_object", {
     })
   })
 
+  it("combines properties for parent classes", {
+    foo1 <- new_class("foo1", properties = list(x = "numeric"))
+    foo2 <- new_class("foo2", foo1, properties = list(y = "numeric"))
+    expect_equal(names(foo2@properties), c("x", "y"))
+  })
+  it("child properties override parent", {
+    foo1 <- new_class("foo1", properties = list(x = "numeric"))
+    foo2 <- new_class("foo2", foo1, properties = list(x = "character"))
+    expect_equal(names(foo2@properties), "x")
+    expect_equal(foo2@properties$x$class, "character")
+  })
 
   it("can use the parent constructor to instantiate objects", {
     text2 <- new_class("text2", parent = "character")
-    my_class <- new_class("my_class", parent = text2, properties = c("name" = "character"), constructor = function(x, name) new_object(text2(x), name = name))
-
+    my_class <- new_class("my_class",
+      parent = text2,
+      properties = c("name" = "character"),
+      constructor = function(x, name) new_object(text2(x), name = name)
+    )
     obj <- my_class("foo", "bar")
-
     expect_equal(obj@.data, text2("foo"))
   })
 })
@@ -91,7 +104,7 @@ test_that("object_class returns the object class property for R7_object objects"
 
   obj <- text("hi")
 
-  expect_equal(object_class(obj), obj@object_class)
+  expect_equal(object_class(obj), text)
 })
 
 test_that("object_class returns class for basic types", {
