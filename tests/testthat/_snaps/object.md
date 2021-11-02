@@ -1,3 +1,23 @@
+# new_object: checks are arguments are properties
+
+    Code
+      foo <- new_class("foo")
+      foo(1)
+    Error <simpleError>
+      All arguments to <foo> constructor must be named
+    Code
+      foo(1, 2)
+    Error <simpleError>
+      All arguments to <foo> constructor must be named
+    Code
+      foo(x = 1)
+    Error <simpleError>
+      All arguments to <foo> constructor must be properties: x
+    Code
+      foo(x = 1, y = 2)
+    Error <simpleError>
+      All arguments to <foo> constructor must be properties: x, y
+
 # printing R7 objects work
 
     Code

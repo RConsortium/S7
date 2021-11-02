@@ -53,15 +53,16 @@ person <- new_class("person", properties = list(
   new_property(
      "firstName",
      getter = function(x) {
-       warning("@first_name is deprecated; please use @firstName instead")
+       warning("@firstName is deprecated; please use @first_name instead")
        x@first_name
      },
      setter = function(x, value) {
-       warning("@first_name is deprecated; please use @firstName instead")
+       warning("@firstName is deprecated; please use @first_name instead")
        x@first_name <- value
      }
    )
 ))
 hadley <- person(first_name = "Hadley")
 hadley@firstName
+hadley@first_name
 }

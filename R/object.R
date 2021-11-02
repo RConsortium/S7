@@ -6,6 +6,24 @@ new_object <- function(.data = NULL, ...) {
 
   args <- list(...)
   nms <- names(args)
+  if (length(args) > 0 && (is.null(nms) || any(nms == ""))) {
+    stop(
+      sprintf("All arguments to <%s> constructor must be named", obj_cls@name),
+      call. = FALSE
+    )
+  }
+
+  bad_names <- setdiff(nms, names(obj_cls@properties))
+  if (length(bad_names) > 0) {
+    stop(
+      sprintf(
+        "All arguments to <%s> constructor must be properties: %s",
+        obj_cls@name,
+        paste0(bad_names, collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
 
 
   if (!is.null(.data)) {
@@ -21,20 +39,12 @@ new_object <- function(.data = NULL, ...) {
   attr(object, ".should_validate") <- FALSE
 
   class(object) <- "R7_object"
-
   object_class(object) <- obj_cls
-
-  props <- properties(object)
-
-  to_set <- intersect(nms, names(props))
-  # TODO: error if not all arguments are names of properties, likely a typo
-
-  for (nme in to_set) {
+  for (nme in nms) {
     prop(object, nme) <- args[[nme]]
   }
 
   attr(object, ".should_validate") <- NULL
-
   validate(object)
 
   object
