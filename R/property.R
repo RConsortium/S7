@@ -92,9 +92,9 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 #' prop(lexington, "height") <- 15
 #'
 #' try(prop(lexington, "age"))
-#' property_safely(lexington, "age")
+#' prop_safely(lexington, "age")
  prop <- function(object, name) {
-  val <- property_safely(object, name)
+  val <- prop_safely(object, name)
   if (is.null(val)) {
     class <- object_class(object)
     stop(sprintf("Can't find property %s@%s", fmt_classes(class@name), name), call. = FALSE)
@@ -105,7 +105,7 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 
 #' @rdname prop
 #' @export
-property_safely <- function(object, name) {
+prop_safely <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     return(NULL)
   }

@@ -21,7 +21,7 @@ validate <- function(object) {
 
   obj_class <- object_class(object)
 
-  validator <- property_safely(obj_class, "validator")
+  validator <- prop_safely(obj_class, "validator")
   if (is.null(validator)) {
     return(invisible(object))
   }

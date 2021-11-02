@@ -97,7 +97,7 @@ class_names <- function(object) {
     } else {
       classes <- c(classes, parent)
     }
-    parent <- property_safely(parent, "parent")
+    parent <- prop_safely(parent, "parent")
   }
   unique(classes, fromLast = TRUE)
 }
@@ -132,8 +132,8 @@ print.R7_class <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  parent <- property_safely(x, "parent")
-  parent <- property_safely(parent, "name") %||% parent %||% ""
+  parent <- prop_safely(x, "parent")
+  parent <- prop_safely(parent, "name") %||% parent %||% ""
 
   cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, parent, prop_fmt), sep = "")
 }

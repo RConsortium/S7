@@ -2,7 +2,7 @@
 % Please edit documentation in R/property.R
 \name{prop}
 \alias{prop}
-\alias{property_safely}
+\alias{prop_safely}
 \alias{prop_names}
 \alias{props}
 \alias{prop_exists}
@@ -12,7 +12,7 @@
 \usage{
 prop(object, name)
 
-property_safely(object, name)
+prop_safely(object, name)
 
 prop_names(object)
 
@@ -62,5 +62,5 @@ lexington@height <- 14
 prop(lexington, "height") <- 15
 
 try(prop(lexington, "age"))
-property_safely(lexington, "age")
+prop_safely(lexington, "age")
 }
