@@ -93,7 +93,7 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 #'
 #' try(prop(lexington, "age"))
 #' prop_safely(lexington, "age")
- prop <- function(object, name) {
+prop <- function(object, name) {
   val <- prop_safely(object, name)
   if (is.null(val)) {
     class <- object_class(object)
