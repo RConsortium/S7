@@ -129,9 +129,9 @@
 <span class="co">#&gt; # A tibble: 3 × 6</span>
 <span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;   &lt;bch:expr&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span>
-<span class="co">#&gt; 1 foo_R7(x)   13.41µs  16.14µs    43099.    4.44KB     17.2</span>
-<span class="co">#&gt; 2 foo_s3(x)    6.83µs   7.81µs   122130.        0B      0  </span>
-<span class="co">#&gt; 3 foo_s4(x)     7.4µs   8.58µs   107561.        0B     10.8</span>
+<span class="co">#&gt; 1 foo_R7(x)   13.02µs  16.27µs    51188.    4.44KB     20.5</span>
+<span class="co">#&gt; 2 foo_s3(x)    6.67µs   7.64µs   124722.        0B      0  </span>
+<span class="co">#&gt; 3 foo_s4(x)    7.84µs   8.73µs   107609.        0B     10.8</span>
 
 <span class="va">bar_R7</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar_R7"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">bar_R7</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"text"</span>, <span class="st">"number"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"-"</span>, <span class="va">y</span>, <span class="st">"-bar"</span><span class="op">)</span>
@@ -145,8 +145,8 @@
 <span class="co">#&gt; # A tibble: 2 × 6</span>
 <span class="co">#&gt;   expression        min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;   &lt;bch:expr&gt;   &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span>
-<span class="co">#&gt; 1 bar_R7(x, y)   25.7µs   28.3µs    34153.        0B    10.2 </span>
-<span class="co">#&gt; 2 bar_s4(x, y)   18.2µs   20.7µs    47051.        0B     4.71</span></code></pre></div>
+<span class="co">#&gt; 1 bar_R7(x, y)   26.1µs   28.5µs    29934.        0B     8.98</span>
+<span class="co">#&gt; 2 bar_s4(x, y)   18.9µs   20.7µs    37869.        0B     3.79</span></code></pre></div>
 <p>A potential optimization is caching based on the class names, but lookup should be fast without this.</p>
 <p>The following benchmark generates a class hierarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hiearchy vs the time to dispatch on the last class.</p>
 <p>We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.</p>
@@ -198,26 +198,26 @@
 <span class="co">#&gt; # A tibble: 20 × 8</span>
 <span class="co">#&gt;    expression num_classes class_nchar      min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;    &lt;bch:expr&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span>
-<span class="co">#&gt;  1 best                 3          15   13.6µs   15.8µs    46666.        0B     9.34</span>
-<span class="co">#&gt;  2 worst                3          15   14.3µs   16.3µs    59848.        0B    12.0 </span>
-<span class="co">#&gt;  3 best                 5          15   13.6µs   15.5µs    62592.        0B    12.5 </span>
-<span class="co">#&gt;  4 worst                5          15   14.9µs     17µs    57016.        0B    11.4 </span>
-<span class="co">#&gt;  5 best                10          15   13.9µs     16µs    57808.        0B    11.6 </span>
-<span class="co">#&gt;  6 worst               10          15   16.1µs   17.6µs    51214.        0B    10.2 </span>
-<span class="co">#&gt;  7 best                50          15   14.6µs   16.8µs    56831.        0B    11.4 </span>
-<span class="co">#&gt;  8 worst               50          15   22.2µs   24.4µs    32102.        0B     6.42</span>
-<span class="co">#&gt;  9 best               100          15     15µs     17µs    56348.        0B    11.3 </span>
-<span class="co">#&gt; 10 worst              100          15   27.7µs   30.6µs    32312.        0B     6.46</span>
-<span class="co">#&gt; 11 best                 3         100     14µs   15.9µs    59157.        0B    11.8 </span>
-<span class="co">#&gt; 12 worst                3         100   14.3µs   16.3µs    59917.        0B    12.0 </span>
-<span class="co">#&gt; 13 best                 5         100   13.4µs   15.7µs    59092.        0B    11.8 </span>
-<span class="co">#&gt; 14 worst                5         100   15.4µs   17.7µs    55423.        0B    11.1 </span>
-<span class="co">#&gt; 15 best                10         100   14.3µs   16.1µs    60672.        0B    12.1 </span>
-<span class="co">#&gt; 16 worst               10         100   17.1µs     19µs    51819.        0B    10.4 </span>
-<span class="co">#&gt; 17 best                50         100   15.1µs     17µs    57949.        0B    11.6 </span>
-<span class="co">#&gt; 18 worst               50         100   26.8µs   28.8µs    34086.        0B     6.82</span>
-<span class="co">#&gt; 19 best               100         100   15.4µs   17.4µs    56642.        0B    11.3 </span>
-<span class="co">#&gt; 20 worst              100         100     38µs   40.9µs    22606.        0B     4.52</span></code></pre></div>
+<span class="co">#&gt;  1 best                 3          15   13.7µs     16µs    57527.        0B    11.5 </span>
+<span class="co">#&gt;  2 worst                3          15     15µs   16.6µs    58934.        0B    11.8 </span>
+<span class="co">#&gt;  3 best                 5          15   13.8µs   15.9µs    47207.        0B     9.44</span>
+<span class="co">#&gt;  4 worst                5          15   15.2µs     17µs    55121.        0B    11.0 </span>
+<span class="co">#&gt;  5 best                10          15   14.6µs   16.3µs    47116.        0B     9.43</span>
+<span class="co">#&gt;  6 worst               10          15   16.2µs   17.9µs    54993.        0B    11.0 </span>
+<span class="co">#&gt;  7 best                50          15   14.7µs     17µs    55586.        0B    11.1 </span>
+<span class="co">#&gt;  8 worst               50          15   22.2µs   24.2µs    40753.        0B     8.15</span>
+<span class="co">#&gt;  9 best               100          15   15.6µs   17.4µs    54873.        0B    11.0 </span>
+<span class="co">#&gt; 10 worst              100          15   30.1µs   32.3µs    30481.        0B     6.10</span>
+<span class="co">#&gt; 11 best                 3         100   14.4µs   16.4µs    58133.        0B    11.6 </span>
+<span class="co">#&gt; 12 worst                3         100   15.3µs   17.4µs    56462.        0B    11.3 </span>
+<span class="co">#&gt; 13 best                 5         100   13.6µs   16.3µs    58502.        0B    11.7 </span>
+<span class="co">#&gt; 14 worst                5         100     15µs   17.5µs    56015.        0B    11.2 </span>
+<span class="co">#&gt; 15 best                10         100   14.2µs   16.3µs    60387.        0B    12.1 </span>
+<span class="co">#&gt; 16 worst               10         100   17.1µs   19.1µs    49726.        0B     9.95</span>
+<span class="co">#&gt; 17 best                50         100   15.6µs   17.6µs    46643.        0B     9.33</span>
+<span class="co">#&gt; 18 worst               50         100   26.7µs   29.7µs    30824.        0B     6.17</span>
+<span class="co">#&gt; 19 best               100         100   15.8µs   17.6µs    55498.        0B    11.1 </span>
+<span class="co">#&gt; 20 worst              100         100   38.3µs   40.9µs    21571.        0B     4.41</span></code></pre></div>
 <p>And the same benchmark using double-dispatch</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bench/man/press.html">press</a></span><span class="op">(</span>
@@ -258,26 +258,26 @@
 <span class="co">#&gt; # A tibble: 20 × 8</span>
 <span class="co">#&gt;    expression num_classes class_nchar      min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;    &lt;bch:expr&gt;       &lt;dbl&gt;       &lt;dbl&gt; &lt;bch:tm&gt; &lt;bch:tm&gt;     &lt;dbl&gt; &lt;bch:byt&gt;    &lt;dbl&gt;</span>
-<span class="co">#&gt;  1 best                 3          15     14µs   16.5µs    57814.        0B    11.6 </span>
-<span class="co">#&gt;  2 worst                3          15   16.2µs   18.7µs    50549.        0B    10.1 </span>
-<span class="co">#&gt;  3 best                 5          15   15.2µs   17.2µs    52871.        0B    10.6 </span>
-<span class="co">#&gt;  4 worst                5          15   16.6µs   18.9µs    49211.        0B     9.84</span>
-<span class="co">#&gt;  5 best                10          15   14.5µs   16.9µs    57647.        0B    11.5 </span>
-<span class="co">#&gt;  6 worst               10          15   18.2µs   20.3µs    47153.        0B    14.2 </span>
-<span class="co">#&gt;  7 best                50          15   15.2µs   17.8µs    55267.        0B    11.1 </span>
-<span class="co">#&gt;  8 worst               50          15   28.6µs   31.2µs    28559.        0B     5.71</span>
-<span class="co">#&gt;  9 best               100          15   17.3µs   19.3µs    49807.        0B     9.96</span>
-<span class="co">#&gt; 10 worst              100          15   41.3µs   44.9µs    21319.        0B     4.26</span>
-<span class="co">#&gt; 11 best                 3         100   14.5µs   17.2µs    57270.        0B    11.5 </span>
-<span class="co">#&gt; 12 worst                3         100     16µs   18.1µs    42903.        0B     8.58</span>
-<span class="co">#&gt; 13 best                 5         100   14.3µs     17µs    54928.        0B    11.0 </span>
-<span class="co">#&gt; 14 worst                5         100   17.6µs   19.8µs    47055.        0B     9.41</span>
-<span class="co">#&gt; 15 best                10         100   14.8µs   16.8µs    57821.        0B    11.6 </span>
-<span class="co">#&gt; 16 worst               10         100   19.1µs   21.8µs    37148.        0B    11.1 </span>
-<span class="co">#&gt; 17 best                50         100   15.7µs   18.3µs    53802.        0B    10.8 </span>
-<span class="co">#&gt; 18 worst               50         100   36.1µs   39.6µs    21954.        0B     4.39</span>
-<span class="co">#&gt; 19 best               100         100   17.3µs   19.5µs    41175.        0B     8.24</span>
-<span class="co">#&gt; 20 worst              100         100   61.7µs     66µs    14670.        0B     4.05</span></code></pre></div>
+<span class="co">#&gt;  1 best                 3          15   14.8µs   16.9µs    45133.        0B     9.03</span>
+<span class="co">#&gt;  2 worst                3          15   16.1µs   18.2µs    54067.        0B    10.8 </span>
+<span class="co">#&gt;  3 best                 5          15     15µs   17.2µs    56480.        0B    11.3 </span>
+<span class="co">#&gt;  4 worst                5          15   16.8µs   18.6µs    52675.        0B    10.5 </span>
+<span class="co">#&gt;  5 best                10          15   15.5µs   17.6µs    44478.        0B    13.3 </span>
+<span class="co">#&gt;  6 worst               10          15   18.7µs   20.7µs    46606.        0B     9.32</span>
+<span class="co">#&gt;  7 best                50          15   16.7µs   18.7µs    50927.        0B    10.2 </span>
+<span class="co">#&gt;  8 worst               50          15   29.7µs   31.8µs    29658.        0B     5.93</span>
+<span class="co">#&gt;  9 best               100          15   17.5µs   19.6µs    48007.        0B     9.60</span>
+<span class="co">#&gt; 10 worst              100          15   43.7µs   45.4µs    21380.        0B     6.42</span>
+<span class="co">#&gt; 11 best                 3         100   15.5µs   17.7µs    55880.        0B    11.2 </span>
+<span class="co">#&gt; 12 worst                3         100   17.6µs   19.2µs    50982.        0B    10.2 </span>
+<span class="co">#&gt; 13 best                 5         100   14.9µs   17.8µs    54179.        0B    10.8 </span>
+<span class="co">#&gt; 14 worst                5         100   18.1µs   20.1µs    47700.        0B     9.54</span>
+<span class="co">#&gt; 15 best                10         100   15.5µs   17.5µs    56058.        0B    16.8 </span>
+<span class="co">#&gt; 16 worst               10         100   20.1µs   22.1µs    42767.        0B     8.56</span>
+<span class="co">#&gt; 17 best                50         100   16.3µs   18.4µs    51339.        0B    10.3 </span>
+<span class="co">#&gt; 18 worst               50         100     38µs   40.3µs    21515.        0B     4.30</span>
+<span class="co">#&gt; 19 best               100         100   17.6µs   19.4µs    40959.        0B    12.3 </span>
+<span class="co">#&gt; 20 worst              100         100   60.8µs   64.2µs    13774.        0B     2.01</span></code></pre></div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
