@@ -1,4 +1,4 @@
-# property: does not use partial matching
+# prop: does not use partial matching
 
     Can't find property <range>@st
 

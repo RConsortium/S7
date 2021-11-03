@@ -1,12 +1,16 @@
-describe("property", {
+describe("prop", {
   it("retrieves the property", {
     x <- range(1, 10)
-    expect_equal(property(x, "start"), 1)
-    expect_equal(property(x, "end"), 10)
+    expect_equal(prop(x, "start"), 1)
+    expect_equal(prop(x, "end"), 10)
+  })
+  it("evalutes dynamic properties", {
+    x <- range(1, 10)
+    expect_equal(prop(x, "length"), 9)
   })
   it("does not use partial matching", {
     x <- range(1, 10)
-    expect_snapshot_error(property(x, "st"))
+    expect_snapshot_error(prop(x, "st"))
   })
   it("retrieves .data", {
     x <- text("hi")
@@ -25,23 +29,23 @@ describe("property", {
   })
 })
 
-describe("property<-", {
+describe("prop<-", {
   it("sets the property", {
     x <- range(1, 10)
-    expect_equal(property(x, "start"), 1)
-    property(x, "start") <- 2
-    expect_equal(property(x, "start"), 2)
+    expect_equal(prop(x, "start"), 1)
+    prop(x, "start") <- 2
+    expect_equal(prop(x, "start"), 2)
   })
   it("errors if the value does not match the correct class", {
     x <- range(1, 10)
     expect_error(
-      property(x, "start") <- "foo",
+      prop(x, "start") <- "foo",
       "must be of class"
     )
   })
   it("does not run the check or validation functions if check = FALSE", {
     x <- range(1, 10)
-    property(x, "end", check = FALSE) <- "foo"
+    prop(x, "end", check = FALSE) <- "foo"
     expect_equal(x@end, "foo")
   })
 })
@@ -75,6 +79,43 @@ describe("@<-", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
   })
+})
+
+describe("property access", {
+  it("access en masse", {
+    foo <- new_class("foo", properties = list(x = "numeric", y = "numeric"))
+    x <- foo(x = 1, y = 2)
+    expect_equal(prop_names(x), c("x", "y"))
+    expect_equal(props(x), list(x = 1, y = 2))
+    expect_true(prop_exists(x, "x"))
+    expect_true(prop_exists(x, "y"))
+    expect_false(prop_exists(x, "z"))
+  })
+
+  it("can access dynamic properties", {
+    foo <- new_class("foo", properties = list(
+      new_property("x", getter = function(x) 10),
+      new_property("y")
+    ))
+    x <- foo(y = 2)
+    expect_equal(props(x), list(x = 10, y = 2))
+  })
+
+  it("can with property-less object", {
+    x <- new_class("x")()
+    expect_equal(prop_names(x), character())
+    expect_equal(props(x), list())
+    expect_equal(prop_exists(x, "y"), FALSE)
+  })
+})
+
+test_that("properties ignore attributes", {
+  x <- new_class("x")()
+  attr(x, "extra") <- 1
+
+  expect_equal(prop_names(x), character())
+  expect_equal(props(x), list())
+  expect_false(prop_exists(x, "extra"))
 })
 
 test_that("properties can be getter functions", {

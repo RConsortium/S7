@@ -25,7 +25,6 @@ new_object <- function(.data = NULL, ...) {
     )
   }
 
-
   if (!is.null(.data)) {
     # Verify .data satisfies the parent class
     cls_nms <- class_names(obj_cls@parent)
@@ -41,7 +40,7 @@ new_object <- function(.data = NULL, ...) {
   class(object) <- "R7_object"
   object_class(object) <- obj_cls
   for (nme in nms) {
-    property(object, nme) <- args[[nme]]
+    prop(object, nme) <- args[[nme]]
   }
 
   attr(object, ".should_validate") <- NULL
@@ -69,11 +68,11 @@ object_class <- function(object) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  props <- properties(x)
+  props <- props(x)
   if (length(props) > 0) {
-    values <- lapply(names(props), function(xx) property(x, xx))
+    values <- lapply(names(props), function(xx) prop(x, xx))
     prop_names <- format(names(props))
-    prop_values <- format(vcapply(names(props), function(name) paste0(format(property(x, name)), collapse = "\n")), justify = "right")
+    prop_values <- format(vcapply(names(props), function(name) paste0(format(prop(x, name)), collapse = "\n")), justify = "right")
     prop_fmt <- paste0(paste0("@", prop_names, " ", prop_values, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""
