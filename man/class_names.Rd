@@ -2,7 +2,7 @@
 % Please edit documentation in R/class.R
 \name{class_names}
 \alias{class_names}
-\title{Retrive all of the class names for a class}
+\title{Retrieve all of the class names for a class}
 \usage{
 class_names(object)
 }
@@ -13,5 +13,5 @@ class_names(object)
 A character vector of all the class names for a given R7 class.
 }
 \description{
-Retrive all of the class names for a class
+Retrieve all of the class names for a class
 }

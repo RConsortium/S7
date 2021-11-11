@@ -97,7 +97,7 @@ new_class <- function(name, parent = R7_object, constructor = NULL, validator = 
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
-#' Retrive all of the class names for a class
+#' Retrieve all of the class names for a class
 #'
 #' @param object The R7 object to query
 #' @return A character vector of all the class names for a given R7 class.
