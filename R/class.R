@@ -95,8 +95,12 @@ new_constructor <- function(parent, properties) {
   parent_name <- parent@name
   parent_props <- setNames(nm = names(formals(parent)))
 
-  no_getter <- vlapply(properties, function(x) is.null(x$getter))
-  self_props <- setNames(nm = union(parent_props, names(properties)[no_getter]))
+  self_props <- names(properties)
+  self_props <- self_props[vlapply(properties, function(x) is.null(x$getter))]
+  self_props <- setdiff(self_props, names(parent@properties))
+  self_props <- setNames(nm = self_props)
+
+  constructor_args <- setNames(nm = union(parent_props, self_props))
 
   if (identical(parent, R7_object)) {
     args <- lapply(self_props, as.name)
@@ -108,13 +112,13 @@ new_constructor <- function(parent, properties) {
     parent_args <- lapply(parent_props, as.name)
     parent_call <- as.call(c(list(as.name(parent_name)), parent_args))
 
-    new_props <- setNames(nm = setdiff(self_props, parent_props))
+    new_props <- setNames(nm = self_props)
     args <- lapply(new_props, as.name)
     call <- as.call(c(list(quote(new_object), parent_call), args))
   }
 
   f <- function() {}
-  formals(f) <- lapply(self_props, function(i) quote(expr = ))
+  formals(f) <- lapply(constructor_args, function(i) quote(expr = ))
   body(f) <- call
   environment(f) <- env
   attr(f, "srcref") <- NULL

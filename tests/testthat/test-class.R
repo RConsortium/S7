@@ -52,3 +52,26 @@ test_that("classes can use unions in properties", {
 
   expect_snapshot_error(my_class(name = 1))
 })
+
+test_that("generates meaningful constructors", {
+  expect_snapshot({
+    foo <- new_class("foo")
+    foo@constructor
+
+    foo <- new_class("foo", properties = list(x = "numeric", y = "numeric"))
+    foo@constructor
+
+    foo <- new_class("foo", parent = "character")
+    foo@constructor
+
+    foo2 <- new_class("foo2", parent = foo)
+    foo2@constructor
+
+    foo <- new_class("foo",
+      properties = list(x = "numeric", y = "numeric"),
+      constructor = function() new_object(x = 1, y = 2)
+    )
+    foo2 <- new_class("foo2", parent = foo, properties = list(z = "numeric"))
+    foo2@constructor
+  }, transform = scrub_environment)
+})
