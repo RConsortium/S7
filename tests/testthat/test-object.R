@@ -47,6 +47,25 @@ describe("new_object", {
     })
   })
 
+  it("checks that all properties are present", {
+    foo2 <- new_class("foo2", properties = list(x = "numeric", y = "numeric"))
+    expect_snapshot(error = TRUE, {
+      foo2()
+      foo2(x = 1)
+    })
+    expect_error(foo2(x = 1, y = 2), NA)
+
+    foo3 <- new_class("foo3",
+      parent = foo2,
+      properties = list(z = "numeric"),
+      constructor = function(x, y, z) {
+        new_object(foo2(x = x, y = y), z = z)
+      }
+    )
+    expect_error(foo3(1, 2, 3), NA)
+  })
+
+
   it("combines properties for parent classes", {
     foo1 <- new_class("foo1", properties = list(x = "numeric"))
     foo2 <- new_class("foo2", foo1, properties = list(y = "numeric"))

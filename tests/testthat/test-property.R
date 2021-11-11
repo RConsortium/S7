@@ -143,7 +143,7 @@ test_that("property setters can set themselves", {
     )
   )
 
-  x <- foo()
+  x <- foo(bar = 10)
 
   x@bar <- "foo"
 

@@ -42,7 +42,7 @@ R7_generic <- new_class(
 #' @export
 R7_method <- new_class(
   name = "R7_method",
-  properties = list(generic = "R7_generic", signature = "list", fun = "function"),
+  properties = list(generic = "R7_generic", signature = "list"),
   parent = "function",
   constructor = function(generic, signature, fun) {
     if (is.character(signature)) {

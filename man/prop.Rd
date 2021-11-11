@@ -54,7 +54,7 @@ horse <- new_class("horse", properties = list(
   colour = "character",
   height = "numeric"
 ))
-lexington <- horse(colour = "bay", height = 15)
+lexington <- horse(colour = "bay", height = 15, name = "Lex")
 lexington@colour
 prop(lexington, "colour")
 

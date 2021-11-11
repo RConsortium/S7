@@ -18,6 +18,17 @@
     Error <simpleError>
       All arguments to <foo> constructor must be properties: x, y
 
+# new_object: checks that all properties are present
+
+    Code
+      foo2()
+    Error <simpleError>
+      All properties to must be supplied when constructing a <foo2>: x, y
+    Code
+      foo2(x = 1)
+    Error <simpleError>
+      All properties to must be supplied when constructing a <foo2>: y
+
 # printing R7 objects work
 
     Code

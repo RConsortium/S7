@@ -24,6 +24,18 @@ new_object <- function(.data = NULL, ...) {
       call. = FALSE
     )
   }
+  missing_props <- setdiff(setdiff(prop_names_static(obj_cls), prop_names(.data)), nms)
+  if (length(missing_props) > 0) {
+    stop(
+      sprintf(
+        "All properties to must be supplied when constructing a <%s>: %s",
+        obj_cls@name,
+        paste0(missing_props, collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
 
   if (!is.null(.data)) {
     # Verify .data satisfies the parent class
@@ -47,6 +59,12 @@ new_object <- function(.data = NULL, ...) {
   validate(object)
 
   object
+}
+
+prop_names_static <- function(x) {
+  props <- x@properties
+  no_getter <- vlapply(props, function(x) is.null(x$getter))
+  names(props)[no_getter]
 }
 
 #' Retrieve the R7 class of an object
