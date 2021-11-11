@@ -87,9 +87,11 @@ new_class <- function(name, parent = R7_object, constructor = NULL, validator = 
 
   if (is.null(constructor)) {
     if (identical(parent, R7_object)) {
-      constructor <- function(...) new_object(.data = NULL, ...)
+      fun1 <- function(...) new_object(.data = NULL, ...)
+      constructor <- fun1
     } else {
-      constructor <- function(.data = NULL, ...) new_object(.data, ...)
+      fun2 <- function(.data = NULL, ...) new_object(.data, ...)
+      constructor <- fun2
     }
   }
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
