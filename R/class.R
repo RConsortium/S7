@@ -1,5 +1,5 @@
 #' @importFrom utils modifyList
-R7_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
+R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
     parent_obj <- class_get(parent)
     if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
@@ -12,6 +12,10 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
     attr(parent, "properties", exact = TRUE) %||% list(),
     as_properties(properties)
   )
+
+  if (is.null(constructor)) {
+    constructor <- new_constructor(parent, properties)
+  }
 
   object <- constructor
   attr(object, "name") <- name
@@ -84,17 +88,38 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
 #' # Type validation is performed automatically in R7
 #' try(range(start = "hello", end = 20))
 new_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
-
-  if (is.null(constructor)) {
-    if (identical(parent, R7_object)) {
-      fun1 <- function(...) new_object(.data = NULL, ...)
-      constructor <- fun1
-    } else {
-      fun2 <- function(.data = NULL, ...) new_object(.data, ...)
-      constructor <- fun2
-    }
-  }
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
+}
+
+new_constructor <- function(parent, properties) {
+  parent_name <- parent@name
+  parent_props <- setNames(nm = names(formals(parent)))
+
+  no_getter <- vlapply(properties, function(x) is.null(x$getter))
+  self_props <- setNames(nm = union(parent_props, names(properties)[no_getter]))
+
+  if (identical(parent, R7_object)) {
+    args <- lapply(self_props, as.name)
+    call <- as.call(c(list(quote(new_object), .data = NULL), args))
+    env <- asNamespace("R7")
+  } else {
+    env <- new.env(parent = asNamespace("R7"))
+    env[[parent_name]] <- parent
+    parent_args <- lapply(parent_props, as.name)
+    parent_call <- as.call(c(list(as.name(parent_name)), parent_args))
+
+    new_props <- setNames(nm = setdiff(self_props, parent_props))
+    args <- lapply(new_props, as.name)
+    call <- as.call(c(list(quote(new_object), parent_call), args))
+  }
+
+  f <- function() {}
+  formals(f) <- lapply(self_props, function(i) quote(expr = ))
+  body(f) <- call
+  environment(f) <- env
+  attr(f, "srcref") <- NULL
+
+  f
 }
 
 #' Retrieve all of the class names for a class

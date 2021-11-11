@@ -10,19 +10,23 @@ R7_object <- new_class(
   }
 )
 
+new_base_class <- function(name) {
+  R7_class(name = name, constructor = function(.data) new_object(.data))
+}
+
 base_classes <- new.env(parent = emptyenv())
-base_classes[["logical"]] <- new_class("logical", constructor = function(x = logical()) new_object(x))
-base_classes[["integer"]] <- new_class("integer", constructor = function(x = integer()) new_object(x))
-base_classes[["double"]] <- new_class("double", constructor = function(x = double()) new_object(x))
-base_classes[["numeric"]] <- new_class("numeric", constructor = function(x = numeric()) new_object(x))
-base_classes[["complex"]] <- new_class("complex", constructor = function(x = complex()) new_object(x))
-base_classes[["character"]] <- new_class("character", constructor = function(x = character()) new_object(x))
-base_classes[["factor"]] <- new_class("factor", constructor = function(x = factor()) new_object(x))
-base_classes[["raw"]] <- new_class("raw", constructor = function(x = raw()) new_object(x))
-base_classes[["function"]] <- new_class("function", constructor = function(x = function() NULL) new_object(x))
-base_classes[["list"]] <- new_class("list", constructor = function(x = list()) new_object(x))
-base_classes[["data.frame"]] <- new_class("data.frame", constructor = function(x = data.frame()) new_object(x))
-base_classes[["NULL"]] <- new_class("NULL", constructor = function(x = NULL) new_object(x))
+base_classes[["logical"]]    <- new_base_class("logical")
+base_classes[["integer"]]    <- new_base_class("integer")
+base_classes[["double"]]     <- new_base_class("double")
+base_classes[["numeric"]]    <- new_base_class("numeric")
+base_classes[["complex"]]    <- new_base_class("complex")
+base_classes[["character"]]  <- new_base_class("character")
+base_classes[["factor"]]     <- new_base_class("factor")
+base_classes[["raw"]]        <- new_base_class("raw")
+base_classes[["function"]]   <- new_base_class("function")
+base_classes[["list"]]       <- new_base_class("list")
+base_classes[["data.frame"]] <- new_base_class("data.frame")
+base_classes[["NULL"]]       <- new_base_class("NULL")
 
 #' R7 generics and method objects
 #' @param name,generic The name or generic object of the generic
