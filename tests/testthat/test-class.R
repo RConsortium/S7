@@ -53,51 +53,16 @@ test_that("classes can use unions in properties", {
   expect_snapshot_error(my_class(name = 1))
 })
 
+test_that("default constructor works", {
+  foo1 <- new_class("foo1", properties = list(x = "numeric"))
+  foo2 <- new_class("foo2", parent = foo1, properties = list(y = "numeric"))
+  expect_s3_class(foo1(x = 1), "foo1")
+  expect_s3_class(foo2(x = 1, y = 2), "foo2")
+
+  text1 <- new_class("text1", parent = "character")
+  text2 <- new_class("text2", parent = text1, properties = list(y = "numeric"))
+  expect_s3_class(text1("abc"), "text1")
+  expect_s3_class(text2("abc", y = 1), "text2")
+})
 
 # constructor -------------------------------------------------------------
-
-test_that("generates correct arguments from parent + properties",  {
-  # No arguments
-  args <- constructor_args(R7_object)
-  expect_equal(args$constructor, character())
-
-  # Includes properties
-  args <- constructor_args(R7_object, as_properties(list(x = "numeric")))
-  expect_equal(args$constructor, "x")
-
-  # unless they're dynamic
-  args <- constructor_args(R7_object,
-    as_properties(list(new_property("x", getter = function(x) 10)))
-  )
-  expect_equal(args$constructor, character())
-
-  # Includes parent properties
-  foo <- new_class("foo", properties = list(x = "numeric"))
-  args <- constructor_args(foo, as_properties(list(y = "numeric")))
-  expect_equal(args$constructor, c("x", "y"))
-  expect_equal(args$self, "y")
-  expect_equal(args$parent, "x")
-
-  # But only those in the constructor
-  foo <- new_class("foo",
-    properties = list(x = "numeric"),
-    constructor = function() new_object(x = 1)
-  )
-  args <- constructor_args(foo, as_properties(list(y = "numeric")))
-  expect_equal(args$constructor, "y")
-  expect_equal(args$self, "y")
-  expect_equal(args$parent, character())
-})
-
-test_that("generates meaningful constructors", {
-  expect_snapshot({
-    foo <- new_class("foo", properties = list(x = "numeric", y = "numeric"))
-    foo@constructor
-
-    foo <- new_class("foo", parent = "character")
-    foo@constructor
-
-    foo2 <- new_class("foo2", parent = foo)
-    foo2@constructor
-  }, transform = scrub_environment)
-})
