@@ -64,5 +64,3 @@ test_that("default constructor works", {
   expect_s3_class(text1("abc"), "text1")
   expect_s3_class(text2("abc", y = 1), "text2")
 })
-
-# constructor -------------------------------------------------------------
