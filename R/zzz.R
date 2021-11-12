@@ -14,25 +14,14 @@ new_base_class <- function(name) {
   R7_class(name = name, constructor = function(.data) new_object(.data))
 }
 
-base_classes <- new.env(parent = emptyenv())
-base_classes[["logical"]] <- new_base_class("logical")
-base_classes[["integer"]] <- new_base_class("integer")
-base_classes[["double"]] <- new_base_class("double")
-base_classes[["numeric"]] <- new_base_class("numeric")
-base_classes[["complex"]] <- new_base_class("complex")
-base_classes[["character"]] <- new_base_class("character")
-base_classes[["factor"]] <- new_base_class("factor")
-base_classes[["raw"]] <- new_base_class("raw")
-base_classes[["function"]] <- new_base_class("function")
-base_classes[["list"]] <- new_base_class("list")
-base_classes[["data.frame"]] <- new_base_class("data.frame")
+base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "factor", "raw", "function", "list", "data.frame"))
+
+base_classes <- lapply(base_types, new_base_class)
 base_classes[["NULL"]] <- new_base_class("NULL")
 
-#' R7 generics and method objects
-#' @param name,generic The name or generic object of the generic
-#' @param signature The signature of the generic
-#' @param fun The function to use as the body of the generic.
-#' @export
+base_constructors <- lapply(base_types, get)
+
+
 R7_generic <- new_class(
   name = "R7_generic",
   properties = list(name = "character", methods = "environment", signature = new_property(name = "signature", getter = function(x) formals(x@.data))),
@@ -42,8 +31,6 @@ R7_generic <- new_class(
   }
 )
 
-#' @rdname R7_generic
-#' @export
 R7_method <- new_class(
   name = "R7_method",
   properties = list(generic = "R7_generic", signature = "list", fun = "function"),
@@ -56,14 +43,6 @@ R7_method <- new_class(
   }
 )
 
-#' Class unions
-#'
-#' A class union represents a list of possible classes. It is used in
-#' properties to allow a property to be one of a set of classes, and in method
-#' dispatch as a convenience for defining a method for multiple classes.
-#' @param ... The classes to include in the union, either looked up by named or
-#'   by passing the `R7_class` objects directly.
-#' @export
 R7_union <- new_class(
   name = "R7_union",
   properties = list(classes = "list"),
@@ -86,7 +65,13 @@ R7_union <- new_class(
   }
 )
 
-#' @rdname R7_union
+#' Class unions
+#'
+#' A class union represents a list of possible classes. It is used in
+#' properties to allow a property to be one of a set of classes, and in method
+#' dispatch as a convenience for defining a method for multiple classes.
+#' @param ... The classes to include in the union, either looked up by named or
+#'   by passing the `R7_class` objects directly.
 #' @export
 new_union <- R7_union
 

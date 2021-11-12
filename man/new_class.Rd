@@ -15,8 +15,12 @@ new_class(
 \arguments{
 \item{name}{The name of the class, as a string.}
 
-\item{parent}{The parent class. Either a string or (better) an object
-constructor.}
+\item{parent}{The parent class.
+\itemize{
+\item To inherit behaviour from an R7 class, pass the class object.
+\item To inherit behaviour from a base type, pass the function you'd use
+to construct the object, e.g. \code{character}, \code{integer}.
+}}
 
 \item{constructor}{The constructor function. This is optional, unless
 you want to control which properties can be set on constructor.}

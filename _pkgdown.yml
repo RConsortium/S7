@@ -23,8 +23,3 @@ reference:
   contents:
   - next_method
   - method_call
-
-- title: Internal classes
-  contents:
-  - R7_object
-  - R7_generic
