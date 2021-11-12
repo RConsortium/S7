@@ -155,10 +155,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Employee</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Employee"</span>,
   parent <span class="op">=</span> <span class="va">Person</span>,
-  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>boss <span class="op">=</span> <span class="st">"Person"</span><span class="op">)</span>,
-  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span>, <span class="va">boss</span><span class="op">)</span> <span class="op">{</span>
-    <span class="fu"><a href="../reference/new_object.html">new_object</a></span><span class="op">(</span><span class="fu">Person</span><span class="op">(</span><span class="va">...</span><span class="op">)</span>, boss <span class="op">=</span> <span class="va">boss</span><span class="op">)</span>
-  <span class="op">}</span>
+  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>boss <span class="op">=</span> <span class="st">"Person"</span><span class="op">)</span>
 <span class="op">)</span>
 
 <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Employee</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"John Smith"</span>, birthdate <span class="op">=</span> <span class="st">"1992-10-11"</span>, boss <span class="op">=</span> <span class="va">jane</span><span class="op">)</span>
