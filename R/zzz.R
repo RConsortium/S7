@@ -55,30 +55,44 @@ R7_method <- new_class(
 #' A class union represents a list of possible classes. It is used in
 #' properties to allow a property to be one of a set of classes, and in method
 #' dispatch as a convenience for defining a method for multiple classes.
+#'
 #' @param ... The classes to include in the union, either looked up by named or
 #'   by passing the `R7_class` objects directly.
 #' @export
 R7_union <- new_class(
   name = "R7_union",
-  properties = list(classes = "list"),
-  validator = function(x) {
-    for (val in x@classes) {
-      if (!inherits(val, "R7_class")) {
-        return(sprintf("All classes in an <R7_union> must be R7 classes:\n - <%s> is not an <R7_class>", class(val)[[1]]))
+  properties = list(
+    new_property(
+      "classes",
+      setter = function(x, val) {
+        x@classes <- class_standardise(val)
+        x
       }
-    }
-  },
+    )
+  ),
   constructor = function(...) {
-    classes <- list(...)
-    for (i in seq_along(classes)) {
-      if (is.character(classes[[i]])) {
-        classes[[i]] <- class_get(classes[[i]])
-      }
-    }
-
-    new_object(classes = classes)
+    new_object(classes = list(...))
   }
 )
+
+class_standardise <- function(x) {
+  x <- lapply(x, class_get, unions = TRUE)
+
+  # Flatten unions
+  is_union <- vlapply(x, is_union)
+  x[!is_union] <- lapply(x[!is_union], list)
+  x[is_union] <- lapply(x[is_union], function(x) x@classes)
+
+  unique(unlist(x, recursive = FALSE, use.names = FALSE))
+}
+
+is_union <- function(x) inherits(x, "R7_union")
+
+#' @export
+print.R7_union <- function(x, ...) {
+  cat(sprintf("<R7_union>: %s", fmt_classes(class_names(x), " u "), "\n", sep = ""))
+  invisible(x)
+}
 
 #' @rdname R7_union
 #' @export

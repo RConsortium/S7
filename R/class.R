@@ -122,8 +122,10 @@ class_names <- function(object) {
 #' @param x The name of the R7 class
 #' @param envir The environment to look for the name
 #' @export
-class_get <- function(x, envir = parent.frame()) {
+class_get <- function(x, unions = FALSE, envir = parent.frame()) {
   if (inherits(x, "R7_class")) {
+    x
+  } else if (unions && is_union(x)) {
     x
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
