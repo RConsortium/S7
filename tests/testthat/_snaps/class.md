@@ -13,3 +13,7 @@
     <my_class>@name must be of class <character>, <factor>:
     - `value` is of class <numeric>
 
+# can get class from base constructor
+
+    Could not find class for constructor function
+
