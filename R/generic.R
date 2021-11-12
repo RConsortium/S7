@@ -49,11 +49,16 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
     signature <- guess_signature(fun)
   } else {
     signature <- normalize_signature(signature)
+    # For now, ensure all generics have ... in signature
+    signature <- union(signature, "...")
   }
 
   if (is.null(fun)) {
     fun <- function() method_call()
-    formals(fun) <- signature
+    args <- lapply(signature, function(i) quote(expr = ))
+    names(args) <- signature
+
+    formals(fun) <- args
     environment(fun) <- topenv(environment())
   }
 
@@ -101,31 +106,20 @@ guess_signature <- function(fun) {
 }
 
 
-normalize_signature <- function(signature, envir = parent.frame()) {
-  if (!is_named(signature)) {
-    if (!is.character(signature)) {
-      stop("`signature` must either be named types or an unnamed character vector of argument names", call. = FALSE)
-    }
-    out <- vector("list", length(signature))
-    for (i in seq_along(out)) {
-      out[[i]] <- quote(expr =)
-    }
-    names(out) <- signature
-    signature <- out
+normalize_signature <- function(signature) {
+  if (!is.character(signature)) {
+    stop("signature must be a character vector", call. = FALSE)
   }
-  signature <- as.list(signature)
-
-  # add ... to the signature if it isn't already there
-  if (!("..." %in% names(signature))) {
-    signature[["..."]] <- quote(expr = )
+  if (length(signature) == 0) {
+    stop("signature must have at least one component", call. = FALSE)
   }
   signature
 }
 
 generic_generate_signature_call <- function(signature) {
-  class_args <- setdiff(names(signature), "...")
-  call_args <- names(signature)
-  as.call(c(as.symbol("list"), lapply(class_args, function(x) { bquote(object_class(.(arg)), list(arg = as.symbol(x)))})))
+  class_args <- setdiff(signature, "...")
+  args <- lapply(class_args, function(x) call("object_class", as.symbol(x)))
+  as.call(c(quote(list), args))
 }
 
 #' @export

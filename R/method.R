@@ -85,9 +85,9 @@ method_impl <- function(generic, signature, ignore) {
       generic <- generic@name
     } else {
       generic <- find_function_name(generic, topenv(environment(generic)))
-      args <- args(formals(generic))
+      args <- names(formals(generic))
     }
-    args <- args[names(args) != "..."]
+    args <- setdiff(args, "...")
 
     out <- getS3method(generic, signature[[1]][[1]], optional = TRUE)
 
@@ -96,7 +96,7 @@ method_impl <- function(generic, signature, ignore) {
   }
 
   if (is.null(out)) {
-    method_lookup_error(generic, names(args), signature)
+    method_lookup_error(generic, args, signature)
   }
 
   out
