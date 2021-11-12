@@ -1,10 +1,9 @@
 #' @importFrom utils modifyList
 R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
-  if (is.character(parent)) {
-    parent_obj <- class_get(parent)
-    if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
-      parent <- parent_obj
-    }
+
+  parent_obj <- class_get(parent)
+  if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
+    parent <- parent_obj
   }
 
   # Combine properties from parent, overriding as needed
@@ -36,8 +35,12 @@ R7_class <- function(name, parent = R7_object, constructor = NULL, validator = f
 #' when an object is passed to a generic.
 #'
 #' @param name The name of the class, as a string.
-#' @param parent The parent class. Either a string or (better) an object
-#'  constructor.
+#' @param parent The parent class.
+#'
+#'   * To inherit behaviour from an R7 class, pass the class object.
+#'   * To inherit behaviour from a base type, pass the function you'd use
+#'     to construct the object, e.g. `character`, `integer`.
+#'
 #' @param constructor The constructor function. This is optional, unless
 #'   you want to control which properties can be set on constructor.
 #' @param validator A function used to determine whether or not an object
@@ -114,25 +117,44 @@ class_names <- function(object) {
   unique(classes, fromLast = TRUE)
 }
 
-#' Retrieve the R7 class corresponding to a name
+#' Retrieve the R7 class from a class specification
 #'
-#' @param name The name of the R7 class
+#' @param x The name of the R7 class
 #' @param envir The environment to look for the name
 #' @export
-class_get <- function(name, envir = parent.frame()) {
-  if (length(name) != 1) {
-    return()
-  }
-  class <- get0(name, envir = envir)
-  if (inherits(class, "R7_class")) {
-    return(class)
-  }
+class_get <- function(x, envir = parent.frame()) {
+  if (inherits(x, "R7_class")) {
+    x
+  } else if (is.function(x)) {
+    candidate <- Filter(function(y) identical(x, y), base_constructors)
+    if (length(candidate) != 1) {
+      stop("Could not find class for constructor function", call. = FALSE)
+    }
+    base_classes[[names(candidate)]]
+  } else if (is.character(x)) {
+    if (length(x) == 1) {
+      if (x %in% names(base_classes)) {
+        return(base_classes[[x]])
+      }
 
-  # TODO: What do we do about existing S3 / S4 classes?
+      obj <- get(x, envir = envir)
+      if (inherits(obj, "R7_class")) {
+        return(obj)
+      }
+    }
 
-  # otherwise assume this is a base class, so use get_base_class
-  base_classes[[name]]
+    # TODO: What do we do about existing S3 / S4 classes?
+    NULL
+  } else if (is.null(x)) {
+    x
+  } else {
+    stop(
+      "Must specify class as a <R7_class>, a base constructor function, or a string",
+      call. = FALSE
+    )
+  }
 }
+
 
 #' @export
 print.R7_class <- function(x, ...) {

@@ -13,3 +13,11 @@
     <my_class>@name must be of class <character>, <factor>:
     - `value` is of class <numeric>
 
+# constructor  types check their values
+
+    `.data` must be <integer> not <character>
+
+# can get class from base constructor
+
+    Could not find class for constructor function
+

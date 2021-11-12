@@ -14,19 +14,13 @@ new_base_class <- function(name) {
   R7_class(name = name, constructor = function(.data) new_object(.data))
 }
 
-base_classes <- new.env(parent = emptyenv())
-base_classes[["logical"]] <- new_base_class("logical")
-base_classes[["integer"]] <- new_base_class("integer")
-base_classes[["double"]] <- new_base_class("double")
-base_classes[["numeric"]] <- new_base_class("numeric")
-base_classes[["complex"]] <- new_base_class("complex")
-base_classes[["character"]] <- new_base_class("character")
-base_classes[["factor"]] <- new_base_class("factor")
-base_classes[["raw"]] <- new_base_class("raw")
-base_classes[["function"]] <- new_base_class("function")
-base_classes[["list"]] <- new_base_class("list")
-base_classes[["data.frame"]] <- new_base_class("data.frame")
+base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "factor", "raw", "function", "list", "data.frame"))
+
+base_classes <- lapply(base_types, new_base_class)
 base_classes[["NULL"]] <- new_base_class("NULL")
+
+base_constructors <- lapply(base_types, get)
+
 
 #' R7 generics and method objects
 #' @param name,generic The name or generic object of the generic

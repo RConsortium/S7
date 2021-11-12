@@ -44,6 +44,13 @@ test_that("classes can inherit from base types", {
   expect_equal(typeof(obj@.data), "closure")
 })
 
+test_that("can supply literal examples of base types", {
+  foo <- new_class("foo", parent = integer)
+  obj <- foo(1L)
+  expect_s3_class(obj, "integer")
+  expect_type(obj@.data, "integer")
+})
+
 test_that("classes can use unions in properties", {
   my_class <- new_class("my_class", properties = list(new_property(name = "name", new_union("character", "factor"))))
 
@@ -63,4 +70,26 @@ test_that("default constructor works", {
   text2 <- new_class("text2", parent = text1, properties = list(y = "numeric"))
   expect_s3_class(text1("abc"), "text1")
   expect_s3_class(text2("abc", y = 1), "text2")
+})
+
+test_that("constructor  types check their values", {
+  expect_snapshot_error(new_class("foo", parent = integer)("abc"))
+})
+
+
+
+# class_get ---------------------------------------------------------------
+
+test_that("can get class from string", {
+  foo <- new_class("foo")
+  expect_equal(class_get("foo"), foo)
+
+  expect_equal(class_get("character"), base_classes$character)
+})
+
+test_that("can get class from base constructor", {
+  expect_equal(class_get(character), base_classes$character)
+  expect_equal(class_get(`function`), base_classes$`function`)
+
+  expect_snapshot_error(class_get(mean))
 })
