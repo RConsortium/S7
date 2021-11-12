@@ -121,6 +121,7 @@ class_names <- function(object) {
 #'
 #' @param x The name of the R7 class
 #' @param envir The environment to look for the name
+#' @param unions Include unions?
 #' @export
 class_get <- function(x, unions = FALSE, envir = parent.frame()) {
   if (inherits(x, "R7_class")) {
