@@ -50,3 +50,19 @@ method_signature <- function(signature) {
   }
   collapse(vcapply(signature, format_signature), by = ", ")
 }
+
+as_names <- function(x, named = FALSE) {
+  if (named) {
+    names(x) <- x
+  }
+  lapply(x, as.name)
+}
+
+names2 <- function(x) {
+  nms <- names(x)
+  if (is.null(nms)) {
+    rep("", length(x))
+  } else {
+    nms
+  }
+}
