@@ -26,7 +26,7 @@ test_that("method errors on invalid inputs", {
 })
 
 test_that("method errors if no method is defined for that class", {
-  foo <- new_generic("foo", signature = alist(x=))
+  foo <- new_generic("foo", signature = "x")
 
   expect_snapshot_error(
     method(foo, list("blah"))
@@ -34,14 +34,14 @@ test_that("method errors if no method is defined for that class", {
 })
 
 test_that("methods can be registered for a generic and then called", {
-  foo <- new_generic("foo", signature = alist(x=))
+  foo <- new_generic("foo", signature = "x")
   new_method(foo, "text", function(x, ...) paste0("foo-", x@.data))
 
   expect_equal(foo(text("bar")), "foo-bar")
 })
 
 test_that("single inheritance works when searching for methods", {
-  foo2 <- new_generic("foo2", signature = alist(x=))
+  foo2 <- new_generic("foo2", signature = "x")
 
   new_method(foo2, "character", function(x, ...) paste0("foo2-", x))
 
@@ -49,13 +49,13 @@ test_that("single inheritance works when searching for methods", {
 })
 
 test_that("direct multiple dispatch works", {
-  foo3 <- new_generic("foo3", signature = alist(x=, y=))
+  foo3 <- new_generic("foo3", signature = c("x", "y"))
   new_method(foo3, list("text", "number"), function(x, y, ...) paste0(x, y))
   expect_equal(foo3(text("bar"), number(1)), "bar1")
 })
 
 test_that("inherited multiple dispatch works", {
-  foo4 <- new_generic("foo4", signature = alist(x=, y=))
+  foo4 <- new_generic("foo4", signature = c("x", "y"))
   new_method(foo4, list("character", "numeric"), function(x, y, ...) paste0(x, ":", y))
 
   expect_equal(foo4(text("bar"), number(1)), "bar:1")
@@ -85,21 +85,21 @@ test_that("method dispatch works for S3 objects", {
 })
 
 test_that("new_method works if you use R7 class objects", {
-  foo5 <- new_generic("foo5", signature = alist(x=, y=))
+  foo5 <- new_generic("foo5", signature = c("x", "y"))
   new_method(foo5, list(text, number), function(x, y, ...) paste0(x, ":", y))
 
   expect_equal(foo5(text("bar"), number(1)), "bar:1")
 })
 
 test_that("new_method works if you pass a bare class", {
-  foo6 <- new_generic("foo6", signature = alist(x=))
+  foo6 <- new_generic("foo6", signature = "x")
   new_method(foo6, text, function(x, ...) paste0("foo-", x))
 
   expect_equal(foo6(text("bar")), "foo-bar")
 })
 
 test_that("new_method works if you pass a bare class union", {
-  foo7 <- new_generic("foo7", signature = alist(x=))
+  foo7 <- new_generic("foo7", signature = "x")
   new_method(foo7, new_union(text, number), function(x, ...) paste0("foo-", x))
 
   expect_equal(foo7(text("bar")), "foo-bar")
@@ -208,15 +208,15 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  foo <- new_generic("foo", alist(x = NULL))
+  foo <- new_generic("foo", fun = function(x = NULL) {})
   expect_true(
     method_compatible(
-      function(x = NULL, ...) x,
+      function(x = NULL) x,
       foo
     )
   )
 
-  bar <- new_generic("bar", alist(x=, y=))
+  bar <- new_generic("bar", c("x", "y"))
   expect_true(
     method_compatible(
       function(x, y, ...) x,
@@ -224,7 +224,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  bar <- new_generic("bar", alist(x=NULL, y=1))
+  bar <- new_generic("bar", fun = function(x=NULL, y=1, ...) {})
   expect_true(
     method_compatible(
       function(x = NULL, y = 1, ...) x,
@@ -260,7 +260,7 @@ test_that("method_compatible throws errors if the functions are not compatible",
     )
   )
 
-  bar <- new_generic("bar", alist(x=, y=))
+  bar <- new_generic("bar", c("x", "y"))
 
   # Arguments in wrong order
   expect_snapshot_error(
