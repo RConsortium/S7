@@ -90,7 +90,7 @@ is_union <- function(x) inherits(x, "R7_union")
 
 #' @export
 print.R7_union <- function(x, ...) {
-  cat(sprintf("<R7_union>: %s", fmt_classes(class_names(x), " u "), "\n", sep = ""))
+  cat(sprintf("<R7_union>: %s", fmt_classes(class_names(x), " u ")), "\n", sep = "")
   invisible(x)
 }
 
