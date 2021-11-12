@@ -143,9 +143,6 @@ test_that("property setters can set themselves", {
     )
   )
 
-  x <- foo()
-
-  x@bar <- "foo"
-
+  x <- foo(bar = "foo")
   expect_equal(x@bar, "foo-bar")
 })

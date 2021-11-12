@@ -4,19 +4,19 @@
       foo <- new_class("foo")
       foo(1)
     Error <simpleError>
-      All arguments to <foo> constructor must be named
+      unused argument (1)
     Code
       foo(1, 2)
     Error <simpleError>
-      All arguments to <foo> constructor must be named
+      unused arguments (1, 2)
     Code
       foo(x = 1)
     Error <simpleError>
-      All arguments to <foo> constructor must be properties: x
+      unused argument (x = 1)
     Code
       foo(x = 1, y = 2)
     Error <simpleError>
-      All arguments to <foo> constructor must be properties: x, y
+      unused arguments (x = 1, y = 2)
 
 # printing R7 objects work
 

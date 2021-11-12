@@ -85,7 +85,7 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
 #'   colour = "character",
 #'   height = "numeric"
 #' ))
-#' lexington <- horse(colour = "bay", height = 15)
+#' lexington <- horse(colour = "bay", height = 15, name = "Lex")
 #' lexington@colour
 #' prop(lexington, "colour")
 #'

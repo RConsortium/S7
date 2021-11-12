@@ -52,3 +52,15 @@ test_that("classes can use unions in properties", {
 
   expect_snapshot_error(my_class(name = 1))
 })
+
+test_that("default constructor works", {
+  foo1 <- new_class("foo1", properties = list(x = "numeric"))
+  foo2 <- new_class("foo2", parent = foo1, properties = list(y = "numeric"))
+  expect_s3_class(foo1(x = 1), "foo1")
+  expect_s3_class(foo2(x = 1, y = 2), "foo2")
+
+  text1 <- new_class("text1", parent = "character")
+  text2 <- new_class("text2", parent = text1, properties = list(y = "numeric"))
+  expect_s3_class(text1("abc"), "text1")
+  expect_s3_class(text2("abc", y = 1), "text2")
+})

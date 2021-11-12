@@ -78,10 +78,7 @@ Classes can inherit from a parent class with `parent` and contain properties tha
 ```{r}
 Employee <- new_class("Employee",
   parent = Person,
-  properties = list(boss = "Person"),
-  constructor = function(..., boss) {
-    new_object(Person(...), boss = boss)
-  }
+  properties = list(boss = "Person")
 )
 
 x <- Employee(name = "John Smith", birthdate = "1992-10-11", boss = jane)

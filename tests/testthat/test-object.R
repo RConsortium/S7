@@ -23,9 +23,6 @@ describe("new_object", {
   })
 
   it("can instantiate a new object that inherits from a basic type", {
-    x <- text()
-    expect_equal(x@.data, class_get("character")())
-
     y <- text("foo")
     expect_equal(y@.data, class_get("character")("foo"))
   })

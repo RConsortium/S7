@@ -1,5 +1,5 @@
 #' @importFrom utils modifyList
-R7_class <- function(name, parent = R7_object, constructor = function(.data = NULL, ...) new_object(.data, ...), validator = function(x) NULL, properties = list()) {
+R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
   if (is.character(parent)) {
     parent_obj <- class_get(parent)
     if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
@@ -12,6 +12,10 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
     attr(parent, "properties", exact = TRUE) %||% list(),
     as_properties(properties)
   )
+
+  if (is.null(constructor)) {
+    constructor <- new_constructor(parent, properties)
+  }
 
   object <- constructor
   attr(object, "name") <- name
@@ -84,16 +88,6 @@ R7_class <- function(name, parent = R7_object, constructor = function(.data = NU
 #' # Type validation is performed automatically in R7
 #' try(range(start = "hello", end = 20))
 new_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
-
-  if (is.null(constructor)) {
-    if (identical(parent, R7_object)) {
-      fun1 <- function(...) new_object(.data = NULL, ...)
-      constructor <- fun1
-    } else {
-      fun2 <- function(.data = NULL, ...) new_object(.data, ...)
-      constructor <- fun2
-    }
-  }
   R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
 }
 
