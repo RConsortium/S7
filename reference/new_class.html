@@ -156,8 +156,11 @@ when an object is passed to a generic.</p>
     </tr>
     <tr>
       <th>parent</th>
-      <td><p>The parent class. Either a string or (better) an object
-constructor.</p></td>
+      <td><p>The parent class.</p><ul>
+<li><p>To inherit behaviour from an R7 class, pass the class object.</p></li>
+<li><p>To inherit behaviour from a base type, pass the function you'd use
+to construct the object, e.g. <code>character</code>, <code>integer</code>.</p></li>
+</ul></td>
     </tr>
     <tr>
       <th>constructor</th>
