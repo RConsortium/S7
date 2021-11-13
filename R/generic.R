@@ -60,6 +60,8 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
 
     formals(fun) <- args
     environment(fun) <- topenv(environment())
+  } else {
+    check_generic(fun)
   }
 
   R7_generic(name = name, signature, fun = fun)
@@ -133,4 +135,34 @@ print.R7_generic <- function(x, ...) {
   formals <- collapse(head(format(args(x)), n = -1), by = "\n")
 
   cat(sprintf("<R7_generic> %s with %i methods:\n%s", formals, length(ms), msg), sep = "")
+}
+
+check_generic <- function(fun) {
+  if (!is.function(fun)) {
+    stop("`fun` must be a function", call. = FALSE)
+  }
+
+  if (!has_call(body(fun), quote(method_call))) {
+    stop("`fun` must contain a call to `method_call()`", call. = FALSE)
+  }
+}
+has_call <- function(x, name) {
+  if (!is.call(x)) {
+    return(FALSE)
+  }
+
+  if (identical(x[[1]], name)) {
+    return(TRUE)
+  }
+
+  if (length(x) == 1) {
+    return(FALSE)
+  }
+
+  for (i in seq(2, length(x))) {
+    if (has_call(x[[i]], name)) {
+      return(TRUE)
+    }
+  }
+  FALSE
 }

@@ -16,3 +16,14 @@
       <R7_generic> function (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, 
           r, s, t, u, v, w, x, y, z, ...)  with 0 methods:
 
+# check_generic produces informative errors
+
+    Code
+      check_generic("x")
+    Error <simpleError>
+      `fun` must be a function
+    Code
+      check_generic(function() { })
+    Error <simpleError>
+      `fun` must contain a call to `method_call()`
+
