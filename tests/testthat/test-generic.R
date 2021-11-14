@@ -3,10 +3,10 @@ test_that("new_generic needs fun or signature", {
 })
 
 test_that("signature overrules derived signature", {
-  g <- new_generic("g", fun = function(x, y, ...) method_call())
+  g <- new_generic("g", function(x, y, ...) method_call())
   expect_equal(g@signature, c("x", "y", "..."))
 
-  g <- new_generic("g", fun = function(x, y, ...) method_call(), signature = "x")
+  g <- new_generic("g", function(x, y, ...) method_call(), signature = "x")
   expect_equal(g@signature, c("x", "..."))
 })
 

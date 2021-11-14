@@ -30,7 +30,7 @@
 #'
 #' # If you want to require methods implement additional arguments, supply
 #' # them after ... in the call
-#' mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
+#' mean2 <- new_generic("mean2", function(x, ..., na.rm = TRUE) {
 #'    method_call()
 #' })
 #' method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
@@ -41,7 +41,7 @@
 #' }
 #' method(mean2, "character") <- function(x, ...) {stop("Not supported")}
 #'
-new_generic <- function(name, signature = NULL, fun = NULL) {
+new_generic <- function(name, fun = NULL, signature = NULL) {
   if (is.null(signature) && is.null(fun)) {
     stop(
       "Must call `new_generic()` with at least one of `signature` or `fun`",
