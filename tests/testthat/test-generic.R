@@ -2,6 +2,14 @@ test_that("new_generic needs fun or signature", {
   expect_snapshot_error(new_generic())
 })
 
+test_that("signature overrules derived signature", {
+  g <- new_generic("g", fun = function(x, y, ...) method_call())
+  expect_equal(g@signature, c("x", "y", "..."))
+
+  g <- new_generic("g", fun = function(x, y, ...) method_call(), signature = "x")
+  expect_equal(g@signature, c("x", "..."))
+})
+
 test_that("generics pass ... to methods, and methods can define additional arguments on basic types", {
   foo <- new_generic("foo", signature = "x")
   new_method(foo, "character", function(x, sep = "-", ...) paste0("foo", sep, x))
@@ -22,8 +30,8 @@ test_that("guesses signature from required arguments", {
   expect_equal(guess_signature(function() {}), NULL)
   expect_equal(guess_signature(function(x) {}), "x")
   expect_equal(guess_signature(function(x, y) {}), c("x", "y"))
-  expect_equal(guess_signature(function(x, y, ...) {}), c("x", "y"))
-  expect_equal(guess_signature(function(x, ..., y = 1) {}), "x")
+  expect_equal(guess_signature(function(x, y, ...) {}), c("x", "y", "..."))
+  expect_equal(guess_signature(function(x, ..., y = 1) {}), c("x", "..."))
 })
 
 test_that("R7_generic printing", {

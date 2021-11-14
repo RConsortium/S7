@@ -102,7 +102,7 @@ new_external_generic <- function(package, generic, version = NULL) {
 guess_signature <- function(fun) {
   formals <- formals(fun)
   is_required <- vlapply(formals, identical, quote(expr = ))
-  setdiff(names(formals[is_required]), "...")
+  names(formals[is_required])
 }
 
 
