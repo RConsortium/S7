@@ -116,12 +116,6 @@ normalize_signature <- function(signature) {
   signature
 }
 
-generic_generate_signature_call <- function(signature) {
-  class_args <- setdiff(signature, "...")
-  args <- lapply(class_args, function(x) call("object_class", as.symbol(x)))
-  as.call(c(quote(list), args))
-}
-
 #' @export
 print.R7_generic <- function(x, ...) {
   ms <- methods(x)

@@ -127,7 +127,11 @@ next_method <- function() {
   }
 
   generic <- current_method
-  signature <- eval(generic_generate_signature_call(generic@signature), parent.frame())
+
+  # Find signature
+  dispatch_on <- setdiff(generic@signature, "...")
+  vals <- mget(dispatch_on, envir = parent.frame())
+  signature <- lapply(vals, object_class)
 
   method_impl(generic, signature, ignore = methods)
 }
