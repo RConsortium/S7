@@ -52,7 +52,7 @@ new_generic <- function(name, signature = NULL, fun = NULL) {
   if (is.null(signature)) {
     signature <- guess_signature(fun)
   } else {
-    signature <- normalize_signature(signature)
+    signature <- check_signature(signature)
     # For now, ensure all generics have ... in signature
     signature <- union(signature, "...")
 
@@ -71,12 +71,12 @@ guess_signature <- function(fun) {
   names(formals[is_required])
 }
 
-normalize_signature <- function(signature) {
+check_signature <- function(signature) {
   if (!is.character(signature)) {
-    stop("signature must be a character vector", call. = FALSE)
+    stop("`signature` must be a character vector", call. = FALSE)
   }
   if (length(signature) == 0) {
-    stop("signature must have at least one component", call. = FALSE)
+    stop("`signature` must have at least one component", call. = FALSE)
   }
   signature
 }

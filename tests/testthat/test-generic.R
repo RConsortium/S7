@@ -34,6 +34,13 @@ test_that("guesses signature from required arguments", {
   expect_equal(guess_signature(function(x, ..., y = 1) {}), c("x", "..."))
 })
 
+test_that("check_signature produces informative errors", {
+  expect_snapshot(error = TRUE, {
+    check_signature(1)
+    check_signature(character())
+  })
+})
+
 test_that("R7_generic printing", {
   foo <- new_generic(name = "foo", signature = c("x", "y", "z"))
   method(foo, list("character", text, "character")) <- function(x, y, z, ...) 1
