@@ -1,3 +1,7 @@
+test_that("new_generic needs fun or signature", {
+  expect_snapshot_error(new_generic())
+})
+
 test_that("generics pass ... to methods, and methods can define additional arguments on basic types", {
   foo <- new_generic("foo", signature = "x")
   new_method(foo, "character", function(x, sep = "-", ...) paste0("foo", sep, x))

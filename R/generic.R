@@ -43,26 +43,26 @@
 #'
 new_generic <- function(name, signature = NULL, fun = NULL) {
   if (is.null(signature) && is.null(fun)) {
-    stop("Must call `new_generic()` with either `signature` or `fun`", call. = FALSE)
+    stop(
+      "Must call `new_generic()` with at least one of `signature` or `fun`",
+      call. = FALSE
+    )
   }
+
   if (is.null(signature)) {
     signature <- guess_signature(fun)
   } else {
     signature <- normalize_signature(signature)
     # For now, ensure all generics have ... in signature
     signature <- union(signature, "...")
+
+    if (is.null(fun)) {
+      args <- setNames(lapply(signature, function(i) quote(expr = )), signature)
+      fun <- make_function(args, quote(method_call()), topenv(environment()))
+    }
   }
 
-  if (is.null(fun)) {
-    fun <- function() method_call()
-    args <- lapply(signature, function(i) quote(expr = ))
-    names(args) <- signature
-
-    formals(fun) <- args
-    environment(fun) <- topenv(environment())
-  }
-
-  R7_generic(name = name, signature, fun = fun)
+  R7_generic(name = name, signature = signature, fun = fun)
 }
 
 #' Generics in suggested packages

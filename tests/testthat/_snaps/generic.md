@@ -1,3 +1,7 @@
+# new_generic needs fun or signature
+
+    Must call `new_generic()` with at least one of `signature` or `fun`
+
 # R7_generic printing
 
     Code
