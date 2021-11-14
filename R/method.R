@@ -136,31 +136,6 @@ next_method <- function() {
   method_impl(generic, signature, ignore = methods)
 }
 
-#' @importFrom utils getFromNamespace packageName
-#' @rdname new_external_generic
-#' @export
-method_register <- function() {
-  package <- packageName(parent.frame())
-  tbl <- asNamespace(package)[[".__S3MethodsTable__."]][[".R7_methods"]]
-  for (x in tbl) {
-    if (isNamespaceLoaded(x$package)) {
-      ns <- asNamespace(x$package)
-      new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
-    } else {
-      setHook(packageEvent(x$package, "onLoad"),
-        local({
-          x <- x
-          function(...) {
-            ns <- asNamespace(x$package)
-            if (is.null(x$version) || getNamespaceVersion(ns) >= x$version) {
-              new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
-            }
-          }
-        })
-      )
-    }
-  }
-}
 
 arg_to_string <- function(arg) {
   if (is.na(names(arg)[[1]])) {
