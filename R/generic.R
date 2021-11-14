@@ -53,14 +53,14 @@ new_generic <- function(name, fun = NULL, signature = NULL) {
     signature <- guess_signature(fun)
   } else {
     signature <- check_signature(signature)
-    # For now, ensure all generics have ... in signature
-    signature <- union(signature, "...")
 
     if (is.null(fun)) {
       args <- setNames(lapply(signature, function(i) quote(expr = )), signature)
       fun <- make_function(args, quote(method_call()), topenv(environment()))
     }
   }
+  # Never dispatch on ...
+  signature <- setdiff(signature, "...")
 
   R7_generic(name = name, signature = signature, fun = fun)
 }

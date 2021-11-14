@@ -117,16 +117,9 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
 
   // Get the signature, the names of arguments to use for dispatch
+  // These must be the first arguments to the generic
   SEXP gen_signature_args = Rf_getAttrib(generic, Rf_install("signature"));
-
-  // Every generic signature has `...` as the last arg, which we want to ignore.
   R_xlen_t gen_signature_len = Rf_xlength(gen_signature_args);
-
-  Rboolean has_dots = strcmp(CHAR(STRING_ELT(gen_signature_args, gen_signature_len - 1)), "...") == 0;
-
-  if (has_dots) {
-    --gen_signature_len;
-  }
 
   // Allocate a list to store the classes for the arguments
   SEXP signature_classes = PROTECT(Rf_allocVector(VECSXP, gen_signature_len));
@@ -179,20 +172,6 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
     tail = CDR(tail);
   }
 
-
-  // We only need to add the dots to our arguments if the generic has dots and
-  // something was passed in them. Otherwise they are `R_MissingArg` and we
-  // don't need to.
-  if (has_dots) {
-    SEXP dots = Rf_findVar(R_DotsSymbol, envir);
-    if (dots != R_MissingArg) {
-      SETCDR(tail, dots);
-    }
-  }
-
-  // The head of args is always R_NilValue, so we just want the tail
-  args = CDR(args);
-
   // Now that we have retrieved all the classes, we can look up what method to call.
   SEXP m = method_(generic, signature_classes, R_NilValue);
 
@@ -200,6 +179,24 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   if (m == R_NilValue) {
     R7_method_lookup_error(generic, signature_classes, envir);
   }
+
+  // Now add the remaining, non-dispatched, args
+  SEXP gen_formals = FORMALS(generic);
+  R_xlen_t gen_formals_len = Rf_xlength(gen_formals);
+  if (gen_formals_len > gen_signature_len) {
+    for (R_xlen_t i = gen_signature_len; i < gen_formals_len; ++i) {
+      // Find value of that argument
+      SEXP name = Rf_install(CHAR(STRING_ELT(gen_signature_args, i)));
+      SEXP arg = Rf_findVar(name, envir);
+
+      // And add to args
+      SETCDR(tail, Rf_cons(arg, R_NilValue));
+      tail = CDR(tail);
+    }
+  }
+
+  // The head of args is always R_NilValue; we just want the tail
+  args = CDR(args);
 
   // And then actually call it.
   SEXP res = Rf_applyClosure(call, m, args, envir, R_NilValue);
