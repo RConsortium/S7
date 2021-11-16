@@ -4,10 +4,12 @@
 \alias{class_get}
 \title{Retrieve the R7 class from a class specification}
 \usage{
-class_get(x, envir = parent.frame())
+class_get(x, unions = FALSE, envir = parent.frame())
 }
 \arguments{
 \item{x}{The name of the R7 class}
+
+\item{unions}{Include unions?}
 
 \item{envir}{The environment to look for the name}
 }
