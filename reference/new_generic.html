@@ -139,7 +139,7 @@ of one or more arguments (the <code>signature</code>). Create a new generic with
 <code>new_generic()</code> then use method&lt;- to add methods to it.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>new_generic</span><span class='op'>(</span><span class='va'>name</span>, signature <span class='op'>=</span> <span class='cn'>NULL</span>, fun <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>new_generic</span><span class='op'>(</span><span class='va'>name</span>, fun <span class='op'>=</span> <span class='cn'>NULL</span>, signature <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -150,17 +150,17 @@ of one or more arguments (the <code>signature</code>). Create a new generic with
 that you assign it to.</p></td>
     </tr>
     <tr>
-      <th>signature</th>
-      <td><p>A character vector providing the names of arguments to
-dispatch on. If omitted, defaults to the required arguments of <code>fun</code>.</p></td>
-    </tr>
-    <tr>
       <th>fun</th>
       <td><p>An optional specification of the generic, which must call
 <code><a href='method_call.html'>method_call()</a></code> to dispatch to methods. This is usually generated
 automatically from the <code>signature</code>, but you may want to supply it if
 you want to add additional required arguments, or perform some standardised
 computation in the generic.</p></td>
+    </tr>
+    <tr>
+      <th>signature</th>
+      <td><p>A character vector providing the names of arguments to
+dispatch on. If omitted, defaults to the required arguments of <code>fun</code>.</p></td>
     </tr>
     </table>
 
@@ -185,7 +185,7 @@ in another package without taking a strong dependency on it.</p></div>
 <span class='r-in'></span>
 <span class='r-in'><span class='co'># If you want to require methods implement additional arguments, supply</span></span>
 <span class='r-in'><span class='co'># them after ... in the call</span></span>
-<span class='r-in'><span class='va'>mean2</span> <span class='op'>&lt;-</span> <span class='fu'>new_generic</span><span class='op'>(</span><span class='st'>"mean2"</span>, fun <span class='op'>=</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span>, <span class='va'>na.rm</span> <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='va'>mean2</span> <span class='op'>&lt;-</span> <span class='fu'>new_generic</span><span class='op'>(</span><span class='st'>"mean2"</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span>, <span class='va'>na.rm</span> <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span class='r-in'>   <span class='fu'><a href='method_call.html'>method_call</a></span><span class='op'>(</span><span class='op'>)</span></span>
 <span class='r-in'><span class='op'>}</span><span class='op'>)</span></span>
 <span class='r-in'><span class='fu'><a href='method.html'>method</a></span><span class='op'>(</span><span class='va'>mean2</span>, <span class='st'>"numeric"</span><span class='op'>)</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span>, <span class='va'>na.rm</span> <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span> <span class='op'>{</span></span>

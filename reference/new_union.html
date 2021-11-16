@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Generics in suggested packages — new_external_generic • R7</title>
+<title>Class unions — new_union • R7</title>
 
 
 <!-- jquery -->
@@ -39,19 +39,10 @@
 
 
 
-<meta property="og:title" content="Generics in suggested packages — new_external_generic" />
-<meta property="og:description" content="The easiest way to define a method for a generic in another package is to
-add the package to Imports and import the generic into the NAMESPACE.
-This, however, creates a strong dependency on the other package, which is
-not always desired. For example, you might want to register a
-knitr::knitr_print method to customise how your object is printed in Rmd,
-but your package doesn't use anything else from knitr.
-Instead, you can add the package to Suggests and use
-new_external_generic() along with method_register() to declare an
-&quot;external&quot; generic. new_external_generic() defines the &quot;shape&quot; of the
-generic without requiring the other package be available. You then call
-method_register() in .onLoad() to dynamically register the methods
-when the other package is loaded." />
+<meta property="og:title" content="Class unions — new_union" />
+<meta property="og:description" content="A class union represents a list of possible classes. It is used in
+properties to allow a property to be one of a set of classes, and in method
+dispatch as a convenience for defining a method for multiple classes." />
 
 
 
@@ -137,45 +128,26 @@ when the other package is loaded." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Generics in suggested packages</h1>
-    <small class="dont-index">Source: <a href='https://github.com/RConsortium/OOP-WG/blob/master/R/external-generic.R'><code>R/external-generic.R</code></a></small>
-    <div class="hidden name"><code>new_external_generic.Rd</code></div>
+    <h1>Class unions</h1>
+    <small class="dont-index">Source: <a href='https://github.com/RConsortium/OOP-WG/blob/master/R/zzz.R'><code>R/zzz.R</code></a></small>
+    <div class="hidden name"><code>new_union.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The easiest way to define a method for a generic in another package is to
-add the package to <code>Imports</code> and import the generic into the <code>NAMESPACE</code>.
-This, however, creates a strong dependency on the other package, which is
-not always desired. For example, you might want to register a
-<code>knitr::knitr_print</code> method to customise how your object is printed in Rmd,
-but your package doesn't use anything else from knitr.</p>
-<p>Instead, you can add the package to <code>Suggests</code> and use
-<code>new_external_generic()</code> along with <code>method_register()</code> to declare an
-"external" generic. <code>new_external_generic()</code> defines the "shape" of the
-generic without requiring the other package be available. You then call
-<code>method_register()</code> in <code><a href='https://rdrr.io/r/base/ns-hooks.html'>.onLoad()</a></code> to dynamically register the methods
-when the other package is loaded.</p>
+    <p>A class union represents a list of possible classes. It is used in
+properties to allow a property to be one of a set of classes, and in method
+dispatch as a convenience for defining a method for multiple classes.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>new_external_generic</span><span class='op'>(</span><span class='va'>package</span>, <span class='va'>generic</span>, version <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span>
-
-<span class='fu'>method_register</span><span class='op'>(</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>new_union</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>package</th>
-      <td><p>Package the generic is defined in.</p></td>
-    </tr>
-    <tr>
-      <th>generic</th>
-      <td><p>Name of generic, as a string.</p></td>
-    </tr>
-    <tr>
-      <th>version</th>
-      <td><p>An optional version the package must meet for the method to
-be registered.</p></td>
+      <th>...</th>
+      <td><p>The classes to include in the union, either looked up by named or
+by passing the <code>R7_class</code> objects directly.</p></td>
     </tr>
     </table>
 
