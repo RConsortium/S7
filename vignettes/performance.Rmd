@@ -48,7 +48,7 @@ setMethod("foo_s4", c("text"), function(x, ...) paste0(x, "-foo"))
 # Measure performance of single dispatch
 bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 
-bar_R7 <- new_generic("bar_R7", c("x", "y"))
+bar_R7 <- new_generic("bar_R7", signature = c("x", "y"))
 method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y, ...) standardGeneric("bar_s4"))

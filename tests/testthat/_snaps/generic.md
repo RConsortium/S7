@@ -1,3 +1,18 @@
+# new_generic needs fun or signature
+
+    Must call `new_generic()` with at least one of `signature` or `fun`
+
+# check_signature produces informative errors
+
+    Code
+      check_signature(1)
+    Error <simpleError>
+      `signature` must be a character vector
+    Code
+      check_signature(character())
+    Error <simpleError>
+      `signature` must have at least one component
+
 # R7_generic printing
 
     Code

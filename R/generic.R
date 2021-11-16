@@ -30,7 +30,7 @@
 #'
 #' # If you want to require methods implement additional arguments, supply
 #' # them after ... in the call
-#' mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
+#' mean2 <- new_generic("mean2", function(x, ..., na.rm = TRUE) {
 #'    method_call()
 #' })
 #' method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
@@ -41,87 +41,45 @@
 #' }
 #' method(mean2, "character") <- function(x, ...) {stop("Not supported")}
 #'
-new_generic <- function(name, signature = NULL, fun = NULL) {
+new_generic <- function(name, fun = NULL, signature = NULL) {
   if (is.null(signature) && is.null(fun)) {
-    stop("Must call `new_generic()` with either `signature` or `fun`", call. = FALSE)
+    stop(
+      "Must call `new_generic()` with at least one of `signature` or `fun`",
+      call. = FALSE
+    )
   }
+
   if (is.null(signature)) {
+    check_generic(fun)
     signature <- guess_signature(fun)
   } else {
-    signature <- normalize_signature(signature)
+    signature <- check_signature(signature)
     # For now, ensure all generics have ... in signature
     signature <- union(signature, "...")
+
+    if (is.null(fun)) {
+      args <- setNames(lapply(signature, function(i) quote(expr = )), signature)
+      fun <- make_function(args, quote(method_call()), topenv(environment()))
+    }
   }
 
-  if (is.null(fun)) {
-    fun <- function() method_call()
-    args <- lapply(signature, function(i) quote(expr = ))
-    names(args) <- signature
-
-    formals(fun) <- args
-    environment(fun) <- topenv(environment())
-  } else {
-    check_generic(fun)
-  }
-
-  R7_generic(name = name, signature, fun = fun)
+  R7_generic(name = name, signature = signature, fun = fun)
 }
-
-#' Generics in suggested packages
-#'
-#' @description
-#' The easiest way to define a method for a generic in another package is to
-#' add the package to `Imports` and import the generic into the `NAMESPACE`.
-#' This, however, creates a strong dependency on the other package, which is
-#' not always desired. For example, you might want to register a
-#' `knitr::knitr_print` method to customise how your object is printed in Rmd,
-#' but your package doesn't use anything else from knitr.
-#'
-#' Instead, you can add the package to `Suggests` and use
-#' `new_external_generic()` along with `method_register()` to declare an
-#' "external" generic. `new_external_generic()` defines the "shape" of the
-#' generic without requiring the other package be available. You then call
-#' `method_register()` in `.onLoad()` to dynamically register the methods
-#' when the other package is loaded.
-#'
-#' @param package Package the generic is defined in.
-#' @param generic Name of generic, as a string.
-#' @param version An optional version the package must meet for the method to
-#'   be registered.
-#' @export
-new_external_generic <- function(package, generic, version = NULL) {
-  out <- list(
-    package = package,
-    generic = generic,
-    version = version
-  )
-
-  class(out) <- "R7_external_generic"
-  out
-}
-
 
 guess_signature <- function(fun) {
   formals <- formals(fun)
   is_required <- vlapply(formals, identical, quote(expr = ))
-  setdiff(names(formals[is_required]), "...")
+  names(formals[is_required])
 }
 
-
-normalize_signature <- function(signature) {
+check_signature <- function(signature) {
   if (!is.character(signature)) {
-    stop("signature must be a character vector", call. = FALSE)
+    stop("`signature` must be a character vector", call. = FALSE)
   }
   if (length(signature) == 0) {
-    stop("signature must have at least one component", call. = FALSE)
+    stop("`signature` must have at least one component", call. = FALSE)
   }
   signature
-}
-
-generic_generate_signature_call <- function(signature) {
-  class_args <- setdiff(signature, "...")
-  args <- lapply(class_args, function(x) call("object_class", as.symbol(x)))
-  as.call(c(quote(list), args))
 }
 
 #' @export

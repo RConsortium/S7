@@ -66,3 +66,9 @@ names2 <- function(x) {
     nms
   }
 }
+
+make_function <- function(args, body, env = parent.frame()) {
+  args <- as.pairlist(args)
+
+  as.function.default(c(args, body), envir = env)
+}
