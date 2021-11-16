@@ -135,7 +135,7 @@
     <p>Retrieve the R7 class from a class specification</p>
     </div>
 
-    <pre class="usage"><span class='fu'>class_get</span><span class='op'>(</span><span class='va'>x</span>, envir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sys.parent.html'>parent.frame</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>class_get</span><span class='op'>(</span><span class='va'>x</span>, unions <span class='op'>=</span> <span class='cn'>FALSE</span>, envir <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/sys.parent.html'>parent.frame</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -143,6 +143,10 @@
     <tr>
       <th>x</th>
       <td><p>The name of the R7 class</p></td>
+    </tr>
+    <tr>
+      <th>unions</th>
+      <td><p>Include unions?</p></td>
     </tr>
     <tr>
       <th>envir</th>
