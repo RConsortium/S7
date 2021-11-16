@@ -179,7 +179,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  foo <- new_generic("foo", function(x = NULL) {})
+  foo <- new_generic("foo", function(x = NULL) method_call())
   expect_true(
     method_compatible(
       function(x = NULL) x,
@@ -195,7 +195,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  bar <- new_generic("bar", function(x=NULL, y=1, ...) {})
+  bar <- new_generic("bar", function(x=NULL, y=1, ...) method_call())
   expect_true(
     method_compatible(
       function(x = NULL, y = 1, ...) x,

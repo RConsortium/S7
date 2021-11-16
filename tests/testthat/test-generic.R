@@ -58,3 +58,22 @@ test_that("R7_generic printing with long / many arguments", {
     foo
   )
 })
+
+
+# check_generic_fun -------------------------------------------------------
+
+test_that("check_generic produces informative errors", {
+  expect_snapshot(error = TRUE,{
+    check_generic("x")
+    check_generic(function() {})
+  })
+})
+
+test_that("has_fun handles expected cases", {
+  expect_false(has_call(1, quote(x)))
+  expect_false(has_call(quote(f()), quote(x)))
+  expect_false(has_call(quote(f(a, b, c)), quote(x)))
+
+  expect_true(has_call(quote(x()), quote(x)))
+  expect_true(has_call(quote(y(x())), quote(x)))
+})
