@@ -107,7 +107,7 @@ test_that("new_method works if you pass a bare class union", {
 })
 
 test_that("next_method works for single dispatch", {
-  foo <- new_generic("foo", "x")
+  foo <- new_generic("foo", signature = "x")
 
   new_method(foo, "text", function(x, ...) {
     x@.data <- paste0("foo-", x@.data)
@@ -122,7 +122,7 @@ test_that("next_method works for single dispatch", {
 })
 
 test_that("next_method works for double dispatch", {
-  foo <- new_generic("foo", c("x", "y"))
+  foo <- new_generic("foo", signature = c("x", "y"))
 
   new_method(foo, list("text", "number"), function(x, y, ...) {
     x@.data <- paste0("foo-", x@.data, "-", y@.data)
@@ -143,7 +143,7 @@ test_that("next_method works for double dispatch", {
 })
 
 test_that("substitute() works for single dispatch method calls like S3", {
-  foo <- new_generic("foo", "x")
+  foo <- new_generic("foo", signature = "x")
 
   new_method(foo, "character", function(x, ...) substitute(x))
 
@@ -152,7 +152,7 @@ test_that("substitute() works for single dispatch method calls like S3", {
 })
 
 test_that("substitute() works for multiple dispatch method calls like S3", {
-  foo <- new_generic("foo", c("x", "y"))
+  foo <- new_generic("foo", signature = c("x", "y"))
 
   new_method(foo, "character", function(x, y, ...) c(substitute(x), substitute(y)))
 
@@ -161,37 +161,8 @@ test_that("substitute() works for multiple dispatch method calls like S3", {
   expect_equal(foo(bar, baz), c(as.symbol("bar"), as.symbol("baz")))
 })
 
-test_that("new_method works with both hard and soft dependencies", {
-  skip_on_os("windows")
-  skip_if(quick_test())
-
-  tmp_lib <- tempfile()
-  dir.create(tmp_lib)
-  old_libpaths <- .libPaths()
-  .libPaths(c(tmp_lib, old_libpaths))
-  on.exit({
-    .libPaths(old_libpaths)
-    detach("package:t2", unload = TRUE)
-    detach("package:t1", unload = TRUE)
-    detach("package:t0", unload = TRUE)
-    unlink(tmp_lib, recursive = TRUE)
-  })
-
-  quick_install(test_path(c("t0", "t1", "t2")))
-
-  library("t2")
-
-  # t2 has a soft dependency on t1
-  library("t1")
-  expect_equal(foo("blah", 1), "foo-blah-1")
-
-  # t2 has a hard dependency on t0
-  library("t0")
-  expect_equal(bar("blah", 1), "bar-blah-1")
-})
-
 test_that("method_compatible returns TRUE if the functions are compatible", {
-  foo <- new_generic("foo", "x")
+  foo <- new_generic("foo", signature = "x")
 
   expect_true(
     method_compatible(
@@ -208,7 +179,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  foo <- new_generic("foo", fun = function(x = NULL) {})
+  foo <- new_generic("foo", function(x = NULL) {})
   expect_true(
     method_compatible(
       function(x = NULL) x,
@@ -216,7 +187,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  bar <- new_generic("bar", c("x", "y"))
+  bar <- new_generic("bar", signature = c("x", "y"))
   expect_true(
     method_compatible(
       function(x, y, ...) x,
@@ -224,7 +195,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
     )
   )
 
-  bar <- new_generic("bar", fun = function(x=NULL, y=1, ...) {})
+  bar <- new_generic("bar", function(x=NULL, y=1, ...) {})
   expect_true(
     method_compatible(
       function(x = NULL, y = 1, ...) x,
@@ -234,7 +205,7 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
 })
 
 test_that("method_compatible throws errors if the functions are not compatible", {
-  foo <- new_generic("foo", "x")
+  foo <- new_generic("foo", signature = "x")
 
   # Different argument names
   expect_snapshot_error(
@@ -260,7 +231,7 @@ test_that("method_compatible throws errors if the functions are not compatible",
     )
   )
 
-  bar <- new_generic("bar", c("x", "y"))
+  bar <- new_generic("bar", signature = c("x", "y"))
 
   # Arguments in wrong order
   expect_snapshot_error(
@@ -288,7 +259,7 @@ test_that("method_compatible throws errors if the functions are not compatible",
 })
 
 test_that("method compatible verifies that if a generic does not have dots the method should not have dots", {
-  foo <- new_generic("foo", fun = function(x) method_call())
+  foo <- new_generic("foo", function(x) method_call())
 
   expect_true(
     method_compatible(

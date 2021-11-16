@@ -4,20 +4,20 @@
 \alias{new_generic}
 \title{Define a new generic}
 \usage{
-new_generic(name, signature = NULL, fun = NULL)
+new_generic(name, fun = NULL, signature = NULL)
 }
 \arguments{
 \item{name}{The name of the generic. This should be the same as the object
 that you assign it to.}
-
-\item{signature}{A character vector providing the names of arguments to
-dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
 
 \item{fun}{An optional specification of the generic, which must call
 \code{method_call()} to dispatch to methods. This is usually generated
 automatically from the \code{signature}, but you may want to supply it if
 you want to add additional required arguments, or perform some standardised
 computation in the generic.}
+
+\item{signature}{A character vector providing the names of arguments to
+dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
 }
 \description{
 A generic function uses different implementations depending on the class
@@ -37,7 +37,7 @@ type_of(mean)
 
 # If you want to require methods implement additional arguments, supply
 # them after ... in the call
-mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
+mean2 <- new_generic("mean2", function(x, ..., na.rm = TRUE) {
    method_call()
 })
 method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
