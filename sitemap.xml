@@ -4,6 +4,9 @@
     <loc>https://RConsortium.github.io/OOP-WG/index.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_union.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/class_get.html</loc>
   </url>
   <url>
@@ -31,9 +34,6 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/new_property.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/new_union.html</loc>
-  </url>
-  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/next_method.html</loc>
   </url>
   <url>
@@ -41,6 +41,9 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/prop.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/r7_generic.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/r7_object.html</loc>
