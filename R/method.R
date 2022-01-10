@@ -19,7 +19,7 @@
 #' @export
 #' @examples
 #' # Create a generic
-#' bizarro <- new_generic("bizarro", signature = "x")
+#' bizarro <- new_generic("bizarro", dispatch_args = "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x, ...) rev(x)
 #' method(bizarro, "factor") <- function(x, ...) {
@@ -81,7 +81,7 @@ method_impl <- function(generic, signature, ignore) {
   if (is.null(out)) {
     # If no R7 method is found, see if there are any S3 methods registered
     if (inherits(generic, "R7_generic")) {
-      args <- generic@signature
+      args <- generic@dispatch_args
       generic <- generic@name
     } else {
       generic <- find_function_name(generic, topenv(environment(generic)))
@@ -129,7 +129,7 @@ next_method <- function() {
   generic <- current_method
 
   # Find signature
-  dispatch_on <- setdiff(generic@signature, "...")
+  dispatch_on <- setdiff(generic@dispatch_args, "...")
   vals <- mget(dispatch_on, envir = parent.frame())
   signature <- lapply(vals, object_class)
 

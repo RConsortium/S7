@@ -4,7 +4,7 @@
 \alias{new_generic}
 \title{Define a new generic}
 \usage{
-new_generic(name, fun = NULL, signature = NULL)
+new_generic(name, fun = NULL, dispatch_args = NULL)
 }
 \arguments{
 \item{name}{The name of the generic. This should be the same as the object
@@ -16,7 +16,7 @@ automatically from the \code{signature}, but you may want to supply it if
 you want to add additional required arguments, or perform some standardised
 computation in the generic.}
 
-\item{signature}{A character vector providing the names of arguments to
+\item{dispatch_args}{A character vector providing the names of arguments to
 dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
 }
 \description{
@@ -26,7 +26,7 @@ of one or more arguments (the \code{signature}). Create a new generic with
 }
 \examples{
 # A simple generic with methods for some base types and S3 classes
-type_of <- new_generic("type_of", signature = "x")
+type_of <- new_generic("type_of", dispatch_args = "x")
 method(type_of, "character") <- function(x, ...) "A character vector"
 method(type_of, "data.frame") <- function(x, ...) "A data frame"
 method(type_of, "function") <- function(x, ...) "A function"

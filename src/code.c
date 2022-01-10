@@ -108,7 +108,7 @@ void R7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
     R7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
   }
   SEXP name = Rf_getAttrib(generic, Rf_install("name"));
-  SEXP args = Rf_getAttrib(generic, Rf_install("signature"));
+  SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
   SEXP R7_method_lookup_error_call = PROTECT(Rf_lang4(R7_method_lookup_error_fun, name, args, signature));
   Rf_eval(R7_method_lookup_error_call, envir);
 }
@@ -117,7 +117,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
 
   // Get the signature, the names of arguments to use for dispatch
-  SEXP gen_signature_args = Rf_getAttrib(generic, Rf_install("signature"));
+  SEXP gen_signature_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
 
   // Every generic signature has `...` as the last arg, which we want to ignore.
   R_xlen_t gen_signature_len = Rf_xlength(gen_signature_args);
