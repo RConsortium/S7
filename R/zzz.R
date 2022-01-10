@@ -24,7 +24,7 @@ base_constructors <- lapply(base_types, get)
 
 R7_generic <- new_class(
   name = "R7_generic",
-  properties = list(name = "character", methods = "environment", signature = new_property(name = "signature", getter = function(x) formals(x@.data))),
+  properties = list(name = "character", methods = "environment", signature = new_property(name = "signature", getter = function(x) formals(r7_data(x)))),
   parent = "function",
   constructor = function(name, signature, fun) {
     new_object(name = name, signature = signature, methods = new.env(parent = emptyenv(), hash = TRUE), .data = fun)

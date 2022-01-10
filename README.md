@@ -65,7 +65,7 @@ x@length
 
 # incorrect properties throws an error
 x@middle
-#> Error: Can't find property <range>@middle
+#> Error in prop(object, name): Can't find property <range>@middle
 
 # assigning properties verifies the class matches the class of the value
 x@end <- "foo"
@@ -93,16 +93,6 @@ x
 #> @start  1
 #> @end    6
 #> @length 5
-
-# Use `.data` to refer to and retrieve the base data type, properties are
-# automatically removed, but non-property attributes (such as names) are retained.
-
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
-
-y <- text(c(foo = "bar"))
-
-names(y@.data)
-#> [1] "foo"
 ```
 
 ## Generics and methods
