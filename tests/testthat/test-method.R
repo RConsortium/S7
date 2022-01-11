@@ -206,73 +206,16 @@ test_that("method_compatible returns TRUE if the functions are compatible", {
 
 test_that("method_compatible throws errors if the functions are not compatible", {
   foo <- new_generic("foo", dispatch_args = "x")
-
   # Different argument names
-  expect_snapshot_error(
-    method_compatible(
-      function(y, ...) y,
-      foo
-    )
-  )
-
-  # No dots in method
-  expect_snapshot_error(
-    method_compatible(
-      function(x) x,
-      foo
-    )
-  )
-
+  expect_snapshot_error(method_compatible(function(y) {}, foo))
   # Different default values
-  expect_snapshot_error(
-    method_compatible(
-      function(x = "foo", ...) x,
-      foo
-    )
-  )
+  expect_snapshot_error(method_compatible(function(x = "foo") {}, foo))
 
   bar <- new_generic("bar", dispatch_args = c("x", "y"))
-
   # Arguments in wrong order
-  expect_snapshot_error(
-    method_compatible(
-      function(y, x, ...) x,
-      bar
-    )
-  )
-
-  # No dots in method
-  expect_snapshot_error(
-    method_compatible(
-      function(x, y) x,
-      bar
-    )
-  )
-
+  expect_snapshot_error(method_compatible(function(y, x, ...) {}, bar))
   # Different default values
-  expect_snapshot_error(
-    method_compatible(
-      function(x, y = NULL) x,
-      bar
-    )
-  )
-})
-
-test_that("method compatible verifies that if a generic does not have dots the method should not have dots", {
-  foo <- new_generic("foo", function(x) method_call())
-
-  expect_true(
-    method_compatible(
-      function(x) x,
-      foo
-    )
-  )
-  expect_snapshot_error(
-    method_compatible(
-      function(x, ...) x,
-      foo
-    )
-  )
+  expect_snapshot_error(method_compatible(function(x, y = NULL) {}, bar))
 })
 
 test_that("method lookup fails with an informative message for single classes", {

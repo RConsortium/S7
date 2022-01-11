@@ -153,19 +153,17 @@ method_compatible <- function(method, generic) {
     return()
   }
 
-  for (i in seq_len(length(generic_formals) - 1)) {
+  for (i in seq_len(length(generic_formals))) {
+    if (names(generic_formals[i]) == "...") {
+      # Method doesn't have to have ... even if generic does
+      next
+    }
+
     if (!identical(generic_formals[i], method_formals[i])) {
       stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- Argument %i in generic %s\n- Argument %i in method %s", generic@name, i, arg_to_string(generic_formals[i]), i, arg_to_string(method_formals[i])), call. = FALSE)
     }
   }
 
-  if ("..." %in% names(generic_formals) && !"..." %in% names(method_formals)) {
-      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- `generic` has `...`\n- `method` does not have `...`", generic@name), call. = FALSE)
-  }
-
-  if (!"..." %in% names(generic_formals) && "..." %in% names(method_formals)) {
-      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- `generic` does not have `...`\n- `method` has `...`", generic@name), call. = FALSE)
-  }
   TRUE
 }
 

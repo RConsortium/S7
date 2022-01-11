@@ -116,20 +116,12 @@ void R7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
 
-  // Get the signature, the names of arguments to use for dispatch
-  SEXP gen_signature_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
-
-  // Every generic signature has `...` as the last arg, which we want to ignore.
-  R_xlen_t gen_signature_len = Rf_xlength(gen_signature_args);
-
-  Rboolean has_dots = strcmp(CHAR(STRING_ELT(gen_signature_args, gen_signature_len - 1)), "...") == 0;
-
-  if (has_dots) {
-    --gen_signature_len;
-  }
+  // Get the names of arguments to use for dispatch
+  SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+  R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
   // Allocate a list to store the classes for the arguments
-  SEXP signature_classes = PROTECT(Rf_allocVector(VECSXP, gen_signature_len));
+  SEXP signature_classes = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
   ++n_protect;
 
   // Allocate a pairlist to hold the argument promises when we do the call to the method
@@ -137,11 +129,11 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   ++n_protect;
   SEXP tail = args;
 
-  // For each of the arguments in the signature
-  for (R_xlen_t i = 0; i < gen_signature_len; ++i) {
+  // For each of the arguments used fo dispatch
+  for (R_xlen_t i = 0; i < n_dispatch; ++i) {
 
     // Lookup the promise for that argument in the environment
-    SEXP name = Rf_install(CHAR(STRING_ELT(gen_signature_args, i)));
+    SEXP name = Rf_install(CHAR(STRING_ELT(dispatch_args, i)));
     SEXP arg = Rf_findVar(name, envir);
 
     // Most of the time this should be a promise
@@ -179,15 +171,10 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
     tail = CDR(tail);
   }
 
-
-  // We only need to add the dots to our arguments if the generic has dots and
-  // something was passed in them. Otherwise they are `R_MissingArg` and we
-  // don't need to.
-  if (has_dots) {
-    SEXP dots = Rf_findVar(R_DotsSymbol, envir);
-    if (dots != R_MissingArg) {
-      SETCDR(tail, dots);
-    }
+  // Now we add the remaining arguments from the call
+  R_xlen_t n_args = Rf_length(call) - 1;
+  for (R_xlen_t i = n_dispatch; i < n_args; ++i) {
+    SETCDR(tail, Rf_nthcdr(call, i + 1));
   }
 
   // The head of args is always R_NilValue, so we just want the tail

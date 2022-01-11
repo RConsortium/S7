@@ -53,12 +53,11 @@ new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
     check_generic(fun)
     dispatch_args <- guess_dispatch_args(fun)
   } else {
-    dispatch_args <- check_dispatch_args(dispatch_args)
-    # For now, ensure all generics have ... in dispatch_args
-    dispatch_args <- union(dispatch_args, "...")
+    dispatch_args <- check_dispatch_args(dispatch_args, fun)
 
     if (is.null(fun)) {
-      args <- setNames(lapply(dispatch_args, function(i) quote(expr = )), dispatch_args)
+      args <- c(dispatch_args, "...")
+      args <- setNames(lapply(args, function(i) quote(expr = )), args)
       fun <- make_function(args, quote(method_call()), topenv(environment()))
     }
   }
@@ -69,16 +68,27 @@ new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
 guess_dispatch_args <- function(fun) {
   formals <- formals(fun)
   is_required <- vlapply(formals, identical, quote(expr = ))
-  names(formals[is_required])
+  setdiff(names(formals[is_required]), "...")
 }
 
-check_dispatch_args <- function(dispatch_args) {
+check_dispatch_args <- function(dispatch_args, fun = NULL) {
   if (!is.character(dispatch_args)) {
     stop("`dispatch_args` must be a character vector", call. = FALSE)
   }
   if (length(dispatch_args) == 0) {
     stop("`dispatch_args` must have at least one component", call. = FALSE)
   }
+  if ("..." %in% dispatch_args) {
+    stop("Can't dispatch on `...`", call. = FALSE)
+  }
+
+  if (!is.null(fun)) {
+    args <- names(formals(fun))
+    if (!identical(dispatch_args, args[seq_along(dispatch_args)])) {
+      stop("`dispatch_args` must be a prefix of the generic arguments")
+    }
+  }
+
   dispatch_args
 }
 
