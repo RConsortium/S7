@@ -116,82 +116,65 @@ void R7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
 
-  // Get the names of arguments to use for dispatch
+  // Get the number of arguments to the generic
+  R_xlen_t n_args = Rf_xlength(FORMALS(generic));
+  // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
   R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
   // Allocate a list to store the classes for the arguments
-  SEXP signature_classes = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
+  SEXP dispatch_classes = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
   ++n_protect;
 
-  // Allocate a pairlist to hold the argument promises when we do the call to the method
-  SEXP args = PROTECT(Rf_cons(R_NilValue, R_NilValue));
+  // Allocate a pairlist to hold the arguments for when we call the method
+  SEXP mcall = PROTECT(Rf_lcons(R_NilValue, R_NilValue));
   ++n_protect;
-  SEXP tail = args;
+  SEXP tail = mcall;
 
-  // For each of the arguments used fo dispatch
-  for (R_xlen_t i = 0; i < n_dispatch; ++i) {
+  // For each of the arguments to the generic
+  for (R_xlen_t i = 0; i < n_args; ++i) {
 
-    // Lookup the promise for that argument in the environment
-    SEXP name = Rf_install(CHAR(STRING_ELT(dispatch_args, i)));
+    // Find its name and look up its value (a promise)
+    SEXP name = TAG(Rf_nthcdr(FORMALS(generic), i));
     SEXP arg = Rf_findVar(name, envir);
 
-    // Most of the time this should be a promise
-    if (TYPEOF(arg) == PROMSXP) {
+    if (i < n_dispatch) {
+      if (PRCODE(arg) != R_MissingArg) {
+        // Evaluate the original promise so we can look up its class
+        SEXP val = PROTECT(Rf_eval(arg, envir));
+        // And update the value of the promise to avoid evaluating it
+        // again in the method body
+        SET_PRVALUE(arg, val);
+        // Then add to arguments to method call
+        SETCDR(tail, Rf_cons(arg, R_NilValue));
 
-      // We first want to duplicate the existing promise
-      SEXP new_promise = PROTECT(Rf_duplicate(arg));
+        // We need to call `R7::object_class()`, as not every object has a class
+        // attribute, some are created dynamically.
+        SEXP klass = PROTECT(object_class_(val, envir));
 
-      // Then evaluate the original promise so we can lookup its class
-      SEXP val = PROTECT(Rf_eval(arg, envir));
-
-      // And set the value of the new promise to that of the evaluated one, so
-      // we don't evaluate it twice in the method body.
-      SET_PRVALUE(new_promise, val);
-
-      // We can then add our new promise to our argument list
-      SETCDR(tail, Rf_cons(new_promise, R_NilValue));
-
-      // We need to call `R7::object_class()`, as not every object has a class
-      // attribute, some are created dynamically.
-      SEXP klass = PROTECT(object_class_(val, envir));
-
-      // Now that we have the classes for the argument we can add them to the signature classes
-      SET_VECTOR_ELT(signature_classes, i, klass);
-
-      UNPROTECT(3);
+        // Now that we have the classes for the argument we can add them to the signature classes
+        SET_VECTOR_ELT(dispatch_classes, i, klass);
+        UNPROTECT(2);
+      } else {
+        SETCDR(tail, Rf_cons(name, R_NilValue));
+        SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
+      }
+    } else {
+      SETCDR(tail, Rf_cons(name, R_NilValue));
     }
-    // but the bytecode compiler sometimes inlines literals, which we handle
-    // here
-    else {
-      SETCDR(tail, Rf_cons(arg, R_NilValue));
-    }
-
-    // Move the pointer forward for the next iteration
     tail = CDR(tail);
   }
 
-  // Now we add the remaining arguments from the call
-  R_xlen_t n_args = Rf_length(call) - 1;
-  for (R_xlen_t i = n_dispatch; i < n_args; ++i) {
-    SETCDR(tail, Rf_nthcdr(call, i + 1));
-  }
-
-  // The head of args is always R_NilValue, so we just want the tail
-  args = CDR(args);
-
-  // Now that we have retrieved all the classes, we can look up what method to call.
-  SEXP m = method_(generic, signature_classes, R_NilValue);
-
-  // If no method found, throw an error
+  // Now that we have all the classes, we can look up what method to call
+  SEXP m = method_(generic, dispatch_classes, R_NilValue);
   if (m == R_NilValue) {
-    R7_method_lookup_error(generic, signature_classes, envir);
+    R7_method_lookup_error(generic, dispatch_classes, envir);
   }
+  SETCAR(mcall, m);
 
-  // And then actually call it.
-  SEXP res = Rf_applyClosure(call, m, args, envir, R_NilValue);
+  // And then call it
+  SEXP res = Rf_eval(mcall, envir);
 
   UNPROTECT(n_protect);
-
   return res;
 }

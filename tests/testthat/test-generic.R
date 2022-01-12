@@ -19,12 +19,12 @@ test_that("generics pass ... to methods, and methods can define additional argum
   foo <- new_generic("foo", dispatch_args = "x")
 
   # base type
-  new_method(foo, "character", function(x, sep = "-") paste0("foo", sep, x))
+  method(foo, "character") <- function(x, sep = "-") paste0("foo", sep, x)
   expect_equal(foo("bar"), "foo-bar")
   expect_equal(foo("bar", sep = "/"), "foo/bar")
 
   # R7
-  new_method(foo, "text", function(x, sep = "-") paste0("foo", sep, x))
+  method(foo, "text") <- function(x, sep = "-") paste0("foo", sep, x)
   expect_equal(foo(text("bar")), "foo-bar")
   expect_equal(foo(text("bar"), sep = "/"), "foo/bar")
 })
