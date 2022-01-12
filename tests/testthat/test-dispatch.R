@@ -1,7 +1,14 @@
-test_that("can substitute() dispatch args", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  method(foo, "character") <- function(x, ...) substitute(x)
+test_that("can substitute() args", {
+  foo <- new_generic("foo", function(x, ..., z = 1) method_call())
+  method(foo, "character") <- function(x, ..., z = 1) substitute(x)
   expect_equal(foo(letters), quote(letters))
+
+  method(foo, "character") <- function(x, ..., z = 1, y) substitute(y)
+  expect_equal(foo("x", y = letters), quote(letters))
+
+  # Doesn't work currently
+  # method(foo, "character") <- function(x, ..., z = 1) substitute(z)
+  # expect_equal(foo("x", z = letters), quote(letters))
 })
 
 test_that("dispatched arguments are evaluated once", {
