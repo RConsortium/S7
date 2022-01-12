@@ -15,20 +15,6 @@ test_that("derived fun always includes ...", {
   expect_equal(names(formals(g)), c("x", "..."))
 })
 
-test_that("generics pass ... to methods, and methods can define additional arguments", {
-  foo <- new_generic("foo", dispatch_args = "x")
-
-  # base type
-  method(foo, "character") <- function(x, sep = "-") paste0("foo", sep, x)
-  expect_equal(foo("bar"), "foo-bar")
-  expect_equal(foo("bar", sep = "/"), "foo/bar")
-
-  # R7
-  method(foo, "text") <- function(x, sep = "-") paste0("foo", sep, x)
-  expect_equal(foo(text("bar")), "foo-bar")
-  expect_equal(foo(text("bar"), sep = "/"), "foo/bar")
-})
-
 test_that("guesses dispatch_args from required arguments", {
   expect_equal(guess_dispatch_args(function() {}), NULL)
   expect_equal(guess_dispatch_args(function(x) {}), "x")

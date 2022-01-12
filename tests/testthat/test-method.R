@@ -151,16 +151,6 @@ test_that("substitute() works for single dispatch method calls like S3", {
   expect_equal(foo(bar), as.symbol("bar"))
 })
 
-test_that("substitute() works for multiple dispatch method calls like S3", {
-  foo <- new_generic("foo", dispatch_args = c("x", "y"))
-
-  new_method(foo, "character", function(x, y, ...) c(substitute(x), substitute(y)))
-
-  bar <- "blah"
-  baz <- "bloo"
-  expect_equal(foo(bar, baz), c(as.symbol("bar"), as.symbol("baz")))
-})
-
 test_that("method_compatible returns TRUE if the functions are compatible", {
   foo <- new_generic("foo", dispatch_args = "x")
 
@@ -216,26 +206,6 @@ test_that("method_compatible throws errors if the functions are not compatible",
   expect_snapshot_error(method_compatible(function(y, x, ...) {}, bar))
   # Different default values
   expect_snapshot_error(method_compatible(function(x, y = NULL) {}, bar))
-})
-
-test_that("method lookup fails with an informative message for single classes", {
-  foo <- new_generic(name="foo", dispatch_args = c("x", "y"))
-  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
-  expect_snapshot_error(
-    foo(TRUE, list())
-  )
-
-  expect_snapshot_error(
-    foo(TRUE)
-  )
-})
-
-test_that("method lookup fails with an informative message for multiple classes", {
-  foo <- new_generic(name="foo", dispatch_args = c("x", "y"))
-  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
-  expect_snapshot_error(
-    foo(tibble::tibble(), .POSIXct(double()))
-  )
 })
 
 test_that("R7_method printing", {
