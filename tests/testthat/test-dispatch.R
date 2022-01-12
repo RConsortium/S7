@@ -27,6 +27,12 @@ test_that("generics pass ... to methods", {
   expect_snapshot_error(foo("bar", baz = "/"))
 })
 
+test_that("generics pass extra args to methods", {
+  foo <- new_generic("foo", function(x, ..., z = 1) method_call())
+  method(foo, "character") <- function(x, ..., z = 1) z
+  expect_equal(foo("x", z = 3), 3)
+})
+
 test_that("method lookup fails with informative messages", {
   foo <- new_generic("foo", dispatch_args = c("x", "y"))
   method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)

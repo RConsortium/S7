@@ -160,7 +160,9 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
       }
     } else {
-      SETCDR(tail, Rf_cons(name, R_NilValue));
+      SEXP arg_wrap = Rf_cons(name, R_NilValue);
+      SET_TAG(arg_wrap, name);
+      SETCDR(tail, arg_wrap);
     }
     tail = CDR(tail);
   }
