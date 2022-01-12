@@ -11,6 +11,15 @@ test_that("can substitute() args", {
   # expect_equal(foo("x", z = letters), quote(letters))
 })
 
+test_that("methods get values modified in the generic", {
+  foo <- new_generic("foo", function(x, y = 1) {
+    y <- 10
+    method_call()
+  })
+  method(foo, "character") <- function(x, y = 1) y
+  expect_equal(foo("x", 1), 10)
+})
+
 test_that("dispatched arguments are evaluated once", {
   counter <- local({
     i <- 0
