@@ -4,6 +4,20 @@ test_that("can substitute() dispatch args", {
   expect_equal(foo(letters), quote(letters))
 })
 
+test_that("dispatched arguments are evaluated once", {
+  counter <- local({
+    i <- 0
+    function() {
+      i <<- i + 1
+      i
+    }
+  })
+
+  f <- new_generic("f", dispatch_args = "x")
+  method(f, "numeric") <- function(x) x
+  expect_equal(f(counter()), 1)
+})
+
 test_that("generics pass ... to methods", {
   foo <- new_generic("foo", dispatch_args = "x")
 
