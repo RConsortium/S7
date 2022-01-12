@@ -37,10 +37,10 @@ test_that("dispatched arguments are evaluated once", {
 test_that("generics pass ... to methods", {
   foo <- new_generic("foo", dispatch_args = "x")
 
-  method(foo, "character") <- function(x, sep = "-") paste0("foo", sep, x)
-  expect_equal(foo("bar"), "foo-bar")
-  expect_equal(foo("bar", sep = "/"), "foo/bar")
-  expect_snapshot_error(foo("bar", baz = "/"))
+  method(foo, "character") <- function(x, y = 1) y
+  expect_equal(foo("x"), 1)
+  expect_equal(foo("x", y = 2), 2)
+  expect_snapshot_error(foo("x", z = 2))
 })
 
 test_that("generics pass extra args to methods", {

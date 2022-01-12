@@ -1,6 +1,6 @@
 # generics pass ... to methods
 
-    unused argument (baz = "/")
+    unused argument (z = 2)
 
 # method lookup fails with informative messages
 
