@@ -1,10 +1,7 @@
 #' @importFrom utils modifyList
 R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
 
-  parent_obj <- as_class(parent)
-  if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
-    parent <- parent_obj
-  }
+  parent <- as_class(parent)
 
   # Combine properties from parent, overriding as needed
   properties <- modifyList(
@@ -128,26 +125,27 @@ as_class <- function(x, unions = FALSE, envir = parent.frame()) {
     x
   } else if (unions && is_union(x)) {
     x
+  } else if (is_s3_class(x)) {
+    x
+  } else if (isS4(x) && methods::isClass(x)) {
+    x
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
     if (length(candidate) != 1) {
       stop("Could not find class for constructor function", call. = FALSE)
     }
     base_classes[[names(candidate)]]
-  } else if (is.character(x)) {
-    if (length(x) == 1) {
-      if (x %in% names(base_classes)) {
-        return(base_classes[[x]])
-      }
-
-      obj <- get(x, envir = envir)
-      if (inherits(obj, "R7_class")) {
-        return(obj)
-      }
+  } else if (is.character(x) && length(x) == 1) {
+    if (x %in% names(base_classes)) {
+      return(base_classes[[x]])
     }
 
-    # TODO: What do we do about existing S3 / S4 classes?
-    NULL
+    obj <- get(x, envir = envir)
+    if (inherits(obj, "R7_class")) {
+      return(obj)
+    }
+
+    stop(sprintf("Can't find R7 class called '%s'", x))
   } else if (is.null(x)) {
     x
   } else {
@@ -173,4 +171,20 @@ print.R7_class <- function(x, ...) {
   parent <- prop_safely(parent, "name") %||% parent %||% ""
 
   cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, parent, prop_fmt), sep = "")
+}
+
+#' Declare an S3 class vector
+#'
+#' @export
+s3_class <- function(class) {
+  if (!is.character(class)) {
+    stop("Class must be a character vector")
+  }
+  structure(class, class = "r7_s3_class")
+}
+
+#' @export
+#' @rdname s3_class
+is_s3_class <- function(x) {
+  inherits(x, "r7_s3_class")
 }
