@@ -19,5 +19,5 @@
 
 # can get class from base constructor
 
-    Could not find class for constructor function
+    Could not find base class corresponding to supplied constructor function
 

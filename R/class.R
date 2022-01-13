@@ -2,6 +2,9 @@
 R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
 
   parent <- as_class(parent)
+  if (is_union(parent) || is_s4_class(parent)) {
+    stop("`parent` must be an R7 class, S3 class, or base type")
+  }
 
   # Combine properties from parent, overriding as needed
   properties <- modifyList(
@@ -24,6 +27,8 @@ R7_class <- function(name, parent = R7_object, constructor = NULL, validator = f
   global_variables(names(properties))
   object
 }
+
+is_class <- function(x) inherits(x, "R7_class")
 
 #' Create a new R7 class
 #'
@@ -114,55 +119,77 @@ class_names <- function(object) {
   unique(classes, fromLast = TRUE)
 }
 
-#' Retrieve the R7 class from a class specification
+#' Standard class specifications
+#'
+#' Can be:
+#' * An R7 class object or class union.
+#' * An S3 class object, created by `s3_class()`.
+#' * An S4 class object.
+#' * A base type specified either with its constructor (`logical`, `integer`,
+#'   `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
 #'
 #' @param x The name of the R7 class
 #' @param envir The environment to look for the name
 #' @param unions Include unions?
 #' @export
-as_class <- function(x, unions = FALSE, envir = parent.frame()) {
-  if (inherits(x, "R7_class")) {
+as_class <- function(x, envir = parent.frame()) {
+  if (is.null(x)) {
     x
-  } else if (unions && is_union(x)) {
+  } else if (is_class(x)) {
+    x
+  } else if (is_union(x)) {
     x
   } else if (is_s3_class(x)) {
     x
-  } else if (isS4(x) && methods::isClass(x)) {
+  } else if (is_s4_class(x)) {
     x
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
     if (length(candidate) != 1) {
-      stop("Could not find class for constructor function", call. = FALSE)
+      stop("Could not find base class corresponding to supplied constructor function")
     }
     base_classes[[names(candidate)]]
   } else if (is.character(x) && length(x) == 1) {
     if (x %in% names(base_classes)) {
-      return(base_classes[[x]])
+      base_classes[[x]]
+    } else {
+      stop(sprintf("Can't find base class called '%s'", x))
     }
-
-    obj <- get(x, envir = envir)
-    if (inherits(obj, "R7_class")) {
-      return(obj)
-    }
-
-    stop(sprintf("Can't find R7 class called '%s'", x))
-  } else if (is.null(x)) {
-    x
   } else {
-    stop(
-      "Must specify class as a <R7_class>, a base constructor function, or a string",
-      call. = FALSE
-    )
+    print(x)
+    stop("Invalid class specification")
   }
 }
 
+class_type <- function(x) {
+  if (is_class(x)) {
+    "r7"
+  } else if (is.null(x)) {
+    "NULL"
+  } else if (is_s3_class(x)) {
+    "s3"
+  } else if (isS4(x)) {
+    "s4"
+  } else {
+    stop("`x` is not standard R7 class")
+  }
+}
+
+class_name <- function(x) {
+  switch(class_type(x),
+    NULL = "",
+    s3 = class(x)[[1]],
+    s4 = class(x),
+    r7 = x@name,
+  )
+}
 
 #' @export
 print.R7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
     prop_names <- format(names(props))
-    prop_types <- format(paste0("<", vcapply(props, function(xx) xx[["class"]][[1]] %||% ""), ">"), justify = "right")
+    prop_types <- format(paste0("<", vcapply(props, function(x) class_name(x$class)), ">"), justify = "right")
     prop_fmt <- paste0(paste0(" $", prop_names, " ", prop_types, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""
@@ -187,4 +214,8 @@ s3_class <- function(class) {
 #' @rdname s3_class
 is_s3_class <- function(x) {
   inherits(x, "r7_s3_class")
+}
+
+is_s4_class <- function(x) {
+  isS4(x) && methods::isClass(x)
 }

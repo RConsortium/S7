@@ -81,9 +81,6 @@ test_that("constructor  types check their values", {
 # class_get ---------------------------------------------------------------
 
 test_that("can get class from string", {
-  foo <- new_class("foo")
-  expect_equal(as_class("foo"), foo)
-
   expect_equal(as_class("character"), base_classes$character)
 })
 
