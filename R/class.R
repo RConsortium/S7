@@ -1,7 +1,7 @@
 #' @importFrom utils modifyList
 R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
 
-  parent_obj <- class_get(parent)
+  parent_obj <- as_class(parent)
   if (!is.null(parent_obj) && inherits(parent_obj, "R7_class")) {
     parent <- parent_obj
   }
@@ -123,7 +123,7 @@ class_names <- function(object) {
 #' @param envir The environment to look for the name
 #' @param unions Include unions?
 #' @export
-class_get <- function(x, unions = FALSE, envir = parent.frame()) {
+as_class <- function(x, unions = FALSE, envir = parent.frame()) {
   if (inherits(x, "R7_class")) {
     x
   } else if (unions && is_union(x)) {

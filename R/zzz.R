@@ -49,7 +49,7 @@ R7_union <- new_class(
     new_property(
       "classes",
       setter = function(x, val) {
-        x@classes <- class_standardise(val)
+        x@classes <- class_flatten(val)
         x
       }
     )
@@ -59,8 +59,8 @@ R7_union <- new_class(
   }
 )
 
-class_standardise <- function(x) {
-  x <- lapply(x, class_get, unions = TRUE)
+class_flatten <- function(x) {
+  x <- lapply(x, as_class, unions = TRUE)
 
   # Flatten unions
   is_union <- vlapply(x, is_union)

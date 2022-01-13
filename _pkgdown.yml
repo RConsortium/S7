@@ -12,7 +12,7 @@ reference:
 
 - title: Introspection
   contents:
-  - class_get
+  - as_class
   - class_names
   - object_class
   - method

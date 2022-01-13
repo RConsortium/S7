@@ -82,14 +82,14 @@ test_that("constructor  types check their values", {
 
 test_that("can get class from string", {
   foo <- new_class("foo")
-  expect_equal(class_get("foo"), foo)
+  expect_equal(as_class("foo"), foo)
 
-  expect_equal(class_get("character"), base_classes$character)
+  expect_equal(as_class("character"), base_classes$character)
 })
 
 test_that("can get class from base constructor", {
-  expect_equal(class_get(character), base_classes$character)
-  expect_equal(class_get(`function`), base_classes$`function`)
+  expect_equal(as_class(character), base_classes$character)
+  expect_equal(as_class(`function`), base_classes$`function`)
 
-  expect_snapshot_error(class_get(mean))
+  expect_snapshot_error(as_class(mean))
 })

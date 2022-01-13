@@ -24,7 +24,7 @@ describe("new_object", {
 
   it("can instantiate a new object that inherits from a basic type", {
     y <- text("foo")
-    expect_equal(y@.data, class_get("character")("foo"))
+    expect_equal(y@.data, as_class("character")("foo"))
   })
 
   it("errors if given an invalid property", {

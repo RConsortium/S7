@@ -14,18 +14,18 @@ describe("prop", {
   })
   it("retrieves .data", {
     x <- text("hi")
-    expect_equal(x@.data, class_get("character")("hi"))
+    expect_equal(x@.data, as_class("character")("hi"))
   })
   it("preserves non-property attributes when retrieving .data", {
     val <- c(foo = "hi", bar = "ho")
     x <- text(val)
-    expect_equal(x@.data, class_get("character")(val))
+    expect_equal(x@.data, as_class("character")(val))
   })
   it("lets you set .data", {
     val <- c(foo = "hi", bar = "ho")
     x <- text("foo")
     x@.data <- "bar"
-    expect_equal(x@.data, class_get("character")("bar"))
+    expect_equal(x@.data, as_class("character")("bar"))
   })
 })
 
