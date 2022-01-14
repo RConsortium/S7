@@ -53,7 +53,7 @@ describe("new_object", {
     foo1 <- new_class("foo1", properties = list(x = "numeric"))
     foo2 <- new_class("foo2", foo1, properties = list(x = "character"))
     expect_equal(names(foo2@properties), "x")
-    expect_equal(foo2@properties$x$class, "character")
+    expect_equal(foo2@properties$x$class, as_class("character"))
   })
 
   it("can use the parent constructor to instantiate objects", {

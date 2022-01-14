@@ -163,7 +163,13 @@ as_class <- function(x, envir = parent.frame()) {
 
 class_type <- function(x) {
   if (is_class(x)) {
-    "r7"
+    if (hasName(base_classes, x@name)) {
+      "r7_base"
+    } else {
+      "r7"
+    }
+  } else if (is_union(x)) {
+    "r7_union"
   } else if (is.null(x)) {
     "NULL"
   } else if (is_s3_class(x)) {
@@ -175,12 +181,45 @@ class_type <- function(x) {
   }
 }
 
-class_name <- function(x) {
+obj_type <- function(x) {
+  if (inherits(x, "R7_object")) {
+    "r7"
+  } else if (isS4(x)) {
+    "s4"
+  } else if (is.object(x)) {
+    "s3"
+  } else {
+    "base"
+  }
+}
+obj_desc <- function(x) {
+  switch(obj_type(x),
+   base = fmt_classes(typeof(x)),
+   s3 = fmt_classes(class(x)),
+   s4 = fmt_classes(class(x)),
+   r7 = fmt_classes(object_class(x)@name)
+  )
+}
+
+class_desc <- function(x) {
   switch(class_type(x),
     NULL = "",
-    s3 = class(x)[[1]],
-    s4 = class(x),
-    r7 = x@name,
+    s3 = fmt_classes(class(x)[[1]]),
+    s4 = fmt_classes(class(x)),
+    r7 = fmt_classes(x@name),
+    r7_base = fmt_classes(x@name),
+    r7_union = paste(unlist(lapply(x@classes, class_desc)), collapse = " u "),
+  )
+}
+
+class_inherits <- function(x, what) {
+  switch(class_type(what),
+    NULL = TRUE,
+    s3 = is_s3(x) && inherits(x, class(what)),
+    s4 = isS4(x) && methods::is(x, what),
+    r7 = inherits(x, "R7_object") && inherits(x, what@name),
+    r7_base = inherits(x, what@name),
+    r7_union = any(vlapply(what@classes, class_inherits, x = x))
   )
 }
 
@@ -189,7 +228,7 @@ print.R7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
     prop_names <- format(names(props))
-    prop_types <- format(paste0("<", vcapply(props, function(x) class_name(x$class)), ">"), justify = "right")
+    prop_types <- format(vcapply(props, function(x) class_desc(x$class)), justify = "right")
     prop_fmt <- paste0(paste0(" $", prop_names, " ", prop_types, collapse = "\n"), "\n")
   } else {
     prop_fmt <- ""
