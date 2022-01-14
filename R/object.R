@@ -26,18 +26,25 @@ new_object <- function(.data = NULL, ...) {
   }
 
   if (!is.null(.data)) {
-    # Verify .data satisfies the parent class
-    cls_nms <- class_names(obj_cls@parent)
-
-    if (!identical(cls_nms, "R7_object") && !inherits(.data, cls_nms)) {
-      stop_bad_type(cls_nms, class(.data))
-    }
-
-    if (identical(cls_nms, "R7_object") && hasName(base_classes, obj_cls@name)) {
+    # TODO eliminate this special case
+    if (obj_cls@name %in% names(base_types)) {
       if (!inherits(.data, obj_cls@name)) {
-        stop_bad_type(obj_cls@name, class(.data))
+        stop(sprintf(
+          "`.data` must be %s not %s",
+          class_desc(as_class(obj_cls@name)),
+          obj_desc(.data)
+        ))
+      }
+    } else {
+      if (!class_inherits(.data, obj_cls@parent)) {
+        stop(sprintf(
+          "`.data` must be %s not %s",
+          class_desc(obj_cls@parent),
+          obj_desc(.data)
+        ))
       }
     }
+
     object <- .data
   } else {
     object <- obj_cls@parent@constructor()
@@ -54,17 +61,6 @@ new_object <- function(.data = NULL, ...) {
   validate(object)
 
   object
-}
-
-stop_bad_type <- function(expected, actual) {
-  stop(
-    sprintf(
-      "`.data` must be %s not %s",
-      fmt_classes(expected),
-      fmt_classes(actual[[1]])
-    ),
-    call. = FALSE
-  )
 }
 
 #' Retrieve the R7 class of an object
