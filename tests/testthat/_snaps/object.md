@@ -37,9 +37,9 @@
       @name range
       @parent <R7_object>
       @properties
-       $start  <numeric>
-       $end    <numeric>
-       $length <numeric>
+       $start  <double>
+       $end    <double>
+       $length <double>
 
 # str with simple R7 objects work
 
@@ -57,7 +57,7 @@
     Output
       List of 2
        $ : <text/character/R7_object>  chr "b"
-       $ : <number/numeric/R7_object>  num 50
+       $ : <number/double/R7_object>  num 50
 
 # str R7 classes work
 
@@ -75,7 +75,7 @@
        ..  ..$ start :List of 4
        ..  .. ..$ name  : chr "start"
        ..  .. ..$ class : <R7_class/R7_object> function (.data)  
-       ..  .. .. ..- attr(*, "name")= chr "numeric"
+       ..  .. .. ..- attr(*, "name")= chr "double"
        ..  .. .. ..- attr(*, "parent")= <R7_class/R7_object> function ()  
        ..  .. .. .. ..- attr(*, "name")= chr "R7_object"
        ..  .. .. .. ..- attr(*, "properties")= list()
@@ -90,7 +90,7 @@
        ..  ..$ end   :List of 4
        ..  .. ..$ name  : chr "end"
        ..  .. ..$ class : <R7_class/R7_object> function (.data)  
-       ..  .. .. ..- attr(*, "name")= chr "numeric"
+       ..  .. .. ..- attr(*, "name")= chr "double"
        ..  .. .. ..- attr(*, "parent")= <R7_class/R7_object> function ()  
        ..  .. .. .. ..- attr(*, "name")= chr "R7_object"
        ..  .. .. .. ..- attr(*, "properties")= list()
@@ -105,7 +105,7 @@
        ..  ..$ length:List of 4
        ..  .. ..$ name  : chr "length"
        ..  .. ..$ class : <R7_class/R7_object> function (.data)  
-       ..  .. .. ..- attr(*, "name")= chr "numeric"
+       ..  .. .. ..- attr(*, "name")= chr "double"
        ..  .. .. ..- attr(*, "parent")= <R7_class/R7_object> function ()  
        ..  .. .. .. ..- attr(*, "name")= chr "R7_object"
        ..  .. .. .. ..- attr(*, "properties")= list()

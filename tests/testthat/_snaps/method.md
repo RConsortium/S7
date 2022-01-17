@@ -59,20 +59,20 @@
 # method lookup fails with an informative message for single classes
 
     Can't find method for generic `foo()` with classes:
-    - x: <character>
-    - y: <character>
+    - x: <logical>
+    - y: <list>
 
 ---
 
     Can't find method for generic `foo()` with classes:
-    - x: <character>
-    - y: NULL
+    - x: <logical>
+    - y: <>
 
 # method lookup fails with an informative message for multiple classes
 
     Can't find method for generic `foo()` with classes:
-    - x: <character>
-    - y: <character>
+    - x: <tbl_df>, <tbl>, <data.frame>
+    - y: <POSIXct>, <POSIXt>
 
 # R7_method printing
 

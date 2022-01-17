@@ -3,7 +3,12 @@ R7_class <- function(name, parent = R7_object, constructor = NULL, validator = f
 
   parent <- as_class(parent)
   if (is_union(parent) || isS4(parent)) {
-    stop("`parent` must be an R7 class, S3 class, or base type")
+    not <- if (is_union(parent)) "a class union" else "an S4 class"
+    stop(
+      sprintf(
+        "`parent` must be an R7 class, S3 class, or base type, not %s.", not),
+      call. = FALSE
+    )
   }
 
   # Combine properties from parent, overriding as needed

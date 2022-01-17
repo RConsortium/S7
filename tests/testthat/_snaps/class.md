@@ -10,7 +10,7 @@
 
 # classes can use unions in properties
 
-    <my_class>@name must be of class <character> u <factor>, not <double>
+    <my_class>@name must be of class <integer> u <double>, not <character>
 
 # constructor  types check their values
 

@@ -94,7 +94,7 @@ class_inherits <- function(x, what) {
     s3 = !isS4(x) && inherits(x, what[[1]]),
     s4 = isS4(x) && methods::is(x, what),
     r7 = inherits(x, "R7_object") && inherits(x, what@name),
-    r7_base = inherits(x, what@name),
+    r7_base = what@name %in% .class2(x),
     r7_union = any(vlapply(what@classes, class_inherits, x = x))
   )
 }

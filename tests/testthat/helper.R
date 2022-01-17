@@ -1,5 +1,5 @@
 text <- new_class("text", parent = "character", constructor = function(text = character()) new_object(.data = text))
-number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
+number <- new_class("number", parent = "double", constructor = function(x) new_object(.data = x))
 
 range <- new_class("range",
   constructor = function(start, end) {
@@ -11,11 +11,11 @@ range <- new_class("range",
     }
   },
   properties = list(
-    start = "numeric",
-    end = "numeric",
+    start = "double",
+    end = "double",
     new_property(
       name = "length",
-      class = "numeric",
+      class = "double",
       getter = function(x) x@end - x@start,
       setter = function(x, value) {
         x@end <- x@start + value

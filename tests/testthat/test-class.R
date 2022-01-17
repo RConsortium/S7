@@ -35,7 +35,7 @@ test_that("classes can inherit from base types", {
     expect_equal(typeof(obj@.data), type)
   }
 
-  foo <- new_class("foo", parent = "numeric", constructor = function(x = numeric()) new_object(x))
+  foo <- new_class("foo", parent = "double", constructor = function(x = numeric()) new_object(x))
   obj <- foo()
   expect_equal(typeof(obj@.data), "double")
 
@@ -52,22 +52,22 @@ test_that("can supply literal examples of base types", {
 })
 
 test_that("classes can use unions in properties", {
-  my_class <- new_class("my_class", properties = list(new_property(name = "name", new_union("character", "factor"))))
+  my_class <- new_class("my_class", properties = list(name = "numeric"))
 
-  expect_equal(my_class(name = "foo")@name, "foo")
-  expect_equal(my_class(name = factor("foo"))@name, factor("foo"))
+  expect_equal(my_class(name = 1.5)@name, 1.5)
+  expect_equal(my_class(name = 1L)@name, 1L)
 
-  expect_snapshot_error(my_class(name = 1))
+  expect_snapshot_error(my_class(name = "x"))
 })
 
 test_that("default constructor works", {
-  foo1 <- new_class("foo1", properties = list(x = "numeric"))
-  foo2 <- new_class("foo2", parent = foo1, properties = list(y = "numeric"))
+  foo1 <- new_class("foo1", properties = list(x = "double"))
+  foo2 <- new_class("foo2", parent = foo1, properties = list(y = "double"))
   expect_s3_class(foo1(x = 1), "foo1")
   expect_s3_class(foo2(x = 1, y = 2), "foo2")
 
   text1 <- new_class("text1", parent = "character")
-  text2 <- new_class("text2", parent = text1, properties = list(y = "numeric"))
+  text2 <- new_class("text2", parent = text1, properties = list(y = "double"))
   expect_s3_class(text1("abc"), "text1")
   expect_s3_class(text2("abc", y = 1), "text2")
 })

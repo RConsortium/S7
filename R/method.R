@@ -22,11 +22,11 @@
 #' bizarro <- new_generic("bizarro", signature = "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x, ...) rev(x)
-#' method(bizarro, "factor") <- function(x, ...) {
+#' method(bizarro, s3_class("factor")) <- function(x, ...) {
 #'   levels(x) <- rev(levels(x))
 #'   x
 #' }
-#' method(bizarro, "data.frame") <- function(x, ...) {
+#' method(bizarro, s3_class("data.frame")) <- function(x, ...) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
@@ -36,11 +36,10 @@
 #'
 #' # But it can be useful to explicitly retrieve a method in order to
 #' # inspect its implementation
-#' method(bizarro, list("numeric"))
-#' method(bizarro, list("factor"))
+#' method(bizarro, "double")
+#' method(bizarro, s3_class("factor"))
 method <- function(generic, signature) {
   # TODO: check that signature doesn't contain any unions
-
   signature <- as_signature(signature)
   method_impl(generic, signature, ignore = NULL)
 }
@@ -94,7 +93,7 @@ method_impl <- function(generic, signature, ignore) {
     return(out)
   }
 
-  method_lookup_error(generic, args, signature)
+  method_lookup_error(generic, args, signature, in_R = TRUE)
 }
 
 find_function_name <- function(x, env) {
@@ -212,6 +211,7 @@ new_method <- function(generic, signature, method, package = NULL) {
       this_sig <- signature
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
+        method <- R7_method(generic, this_sig, method)
         new_method(generic, this_sig, method, package = package)
       }
       return(invisible(generic))
@@ -283,9 +283,16 @@ as_generic <- function(generic) {
   generic
 }
 
-method_lookup_error <- function(name, args, signatures) {
+method_lookup_error <- function(name, args, signatures, in_R = FALSE) {
+  # Temporary hack until automatic and explicit method dispatch are coordinated
+  if (in_R) {
+    signatures <- vcapply(signatures, class_desc)
+  } else {
+    signatures <- vcapply(signatures, fmt_classes)
+  }
+
   args <- setdiff(args, "...")
-  types <- paste0("- ", args, ": ", vcapply(signatures, obj_desc), collapse = "\n")
+  types <- paste0("- ", args, ": ", signatures, collapse = "\n")
   stop(sprintf("Can't find method for generic `%s()` with classes:\n%s", name, types), call. = FALSE)
 }
 
