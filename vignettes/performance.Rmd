@@ -28,7 +28,7 @@ x <- text("hi")
 y <- number(1)
 
 foo_R7 <- new_generic("foo_R7", signature = "x")
-method(foo_R7, "text") <- function(x, ...) paste0(x, "-foo")
+method(foo_R7, text) <- function(x, ...) paste0(x, "-foo")
 
 foo_s3 <- function(x, ...) {
   UseMethod("foo_s3")
@@ -49,7 +49,7 @@ setMethod("foo_s4", c("text"), function(x, ...) paste0(x, "-foo"))
 bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
 
 bar_R7 <- new_generic("bar_R7", signature = c("x", "y"))
-method(bar_R7, list("text", "number")) <- function(x, y, ...) paste0(x, "-", y, "-bar")
+method(bar_R7, list(text, number)) <- function(x, y, ...) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_s4", function(x, y, ...) standardGeneric("bar_s4"))
 setMethod("bar_s4", c("text", "number"), function(x, y, ...) paste0(x, "-", y, "-bar"))
@@ -80,12 +80,12 @@ bench::press(
   class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+    text <- new_class("text", parent = "character")
     parent <- text
     classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
-      assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
+      assign(x, new_class(x, parent = parent), env)
       parent <- get(x, env)
     }
 
@@ -119,12 +119,12 @@ bench::press(
   class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
+    text <- new_class("text", parent = "character")
     parent <- text
     classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
-      assign(x, new_class(x, parent = parent, constructor = function(text) new_object(.data = text)), env)
+      assign(x, new_class(x, parent = parent), env)
       parent <- get(x, env)
     }
 
