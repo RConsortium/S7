@@ -42,14 +42,19 @@ test_that("check_signature produces informative errors", {
 })
 
 test_that("R7_generic printing", {
-  foo <- new_generic(name = "foo", signature = c("x", "y", "z"))
-  method(foo, list("character", text, "character")) <- function(x, y, z, ...) 1
-  method(foo, list("character", "integer", "character")) <- function(x, y, z, ...) 2
-  method(foo, list("character", "integer", "logical")) <- function(x, y, z, ...) 3
+  foo1 <- new_generic(name = "foo1", signature = c("x", "y", "z"))
+  method(foo1, list("character")) <- function(x, y, z, ...) 1
+  method(foo1, list(text)) <- function(x, y, z, ...) 2
 
-  expect_snapshot(
-    foo
-  )
+  foo3 <- new_generic(name = "foo3", signature = c("x", "y", "z"))
+  method(foo3, list("character", text, "character")) <- function(x, y, z, ...) 1
+  method(foo3, list("character", "integer", "character")) <- function(x, y, z, ...) 2
+  method(foo3, list("character", "integer", "logical")) <- function(x, y, z, ...) 3
+
+  expect_snapshot({
+    foo1
+    foo3
+  })
 })
 
 test_that("R7_generic printing with long / many arguments", {

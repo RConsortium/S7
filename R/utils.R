@@ -36,8 +36,16 @@ collapse <- function(x, by) {
   paste(x, collapse = by)
 }
 
-method_signature <- function(signature) {
-  collapse(vcapply(signature, class_deparse), by = ", ")
+method_signature <- function(generic, signature) {
+  single <- length(setdiff(generic@signature, "...")) == 1
+  if (single) {
+    signature <- class_deparse(signature[[1]])
+  } else {
+    classes <- vcapply(signature, class_deparse)
+    signature <- paste0("list(", paste0(classes, collapse = ", "), ")")
+  }
+
+  sprintf("method(%s, %s)", generic@name, signature)
 }
 
 as_names <- function(x, named = FALSE) {

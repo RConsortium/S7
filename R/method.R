@@ -297,12 +297,9 @@ method_call <- function() {
 
 #' @export
 print.R7_method <- function(x, ...) {
-  method_signature <- method_signature(x@signature)
-
-  msg <- sprintf("method(%s, list(%s))", x@generic@name, method_signature)
+  signature <- method_signature(x@generic, x@signature)
+  cat("<R7_method> ", signature, "\n", sep = "")
 
   attributes(x) <- NULL
-
-  cat("<R7_method> ", msg, "\n", sep = "")
   print(x)
 }

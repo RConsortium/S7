@@ -84,15 +84,18 @@ check_signature <- function(signature) {
 
 #' @export
 print.R7_generic <- function(x, ...) {
-  ms <- methods(x)
-  indexes <- seq_along(ms)
-  method_signatures <- vcapply(ms, function(x) method_signature(x@signature))
-
-  msg <- collapse(sprintf("%s: method(%s, list(%s))", indexes, x@name, method_signatures), by = "\n")
-
+  methods <- methods(x)
   formals <- collapse(head(format(args(x)), n = -1), by = "\n")
+  cat(sprintf("<R7_generic> %s with %i methods:\n", formals, length(methods)), sep = "")
 
-  cat(sprintf("<R7_generic> %s with %i methods:\n%s", formals, length(ms), msg), sep = "")
+  if (length(methods) > 0) {
+    signatures <- lapply(methods, prop, "signature")
+    msg <- vcapply(signatures, method_signature, generic = x)
+    msg <- paste0(format(seq_along(signatures)), ": ", msg, "\n")
+    cat(msg, sep = "")
+  }
+
+  invisible(x)
 }
 
 check_generic <- function(fun) {

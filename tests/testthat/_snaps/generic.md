@@ -16,12 +16,18 @@
 # R7_generic printing
 
     Code
-      foo
+      foo1
+    Output
+      <R7_generic> function (x, y, z, ...)  with 2 methods:
+      1: method(foo1, list("character"))
+      2: method(foo1, list(text))
+    Code
+      foo3
     Output
       <R7_generic> function (x, y, z, ...)  with 3 methods:
-      1: method(foo, list("character", "integer", "character"))
-      2: method(foo, list("character", "integer", "logical"))
-      3: method(foo, list("character", text, "character"))
+      1: method(foo3, list("character", "integer", "character"))
+      2: method(foo3, list("character", "integer", "logical"))
+      3: method(foo3, list("character", text, "character"))
 
 # R7_generic printing with long / many arguments
 
