@@ -66,7 +66,7 @@
 
     Can't find method for generic `foo()` with classes:
     - x: <character>
-    - y: <NULL>
+    - y: NULL
 
 # method lookup fails with an informative message for multiple classes
 

@@ -16,7 +16,3 @@
 
     `.data` must be <integer> not <character>
 
-# can get class from base constructor
-
-    as_class(): could not find base class corresponding to supplied constructor function
-

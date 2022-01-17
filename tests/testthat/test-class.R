@@ -75,18 +75,3 @@ test_that("default constructor works", {
 test_that("constructor  types check their values", {
   expect_snapshot_error(new_class("foo", parent = integer)("abc"))
 })
-
-
-
-# class_get ---------------------------------------------------------------
-
-test_that("can get class from string", {
-  expect_equal(as_class("character"), base_classes$character)
-})
-
-test_that("can get class from base constructor", {
-  expect_equal(as_class(character), base_classes$character)
-  expect_equal(as_class(`function`), base_classes$`function`)
-
-  expect_snapshot_error(as_class(mean))
-})
