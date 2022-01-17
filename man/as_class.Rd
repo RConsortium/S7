@@ -4,7 +4,7 @@
 \alias{as_class}
 \title{Standard class specifications}
 \usage{
-as_class(x, arg_name = NULL)
+as_class(x, arg_name = "as_class()")
 }
 \arguments{
 \item{x}{A class specification.
