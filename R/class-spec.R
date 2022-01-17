@@ -124,7 +124,11 @@ obj_desc <- function(x) {
 
 #' Declare an S3 class vector
 #'
+#' The S3 class system is informal so doesn't have a way to formally register
+#' a class. This helper allows you to use S3 classes within R7.
+#'
 #' @export
+#' @param class Character vector of S3 classes
 s3_class <- function(class) {
   if (!is.character(class)) {
     stop("`class` must be a character vector")
@@ -132,8 +136,6 @@ s3_class <- function(class) {
   structure(class, class = "r7_s3_class")
 }
 
-#' @export
-#' @rdname s3_class
 is_s3_class <- function(x) {
   inherits(x, "r7_s3_class")
 }
@@ -143,3 +145,6 @@ is_s3_class <- function(x) {
 fmt_classes <- function(classes, collapse = ", ") {
   paste0("<", classes, ">", collapse = collapse)
 }
+
+# Suppress @className false positive
+globalVariables("className")

@@ -2,13 +2,14 @@
 % Please edit documentation in R/class-spec.R
 \name{s3_class}
 \alias{s3_class}
-\alias{is_s3_class}
 \title{Declare an S3 class vector}
 \usage{
 s3_class(class)
-
-is_s3_class(x)
+}
+\arguments{
+\item{class}{Character vector of S3 classes}
 }
 \description{
-Declare an S3 class vector
+The S3 class system is informal so doesn't have a way to formally register
+a class. This helper allows you to use S3 classes within R7.
 }
