@@ -107,6 +107,17 @@ test_that("can work with base types", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("class_inherits handles variation in class names", {
+  expect_true(class_inherits(1, base_classes$double))
+
+  expect_true(class_inherits(1L, base_classes$numeric))
+  expect_true(class_inherits(1, base_classes$numeric))
+
+  expect_true(class_inherits(function() {}, base_classes$`function`))
+  expect_true(class_inherits(sum, base_classes$`function`))
+  expect_true(class_inherits(`[`, base_classes$`function`))
+})
+
 test_that("can get class from base constructor", {
   expect_equal(as_class(character), base_classes$character)
   expect_equal(as_class(`function`), base_classes$`function`)
