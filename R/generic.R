@@ -39,7 +39,9 @@
 #'   }
 #'   sum(x) / length(x)
 #' }
-#' method(mean2, "character") <- function(x, ...) {stop("Not supported")}
+#' method(mean2, "character") <- function(x, ..., na.rm = TRUE) {
+#'   stop("Not supported")
+#' }
 #'
 new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
   if (is.null(dispatch_args) && is.null(fun)) {

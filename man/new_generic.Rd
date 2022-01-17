@@ -46,7 +46,9 @@ method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
   }
   sum(x) / length(x)
 }
-method(mean2, "character") <- function(x, ...) {stop("Not supported")}
+method(mean2, "character") <- function(x, ..., na.rm = TRUE) {
+  stop("Not supported")
+}
 
 }
 \seealso{
