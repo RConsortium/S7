@@ -91,7 +91,7 @@ print.R7_object <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("%s\n%s", fmt_classes(class(x), collapse = " "), prop_fmt), sep = "")
+  cat(sprintf("%s\n%s", obj_desc(x), prop_fmt), sep = "")
 }
 
 #' @export

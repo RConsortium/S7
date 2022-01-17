@@ -137,3 +137,9 @@ s3_class <- function(class) {
 is_s3_class <- function(x) {
   inherits(x, "r7_s3_class")
 }
+
+# helpers -----------------------------------------------------------------
+
+fmt_classes <- function(classes, collapse = ", ") {
+  paste0("<", classes, ">", collapse = collapse)
+}

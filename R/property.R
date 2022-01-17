@@ -101,8 +101,7 @@ prop <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     stop("`object` is not an <R7_object>")
   } else if (!prop_exists(object, name)) {
-    class <- object_class(object)
-    stop(sprintf("Can't find property %s@%s", fmt_classes(attr(class, "name")), name))
+    stop(sprintf("Can't find property %s@%s", obj_desc(object), name))
   } else {
     prop_val(object, name)
   }
