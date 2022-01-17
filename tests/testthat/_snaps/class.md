@@ -18,5 +18,5 @@
 
 # can get class from base constructor
 
-    Could not find base class corresponding to supplied constructor function
+    as_class(): could not find base class corresponding to supplied constructor function
 

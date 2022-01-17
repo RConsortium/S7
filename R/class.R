@@ -2,7 +2,7 @@
 R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
 
   parent <- as_class(parent)
-  if (is_union(parent) || is_s4_class(parent)) {
+  if (is_union(parent) || isS4(parent)) {
     stop("`parent` must be an R7 class, S3 class, or base type")
   }
 
@@ -129,10 +129,9 @@ class_names <- function(object) {
 #'   `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
 #'
 #' @param x The name of the R7 class
-#' @param envir The environment to look for the name
 #' @param unions Include unions?
 #' @export
-as_class <- function(x, envir = parent.frame()) {
+as_class <- function(x, arg_name = "as_class()") {
   if (is.null(x)) {
     x
   } else if (is_class(x)) {
@@ -141,23 +140,24 @@ as_class <- function(x, envir = parent.frame()) {
     x
   } else if (is_s3_class(x)) {
     x
-  } else if (is_s4_class(x)) {
+  } else if (isS4(x) && methods::is(x, "classGeneratorFunction")) {
+    methods::getClass(as.character(x@className))
+  } else if (isS4(x) && methods::is(x, "classRepresentation")) {
     x
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
-    if (length(candidate) != 1) {
-      stop("Could not find base class corresponding to supplied constructor function")
+    if (length(candidate)  == 0) {
+      stop(sprintf("%s: could not find base class corresponding to supplied constructor function", arg_name), call. = FALSE)
     }
-    base_classes[[names(candidate)]]
+    base_classes[[names(candidate)[[1]]]]
   } else if (is.character(x) && length(x) == 1) {
     if (x %in% names(base_classes)) {
       base_classes[[x]]
     } else {
-      stop(sprintf("Can't find base class called '%s'", x))
+      stop(sprintf("%s: Can't find base class called '%s'", arg_name, x), call. = FALSE)
     }
   } else {
-    print(x)
-    stop("Invalid class specification")
+    stop(sprintf("%s: class specification must by a R7 class object, result of s3_class(), a S4 class object, or a base constructor function, not a %s.", arg_name, obj_desc(x)), call. = FALSE)
   }
 }
 
@@ -212,6 +212,18 @@ class_desc <- function(x) {
   )
 }
 
+# Used when printing method signature to generate executable code
+class_deparse <- function(x) {
+  switch(class_type(x),
+    NULL = "",
+    s3 = paste0("s3_class(", encodeString(x, quote = '"'), ")"),
+    s4 = x@className,
+    r7_base = encodeString(x@name, quote = '"'),
+    r7 = x@name,
+    stop("Unsupported")
+  )
+}
+
 class_inherits <- function(x, what) {
   switch(class_type(what),
     NULL = TRUE,
@@ -253,8 +265,4 @@ s3_class <- function(class) {
 #' @rdname s3_class
 is_s3_class <- function(x) {
   inherits(x, "r7_s3_class")
-}
-
-is_s4_class <- function(x) {
-  isS4(x) && methods::isClass(x)
 }

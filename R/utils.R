@@ -41,14 +41,7 @@ collapse <- function(x, by) {
 }
 
 method_signature <- function(signature) {
-  format_signature <- function(x) {
-    if (inherits(x, "R7_class")) {
-      x@name
-    } else {
-      sprintf('"%s"', x)
-    }
-  }
-  collapse(vcapply(signature, format_signature), by = ", ")
+  collapse(vcapply(signature, class_deparse), by = ", ")
 }
 
 as_names <- function(x, named = FALSE) {
