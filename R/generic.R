@@ -5,6 +5,16 @@
 #' of one or more arguments (the `signature`). Create a new generic with
 #' `new_generic()` then use [method<-] to add methods to it.
 #'
+#' @section Dispatch arguments:
+#' The arguments that are used to pick the method are called the **dispatch
+#' arguments**. In most cases, this will be one argument, in which case the
+#' generic is said to use **single dispatch**. If it consists of more than
+#' one argument, it's said to use **multiple dispatch**.
+#'
+#' There are two restrictions on the dispatch arguments: they must be the first
+#' arguments to the generic and if the generic uses `...`, it must occur
+#' immediately after the dispatch arguments.
+#'
 #' @param name The name of the generic. This should be the same as the object
 #'   that you assign it to.
 #' @param dispatch_args A character vector providing the names of arguments to
@@ -91,6 +101,12 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
   }
   if (length(dispatch_args) == 0) {
     stop("`dispatch_args` must have at least one component", call. = FALSE)
+  }
+  if (anyDuplicated(dispatch_args)) {
+    stop("`dispatch_args` must be unique", call. = FALSE)
+  }
+  if (any(is.na(dispatch_args) | dispatch_args == "")) {
+    stop("`dispatch_args` must not be missing or the empty string")
   }
   if ("..." %in% dispatch_args) {
     stop("Can't dispatch on `...`", call. = FALSE)

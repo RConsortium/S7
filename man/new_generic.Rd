@@ -29,6 +29,18 @@ A generic function uses different implementations depending on the class
 of one or more arguments (the \code{signature}). Create a new generic with
 \code{new_generic()} then use \link{method<-} to add methods to it.
 }
+\section{Dispatch arguments}{
+
+The arguments that are used to pick the method are called the \strong{dispatch
+arguments}. In most cases, this will be one argument, in which case the
+generic is said to use \strong{single dispatch}. If it consists of more than
+one argument, it's said to use \strong{multiple dispatch}.
+
+There are two restrictions on the dispatch arguments: they must be the first
+arguments to the generic and if the generic uses \code{...}, it must occur
+immediately after the dispatch arguments.
+}
+
 \examples{
 # A simple generic with methods for some base types and S3 classes
 type_of <- new_generic("type_of", dispatch_args = "x")

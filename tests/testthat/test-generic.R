@@ -29,6 +29,9 @@ test_that("check_dispatch_args() produces informative errors", {
   expect_snapshot(error = TRUE, {
     check_dispatch_args(1)
     check_dispatch_args(character())
+    check_dispatch_args("")
+    check_dispatch_args(NA_character_)
+    check_dispatch_args(c("x", "x"))
     check_dispatch_args("...")
     check_dispatch_args("x", function(x, y, ...) {})
     check_dispatch_args("y", function(x, ..., y) {})

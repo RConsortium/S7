@@ -13,6 +13,18 @@
     Error <simpleError>
       `dispatch_args` must have at least one component
     Code
+      check_dispatch_args("")
+    Error <simpleError>
+      `dispatch_args` must not be missing or the empty string
+    Code
+      check_dispatch_args(NA_character_)
+    Error <simpleError>
+      `dispatch_args` must not be missing or the empty string
+    Code
+      check_dispatch_args(c("x", "x"))
+    Error <simpleError>
+      `dispatch_args` must be unique
+    Code
       check_dispatch_args("...")
     Error <simpleError>
       Can't dispatch on `...`
