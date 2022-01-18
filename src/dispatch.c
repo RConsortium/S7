@@ -146,12 +146,11 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         // And update the value of the promise to avoid evaluating it
         // again in the method body
         SET_PRVALUE(arg, val);
-        // Then add to arguments to method call
+
+        // Then add to arguments of method call
         SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
 
-        // We need to call `R7::object_class()`, as not every object has a class
-        // attribute, some are created dynamically.
-        // Now that we have the classes for the argument we can add them to the signature classes
+        // Determine class string to use for method look up
         SET_VECTOR_ELT(dispatch_classes, i, object_class_(val, envir));
       } else {
         SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
