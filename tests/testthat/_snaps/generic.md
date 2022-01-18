@@ -12,6 +12,18 @@
       check_dispatch_args(character())
     Error <simpleError>
       `dispatch_args` must have at least one component
+    Code
+      check_dispatch_args("...")
+    Error <simpleError>
+      Can't dispatch on `...`
+    Code
+      check_dispatch_args("x", function(x, y, ...) { })
+    Error <simpleError>
+      If present, ... must immediately follow the `dispatch_args`
+    Code
+      check_dispatch_args("y", function(x, ..., y) { })
+    Error <simpleError>
+      `dispatch_args` must be a prefix of the generic arguments
 
 # R7_generic printing
 

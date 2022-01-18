@@ -6,7 +6,7 @@ test_that("dispatch_args overrules derived", {
   g <- new_generic("g", function(x, y, ...) method_call())
   expect_equal(g@dispatch_args, c("x", "y"))
 
-  g <- new_generic("g", function(x, y, ...) method_call(), dispatch_args = "x")
+  g <- new_generic("g", function(x, ...) method_call(), dispatch_args = "x")
   expect_equal(g@dispatch_args, "x")
 })
 
@@ -15,18 +15,23 @@ test_that("derived fun always includes ...", {
   expect_equal(names(formals(g)), c("x", "..."))
 })
 
-test_that("guesses dispatch_args from required arguments", {
-  expect_equal(guess_dispatch_args(function() {}), NULL)
+test_that("guesses dispatch_args from args after dots arguments", {
+  expect_equal(guess_dispatch_args(function() {}), character())
   expect_equal(guess_dispatch_args(function(x) {}), "x")
-  expect_equal(guess_dispatch_args(function(x, y) {}), c("x", "y"))
+  expect_equal(guess_dispatch_args(function(x, y) {}), "x")
+
+  expect_equal(guess_dispatch_args(function(...) {}), character())
   expect_equal(guess_dispatch_args(function(x, y, ...) {}), c("x", "y"))
-  expect_equal(guess_dispatch_args(function(x, ..., y = 1) {}), c("x"))
+  expect_equal(guess_dispatch_args(function(x, ..., y = 1) {}), "x")
 })
 
 test_that("check_dispatch_args() produces informative errors", {
   expect_snapshot(error = TRUE, {
     check_dispatch_args(1)
     check_dispatch_args(character())
+    check_dispatch_args("...")
+    check_dispatch_args("x", function(x, y, ...) {})
+    check_dispatch_args("y", function(x, ..., y) {})
   })
 })
 

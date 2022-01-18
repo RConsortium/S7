@@ -152,61 +152,35 @@ test_that("substitute() works for single dispatch method calls like S3", {
 })
 
 test_that("method_compatible returns TRUE if the functions are compatible", {
-  foo <- new_generic("foo", dispatch_args = "x")
-
-  expect_true(
-    method_compatible(
-      function(x, ...) x,
-      foo
-    )
-  )
-
+  foo <- new_generic("foo", function(x, ...) method_call())
+  expect_true(method_compatible(function(x, ...) x, foo))
   # extra arguments are ignored
-  expect_true(
-    method_compatible(
-      function(x, y, ...) x,
-      foo
-    )
-  )
+  expect_true(method_compatible(function(x, ..., y) x, foo))
 
-  foo <- new_generic("foo", function(x = NULL) method_call())
-  expect_true(
-    method_compatible(
-      function(x = NULL) x,
-      foo
-    )
-  )
+  foo <- new_generic("foo", function(x) method_call())
+  expect_true(method_compatible(function(x) x, foo))
 
   bar <- new_generic("bar", dispatch_args = c("x", "y"))
-  expect_true(
-    method_compatible(
-      function(x, y, ...) x,
-      bar
-    )
-  )
-
-  bar <- new_generic("bar", function(x=NULL, y=1, ...) method_call())
-  expect_true(
-    method_compatible(
-      function(x = NULL, y = 1, ...) x,
-      bar
-    )
-  )
+  expect_true(method_compatible(function(x, y, ...) x, bar))
 })
 
-test_that("method_compatible throws errors if the functions are not compatible", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  # Different argument names
-  expect_snapshot_error(method_compatible(function(y) {}, foo))
-  # Different default values
-  expect_snapshot_error(method_compatible(function(x = "foo") {}, foo))
-
-  bar <- new_generic("bar", dispatch_args = c("x", "y"))
-  # Arguments in wrong order
-  expect_snapshot_error(method_compatible(function(y, x, ...) {}, bar))
-  # Different default values
-  expect_snapshot_error(method_compatible(function(x, y = NULL) {}, bar))
+test_that("method_compatible errors if the functions are not compatible", {
+  expect_snapshot(error = TRUE, {
+    foo <- new_generic("foo", dispatch_args = "x")
+    method_compatible(function(y) {}, foo)
+    method_compatible(function(x = "foo") {}, foo)
+    method_compatible(function(x, y, ...) {}, foo)
+  })
 })
+
+test_that("method_compatible warn if default arguments don't match", {
+  expect_snapshot({
+    foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
+    method_compatible(function(x, ..., y = 1) {}, foo)
+    method_compatible(function(x, ..., y = 1, z = 1) {}, foo)
+  })
+})
+
 
 test_that("R7_method printing", {
   foo <- new_generic(name="foo", dispatch_args = c("x", "y"))

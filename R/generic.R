@@ -8,10 +8,16 @@
 #' @param name The name of the generic. This should be the same as the object
 #'   that you assign it to.
 #' @param dispatch_args A character vector providing the names of arguments to
-#'   dispatch on. If omitted, defaults to the required arguments of `fun`.
+#'   dispatch on.
+#'
+#'   If `dispatch_args` are omitted, but `fun` is supplied, will default to the
+#'   arguments that appear before `...` in `fun`. If there are no dots, it will
+#'   default to the first argument. If both `fun` and `dispatch_args` are
+#'   supplied, the `dispatch_args` must appear at the start of `fun`'s formals.
+#'
 #' @param fun An optional specification of the generic, which must call
 #'  `method_call()` to dispatch to methods. This is usually generated
-#'  automatically from the `signature`, but you may want to supply it if
+#'  automatically from the `dispatch_args`, but you may want to supply it if
 #'  you want to add additional required arguments, or perform some standardised
 #'  computation in the generic.
 #' @seealso [new_external_generic()] to define a method for a generic
@@ -69,8 +75,14 @@ new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
 
 guess_dispatch_args <- function(fun) {
   formals <- formals(fun)
-  is_required <- vlapply(formals, identical, quote(expr = ))
-  setdiff(names(formals[is_required]), "...")
+  # all arguments before ...
+  if (length(formals) == 0) {
+    character()
+  } else if ("..." %in% names(formals)) {
+    names(formals)[seq_len(which(names(formals) == "...") - 1)]
+  } else {
+    names(formals)[[1]]
+  }
 }
 
 check_dispatch_args <- function(dispatch_args, fun = NULL) {
@@ -85,9 +97,14 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
   }
 
   if (!is.null(fun)) {
-    args <- names(formals(fun))
-    if (!identical(dispatch_args, args[seq_along(dispatch_args)])) {
-      stop("`dispatch_args` must be a prefix of the generic arguments")
+    arg_names <- names(formals(fun))
+
+    if (!identical(dispatch_args, arg_names[seq_along(dispatch_args)])) {
+      stop("`dispatch_args` must be a prefix of the generic arguments", call. = FALSE)
+    }
+
+    if ("..." %in% arg_names && arg_names[[length(dispatch_args) + 1]] != "...") {
+      stop("If present, ... must immediately follow the `dispatch_args`", call. = FALSE)
     }
   }
 

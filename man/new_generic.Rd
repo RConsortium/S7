@@ -12,12 +12,17 @@ that you assign it to.}
 
 \item{fun}{An optional specification of the generic, which must call
 \code{method_call()} to dispatch to methods. This is usually generated
-automatically from the \code{signature}, but you may want to supply it if
+automatically from the \code{dispatch_args}, but you may want to supply it if
 you want to add additional required arguments, or perform some standardised
 computation in the generic.}
 
 \item{dispatch_args}{A character vector providing the names of arguments to
-dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
+dispatch on.
+
+If \code{dispatch_args} are omitted, but \code{fun} is supplied, will default to the
+arguments that appear before \code{...} in \code{fun}. If there are no dots, it will
+default to the first argument. If both \code{fun} and \code{dispatch_args} are
+supplied, the \code{dispatch_args} must appear at the start of \code{fun}'s formals.}
 }
 \description{
 A generic function uses different implementations depending on the class

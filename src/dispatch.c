@@ -117,7 +117,8 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
 
   // Get the number of arguments to the generic
-  R_xlen_t n_args = Rf_xlength(FORMALS(generic));
+  SEXP formals = FORMALS(generic);
+  R_xlen_t n_args = Rf_xlength(formals);
   // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
   R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
@@ -129,42 +130,42 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   // Allocate a pairlist to hold the arguments for when we call the method
   SEXP mcall = PROTECT(Rf_lcons(R_NilValue, R_NilValue));
   ++n_protect;
-  SEXP tail = mcall;
+  SEXP mcall_tail = mcall;
 
   // For each of the arguments to the generic
   for (R_xlen_t i = 0; i < n_args; ++i) {
 
     // Find its name and look up its value (a promise)
-    SEXP name = TAG(Rf_nthcdr(FORMALS(generic), i));
+    SEXP name = TAG(formals);
     SEXP arg = Rf_findVar(name, envir);
 
     if (i < n_dispatch) {
       if (PRCODE(arg) != R_MissingArg) {
         // Evaluate the original promise so we can look up its class
-        SEXP val = PROTECT(Rf_eval(arg, envir));
+        SEXP val = Rf_eval(arg, R_EmptyEnv);
         // And update the value of the promise to avoid evaluating it
         // again in the method body
         SET_PRVALUE(arg, val);
         // Then add to arguments to method call
-        SETCDR(tail, Rf_cons(arg, R_NilValue));
+        SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
 
         // We need to call `R7::object_class()`, as not every object has a class
         // attribute, some are created dynamically.
-        SEXP klass = PROTECT(object_class_(val, envir));
-
         // Now that we have the classes for the argument we can add them to the signature classes
-        SET_VECTOR_ELT(dispatch_classes, i, klass);
-        UNPROTECT(2);
+        SET_VECTOR_ELT(dispatch_classes, i, object_class_(val, envir));
       } else {
-        SETCDR(tail, Rf_cons(name, R_NilValue));
+        SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
       }
     } else {
+      // other arguments not used for dispatch
       SEXP arg_wrap = Rf_cons(name, R_NilValue);
       SET_TAG(arg_wrap, name);
-      SETCDR(tail, arg_wrap);
+      SETCDR(mcall_tail, arg_wrap);
     }
-    tail = CDR(tail);
+
+    mcall_tail = CDR(mcall_tail);
+    formals = CDR(formals);
   }
 
   // Now that we have all the classes, we can look up what method to call
