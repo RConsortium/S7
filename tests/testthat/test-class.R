@@ -44,6 +44,14 @@ test_that("classes can inherit from base types", {
   expect_equal(typeof(obj@.data), "closure")
 })
 
+test_that("classes can't inherit from S4 or class unions", {
+  parentS4 <- methods::setClass("parentS4", slots = c(x = "numeric"))
+  expect_snapshot(error = TRUE, {
+    new_class("test", parent = parentS4)
+    new_class("test", parent = new_union("character"))
+  })
+})
+
 test_that("can supply literal examples of base types", {
   foo <- new_class("foo", parent = integer)
   obj <- foo(1L)
