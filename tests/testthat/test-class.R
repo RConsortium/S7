@@ -51,15 +51,6 @@ test_that("can supply literal examples of base types", {
   expect_type(obj@.data, "integer")
 })
 
-test_that("classes can use unions in properties", {
-  my_class <- new_class("my_class", properties = list(new_property(name = "name", new_union("character", "factor"))))
-
-  expect_equal(my_class(name = "foo")@name, "foo")
-  expect_equal(my_class(name = factor("foo"))@name, factor("foo"))
-
-  expect_snapshot_error(my_class(name = 1))
-})
-
 test_that("default constructor works", {
   foo1 <- new_class("foo1", properties = list(x = "numeric"))
   foo2 <- new_class("foo2", parent = foo1, properties = list(y = "numeric"))
