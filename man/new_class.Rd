@@ -7,9 +7,9 @@
 new_class(
   name,
   parent = R7_object,
+  properties = list(),
   constructor = NULL,
-  validator = function(x) NULL,
-  properties = list()
+  validator = function(x) NULL
 )
 }
 \arguments{
@@ -22,6 +22,11 @@ new_class(
 to construct the object, e.g. \code{character}, \code{integer}.
 }}
 
+\item{properties}{A list specifying the properties (data) that
+every object of the class will possess. Each property can either be
+a named string (specifying the class), or a call to \code{\link[=new_property]{new_property()}},
+allowing greater flexibility.}
+
 \item{constructor}{The constructor function. This is optional, unless
 you want to control which properties can be set on constructor.}
 
@@ -29,11 +34,6 @@ you want to control which properties can be set on constructor.}
 is valid. This is called automatically after construction, and
 whenever any property is set. It should return \code{NULL} if the object is
 valid, and otherwise return a character vector of problems.}
-
-\item{properties}{A list specifying the properties (data) that
-every object of the class will possess. Each property can either be
-a named string (specifying the class), or a call to \code{\link[=new_property]{new_property()}},
-allowing greater flexibility.}
 }
 \value{
 A object constructor, a function that can be used to create objects
