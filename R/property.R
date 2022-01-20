@@ -119,19 +119,6 @@ prop_safely <- function(object, name) {
 
 # Internal helper that assumes the property exists
 prop_val <- function(object, name) {
-  if (identical(name, ".data")) {
-    # Remove properties, return the rest
-    for (name in prop_names(object)) {
-      attr(object, name) <- NULL
-    }
-
-    obj_cls <- object_class(object)
-    class(object) <- setdiff(class_names(obj_cls@parent), obj_cls@name)
-    object_class(object) <- object_class(obj_cls@parent)
-
-    return(object)
-  }
-
   val <- attr(object, name, exact = TRUE)
   if (is.null(val)) {
     prop <- prop_obj(object, name)
@@ -179,11 +166,7 @@ props <- function(object) {
 #' @rdname prop
 #' @export
 prop_exists <- function(object, name) {
-  if (identical(name, ".data")) {
-    !identical(object, R7_object)
-  } else {
-    name %in% prop_names(object)
-  }
+  name %in% prop_names(object)
 }
 
 #' @rdname prop
@@ -195,16 +178,6 @@ prop_exists <- function(object, name) {
   setter_property <- NULL
 
   function(object, name, check = TRUE, value) {
-    if (name == ".data") {
-      attrs <- attributes(object)
-      object <- value
-      attributes(object) <- attrs
-      if (isTRUE(check)) {
-        validate(object)
-      }
-      return(invisible(object))
-    }
-
     prop <- prop_obj(object, name)
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
