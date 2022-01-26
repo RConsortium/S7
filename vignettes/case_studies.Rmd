@@ -180,7 +180,7 @@ The subsets the individual components appropriately and then returns a new `anno
 subset_R7 <- new_generic("R7_subset", dispatch_args = c("object", "row", "column"))
 
 method(subset_R7, list(annotated_df, "integer", "integer")) <- function(object, row, column, ...) {
-  data <- object@.data[row, column]
+  data <- r7_data(object)[row, column]
   rows <- object@rows[row, ]
   columns <-  object@columns[column, ]
   annotated_df(data, rows, columns)
