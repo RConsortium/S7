@@ -12,18 +12,35 @@ that you assign it to.}
 
 \item{fun}{An optional specification of the generic, which must call
 \code{method_call()} to dispatch to methods. This is usually generated
-automatically from the \code{signature}, but you may want to supply it if
+automatically from the \code{dispatch_args}, but you may want to supply it if
 you want to add additional required arguments, or perform some standardised
 computation in the generic.}
 
 \item{dispatch_args}{A character vector providing the names of arguments to
-dispatch on. If omitted, defaults to the required arguments of \code{fun}.}
+dispatch on.
+
+If \code{dispatch_args} are omitted, but \code{fun} is supplied, will default to the
+arguments that appear before \code{...} in \code{fun}. If there are no dots, it will
+default to the first argument. If both \code{fun} and \code{dispatch_args} are
+supplied, the \code{dispatch_args} must appear at the start of \code{fun}'s formals.}
 }
 \description{
 A generic function uses different implementations depending on the class
 of one or more arguments (the \code{signature}). Create a new generic with
 \code{new_generic()} then use \link{method<-} to add methods to it.
 }
+\section{Dispatch arguments}{
+
+The arguments that are used to pick the method are called the \strong{dispatch
+arguments}. In most cases, this will be one argument, in which case the
+generic is said to use \strong{single dispatch}. If it consists of more than
+one argument, it's said to use \strong{multiple dispatch}.
+
+There are two restrictions on the dispatch arguments: they must be the first
+arguments to the generic and if the generic uses \code{...}, it must occur
+immediately after the dispatch arguments.
+}
+
 \examples{
 # A simple generic with methods for some base types and S3 classes
 type_of <- new_generic("type_of", dispatch_args = "x")
@@ -46,7 +63,9 @@ method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
   }
   sum(x) / length(x)
 }
-method(mean2, "character") <- function(x, ...) {stop("Not supported")}
+method(mean2, "character") <- function(x, ..., na.rm = TRUE) {
+  stop("Not supported")
+}
 
 }
 \seealso{

@@ -4,40 +4,37 @@ test_that("new_generic needs fun or dispatch_args", {
 
 test_that("dispatch_args overrules derived", {
   g <- new_generic("g", function(x, y, ...) method_call())
-  expect_equal(g@dispatch_args, c("x", "y", "..."))
+  expect_equal(g@dispatch_args, c("x", "y"))
 
-  g <- new_generic("g", function(x, y, ...) method_call(), dispatch_args = "x")
-  expect_equal(g@dispatch_args, c("x", "..."))
+  g <- new_generic("g", function(x, ...) method_call(), dispatch_args = "x")
+  expect_equal(g@dispatch_args, "x")
 })
 
-test_that("generics pass ... to methods, and methods can define additional arguments on basic types", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  new_method(foo, "character", function(x, sep = "-", ...) paste0("foo", sep, x))
-
-  expect_equal(foo("bar"), "foo-bar")
-  expect_equal(foo("bar", sep = "/"), "foo/bar")
+test_that("derived fun always includes ...", {
+  g <- new_generic("g", dispatch_args = "x")
+  expect_equal(names(formals(g)), c("x", "..."))
 })
 
-test_that("generics pass ... to methods, and methods can define additional arguments on R7 objects", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  new_method(foo, "text", function(x, sep = "-", ...) paste0("foo", sep, x))
-
-  expect_equal(foo(text("bar")), "foo-bar")
-  expect_equal(foo(text("bar"), sep = "/"), "foo/bar")
-})
-
-test_that("guesses dispatch_args from required arguments", {
-  expect_equal(guess_dispatch_args(function() {}), NULL)
+test_that("guesses dispatch_args from args after dots arguments", {
+  expect_equal(guess_dispatch_args(function() {}), character())
   expect_equal(guess_dispatch_args(function(x) {}), "x")
-  expect_equal(guess_dispatch_args(function(x, y) {}), c("x", "y"))
-  expect_equal(guess_dispatch_args(function(x, y, ...) {}), c("x", "y", "..."))
-  expect_equal(guess_dispatch_args(function(x, ..., y = 1) {}), c("x", "..."))
+  expect_equal(guess_dispatch_args(function(x, y) {}), "x")
+
+  expect_equal(guess_dispatch_args(function(...) {}), character())
+  expect_equal(guess_dispatch_args(function(x, y, ...) {}), c("x", "y"))
+  expect_equal(guess_dispatch_args(function(x, ..., y = 1) {}), "x")
 })
 
 test_that("check_dispatch_args() produces informative errors", {
   expect_snapshot(error = TRUE, {
     check_dispatch_args(1)
     check_dispatch_args(character())
+    check_dispatch_args("")
+    check_dispatch_args(NA_character_)
+    check_dispatch_args(c("x", "x"))
+    check_dispatch_args("...")
+    check_dispatch_args("x", function(x, y, ...) {})
+    check_dispatch_args("y", function(x, ..., y) {})
   })
 })
 

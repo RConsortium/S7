@@ -136,36 +136,40 @@ next_method <- function() {
   method_impl(generic, signature, ignore = methods)
 }
 
-
-arg_to_string <- function(arg) {
-  if (is.na(names(arg)[[1]])) {
-    return("does not exist")
-  }
-  sprintf("is `%s = %s`", names(arg), deparse(arg[[1]]))
-}
-
 method_compatible <- function(method, generic) {
   generic_formals <- suppressWarnings(formals(args(generic)))
-  method_formals <- formals(method)
-
   # This can happen for some primitive functions such as `[`
   if (length(generic_formals) == 0) {
     return()
   }
 
-  for (i in seq_len(length(generic_formals) - 1)) {
-    if (!identical(generic_formals[i], method_formals[i])) {
-      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- Argument %i in generic %s\n- Argument %i in method %s", generic@name, i, arg_to_string(generic_formals[i]), i, arg_to_string(method_formals[i])), call. = FALSE)
+  method_formals <- formals(method)
+  generic_args <- names(generic_formals)
+  method_args <- names(method_formals)
+
+  n_dispatch <- length(generic@dispatch_args)
+  has_dispatch <- length(method_formals) >= n_dispatch &&
+    identical(method_args[1:n_dispatch], generic@dispatch_args)
+  if (!has_dispatch) {
+    stop("`method` doesn't match generic dispatch arg", call. = FALSE)
+  }
+  if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
+    stop("... must immediately follow dispatch args", call. = FALSE)
+  }
+  empty_dispatch <- vlapply(method_formals[generic@dispatch_args], identical, quote(expr = ))
+  if (any(!empty_dispatch)) {
+    stop("Dispatch arguments must not have default values", call. = FALSE)
+  }
+
+  extra_args <- setdiff(names(generic_formals), c(generic@dispatch_args, "..."))
+  for (arg in extra_args) {
+    if (!arg %in% method_args) {
+      warning(sprintf("Argument `%s` is missing from method", arg), call. = FALSE)
+    } else if (!identical(generic_formals[[arg]], method_formals[[arg]])) {
+      warning(sprintf("Default value is not the same as the generic\n- Generic: %s = %s\n- Method:  %s = %s", arg, deparse1(generic_formals[[arg]]), arg, deparse1(method_formals[[arg]])), call. = FALSE)
     }
   }
 
-  if ("..." %in% names(generic_formals) && !"..." %in% names(method_formals)) {
-      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- `generic` has `...`\n- `method` does not have `...`", generic@name), call. = FALSE)
-  }
-
-  if (!"..." %in% names(generic_formals) && "..." %in% names(method_formals)) {
-      stop(sprintf("`method` must be consistent with <R7_generic> %s.\n- `generic` does not have `...`\n- `method` has `...`", generic@name), call. = FALSE)
-  }
   TRUE
 }
 
@@ -261,18 +265,6 @@ as_generic <- function(generic) {
   }
 
   generic
-}
-
-method_lookup_error <- function(name, args, signatures) {
-  args <- setdiff(args, "...")
-  types <- paste0("- ", args, ": ", vcapply(signatures, fmt_classes), collapse = "\n")
-  stop(sprintf("Can't find method for generic `%s()` with classes:\n%s", name, types), call. = FALSE)
-}
-
-#' Lookup the R7 method for the current generic and call it.
-#' @export
-method_call <- function() {
-  .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
 }
 
 #' @export
