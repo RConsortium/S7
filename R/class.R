@@ -90,8 +90,20 @@ R7_class <- function(name, parent = R7_object, constructor = NULL, validator = f
 #' try(range(start = 20, end = 10))
 #' # Type validation is performed automatically in R7
 #' try(range(start = "hello", end = 20))
-new_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
-  R7_class(name = name, parent = parent, constructor = constructor, validator = validator, properties = properties)
+new_class <- function(
+    name,
+    parent = R7_object,
+    properties = list(),
+    constructor = NULL,
+    validator = function(x) NULL) {
+
+  R7_class(
+    name = name,
+    parent = parent,
+    constructor = constructor,
+    validator = validator,
+    properties = properties
+  )
 }
 
 #' Retrieve all of the class names for a class

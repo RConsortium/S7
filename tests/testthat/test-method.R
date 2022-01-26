@@ -35,7 +35,7 @@ test_that("method errors if no method is defined for that class", {
 
 test_that("methods can be registered for a generic and then called", {
   foo <- new_generic("foo", dispatch_args = "x")
-  new_method(foo, "text", function(x, ...) paste0("foo-", x@.data))
+  new_method(foo, "text", function(x, ...) paste0("foo-", r7_data(x)))
 
   expect_equal(foo(text("bar")), "foo-bar")
 })
@@ -110,7 +110,7 @@ test_that("next_method works for single dispatch", {
   foo <- new_generic("foo", dispatch_args = "x")
 
   new_method(foo, "text", function(x, ...) {
-    x@.data <- paste0("foo-", x@.data)
+    r7_data(x) <- paste0("foo-", r7_data(x))
     next_method()(x)
   })
 
@@ -125,21 +125,22 @@ test_that("next_method works for double dispatch", {
   foo <- new_generic("foo", dispatch_args = c("x", "y"))
 
   new_method(foo, list("text", "number"), function(x, y, ...) {
-    x@.data <- paste0("foo-", x@.data, "-", y@.data)
+    r7_data(x) <- paste0("foo-", r7_data(x), "-", r7_data(y))
     next_method()(x, y)
   })
 
   new_method(foo, list("character", "number"), function(x, y, ...) {
-    y@.data <- y + 1
-    x@.data <- paste0(x@.data, "-", y@.data)
+    r7_data(y) <- y + 1
+    r7_data(x) <- paste0(r7_data(x), "-", r7_data(y))
     next_method()(x, y)
   })
 
   new_method(foo, list("character", "numeric"), function(x, y, ...) {
-    as.character(x@.data)
+    as.character(r7_data(x))
   })
 
   expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
+
 })
 
 test_that("substitute() works for single dispatch method calls like S3", {
