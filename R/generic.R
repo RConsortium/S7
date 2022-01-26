@@ -37,7 +37,7 @@
 #' # A simple generic with methods for some base types and S3 classes
 #' type_of <- new_generic("type_of", dispatch_args = "x")
 #' method(type_of, "character") <- function(x, ...) "A character vector"
-#' method(type_of, "data.frame") <- function(x, ...) "A data frame"
+#' method(type_of, s3_class("data.frame")) <- function(x, ...) "A data frame"
 #' method(type_of, "function") <- function(x, ...) "A function"
 #'
 #' type_of(mtcars)

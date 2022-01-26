@@ -16,7 +16,7 @@ new_base_class <- function(name) {
   R7_class(name = name, constructor = function(.data) new_object(.data))
 }
 
-base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "factor", "raw", "function", "list", "data.frame", "environment"))
+base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "raw", "function", "list", "environment"))
 
 base_classes <- lapply(base_types, new_base_class)
 base_classes[["NULL"]] <- new_base_class("NULL")

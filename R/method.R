@@ -22,11 +22,11 @@
 #' bizarro <- new_generic("bizarro", dispatch_args = "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x, ...) rev(x)
-#' method(bizarro, "factor") <- function(x, ...) {
+#' method(bizarro, s3_class("factor")) <- function(x, ...) {
 #'   levels(x) <- rev(levels(x))
 #'   x
 #' }
-#' method(bizarro, "data.frame") <- function(x, ...) {
+#' method(bizarro, s3_class("data.frame")) <- function(x, ...) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
@@ -36,8 +36,8 @@
 #'
 #' # But it can be useful to explicitly retrieve a method in order to
 #' # inspect its implementation
-#' method(bizarro, list("numeric"))
-#' method(bizarro, list("factor"))
+#' method(bizarro, "numeric")
+#' method(bizarro, s3_class("factor"))
 method <- function(generic, signature) {
   # TODO: check that signature doesn't contain any unions
 
