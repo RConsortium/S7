@@ -14,65 +14,39 @@
 
     signature[[1]]: Can't find base class called 'blah'
 
-# method_compatible throws errors if the functions are not compatible
+# method_compatible errors if the functions are not compatible
 
-    `method` must be consistent with <R7_generic> foo.
-    - Argument 1 in generic is `x = `
-    - Argument 1 in method is `y = `
+    Code
+      foo <- new_generic("foo", dispatch_args = "x")
+      method_compatible(function(y) { }, foo)
+    Error <simpleError>
+      `method` doesn't match generic dispatch arg
+    Code
+      method_compatible(function(x = "foo") { }, foo)
+    Error <simpleError>
+      Dispatch arguments must not have default values
+    Code
+      method_compatible(function(x, y, ...) { }, foo)
+    Error <simpleError>
+      ... must immediately follow dispatch args
 
----
+# method_compatible warn if default arguments don't match
 
-    `method` must be consistent with <R7_generic> foo.
-    - `generic` has `...`
-    - `method` does not have `...`
-
----
-
-    `method` must be consistent with <R7_generic> foo.
-    - Argument 1 in generic is `x = `
-    - Argument 1 in method is `x = "foo"`
-
----
-
-    `method` must be consistent with <R7_generic> bar.
-    - Argument 1 in generic is `x = `
-    - Argument 1 in method is `y = `
-
----
-
-    `method` must be consistent with <R7_generic> bar.
-    - `generic` has `...`
-    - `method` does not have `...`
-
----
-
-    `method` must be consistent with <R7_generic> bar.
-    - Argument 2 in generic is `y = `
-    - Argument 2 in method is `y = NULL`
-
-# method compatible verifies that if a generic does not have dots the method should not have dots
-
-    `method` must be consistent with <R7_generic> foo.
-    - `generic` does not have `...`
-    - `method` has `...`
-
-# method lookup fails with an informative message for single classes
-
-    Can't find method for generic `foo()` with classes:
-    - x: <character>
-    - y: <character>
-
----
-
-    Can't find method for generic `foo()` with classes:
-    - x: <character>
-    - y: NULL
-
-# method lookup fails with an informative message for multiple classes
-
-    Can't find method for generic `foo()` with classes:
-    - x: <character>
-    - y: <character>
+    Code
+      foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
+      method_compatible(function(x, ..., y = 1) { }, foo)
+    Warning <simpleWarning>
+      Argument `z` is missing from method
+    Output
+      [1] TRUE
+    Code
+      method_compatible(function(x, ..., y = 1, z = 1) { }, foo)
+    Warning <simpleWarning>
+      Default value is not the same as the generic
+      - Generic: z = 2
+      - Method:  z = 1
+    Output
+      [1] TRUE
 
 # R7_method printing
 

@@ -32,16 +32,16 @@ test_that("classes can inherit from base types", {
     f <- match.fun(type)
     foo <- new_class("foo", parent = type, constructor = function(x = f()) new_object(x))
     obj <- foo()
-    expect_equal(typeof(obj@.data), type)
+    expect_equal(typeof(r7_data(obj)), type)
   }
 
   foo <- new_class("foo", parent = "numeric", constructor = function(x = numeric()) new_object(x))
   obj <- foo()
-  expect_equal(typeof(obj@.data), "double")
+  expect_equal(typeof(r7_data(obj)), "double")
 
   foo <- new_class("foo", parent = "function", constructor = function(x = function() NULL, ...) new_object(x))
   obj <- foo()
-  expect_equal(typeof(obj@.data), "closure")
+  expect_equal(typeof(r7_data(obj)), "closure")
 })
 
 test_that("classes can't inherit from S4 or class unions", {
@@ -56,7 +56,7 @@ test_that("can supply literal examples of base types", {
   foo <- new_class("foo", parent = integer)
   obj <- foo(1L)
   expect_s3_class(obj, "integer")
-  expect_type(obj@.data, "integer")
+  expect_type(r7_data(obj), "integer")
 })
 
 test_that("default constructor works", {

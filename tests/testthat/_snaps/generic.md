@@ -1,17 +1,41 @@
-# new_generic needs fun or signature
+# new_generic needs fun or dispatch_args
 
-    Must call `new_generic()` with at least one of `signature` or `fun`
+    Must call `new_generic()` with at least one of `dispatch_args` or `fun`
 
-# check_signature produces informative errors
+# check_dispatch_args() produces informative errors
 
     Code
-      check_signature(1)
+      check_dispatch_args(1)
     Error <simpleError>
-      `signature` must be a character vector
+      `dispatch_args` must be a character vector
     Code
-      check_signature(character())
+      check_dispatch_args(character())
     Error <simpleError>
-      `signature` must have at least one component
+      `dispatch_args` must have at least one component
+    Code
+      check_dispatch_args("")
+    Error <simpleError>
+      `dispatch_args` must not be missing or the empty string
+    Code
+      check_dispatch_args(NA_character_)
+    Error <simpleError>
+      `dispatch_args` must not be missing or the empty string
+    Code
+      check_dispatch_args(c("x", "x"))
+    Error <simpleError>
+      `dispatch_args` must be unique
+    Code
+      check_dispatch_args("...")
+    Error <simpleError>
+      Can't dispatch on `...`
+    Code
+      check_dispatch_args("x", function(x, y, ...) { })
+    Error <simpleError>
+      If present, ... must immediately follow the `dispatch_args`
+    Code
+      check_dispatch_args("y", function(x, ..., y) { })
+    Error <simpleError>
+      `dispatch_args` must be a prefix of the generic arguments
 
 # R7_generic printing
 

@@ -65,7 +65,7 @@ x@length
 
 # incorrect properties throws an error
 x@middle
-#> Error: Can't find property <range>@middle
+#> Error in prop(object, name): Can't find property <range>@middle
 
 # assigning properties verifies the class matches the class of the value
 x@end <- "foo"
@@ -93,16 +93,6 @@ x
 #> @start  1
 #> @end    6
 #> @length 5
-
-# Use `.data` to refer to and retrieve the base data type, properties are
-# automatically removed, but non-property attributes (such as names) are retained.
-
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
-
-y <- text(c(foo = "bar"))
-
-names(y@.data)
-#> [1] "foo"
 ```
 
 ## Generics and methods
@@ -110,7 +100,7 @@ names(y@.data)
 ``` r
 text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
 
-foo <- new_generic("foo", signature = "x")
+foo <- new_generic("foo", dispatch_args = "x")
 
 method(foo, "text") <- function(x, ...) paste0("foo-", x)
 
@@ -133,7 +123,7 @@ vector.
 ``` r
 number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
 
-bar <- new_generic("bar", signature = c("x", "y"))
+bar <- new_generic("bar", dispatch_args = c("x", "y"))
 
 method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":", y)
 
@@ -165,7 +155,7 @@ same way as `UseMethod()`, so non-standard evaluation works basically
 the same as S3.
 
 ``` r
-subset2 <- new_generic("subset2", signature = "x")
+subset2 <- new_generic("subset2", dispatch_args = "x")
 
 method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
   e <- substitute(subset)

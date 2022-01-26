@@ -108,7 +108,7 @@ void R7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
     R7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
   }
   SEXP name = Rf_getAttrib(generic, Rf_install("name"));
-  SEXP args = Rf_getAttrib(generic, Rf_install("signature"));
+  SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
   SEXP R7_method_lookup_error_call = PROTECT(Rf_lang4(R7_method_lookup_error_fun, name, args, signature));
   Rf_eval(R7_method_lookup_error_call, envir);
 }
@@ -116,95 +116,67 @@ void R7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   int n_protect = 0;
 
-  // Get the signature, the names of arguments to use for dispatch
-  SEXP gen_signature_args = Rf_getAttrib(generic, Rf_install("signature"));
-
-  // Every generic signature has `...` as the last arg, which we want to ignore.
-  R_xlen_t gen_signature_len = Rf_xlength(gen_signature_args);
-
-  Rboolean has_dots = strcmp(CHAR(STRING_ELT(gen_signature_args, gen_signature_len - 1)), "...") == 0;
-
-  if (has_dots) {
-    --gen_signature_len;
-  }
+  // Get the number of arguments to the generic
+  SEXP formals = FORMALS(generic);
+  R_xlen_t n_args = Rf_xlength(formals);
+  // And how many are used for dispatch
+  SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+  R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
   // Allocate a list to store the classes for the arguments
-  SEXP signature_classes = PROTECT(Rf_allocVector(VECSXP, gen_signature_len));
+  SEXP dispatch_classes = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
   ++n_protect;
 
-  // Allocate a pairlist to hold the argument promises when we do the call to the method
-  SEXP args = PROTECT(Rf_cons(R_NilValue, R_NilValue));
+  // Allocate a pairlist to hold the arguments for when we call the method
+  SEXP mcall = PROTECT(Rf_lcons(R_NilValue, R_NilValue));
   ++n_protect;
-  SEXP tail = args;
+  SEXP mcall_tail = mcall;
 
-  // For each of the arguments in the signature
-  for (R_xlen_t i = 0; i < gen_signature_len; ++i) {
+  // For each of the arguments to the generic
+  for (R_xlen_t i = 0; i < n_args; ++i) {
 
-    // Lookup the promise for that argument in the environment
-    SEXP name = Rf_install(CHAR(STRING_ELT(gen_signature_args, i)));
+    // Find its name and look up its value (a promise)
+    SEXP name = TAG(formals);
     SEXP arg = Rf_findVar(name, envir);
 
-    // Most of the time this should be a promise
-    if (TYPEOF(arg) == PROMSXP) {
+    if (i < n_dispatch) {
+      if (PRCODE(arg) != R_MissingArg) {
+        // Evaluate the original promise so we can look up its class
+        SEXP val = Rf_eval(arg, R_EmptyEnv);
+        // And update the value of the promise to avoid evaluating it
+        // again in the method body
+        SET_PRVALUE(arg, val);
 
-      // We first want to duplicate the existing promise
-      SEXP new_promise = PROTECT(Rf_duplicate(arg));
+        // Then add to arguments of method call
+        SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
 
-      // Then evaluate the original promise so we can lookup its class
-      SEXP val = PROTECT(Rf_eval(arg, envir));
-
-      // And set the value of the new promise to that of the evaluated one, so
-      // we don't evaluate it twice in the method body.
-      SET_PRVALUE(new_promise, val);
-
-      // We can then add our new promise to our argument list
-      SETCDR(tail, Rf_cons(new_promise, R_NilValue));
-
-      // We need to call `R7::object_class()`, as not every object has a class
-      // attribute, some are created dynamically.
-      SEXP klass = PROTECT(object_class_(val, envir));
-
-      // Now that we have the classes for the argument we can add them to the signature classes
-      SET_VECTOR_ELT(signature_classes, i, klass);
-
-      UNPROTECT(3);
-    }
-    // but the bytecode compiler sometimes inlines literals, which we handle
-    // here
-    else {
-      SETCDR(tail, Rf_cons(arg, R_NilValue));
+        // Determine class string to use for method look up
+        SET_VECTOR_ELT(dispatch_classes, i, object_class_(val, envir));
+      } else {
+        SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
+        SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
+      }
+    } else {
+      // other arguments not used for dispatch
+      SEXP arg_wrap = Rf_cons(name, R_NilValue);
+      SET_TAG(arg_wrap, name);
+      SETCDR(mcall_tail, arg_wrap);
     }
 
-    // Move the pointer forward for the next iteration
-    tail = CDR(tail);
+    mcall_tail = CDR(mcall_tail);
+    formals = CDR(formals);
   }
 
-
-  // We only need to add the dots to our arguments if the generic has dots and
-  // something was passed in them. Otherwise they are `R_MissingArg` and we
-  // don't need to.
-  if (has_dots) {
-    SEXP dots = Rf_findVar(R_DotsSymbol, envir);
-    if (dots != R_MissingArg) {
-      SETCDR(tail, dots);
-    }
-  }
-
-  // The head of args is always R_NilValue, so we just want the tail
-  args = CDR(args);
-
-  // Now that we have retrieved all the classes, we can look up what method to call.
-  SEXP m = method_(generic, signature_classes, R_NilValue);
-
-  // If no method found, throw an error
+  // Now that we have all the classes, we can look up what method to call
+  SEXP m = method_(generic, dispatch_classes, R_NilValue);
   if (m == R_NilValue) {
-    R7_method_lookup_error(generic, signature_classes, envir);
+    R7_method_lookup_error(generic, dispatch_classes, envir);
   }
+  SETCAR(mcall, m);
 
-  // And then actually call it.
-  SEXP res = Rf_applyClosure(call, m, args, envir, R_NilValue);
+  // And then call it
+  SEXP res = Rf_eval(mcall, envir);
 
   UNPROTECT(n_protect);
-
   return res;
 }

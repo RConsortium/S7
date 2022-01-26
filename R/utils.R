@@ -37,7 +37,7 @@ collapse <- function(x, by) {
 }
 
 method_signature <- function(generic, signature) {
-  single <- length(setdiff(generic@signature, "...")) == 1
+  single <- length(generic@dispatch_args) == 1
   if (single) {
     signature <- class_deparse(signature[[1]])
   } else {
