@@ -2,6 +2,9 @@
 
 ## Jan 2020
 
+* Classes (base types, S3, S4, and R7) and handled consistently whereever they
+  are used. Strings now only refer to base types. New explicit `s3_class()` for 
+  referring to S3 classes (#134).
 * Different evaluation mechanism for method dispatch, and greater restrictions 
   on dispatch args (#141)
 * `x@.data` -> `r7_data()`; probably to be replaced by casting.
