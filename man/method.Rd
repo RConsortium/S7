@@ -30,7 +30,7 @@ interactively in order to see the implementation of a specific method.
 }
 \examples{
 # Create a generic
-bizarro <- new_generic("bizarro", signature = "x")
+bizarro <- new_generic("bizarro", dispatch_args = "x")
 # Register some methods
 method(bizarro, "numeric") <- function(x, ...) rev(x)
 method(bizarro, "factor") <- function(x, ...) {

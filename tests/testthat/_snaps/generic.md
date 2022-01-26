@@ -1,17 +1,17 @@
-# new_generic needs fun or signature
+# new_generic needs fun or dispatch_args
 
-    Must call `new_generic()` with at least one of `signature` or `fun`
+    Must call `new_generic()` with at least one of `dispatch_args` or `fun`
 
-# check_signature produces informative errors
+# check_dispatch_args() produces informative errors
 
     Code
-      check_signature(1)
+      check_dispatch_args(1)
     Error <simpleError>
-      `signature` must be a character vector
+      `dispatch_args` must be a character vector
     Code
-      check_signature(character())
+      check_dispatch_args(character())
     Error <simpleError>
-      `signature` must have at least one component
+      `dispatch_args` must have at least one component
 
 # R7_generic printing
 
