@@ -216,6 +216,7 @@ new_method <- function(generic, signature, method, package = NULL) {
       this_sig <- signature
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
+        method <- R7_method(generic, this_sig, method)
         new_method(generic, this_sig, method, package = package)
       }
       return(invisible(generic))

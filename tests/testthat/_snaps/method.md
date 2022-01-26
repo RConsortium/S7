@@ -14,6 +14,15 @@
 
     signature[[1]]: Can't find base class called 'blah'
 
+# new_method works if you pass a bare class union
+
+    Code
+      foo7
+    Output
+      <R7_generic> function (x, ...)  with 2 methods:
+      1: method(foo7, number)
+      2: method(foo7, text)
+
 # method_compatible errors if the functions are not compatible
 
     Code

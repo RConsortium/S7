@@ -101,6 +101,11 @@ test_that("new_method works if you pass a bare class union", {
 
   expect_equal(foo7(text("bar")), "foo-bar")
   expect_equal(foo7(number(1)), "foo-1")
+
+  # one method for each union component
+  expect_length(methods(foo7), 2)
+  # and methods printed nicely
+  expect_snapshot(foo7)
 })
 
 test_that("next_method works for single dispatch", {
