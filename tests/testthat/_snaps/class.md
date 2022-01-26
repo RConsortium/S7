@@ -13,11 +13,11 @@
     Code
       new_class("test", parent = parentS4)
     Error <simpleError>
-      `parent` must be an R7 class, S3 class, or base type
+      `parent` must be an R7 class, S3 class, or base type, not an S4 class.
     Code
       new_class("test", parent = new_union("character"))
     Error <simpleError>
-      `parent` must be an R7 class, S3 class, or base type
+      `parent` must be an R7 class, S3 class, or base type, not a class union.
 
 # constructor  types check their values
 
