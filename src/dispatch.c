@@ -51,7 +51,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
 SEXP get_class(SEXP object, SEXP envir) {
     static SEXP fun = NULL;
     if (fun == NULL) {
-      fun = Rf_findVarInFrame(R_BaseEnv, Rf_install("class"));
+      fun = Rf_findVarInFrame(R_BaseEnv, Rf_install(".class2"));
     }
     SEXP call = PROTECT(Rf_lang2(fun, object));
     SEXP res = Rf_eval(call, envir);
