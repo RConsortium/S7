@@ -1,5 +1,5 @@
 text <- new_class("text", parent = "character", constructor = function(text = character()) new_object(.data = text))
-number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
+number <- new_class("number", parent = "double", constructor = function(x) new_object(.data = x))
 
 range <- new_class("range",
   constructor = function(start, end) {

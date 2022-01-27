@@ -47,6 +47,6 @@ bizarro(1)
 
 # But it can be useful to explicitly retrieve a method in order to
 # inspect its implementation
-method(bizarro, "numeric")
+method(bizarro, "double")
 method(bizarro, s3_class("factor"))
 }
