@@ -13,12 +13,13 @@
     Code
       str(my_class)
     Output
-      <my_class/R7_object> constructor function ()  
-       .. - attr(*, "name")= chr "my_class"
-       .. - attr(*, "parent")= <R7_object> constructor
-       .. - attr(*, "properties")= list()
-       .. - attr(*, "constructor")=function ()  
-       .. - attr(*, "validator")=function (x)  
+      <my_class/R7_object> constructor
+      @ name       :  chr "my_class"
+      @ parent     :  <R7_object> constructor
+      @ properties :  list()
+      @ constructor: function ()  
+      @ validator  : function (x)  
+      @ class      :  chr [1:2] "R7_class" "R7_object"
     Code
       str(list(my_class))
     Output

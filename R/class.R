@@ -156,11 +156,9 @@ print.R7_class <- function(x, ...) {
 str.R7_class <- function(object, ..., nest.lev = 0) {
   if (nest.lev > 0) cat(" ")
   cat("<", paste0(class_names(object), collapse = "/"), "> constructor", sep = "")
-  if (nest.lev > 0) cat("\n") else cat(" ")
+  cat("\n")
 
   if (nest.lev == 0) {
-    bare <- unclass(object)
-    attr(bare, "object_class") <- NULL
-    str(bare, ..., nest.lev = nest.lev + 1)
+    str_props(object, ...)
   }
 }
