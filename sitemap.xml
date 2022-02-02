@@ -1,13 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/404.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/LICENSE-text.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/LICENSE.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/TODO.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/case_studies.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/index.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/performance.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/authors.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/index.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/news/index.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/class_get.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/class_names.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/index.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/method.html</loc>
@@ -43,18 +73,12 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/prop.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/r7_data.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/r7_object.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/validate.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/articles/TODO.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/articles/case_studies.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/articles/performance.html</loc>
   </url>
 </urlset>
