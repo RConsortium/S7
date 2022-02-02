@@ -62,6 +62,13 @@ new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
   out
 }
 
+#' @export
+str.R7_property <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  cat("<R7_property> \n")
+  str_list(object, nest.lev = nest.lev)
+}
+
 #' Get or set value of a property
 #'
 #' - `prop()` and `@`, gets the value of the given property, throwing an

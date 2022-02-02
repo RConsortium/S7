@@ -17,8 +17,8 @@
       @ name       :  chr "my_class"
       @ parent     :  <R7_object> constructor
       @ properties :  list()
-      @ constructor: function ()  
-      @ validator  : function (x)  
+      @ constructor:  function ()  
+      @ validator  :  function (x)  
       @ class      :  chr [1:2] "R7_class" "R7_object"
     Code
       str(list(my_class))

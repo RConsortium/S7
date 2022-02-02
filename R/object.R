@@ -111,22 +111,35 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
     cat("\n")
   }
 
-  str_props(object, ..., nest.lev = nest.lev)
+  str_list(props(object), ..., nest.lev = nest.lev, prefix = "@")
 }
 
-str_props <- function(
+str_list <- function(
     object,
     ...,
     nest.lev = 0,
-    indent.str = paste(rep.int(" ", max(0, nest.lev + 1)), collapse = "..")
+    indent.str = paste(rep.int(" ", max(0, nest.lev + 1)), collapse = ".."),
+    prefix = "$"
 ) {
 
-  props <- props(object)
-  prop_names <- format(names(props))
+  names <- format(names(object))
 
-  for (i in seq_along(props)) {
-    cat(if (nest.lev > 0) indent.str, "@ ", prop_names[[i]], ": ", sep = "")
-    str(props[[i]], ..., nest.lev = nest.lev + 1)
+  for (i in seq_along(object)) {
+    cat(if (nest.lev > 0) indent.str, prefix, " ", names[[i]], ": ", sep = "")
+
+    xi <- object[[i]]
+    if (is.function(xi)) {
+      str_function(xi, nest.lev = nest.lev + 1)
+    } else {
+      str(xi, ..., nest.lev = nest.lev + 1)
+    }
   }
+}
 
+str_function <- function(object, ..., nest.lev = 0) {
+  attr(object, "srcref") <- NULL
+  if (identical(class(object), "function")) {
+    cat(" ")
+  }
+  str(object, ..., nest.lev = nest.lev)
 }

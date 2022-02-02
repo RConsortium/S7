@@ -25,7 +25,7 @@ describe("R7_class", {
     expect_snapshot(my_class)
   })
   it("str yields all details when used at top-level", {
-    expect_snapshot(transform = scrub_src_references, {
+    expect_snapshot({
       str(my_class)
       str(list(my_class))
     })
