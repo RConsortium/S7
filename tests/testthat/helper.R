@@ -61,7 +61,9 @@ quick_test_enable <- function() {
 }
 
 scrub_src_references <- function(x) {
-  grep("attr[(][*], \"srcref|srcfile\"[)]|..[$] srcref ", x, invert = TRUE, value = TRUE)
+  x <- grep("attr[(][*], \"srcref|srcfile\"[)]|..[$] srcref ", x, invert = TRUE, value = TRUE)
+  x <- grep("@ (srcref|srcfile)", x, invert = TRUE, value = TRUE)
+  x
 }
 
 scrub_environment <- function(x) {

@@ -23,7 +23,7 @@
     Code
       print(x)
     Output
-      <range> <R7_object>
+      <range/R7_object>
       @start   1
       @end    10
       @length  9
@@ -46,9 +46,10 @@
     Code
       str(range(1, 2))
     Output
-       <range/R7_object> List of 2
-       .. $ start: num 1
-       .. $ end  : num 2
+      <range/R7_object>
+      @ start :  num 1
+      @ end   :  num 2
+      @ length:  num 1
 
 # str with R7 objects of base classes work
 
@@ -56,36 +57,37 @@
       str(list(text("b"), number(50)))
     Output
       List of 2
-       $ : <text/character/R7_object>  chr "b"
-       $ : <number/numeric/R7_object>  num 50
+       $ : <text/character/R7_object> chr "b"
+       $ : <number/numeric/R7_object> num 50
 
 # str R7 classes work
 
     Code
       str(range)
     Output
-      <range/R7_object> constructor function (start, end)  
-       .. - attr(*, "name")= chr "range"
-       .. - attr(*, "parent")= <R7_object> constructor
-       .. - attr(*, "properties")=List of 3
-       ..  ..$ start :List of 4
-       ..  .. ..$ name  : chr "start"
-       ..  .. ..$ class : chr "numeric"
-       ..  .. ..$ getter: NULL
-       ..  .. ..$ setter: NULL
-       ..  .. ..- attr(*, "class")= chr "R7_property"
-       ..  ..$ end   :List of 4
-       ..  .. ..$ name  : chr "end"
-       ..  .. ..$ class : chr "numeric"
-       ..  .. ..$ getter: NULL
-       ..  .. ..$ setter: NULL
-       ..  .. ..- attr(*, "class")= chr "R7_property"
-       ..  ..$ length:List of 4
-       ..  .. ..$ name  : chr "length"
-       ..  .. ..$ class : chr "numeric"
-       ..  .. ..$ getter:function (x)  
-       ..  .. ..$ setter:function (x, value)  
-       ..  .. ..- attr(*, "class")= chr "R7_property"
-       .. - attr(*, "constructor")=function (start, end)  
-       .. - attr(*, "validator")=function (x)  
+      <range/R7_object> constructor
+      @ name       :  chr "range"
+      @ parent     :  <R7_object> constructor
+      @ properties : List of 3
+       .. $ start :List of 4
+       ..  ..$ name  : chr "start"
+       ..  ..$ class : chr "numeric"
+       ..  ..$ getter: NULL
+       ..  ..$ setter: NULL
+       ..  ..- attr(*, "class")= chr "R7_property"
+       .. $ end   :List of 4
+       ..  ..$ name  : chr "end"
+       ..  ..$ class : chr "numeric"
+       ..  ..$ getter: NULL
+       ..  ..$ setter: NULL
+       ..  ..- attr(*, "class")= chr "R7_property"
+       .. $ length:List of 4
+       ..  ..$ name  : chr "length"
+       ..  ..$ class : chr "numeric"
+       ..  ..$ getter:function (x)  
+       ..  ..$ setter:function (x, value)  
+       ..  ..- attr(*, "class")= chr "R7_property"
+      @ constructor: function (start, end)  
+      @ validator  : function (x)  
+      @ class      :  chr [1:2] "R7_class" "R7_object"
 

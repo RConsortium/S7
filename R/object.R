@@ -95,22 +95,38 @@ print.R7_object <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  cat(sprintf("%s\n%s", fmt_classes(class(x), collapse = " "), prop_fmt), sep = "")
+  cat(sprintf("<%s>\n%s", paste(class(x), collapse = "/"), prop_fmt), sep = "")
 }
 
 #' @export
 str.R7_object <- function(object, ..., nest.lev = 0) {
-  cat(" <", paste0(class(object), collapse = "/"), "> ", sep = "")
+  cat(if (nest.lev > 0) " ")
+  cat("<", paste0(class(object), collapse = "/"), ">", sep = "")
 
   if (typeof(object) != "S4") {
-    bare <- unclass(object)
-    attr(bare, "object_class") <- NULL
+    bare <- object
+    attributes(bare) <- NULL
+    str(bare)
   } else {
-    bare <- attributes(object)
-    bare$class <- NULL
-    bare$object_class <- NULL
+    cat("\n")
   }
-  str(bare, ..., nest.lev = nest.lev + 1)
+
+  str_props(object, ..., nest.lev = nest.lev)
 }
 
+str_props <- function(
+    object,
+    ...,
+    nest.lev = 0,
+    indent.str = paste(rep.int(" ", max(0, nest.lev + 1)), collapse = "..")
+) {
 
+  props <- props(object)
+  prop_names <- format(names(props))
+
+  for (i in seq_along(props)) {
+    cat(if (nest.lev > 0) indent.str, "@ ", prop_names[[i]], ": ", sep = "")
+    str(props[[i]], ..., nest.lev = nest.lev + 1)
+  }
+
+}
