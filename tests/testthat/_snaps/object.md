@@ -64,56 +64,25 @@
     Code
       str(range)
     Output
-       <R7_class/R7_object> function (start, end)  
+      <range/R7_object> constructor function (start, end)  
        .. - attr(*, "name")= chr "range"
-       .. - attr(*, "parent")= <R7_class/R7_object> function ()  
-       ..  ..- attr(*, "name")= chr "R7_object"
-       ..  ..- attr(*, "properties")= list()
-       ..  ..- attr(*, "constructor")=function ()  
-       ..  ..- attr(*, "validator")=function (x)  
+       .. - attr(*, "parent")= <R7_object> constructor
        .. - attr(*, "properties")=List of 3
        ..  ..$ start :List of 4
        ..  .. ..$ name  : chr "start"
-       ..  .. ..$ class : <R7_class/R7_object> function (.data)  
-       ..  .. .. ..- attr(*, "name")= chr "numeric"
-       ..  .. .. ..- attr(*, "parent")= <R7_class/R7_object> function ()  
-       ..  .. .. .. ..- attr(*, "name")= chr "R7_object"
-       ..  .. .. .. ..- attr(*, "properties")= list()
-       ..  .. .. .. ..- attr(*, "constructor")=function ()  
-       ..  .. .. .. ..- attr(*, "validator")=function (x)  
-       ..  .. .. ..- attr(*, "properties")= list()
-       ..  .. .. ..- attr(*, "constructor")=function (.data)  
-       ..  .. .. ..- attr(*, "validator")=function (x)  
+       ..  .. ..$ class : <numeric/R7_object> constructor
        ..  .. ..$ getter: NULL
        ..  .. ..$ setter: NULL
        ..  .. ..- attr(*, "class")= chr "R7_property"
        ..  ..$ end   :List of 4
        ..  .. ..$ name  : chr "end"
-       ..  .. ..$ class : <R7_class/R7_object> function (.data)  
-       ..  .. .. ..- attr(*, "name")= chr "numeric"
-       ..  .. .. ..- attr(*, "parent")= <R7_class/R7_object> function ()  
-       ..  .. .. .. ..- attr(*, "name")= chr "R7_object"
-       ..  .. .. .. ..- attr(*, "properties")= list()
-       ..  .. .. .. ..- attr(*, "constructor")=function ()  
-       ..  .. .. .. ..- attr(*, "validator")=function (x)  
-       ..  .. .. ..- attr(*, "properties")= list()
-       ..  .. .. ..- attr(*, "constructor")=function (.data)  
-       ..  .. .. ..- attr(*, "validator")=function (x)  
+       ..  .. ..$ class : <numeric/R7_object> constructor
        ..  .. ..$ getter: NULL
        ..  .. ..$ setter: NULL
        ..  .. ..- attr(*, "class")= chr "R7_property"
        ..  ..$ length:List of 4
        ..  .. ..$ name  : chr "length"
-       ..  .. ..$ class : <R7_class/R7_object> function (.data)  
-       ..  .. .. ..- attr(*, "name")= chr "numeric"
-       ..  .. .. ..- attr(*, "parent")= <R7_class/R7_object> function ()  
-       ..  .. .. .. ..- attr(*, "name")= chr "R7_object"
-       ..  .. .. .. ..- attr(*, "properties")= list()
-       ..  .. .. .. ..- attr(*, "constructor")=function ()  
-       ..  .. .. .. ..- attr(*, "validator")=function (x)  
-       ..  .. .. ..- attr(*, "properties")= list()
-       ..  .. .. ..- attr(*, "constructor")=function (.data)  
-       ..  .. .. ..- attr(*, "validator")=function (x)  
+       ..  .. ..$ class : <numeric/R7_object> constructor
        ..  .. ..$ getter:function (x)  
        ..  .. ..$ setter:function (x, value)  
        ..  .. ..- attr(*, "class")= chr "R7_property"

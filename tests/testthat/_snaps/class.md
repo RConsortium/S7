@@ -8,6 +8,23 @@
       @parent <R7_object>
       @properties
 
+# R7_class: str yields all details when used at top-level
+
+    Code
+      str(my_class)
+    Output
+      <my_class/R7_object> constructor function ()  
+       .. - attr(*, "name")= chr "my_class"
+       .. - attr(*, "parent")= <R7_object> constructor
+       .. - attr(*, "properties")= list()
+       .. - attr(*, "constructor")=function ()  
+       .. - attr(*, "validator")=function (x)  
+    Code
+      str(list(my_class))
+    Output
+      List of 1
+       $ : <my_class/R7_object> constructor
+
 # classes can't inherit from S4 or class unions
 
     Code

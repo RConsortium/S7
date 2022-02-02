@@ -79,7 +79,7 @@ test_that("printing R7 classes work", {
 })
 
 test_that("str with simple R7 objects work", {
-  expect_snapshot(str(range(1, 2)), transform = scrub_src_references)
+  expect_snapshot(str(range(1, 2)))
 })
 
 test_that("str with R7 objects of base classes work", {

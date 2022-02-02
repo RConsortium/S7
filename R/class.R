@@ -151,3 +151,16 @@ print.R7_class <- function(x, ...) {
 
   cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, parent, prop_fmt), sep = "")
 }
+
+#' @export
+str.R7_class <- function(object, ..., nest.lev = 0) {
+  if (nest.lev > 0) cat(" ")
+  cat("<", paste0(class_names(object), collapse = "/"), "> constructor", sep = "")
+  if (nest.lev > 0) cat("\n") else cat(" ")
+
+  if (nest.lev == 0) {
+    bare <- unclass(object)
+    attr(bare, "object_class") <- NULL
+    str(bare, ..., nest.lev = nest.lev + 1)
+  }
+}
