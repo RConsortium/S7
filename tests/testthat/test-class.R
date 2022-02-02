@@ -24,6 +24,12 @@ describe("R7_class", {
   it("can be printed", {
     expect_snapshot(my_class)
   })
+  it("str yields all details when used at top-level", {
+    expect_snapshot(transform = scrub_src_references, {
+      str(my_class)
+      str(list(my_class))
+    })
+  })
 })
 
 test_that("classes can inherit from base types", {

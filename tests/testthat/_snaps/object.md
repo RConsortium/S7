@@ -64,13 +64,9 @@
     Code
       str(range)
     Output
-       <R7_class/R7_object> function (start, end)  
+      <range/R7_object> constructor function (start, end)  
        .. - attr(*, "name")= chr "range"
-       .. - attr(*, "parent")= <R7_class/R7_object> function ()  
-       ..  ..- attr(*, "name")= chr "R7_object"
-       ..  ..- attr(*, "properties")= list()
-       ..  ..- attr(*, "constructor")=function ()  
-       ..  ..- attr(*, "validator")=function (x)  
+       .. - attr(*, "parent")= <R7_object> constructor
        .. - attr(*, "properties")=List of 3
        ..  ..$ start :List of 4
        ..  .. ..$ name  : chr "start"
