@@ -23,15 +23,15 @@
       my_class
     Output
       <R7_class>
-      @name my_class
-      @parent <R7_object>
-      @properties
-       $anything                  <ANY>
-       $base                  <integer>
-       $s3                     <factor>
-       $s4                   <class_s4>
-       $r7                   <class_r7>
-       $r7_union <integer> or <logical>
+      @ name  :  my_class
+      @ parent: <R7_object>
+      @ properties:
+       $ anything: <ANY>                 
+       $ base    : <integer>             
+       $ s3      : <factor>              
+       $ s4      : <class_s4>            
+       $ r7      : <class_r7>            
+       $ r7_union: <integer> or <logical>
 
 ---
 

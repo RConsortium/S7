@@ -23,10 +23,10 @@
     Code
       print(x)
     Output
-      <range>
-      @start   1
-      @end    10
-      @length  9
+      <range/R7_object>
+      @ start :  num 1
+      @ end   :  num 10
+      @ length:  num 9
 
 # printing R7 classes work
 
@@ -34,12 +34,12 @@
       range
     Output
       <R7_class>
-      @name range
-      @parent <R7_object>
-      @properties
-       $start  <numeric>
-       $end    <numeric>
-       $length <numeric>
+      @ name  :  range
+      @ parent: <R7_object>
+      @ properties:
+       $ start : <numeric>
+       $ end   : <numeric>
+       $ length: <numeric>
 
 # str with simple R7 objects work
 
