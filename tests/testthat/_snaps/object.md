@@ -71,26 +71,17 @@
       @ properties : List of 3
        .. $ start : <R7_property> 
        .. .. $ name  :  chr "start"
-       .. .. $ class :  <R7_union/R7_object>
-       .. .. .. @ classes: List of 2
-       .. .. .. .. $ : <integer/R7_object> constructor
-       .. .. .. .. $ : <double/R7_object> constructor
+       .. .. $ class :  <R7_union>: <integer> or <double>
        .. .. $ getter:  NULL
        .. .. $ setter:  NULL
        .. $ end   : <R7_property> 
        .. .. $ name  :  chr "end"
-       .. .. $ class :  <R7_union/R7_object>
-       .. .. .. @ classes: List of 2
-       .. .. .. .. $ : <integer/R7_object> constructor
-       .. .. .. .. $ : <double/R7_object> constructor
+       .. .. $ class :  <R7_union>: <integer> or <double>
        .. .. $ getter:  NULL
        .. .. $ setter:  NULL
        .. $ length: <R7_property> 
        .. .. $ name  :  chr "length"
-       .. .. $ class :  <R7_union/R7_object>
-       .. .. .. @ classes: List of 2
-       .. .. .. .. $ : <integer/R7_object> constructor
-       .. .. .. .. $ : <double/R7_object> constructor
+       .. .. $ class :  <R7_union>: <integer> or <double>
        .. .. $ getter:  function (x)  
        .. .. $ setter:  function (x, value)  
       @ constructor:  function (start, end)  

@@ -73,6 +73,20 @@ R7_union <- new_class(
   }
 )
 
+#' @export
+str.R7_union <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  cat("<R7_union>: ", class_desc(object), sep = "")
+  cat("\n")
+
+  if (nest.lev == 0) {
+    props <- props(object)
+    props$srcref <- NULL
+    str_list(props, ..., prefix = "@", nest.lev = nest.lev)
+  }
+}
+
+
 class_flatten <- function(x) {
   x <- lapply(x, as_class)
 
