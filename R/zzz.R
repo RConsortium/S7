@@ -126,6 +126,6 @@ global_variables(c("name", "parent", "properties", "constructor", "validator"))
 .onLoad <- function(...) {
   base_classes$`NULL` <- new_base_class("NULL")
   base_classes$numeric <<- new_union("integer", "double")
-  base_classes$atomic <<- new_union("logical", base_classes$numeric, "complex", "character")
-  base_classes$vector <<- new_union(base_classes$atomic, "expression", "list")
+  base_classes$atomic <<- new_union("logical", "integer", "double", "complex", "character")
+  base_classes$vector <<- new_union("logical", "integer", "double", "complex", "character", "expression", "list")
 }
