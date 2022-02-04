@@ -16,9 +16,9 @@
     Code
       base_classes$atomic
     Output
-      <R7_union>: <logical>, <integer>, <double>, <complex>, or <character>
+      <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, or <raw>
     Code
       base_classes$vector
     Output
-      <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <expression>, or <list>
+      <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
 
