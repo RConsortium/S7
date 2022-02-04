@@ -1,14 +1,14 @@
 # method errors on invalid inputs
 
-    signature[[1]]: class specification must by a R7 class object, result of s3_class(), a S4 class object, or a base constructor function, not a <double>.
+    signature[[1]]: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
 
 ---
 
-    signature[[1]]: class specification must by a R7 class object, result of s3_class(), a S4 class object, or a base constructor function, not a <double>.
+    signature[[1]]: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
 
 ---
 
-    signature[[1]]: class specification must by a R7 class object, result of s3_class(), a S4 class object, or a base constructor function, not a <logical>.
+    signature[[1]]: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <logical>.
 
 # method errors if no method is defined for that class
 

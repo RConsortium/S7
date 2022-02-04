@@ -58,7 +58,7 @@ class_type <- function(x) {
   } else if (isS4(x)) {
     "s4"
   } else {
-    stop("`x` is not standard R7 class", .call = FALSE)
+    stop("`x` is not standard R7 class", call. = FALSE)
   }
 }
 
@@ -131,7 +131,7 @@ obj_desc <- function(x) {
 #' @param class Character vector of S3 classes
 s3_class <- function(class) {
   if (!is.character(class)) {
-    stop("`class` must be a character vector", .call = FALSE)
+    stop("`class` must be a character vector", call. = FALSE)
   }
   structure(class, class = "r7_s3_class")
 }

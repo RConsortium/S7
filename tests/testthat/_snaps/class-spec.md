@@ -11,7 +11,7 @@
     Code
       as_class(TRUE)
     Error <simpleError>
-      as_class(): class specification must by a R7 class object, result of s3_class(), a S4 class object, or a base constructor function, not a <logical>.
+      as_class(): class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <logical>.
 
 # s3_class() checks its inputs
 
