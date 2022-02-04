@@ -20,7 +20,8 @@ test_that("can work with unions", {
   expect_equal(class_desc(klass), "<text> u <number>")
   expect_equal(class_deparse(klass), "new_union(text, number)")
 
-  # Can't have an instance of a union
+  # Can't have an instance of a union so no obj_ tests
+
   expect_equal(class_inherits(text("x"), klass), TRUE)
   expect_equal(class_inherits(number(1), klass), TRUE)
 })
