@@ -69,25 +69,22 @@
       @ name       :  chr "range"
       @ parent     :  <R7_object> constructor
       @ properties : List of 3
-       .. $ start :List of 4
-       ..  ..$ name  : chr "start"
-       ..  ..$ class : <numeric/R7_object> constructor
-       ..  ..$ getter: NULL
-       ..  ..$ setter: NULL
-       ..  ..- attr(*, "class")= chr "R7_property"
-       .. $ end   :List of 4
-       ..  ..$ name  : chr "end"
-       ..  ..$ class : <numeric/R7_object> constructor
-       ..  ..$ getter: NULL
-       ..  ..$ setter: NULL
-       ..  ..- attr(*, "class")= chr "R7_property"
-       .. $ length:List of 4
-       ..  ..$ name  : chr "length"
-       ..  ..$ class : <numeric/R7_object> constructor
-       ..  ..$ getter:function (x)  
-       ..  ..$ setter:function (x, value)  
-       ..  ..- attr(*, "class")= chr "R7_property"
-      @ constructor: function (start, end)  
-      @ validator  : function (x)  
+       .. $ start : <R7_property> 
+       .. .. $ name  :  chr "start"
+       .. .. $ class :  <numeric/R7_object> constructor
+       .. .. $ getter:  NULL
+       .. .. $ setter:  NULL
+       .. $ end   : <R7_property> 
+       .. .. $ name  :  chr "end"
+       .. .. $ class :  <numeric/R7_object> constructor
+       .. .. $ getter:  NULL
+       .. .. $ setter:  NULL
+       .. $ length: <R7_property> 
+       .. .. $ name  :  chr "length"
+       .. .. $ class :  <numeric/R7_object> constructor
+       .. .. $ getter:  function (x)  
+       .. .. $ setter:  function (x, value)  
+      @ constructor:  function (start, end)  
+      @ validator  :  function (x)  
       @ class      :  chr [1:2] "R7_class" "R7_object"
 

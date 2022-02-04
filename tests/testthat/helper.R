@@ -60,12 +60,6 @@ quick_test_enable <- function() {
   Sys.setenv("R_TESTTHAT_QUICK" = "true")
 }
 
-scrub_src_references <- function(x) {
-  x <- grep("attr[(][*], \"srcref|srcfile\"[)]|..[$] srcref ", x, invert = TRUE, value = TRUE)
-  x <- grep("@ (srcref|srcfile)", x, invert = TRUE, value = TRUE)
-  x
-}
-
 scrub_environment <- function(x) {
   gsub("environment: 0x[0-9a-f]+", "environment: 0x0", x)
 }

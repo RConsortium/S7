@@ -9,4 +9,5 @@
   on dispatch args (#141)
 * `x@.data` -> `r7_data()`; probably to be replaced by casting.
 * In generic, `signature` -> `dispatch_args`.
+* Polished `str()` methods
 * `new_class()` has properties as 3rd argument (instead of constructor).

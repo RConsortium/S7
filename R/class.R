@@ -154,11 +154,13 @@ print.R7_class <- function(x, ...) {
 
 #' @export
 str.R7_class <- function(object, ..., nest.lev = 0) {
-  if (nest.lev > 0) cat(" ")
+  cat(if (nest.lev > 0) " ")
   cat("<", paste0(class_names(object), collapse = "/"), "> constructor", sep = "")
   cat("\n")
 
   if (nest.lev == 0) {
-    str_props(object, ...)
+    props <- props(object)
+    props$srcref <- NULL
+    str_list(props, ..., prefix = "@", nest.lev = nest.lev)
   }
 }

@@ -83,11 +83,11 @@ test_that("str with simple R7 objects work", {
 })
 
 test_that("str with R7 objects of base classes work", {
-  expect_snapshot(str(list(text("b"), number(50))), transform = scrub_src_references)
+  expect_snapshot(str(list(text("b"), number(50))))
 })
 
 test_that("str R7 classes work", {
-  expect_snapshot(str(range), transform = scrub_src_references)
+  expect_snapshot(str(range))
 })
 
 test_that("object_class returns itself for R7_class objects", {
