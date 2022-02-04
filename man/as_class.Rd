@@ -4,7 +4,7 @@
 \alias{as_class}
 \title{Standard class specifications}
 \usage{
-as_class(x, arg_name = "as_class()")
+as_class(x, arg = deparse(substitute(x)))
 }
 \arguments{
 \item{x}{A class specification.
@@ -16,10 +16,14 @@ as_class(x, arg_name = "as_class()")
 \code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
 }}
 
-\item{arg_name}{Argument name used when generating errors.}
+\item{arg}{Argument name used when generating errors.}
+}
+\value{
+A standardised class: either \code{NULL}, an R7 class, an R7 union,
+as \link{s3_class}, or a S4 class.
 }
 \description{
 This is used as the interface between R7 and R's other OO systems, allowing
-you to build R7 classes and methods on top of base types, informal S3
-classes, and formal S4 classes.
+you to use R7 classes and methods with base types, informal S3 classes, and
+formal S4 classes.
 }

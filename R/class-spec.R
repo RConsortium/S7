@@ -1,8 +1,8 @@
 #' Standard class specifications
 #'
 #' This is used as the interface between R7 and R's other OO systems, allowing
-#' you to build R7 classes and methods on top of base types, informal S3
-#' classes, and formal S4 classes.
+#' you to use R7 classes and methods with base types, informal S3 classes, and
+#' formal S4 classes.
 #'
 #' @param x A class specification.
 #'    * An R7 class object or class union.
@@ -10,9 +10,13 @@
 #'    * An S4 class object.
 #'    * A base type specified either with its constructor (`logical`, `integer`,
 #'      `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
-#' @param arg_name Argument name used when generating errors.
+#' @param arg Argument name used when generating errors.
 #' @export
-as_class <- function(x, arg_name = "as_class()") {
+#' @return A standardised class: either `NULL`, an R7 class, an R7 union,
+#'   as [s3_class], or a S4 class.
+as_class <- function(x, arg = deparse(substitute(x))) {
+  error_base <- sprintf("Can't convert `%s` to a valid class", arg)
+
   if (is.null(x)) {
     x
   } else if (is_class(x)) {
@@ -28,19 +32,21 @@ as_class <- function(x, arg_name = "as_class()") {
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
     if (length(candidate) == 0) {
-      stop(sprintf("%s: could not find base class corresponding to supplied constructor function", arg_name), call. = FALSE)
+      stop(sprintf("%s. Could not find base class corresponding to supplied constructor function", error_base), call. = FALSE)
     }
     base_classes[[names(candidate)[[1]]]]
   } else if (is.character(x) && length(x) == 1) {
     if (x %in% names(base_classes)) {
       base_classes[[x]]
     } else {
-      stop(sprintf("%s: Can't find base class called '%s'", arg_name, x), call. = FALSE)
+      stop(sprintf("%s. No base classes are called '%s'", error_base, x), call. = FALSE)
     }
   } else {
-    stop(sprintf("%s: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a %s.", arg_name, obj_desc(x)), call. = FALSE)
+    stop(sprintf("%s. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a %s.", error_base, obj_desc(x)), call. = FALSE)
   }
 }
+
+
 
 class_type <- function(x) {
   if (is_class(x)) {

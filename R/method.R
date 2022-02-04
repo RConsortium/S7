@@ -63,7 +63,7 @@ as_signature <- function(signature) {
   }
 
   for (i in seq_along(signature)) {
-    signature[[i]] <- as_class(signature[[i]], arg_name = sprintf("signature[[%i]]", i))
+    signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
   }
   signature
 }

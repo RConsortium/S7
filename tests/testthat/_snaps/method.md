@@ -1,18 +1,18 @@
 # method errors on invalid inputs
 
-    signature[[1]]: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
 
 ---
 
-    signature[[1]]: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
 
 ---
 
-    signature[[1]]: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <logical>.
+    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <logical>.
 
 # method errors if no method is defined for that class
 
-    signature[[1]]: Can't find base class called 'blah'
+    Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
 
 # new_method works if you pass a bare class union
 
