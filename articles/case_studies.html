@@ -166,10 +166,10 @@
 <span class="co">#&gt; [1] 29</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">boss</span>
-<span class="co">#&gt; &lt;Person&gt;</span>
-<span class="co">#&gt; @name        Jane Doe</span>
-<span class="co">#&gt; @birthdate 1982-03-04</span>
-<span class="co">#&gt; @age               39</span></code></pre></div>
+<span class="co">#&gt; &lt;Person/R7_object&gt;</span>
+<span class="co">#&gt; @ name     :  chr "Jane Doe"</span>
+<span class="co">#&gt; @ birthdate:  Date[1:1], format: "1982-03-04"</span>
+<span class="co">#&gt; @ age      :  num 39</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="annotated-data-frame">Annotated Data Frame<a class="anchor" aria-label="anchor" href="#annotated-data-frame"></a>
@@ -202,23 +202,23 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">annotated_df</span>
 <span class="co">#&gt; &lt;R7_class&gt;</span>
-<span class="co">#&gt; @name annotated_df</span>
-<span class="co">#&gt; @parent &lt;tbl_df&gt;</span>
-<span class="co">#&gt; @properties</span>
-<span class="co">#&gt;  $rows    &lt;tbl_df&gt;</span>
-<span class="co">#&gt;  $columns &lt;tbl_df&gt;</span>
+<span class="co">#&gt; @ name  :  annotated_df</span>
+<span class="co">#&gt; @ parent: &lt;tbl_df&gt;</span>
+<span class="co">#&gt; @ properties:</span>
+<span class="co">#&gt;  $ rows   : &lt;tbl_df&gt;</span>
+<span class="co">#&gt;  $ columns: &lt;tbl_df&gt;</span>
 <span class="co">#&gt; &lt;R7_class&gt;</span>
-<span class="co">#&gt; @name annotated_df</span>
-<span class="co">#&gt; @parent &lt;tbl&gt;</span>
-<span class="co">#&gt; @properties</span>
-<span class="co">#&gt;  $rows    &lt;tbl_df&gt;</span>
-<span class="co">#&gt;  $columns &lt;tbl_df&gt;</span>
+<span class="co">#&gt; @ name  :  annotated_df</span>
+<span class="co">#&gt; @ parent: &lt;tbl&gt;</span>
+<span class="co">#&gt; @ properties:</span>
+<span class="co">#&gt;  $ rows   : &lt;tbl_df&gt;</span>
+<span class="co">#&gt;  $ columns: &lt;tbl_df&gt;</span>
 <span class="co">#&gt; &lt;R7_class&gt;</span>
-<span class="co">#&gt; @name annotated_df</span>
-<span class="co">#&gt; @parent &lt;data.frame&gt;</span>
-<span class="co">#&gt; @properties</span>
-<span class="co">#&gt;  $rows    &lt;tbl_df&gt;</span>
-<span class="co">#&gt;  $columns &lt;tbl_df&gt;</span></code></pre></div>
+<span class="co">#&gt; @ name  :  annotated_df</span>
+<span class="co">#&gt; @ parent: &lt;data.frame&gt;</span>
+<span class="co">#&gt; @ properties:</span>
+<span class="co">#&gt;  $ rows   : &lt;tbl_df&gt;</span>
+<span class="co">#&gt;  $ columns: &lt;tbl_df&gt;</span></code></pre></div>
 <p>To instantiate an instance of <code>annotated_df</code> we first need to get some data to put in it. As an example we will use the mtcars dataset. This requires some manipulation to get the <code>rows</code> and <code>columns</code> data in the right formats.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mt</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">32</span>, <span class="fl">4</span><span class="op">)</span>, <span class="op">]</span>
@@ -253,32 +253,25 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu">annotated_df</span><span class="op">(</span><span class="va">mt</span>, <span class="va">row_info</span>, <span class="va">col_info</span><span class="op">)</span>
 <span class="va">obj</span>
-<span class="co">#&gt; &lt;annotated_df&gt;</span>
-<span class="co">#&gt; @rows                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span style="color: #949494;"># A tibble: 8 × 2</span></span>
-<span class="co">#&gt;   make     model     </span>
-<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Mazda    RX4       </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Hornet   Sportabout</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Merc     230       </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Merc     450SL     </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Chrysler Imperial  </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Toyota   Corona    </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">7</span> Pontiac  Firebird  </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">8</span> Ford     Pantera L </span>
-<span class="co">#&gt; @columns <span style="color: #949494;"># A tibble: 11 × 2</span></span>
-<span class="co">#&gt;    name  description                             </span>
-<span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                   </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> mpg   Miles/(US) gallon                       </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> cyl   Number of cylinders                     </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> disp  Displacement (cu.in.)                   </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> hp    Gross horsepower                        </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> drat  Rear axle ratio                         </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> wt    Weight (1000 lbs)                       </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> qsec  1/4 mile time                           </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> vs    Engine (0 = V-shaped, 1 = straight)     </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> am    Transmission (0 = automatic, 1 = manual)</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">10</span> gear  Number of forward gears                 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">11</span> carb  Number of carburetors</span>
+<span class="co">#&gt; &lt;annotated_df/R7_object/tbl_df/tbl/data.frame&gt;List of 11</span>
+<span class="co">#&gt;  $ : num [1:8] 21 18.7 22.8 17.3 14.7 21.5 19.2 15.8</span>
+<span class="co">#&gt;  $ : num [1:8] 6 8 4 8 8 4 8 8</span>
+<span class="co">#&gt;  $ : num [1:8] 160 360 141 276 440 ...</span>
+<span class="co">#&gt;  $ : num [1:8] 110 175 95 180 230 97 175 264</span>
+<span class="co">#&gt;  $ : num [1:8] 3.9 3.15 3.92 3.07 3.23 3.7 3.08 4.22</span>
+<span class="co">#&gt;  $ : num [1:8] 2.62 3.44 3.15 3.73 5.34 ...</span>
+<span class="co">#&gt;  $ : num [1:8] 16.5 17 22.9 17.6 17.4 ...</span>
+<span class="co">#&gt;  $ : num [1:8] 0 0 1 0 0 1 0 0</span>
+<span class="co">#&gt;  $ : num [1:8] 1 0 0 0 0 0 0 1</span>
+<span class="co">#&gt;  $ : num [1:8] 4 3 4 3 3 3 3 5</span>
+<span class="co">#&gt;  $ : num [1:8] 4 2 2 3 4 1 2 4</span>
+<span class="co">#&gt; @ rows   :  tibble [8 × 2] (S3: tbl_df/tbl/data.frame)</span>
+<span class="co">#&gt;  $ make : chr [1:8] "Mazda" "Hornet" "Merc" "Merc" ...</span>
+<span class="co">#&gt;  $ model: chr [1:8] "RX4" "Sportabout" "230" "450SL" ...</span>
+<span class="co">#&gt; @ columns:  tibble [11 × 2] (S3: tbl_df/tbl/data.frame)</span>
+<span class="co">#&gt;  $ name       : chr [1:11] "mpg" "cyl" "disp" "hp" ...</span>
+<span class="co">#&gt;  $ description: Named chr [1:11] "Miles/(US) gallon" "Number of cylinders" "Displacement (cu.in.)" "Gross horsepower" ...</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr [1:11] "mpg" "cyl" "disp" "hp" ...</span>
 
 <span class="va">obj</span><span class="op">@</span><span class="va">rows</span>
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 2</span></span>
@@ -323,21 +316,19 @@
 <code class="sourceCode R"><span class="va">obj2</span> <span class="op">&lt;-</span> <span class="fu">subset_R7</span><span class="op">(</span><span class="va">obj</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>
 
 <span class="va">obj2</span>
-<span class="co">#&gt; &lt;annotated_df&gt;</span>
-<span class="co">#&gt; @rows                                                                                                                                                                <span style="color: #949494;"># A tibble: 3 × 2</span></span>
-<span class="co">#&gt;   make   model     </span>
-<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Mazda  RX4       </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Hornet Sportabout</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Merc   230       </span>
-<span class="co">#&gt; @columns <span style="color: #949494;"># A tibble: 5 × 2</span></span>
-<span class="co">#&gt;   name  description          </span>
-<span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> mpg   Miles/(US) gallon    </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> cyl   Number of cylinders  </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> disp  Displacement (cu.in.)</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">4</span> hp    Gross horsepower     </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">5</span> drat  Rear axle ratio</span>
+<span class="co">#&gt; &lt;annotated_df/R7_object/tbl_df/tbl/data.frame&gt;List of 5</span>
+<span class="co">#&gt;  $ : num [1:3] 21 18.7 22.8</span>
+<span class="co">#&gt;  $ : num [1:3] 6 8 4</span>
+<span class="co">#&gt;  $ : num [1:3] 160 360 141</span>
+<span class="co">#&gt;  $ : num [1:3] 110 175 95</span>
+<span class="co">#&gt;  $ : num [1:3] 3.9 3.15 3.92</span>
+<span class="co">#&gt; @ rows   :  tibble [3 × 2] (S3: tbl_df/tbl/data.frame)</span>
+<span class="co">#&gt;  $ make : chr [1:3] "Mazda" "Hornet" "Merc"</span>
+<span class="co">#&gt;  $ model: chr [1:3] "RX4" "Sportabout" "230"</span>
+<span class="co">#&gt; @ columns:  tibble [5 × 2] (S3: tbl_df/tbl/data.frame)</span>
+<span class="co">#&gt;  $ name       : chr [1:5] "mpg" "cyl" "disp" "hp" ...</span>
+<span class="co">#&gt;  $ description: Named chr [1:5] "Miles/(US) gallon" "Number of cylinders" "Displacement (cu.in.)" "Gross horsepower" ...</span>
+<span class="co">#&gt;   ..- attr(*, "names")= chr [1:5] "mpg" "cyl" "disp" "hp" ...</span>
 
 <span class="va">obj2</span><span class="op">@</span><span class="va">rows</span>
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span>
