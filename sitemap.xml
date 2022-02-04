@@ -31,7 +31,7 @@
     <loc>https://RConsortium.github.io/OOP-WG/news/index.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/class_get.html</loc>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/as_class.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/class_names.html</loc>
@@ -77,6 +77,9 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/r7_object.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/s3_class.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/validate.html</loc>
