@@ -17,7 +17,7 @@ test_that("can work with unions", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "r7_union")
-  expect_equal(class_desc(klass), "<text> u <number>")
+  expect_equal(class_desc(klass), "<text> or <number>")
   expect_equal(class_deparse(klass), "new_union(text, number)")
 
   # Can't have an instance of a union so no obj_ tests

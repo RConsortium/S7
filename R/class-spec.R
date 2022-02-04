@@ -75,7 +75,7 @@ class_desc <- function(x) {
     s4 = fmt_classes(x@className),
     r7 = fmt_classes(x@name),
     r7_base = fmt_classes(x@name),
-    r7_union = paste(unlist(lapply(x@classes, class_desc)), collapse = " u "),
+    r7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
   )
 }
 

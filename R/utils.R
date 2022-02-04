@@ -73,3 +73,15 @@ make_function <- function(args, body, env = parent.frame()) {
 is_prefix <- function(x, y) {
   length(x) <= length(y) && identical(unclass(x), unclass(y)[seq_along(x)])
 }
+
+oxford_or <- function (x)  {
+  n <- length(x)
+  if (n == 1) {
+    x
+  } else if (n == 2) {
+    paste0(x[[1]], " or ", x[[2]])
+  } else if (n >= 2) {
+    x <- c(x[seq(1, n - 2, by = 1)], paste0(x[[n - 1]], ", or ", x[[n]]))
+    paste0(x, collapse = ", ")
+  }
+}

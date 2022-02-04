@@ -26,12 +26,12 @@
       @name my_class
       @parent <R7_object>
       @properties
-       $anything                 <ANY>
-       $base                 <integer>
-       $s3                    <factor>
-       $s4                  <class_s4>
-       $r7                  <class_r7>
-       $r7_union <integer> u <logical>
+       $anything                  <ANY>
+       $base                  <integer>
+       $s3                     <factor>
+       $s4                   <class_s4>
+       $r7                   <class_r7>
+       $r7_union <integer> or <logical>
 
 ---
 
@@ -54,5 +54,5 @@
     Code
       my_obj@r7_union <- "x"
     Error <simpleError>
-      <my_class>@r7_union must be of class <integer> u <logical>, not <character>
+      <my_class>@r7_union must be of class <integer> or <logical>, not <character>
 
