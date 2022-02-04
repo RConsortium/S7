@@ -97,7 +97,7 @@ class_deparse <- function(x) {
 class_inherits <- function(x, what) {
   switch(class_type(what),
     NULL = TRUE,
-    s3 = !isS4(x) && inherits(x, what[[1]]),
+    s3 = !isS4(x) && is_prefix(what, class(x)),
     s4 = isS4(x) && methods::is(x, what),
     r7 = inherits(x, "R7_object") && inherits(x, what@name),
     r7_base = what@name %in% .class2(x),

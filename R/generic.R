@@ -115,7 +115,7 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
   if (!is.null(fun)) {
     arg_names <- names(formals(fun))
 
-    if (!identical(dispatch_args, arg_names[seq_along(dispatch_args)])) {
+    if (!is_prefix(dispatch_args, arg_names)) {
       stop("`dispatch_args` must be a prefix of the generic arguments", call. = FALSE)
     }
 

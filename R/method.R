@@ -79,7 +79,7 @@ method_impl <- function(generic, signature, ignore) {
     args <- generic@dispatch_args
     generic <- generic@name
   } else {
-    args <- names(formals(generic))
+    args <- setdiff(names(formals(generic)), "...")
     generic <- find_function_name(generic, topenv(environment(generic)))
   }
 
@@ -209,8 +209,6 @@ new_method <- function(generic, signature, method, package = NULL) {
 
 
   for (i in seq_along(signature)) {
-    type <- class_type(signature[[i]])
-
     # Register one method for each class in union
     if (inherits(signature[[i]], "R7_union")) {
       this_sig <- signature
@@ -222,7 +220,7 @@ new_method <- function(generic, signature, method, package = NULL) {
       return(invisible(generic))
     }
 
-    class_name <- r7_class(signature[[i]])
+    class_name <- r7_class_name(signature[[i]])
     if (i == length(signature)) {
       p_tbl[[class_name]] <- method
     } else {
@@ -249,7 +247,7 @@ s3_class_name <- function(x) {
   )
 }
 # Class name when registering an R7 method
-r7_class <- function(x) {
+r7_class_name <- function(x) {
   switch(class_type(x),
     s3 = x,
     s4 = x@className,

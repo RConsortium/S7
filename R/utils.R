@@ -69,3 +69,7 @@ make_function <- function(args, body, env = parent.frame()) {
 
   as.function.default(c(args, body), envir = env)
 }
+
+is_prefix <- function(x, y) {
+  length(x) <= length(y) && identical(unclass(x), unclass(y)[seq_along(x)])
+}
