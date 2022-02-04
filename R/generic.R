@@ -37,7 +37,7 @@
 #' # A simple generic with methods for some base types and S3 classes
 #' type_of <- new_generic("type_of", dispatch_args = "x")
 #' method(type_of, "character") <- function(x, ...) "A character vector"
-#' method(type_of, "data.frame") <- function(x, ...) "A data frame"
+#' method(type_of, s3_class("data.frame")) <- function(x, ...) "A data frame"
 #' method(type_of, "function") <- function(x, ...) "A function"
 #'
 #' type_of(mtcars)
@@ -115,7 +115,7 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
   if (!is.null(fun)) {
     arg_names <- names(formals(fun))
 
-    if (!identical(dispatch_args, arg_names[seq_along(dispatch_args)])) {
+    if (!is_prefix(dispatch_args, arg_names)) {
       stop("`dispatch_args` must be a prefix of the generic arguments", call. = FALSE)
     }
 
@@ -129,15 +129,18 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
 
 #' @export
 print.R7_generic <- function(x, ...) {
-  ms <- methods(x)
-  indexes <- seq_along(ms)
-  method_signatures <- vcapply(ms, function(x) method_signature(x@signature))
-
-  msg <- collapse(sprintf("%s: method(%s, list(%s))", indexes, x@name, method_signatures), by = "\n")
-
+  methods <- methods(x)
   formals <- collapse(head(format(args(x)), n = -1), by = "\n")
+  cat(sprintf("<R7_generic> %s with %i methods:\n", formals, length(methods)), sep = "")
 
-  cat(sprintf("<R7_generic> %s with %i methods:\n%s", formals, length(ms), msg), sep = "")
+  if (length(methods) > 0) {
+    signatures <- lapply(methods, prop, "signature")
+    msg <- vcapply(signatures, method_signature, generic = x)
+    msg <- paste0(format(seq_along(signatures)), ": ", msg, "\n")
+    cat(msg, sep = "")
+  }
+
+  invisible(x)
 }
 
 check_generic <- function(fun) {

@@ -56,11 +56,14 @@
 #' hadley@firstName
 #' hadley@first_name
 new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
+  class <- as_class(class)
   out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "R7_property"
 
   out
 }
+
+is_property <- function(x) inherits(x, "R7_property")
 
 #' @export
 str.R7_property <- function(object, ..., nest.lev = 0) {
@@ -105,8 +108,7 @@ prop <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     stop("`object` is not an <R7_object>")
   } else if (!prop_exists(object, name)) {
-    class <- object_class(object)
-    stop(sprintf("Can't find property %s@%s", fmt_classes(attr(class, "name")), name))
+    stop(sprintf("Can't find property %s@%s", obj_desc(object), name))
   } else {
     prop_val(object, name)
   }
@@ -191,12 +193,12 @@ prop_exists <- function(object, name) {
       on.exit(setter_property <<- NULL, add = TRUE)
       object <- prop$setter(object, value)
     } else {
-      if (isTRUE(check) && length(prop[["class"]]) > 0) {
-        classes <- setdiff(class_names(prop[["class"]]), "R7_object")
-        if (!inherits(value, classes)) {
-          obj_cls <- object_class(object)
-          stop(sprintf("%s@%s must be of class %s:\n- `value` is of class <%s>", fmt_classes(obj_cls@name), name, fmt_classes(classes), class(value)[[1]]), call. = FALSE)
-        }
+      if (isTRUE(check) && !class_inherits(value, prop$class)) {
+        stop(sprintf("%s@%s must be of class %s, not %s",
+          obj_desc(object), name,
+          class_desc(prop$class),
+          obj_desc(value)
+        ), call. = FALSE)
       }
       attr(object, name) <- value
     }
@@ -235,16 +237,16 @@ as_properties <- function(x) {
     return(list())
   }
 
-  named_chars <- vlapply(x, is.character) & has_names(x)
-  R7_properties <- vlapply(x, inherits, "R7_property")
+  named_class <- !vlapply(x, is_property) & has_names(x)
 
-  if (!all(named_chars | R7_properties)) {
-    stop("`x` must be a list of 'R7_property' objects or named characters", call. = FALSE)
-  }
+  x[named_class] <- mapply(new_property,
+    name = names(x)[named_class],
+    class = x[named_class],
+    USE.NAMES = TRUE,
+    SIMPLIFY = FALSE
+  )
 
-  x[named_chars] <- mapply(new_property, name = names(x)[named_chars], class = x[named_chars], USE.NAMES = TRUE, SIMPLIFY = FALSE)
-
-  names(x)[!named_chars] <- vcapply(x[!named_chars], function(x) x[["name"]])
+  names(x)[!named_class] <- vcapply(x[!named_class], function(x) x[["name"]])
 
   x
 }

@@ -23,7 +23,7 @@
     Code
       print(x)
     Output
-      <range/R7_object>
+      <range>
       @start   1
       @end    10
       @length  9
@@ -71,17 +71,17 @@
       @ properties : List of 3
        .. $ start : <R7_property> 
        .. .. $ name  :  chr "start"
-       .. .. $ class :  chr "numeric"
+       .. .. $ class :  <numeric/R7_object> constructor
        .. .. $ getter:  NULL
        .. .. $ setter:  NULL
        .. $ end   : <R7_property> 
        .. .. $ name  :  chr "end"
-       .. .. $ class :  chr "numeric"
+       .. .. $ class :  <numeric/R7_object> constructor
        .. .. $ getter:  NULL
        .. .. $ setter:  NULL
        .. $ length: <R7_property> 
        .. .. $ name  :  chr "length"
-       .. .. $ class :  chr "numeric"
+       .. .. $ class :  <numeric/R7_object> constructor
        .. .. $ getter:  function (x)  
        .. .. $ setter:  function (x, value)  
       @ constructor:  function (start, end)  

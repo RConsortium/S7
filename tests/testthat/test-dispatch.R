@@ -51,7 +51,7 @@ test_that("generics pass extra args to methods", {
 
 test_that("method lookup fails with informative messages", {
   foo <- new_generic("foo", dispatch_args = c("x", "y"))
-  method(foo, c("character", "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  method(foo, list("character", "integer")) <- function(x, y) paste0("bar:", x, y)
   expect_snapshot_error(foo(TRUE))
   expect_snapshot_error(foo(TRUE, list()))
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))

@@ -32,23 +32,20 @@ vlapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = logical(1)
 vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
 `%||%` <- function(x, y) if (length(x) == 0 || (length(x) == 1 && !nzchar(x))) y else x
 
-fmt_classes <- function(classes, collapse = ", ") {
-  paste0("<", classes, ">", collapse = collapse)
-}
-
 collapse <- function(x, by) {
   paste(x, collapse = by)
 }
 
-method_signature <- function(signature) {
-  format_signature <- function(x) {
-    if (inherits(x, "R7_class")) {
-      x@name
-    } else {
-      sprintf('"%s"', x)
-    }
+method_signature <- function(generic, signature) {
+  single <- length(generic@dispatch_args) == 1
+  if (single) {
+    signature <- class_deparse(signature[[1]])
+  } else {
+    classes <- vcapply(signature, class_deparse)
+    signature <- paste0("list(", paste0(classes, collapse = ", "), ")")
   }
-  collapse(vcapply(signature, format_signature), by = ", ")
+
+  sprintf("method(%s, %s)", generic@name, signature)
 }
 
 as_names <- function(x, named = FALSE) {
@@ -71,4 +68,20 @@ make_function <- function(args, body, env = parent.frame()) {
   args <- as.pairlist(args)
 
   as.function.default(c(args, body), envir = env)
+}
+
+is_prefix <- function(x, y) {
+  length(x) <= length(y) && identical(unclass(x), unclass(y)[seq_along(x)])
+}
+
+oxford_or <- function (x)  {
+  n <- length(x)
+  if (n == 1) {
+    x
+  } else if (n == 2) {
+    paste0(x[[1]], " or ", x[[2]])
+  } else if (n >= 2) {
+    x <- c(x[seq(1, n - 2, by = 1)], paste0(x[[n - 1]], ", or ", x[[n]]))
+    paste0(x, collapse = ", ")
+  }
 }

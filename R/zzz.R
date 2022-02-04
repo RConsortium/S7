@@ -1,3 +1,5 @@
+is_union <- function(x) inherits(x, "R7_union")
+
 #' An R7 object
 #' @export
 R7_object <- new_class(
@@ -14,7 +16,7 @@ new_base_class <- function(name) {
   R7_class(name = name, constructor = function(.data) new_object(.data))
 }
 
-base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "factor", "raw", "function", "list", "data.frame"))
+base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "raw", "function", "list", "environment"))
 
 base_classes <- lapply(base_types, new_base_class)
 base_classes[["NULL"]] <- new_base_class("NULL")
@@ -44,7 +46,7 @@ R7_generic <- new_class(
 
 R7_method <- new_class(
   name = "R7_method",
-  properties = list(generic = "R7_generic", signature = "list", fun = "function"),
+  properties = list(generic = R7_generic, signature = "list", fun = "function"),
   parent = "function",
   constructor = function(generic, signature, fun) {
     if (is.character(signature)) {
@@ -60,7 +62,7 @@ R7_union <- new_class(
     new_property(
       "classes",
       setter = function(x, val) {
-        x@classes <- class_standardise(val)
+        x@classes <- class_flatten(val)
         x
       }
     )
@@ -70,8 +72,8 @@ R7_union <- new_class(
   }
 )
 
-class_standardise <- function(x) {
-  x <- lapply(x, class_get, unions = TRUE)
+class_flatten <- function(x) {
+  x <- lapply(x, as_class)
 
   # Flatten unions
   is_union <- vlapply(x, is_union)
@@ -81,11 +83,9 @@ class_standardise <- function(x) {
   unique(unlist(x, recursive = FALSE, use.names = FALSE))
 }
 
-is_union <- function(x) inherits(x, "R7_union")
-
 #' @export
 print.R7_union <- function(x, ...) {
-  cat(sprintf("<R7_union>: %s", fmt_classes(class_names(x), " u ")), "\n", sep = "")
+  cat(sprintf("<R7_union>: %s", class_desc(x)), "\n", sep = "")
   invisible(x)
 }
 

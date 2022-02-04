@@ -10,11 +10,12 @@ reference:
   - new_union
   - new_external_generic
   - r7_data
+  - s3_class
   - R7_object
 
 - title: Introspection
   contents:
-  - class_get
+  - as_class
   - class_names
   - object_class
   - method

@@ -22,11 +22,11 @@
 #' bizarro <- new_generic("bizarro", dispatch_args = "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x, ...) rev(x)
-#' method(bizarro, "factor") <- function(x, ...) {
+#' method(bizarro, s3_class("factor")) <- function(x, ...) {
 #'   levels(x) <- rev(levels(x))
 #'   x
 #' }
-#' method(bizarro, "data.frame") <- function(x, ...) {
+#' method(bizarro, s3_class("data.frame")) <- function(x, ...) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
@@ -36,11 +36,12 @@
 #'
 #' # But it can be useful to explicitly retrieve a method in order to
 #' # inspect its implementation
-#' method(bizarro, list("numeric"))
-#' method(bizarro, list("factor"))
+#' method(bizarro, "numeric")
+#' method(bizarro, s3_class("factor"))
 method <- function(generic, signature) {
-  signature <- as_signature(signature)
+  # TODO: check that signature doesn't contain any unions
 
+  signature <- as_signature(signature)
   method_impl(generic, signature, ignore = NULL)
 }
 
@@ -60,46 +61,40 @@ as_signature <- function(signature) {
   if (!is.list(signature)) {
     signature <- list(signature)
   }
-  is_valid_signature <- vlapply(signature, function(x) inherits(x, "R7_class") | inherits(x, "character"))
-  if (all(is_valid_signature)) {
-    return(signature)
+
+  for (i in seq_along(signature)) {
+    signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
   }
-
-  invalid_indexes <- which(!is_valid_signature)
-  invalid_classes <- vcapply(signature[!is_valid_signature], function(x) fmt_classes(class(x)))
-
-  stop(
-    "`signature` must be a list of <R7_class> or a <character>:\n",
-    paste0(collapse = "\n",
-      sprintf("- `signature[%s]`: is %s", invalid_indexes, invalid_classes)
-    ),
-  call. = FALSE)
+  signature
 }
 
 method_impl <- function(generic, signature, ignore) {
   out <- .Call(method_, generic, signature, ignore)
-  if (is.null(out)) {
-    # If no R7 method is found, see if there are any S3 methods registered
-    if (inherits(generic, "R7_generic")) {
-      args <- generic@dispatch_args
-      generic <- generic@name
-    } else {
-      generic <- find_function_name(generic, topenv(environment(generic)))
-      args <- names(formals(generic))
-    }
-    args <- setdiff(args, "...")
-
-    out <- getS3method(generic, signature[[1]][[1]], optional = TRUE)
-
-    # If no method found check if the generic has a default method
-    out <- getS3method(generic, "default", optional = TRUE)
+  if (!is.null(out)) {
+    return(out)
   }
 
-  if (is.null(out)) {
-    method_lookup_error(generic, args, signature)
+  # If no R7 method is found, see if there are any S3 methods registered
+  if (inherits(generic, "R7_generic")) {
+    args <- generic@dispatch_args
+    generic <- generic@name
+  } else {
+    args <- setdiff(names(formals(generic)), "...")
+    generic <- find_function_name(generic, topenv(environment(generic)))
   }
 
-  out
+  out <- getS3method(generic, s3_class_name(signature[[1]]), optional = TRUE)
+  if (!is.null(out)) {
+    return(out)
+  }
+
+  # If no method found check if the generic has a default method
+  out <- getS3method(generic, "default", optional = TRUE)
+  if (!is.null(out)) {
+    return(out)
+  }
+
+  method_lookup_error(generic, args, signature)
 }
 
 find_function_name <- function(x, env) {
@@ -174,6 +169,8 @@ method_compatible <- function(method, generic) {
 }
 
 new_method <- function(generic, signature, method, package = NULL) {
+  signature <- as_signature(signature)
+
   if (inherits(generic, "R7_external_generic")) {
     # Get current package, if any
     if (!is.null(package)) {
@@ -201,10 +198,8 @@ new_method <- function(generic, signature, method, package = NULL) {
   }
 
   if (inherits(generic, "S3_generic")) {
-    if (inherits(signature[[1]], "R7_class")) {
-      signature[[1]] <- signature[[1]]@name
-    }
-    registerS3method(attr(generic, "name"), signature[[1]], method, envir = parent.frame())
+    class <- s3_class_name(signature[[1]])
+    registerS3method(attr(generic, "name"), class, method, envir = parent.frame())
     return(invisible(generic))
   }
 
@@ -214,21 +209,25 @@ new_method <- function(generic, signature, method, package = NULL) {
 
 
   for (i in seq_along(signature)) {
+    # Register one method for each class in union
     if (inherits(signature[[i]], "R7_union")) {
+      this_sig <- signature
       for (class in signature[[i]]@classes) {
-        new_method(generic, c(signature[seq_len(i - 1)], class@name), method)
+        this_sig[[i]] <- class
+        method <- R7_method(generic, this_sig, method)
+        new_method(generic, this_sig, method, package = package)
       }
       return(invisible(generic))
-    } else if (inherits(signature[[i]], "R7_class")) {
-      signature[[i]] <- signature[[i]]@name
     }
+
+    class_name <- r7_class_name(signature[[i]])
     if (i == length(signature)) {
-      p_tbl[[signature[[i]]]] <- method
+      p_tbl[[class_name]] <- method
     } else {
-      tbl <- p_tbl[[signature[[i]]]]
+      tbl <- p_tbl[[class_name]]
       if (is.null(tbl)) {
         tbl <- new.env(hash = TRUE, parent = emptyenv())
-        p_tbl[[signature[[i]]]] <- tbl
+        p_tbl[[class_name]] <- tbl
       }
       p_tbl <- tbl
     }
@@ -237,6 +236,26 @@ new_method <- function(generic, signature, method, package = NULL) {
   invisible(generic)
 }
 
+# Class name when registering an S3 method
+s3_class_name <- function(x) {
+  switch(class_type(x),
+   s3 = class(x),
+   s4 = class(x),
+   r7 = x@name,
+   r7_base = typeof(x),
+   stop("Unsupported")
+  )
+}
+# Class name when registering an R7 method
+r7_class_name <- function(x) {
+  switch(class_type(x),
+    s3 = x,
+    s4 = x@className,
+    r7 = x@name,
+    r7_base = x@name,
+    stop("Unsupported")
+  )
+}
 
 #' @rdname method
 #'
@@ -269,12 +288,9 @@ as_generic <- function(generic) {
 
 #' @export
 print.R7_method <- function(x, ...) {
-  method_signature <- method_signature(x@signature)
-
-  msg <- sprintf("method(%s, list(%s))", x@generic@name, method_signature)
+  signature <- method_signature(x@generic, x@signature)
+  cat("<R7_method> ", signature, "\n", sep = "")
 
   attributes(x) <- NULL
-
-  cat("<R7_method> ", msg, "\n", sep = "")
   print(x)
 }

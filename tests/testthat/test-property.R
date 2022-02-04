@@ -12,6 +12,21 @@ describe("prop", {
     x <- range(1, 10)
     expect_snapshot_error(prop(x, "st"))
   })
+  it("retrieves .data", {
+    x <- text("hi")
+    expect_equal(r7_data(x), as_class("character")("hi"))
+  })
+  it("preserves non-property attributes when retrieving .data", {
+    val <- c(foo = "hi", bar = "ho")
+    x <- text(val)
+    expect_equal(r7_data(x), as_class("character")(val))
+  })
+  it("lets you set .data", {
+    val <- c(foo = "hi", bar = "ho")
+    x <- text("foo")
+    r7_data(x) <- "bar"
+    expect_equal(r7_data(x), as_class("character")("bar"))
+  })
 })
 
 describe("prop<-", {
@@ -130,4 +145,46 @@ test_that("property setters can set themselves", {
 
   x <- foo(bar = "foo")
   expect_equal(x@bar, "foo-bar")
+})
+
+test_that("properties can be base, S3, S4, R7, or R7 union", {
+  class_r7 <- new_class("class_r7")
+  class_s4 <- methods::setClass("class_s4", slots = c(x = "numeric"))
+
+  my_class <- new_class("my_class",
+    properties = list(
+      anything = NULL,
+      base = "integer",
+      s3 = s3_class("factor"),
+      s4 = class_s4,
+      r7 = class_r7,
+      r7_union = new_union("integer", "logical")
+    )
+  )
+  expect_snapshot(my_class)
+  my_obj <- my_class(
+    anything = TRUE,
+    base = 1L,
+    s3 = factor(),
+    s4 = class_s4(x = 1),
+    r7 = class_r7(),
+    r7_union = 1L
+  )
+
+  # First check that we can set with out error
+  expect_error(my_obj@base <- 2L, NA)
+  expect_error(my_obj@s3 <- factor("x"), NA)
+  expect_error(my_obj@s4 <- class_s4(x = 2), NA)
+  expect_error(my_obj@r7 <- class_r7(), NA)
+  expect_error(my_obj@r7_union <- 2L, NA)
+  expect_error(my_obj@r7_union <- TRUE, NA)
+
+  # Then capture the error messages for human inspection
+  expect_snapshot(error = TRUE, {
+    my_obj@base <- "x"
+    my_obj@s3 <- "x"
+    my_obj@s4 <- "x"
+    my_obj@r7 <- "x"
+    my_obj@r7_union <- "x"
+  })
 })
