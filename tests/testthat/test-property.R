@@ -153,6 +153,7 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
 
   my_class <- new_class("my_class",
     properties = list(
+      anything = NULL,
       base = "integer",
       s3 = s3_class("factor"),
       s4 = class_s4,
@@ -160,7 +161,9 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
       r7_union = new_union("integer", "logical")
     )
   )
+  expect_snapshot(my_class)
   my_obj <- my_class(
+    anything = TRUE,
     base = 1L,
     s3 = factor(),
     s4 = class_s4(x = 1),

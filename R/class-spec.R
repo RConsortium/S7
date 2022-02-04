@@ -70,7 +70,7 @@ class_type <- function(x) {
 
 class_desc <- function(x) {
   switch(class_type(x),
-    NULL = "",
+    NULL = "<ANY>",
     s3 = fmt_classes(x[[1]]),
     s4 = fmt_classes(x@className),
     r7 = fmt_classes(x@name),

@@ -29,7 +29,7 @@ test_that("handles NULL", {
   expect_equal(as_class(NULL), NULL)
 
   expect_equal(class_type(NULL), "NULL")
-  expect_equal(class_desc(NULL), "")
+  expect_equal(class_desc(NULL), "<ANY>")
   expect_equal(class_deparse(NULL), "")
 
   expect_equal(obj_type(NULL), "NULL")

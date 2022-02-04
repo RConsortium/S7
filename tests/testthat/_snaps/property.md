@@ -20,6 +20,22 @@
 # properties can be base, S3, S4, R7, or R7 union
 
     Code
+      my_class
+    Output
+      <R7_class>
+      @name my_class
+      @parent <R7_object>
+      @properties
+       $anything                 <ANY>
+       $base                 <integer>
+       $s3                    <factor>
+       $s4                  <class_s4>
+       $r7                  <class_r7>
+       $r7_union <integer> u <logical>
+
+---
+
+    Code
       my_obj@base <- "x"
     Error <simpleError>
       <my_class>@base must be of class <integer>, not <character>
