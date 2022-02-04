@@ -2,7 +2,7 @@
 
 ## Jan 2020
 
-* Classes (base types, S3, S4, and R7) and handled consistently whereever they
+* Classes (base types, S3, S4, and R7) are handled consistently wherever they
   are used. Strings now only refer to base types. New explicit `s3_class()` for 
   referring to S3 classes (#134).
 * Different evaluation mechanism for method dispatch, and greater restrictions 

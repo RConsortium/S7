@@ -27,7 +27,7 @@ as_class <- function(x, arg_name = "as_class()") {
     x
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
-    if (length(candidate)  == 0) {
+    if (length(candidate) == 0) {
       stop(sprintf("%s: could not find base class corresponding to supplied constructor function", arg_name), call. = FALSE)
     }
     base_classes[[names(candidate)[[1]]]]
@@ -38,13 +38,13 @@ as_class <- function(x, arg_name = "as_class()") {
       stop(sprintf("%s: Can't find base class called '%s'", arg_name, x), call. = FALSE)
     }
   } else {
-    stop(sprintf("%s: class specification must by a R7 class object, result of s3_class(), a S4 class object, or a base constructor function, not a %s.", arg_name, obj_desc(x)), call. = FALSE)
+    stop(sprintf("%s: class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a %s.", arg_name, obj_desc(x)), call. = FALSE)
   }
 }
 
 class_type <- function(x) {
   if (is_class(x)) {
-    if (hasName(base_classes, x@name)) {
+    if (utils::hasName(base_classes, x@name)) {
       "r7_base"
     } else {
       "r7"
@@ -58,7 +58,7 @@ class_type <- function(x) {
   } else if (isS4(x)) {
     "s4"
   } else {
-    stop("`x` is not standard R7 class")
+    stop("`x` is not standard R7 class", .call = FALSE)
   }
 }
 
@@ -131,7 +131,7 @@ obj_desc <- function(x) {
 #' @param class Character vector of S3 classes
 s3_class <- function(class) {
   if (!is.character(class)) {
-    stop("`class` must be a character vector")
+    stop("`class` must be a character vector", .call = FALSE)
   }
   structure(class, class = "r7_s3_class")
 }
