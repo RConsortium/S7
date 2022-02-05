@@ -47,7 +47,6 @@ as_class <- function(x, arg = deparse(substitute(x))) {
 }
 
 
-
 class_type <- function(x) {
   if (is_class(x)) {
     if (utils::hasName(base_classes, x@name)) {
@@ -68,10 +67,26 @@ class_type <- function(x) {
   }
 }
 
+class_construct <- function(.x, ...) {
+  switch(class_type(.x),
+    NULL = NULL,
+    s3 = {
+      if (is.null(.x$constructor)) {
+        stop(sprintf("Constructor not supplied for S3 class %s", x@class[[1]]), call. = FALSE)
+      }
+      .x$constructor(...)
+    },
+    s4 = methods::new(.x, ...),
+    r7 = .x(...),
+    r7_base = .x(...),
+    r7_union = .x@classes[[1]](...),
+  )
+}
+
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
-    s3 = fmt_classes(x[[1]]),
+    s3 = fmt_classes(x$class[[1]]),
     s4 = fmt_classes(x@className),
     r7 = fmt_classes(x@name),
     r7_base = fmt_classes(x@name),
@@ -83,7 +98,7 @@ class_desc <- function(x) {
 class_deparse <- function(x) {
   switch(class_type(x),
     NULL = "",
-    s3 = paste0("s3_class(", paste(encodeString(x, quote = '"'), collapse = ", "), ")"),
+    s3 = paste0("s3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
     s4 = as.character(x@className),
     r7 = x@name,
     r7_base = encodeString(x@name, quote = '"'),
@@ -97,7 +112,7 @@ class_deparse <- function(x) {
 class_inherits <- function(x, what) {
   switch(class_type(what),
     NULL = TRUE,
-    s3 = !isS4(x) && is_prefix(what, class(x)),
+    s3 = !isS4(x) && is_prefix(what$class, class(x)),
     s4 = isS4(x) && methods::is(x, what),
     r7 = inherits(x, "R7_object") && inherits(x, what@name),
     r7_base = what@name %in% .class2(x),
@@ -135,11 +150,19 @@ obj_desc <- function(x) {
 #'
 #' @export
 #' @param class Character vector of S3 classes
-s3_class <- function(class) {
+#' @param constructor An optional constructor that can be used to create
+#'   objects of the specified class.
+s3_class <- function(class, constructor = NULL) {
   if (!is.character(class)) {
     stop("`class` must be a character vector", call. = FALSE)
   }
-  structure(class, class = "r7_s3_class")
+  structure(
+    list(
+      class = class,
+      constructor = constructor
+    ),
+    class = "r7_s3_class"
+  )
 }
 
 is_s3_class <- function(x) {

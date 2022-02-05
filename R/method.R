@@ -58,7 +58,7 @@ get_all_methods <- function(x, signature) {
 }
 
 as_signature <- function(signature) {
-  if (!is.list(signature)) {
+  if (!is.list(signature) || is.object(signature)) {
     signature <- list(signature)
   }
 
@@ -249,7 +249,7 @@ s3_class_name <- function(x) {
 # Class name when registering an R7 method
 r7_class_name <- function(x) {
   switch(class_type(x),
-    s3 = x,
+    s3 = x$class,
     s4 = x@className,
     r7 = x@name,
     r7_base = x@name,

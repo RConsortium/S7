@@ -4,10 +4,13 @@
 \alias{s3_class}
 \title{Declare an S3 class vector}
 \usage{
-s3_class(class)
+s3_class(class, constructor = NULL)
 }
 \arguments{
 \item{class}{Character vector of S3 classes}
+
+\item{constructor}{An optional constructor that can be used to create
+objects of the specified class.}
 }
 \description{
 The S3 class system is informal so doesn't have a way to formally register
