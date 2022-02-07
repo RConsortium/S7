@@ -141,15 +141,16 @@ print.R7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
     prop_names <- format(names(props))
-    prop_types <- format(vcapply(props, function(x) class_desc(x$class)), justify = "right")
-    prop_fmt <- paste0(paste0(" $", prop_names, " ", prop_types, collapse = "\n"), "\n")
+    prop_types <- format(vcapply(props, function(x) class_desc(x$class)))
+    prop_fmt <- paste0(" $ ", prop_names, ": ", prop_types, "\n", collapse = "")
   } else {
     prop_fmt <- ""
   }
   parent <- prop_safely(x, "parent")
   parent <- prop_safely(parent, "name") %||% parent %||% ""
 
-  cat(sprintf("<R7_class>\n@name %s\n@parent <%s>\n@properties\n%s", x@name, parent, prop_fmt), sep = "")
+  cat(sprintf("<R7_class>\n@ name  :  %s\n@ parent: <%s>\n@ properties:\n%s", x@name, parent, prop_fmt), sep = "")
+  invisible(x)
 }
 
 #' @export

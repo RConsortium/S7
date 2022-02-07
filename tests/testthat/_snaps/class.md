@@ -4,9 +4,9 @@
       my_class
     Output
       <R7_class>
-      @name my_class
-      @parent <R7_object>
-      @properties
+      @ name  :  my_class
+      @ parent: <R7_object>
+      @ properties:
 
 # R7_class: str yields all details when used at top-level
 

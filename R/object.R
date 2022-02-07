@@ -82,16 +82,8 @@ object_class <- function(object) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  props <- props(x)
-  if (length(props) > 0) {
-    values <- lapply(names(props), function(xx) prop(x, xx))
-    prop_names <- format(names(props))
-    prop_values <- format(vcapply(names(props), function(name) paste0(format(prop(x, name)), collapse = "\n")), justify = "right")
-    prop_fmt <- paste0(paste0("@", prop_names, " ", prop_values, collapse = "\n"), "\n")
-  } else {
-    prop_fmt <- ""
-  }
-  cat(sprintf("%s\n%s", obj_desc(x), prop_fmt), sep = "")
+  str(x)
+  invisible(x)
 }
 
 #' @export
