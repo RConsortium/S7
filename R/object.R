@@ -47,7 +47,7 @@ new_object <- function(.data = NULL, ...) {
 
     object <- .data
   } else {
-    object <- obj_cls@parent@constructor()
+    object <- class_construct(obj_cls@parent)
   }
   attr(object, ".should_validate") <- FALSE
 

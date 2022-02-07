@@ -128,6 +128,8 @@ class_names <- function(object) {
       }
     } else if (inherits(parent, "R7_class")) {
       classes <- c(classes, parent@name, "R7_object")
+    } else if (inherits(parent, "r7_s3_class")) {
+      classes <- c(classes, parent$class)
     } else {
       classes <- c(classes, parent)
     }

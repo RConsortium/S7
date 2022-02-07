@@ -32,8 +32,7 @@ test_that("can construct from unions", {
 })
 
 test_that("can construct from S3 and S4 classes", {
-  factor <- s3_class("factor", factor)
   s4_union <- methods::setClass("s4_union")
-  u <- new_union(factor, s4_union)
-  expect_equal(u@classes, list(factor, getClass("s4_union")))
+  u <- new_union(s3_factor, s4_union)
+  expect_equal(u@classes, list(s3_factor, getClass("s4_union")))
 })

@@ -155,7 +155,7 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
     properties = list(
       anything = NULL,
       base = "integer",
-      s3 = s3_class("factor", factor),
+      s3 = s3_class("factor"),
       s4 = class_s4,
       r7 = class_r7,
       r7_union = new_union("integer", "logical")

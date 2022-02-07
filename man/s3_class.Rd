@@ -2,7 +2,7 @@
 % Please edit documentation in R/class-spec.R
 \name{s3_class}
 \alias{s3_class}
-\title{Declare an S3 class vector}
+\title{Declare an S3 class}
 \usage{
 s3_class(class, constructor = NULL)
 }
@@ -10,9 +10,47 @@ s3_class(class, constructor = NULL)
 \item{class}{Character vector of S3 classes}
 
 \item{constructor}{An optional constructor that can be used to create
-objects of the specified class.}
+objects of the specified class. This is only needed if you wish to
+have an R7 class inherit from an S3 class. It must be specified in the
+same way as a R7 constructor: the first argument should be \code{.data}
+(the base type whose attributes will be modified).}
 }
 \description{
-The S3 class system is informal so doesn't have a way to formally register
-a class. This helper allows you to use S3 classes within R7.
+The S3 class system is informal so lacks a formal specification of
+inheritance and expected attributes. These are needed for to use S3
+objects with R7, so \code{s3_class()} gives you a way to formally specify
+the properties of the S3 class.
+
+Validation is not currently supported.
+}
+\details{
+There are four ways that you can use S3 with R7:
+\itemize{
+\item To provide an S3 method for an R7 generic.
+\item To restrict an R7 property to an S3 class.
+\item To use an S3 class in R7 union.
+\item To extend an S3 class with an R7 class.
+}
+
+The first three uses only need the S3 class vector, which is straightforward
+to determine and supply:\if{html}{\out{<div class="sourceCode R">}}\preformatted{method(my_generic, s3_class("factor")) <- function(x) "A factor"
+new_class("my_class", properties = list(types = s3_class("factor")))
+new_union("character", s3_class("factor"))
+}\if{html}{\out{</div>}}
+
+Creating an R7 class that inherits behaviour from an S3 method requires
+more work. You'll need to provide a constructor for the S3 class that
+follows R7 conventions. This means:
+\itemize{
+\item The first argument should always be \code{.data}.
+\item There should be one additional argument for each attribute used by the
+class.
+\item The constructor should check that all arguments have the correct types.
+}
+
+This is often challenging because S3 classes typically quite heavily wrapped
+for user convenience. For example, the factor class is an integer vector
+with a character vector of \code{levels}, but there's no base R function that
+takes an integer vector of values and character vector of levels and creates
+a factor object.
 }
