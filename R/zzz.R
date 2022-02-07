@@ -16,13 +16,14 @@ new_base_class <- function(name) {
   R7_class(name = name, constructor = function(.data) new_object(.data))
 }
 
-base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "raw", "function", "list", "environment"))
-
+# Define simple base types with constructors. See .onLoad() for more
+base_types <- setNames(, c(
+  "logical", "integer", "double", "complex", "character", "raw",
+  "list", "expression",
+  "function", "environment"
+))
 base_classes <- lapply(base_types, new_base_class)
-base_classes[["NULL"]] <- new_base_class("NULL")
-
 base_constructors <- lapply(base_types, get)
-
 
 R7_generic <- new_class(
   name = "R7_generic",
@@ -72,6 +73,19 @@ R7_union <- new_class(
   }
 )
 
+#' @export
+str.R7_union <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  cat("<R7_union>: ", class_desc(object), sep = "")
+  cat("\n")
+
+  if (nest.lev == 0) {
+    props <- props(object)
+    str_list(props, ..., prefix = "@", nest.lev = nest.lev)
+  }
+}
+
+
 class_flatten <- function(x) {
   x <- lapply(x, as_class)
 
@@ -106,4 +120,11 @@ global_variables(c("name", "parent", "properties", "constructor", "validator"))
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
   env[[".conflicts.OK"]] <- TRUE
+}
+
+.onLoad <- function(...) {
+  base_classes$`NULL` <<- new_base_class("NULL")
+  base_classes$numeric <<- new_union("integer", "double")
+  base_classes$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
+  base_classes$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
 }

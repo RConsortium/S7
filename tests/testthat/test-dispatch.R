@@ -49,6 +49,19 @@ test_that("generics pass extra args to methods", {
   expect_equal(foo("x", z = 3), 3)
 })
 
+test_that("can dispatch on base 'union' types", {
+  foo <- new_generic("foo", dispatch_args = "x")
+  method(foo, "vector") <- function(x) "v"
+  method(foo, "atomic") <- function(x) "a"
+  method(foo, "numeric") <- function(x) "n"
+  method(foo, "integer") <- function(x) "i"
+
+  expect_equal(foo(list()), "v")
+  expect_equal(foo(character()), "a")
+  expect_equal(foo(double()), "n")
+  expect_equal(foo(integer()), "i")
+})
+
 test_that("method lookup fails with informative messages", {
   foo <- new_generic("foo", dispatch_args = c("x", "y"))
   method(foo, list("character", "integer")) <- function(x, y) paste0("bar:", x, y)

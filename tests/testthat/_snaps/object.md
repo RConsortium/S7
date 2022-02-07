@@ -37,9 +37,9 @@
       @ name  :  range
       @ parent: <R7_object>
       @ properties:
-       $ start : <numeric>
-       $ end   : <numeric>
-       $ length: <numeric>
+       $ start : <integer> or <double>
+       $ end   : <integer> or <double>
+       $ length: <integer> or <double>
 
 # str with simple R7 objects work
 
@@ -58,7 +58,7 @@
     Output
       List of 2
        $ : <text/character/R7_object> chr "b"
-       $ : <number/numeric/R7_object> num 50
+       $ : <number/double/R7_object> num 50
 
 # str R7 classes work
 
@@ -71,17 +71,17 @@
       @ properties : List of 3
        .. $ start : <R7_property> 
        .. .. $ name  :  chr "start"
-       .. .. $ class :  <numeric/R7_object> constructor
+       .. .. $ class :  <R7_union>: <integer> or <double>
        .. .. $ getter:  NULL
        .. .. $ setter:  NULL
        .. $ end   : <R7_property> 
        .. .. $ name  :  chr "end"
-       .. .. $ class :  <numeric/R7_object> constructor
+       .. .. $ class :  <R7_union>: <integer> or <double>
        .. .. $ getter:  NULL
        .. .. $ setter:  NULL
        .. $ length: <R7_property> 
        .. .. $ name  :  chr "length"
-       .. .. $ class :  <numeric/R7_object> constructor
+       .. .. $ class :  <R7_union>: <integer> or <double>
        .. .. $ getter:  function (x)  
        .. .. $ setter:  function (x, value)  
       @ constructor:  function (start, end)  

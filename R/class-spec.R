@@ -10,6 +10,8 @@
 #'    * An S4 class object.
 #'    * A base type specified either with its constructor (`logical`, `integer`,
 #'      `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
+#'    * A base union type specified by its name: `"numeric"`, `"atomic"`, or
+#'      `"vector"`.
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
