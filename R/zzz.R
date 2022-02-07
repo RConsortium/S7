@@ -81,7 +81,6 @@ str.R7_union <- function(object, ..., nest.lev = 0) {
 
   if (nest.lev == 0) {
     props <- props(object)
-    props$srcref <- NULL
     str_list(props, ..., prefix = "@", nest.lev = nest.lev)
   }
 }
@@ -124,7 +123,7 @@ global_variables(c("name", "parent", "properties", "constructor", "validator"))
 }
 
 .onLoad <- function(...) {
-  base_classes$`NULL` <- new_base_class("NULL")
+  base_classes$`NULL` <<- new_base_class("NULL")
   base_classes$numeric <<- new_union("integer", "double")
   base_classes$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
   base_classes$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
