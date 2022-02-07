@@ -1,12 +1,33 @@
-test_that("validate calls the validation function", {
-  obj <- range(1, 10)
-  # Use attr to set the property
-  attr(obj, "start") <- 11
-
-  expect_error(
-    validate(obj),
-    "must be greater than"
+test_that("validate() validates object and type recursively", {
+  klass <- new_class("klass",
+    properties = list(x = "double", y = "double"),
+    validator = function(object) {
+      c(
+        if (object@x < 0) "x must be positive",
+        if (object@y > 0) "y must be negative"
+      )
+    }
   )
+
+  expect_snapshot(error = TRUE, {
+    obj <- klass(1, -1)
+    attr(obj, "x") <- -1
+    validate(obj)
+
+    attr(obj, "x") <- "y"
+    validate(obj)
+  })
+
+  klass2 <- new_class("klass2", parent = klass, properties = list(z = "double"))
+  expect_snapshot(error = TRUE, {
+    obj <- klass2(1, -1, 1)
+    attr(obj, "x") <- -1
+    validate(obj)
+
+    attr(obj, "x") <- "y"
+    attr(obj, "z") <- "y"
+    validate(obj)
+  })
 })
 
 test_that("valid eventually calls the validation function only at the end", {

@@ -54,7 +54,7 @@ new_object <- function(.data = NULL, ...) {
   class(object) <- "R7_object"
   object_class(object) <- obj_cls
   for (nme in nms) {
-    prop(object, nme) <- args[[nme]]
+    prop(object, nme, check = FALSE) <- args[[nme]]
   }
 
   attr(object, ".should_validate") <- NULL

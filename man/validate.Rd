@@ -4,9 +4,9 @@
 \alias{validate}
 \alias{valid_eventually}
 \alias{valid_implicitly}
-\title{Validation of R7 objects}
+\title{Validate an R7 object}
 \usage{
-validate(object)
+validate(object, properties = TRUE)
 
 valid_eventually(object, fun)
 
@@ -15,20 +15,55 @@ valid_implicitly(object, fun)
 \arguments{
 \item{object}{An R7 object}
 
+\item{properties}{If \code{TRUE}, the default, checks property types before
+executing the validator.}
+
 \item{fun}{A function to call on the object before validation.}
 }
 \description{
-\code{\link[=validate]{validate()}} calls the validation of an R7 object. This is done
-automatically when creating new objects (at the end of \link{new_object}) and
-when setting any property.
+\code{validate()} calls the validator of an R7 object. This is done automatically
+when creating new objects (at the end of \code{\link[=new_object]{new_object()}}) and when setting
+any property with \link{prop<-}.
+
+\code{valid_eventually()} disables validation, modifies the object, then
+revalidates. This is useful when a sequence of operations would otherwise
+lead an object to be temporarily invalid.
+
+\code{valid_implicitly()} does the same but does not validate the object at the
+end. It should only be used rarely, and in performance critical code where
+you are certain a sequence of operations cannot produce an invalid object.
 }
-\details{
-\code{\link[=valid_eventually]{valid_eventually()}} disables validation of properties, runs a function on
-the object, then validates the object.
+\examples{
+# A range class might validate that the start is less than the end
+Range <- new_class("Range",
+  properties = list(start = "double", end = "double"),
+  validator = function(object) {
+    if (object@start >= object@end) "start must be smaller than end"
+  }
+)
+# You can't construct an invalid object:
+try(Range(1, 1))
 
-\code{\link[=valid_implicitly]{valid_implicitly()}} does the same but does not validate the object at the end.
+# And you can't create an invalid object with @<-
+r <- Range(1, 2)
+try(r@end <- 1)
 
-\code{\link[=valid_implicitly]{valid_implicitly()}} should only be used rarely in performance critical code
-where you are certain a sequence of operations cannot produce an invalid
-object.
+# But what if you want to move a range to the right?
+rightwards <- function(r, x) {
+  r@start <- r@start + x
+  r@end <- r@end + x
+  r
+}
+# This function doesn't work because it creates a temporarily invalid state
+try(rightwards(r, 10))
+
+# This is the perfect use case for valid_eventually():
+rightwards <- function(r, x) {
+  valid_eventually(r, function(object) {
+    object@start <- object@start + x
+    object@end <- object@end + x
+    object
+  })
+}
+rightwards(r, 10)
 }

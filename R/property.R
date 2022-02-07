@@ -204,7 +204,7 @@ prop_exists <- function(object, name) {
     }
 
     if (isTRUE(check)) {
-      validate(object)
+      validate(object, properties = FALSE)
     }
 
     invisible(object)
