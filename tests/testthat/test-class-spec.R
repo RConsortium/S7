@@ -76,6 +76,9 @@ test_that("can work with simple S3 classes", {
   expect_equal(class_desc(klass), "<data.frame>")
   expect_equal(class_deparse(klass), 's3_class("data.frame")')
 
+  # constructor errors if needed
+  expect_snapshot(class_construct(s3_class("foo")), error = TRUE)
+
   obj <- data.frame()
   expect_equal(obj_type(obj), "s3")
   expect_equal(obj_desc(obj), "<data.frame>")
@@ -109,6 +112,7 @@ test_that("can work with base types", {
   klass <- as_class("character")
   expect_equal(class_type(klass), "r7_base")
   expect_equal(class_desc(klass), "<character>")
+  expect_equal(class_construct(klass, "x"), base_classes$character("x"))
   expect_equal(class_deparse(klass), '"character"')
 
   obj <- "x"
@@ -145,7 +149,11 @@ test_that("as_class gives informative errors", {
   })
 })
 
-
 test_that("s3_class() checks its inputs", {
   expect_snapshot(s3_class(1), error = TRUE)
+
+  expect_snapshot(error = TRUE, {
+    s3_class("foo", function(x) {})
+    s3_class("foo", function(.data, ...) {})
+  })
 })

@@ -72,7 +72,7 @@ class_constructor <- function(.x, ...) {
     NULL = function() NULL,
     s3 = {
       if (is.null(.x$constructor)) {
-        stop(sprintf("Constructor not supplied for S3 class %s", .x@class[[1]]), call. = FALSE)
+        stop(sprintf("S3 class <%s> doesn't have a constructor", .x$class[[1]]), call. = FALSE)
       }
       .x$constructor
     },
