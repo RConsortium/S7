@@ -5,6 +5,8 @@
 * Classes (base types, S3, S4, and R7) are handled consistently wherever they
   are used. Strings now only refer to base types. New explicit `s3_class()` for 
   referring to S3 classes (#134).
+* Base numeric, atomic, and vector "types" are now represented as class unions
+  (#147).
 * Different evaluation mechanism for method dispatch, and greater restrictions 
   on dispatch args (#141)
 * `x@.data` -> `r7_data()`; probably to be replaced by casting.
