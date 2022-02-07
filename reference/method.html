@@ -119,11 +119,11 @@ given <code>signature</code>. The arguments must be compatible with the generic.
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># But it can be useful to explicitly retrieve a method in order to</span></span>
 <span class="r-in"><span class="co"># inspect its implementation</span></span>
-<span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="st">"numeric"</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;R7_method&gt; method(bizarro, "numeric")</span>
+<span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="st">"double"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;R7_method&gt; method(bizarro, "double")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x, ...) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rev(x)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x7ff242128dc8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x7fbb8d3730f8&gt;</span>
 <span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="fu"><a href="s3_class.html">s3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;R7_method&gt; method(bizarro, s3_class("factor"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x, ...) </span>
@@ -131,7 +131,7 @@ given <code>signature</code>. The arguments must be compatible with the generic.
 <span class="r-out co"><span class="r-pr">#&gt;</span>     levels(x) &lt;- rev(levels(x))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     x</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x7ff242128dc8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x7fbb8d3730f8&gt;</span>
 </code></pre></div>
     </div>
   </div>
