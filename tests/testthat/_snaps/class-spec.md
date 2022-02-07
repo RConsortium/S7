@@ -1,10 +1,3 @@
-# can work with simple S3 classes
-
-    Code
-      class_construct(s3_class("foo"))
-    Error <simpleError>
-      S3 class <foo> doesn't have a constructor
-
 # can get class from base constructor
 
     Can't convert `mean` to a valid class. Could not find base class corresponding to supplied constructor function
@@ -37,4 +30,11 @@
       s3_class("foo", function(.data, ...) { })
     Error <simpleError>
       `constructor` can not use ...
+
+# default s3_class constructor errors
+
+    Code
+      class_construct(s3_class("foo"))
+    Error <simpleError>
+      S3 class <foo> doesn't have a constructor
 

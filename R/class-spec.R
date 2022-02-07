@@ -70,12 +70,7 @@ class_type <- function(x) {
 class_constructor <- function(.x, ...) {
   switch(class_type(.x),
     NULL = function() NULL,
-    s3 = {
-      if (is.null(.x$constructor)) {
-        stop(sprintf("S3 class <%s> doesn't have a constructor", .x$class[[1]]), call. = FALSE)
-      }
-      .x$constructor
-    },
+    s3 = .x$constructor,
     s4 = function(...) methods::new(.x, ...),
     r7 = .x,
     r7_base = .x,
@@ -217,6 +212,10 @@ s3_class <- function(class, constructor = NULL) {
   }
   if (!is.null(constructor)) {
     check_constructor(constructor)
+  } else {
+    constructor <- function() {
+      stop(sprintf("S3 class <%s> doesn't have a constructor", class[[1]]), call. = FALSE)
+    }
   }
 
   structure(
