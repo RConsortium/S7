@@ -1,22 +1,24 @@
 test_that("generates correct arguments from parent + properties",  {
   # No arguments
   args <- constructor_args(R7_object)
-  expect_equal(args$constructor, character())
+  expect_equal(args$self, character())
+  expect_equal(args$parent, character())
 
   # Includes properties
   args <- constructor_args(R7_object, as_properties(list(x = "numeric")))
-  expect_equal(args$constructor, "x")
+  expect_equal(args$self, "x")
+  expect_equal(args$parent, character())
 
   # unless they're dynamic
   args <- constructor_args(R7_object,
     as_properties(list(new_property("x", getter = function(x) 10)))
   )
-  expect_equal(args$constructor, character())
+  expect_equal(args$self, character())
+  expect_equal(args$parent, character())
 
   # Includes parent properties
   foo <- new_class("foo", properties = list(x = "numeric"))
   args <- constructor_args(foo, as_properties(list(y = "numeric")))
-  expect_equal(args$constructor, c("x", "y"))
   expect_equal(args$self, "y")
   expect_equal(args$parent, "x")
 
@@ -26,7 +28,6 @@ test_that("generates correct arguments from parent + properties",  {
     constructor = function() new_object(x = 1)
   )
   args <- constructor_args(foo, as_properties(list(y = "numeric")))
-  expect_equal(args$constructor, "y")
   expect_equal(args$self, "y")
   expect_equal(args$parent, character())
 })
