@@ -108,7 +108,7 @@ prop <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     stop("`object` is not an <R7_object>")
   } else if (!prop_exists(object, name)) {
-    stop(sprintf("Can't find property %s@%s", obj_desc(object), name))
+    stop(prop_error_unknown(object, name))
   } else {
     prop_val(object, name)
   }
@@ -188,17 +188,17 @@ prop_exists <- function(object, name) {
 
   function(object, name, check = TRUE, value) {
     prop <- prop_obj(object, name)
+    if (is.null(prop)) {
+      stop(prop_error_unknown(object, name))
+    }
+
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
       on.exit(setter_property <<- NULL, add = TRUE)
       object <- prop$setter(object, value)
     } else {
       if (isTRUE(check) && !class_inherits(value, prop$class)) {
-        stop(sprintf("%s@%s must be of class %s, not %s",
-          obj_desc(object), name,
-          class_desc(prop$class),
-          obj_desc(value)
-        ), call. = FALSE)
+        stop(prop_error_type(object, name, prop$class, value), call. = FALSE)
       }
       attr(object, name) <- value
     }
@@ -210,6 +210,19 @@ prop_exists <- function(object, name) {
     invisible(object)
   }
 })
+
+prop_error_unknown <- function(object, prop_name) {
+  sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
+}
+
+prop_error_type <- function(object, prop_name, expected, actual) {
+  sprintf("%s@%s must be of class %s, not %s",
+    obj_desc(object),
+    prop_name,
+    class_desc(expected),
+    obj_desc(actual)
+  )
+}
 
 #' @rdname prop
 #' @usage object@name

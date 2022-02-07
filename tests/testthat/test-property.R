@@ -36,6 +36,10 @@ describe("prop<-", {
     prop(x, "start") <- 2
     expect_equal(prop(x, "start"), 2)
   })
+  it("errors if the property doesn't exist", {
+    x <- range(1, 10)
+    expect_snapshot(error = TRUE, x@foo <- 10)
+  })
   it("errors if the value does not match the correct class", {
     x <- range(1, 10)
     expect_error(

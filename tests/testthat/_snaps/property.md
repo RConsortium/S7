@@ -2,6 +2,13 @@
 
     Can't find property <range>@st
 
+# prop<-: errors if the property doesn't exist
+
+    Code
+      x@foo <- 10
+    Error <simpleError>
+      Can't find property <range>@foo
+
 # @: does not use partial matching
 
     Can't find property <range>@st
