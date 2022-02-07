@@ -16,7 +16,6 @@ reference:
 - title: Introspection
   contents:
   - as_class
-  - class_names
   - object_class
   - method
   - props

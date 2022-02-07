@@ -3,6 +3,7 @@ test_that("can work with R7 classes", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "r7")
+  expect_equal(class_names(klass), c("klass", "R7_object"))
   expect_equal(class_construct(klass), klass())
   expect_equal(class_desc(klass), "<klass>")
   expect_equal(class_deparse(klass), "klass")
@@ -18,6 +19,7 @@ test_that("can work with unions", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "r7_union")
+  expect_equal(class_names(klass), c("text", "character", "number", "numeric", "R7_object"))
   expect_equal(class_construct(klass), text())
   expect_equal(class_desc(klass), "<text> or <number>")
   expect_equal(class_deparse(klass), "new_union(text, number)")
@@ -32,6 +34,7 @@ test_that("handles NULL", {
   expect_equal(as_class(NULL), NULL)
 
   expect_equal(class_type(NULL), "NULL")
+  expect_equal(class_names(NULL), NULL)
   expect_equal(class_construct(NULL), NULL)
   expect_equal(class_desc(NULL), "<ANY>")
   expect_equal(class_deparse(NULL), "")
@@ -44,6 +47,7 @@ test_that("handles NULL", {
 test_that("can work with S4 constructors", {
   klass <- methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   expect_equal(class_type(klass), "s4")
+  expect_equal(class_names(klass), "Range")
   expect_equal(class_desc(klass), "<Range>")
   expect_equal(class_deparse(klass), "Range")
 
@@ -57,6 +61,7 @@ test_that("can work with S4 classes", {
   methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   klass <- methods::getClass("Range")
   expect_equal(class_type(klass), "s4")
+  expect_equal(class_names(klass), "Range")
   expect_s4_class(class_construct(klass, start = 1, end = 2), "Range")
   expect_equal(class_desc(klass), "<Range>")
   expect_equal(class_deparse(klass), "Range")
@@ -72,6 +77,7 @@ test_that("can work with simple S3 classes", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "s3")
+  expect_equal(class_names(klass), c("data.frame", "R7_object"))
   expect_equal(class_construct(klass, list(x = 1)), data.frame(x = 1))
   expect_equal(class_desc(klass), "<data.frame>")
   expect_equal(class_deparse(klass), 's3_class("data.frame")')
@@ -93,6 +99,7 @@ test_that("can work with compound s3 classes", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "s3")
+  expect_equal(class_names(klass), c("ordered", "factor", "R7_object"))
   expect_equal(class_desc(klass), "<ordered>")
   expect_equal(class_construct(klass), ordered(numeric()))
   expect_equal(class_deparse(klass), 's3_class("ordered", "factor")')
@@ -111,6 +118,7 @@ test_that("can work with base types", {
 
   klass <- as_class("character")
   expect_equal(class_type(klass), "r7_base")
+  expect_equal(class_names(klass), c("character", "R7_object"))
   expect_equal(class_desc(klass), "<character>")
   expect_equal(class_construct(klass, "x"), base_classes$character("x"))
   expect_equal(class_deparse(klass), '"character"')

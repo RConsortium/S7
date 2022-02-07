@@ -113,31 +113,6 @@ new_class <- function(
   )
 }
 
-#' Retrieve all of the class names for a class
-#'
-#' @param object The R7 object to query
-#' @return A character vector of all the class names for a given R7 class.
-#' @export
-class_names <- function(object) {
-  parent <- object
-  classes <- character()
-  while(!is.null(parent)) {
-    if (inherits(parent, "R7_union")) {
-      for (class in parent@classes) {
-        classes <- c(classes, class_names(class))
-      }
-    } else if (inherits(parent, "R7_class")) {
-      classes <- c(classes, parent@name, "R7_object")
-    } else if (inherits(parent, "r7_s3_class")) {
-      classes <- c(classes, parent$class)
-    } else {
-      classes <- c(classes, parent)
-    }
-    parent <- prop_safely(parent, "parent")
-  }
-  unique(classes, fromLast = TRUE)
-}
-
 #' @export
 print.R7_class <- function(x, ...) {
   props <- x@properties

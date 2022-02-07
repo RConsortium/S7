@@ -97,6 +97,22 @@ class_desc <- function(x) {
   )
 }
 
+# Return complete vector of class names
+class_names <- function(x) {
+  if (identical(x, R7_object)) {
+    return(x@name)
+  }
+
+  switch(class_type(x),
+    NULL = NULL,
+    s3 = c(x$class, "R7_object"),
+    s4 = as.character(x@className),
+    r7 = c(x@name, class_names(x@parent)),
+    r7_base = c(x@name, "R7_object"),
+    r7_union = unique(unlist(lapply(x@classes, class_names)), fromLast = TRUE)
+  )
+}
+
 # Used when printing method signature to generate executable code
 class_deparse <- function(x) {
   switch(class_type(x),
