@@ -83,17 +83,18 @@ method_impl <- function(generic, signature, ignore) {
     generic <- find_function_name(generic, topenv(environment(generic)))
   }
 
-  if (length(signature) > 1) {
-    out <- getS3method(generic, s3_class_name(signature[[1]]), optional = TRUE)
+  if (length(signature) > 0) {
+    classes <- s3_class_name(signature[[1]])
+  } else {
+    classes <- character()
+  }
+  classes <- c(classes, "default")
+
+  for (class in classes) {
+    out <- getS3method(generic, class, optional = TRUE)
     if (!is.null(out)) {
       return(out)
     }
-  }
-
-  # If no method found check if the generic has a default method
-  out <- getS3method(generic, "default", optional = TRUE)
-  if (!is.null(out)) {
-    return(out)
   }
 
   method_lookup_error(generic, args, signature)
@@ -106,7 +107,8 @@ find_function_name <- function(x, env) {
       return(name)
     }
   }
-  NULL
+
+  stop("Can't find `generic`", call. = FALSE)
 }
 
 #' Retrieve the next applicable method after the current one
@@ -241,10 +243,10 @@ new_method <- function(generic, signature, method, package = NULL) {
 # Class name when registering an S3 method
 s3_class_name <- function(x) {
   switch(class_type(x),
-   s3 = class(x),
+   s3 = x,
    s4 = class(x),
    r7 = x@name,
-   r7_base = typeof(x),
+   r7_base = .class2(x),
    stop("Unsupported")
   )
 }

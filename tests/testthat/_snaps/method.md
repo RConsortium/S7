@@ -16,6 +16,10 @@
       method(foo, list("blah"))
     Error <simpleError>
       Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
+    Code
+      method(foobar, "character")
+    Error <simpleError>
+      Can't find `generic`
 
 # union methods are created individually
 

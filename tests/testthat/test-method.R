@@ -53,6 +53,8 @@ describe("multiple dispatch", {
 
 describe("manual method reflection", {
   it("will fall back to S3 generics if no R7 generic is defined", {
+    expect_equal(method(print, s3_class(c("ordered", "factor"))), base::print.factor)
+    expect_equal(method(print, s3_class("Date")), base::print.Date)
     expect_equal(method(print, text), base::print.default)
   })
 
@@ -64,10 +66,12 @@ describe("manual method reflection", {
 
   test_that("errors if no method found", {
     foo <- new_generic("foo", dispatch_args = "x")
+    foobar <- function(x) {}
 
     expect_snapshot(error = TRUE, {
       method(foo, list())
       method(foo, list("blah"))
+      method(foobar, "character")
     })
   })
 })
