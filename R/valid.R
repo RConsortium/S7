@@ -50,6 +50,13 @@
 #'   })
 #' }
 #' rightwards(r, 10)
+#'
+#' # Alternatively, you can set multiple properties at once using props<-
+#' rightwards <- function(r, x) {
+#'   props(r) <- list(start = r@start + x, end = r@end + x)
+#'   r
+#' }
+#' rightwards(r, 20)
 validate <- function(object, properties = TRUE) {
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))

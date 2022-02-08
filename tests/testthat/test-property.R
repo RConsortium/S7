@@ -54,6 +54,15 @@ describe("prop<-", {
   })
 })
 
+describe("props<-", {
+  it("validates after setting all properties", {
+    x <- range(1, 2)
+    props(x) <- list(start = 5, end = 10)
+    expect_equal(x@start, 5)
+    expect_equal(x@end, 10)
+  })
+})
+
 describe("@", {
   it("retrieves the property", {
     x <- range(1, 10)

@@ -2,6 +2,8 @@
 
 ## Jan 2020
 
+* New `props<-` for setting multiple properties simultaneously and validating
+  afterwards (#149).
 * Validation now happens recursively, and validates types before validating 
   the object (#149)
 * Classes (base types, S3, S4, and R7) are handled consistently wherever they

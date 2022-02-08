@@ -5,6 +5,7 @@
 \alias{prop_safely}
 \alias{prop_names}
 \alias{props}
+\alias{props<-}
 \alias{prop_exists}
 \alias{prop<-}
 \alias{@}
@@ -18,6 +19,8 @@ prop_names(object)
 
 props(object)
 
+props(object) <- value
+
 prop_exists(object, name)
 
 prop(object, name, check = TRUE) <- value
@@ -30,11 +33,12 @@ object@name
 \item{name}{The name of the parameter as a character. Partial matching
 is not performed.}
 
+\item{value}{For \verb{prop<-}, a replacement value for the property;
+for \verb{props<-}, a named list of values. The object is automatically
+checked for validity after the replacement is done.}
+
 \item{check}{If \code{TRUE}, check that \code{value} is of the correct type and run
 \code{\link[=validate]{validate()}} on the object before returning.}
-
-\item{value}{A replacement value for the parameter. The object is
-automatically checked for validity after the replacement is done.}
 }
 \description{
 \itemize{
@@ -44,6 +48,7 @@ error if the property doesn't exist for that object.
 rather than throwing an error.
 \item \verb{prop<-} and \verb{@<-} set a new value for the given property.
 \item \code{props()} returns a list of all properties
+\item \verb{props<-} sets multiple properties at once, validating after all are set
 \item \code{prop_names()} returns the names of the properties
 \item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
 }

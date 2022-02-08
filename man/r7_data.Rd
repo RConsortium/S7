@@ -15,8 +15,7 @@ r7_data(object, check = TRUE) <- value
 \item{check}{If \code{TRUE}, check that \code{value} is of the correct type and run
 \code{\link[=validate]{validate()}} on the object before returning.}
 
-\item{value}{A replacement value for the parameter. The object is
-automatically checked for validity after the replacement is done.}
+\item{value}{Object used to replace the underlying data.}
 }
 \description{
 When an R7 class inherits from an existing base type, it can be useful
