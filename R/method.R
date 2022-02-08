@@ -83,9 +83,11 @@ method_impl <- function(generic, signature, ignore) {
     generic <- find_function_name(generic, topenv(environment(generic)))
   }
 
-  out <- getS3method(generic, s3_class_name(signature[[1]]), optional = TRUE)
-  if (!is.null(out)) {
-    return(out)
+  if (length(signature) > 1) {
+    out <- getS3method(generic, s3_class_name(signature[[1]]), optional = TRUE)
+    if (!is.null(out)) {
+      return(out)
+    }
   }
 
   # If no method found check if the generic has a default method

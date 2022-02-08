@@ -28,9 +28,10 @@ test_that("method errors on invalid inputs", {
 test_that("method errors if no method is defined for that class", {
   foo <- new_generic("foo", dispatch_args = "x")
 
-  expect_snapshot_error(
+  expect_snapshot(error = TRUE, {
+    method(foo, list())
     method(foo, list("blah"))
-  )
+  })
 })
 
 test_that("methods can be registered for a generic and then called", {

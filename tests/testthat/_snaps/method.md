@@ -12,7 +12,15 @@
 
 # method errors if no method is defined for that class
 
-    Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
+    Code
+      method(foo, list())
+    Error <simpleError>
+      Can't find method for generic `foo()` with classes:
+      - x: 
+    Code
+      method(foo, list("blah"))
+    Error <simpleError>
+      Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
 
 # new_method works if you pass a bare class union
 
