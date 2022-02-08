@@ -49,7 +49,6 @@ new_object <- function(.data = NULL, ...) {
   } else {
     object <- obj_cls@parent@constructor()
   }
-  attr(object, ".should_validate") <- FALSE
 
   class(object) <- "R7_object"
   object_class(object) <- obj_cls
@@ -57,7 +56,6 @@ new_object <- function(.data = NULL, ...) {
     prop(object, nme, check = FALSE) <- args[[nme]]
   }
 
-  attr(object, ".should_validate") <- NULL
   validate(object)
 
   object
