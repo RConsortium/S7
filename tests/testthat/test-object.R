@@ -60,7 +60,7 @@ describe("new_object", {
     text2 <- new_class("text2", parent = "character")
     my_class <- new_class("my_class",
       parent = text2,
-      properties = c("name" = "character"),
+      properties = list(name = "character"),
       constructor = function(x, name) new_object(text2(x), name = name)
     )
     obj <- my_class("foo", "bar")
