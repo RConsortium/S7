@@ -53,15 +53,16 @@ method <- function(generic, signature) {
 }
 
 methods <- function(generic) {
-  get_all_methods(generic@methods, character())
+  methods_rec(generic@methods, character())
 }
-
-get_all_methods <- function(x, signature) {
-  if(!is.environment(x)) {
+methods_rec <- function(x, signature) {
+  if (!is.environment(x)) {
     return(x)
   }
 
-  unlist(lapply(names(x), function(class) get_all_methods(x[[class]], c(signature, class))), recursive = FALSE)
+  # Recursively collapse environments to a list
+  methods <- lapply(names(x), function(class) methods_rec(x[[class]], c(signature, class)))
+  unlist(methods, recursive = FALSE)
 }
 
 as_signature <- function(signature) {
