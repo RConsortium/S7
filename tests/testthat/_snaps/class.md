@@ -21,10 +21,45 @@
       @ validator  :  function (x)  
       @ class      :  chr [1:2] "R7_class" "R7_object"
     Code
-      str(list(my_class))
+      str(range)
     Output
-      List of 1
-       $ : <my_class/R7_object> constructor
+      <range/R7_object> constructor
+      @ name       :  chr "range"
+      @ parent     :  <R7_object> constructor
+      @ properties : List of 3
+       .. $ start : <R7_property> 
+       .. .. $ name  :  chr "start"
+       .. .. $ class :  <R7_union>: <integer> or <double>
+       .. .. $ getter:  NULL
+       .. .. $ setter:  NULL
+       .. $ end   : <R7_property> 
+       .. .. $ name  :  chr "end"
+       .. .. $ class :  <R7_union>: <integer> or <double>
+       .. .. $ getter:  NULL
+       .. .. $ setter:  NULL
+       .. $ length: <R7_property> 
+       .. .. $ name  :  chr "length"
+       .. .. $ class :  <R7_union>: <integer> or <double>
+       .. .. $ getter:  function (x)  
+       .. .. $ setter:  function (x, value)  
+      @ constructor:  function (start, end)  
+      @ validator  :  function (x)  
+      @ class      :  chr [1:2] "R7_class" "R7_object"
+
+# R7_class: str() summarises when nested
+
+    Code
+      list(range)
+    Output
+      [[1]]
+      <R7_class>
+      @ name  :  range
+      @ parent: <R7_object>
+      @ properties:
+       $ start : <integer> or <double>
+       $ end   : <integer> or <double>
+       $ length: <integer> or <double>
+      
 
 # classes can't inherit from S4 or class unions
 

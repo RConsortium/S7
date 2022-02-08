@@ -27,8 +27,11 @@ describe("R7_class", {
   it("str yields all details when used at top-level", {
     expect_snapshot({
       str(my_class)
-      str(list(my_class))
+      str(range)
     })
+  })
+  it("str() summarises when nested", {
+    expect_snapshot(list(range))
   })
 })
 

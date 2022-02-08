@@ -94,7 +94,7 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
   if (typeof(object) != "S4") {
     bare <- object
     attributes(bare) <- NULL
-    str(bare)
+    str(bare, nest.lev = nest.lev + 1)
   } else {
     cat("\n")
   }

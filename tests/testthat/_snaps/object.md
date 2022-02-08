@@ -18,41 +18,15 @@
     Error <simpleError>
       unused arguments (x = 1, y = 2)
 
-# printing R7 objects work
+# print()/str() gives useful display
 
     Code
-      print(x)
+      str(range(1, 10))
     Output
       <range/R7_object>
       @ start :  num 1
       @ end   :  num 10
       @ length:  num 9
-
-# printing R7 classes work
-
-    Code
-      range
-    Output
-      <R7_class>
-      @ name  :  range
-      @ parent: <R7_object>
-      @ properties:
-       $ start : <integer> or <double>
-       $ end   : <integer> or <double>
-       $ length: <integer> or <double>
-
-# str with simple R7 objects work
-
-    Code
-      str(range(1, 2))
-    Output
-      <range/R7_object>
-      @ start :  num 1
-      @ end   :  num 2
-      @ length:  num 1
-
-# str with R7 objects of base classes work
-
     Code
       str(list(text("b"), number(50)))
     Output
@@ -60,31 +34,15 @@
        $ : <text/character/R7_object> chr "b"
        $ : <number/double/R7_object> num 50
 
-# str R7 classes work
+# print()/str() nests properties correctly
 
     Code
-      str(range)
+      str(klass(x = 10, y = range(1, 10)))
     Output
-      <range/R7_object> constructor
-      @ name       :  chr "range"
-      @ parent     :  <R7_object> constructor
-      @ properties : List of 3
-       .. $ start : <R7_property> 
-       .. .. $ name  :  chr "start"
-       .. .. $ class :  <R7_union>: <integer> or <double>
-       .. .. $ getter:  NULL
-       .. .. $ setter:  NULL
-       .. $ end   : <R7_property> 
-       .. .. $ name  :  chr "end"
-       .. .. $ class :  <R7_union>: <integer> or <double>
-       .. .. $ getter:  NULL
-       .. .. $ setter:  NULL
-       .. $ length: <R7_property> 
-       .. .. $ name  :  chr "length"
-       .. .. $ class :  <R7_union>: <integer> or <double>
-       .. .. $ getter:  function (x)  
-       .. .. $ setter:  function (x, value)  
-      @ constructor:  function (start, end)  
-      @ validator  :  function (x)  
-      @ class      :  chr [1:2] "R7_class" "R7_object"
+      <klass/R7_object>
+      @ x:  num 10
+      @ y:  <range/R7_object>
+       .. @ start :  num 1
+       .. @ end   :  num 10
+       .. @ length:  num 9
 

@@ -68,26 +68,18 @@ describe("new_object", {
   })
 })
 
-test_that("printing R7 objects work", {
-  x <- range(1, 10)
-
-  expect_snapshot(print(x))
+test_that("print()/str() gives useful display", {
+  expect_snapshot({
+    str(range(1, 10))
+    str(list(text("b"), number(50)))
+  })
 })
+test_that("print()/str() nests properties correctly", {
+  klass <- new_class("klass", properties = list(x = "numeric", y = range))
 
-test_that("printing R7 classes work", {
-  expect_snapshot(range)
-})
-
-test_that("str with simple R7 objects work", {
-  expect_snapshot(str(range(1, 2)))
-})
-
-test_that("str with R7 objects of base classes work", {
-  expect_snapshot(str(list(text("b"), number(50))))
-})
-
-test_that("str R7 classes work", {
-  expect_snapshot(str(range))
+  expect_snapshot({
+    str(klass(x = 10, y = range(1, 10)))
+  })
 })
 
 test_that("object_class returns itself for R7_class objects", {
