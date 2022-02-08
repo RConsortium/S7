@@ -2,6 +2,8 @@
 
 ## Jan 2020
 
+* Validation now happens recursively, and validates types before validating 
+  the object (#149)
 * Classes (base types, S3, S4, and R7) are handled consistently wherever they
   are used. Strings now only refer to base types. New explicit `s3_class()` for 
   referring to S3 classes (#134).
