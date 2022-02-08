@@ -122,12 +122,11 @@ test_that("next_method works for single dispatch", {
 })
 
 test_that("next_method works for double dispatch", {
-  skip("Currently broken")
   foo <- new_generic("foo", dispatch_args = c("x", "y"))
 
   new_method(foo, list(text, number), function(x, y, ...) {
     r7_data(x) <- paste0("foo-", r7_data(x), "-", r7_data(y))
-    next_method()(x)
+    next_method()(x, y)
   })
 
   new_method(foo, list(character, number), function(x, y, ...) {
