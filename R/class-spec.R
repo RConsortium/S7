@@ -47,6 +47,9 @@ as_class <- function(x, arg = deparse(substitute(x))) {
 }
 
 as_S4_class <- function(x, error_base) {
+  # Silence R CMD check false postives
+  distance <- subClass <- className <- package <- NULL
+
   # Convert generator function to class
   if (methods::is(x, "classGeneratorFunction")) {
     return(as_S4_class(methods::getClass(as.character(x@className)), error_base))
@@ -54,7 +57,7 @@ as_S4_class <- function(x, error_base) {
 
   if (methods::is(x, "ClassUnionRepresentation")) {
     subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
-    subclasses <- lapply(subclasses, function(x) getClass(x@subClass))
+    subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
 
     do.call("new_union", subclasses)
   } else if (methods::is(x, "classRepresentation")) {
