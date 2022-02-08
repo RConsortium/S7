@@ -73,6 +73,6 @@ test_that("default constructor works", {
   expect_s3_class(text2("abc", y = 1), "text2")
 })
 
-test_that("constructor  types check their values", {
+test_that("constructor types check their values", {
   expect_snapshot_error(new_class("foo", parent = integer)("abc"))
 })
