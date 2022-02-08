@@ -32,3 +32,11 @@
       - <klass2>@x must be of class <double>, not <character>
       - <klass2>@z must be of class <double>, not <character>
 
+# validate checks base type
+
+    Code
+      validate(x)
+    Error <simpleError>
+      Invalid <Double> object:
+      - `.data` must be <double> not <character>
+

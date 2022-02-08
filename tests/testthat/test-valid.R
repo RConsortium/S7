@@ -30,6 +30,14 @@ test_that("validate() validates object and type recursively", {
   })
 })
 
+test_that("validate checks base type", {
+  Double <- new_class("Double", parent = "double")
+  x <- Double(10)
+  mode(x) <- "character"
+
+  expect_snapshot(error = TRUE, validate(x))
+})
+
 test_that("valid eventually calls the validation function only at the end", {
   obj <- range(1, 10)
 
