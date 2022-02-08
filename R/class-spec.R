@@ -27,10 +27,8 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     x
   } else if (is_s3_class(x)) {
     x
-  } else if (isS4(x) && methods::is(x, "classGeneratorFunction")) {
-    methods::getClass(as.character(x@className))
-  } else if (isS4(x) && methods::is(x, "classRepresentation")) {
-    x
+  } else if (isS4(x)) {
+    as_S4_class(x, error_base)
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
     if (length(candidate) == 0) {
@@ -48,7 +46,31 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   }
 }
 
+as_S4_class <- function(x, error_base) {
+  # Silence R CMD check false postives
+  distance <- subClass <- className <- package <- NULL
 
+  # Convert generator function to class
+  if (methods::is(x, "classGeneratorFunction")) {
+    return(as_S4_class(methods::getClass(as.character(x@className)), error_base))
+  }
+
+  if (methods::is(x, "ClassUnionRepresentation")) {
+    subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
+    subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
+
+    do.call("new_union", subclasses)
+  } else if (methods::is(x, "classRepresentation")) {
+    if (x@package == "methods" && x@className %in% names(base_classes)) {
+      # Convert S4 representation of base types to R7 representation
+      base_classes[[x@className]]
+    } else {
+      x
+    }
+  } else {
+    stop(sprintf("%s. Unsupported S4 object: must be a class generator or a class definition, not a %s.", error_base, obj_desc(x)), call. = FALSE)
+  }
+}
 
 class_type <- function(x) {
   if (is_class(x)) {
