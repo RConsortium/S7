@@ -1,123 +1,97 @@
-test_that("method will fall back to S3 generics if no R7 generic is defined", {
-  expect_equal(
-    method(print, list(text)),
-    base::print.default
-  )
-})
 
-test_that("method will accept a character vector (#71)", {
-  expect_equal(
-    method(print, "character"),
-    base::print.default
-  )
-})
-
-test_that("method errors on invalid inputs", {
-  expect_snapshot_error(
-    method(print, 1)
-  )
-  expect_snapshot_error(
-    method(print, list(1))
-  )
-
-  expect_snapshot_error(
-    method(print, list(TRUE, FALSE))
-  )
-})
-
-test_that("method errors if no method is defined for that class", {
+describe("single dispatch", {
   foo <- new_generic("foo", dispatch_args = "x")
 
-  expect_snapshot(error = TRUE, {
-    method(foo, list())
-    method(foo, list("blah"))
+  it("works for base types", {
+    method(foo, "character") <- function(x) "base"
+
+    expect_equal(foo("bar"), "base")
+  })
+
+  it("works for R7 objects", {
+    method(foo, text) <- function(x) "R7"
+
+    expect_equal(foo(text("bar")), "R7")
+  })
+
+  it("works for S3 objects", {
+    obj <- structure("hi", class = "my_s3")
+    method(foo, s3_class("my_s3")) <- function(x) "S3"
+
+    expect_equal(foo(obj), "S3")
+  })
+
+  it("works for S4 objects", {
+    my_S4 <- setClass("my_S4", contains = "numeric")
+    method(foo, my_S4) <- function(x) "S4"
+
+    expect_equal(foo(my_S4(1)), "S4")
+  })
+
+  it("works for unions", {
+    method(foo, new_union(number, "integer")) <- function(x) "union"
+
+    expect_equal(foo(number(1)), "union")
+    expect_equal(foo(1L), "union")
   })
 })
 
-test_that("methods can be registered for a generic and then called", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  new_method(foo, text, function(x, ...) paste0("foo-", r7_data(x)))
+describe("multiple dispatch", {
+  it("works directly", {
+    foo <- new_generic("foo3", dispatch_args = c("x", "y"))
+    method(foo, list(text, number)) <- function(x, y) paste0(x, y)
+    expect_equal(foo(text("bar"), number(1)), "bar1")
+  })
 
-  expect_equal(foo(text("bar")), "foo-bar")
+  it("works via inheritance", {
+    foo <- new_generic("foo", dispatch_args = c("x", "y"))
+    method(foo, list("character", "numeric")) <- function(x, y) paste0(x, ":", y)
+
+    expect_equal(foo(text("bar"), number(1)), "bar:1")
+  })
 })
 
-test_that("single inheritance works when searching for methods", {
-  foo2 <- new_generic("foo2", dispatch_args = "x")
+describe("manual method reflection", {
+  it("will fall back to S3 generics if no R7 generic is defined", {
+    expect_equal(method(print, text), base::print.default)
+  })
 
-  new_method(foo2, "character", function(x, ...) paste0("foo2-", x))
+  it("errors on invalid inputs", {
+    expect_snapshot(error = TRUE, {
+      method(print, 1)
+    })
+  })
 
-  expect_equal(foo2(text("bar")), "foo2-bar")
+  test_that("errors if no method found", {
+    foo <- new_generic("foo", dispatch_args = "x")
+
+    expect_snapshot(error = TRUE, {
+      method(foo, list())
+      method(foo, list("blah"))
+    })
+  })
 })
 
-test_that("direct multiple dispatch works", {
-  foo3 <- new_generic("foo3", dispatch_args = c("x", "y"))
-  new_method(foo3, list(text, number), function(x, y, ...) paste0(x, y))
-  expect_equal(foo3(text("bar"), number(1)), "bar1")
-})
-
-test_that("inherited multiple dispatch works", {
-  foo4 <- new_generic("foo4", dispatch_args = c("x", "y"))
-  new_method(foo4, list("character", "numeric"), function(x, y, ...) paste0(x, ":", y))
-
-  expect_equal(foo4(text("bar"), number(1)), "bar:1")
-})
-
-test_that("method dispatch works for S3 objects", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  obj <- structure("hi", class = "my_s3")
-  new_method(foo, s3_class("my_s3"), function(x, ...) paste0("foo-", x))
-
-  expect_equal(foo(obj), "foo-hi")
-})
-
-test_that("method dispatch works for S4 objects", {
-  skip_if_not(requireNamespace("methods"))
-
+test_that("union methods are created individually", {
   foo <- new_generic("foo", dispatch_args = "x")
 
-  Range <- setClass("Range", slots = c(start = "numeric", end = "numeric"))
-  new_method(foo, Range, function(x, ...) paste0("foo-", x@start, "-", x@end))
-
-  obj <- Range(start = 1, end = 10)
-  expect_equal(foo(obj), "foo-1-10")
-})
-
-test_that("new_method works if you use R7 class objects", {
-  foo5 <- new_generic("foo5", dispatch_args = c("x", "y"))
-  new_method(foo5, list(text, number), function(x, y, ...) paste0(x, ":", y))
-
-  expect_equal(foo5(text("bar"), number(1)), "bar:1")
-})
-
-test_that("new_method works if you pass a bare class", {
-  foo6 <- new_generic("foo6", dispatch_args = "x")
-  new_method(foo6, text, function(x, ...) paste0("foo-", x))
-
-  expect_equal(foo6(text("bar")), "foo-bar")
-})
-
-test_that("new_method works if you pass a bare class union", {
-  foo7 <- new_generic("foo7", dispatch_args = "x")
-  new_method(foo7, new_union(text, number), function(x, ...) paste0("foo-", x))
-
-  expect_equal(foo7(text("bar")), "foo-bar")
-  expect_equal(foo7(number(1)), "foo-1")
+  method(foo, new_union(number, "integer")) <- function(x) "x"
 
   # one method for each union component
-  expect_length(methods(foo7), 2)
+  expect_length(methods(foo), 2)
   # and methods printed nicely
-  expect_snapshot(foo7)
+  expect_snapshot(foo)
 })
 
 test_that("next_method works for single dispatch", {
   foo <- new_generic("foo", dispatch_args = "x")
 
-  new_method(foo, text, function(x, ...) {
+  method(foo, text) <- function(x, ...) {
     x@.data <- paste0("foo-", r7_data(x))
-  })
-  new_method(foo, "character", function(x, ...) {
+  }
+  method(foo, "character") <- function(x, ...) {
     as.character(x)
-  })
+  }
 
   expect_equal(foo(text("hi")), "foo-hi")
 })
@@ -125,20 +99,20 @@ test_that("next_method works for single dispatch", {
 test_that("next_method works for double dispatch", {
   foo <- new_generic("foo", dispatch_args = c("x", "y"))
 
-  new_method(foo, list(text, number), function(x, y, ...) {
+  method(foo, list(text, number)) <- function(x, y, ...) {
     r7_data(x) <- paste0("foo-", r7_data(x), "-", r7_data(y))
     next_method()(x, y)
-  })
+  }
 
-  new_method(foo, list(character, number), function(x, y, ...) {
+  method(foo, list(character, number)) <- function(x, y, ...) {
     r7_data(y) <- y + 1
     r7_data(x) <- paste0(r7_data(x), "-", r7_data(y))
     next_method()(x, y)
-  })
+  }
 
-  new_method(foo, list(character, double), function(x, y, ...) {
+  method(foo, list(character, double)) <- function(x, y, ...) {
     as.character(r7_data(x))
-  })
+  }
 
   expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
 })

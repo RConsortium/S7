@@ -1,16 +1,11 @@
-# method errors on invalid inputs
+# manual method reflection: errors on invalid inputs
 
-    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Code
+      method(print, 1)
+    Error <simpleError>
+      Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
 
----
-
-    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
-
----
-
-    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <logical>.
-
-# method errors if no method is defined for that class
+# errors if no method found
 
     Code
       method(foo, list())
@@ -22,14 +17,14 @@
     Error <simpleError>
       Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
 
-# new_method works if you pass a bare class union
+# union methods are created individually
 
     Code
-      foo7
+      foo
     Output
       <R7_generic> function (x, ...)  with 2 methods:
-      1: method(foo7, number)
-      2: method(foo7, text)
+      1: method(foo, "integer")
+      2: method(foo, number)
 
 # method_compatible errors if the functions are not compatible
 
