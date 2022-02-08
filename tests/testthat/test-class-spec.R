@@ -63,6 +63,23 @@ test_that("can work with S4 classes", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("converts S4 base classes to R7 base classes", {
+  expect_equal(as_class(getClass("NULL")), base_classes[["NULL"]])
+  expect_equal(as_class(getClass("character")), base_classes$character)
+})
+
+test_that("converts S4 unions to R7 unions", {
+  Foo1 <- setClass("Foo1", slots = "x")
+  Foo2 <- setClass("Foo2", slots = "x")
+  Foo3 <- setClass("Foo3", slots = "x")
+
+  Union1 <- setClassUnion("Union1", c("Foo1", "Foo2"))
+  expect_equal(as_class(Union1), new_union(getClass("Foo1"), getClass("Foo2")))
+
+  Union2 <- setClassUnion("Union2", c("Union1", "Foo3"))
+  expect_equal(as_class(Union2), new_union(getClass("Foo1"), getClass("Foo2"), getClass("Foo3")))
+})
+
 test_that("can work with simple S3 classes", {
   klass <- s3_class("data.frame")
   expect_equal(as_class(klass), klass)
