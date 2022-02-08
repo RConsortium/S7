@@ -39,9 +39,16 @@
 #' method(bizarro, "double")
 #' method(bizarro, s3_class("factor"))
 method <- function(generic, signature) {
-  # TODO: check that signature doesn't contain any unions
+  if (!inherits(generic, "R7_generic")) {
+    stop("`generic` must be an <R7_generic>")
+  }
 
   signature <- as_signature(signature)
+  is_union <- vlapply(signature, is_union)
+  if (any(is_union)) {
+    stop("Can't dispatch on unions; must be a concrete type")
+  }
+
   method_impl(generic, signature, ignore = NULL)
 }
 
@@ -74,30 +81,7 @@ method_impl <- function(generic, signature, ignore) {
     return(out)
   }
 
-  # If no R7 method is found, see if there are any S3 methods registered
-  if (inherits(generic, "R7_generic")) {
-    args <- generic@dispatch_args
-    generic <- generic@name
-  } else {
-    args <- setdiff(names(formals(generic)), "...")
-    generic <- find_function_name(generic, topenv(environment(generic)))
-  }
-
-  if (length(signature) > 0) {
-    classes <- s3_class_name(signature[[1]])
-  } else {
-    classes <- character()
-  }
-  classes <- c(classes, "default")
-
-  for (class in classes) {
-    out <- getS3method(generic, class, optional = TRUE)
-    if (!is.null(out)) {
-      return(out)
-    }
-  }
-
-  method_lookup_error(generic, args, signature)
+  method_lookup_error(generic@name, generic@dispatch_args, signature)
 }
 
 find_function_name <- function(x, env) {

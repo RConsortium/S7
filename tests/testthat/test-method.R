@@ -52,26 +52,23 @@ describe("multiple dispatch", {
 })
 
 describe("manual method reflection", {
-  it("will fall back to S3 generics if no R7 generic is defined", {
-    expect_equal(method(print, s3_class(c("ordered", "factor"))), base::print.factor)
-    expect_equal(method(print, s3_class("Date")), base::print.Date)
-    expect_equal(method(print, text), base::print.default)
-  })
-
   it("errors on invalid inputs", {
+
     expect_snapshot(error = TRUE, {
       method(print, 1)
+
+      foo <- function(x) {}
+      method(foo, 1)
+      method(foo, new_union("integer", "double"))
     })
   })
 
   test_that("errors if no method found", {
     foo <- new_generic("foo", dispatch_args = "x")
-    foobar <- function(x) {}
 
     expect_snapshot(error = TRUE, {
       method(foo, list())
       method(foo, list("blah"))
-      method(foobar, "character")
     })
   })
 })

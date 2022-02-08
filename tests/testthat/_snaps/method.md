@@ -3,7 +3,16 @@
     Code
       method(print, 1)
     Error <simpleError>
-      Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      `generic` must be an <R7_generic>
+    Code
+      foo <- (function(x) { })
+      method(foo, 1)
+    Error <simpleError>
+      `generic` must be an <R7_generic>
+    Code
+      method(foo, new_union("integer", "double"))
+    Error <simpleError>
+      `generic` must be an <R7_generic>
 
 # errors if no method found
 
@@ -16,10 +25,6 @@
       method(foo, list("blah"))
     Error <simpleError>
       Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
-    Code
-      method(foobar, "character")
-    Error <simpleError>
-      Can't find `generic`
 
 # union methods are created individually
 
