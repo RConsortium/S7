@@ -22,6 +22,9 @@ describe("method registration", {
     foo <- new_class("foo")
     method(sum, foo) <- function(x, ...) "foo"
     expect_equal(sum(foo()), "foo")
+
+    # and doesn't modify generic
+    expect_equal(sum, base::sum)
   })
 
   it("S3 registration requires single R7 class", {
