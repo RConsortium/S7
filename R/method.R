@@ -49,7 +49,7 @@ method <- function(generic, signature) {
     stop("Can't dispatch on unions; must be a concrete type")
   }
 
-  method_impl(generic, signature, ignore = NULL)
+  .Call(method_, generic, signature, NULL)
 }
 
 methods <- function(generic) {
@@ -74,15 +74,6 @@ as_signature <- function(signature) {
     signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
   }
   signature
-}
-
-method_impl <- function(generic, signature, ignore) {
-  out <- .Call(method_, generic, signature, ignore)
-  if (!is.null(out)) {
-    return(out)
-  }
-
-  method_lookup_error(generic@name, generic@dispatch_args, signature)
 }
 
 find_function_name <- function(x, env) {
@@ -117,7 +108,7 @@ next_method <- function() {
   vals <- mget(dispatch_on, envir = parent.frame())
   signature <- lapply(vals, object_class)
 
-  method_impl(generic, signature, ignore = methods)
+  .Call(method_, generic, signature, ignore = methods)
 }
 
 method_compatible <- function(method, generic) {

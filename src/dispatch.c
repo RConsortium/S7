@@ -14,7 +14,8 @@ Rboolean should_ignore(SEXP value, SEXP ignore) {
   return FALSE;
 }
 
-SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore) {
+// Recursively walk through method table to perform iterated dispatch
+SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore) {
   if (signature_itr >= Rf_xlength(signature)) {
     return R_NilValue;
   }
@@ -26,7 +27,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
       SEXP klass = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(classes, name_sym), 0)));
       SEXP val = Rf_findVarInFrame(table, klass);
       if (TYPEOF(val) == ENVSXP) {
-        val = method_internal(val, signature, signature_itr + 1, ignore);
+        val = method_rec(val, signature, signature_itr + 1, ignore);
       }
       if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
         return val;
@@ -38,7 +39,7 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
       SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
       SEXP val = Rf_findVarInFrame(table, klass);
       if (TYPEOF(val) == ENVSXP) {
-        val = method_internal(val, signature, signature_itr + 1, ignore);
+        val = method_rec(val, signature, signature_itr + 1, ignore);
       }
       if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
         return val;
@@ -46,6 +47,35 @@ SEXP method_internal(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ig
     }
   }
   return R_NilValue;
+}
+
+void R7_method_lookup_error(SEXP generic, SEXP signature) {
+  static SEXP R7_method_lookup_error_fun = NULL;
+  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
+
+  if (R7_method_lookup_error_fun == NULL) {
+    R7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
+  }
+  SEXP name = Rf_getAttrib(generic, Rf_install("name"));
+  SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+  SEXP R7_method_lookup_error_call = PROTECT(Rf_lang4(R7_method_lookup_error_fun, name, args, signature));
+  Rf_eval(R7_method_lookup_error_call, ns);
+}
+
+/* TODO: handle errors when method is not found */
+SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
+  if (!Rf_inherits(generic, "R7_generic")) {
+    return R_NilValue;
+  }
+
+  SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
+
+  SEXP m = method_rec(table, signature, 0, ignore);
+  if (m == R_NilValue) {
+    R7_method_lookup_error(generic, signature);
+  }
+
+  return m;
 }
 
 SEXP get_class(SEXP object, SEXP envir) {
@@ -86,31 +116,8 @@ SEXP object_class_(SEXP object, SEXP envir) {
   return klass;
 }
 
-/* TODO: handle errors when method is not found */
-SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
-  if (!Rf_inherits(generic, "R7_generic")) {
-    return R_NilValue;
-  }
-
-  SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
-
-  return method_internal(table, signature, 0, ignore);
-}
-
 SEXP R7_object_() {
   return Rf_allocSExp(S4SXP);
-}
-
-void R7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
-  static SEXP R7_method_lookup_error_fun = NULL;
-  if (R7_method_lookup_error_fun == NULL) {
-    SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
-    R7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
-  }
-  SEXP name = Rf_getAttrib(generic, Rf_install("name"));
-  SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
-  SEXP R7_method_lookup_error_call = PROTECT(Rf_lang4(R7_method_lookup_error_fun, name, args, signature));
-  Rf_eval(R7_method_lookup_error_call, envir);
 }
 
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
@@ -169,9 +176,6 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
 
   // Now that we have all the classes, we can look up what method to call
   SEXP m = method_(generic, dispatch_classes, R_NilValue);
-  if (m == R_NilValue) {
-    R7_method_lookup_error(generic, dispatch_classes, envir);
-  }
   SETCAR(mcall, m);
 
   // And then call it
