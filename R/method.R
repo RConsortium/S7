@@ -23,11 +23,13 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
+  signature <- as_signature(signature)
+  generic <- as_generic(generic)
+
   register_method(generic, signature, value, package = packageName(parent.frame()))
 }
 
 register_method <- function(generic, signature, method, package = NULL) {
-  signature <- as_signature(signature)
 
   if (inherits(generic, "R7_external_generic")) {
     # Get current package, if any
@@ -47,7 +49,6 @@ register_method <- function(generic, signature, method, package = NULL) {
     signature <- list(signature)
   }
 
-  generic <- as_generic(generic)
 
   method_compatible(method, generic)
 
@@ -106,16 +107,19 @@ methods_rec <- function(x, signature) {
   unlist(methods, recursive = FALSE)
 }
 
-as_generic <- function(generic) {
-  if (length(generic) == 1 && is.character(generic)) {
-    fun <- match.fun(generic)
-    generic <- fun
-  }
-  if (!inherits(generic, "R7_generic")) {
-    attr(generic, "name") <- find_generic_name(generic)
-    class(generic) <- "S3_generic"
+as_generic <- function(x) {
+  if (inherits(x, "R7_generic") || inherits(x, "R7_external_generic")) {
+    return(x)
   }
 
+  if (!is.function(x)) {
+    msg <- sprintf("`generic` must be a function, not a %s", obj_desc(generic))
+    stop(msg, call. = FALSE)
+  }
+
+  # For now, assume that it's an S3 generic
+  attr(generic, "name") <- find_generic_name(generic)
+  class(generic) <- "S3_generic"
   generic
 }
 find_generic_name <- function(generic) {
