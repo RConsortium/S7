@@ -40,7 +40,7 @@ method_register <- function() {
   for (x in tbl) {
     if (isNamespaceLoaded(x$package)) {
       ns <- asNamespace(x$package)
-      new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
+      register_method(getFromNamespace(x$generic, ns), x$signature, x$method)
     } else {
       setHook(packageEvent(x$package, "onLoad"),
         local({
@@ -48,7 +48,7 @@ method_register <- function() {
           function(...) {
             ns <- asNamespace(x$package)
             if (is.null(x$version) || getNamespaceVersion(ns) >= x$version) {
-              new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
+              register_method(getFromNamespace(x$generic, ns), x$signature, x$method)
             }
           }
         })
