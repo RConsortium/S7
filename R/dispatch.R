@@ -51,3 +51,27 @@ method_lookup_error <- function(name, args, signatures) {
 method_call <- function() {
   .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
 }
+
+#' Retrieve the next applicable method after the current one
+#'
+#' @export
+next_method <- function() {
+  current_method <- sys.function(sys.parent(1))
+
+  methods <- list()
+  i <- 1
+  while (!inherits(current_method, "R7_generic")) {
+    methods <- c(methods, current_method)
+    i <- i + 1
+    current_method <- sys.function(sys.parent(i))
+  }
+
+  generic <- current_method
+
+  # Find signature
+  dispatch_on <- setdiff(generic@dispatch_args, "...")
+  vals <- mget(dispatch_on, envir = parent.frame())
+  signature <- lapply(vals, object_class)
+
+  .Call(method_, generic, signature, ignore = methods)
+}

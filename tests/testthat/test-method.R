@@ -62,39 +62,6 @@ test_that("union methods are created individually", {
   expect_snapshot(foo)
 })
 
-test_that("next_method works for single dispatch", {
-  foo <- new_generic("foo", dispatch_args = "x")
-
-  method(foo, text) <- function(x, ...) {
-    x@.data <- paste0("foo-", r7_data(x))
-  }
-  method(foo, "character") <- function(x, ...) {
-    as.character(x)
-  }
-
-  expect_equal(foo(text("hi")), "foo-hi")
-})
-
-test_that("next_method works for double dispatch", {
-  foo <- new_generic("foo", dispatch_args = c("x", "y"))
-
-  method(foo, list(text, number)) <- function(x, y, ...) {
-    r7_data(x) <- paste0("foo-", r7_data(x), "-", r7_data(y))
-    next_method()(x, y)
-  }
-
-  method(foo, list(character, number)) <- function(x, y, ...) {
-    r7_data(y) <- y + 1
-    r7_data(x) <- paste0(r7_data(x), "-", r7_data(y))
-    next_method()(x, y)
-  }
-
-  method(foo, list(character, double)) <- function(x, y, ...) {
-    as.character(r7_data(x))
-  }
-
-  expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
-})
 
 test_that("method_compatible returns TRUE if the functions are compatible", {
   foo <- new_generic("foo", function(x, ...) method_call())
