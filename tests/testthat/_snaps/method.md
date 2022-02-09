@@ -1,4 +1,20 @@
-# union methods are created individually
+# method registration: checks argument types
+
+    Code
+      x <- 10
+      method(x, "character") <- (function(x) ...)
+    Error <simpleError>
+      `generic` must be a function, not a <double>
+    Code
+      method(foo, 1) <- (function(x) ...)
+    Error <simpleError>
+      Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Code
+      method(foo, "character") <- 1
+    Error <simpleError>
+      `value` must be a function
+
+# union methods are registered individually
 
     Code
       foo

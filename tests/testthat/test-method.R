@@ -1,4 +1,18 @@
-test_that("union methods are created individually", {
+describe("method registration", {
+  it("checks argument types", {
+    foo <- new_generic("foo", dispatch_args = "x")
+    expect_snapshot(error = TRUE, {
+      x <- 10
+      method(x, "character") <- function(x) ...
+      method(foo, 1) <- function(x) ...
+      method(foo, "character") <- 1
+    })
+
+  })
+
+})
+
+test_that("union methods are registered individually", {
   foo <- new_generic("foo", dispatch_args = "x")
 
   method(foo, new_union(number, "integer")) <- function(x) "x"

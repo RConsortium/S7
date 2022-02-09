@@ -25,6 +25,9 @@
 `method<-` <- function(generic, signature, value) {
   signature <- as_signature(signature)
   generic <- as_generic(generic)
+  if (!is.function(value)) {
+    stop("`value` must be a function")
+  }
 
   register_method(generic, signature, value, package = packageName(parent.frame()))
 }
@@ -113,7 +116,7 @@ as_generic <- function(x) {
   }
 
   if (!is.function(x)) {
-    msg <- sprintf("`generic` must be a function, not a %s", obj_desc(generic))
+    msg <- sprintf("`generic` must be a function, not a %s", obj_desc(x))
     stop(msg, call. = FALSE)
   }
 
@@ -202,8 +205,6 @@ r7_class_name <- function(x) {
     stop("Unsupported")
   )
 }
-
-
 
 #' @export
 print.R7_method <- function(x, ...) {
