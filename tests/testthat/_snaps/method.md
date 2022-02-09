@@ -29,7 +29,7 @@
       foo <- new_generic("foo", dispatch_args = "x")
       method_compatible(function(y) { }, foo)
     Error <simpleError>
-      `method` doesn't match generic dispatch arg
+      foo() dispatches on `x`, but `method` has arguments `y`
     Code
       method_compatible(function(x = "foo") { }, foo)
     Error <simpleError>

@@ -5,14 +5,14 @@
 \alias{method_register}
 \title{Generics in suggested packages}
 \usage{
-new_external_generic(package, generic, version = NULL)
+new_external_generic(package, name, version = NULL)
 
 method_register()
 }
 \arguments{
-\item{package}{Package the generic is defined in.}
+\item{package}{Package name. Advanced use only.}
 
-\item{generic}{Name of generic, as a string.}
+\item{name}{Name of generic, as a string.}
 
 \item{version}{An optional version the package must meet for the method to
 be registered.}

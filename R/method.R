@@ -29,29 +29,24 @@
     stop("`value` must be a function")
   }
 
-  register_method(generic, signature, value, package = packageName(parent.frame()))
-}
-
-register_method <- function(generic, signature, method, package = NULL) {
-
-  if (inherits(generic, "R7_external_generic")) {
-    # Get current package, if any
+  if (is_external_generic(generic)) {
+    package <- packageName(parent.frame())
     if (!is.null(package)) {
-      tbl <- asNamespace(package)[[".__S3MethodsTable__."]]
-      if (is.null(tbl[[".R7_methods"]])) {
-        tbl[[".R7_methods"]] <- list()
-      }
-      tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic$generic, package = generic$package, signature = signature, method = method, version = generic$version)))
-
-      return(invisible())
+      # Package is live, so can add to lazy register
+      external_methods_add(package, generic, signature, value)
+      return(invisible(generic))
     }
-    generic <- getFromNamespace(generic$generic, asNamespace(generic$package))
+
+    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
   }
 
+  register_method(generic, signature, value)
+}
+
+register_method <- function(generic, signature, method) {
   if (!is.character(signature) && !inherits(signature, "list")) {
     signature <- list(signature)
   }
-
 
   method_compatible(method, generic)
 
@@ -76,13 +71,14 @@ register_method <- function(generic, signature, method, package = NULL) {
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
         method <- R7_method(generic, this_sig, method)
-        register_method(generic, this_sig, method, package = package)
+        register_method(generic, this_sig, method)
       }
       return(invisible(generic))
     }
 
     class_name <- r7_class_name(signature[[i]])
     if (i == length(signature)) {
+      # message(sprintf("registered %s(%s)", generic@name, paste0(vcapply(signature, class_desc), collapse =", ")))
       p_tbl[[class_name]] <- method
     } else {
       tbl <- p_tbl[[class_name]]
@@ -111,7 +107,7 @@ methods_rec <- function(x, signature) {
 }
 
 as_generic <- function(x) {
-  if (inherits(x, "R7_generic") || inherits(x, "R7_external_generic")) {
+  if (inherits(x, "R7_generic") || is_external_generic(x)) {
     return(x)
   }
 
@@ -161,7 +157,13 @@ method_compatible <- function(method, generic) {
   has_dispatch <- length(method_formals) >= n_dispatch &&
     identical(method_args[1:n_dispatch], generic@dispatch_args)
   if (!has_dispatch) {
-    stop("`method` doesn't match generic dispatch arg", call. = FALSE)
+    msg <- sprintf(
+      "%s() dispatches on %s, but `method` has arguments %s",
+      generic@name,
+      paste0(encodeString(generic@dispatch_args, quote = "`"), collapse = ", "),
+      paste0(encodeString(method_args, quote = "`"), collapse = ", ")
+    )
+    stop(msg, call. = FALSE)
   }
   if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
     stop("... must immediately follow dispatch args", call. = FALSE)

@@ -7,8 +7,10 @@ describe("method registration", {
       method(foo, 1) <- function(x) ...
       method(foo, "character") <- 1
     })
-
   })
+})
+
+describe("methods for external generics", {
 
 })
 
