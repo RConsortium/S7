@@ -7,17 +7,33 @@
 method(generic, signature) <- value
 }
 \arguments{
-\item{generic}{A generic function.}
+\item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
+\code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{signature}{A method signature, a list of R7 class constructors
-(produced by \code{\link[=new_class]{new_class()}}) or names of S3 or S4 classes.}
+\item{signature}{A method signature. For R7 generics that use single
+dispatch, this should be one of the following:
+\itemize{
+\item An R7 class (created by \code{\link[=new_class]{new_class()}}).
+\item An R7 union (created by \code{\link[=new_union]{new_union()}}).
+\item An S3 class (created by \code{\link[=s3_class]{s3_class()}}).
+\item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
+\item A base type specified either with its constructor (\code{logical}, \code{integer},
+\code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
+\item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
+\code{"vector"}.
+}
+
+For R7 generics that use multiple dispatch, this can be a list of any of
+the above types.
+
+For S3 generics, this must be an R7 class.}
 
 \item{value}{A function that implements the generic specification for the
-given \code{signature}. The arguments must be compatible with the generic.}
+given \code{signature}.}
 }
 \description{
 A generic defines the interface of a function. Once you have created a
-generic with \code{\link[=new_generic]{new_generic()}}, you provide implememtnations for specific
+generic with \code{\link[=new_generic]{new_generic()}}, you provide implementations for specific
 signatures by registering methods with \verb{method<-}
 }
 \examples{

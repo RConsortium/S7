@@ -4,13 +4,14 @@
 #' you to use R7 classes and methods with base types, informal S3 classes, and
 #' formal S4 classes.
 #'
-#' @param x A class specification.
-#'    * An R7 class object or class union.
-#'    * An S3 class object, created by `s3_class()`.
-#'    * An S4 class object.
-#'    * A base type specified either with its constructor (`logical`, `integer`,
-#'      `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
-#'    * A base union type specified by its name: `"numeric"`, `"atomic"`, or
+#' @param x A class specification. One of the following:
+#'   * An R7 class (created by [new_class()]).
+#'   * An R7 union (created by [new_union()]).
+#'   * An S3 class (created by [s3_class()]).
+#'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
+#'   * A base type specified either with its constructor (`logical`, `integer`,
+#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
+#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
 #'      `"vector"`.
 #' @param arg Argument name used when generating errors.
 #' @export

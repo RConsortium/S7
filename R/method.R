@@ -1,14 +1,28 @@
 #' Register a R7 method for a generic
 #'
 #' A generic defines the interface of a function. Once you have created a
-#' generic with [new_generic()], you provide implememtnations for specific
+#' generic with [new_generic()], you provide implementations for specific
 #' signatures by registering methods with `method<-`
 #'
-#' @param generic A generic function.
-#' @param signature A method signature, a list of R7 class constructors
-#'   (produced by [new_class()]) or names of S3 or S4 classes.
+#' @param generic A generic function, either created by [new_generic()],
+#'   [new_external_generic()], or an existing S3 generic.
+#' @param signature A method signature. For R7 generics that use single
+#'   dispatch, this should be one of the following:
+#'   * An R7 class (created by [new_class()]).
+#'   * An R7 union (created by [new_union()]).
+#'   * An S3 class (created by [s3_class()]).
+#'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
+#'   * A base type specified either with its constructor (`logical`, `integer`,
+#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
+#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
+#'     `"vector"`.
+#'
+#'   For R7 generics that use multiple dispatch, this can be a list of any of
+#'   the above types.
+#'
+#'   For S3 generics, this must be an R7 class.
 #' @param value A function that implements the generic specification for the
-#'   given `signature`. The arguments must be compatible with the generic.
+#'   given `signature`.
 #' @export
 #' @examples
 #' # Create a generic
@@ -63,16 +77,14 @@ register_method <- function(generic, signature, method, package = packageName(pa
 register_r7_method <- function(generic, signature, method) {
   method <- R7_method(method, generic = generic, signature = signature)
 
-  generic_name <- generic@name
   p_tbl <- generic@methods
 
   for (i in seq_along(signature)) {
     # Register one method for each class in union
-    if (inherits(signature[[i]], "R7_union")) {
+    if (is_union(signature[[i]])) {
       this_sig <- signature
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
-        method <- R7_method(method, generic = generic, signature = this_sig)
         register_r7_method(generic, this_sig, method)
       }
       return(invisible(generic))
