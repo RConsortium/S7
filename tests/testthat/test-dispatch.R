@@ -1,3 +1,56 @@
+describe("single dispatch", {
+  foo <- new_generic("foo", dispatch_args = "x")
+
+  it("works for base types", {
+    method(foo, "character") <- function(x) "base"
+
+    expect_equal(foo("bar"), "base")
+  })
+
+  it("works for R7 objects", {
+    method(foo, text) <- function(x) "R7"
+
+    expect_equal(foo(text("bar")), "R7")
+  })
+
+  it("works for S3 objects", {
+    obj <- structure("hi", class = "my_s3")
+    method(foo, s3_class("my_s3")) <- function(x) "S3"
+
+    expect_equal(foo(obj), "S3")
+  })
+
+  it("works for S4 objects", {
+    my_S4 <- setClass("my_S4", contains = "numeric")
+    method(foo, my_S4) <- function(x) "S4"
+
+    expect_equal(foo(my_S4(1)), "S4")
+  })
+
+  it("works for unions", {
+    method(foo, new_union(number, "integer")) <- function(x) "union"
+
+    expect_equal(foo(number(1)), "union")
+    expect_equal(foo(1L), "union")
+  })
+})
+
+describe("multiple dispatch", {
+  it("works directly", {
+    foo <- new_generic("foo3", dispatch_args = c("x", "y"))
+    method(foo, list(text, number)) <- function(x, y) paste0(x, y)
+    expect_equal(foo(text("bar"), number(1)), "bar1")
+  })
+
+  it("works via inheritance", {
+    foo <- new_generic("foo", dispatch_args = c("x", "y"))
+    method(foo, list("character", "numeric")) <- function(x, y) paste0(x, ":", y)
+
+    expect_equal(foo(text("bar"), number(1)), "bar:1")
+  })
+})
+
+
 test_that("can substitute() args", {
   foo <- new_generic("foo", function(x, ..., z = 1) method_call())
   method(foo, "character") <- function(x, ..., z = 1) substitute(x)
