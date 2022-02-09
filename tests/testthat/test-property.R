@@ -147,6 +147,14 @@ test_that("property setters can set themselves", {
   expect_equal(x@bar, "foo-bar")
 })
 
+
+test_that("new_property validates name", {
+  expect_snapshot(error = TRUE, {
+    new_property(1)
+    new_property("")
+  })
+})
+
 test_that("properties can be base, S3, S4, R7, or R7 union", {
   class_r7 <- new_class("class_r7")
   class_s4 <- methods::setClass("class_s4", slots = c(x = "numeric"))
@@ -186,5 +194,26 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
     my_obj@s4 <- "x"
     my_obj@r7 <- "x"
     my_obj@r7_union <- "x"
+  })
+})
+
+test_that("as_properties normalises properties", {
+  expect_equal(as_properties(NULL), list())
+  expect_equal(
+    as_properties(list(new_property("y"))),
+    list(y = new_property("y")
+  ))
+  expect_equal(
+    as_properties(list(x = "numeric")),
+    list(x = new_property("x", "numeric")
+  ))
+})
+
+test_that("as_properties() gives useful error messages", {
+  expect_snapshot(error = TRUE, {
+    as_properties(1)
+    as_properties(list(1))
+    as_properties(list(x = 1))
+    as_properties(list(x = "character", x = "character"))
   })
 })

@@ -17,6 +17,17 @@
     Error <simpleError>
       trying to get slot "blah" from an object of a basic class ("NULL") with no slots
 
+# new_property validates name
+
+    Code
+      new_property(1)
+    Error <simpleError>
+      `name` must be a single string
+    Code
+      new_property("")
+    Error <simpleError>
+      `name` must not be "" or NA
+
 # properties can be base, S3, S4, R7, or R7 union
 
     Code
@@ -55,4 +66,23 @@
       my_obj@r7_union <- "x"
     Error <simpleError>
       <my_class>@r7_union must be of class <integer> or <logical>, not <character>
+
+# as_properties() gives useful error messages
+
+    Code
+      as_properties(1)
+    Error <simpleError>
+      `properties` must be a list
+    Code
+      as_properties(list(1))
+    Error <simpleError>
+      `property[[1]]` is missing a name
+    Code
+      as_properties(list(x = 1))
+    Error <simpleError>
+      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Code
+      as_properties(list(x = "character", x = "character"))
+    Error <simpleError>
+      `properties` names must be unique
 

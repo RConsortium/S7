@@ -56,11 +56,22 @@
 #' hadley@firstName
 #' hadley@first_name
 new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
+  check_name(name)
+
   class <- as_class(class)
   out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "R7_property"
 
   out
+}
+
+check_name <- function(name) {
+  if (length(name) != 1 || !is.character(name)) {
+    stop("`name` must be a single string", call. = FALSE)
+  }
+  if (is.na(name) || name == "") {
+    stop("`name` must not be \"\" or NA", call. = FALSE)
+  }
 }
 
 is_property <- function(x) inherits(x, "R7_property")
@@ -237,16 +248,29 @@ as_properties <- function(x) {
     return(list())
   }
 
-  named_class <- !vlapply(x, is_property) & has_names(x)
+  if (!is.list(x)) {
+    stop("`properties` must be a list", call. = FALSE)
+  }
 
-  x[named_class] <- mapply(new_property,
-    name = names(x)[named_class],
-    class = x[named_class],
-    USE.NAMES = TRUE,
-    SIMPLIFY = FALSE
-  )
+  out <- Map(as_property, x, names2(x), seq_along(x))
+  names(out) <- vcapply(out, function(x) x[["name"]])
 
-  names(x)[!named_class] <- vcapply(x[!named_class], function(x) x[["name"]])
+  if (anyDuplicated(names(out))) {
+    stop("`properties` names must be unique", call. = FALSE)
+  }
 
-  x
+  out
+}
+
+as_property <- function(x, name, i) {
+  if (is_property(x)) {
+    x
+  } else {
+    if (name == "") {
+      msg <- sprintf("`property[[%i]]` is missing a name", i)
+      stop(msg, call. = FALSE)
+    }
+    class <- as_class(x, arg = sprintf("property$%s", name))
+    new_property(name, class = x)
+  }
 }
