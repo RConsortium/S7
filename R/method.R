@@ -1,57 +1,3 @@
-#' Retrieve or register an R7 method for a generic
-#'
-#' @description
-#' Generics partition a function into interface (a generic) and implementation
-#' (many methods). `method<-` allows you to register a method, an
-#' implementation for a specified class signature, with a generic.
-#'
-#' `method()` retrieves a method for a given signature. You typically shouldn't
-#' need this function while programming, because calling the generic will
-#' automatically dispatch to the correct method, but it's often useful
-#' interactively in order to see the implementation of a specific method.
-#'
-#' @param generic A generic function.
-#' @param signature A method signature, a list of R7 class constructors
-#'   (produced by [new_class()]) or names of S3 or S4 classes.
-#' @param value A function that implements the generic specification for the
-#'   given `signature`. The arguments must be compatible with the generic.
-#' @importFrom utils getS3method
-#' @export
-#' @examples
-#' # Create a generic
-#' bizarro <- new_generic("bizarro", dispatch_args = "x")
-#' # Register some methods
-#' method(bizarro, "numeric") <- function(x, ...) rev(x)
-#' method(bizarro, s3_class("factor")) <- function(x, ...) {
-#'   levels(x) <- rev(levels(x))
-#'   x
-#' }
-#' method(bizarro, s3_class("data.frame")) <- function(x, ...) {
-#'   x[] <- lapply(x, bizarro)
-#'   rev(x)
-#' }
-#'
-#' # Using a generic calls the methods automatically
-#' bizarro(1)
-#'
-#' # But it can be useful to explicitly retrieve a method in order to
-#' # inspect its implementation
-#' method(bizarro, "double")
-#' method(bizarro, s3_class("factor"))
-method <- function(generic, signature) {
-  if (!inherits(generic, "R7_generic")) {
-    stop("`generic` must be an <R7_generic>")
-  }
-
-  signature <- as_signature(signature)
-  is_union <- vlapply(signature, is_union)
-  if (any(is_union)) {
-    stop("Can't dispatch on unions; must be a concrete type")
-  }
-
-  .Call(method_, generic, signature, NULL)
-}
-
 methods <- function(generic) {
   methods_rec(generic@methods, character())
 }
@@ -74,17 +20,6 @@ as_signature <- function(signature) {
     signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
   }
   signature
-}
-
-find_function_name <- function(x, env) {
-  nms <- ls(env, all.names = TRUE, sorted = FALSE)
-  for (name in nms) {
-    if (identical(get0(name, envir = env, mode = "function", inherits = FALSE), x)) {
-      return(name)
-    }
-  }
-
-  stop("Can't find `generic`", call. = FALSE)
 }
 
 #' Retrieve the next applicable method after the current one
@@ -237,9 +172,30 @@ r7_class_name <- function(x) {
   )
 }
 
-#' @rdname method
+#' Register a R7 method for a generic
 #'
+#' A generic defines the interface of a function. Once you have created a
+#' generic with [new_generic()], you provide implememtnations for specific
+#' signatures by registering methods with `method<-`
+#'
+#' @param generic A generic function.
+#' @param signature A method signature, a list of R7 class constructors
+#'   (produced by [new_class()]) or names of S3 or S4 classes.
+#' @param value A function that implements the generic specification for the
+#'   given `signature`. The arguments must be compatible with the generic.
 #' @export
+#' @examples
+#' # Create a generic
+#' bizarro <- new_generic("bizarro", dispatch_args = "x")
+#' # Register some methods
+#' method(bizarro, "numeric") <- function(x) rev(x)
+#' method(bizarro, s3_class("data.frame")) <- function(x) {
+#'   x[] <- lapply(x, bizarro)
+#'   rev(x)
+#' }
+#'
+#' # Using a generic calls the methods automatically
+#' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
   new_method(generic, signature, value, package = packageName(parent.frame()))
 }

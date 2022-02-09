@@ -69,3 +69,25 @@ test_that("method lookup fails with informative messages", {
   expect_snapshot_error(foo(TRUE, list()))
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
 })
+
+describe("method()", {
+  it("errors on invalid inputs", {
+
+    expect_snapshot(error = TRUE, {
+      method(print, 1)
+
+      foo <- function(x) {}
+      method(foo, 1)
+      method(foo, new_union("integer", "double"))
+    })
+  })
+
+  test_that("errors if no method found", {
+    foo <- new_generic("foo", dispatch_args = "x")
+
+    expect_snapshot(error = TRUE, {
+      method(foo, list())
+      method(foo, list("blah"))
+    })
+  })
+})

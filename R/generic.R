@@ -1,9 +1,11 @@
 #' Define a new generic
 #'
 #' @description
-#' A generic function uses different implementations depending on the class
-#' of one or more arguments (the `signature`). Create a new generic with
-#' `new_generic()` then use [method<-] to add methods to it.
+#' A generic function uses different implementations (_methods_) depending on
+#' the class of one or more arguments (the _signature_). Create a new generic
+#' with `new_generic()` then use [method<-] to add methods to it. The body of
+#' the generic always contains `method_call()`, which takes care of finding and
+#' calling the appropriate method.
 #'
 #' @section Dispatch arguments:
 #' The arguments that are used to pick the method are called the **dispatch
@@ -17,8 +19,8 @@
 #'
 #' @param name The name of the generic. This should be the same as the object
 #'   that you assign it to.
-#' @param dispatch_args A character vector providing the names of arguments to
-#'   dispatch on.
+#' @param dispatch_args A character vector giving the names of the arguments
+#'   that form the signature, i.e. the arguments used for method dispatch.
 #'
 #'   If `dispatch_args` are omitted, but `fun` is supplied, will default to the
 #'   arguments that appear before `...` in `fun`. If there are no dots, it will
@@ -33,6 +35,7 @@
 #' @seealso [new_external_generic()] to define a method for a generic
 #'  in another package without taking a strong dependency on it.
 #' @export
+#' @order 1
 #' @examples
 #' # A simple generic with methods for some base types and S3 classes
 #' type_of <- new_generic("type_of", dispatch_args = "x")
