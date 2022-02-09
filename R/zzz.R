@@ -45,16 +45,12 @@ R7_generic <- new_class(
   }
 )
 
-R7_method <- new_class(
-  name = "R7_method",
-  properties = list(generic = R7_generic, signature = "list", fun = "function"),
+R7_method <- new_class("R7_method",
   parent = "function",
-  constructor = function(generic, signature, fun) {
-    if (is.character(signature)) {
-      signature <- list(signature)
-    }
-    new_object(generic = generic, signature = signature, .data = fun)
-  }
+  properties = list(
+    generic = R7_generic,
+    signature = "list"
+  )
 )
 
 R7_union <- new_class(

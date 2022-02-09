@@ -25,14 +25,11 @@
 `method<-` <- function(generic, signature, value) {
   signature <- as_signature(signature)
   generic <- as_generic(generic)
-  if (!is.function(value)) {
-    stop("`value` must be a function")
-  }
 
   if (is_external_generic(generic)) {
     package <- packageName(parent.frame())
     if (!is.null(package)) {
-      # Package is live, so can add to lazy register
+      # Package is live, so can add to lazy registry
       external_methods_add(package, generic, signature, value)
       return(invisible(generic))
     }
@@ -40,28 +37,22 @@
     generic <- getFromNamespace(generic$name, asNamespace(generic$package))
   }
 
-  register_method(generic, signature, value)
-}
-
-register_method <- function(generic, signature, method) {
-  if (!is.character(signature) && !inherits(signature, "list")) {
-    signature <- list(signature)
-  }
-
-  method_compatible(method, generic)
-
-  if (!inherits(method, "R7_method")) {
-    method <- R7_method(generic, signature, method)
-  }
-
-  if (inherits(generic, "S3_generic")) {
+  if (is_s3_generic(generic)) {
     class <- s3_class_name(signature[[1]])
     registerS3method(attr(generic, "name"), class, method, envir = parent.frame())
     return(invisible(generic))
   }
 
-  generic_name <- generic@name
+  register_method(generic, signature, value)
+}
 
+register_method <- function(generic, signature, method) {
+  if (!inherits(method, "R7_method")) {
+    method <- R7_method(method, generic = generic, signature = signature)
+    check_method(method, signature, generic)
+  }
+
+  generic_name <- generic@name
   p_tbl <- generic@methods
 
   for (i in seq_along(signature)) {
@@ -70,7 +61,7 @@ register_method <- function(generic, signature, method) {
       this_sig <- signature
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
-        method <- R7_method(generic, this_sig, method)
+        method <- R7_method(method, generic = generic, signature = this_sig)
         register_method(generic, this_sig, method)
       }
       return(invisible(generic))
@@ -78,7 +69,6 @@ register_method <- function(generic, signature, method) {
 
     class_name <- r7_class_name(signature[[i]])
     if (i == length(signature)) {
-      # message(sprintf("registered %s(%s)", generic@name, paste0(vcapply(signature, class_desc), collapse =", ")))
       p_tbl[[class_name]] <- method
     } else {
       tbl <- p_tbl[[class_name]]
@@ -118,9 +108,11 @@ as_generic <- function(x) {
 
   # For now, assume that it's an S3 generic
   attr(generic, "name") <- find_generic_name(generic)
-  class(generic) <- "S3_generic"
+  class(generic) <- "R7_S3_generic"
   generic
 }
+is_s3_generic <- function(x) inherits(x, "R7_S3_generic")
+
 find_generic_name <- function(generic) {
   env <- environment(generic) %||% baseenv()
   for (nme in names(env)) {
@@ -141,14 +133,16 @@ as_signature <- function(signature) {
   signature
 }
 
+check_method <- function(method, signature, generic) {
+  signature <- as_signature(signature)
+  method_args <- paste0(vcapply(signature, class_desc), collapse =", ")
+  method_name <- sprintf("%s(%s)", generic@name, method_args)
 
-method_compatible <- function(method, generic) {
-  generic_formals <- suppressWarnings(formals(args(generic)))
-  # This can happen for some primitive functions such as `[`
-  if (length(generic_formals) == 0) {
-    return()
+  if (!is.function(method)) {
+    stop(sprintf("%s must be a function", method_name), call. = FALSE)
   }
 
+  generic_formals <- suppressWarnings(formals(args(generic)))
   method_formals <- formals(method)
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
@@ -158,34 +152,54 @@ method_compatible <- function(method, generic) {
     identical(method_args[1:n_dispatch], generic@dispatch_args)
   if (!has_dispatch) {
     msg <- sprintf(
-      "%s() dispatches on %s, but `method` has arguments %s",
+      "%s() dispatches on %s, but %s has arguments %s",
       generic@name,
-      paste0(encodeString(generic@dispatch_args, quote = "`"), collapse = ", "),
-      paste0(encodeString(method_args, quote = "`"), collapse = ", ")
+      arg_names(generic@dispatch_args),
+      method_name,
+      arg_names(method_args)
     )
     stop(msg, call. = FALSE)
   }
   if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
-    stop("... must immediately follow dispatch args", call. = FALSE)
+    msg <- sprintf(
+      "In %s, `...` must come immediately after dispatch args (%s)",
+      method_name,
+      arg_names(generic@dispatch_args)
+    )
+    stop(msg, call. = FALSE)
   }
   empty_dispatch <- vlapply(method_formals[generic@dispatch_args], identical, quote(expr = ))
   if (any(!empty_dispatch)) {
-    stop("Dispatch arguments must not have default values", call. = FALSE)
+    msg <- sprintf(
+      "In %s, dispatch arguments (%s) must not have default values",
+      method_name,
+      arg_names(generic@dispatch_args)
+    )
+    stop(msg, call. = FALSE)
   }
 
   extra_args <- setdiff(names(generic_formals), c(generic@dispatch_args, "..."))
   for (arg in extra_args) {
     if (!arg %in% method_args) {
-      warning(sprintf("Argument `%s` is missing from method", arg), call. = FALSE)
+      warning(sprintf("%s doesn't have argument `%s`", method_name, arg), call. = FALSE)
     } else if (!identical(generic_formals[[arg]], method_formals[[arg]])) {
-      warning(sprintf("Default value is not the same as the generic\n- Generic: %s = %s\n- Method:  %s = %s", arg, deparse1(generic_formals[[arg]]), arg, deparse1(method_formals[[arg]])), call. = FALSE)
+      msg <- sprintf(
+        paste0(
+          "In %s, default value of `%s` is not the same as the generic\n",
+          "- Generic: %s\n",
+          "- Method:  %s"
+        ),
+        method_name,
+        arg,
+        deparse1(generic_formals[[arg]]),
+        deparse1(method_formals[[arg]])
+      )
+      warning(msg, call. = FALSE)
     }
   }
 
-  TRUE
+  invisible(TRUE)
 }
-
-
 
 # Class name when registering an S3 method
 s3_class_name <- function(x) {
@@ -217,4 +231,6 @@ print.R7_method <- function(x, ...) {
   print(x)
 }
 
-
+arg_names <- function(x) {
+  paste0(encodeString(x, quote = "`"), collapse = ", ")
+}

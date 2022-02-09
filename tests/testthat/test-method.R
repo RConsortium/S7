@@ -10,13 +10,8 @@ describe("method registration", {
   })
 })
 
-describe("methods for external generics", {
-
-})
-
 test_that("union methods are registered individually", {
   foo <- new_generic("foo", dispatch_args = "x")
-
   method(foo, new_union(number, "integer")) <- function(x) "x"
 
   # one method for each union component
@@ -25,30 +20,31 @@ test_that("union methods are registered individually", {
   expect_snapshot(foo)
 })
 
-test_that("method_compatible returns TRUE if the functions are compatible", {
+test_that("check_method returns TRUE if the functions are compatible", {
   foo <- new_generic("foo", function(x, ...) method_call())
-  expect_true(method_compatible(function(x, ...) x, foo))
+  expect_true(check_method(function(x, ...) x, "character", foo))
   # extra arguments are ignored
-  expect_true(method_compatible(function(x, ..., y) x, foo))
+  expect_true(check_method(function(x, ..., y) x, "character", foo))
 
   foo <- new_generic("foo", function(x) method_call())
-  expect_true(method_compatible(function(x) x, foo))
+  expect_true(check_method(function(x) x, "character", foo))
 })
 
-test_that("method_compatible errors if the functions are not compatible", {
+test_that("check_method errors if the functions are not compatible", {
   expect_snapshot(error = TRUE, {
     foo <- new_generic("foo", dispatch_args = "x")
-    method_compatible(function(y) {}, foo)
-    method_compatible(function(x = "foo") {}, foo)
-    method_compatible(function(x, y, ...) {}, foo)
+    check_method(1, "character", foo)
+    check_method(function(y) {}, "character", foo)
+    check_method(function(x = "foo") {}, "character", foo)
+    check_method(function(x, y, ...) {}, "character", foo)
   })
 })
 
-test_that("method_compatible warn if default arguments don't match", {
+test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
     foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
-    method_compatible(function(x, ..., y = 1) {}, foo)
-    method_compatible(function(x, ..., y = 1, z = 1) {}, foo)
+    check_method(function(x, ..., y = 1) {}, "character", foo)
+    check_method(function(x, ..., y = 1, z = 1) {}, "character", foo)
   })
 })
 

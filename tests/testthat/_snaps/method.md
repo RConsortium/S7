@@ -12,7 +12,7 @@
     Code
       method(foo, "character") <- 1
     Error <simpleError>
-      `value` must be a function
+      `.data` must be <function> not <double>
 
 # union methods are registered individually
 
@@ -23,39 +23,39 @@
       1: method(foo, "integer")
       2: method(foo, number)
 
-# method_compatible errors if the functions are not compatible
+# check_method errors if the functions are not compatible
 
     Code
       foo <- new_generic("foo", dispatch_args = "x")
-      method_compatible(function(y) { }, foo)
+      check_method(1, "character", foo)
     Error <simpleError>
-      foo() dispatches on `x`, but `method` has arguments `y`
+      foo(<character>) must be a function
     Code
-      method_compatible(function(x = "foo") { }, foo)
+      check_method(function(y) { }, "character", foo)
     Error <simpleError>
-      Dispatch arguments must not have default values
+      foo() dispatches on `x`, but foo(<character>) has arguments `y`
     Code
-      method_compatible(function(x, y, ...) { }, foo)
+      check_method(function(x = "foo") { }, "character", foo)
     Error <simpleError>
-      ... must immediately follow dispatch args
+      In foo(<character>), dispatch arguments (`x`) must not have default values
+    Code
+      check_method(function(x, y, ...) { }, "character", foo)
+    Error <simpleError>
+      In foo(<character>), `...` must come immediately after dispatch args (`x`)
 
-# method_compatible warn if default arguments don't match
+# check_method warn if default arguments don't match
 
     Code
       foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
-      method_compatible(function(x, ..., y = 1) { }, foo)
+      check_method(function(x, ..., y = 1) { }, "character", foo)
     Warning <simpleWarning>
-      Argument `z` is missing from method
-    Output
-      [1] TRUE
+      foo(<character>) doesn't have argument `z`
     Code
-      method_compatible(function(x, ..., y = 1, z = 1) { }, foo)
+      check_method(function(x, ..., y = 1, z = 1) { }, "character", foo)
     Warning <simpleWarning>
-      Default value is not the same as the generic
-      - Generic: z = 2
-      - Method:  z = 1
-    Output
-      [1] TRUE
+      In foo(<character>), default value of `z` is not the same as the generic
+      - Generic: 2
+      - Method:  1
 
 # R7_method printing
 
