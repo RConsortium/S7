@@ -27,18 +27,18 @@
   invisible(generic)
 }
 
-register_method <- function(generic, signature, method) {
+register_method <- function(generic, signature, method, package = packageName(parent.frame())) {
   signature <- as_signature(signature)
   generic <- as_generic(generic)
 
   if (is_external_generic(generic)) {
-    package <- packageName(parent.frame())
     if (!is.null(package)) {
-      # Package is live, so can add to lazy registry
+      # method registration within package, so add to lazy registry
       external_methods_add(package, generic, signature, method)
     } else {
+      # otherwise find the generic and register
       generic <- getFromNamespace(generic$name, asNamespace(generic$package))
-      register_r7_method(generic, signature, method)
+      register_method(generic, signature, method)
     }
   } else if (is_s3_generic(generic)) {
     generic_name <- attr(generic, "name")

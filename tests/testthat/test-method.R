@@ -18,6 +18,24 @@ describe("method registration", {
     expect_equal(method(foo, "double")@signature, as_signature("double"))
   })
 
+  it("can register method for external generic from within package", {
+    on.exit(external_methods_reset("R7"), add = TRUE)
+
+    foo <- new_external_generic("foo", "bar")
+    register_method(foo, "character", function(x, ...) "bar", package = "R7")
+    expect_length(external_methods_get("R7"), 1)
+
+    # and doesn't modify generic
+    expect_s3_class(foo, "R7_external_generic")
+  })
+
+  it("can register method for external generic during development", {
+    bar <- new_class("bar")
+    base_sum <- new_external_generic("base", "sum")
+    register_method(base_sum, bar, function(x, ...) "bar", package = NULL)
+    expect_equal(sum(bar()), "bar")
+  })
+
   it("can register R7 method for S3 generic", {
     foo <- new_class("foo")
     method(sum, foo) <- function(x, ...) "foo"
