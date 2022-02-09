@@ -23,10 +23,10 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
-  new_method(generic, signature, value, package = packageName(parent.frame()))
+  register_method(generic, signature, value, package = packageName(parent.frame()))
 }
 
-new_method <- function(generic, signature, method, package = NULL) {
+register_method <- function(generic, signature, method, package = NULL) {
   signature <- as_signature(signature)
 
   if (inherits(generic, "R7_external_generic")) {
@@ -72,7 +72,7 @@ new_method <- function(generic, signature, method, package = NULL) {
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
         method <- R7_method(generic, this_sig, method)
-        new_method(generic, this_sig, method, package = package)
+        register_method(generic, this_sig, method, package = package)
       }
       return(invisible(generic))
     }
