@@ -23,6 +23,11 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
+  register_method(generic, signature, value)
+  invisible(generic)
+}
+
+register_method <- function(generic, signature, method) {
   signature <- as_signature(signature)
   generic <- as_generic(generic)
 
@@ -30,27 +35,33 @@
     package <- packageName(parent.frame())
     if (!is.null(package)) {
       # Package is live, so can add to lazy registry
-      external_methods_add(package, generic, signature, value)
-      return(invisible(generic))
+      external_methods_add(package, generic, signature, method)
+    } else {
+      generic <- getFromNamespace(generic$name, asNamespace(generic$package))
+      register_r7_method(generic, signature, method)
     }
+  } else if (is_s3_generic(generic)) {
+    generic_name <- attr(generic, "name")
 
-    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
+    if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
+      msg <- sprintf(
+        "When registering methods for S3 generic %s(), signature be a single R7 class",
+        generic_name
+      )
+      stop(msg, call. = FALSE)
+    }
+    class <- signature[[1]]@name
+    registerS3method(generic_name, class, method, envir = parent.frame())
+  } else {
+    check_method(method, signature, generic)
+    register_r7_method(generic, signature, method)
   }
 
-  if (is_s3_generic(generic)) {
-    class <- s3_class_name(signature[[1]])
-    registerS3method(attr(generic, "name"), class, method, envir = parent.frame())
-    return(invisible(generic))
-  }
-
-  register_method(generic, signature, value)
+  invisible()
 }
 
-register_method <- function(generic, signature, method) {
-  if (!inherits(method, "R7_method")) {
-    method <- R7_method(method, generic = generic, signature = signature)
-    check_method(method, signature, generic)
-  }
+register_r7_method <- function(generic, signature, method) {
+  method <- R7_method(method, generic = generic, signature = signature)
 
   generic_name <- generic@name
   p_tbl <- generic@methods
@@ -62,7 +73,7 @@ register_method <- function(generic, signature, method) {
       for (class in signature[[i]]@classes) {
         this_sig[[i]] <- class
         method <- R7_method(method, generic = generic, signature = this_sig)
-        register_method(generic, this_sig, method)
+        register_r7_method(generic, this_sig, method)
       }
       return(invisible(generic))
     }
@@ -80,7 +91,7 @@ register_method <- function(generic, signature, method) {
     }
   }
 
-  invisible(generic)
+  invisible()
 }
 
 methods <- function(generic) {
@@ -107,9 +118,9 @@ as_generic <- function(x) {
   }
 
   # For now, assume that it's an S3 generic
-  attr(generic, "name") <- find_generic_name(generic)
-  class(generic) <- "R7_S3_generic"
-  generic
+  attr(x, "name") <- find_generic_name(x)
+  class(x) <- "R7_S3_generic"
+  x
 }
 is_s3_generic <- function(x) inherits(x, "R7_S3_generic")
 
@@ -120,6 +131,8 @@ find_generic_name <- function(generic) {
       return(nme)
     }
   }
+
+  stop("Can't find name of S3 `generic`", call. = FALSE)
 }
 
 as_signature <- function(signature) {
@@ -135,8 +148,7 @@ as_signature <- function(signature) {
 
 check_method <- function(method, signature, generic) {
   signature <- as_signature(signature)
-  method_args <- paste0(vcapply(signature, class_desc), collapse =", ")
-  method_name <- sprintf("%s(%s)", generic@name, method_args)
+  method_name <- method_name(generic, signature)
 
   if (!is.function(method)) {
     stop(sprintf("%s must be a function", method_name), call. = FALSE)
@@ -201,16 +213,6 @@ check_method <- function(method, signature, generic) {
   invisible(TRUE)
 }
 
-# Class name when registering an S3 method
-s3_class_name <- function(x) {
-  switch(class_type(x),
-   s3 = x,
-   s4 = class(x),
-   r7 = x@name,
-   r7_base = .class2(x),
-   stop("Unsupported")
-  )
-}
 # Class name when registering an R7 method
 r7_class_name <- function(x) {
   switch(class_type(x),
@@ -233,4 +235,9 @@ print.R7_method <- function(x, ...) {
 
 arg_names <- function(x) {
   paste0(encodeString(x, quote = "`"), collapse = ", ")
+}
+
+method_name <- function(generic, signature) {
+  method_args <- paste0(vcapply(signature, class_desc), collapse =", ")
+  sprintf("%s(%s)", generic@name, method_args)
 }

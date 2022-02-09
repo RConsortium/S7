@@ -1,24 +1,47 @@
 describe("method registration", {
+  it("adds methods to the generic", {
+    foo <- new_generic("foo", dispatch_args = "x")
+    method(foo, "character") <- function(x) "c"
+    method(foo, "integer") <- function(x) "i"
+    expect_length(methods(foo), 2)
+  })
+
+  it("adds method for each element of a union", {
+    foo <- new_generic("foo", dispatch_args = "x")
+    method(foo, "numeric") <- function(x) "x"
+
+    # one method for each union component
+    expect_length(methods(foo), 2)
+
+    # each method has the expected signature
+    expect_equal(method(foo, "integer")@signature, as_signature("integer"))
+    expect_equal(method(foo, "double")@signature, as_signature("double"))
+  })
+
+  it("can register R7 method for S3 generic", {
+    foo <- new_class("foo")
+    method(sum, foo) <- function(x, ...) "foo"
+    expect_equal(sum(foo()), "foo")
+  })
+
+  it("S3 registration requires single R7 class", {
+    foo <- new_class("foo")
+    expect_snapshot(error = TRUE, {
+      method(sum, list(foo, foo)) <- function(x, ...) "foo"
+      method(sum, s3_class("foo")) <- function(x, ...) "foo"
+    })
+  })
+
   it("checks argument types", {
     foo <- new_generic("foo", dispatch_args = "x")
     expect_snapshot(error = TRUE, {
       x <- 10
       method(x, "character") <- function(x) ...
       method(foo, 1) <- function(x) ...
-      method(foo, "character") <- 1
     })
   })
 })
 
-test_that("union methods are registered individually", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  method(foo, new_union(number, "integer")) <- function(x) "x"
-
-  # one method for each union component
-  expect_length(methods(foo), 2)
-  # and methods printed nicely
-  expect_snapshot(foo)
-})
 
 test_that("check_method returns TRUE if the functions are compatible", {
   foo <- new_generic("foo", function(x, ...) method_call())

@@ -1,3 +1,14 @@
+# method registration: S3 registration requires single R7 class
+
+    Code
+      method(sum, list(foo, foo)) <- (function(x, ...) "foo")
+    Error <simpleError>
+      When registering methods for S3 generic sum(), signature be a single R7 class
+    Code
+      method(sum, s3_class("foo")) <- (function(x, ...) "foo")
+    Error <simpleError>
+      When registering methods for S3 generic sum(), signature be a single R7 class
+
 # method registration: checks argument types
 
     Code
@@ -9,19 +20,6 @@
       method(foo, 1) <- (function(x) ...)
     Error <simpleError>
       Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
-    Code
-      method(foo, "character") <- 1
-    Error <simpleError>
-      `.data` must be <function> not <double>
-
-# union methods are registered individually
-
-    Code
-      foo
-    Output
-      <R7_generic> function (x, ...)  with 2 methods:
-      1: method(foo, "integer")
-      2: method(foo, number)
 
 # check_method errors if the functions are not compatible
 
