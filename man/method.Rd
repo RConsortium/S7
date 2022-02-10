@@ -32,7 +32,7 @@ For S3 generics, this must be an R7 class.}
 A function with class <R7_method>.
 }
 \description{
-\code{method()} takes a generic and signature and retrieves the correspoding
+\code{method()} takes a generic and signature and retrieves the corresponding
 method. This is rarely needed because most of the time you'll rely on the
 the generic, via \code{\link[=method_call]{method_call()}}, to find and call the method for you.
 However, this introspection is useful if you want to see the implementation

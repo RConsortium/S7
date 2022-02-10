@@ -10,7 +10,7 @@ new_external_generic(package, name, version = NULL)
 method_register()
 }
 \arguments{
-\item{package}{Package name. Advanced use only.}
+\item{package}{Package the generic is defined in.}
 
 \item{name}{Name of generic, as a string.}
 

@@ -49,6 +49,7 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore)
   return R_NilValue;
 }
 
+__attribute__ ((noreturn))
 void R7_method_lookup_error(SEXP generic, SEXP signature) {
   static SEXP R7_method_lookup_error_fun = NULL;
   SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
@@ -60,9 +61,10 @@ void R7_method_lookup_error(SEXP generic, SEXP signature) {
   SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
   SEXP R7_method_lookup_error_call = PROTECT(Rf_lang4(R7_method_lookup_error_fun, name, args, signature));
   Rf_eval(R7_method_lookup_error_call, ns);
+
+  while(1);
 }
 
-/* TODO: handle errors when method is not found */
 SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
   if (!Rf_inherits(generic, "R7_generic")) {
     return R_NilValue;

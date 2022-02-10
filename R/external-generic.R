@@ -49,7 +49,6 @@ is_external_generic <- function(x) {
 
 #' @importFrom utils getFromNamespace packageName
 #' @rdname new_external_generic
-#' @param package Package name. Advanced use only.
 #' @export
 method_register <- function() {
   package <- packageName(parent.frame())
@@ -67,6 +66,7 @@ method_register <- function() {
 }
 
 registrar <- function(generic, signature, method) {
+  # Force all arguments
   list(generic, signature, method)
 
   function(...) {
