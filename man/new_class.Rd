@@ -43,7 +43,9 @@ It is called after construction and whenever any property is set.
 The validator should return \code{NULL} if the object is valid. If not, it
 should return a character vector where each element describes a single
 problem. It's generally helpful to report as many problems at once
-as possible.}
+as possible.
+
+See \code{validate()} for more details and examples.}
 }
 \value{
 A object constructor, a function that can be used to create objects
@@ -69,8 +71,11 @@ r@start
 r@end <- 40
 r@end
 
-# Use a validator to ensure that start and end are both length 1,
-# and that start is < end
+# R7 automatically ensures that properties are of the declared types:
+try(range(start = "hello", end = 20))
+
+# But we might also want to use a validator to ensure that start and end
+# are length 1, and that start is < end
 range <- new_class("range",
   properties = list(
     start = "numeric",
@@ -88,6 +93,7 @@ range <- new_class("range",
 )
 try(range(start = c(10, 15), end = 20))
 try(range(start = 20, end = 10))
-# Type validation is performed automatically in R7
-try(range(start = "hello", end = 20))
+
+r <- range(start = 10, end = 20)
+try(r@start <- 25)
 }

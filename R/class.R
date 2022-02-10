@@ -64,6 +64,8 @@ is_class <- function(x) inherits(x, "R7_class")
 #'   should return a character vector where each element describes a single
 #'   problem. It's generally helpful to report as many problems at once
 #'   as possible.
+#'
+#'   See `validate()` for more details and examples.
 #' @param properties A list specifying the properties (data) that
 #'   every object of the class will possess. Each property can either be
 #'   a named string (specifying the class), or a call to [new_property()],
@@ -86,8 +88,11 @@ is_class <- function(x) inherits(x, "R7_class")
 #' r@end <- 40
 #' r@end
 #'
-#' # Use a validator to ensure that start and end are both length 1,
-#' # and that start is < end
+#' # R7 automatically ensures that properties are of the declared types:
+#' try(range(start = "hello", end = 20))
+#'
+#' # But we might also want to use a validator to ensure that start and end
+#' # are length 1, and that start is < end
 #' range <- new_class("range",
 #'   properties = list(
 #'     start = "numeric",
@@ -105,8 +110,9 @@ is_class <- function(x) inherits(x, "R7_class")
 #' )
 #' try(range(start = c(10, 15), end = 20))
 #' try(range(start = 20, end = 10))
-#' # Type validation is performed automatically in R7
-#' try(range(start = "hello", end = 20))
+#'
+#' r <- range(start = 10, end = 20)
+#' try(r@start <- 25)
 new_class <- function(
     name,
     parent = R7_object,
