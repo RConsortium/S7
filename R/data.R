@@ -5,6 +5,7 @@
 #' and all properties.
 #'
 #' @inheritParams prop
+#' @param value Object used to replace the underlying data.
 #' @export
 #' @examples
 #' text <- new_class("text", parent = "character")

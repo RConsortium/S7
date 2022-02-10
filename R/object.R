@@ -26,38 +26,16 @@ new_object <- function(.data = NULL, ...) {
   }
 
   if (!is.null(.data)) {
-    # TODO eliminate this special case
-    if (obj_cls@name %in% names(base_types)) {
-      if (!inherits(.data, obj_cls@name)) {
-        stop(sprintf(
-          "`.data` must be %s not %s",
-          class_desc(as_class(obj_cls@name)),
-          obj_desc(.data)
-        ))
-      }
-    } else {
-      if (!class_inherits(.data, obj_cls@parent)) {
-        stop(sprintf(
-          "`.data` must be %s not %s",
-          class_desc(obj_cls@parent),
-          obj_desc(.data)
-        ))
-      }
-    }
-
     object <- .data
   } else {
     object <- obj_cls@parent@constructor()
   }
-  attr(object, ".should_validate") <- FALSE
 
   class(object) <- "R7_object"
   object_class(object) <- obj_cls
   for (nme in nms) {
-    prop(object, nme) <- args[[nme]]
+    prop(object, nme, check = FALSE) <- args[[nme]]
   }
-
-  attr(object, ".should_validate") <- NULL
   validate(object)
 
   object

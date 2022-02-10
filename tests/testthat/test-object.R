@@ -18,6 +18,10 @@ test_that("Additional attributes storing properties defined by the class, access
 })
 
 describe("new_object", {
+  it("reports all property type errors", {
+    expect_snapshot(range(start = "x", end = "y"), error = TRUE)
+  })
+
   it("checks new objects for validity", {
     expect_error(range(start = 10, end = 1), "`end` must be greater than or equal to `start`")
   })
@@ -25,13 +29,6 @@ describe("new_object", {
   it("can instantiate a new object that inherits from a basic type", {
     y <- text("foo")
     expect_equal(r7_data(y), as_class("character")("foo"))
-  })
-
-  it("errors if given an invalid property", {
-    expect_error(
-      range(1, "foo"),
-      "must be of class"
-    )
   })
 
   it("checks are arguments are properties", {

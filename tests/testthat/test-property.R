@@ -36,6 +36,10 @@ describe("prop<-", {
     prop(x, "start") <- 2
     expect_equal(prop(x, "start"), 2)
   })
+  it("errors if the property doesn't exist", {
+    x <- range(1, 10)
+    expect_snapshot(error = TRUE, x@foo <- 10)
+  })
   it("errors if the value does not match the correct class", {
     x <- range(1, 10)
     expect_error(
@@ -47,6 +51,15 @@ describe("prop<-", {
     x <- range(1, 10)
     prop(x, "end", check = FALSE) <- "foo"
     expect_equal(x@end, "foo")
+  })
+})
+
+describe("props<-", {
+  it("validates after setting all properties", {
+    x <- range(1, 2)
+    props(x) <- list(start = 5, end = 10)
+    expect_equal(x@start, 5)
+    expect_equal(x@end, 10)
   })
 })
 

@@ -30,10 +30,20 @@ allowing greater flexibility.}
 \item{constructor}{The constructor function. This is optional, unless
 you want to control which properties can be set on constructor.}
 
-\item{validator}{A function used to determine whether or not an object
-is valid. This is called automatically after construction, and
-whenever any property is set. It should return \code{NULL} if the object is
-valid, and otherwise return a character vector of problems.}
+\item{validator}{A function taking a single argument, the object to validate.
+
+The job of a validator is to determine whether the object is valid,
+i.e. if the current property values form an allowed combination. The
+types of the properties are always automatically validator so the job of
+the validator is to verify that the value of individual properties is
+ok (i.e. maybe a property should have length 1, or should always be
+positive), or that the combination of values of multiple properties is ok.
+It is called after construction and whenever any property is set.
+
+The validator should return \code{NULL} if the object is valid. If not, it
+should return a character vector where each element describes a single
+problem. It's generally helpful to report as many problems at once
+as possible.}
 }
 \value{
 A object constructor, a function that can be used to create objects
