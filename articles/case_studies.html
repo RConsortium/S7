@@ -148,7 +148,7 @@
 <span class="co">#&gt; [1] 39</span>
 
 <span class="va">jane</span><span class="op">@</span><span class="va">birthdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2001-01-01"</span>, <span class="st">"2002-02-02"</span><span class="op">)</span><span class="op">)</span>
-<span class="co">#&gt; Error: Invalid &lt;Person&gt; object:</span>
+<span class="co">#&gt; Error: &lt;Person&gt; object is invalid:</span>
 <span class="co">#&gt; - @name and @birthdate must be the same length</span></code></pre></div>
 <p>Classes can inherit from a parent class with <code>parent</code> and contain properties that are of complex classes.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -350,7 +350,7 @@
 <p>The validation function is automatically run if you try and change a property, which ensures class integrity.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">obj2</span><span class="op">@</span><span class="va">rows</span> <span class="op">&lt;-</span> <span class="va">obj2</span><span class="op">@</span><span class="va">rows</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="op">]</span>
-<span class="co">#&gt; Error: Invalid &lt;annotated_df&gt; object:</span>
+<span class="co">#&gt; Error: &lt;annotated_df&gt; object is invalid:</span>
 <span class="co">#&gt; - `nrow(&lt;annotated_df&gt;@rows)` must be equal to `nrow(&lt;annotated_df&gt;)`</span></code></pre></div>
 </div>
   </div>

@@ -7,6 +7,7 @@ prop_safely() returns NULL if a property doesn't exist,
 rather than throwing an error.
 prop&amp;lt;- and @&amp;lt;- set a new value for the given property.
 props() returns a list of all properties
+props&amp;lt;- sets multiple properties at once, validating once after all are set.
 prop_names() returns the names of the properties
 prop_exists(x, &quot;prop&quot;) returns TRUE iif x has property prop.
 
@@ -83,6 +84,7 @@ error if the property doesn't exist for that object.</p></li>
 rather than throwing an error.</p></li>
 <li><p><code>prop&lt;-</code> and <code>@&lt;-</code> set a new value for the given property.</p></li>
 <li><p><code>props()</code> returns a list of all properties</p></li>
+<li><p><code>props&lt;-</code> sets multiple properties at once, validating once after all are set.</p></li>
 <li><p><code>prop_names()</code> returns the names of the properties</p></li>
 <li><p><code>prop_exists(x, "prop")</code> returns <code>TRUE</code> iif <code>x</code> has property <code>prop</code>.</p></li>
 </ul></div>
@@ -95,6 +97,8 @@ rather than throwing an error.</p></li>
 <span class="fu">prop_names</span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
 
 <span class="fu">props</span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
+
+<span class="fu">props</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span>
 
 <span class="fu">prop_exists</span><span class="op">(</span><span class="va">object</span>, <span class="va">name</span><span class="op">)</span>
 
@@ -110,12 +114,13 @@ rather than throwing an error.</p></li>
 <dt>name</dt>
 <dd><p>The name of the parameter as a character. Partial matching
 is not performed.</p></dd>
+<dt>value</dt>
+<dd><p>For <code>prop&lt;-</code>, a replacement value for the property;
+for <code>props&lt;-</code>, a named list of values. The object is automatically
+checked for validity after the replacement is done.</p></dd>
 <dt>check</dt>
 <dd><p>If <code>TRUE</code>, check that <code>value</code> is of the correct type and run
 <code><a href="validate.html">validate()</a></code> on the object before returning.</p></dd>
-<dt>value</dt>
-<dd><p>A replacement value for the parameter. The object is
-automatically checked for validity after the replacement is done.</p></dd>
 </dl></div>
 
     <div id="ref-examples">

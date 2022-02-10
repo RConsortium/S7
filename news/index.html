@@ -67,7 +67,9 @@
 <h2 class="page-header" data-toc-text="0.0.0.9000" id="r7-0009000">R7 0.0.0.9000<a class="anchor" aria-label="anchor" href="#r7-0009000"></a></h2>
 <div class="section level3">
 <h3 id="jan-0-0-0-9000">Jan 2020<a class="anchor" aria-label="anchor" href="#jan-0-0-0-9000"></a></h3>
-<ul><li>Classes (base types, S3, S4, and R7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/s3_class.html">s3_class()</a></code> for referring to S3 classes (<a href="https://github.com/RConsortium/OOP-WG/issues/134" class="external-link">#134</a>). S4 unions are converted to R7 unions (<a href="https://github.com/RConsortium/OOP-WG/issues/150" class="external-link">#150</a>).</li>
+<ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/RConsortium/OOP-WG/issues/149" class="external-link">#149</a>).</li>
+<li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/RConsortium/OOP-WG/issues/149" class="external-link">#149</a>)</li>
+<li>Classes (base types, S3, S4, and R7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/s3_class.html">s3_class()</a></code> for referring to S3 classes (<a href="https://github.com/RConsortium/OOP-WG/issues/134" class="external-link">#134</a>). S4 unions are converted to R7 unions (<a href="https://github.com/RConsortium/OOP-WG/issues/150" class="external-link">#150</a>).</li>
 <li>Base numeric, atomic, and vector “types” are now represented as class unions (<a href="https://github.com/RConsortium/OOP-WG/issues/147" class="external-link">#147</a>).</li>
 <li>Different evaluation mechanism for method dispatch, and greater restrictions on dispatch args (<a href="https://github.com/RConsortium/OOP-WG/issues/141" class="external-link">#141</a>)</li>
 <li>

@@ -100,10 +100,18 @@ allowing greater flexibility.</p></dd>
 <dd><p>The constructor function. This is optional, unless
 you want to control which properties can be set on constructor.</p></dd>
 <dt>validator</dt>
-<dd><p>A function used to determine whether or not an object
-is valid. This is called automatically after construction, and
-whenever any property is set. It should return <code>NULL</code> if the object is
-valid, and otherwise return a character vector of problems.</p></dd>
+<dd><p>A function taking a single argument, the object to validate.</p>
+<p>The job of a validator is to determine whether the object is valid,
+i.e. if the current property values form an allowed combination. The
+types of the properties are always automatically validator so the job of
+the validator is to verify that the value of individual properties is
+ok (i.e. maybe a property should have length 1, or should always be
+positive), or that the combination of values of multiple properties is ok.
+It is called after construction and whenever any property is set.</p>
+<p>The validator should return <code>NULL</code> if the object is valid. If not, it
+should return a character vector where each element describes a single
+problem. It's generally helpful to report as many problems at once
+as possible.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -150,14 +158,15 @@ of the given class.</p>
 <span class="r-in">  <span class="op">}</span></span>
 <span class="r-in"><span class="op">)</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">15</span><span class="op">)</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : Invalid &lt;range&gt; object:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object is invalid:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - @start must be a single number</span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">20</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : Invalid &lt;range&gt; object:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object is invalid:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - @end must be great than or equal to @start</span>
 <span class="r-in"><span class="co"># Type validation is performed automatically in R7</span></span>
 <span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"hello"</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt;@start must be of class &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object properties are invalid:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> - &lt;range&gt;@start must be of class &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
 </code></pre></div>
     </div>
   </div>
