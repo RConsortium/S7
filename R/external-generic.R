@@ -9,11 +9,11 @@
 #' but your package doesn't use anything else from knitr.
 #'
 #' Instead, you can add the package to `Suggests` and use
-#' `new_external_generic()` along with `method_register()` to declare an
-#' "external" generic. `new_external_generic()` defines the "shape" of the
+#' `new_external_generic()` along with `external_methods_register()` to declare
+#' an "external" generic. `new_external_generic()` defines the "shape" of the
 #' generic without requiring the other package be available. You then call
-#' `method_register()` in `.onLoad()` to dynamically register the methods
-#' when the other package is loaded.
+#' `external_methods_register()` in `.onLoad()` to dynamically register the
+#' methods when the other package is loaded.
 #'
 #' @param package Package the generic is defined in.
 #' @param name Name of generic, as a string.
@@ -50,7 +50,7 @@ is_external_generic <- function(x) {
 #' @importFrom utils getFromNamespace packageName
 #' @rdname new_external_generic
 #' @export
-method_register <- function() {
+external_methods_register <- function() {
   package <- packageName(parent.frame())
   tbl <- external_methods_get(package)
 

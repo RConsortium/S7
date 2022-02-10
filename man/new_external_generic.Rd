@@ -2,12 +2,12 @@
 % Please edit documentation in R/external-generic.R
 \name{new_external_generic}
 \alias{new_external_generic}
-\alias{method_register}
+\alias{external_methods_register}
 \title{Generics in suggested packages}
 \usage{
 new_external_generic(package, name, version = NULL)
 
-method_register()
+external_methods_register()
 }
 \arguments{
 \item{package}{Package the generic is defined in.}
@@ -26,9 +26,9 @@ not always desired. For example, you might want to register a
 but your package doesn't use anything else from knitr.
 
 Instead, you can add the package to \code{Suggests} and use
-\code{new_external_generic()} along with \code{method_register()} to declare an
-"external" generic. \code{new_external_generic()} defines the "shape" of the
+\code{new_external_generic()} along with \code{external_methods_register()} to declare
+an "external" generic. \code{new_external_generic()} defines the "shape" of the
 generic without requiring the other package be available. You then call
-\code{method_register()} in \code{.onLoad()} to dynamically register the methods
-when the other package is loaded.
+\code{external_methods_register()} in \code{.onLoad()} to dynamically register the
+methods when the other package is loaded.
 }

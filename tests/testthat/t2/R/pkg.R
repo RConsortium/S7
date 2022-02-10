@@ -5,5 +5,5 @@ bar <- R7::new_external_generic("t0", "bar")
 R7::method(bar, "character") <- function(x) "bar"
 
 .onLoad <- function(libname, pkgname) {
-  R7::method_register()
+  R7::external_methods_register()
 }
