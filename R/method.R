@@ -63,23 +63,27 @@ register_method <- function(generic, signature, method, package = packageName(pa
       register_method(generic, signature, method)
     }
   } else if (is_s3_generic(generic)) {
-    generic_name <- attr(generic, "name")
-
-    if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
-      msg <- sprintf(
-        "When registering methods for S3 generic %s(), signature be a single R7 class",
-        generic_name
-      )
-      stop(msg, call. = FALSE)
-    }
-    class <- signature[[1]]@name
-    registerS3method(generic_name, class, method, envir = parent.frame())
+    register_s3_method(generic, signature, method)
   } else {
     check_method(method, signature, generic)
     register_r7_method(generic, signature, method)
   }
 
   invisible()
+}
+
+register_s3_method <- function(generic, signature, method) {
+  generic_name <- attr(generic, "name")
+
+  if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
+    msg <- sprintf(
+      "When registering methods for S3 generic %s(), signature be a single R7 class",
+      generic_name
+    )
+    stop(msg, call. = FALSE)
+  }
+  class <- signature[[1]]@name
+  registerS3method(generic_name, class, method, envir = parent.frame())
 }
 
 register_r7_method <- function(generic, signature, method) {
