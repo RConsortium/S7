@@ -175,3 +175,37 @@ has_call <- function(x, name) {
   }
   FALSE
 }
+
+
+methods <- function(generic) {
+  methods_rec(generic@methods, character())
+}
+methods_rec <- function(x, signature) {
+  if (!is.environment(x)) {
+    return(x)
+  }
+
+  # Recursively collapse environments to a list
+  methods <- lapply(names(x), function(class) methods_rec(x[[class]], c(signature, class)))
+  unlist(methods, recursive = FALSE)
+}
+
+generic_add_method <- function(generic, signature, method) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, r7_class_name)
+
+  for (i in seq_along(chr_signature)) {
+    class_name <- chr_signature[[i]]
+    if (i != length(chr_signature)) {
+      # Iterated dispatch, so create another nested environment
+      tbl <- p_tbl[[class_name]]
+      if (is.null(tbl)) {
+        tbl <- new.env(hash = TRUE, parent = emptyenv())
+        p_tbl[[class_name]] <- tbl
+      }
+      p_tbl <- tbl
+    } else {
+      p_tbl[[class_name]] <- method
+    }
+  }
+}

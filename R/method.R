@@ -83,49 +83,31 @@ register_method <- function(generic, signature, method, package = packageName(pa
 }
 
 register_r7_method <- function(generic, signature, method) {
-  method <- R7_method(method, generic = generic, signature = signature)
+  # Flatten out unions to individual signatures
+  signatures <- flatten_signature(signature)
 
-  p_tbl <- generic@methods
-
-  for (i in seq_along(signature)) {
-    # Register one method for each class in union
-    if (is_union(signature[[i]])) {
-      this_sig <- signature
-      for (class in signature[[i]]@classes) {
-        this_sig[[i]] <- class
-        register_r7_method(generic, this_sig, method)
-      }
-      return(invisible())
-    }
-
-    class_name <- r7_class_name(signature[[i]])
-    if (i != length(signature)) {
-      # Iterated dispatch, so create another nested environment
-      tbl <- p_tbl[[class_name]]
-      if (is.null(tbl)) {
-        tbl <- new.env(hash = TRUE, parent = emptyenv())
-        p_tbl[[class_name]] <- tbl
-      }
-      p_tbl <- tbl
-    } else {
-      p_tbl[[class_name]] <- method
-    }
+  # Register each method
+  for (signature in signatures) {
+    method <- R7_method(method, generic = generic, signature = signature)
+    generic_add_method(generic, signature, method)
   }
 
   invisible()
 }
 
-methods <- function(generic) {
-  methods_rec(generic@methods, character())
-}
-methods_rec <- function(x, signature) {
-  if (!is.environment(x)) {
-    return(x)
-  }
+flatten_signature <- function(signature) {
+  # Unpack unions
+  sig_is_union <- vlapply(signature, is_union)
+  signature[sig_is_union] <- lapply(signature[sig_is_union], prop, "classes")
+  signature[!sig_is_union] <- lapply(signature[!sig_is_union], list)
 
-  # Recursively collapse environments to a list
-  methods <- lapply(names(x), function(class) methods_rec(x[[class]], c(signature, class)))
-  unlist(methods, recursive = FALSE)
+  # Create grid of indices
+  indx <- lapply(signature, seq_along)
+  comb <- as.matrix(rev(do.call("expand.grid", rev(indx))))
+  colnames(comb) <- NULL
+
+  rows <- lapply(1:nrow(comb), function(i) comb[i, ])
+  lapply(rows, function(row) Map("[[", signature, row))
 }
 
 as_generic <- function(x) {
