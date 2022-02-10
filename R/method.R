@@ -45,11 +45,12 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
-  register_method(generic, signature, value)
+  package <- packageName(parent.frame())
+  register_method(generic, signature, value, package = package)
   invisible(generic)
 }
 
-register_method <- function(generic, signature, method, package = packageName(parent.frame())) {
+register_method <- function(generic, signature, method, package = NULL) {
   signature <- as_signature(signature)
   generic <- as_generic(generic)
 
