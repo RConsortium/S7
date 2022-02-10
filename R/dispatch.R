@@ -1,6 +1,6 @@
 #' Retrieve a method for an R7 generic
 #'
-#' `method()` takes a generic and signature and retrieves the correspoding
+#' `method()` takes a generic and signature and retrieves the corresponding
 #' method. This is rarely needed because most of the time you'll rely on the
 #' the generic, via [method_call()], to find and call the method for you.
 #' However, this introspection is useful if you want to see the implementation
