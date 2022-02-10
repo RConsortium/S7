@@ -34,7 +34,7 @@ you want to control which properties can be set on constructor.}
 
 The job of a validator is to determine whether the object is valid,
 i.e. if the current property values form an allowed combination. The
-types of the properties are always automatically validator so the job of
+types of the properties are always automatically validated so the job of
 the validator is to verify that the value of individual properties is
 ok (i.e. maybe a property should have length 1, or should always be
 positive), or that the combination of values of multiple properties is ok.
