@@ -48,7 +48,7 @@ error if the property doesn't exist for that object.
 rather than throwing an error.
 \item \verb{prop<-} and \verb{@<-} set a new value for the given property.
 \item \code{props()} returns a list of all properties
-\item \verb{props<-} sets multiple properties at once, validating after all are set
+\item \verb{props<-} sets multiple properties at once, validating once after all are set.
 \item \code{prop_names()} returns the names of the properties
 \item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
 }

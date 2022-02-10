@@ -69,7 +69,8 @@ rightwards <- function(r, x) {
 }
 rightwards(r, 10)
 
-# Alternatively, you can set multiple properties at once using props<-
+# Alternatively, you can set multiple properties at once using props<-,
+# which validates once at the end
 rightwards <- function(r, x) {
   props(r) <- list(start = r@start + x, end = r@end + x)
   r
