@@ -1,0 +1,42 @@
+# validate() validates object and type recursively
+
+    Code
+      obj <- klass(1, -1)
+      attr(obj, "x") <- -1
+      validate(obj)
+    Error <simpleError>
+      <klass> object is invalid:
+      - x must be positive
+    Code
+      attr(obj, "x") <- "y"
+      validate(obj)
+    Error <simpleError>
+      <klass> object properties are invalid:
+      - <klass>@x must be of class <double>, not <character>
+
+---
+
+    Code
+      obj <- klass2(1, -1, 1)
+      attr(obj, "x") <- -1
+      validate(obj)
+    Error <simpleError>
+      <klass2> object is invalid:
+      - x must be positive
+    Code
+      attr(obj, "x") <- "y"
+      attr(obj, "z") <- "y"
+      validate(obj)
+    Error <simpleError>
+      <klass2> object properties are invalid:
+      - <klass2>@x must be of class <double>, not <character>
+      - <klass2>@z must be of class <double>, not <character>
+
+# validate checks base type
+
+    Code
+      validate(x)
+    Error <simpleError>
+      <Double> object is invalid:
+      - Underlying data must be <double> not <character>
+

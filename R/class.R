@@ -50,10 +50,22 @@ is_class <- function(x) inherits(x, "R7_class")
 #'
 #' @param constructor The constructor function. This is optional, unless
 #'   you want to control which properties can be set on constructor.
-#' @param validator A function used to determine whether or not an object
-#'   is valid. This is called automatically after construction, and
-#'   whenever any property is set. It should return `NULL` if the object is
-#'   valid, and otherwise return a character vector of problems.
+#' @param validator A function taking a single argument, the object to validate.
+#'
+#'   The job of a validator is to determine whether the object is valid,
+#'   i.e. if the current property values form an allowed combination. The
+#'   types of the properties are always automatically validated so the job of
+#'   the validator is to verify that the value of individual properties is
+#'   ok (i.e. maybe a property should have length 1, or should always be
+#'   positive), or that the combination of values of multiple properties is ok.
+#'   It is called after construction and whenever any property is set.
+#'
+#'   The validator should return `NULL` if the object is valid. If not, it
+#'   should return a character vector where each element describes a single
+#'   problem. It's generally helpful to report as many problems at once
+#'   as possible.
+#'
+#'   See `validate()` for more details and examples.
 #' @param properties A list specifying the properties (data) that
 #'   every object of the class will possess. Each property can either be
 #'   a named string (specifying the class), or a call to [new_property()],
@@ -76,8 +88,11 @@ is_class <- function(x) inherits(x, "R7_class")
 #' r@end <- 40
 #' r@end
 #'
-#' # Use a validator to ensure that start and end are both length 1,
-#' # and that start is < end
+#' # R7 automatically ensures that properties are of the declared types:
+#' try(range(start = "hello", end = 20))
+#'
+#' # But we might also want to use a validator to ensure that start and end
+#' # are length 1, and that start is < end
 #' range <- new_class("range",
 #'   properties = list(
 #'     start = "numeric",
@@ -95,8 +110,9 @@ is_class <- function(x) inherits(x, "R7_class")
 #' )
 #' try(range(start = c(10, 15), end = 20))
 #' try(range(start = 20, end = 10))
-#' # Type validation is performed automatically in R7
-#' try(range(start = "hello", end = 20))
+#'
+#' r <- range(start = 10, end = 20)
+#' try(r@start <- 25)
 new_class <- function(
     name,
     parent = R7_object,

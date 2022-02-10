@@ -56,11 +56,22 @@
 #' hadley@firstName
 #' hadley@first_name
 new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
+  check_name(name)
+
   class <- as_class(class)
   out <- list(name = name, class = class, getter = getter, setter = setter)
   class(out) <- "R7_property"
 
   out
+}
+
+check_name <- function(name) {
+  if (length(name) != 1 || !is.character(name)) {
+    stop("`name` must be a single string", call. = FALSE)
+  }
+  if (is.na(name) || name == "") {
+    stop("`name` must not be \"\" or NA", call. = FALSE)
+  }
 }
 
 is_property <- function(x) inherits(x, "R7_property")
@@ -80,14 +91,16 @@ str.R7_property <- function(object, ..., nest.lev = 0) {
 #'   rather than throwing an error.
 #' - `prop<-` and `@<-` set a new value for the given property.
 #' - `props()` returns a list of all properties
+#' - `props<-` sets multiple properties at once, validating once after all are set.
 #' - `prop_names()` returns the names of the properties
 #' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
 #'
 #' @param object An object from a R7 class
 #' @param name The name of the parameter as a character. Partial matching
 #'   is not performed.
-#' @param value A replacement value for the parameter. The object is
-#'   automatically checked for validity after the replacement is done.
+#' @param value For `prop<-`, a replacement value for the property;
+#'   for `props<-`, a named list of values. The object is automatically
+#'   checked for validity after the replacement is done.
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(
@@ -108,7 +121,7 @@ prop <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     stop("`object` is not an <R7_object>")
   } else if (!prop_exists(object, name)) {
-    stop(sprintf("Can't find property %s@%s", obj_desc(object), name))
+    stop(prop_error_unknown(object, name))
   } else {
     prop_val(object, name)
   }
@@ -174,6 +187,19 @@ props <- function(object) {
 
 #' @rdname prop
 #' @export
+`props<-` <- function(object, value) {
+  stopifnot(is.list(value))
+
+  for (name in names(value)) {
+    prop(object, name, check = FALSE) <- value[[name]]
+  }
+  validate(object)
+
+  object
+}
+
+#' @rdname prop
+#' @export
 prop_exists <- function(object, name) {
   name %in% prop_names(object)
 }
@@ -188,28 +214,41 @@ prop_exists <- function(object, name) {
 
   function(object, name, check = TRUE, value) {
     prop <- prop_obj(object, name)
+    if (is.null(prop)) {
+      stop(prop_error_unknown(object, name))
+    }
+
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
       on.exit(setter_property <<- NULL, add = TRUE)
       object <- prop$setter(object, value)
     } else {
       if (isTRUE(check) && !class_inherits(value, prop$class)) {
-        stop(sprintf("%s@%s must be of class %s, not %s",
-          obj_desc(object), name,
-          class_desc(prop$class),
-          obj_desc(value)
-        ), call. = FALSE)
+        stop(prop_error_type(object, name, prop$class, value), call. = FALSE)
       }
       attr(object, name) <- value
     }
 
     if (isTRUE(check)) {
-      validate(object)
+      validate(object, properties = FALSE)
     }
 
     invisible(object)
   }
 })
+
+prop_error_unknown <- function(object, prop_name) {
+  sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
+}
+
+prop_error_type <- function(object, prop_name, expected, actual) {
+  sprintf("%s@%s must be of class %s, not %s",
+    obj_desc(object),
+    prop_name,
+    class_desc(expected),
+    obj_desc(actual)
+  )
+}
 
 #' @rdname prop
 #' @usage object@name
@@ -237,16 +276,29 @@ as_properties <- function(x) {
     return(list())
   }
 
-  named_class <- !vlapply(x, is_property) & has_names(x)
+  if (!is.list(x)) {
+    stop("`properties` must be a list", call. = FALSE)
+  }
 
-  x[named_class] <- mapply(new_property,
-    name = names(x)[named_class],
-    class = x[named_class],
-    USE.NAMES = TRUE,
-    SIMPLIFY = FALSE
-  )
+  out <- Map(as_property, x, names2(x), seq_along(x))
+  names(out) <- vcapply(out, function(x) x[["name"]])
 
-  names(x)[!named_class] <- vcapply(x[!named_class], function(x) x[["name"]])
+  if (anyDuplicated(names(out))) {
+    stop("`properties` names must be unique", call. = FALSE)
+  }
 
-  x
+  out
+}
+
+as_property <- function(x, name, i) {
+  if (is_property(x)) {
+    x
+  } else {
+    if (name == "") {
+      msg <- sprintf("`property[[%i]]` is missing a name", i)
+      stop(msg, call. = FALSE)
+    }
+    class <- as_class(x, arg = sprintf("property$%s", name))
+    new_property(name, class = x)
+  }
 }

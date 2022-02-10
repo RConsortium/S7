@@ -149,7 +149,7 @@ test_that("next_method works for single dispatch", {
   foo <- new_generic("foo", dispatch_args = "x")
 
   method(foo, text) <- function(x, ...) {
-    x@.data <- paste0("foo-", r7_data(x))
+    r7_data(x) <- paste0("foo-", r7_data(x))
   }
   method(foo, "character") <- function(x, ...) {
     as.character(x)

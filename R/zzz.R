@@ -13,7 +13,16 @@ R7_object <- new_class(
 )
 
 new_base_class <- function(name) {
-  R7_class(name = name, constructor = function(.data) new_object(.data))
+  new_class(
+    name = name,
+    constructor = function(.data) new_object(.data),
+    validator = function(object) {
+      data <- unclass(object)
+      if (!name %in% .class2(data)) {
+        sprintf("Underlying data must be <%s> not %s", name, obj_desc(data))
+      }
+    }
+  )
 }
 
 # Define simple base types with constructors. See .onLoad() for more

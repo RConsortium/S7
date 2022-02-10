@@ -1,3 +1,12 @@
+# new_object: reports all property type errors
+
+    Code
+      range(start = "x", end = "y")
+    Error <simpleError>
+      <range> object properties are invalid:
+      - <range>@start must be of class <integer> or <double>, not <character>
+      - <range>@end must be of class <integer> or <double>, not <character>
+
 # new_object: checks are arguments are properties
 
     Code
