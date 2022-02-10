@@ -80,7 +80,7 @@ str.R7_property <- function(object, ..., nest.lev = 0) {
 #'   rather than throwing an error.
 #' - `prop<-` and `@<-` set a new value for the given property.
 #' - `props()` returns a list of all properties
-#' - `props<-` sets multiple properties at once, validating after all are set
+#' - `props<-` sets multiple properties at once, validating once after all are set.
 #' - `prop_names()` returns the names of the properties
 #' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
 #'
