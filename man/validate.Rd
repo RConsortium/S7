@@ -21,13 +21,15 @@ executing the validator.}
 \item{fun}{A function to call on the object before validation.}
 }
 \description{
-\code{validate()} calls the validator of an R7 object. This is done automatically
-when creating new objects (at the end of \code{\link[=new_object]{new_object()}}) and when setting
-any property with \link{prop<-}.
+\code{validate()} ensures that an R7 object is valid by calling the \code{validator}
+provided in \code{\link[=new_class]{new_class()}}. This is done automatically when constructing new
+objects and when modifying properties.
 
 \code{valid_eventually()} disables validation, modifies the object, then
 revalidates. This is useful when a sequence of operations would otherwise
-lead an object to be temporarily invalid.
+lead an object to be temporarily invalid, or when repeated property
+modification causes a performance bottleneck because the validator is
+relatively expensive.
 
 \code{valid_implicitly()} does the same but does not validate the object at the
 end. It should only be used rarely, and in performance critical code where

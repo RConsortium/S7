@@ -1,13 +1,15 @@
 #' Validate an R7 object
 #'
 #' @description
-#' `validate()` calls the validator of an R7 object. This is done automatically
-#' when creating new objects (at the end of [new_object()]) and when setting
-#' any property with [prop<-].
+#' `validate()` ensures that an R7 object is valid by calling the `validator`
+#' provided in [new_class()]. This is done automatically when constructing new
+#' objects and when modifying properties.
 #'
 #' `valid_eventually()` disables validation, modifies the object, then
 #' revalidates. This is useful when a sequence of operations would otherwise
-#' lead an object to be temporarily invalid.
+#' lead an object to be temporarily invalid, or when repeated property
+#' modification causes a performance bottleneck because the validator is
+#' relatively expensive.
 #'
 #' `valid_implicitly()` does the same but does not validate the object at the
 #' end. It should only be used rarely, and in performance critical code where
@@ -68,22 +70,24 @@ validate <- function(object, properties = TRUE) {
   # is likely to return spurious errors
   if (properties) {
     errors <- validate_properties(object, class)
-  } else {
-    errors <- character()
+    if (length(errors) > 0) {
+      bullets <- paste0("- ", errors, collapse = "\n")
+      msg <- sprintf("%s object properties are invalid:\n%s", obj_desc(object), bullets)
+      stop(msg, call. = FALSE)
+    }
   }
 
   # Next, recursively validate the object
-  if (length(errors) == 0) {
-    while(!is.null(class) && is_class(class)) {
-      errors <- c(errors, class@validator(object))
-      class <- prop_safely(class, "parent")
-    }
+  errors <- character()
+  while(!is.null(class) && is_class(class)) {
+    errors <- c(errors, class@validator(object))
+    class <- prop_safely(class, "parent")
   }
 
   # If needed, report errors
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
-    msg <- sprintf("Invalid %s object:\n%s", obj_desc(object), bullets)
+    msg <- sprintf("%s object is invalid:\n%s", obj_desc(object), bullets)
     stop(msg, call. = FALSE)
   }
 
@@ -128,5 +132,6 @@ valid_implicitly <- function(object, fun) {
   attr(object, ".should_validate") <- FALSE
   out <- fun(object)
   attr(out, ".should_validate") <- old
-  invisible(out)
+
+  out
 }

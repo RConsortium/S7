@@ -19,7 +19,7 @@ new_base_class <- function(name) {
     validator = function(object) {
       data <- unclass(object)
       if (!name %in% .class2(data)) {
-        sprintf("`.data` must be <%s> not %s", name, obj_desc(data))
+        sprintf("Underlying data must be <%s> not %s", name, obj_desc(data))
       }
     }
   )

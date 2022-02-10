@@ -39,6 +39,6 @@
 
 # constructor types check their values
 
-    Invalid <integer> object:
-    - `.data` must be <integer> not <character>
+    <integer> object is invalid:
+    - Underlying data must be <integer> not <character>
 

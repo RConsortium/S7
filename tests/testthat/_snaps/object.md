@@ -3,7 +3,7 @@
     Code
       range(start = "x", end = "y")
     Error <simpleError>
-      Invalid <range> object:
+      <range> object properties are invalid:
       - <range>@start must be of class <integer> or <double>, not <character>
       - <range>@end must be of class <integer> or <double>, not <character>
 
