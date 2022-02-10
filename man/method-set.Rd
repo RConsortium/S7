@@ -35,6 +35,13 @@ given \code{signature}.}
 A generic defines the interface of a function. Once you have created a
 generic with \code{\link[=new_generic]{new_generic()}}, you provide implementations for specific
 signatures by registering methods with \verb{method<-}
+
+The goal is for \verb{method<-} to be the single function you need when working
+with R7 generics or R7 classes. This means that as well as registering
+methods for R7 classes on R7 generics, you can also register methods for
+R7 classes on S3 or S4 generics, and S3 or S4 classes for R7 generics.
+But this is not a general method registration function: at least one of
+\code{generic} and \code{signature} needs to be from R7.
 }
 \examples{
 # Create a generic

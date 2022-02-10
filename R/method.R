@@ -1,8 +1,16 @@
 #' Register a R7 method for a generic
 #'
+#' @description
 #' A generic defines the interface of a function. Once you have created a
 #' generic with [new_generic()], you provide implementations for specific
 #' signatures by registering methods with `method<-`
+#'
+#' The goal is for `method<-` to be the single function you need when working
+#' with R7 generics or R7 classes. This means that as well as registering
+#' methods for R7 classes on R7 generics, you can also register methods for
+#' R7 classes on S3 or S4 generics, and S3 or S4 classes for R7 generics.
+#' But this is not a general method registration function: at least one of
+#' `generic` and `signature` needs to be from R7.
 #'
 #' @param generic A generic function, either created by [new_generic()],
 #'   [new_external_generic()], or an existing S3 generic.
@@ -87,19 +95,20 @@ register_r7_method <- function(generic, signature, method) {
         this_sig[[i]] <- class
         register_r7_method(generic, this_sig, method)
       }
-      return(invisible(generic))
+      return(invisible())
     }
 
     class_name <- r7_class_name(signature[[i]])
-    if (i == length(signature)) {
-      p_tbl[[class_name]] <- method
-    } else {
+    if (i != length(signature)) {
+      # Iterated dispatch, so create another nested environment
       tbl <- p_tbl[[class_name]]
       if (is.null(tbl)) {
         tbl <- new.env(hash = TRUE, parent = emptyenv())
         p_tbl[[class_name]] <- tbl
       }
       p_tbl <- tbl
+    } else {
+      p_tbl[[class_name]] <- method
     }
   }
 
@@ -166,7 +175,7 @@ check_method <- function(method, signature, generic) {
     stop(sprintf("%s must be a function", method_name), call. = FALSE)
   }
 
-  generic_formals <- suppressWarnings(formals(args(generic)))
+  generic_formals <- formals(args(generic))
   method_formals <- formals(method)
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
