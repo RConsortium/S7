@@ -1,42 +1,3 @@
-#' @importFrom utils modifyList
-R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
-
-  check_name(name)
-
-  parent <- as_class(parent)
-  if (is_union(parent) || isS4(parent)) {
-    not <- if (is_union(parent)) "a class union" else "an S4 class"
-     stop(
-       sprintf(
-         "`parent` must be an R7 class, S3 class, or base type, not %s.", not),
-       call. = FALSE
-     )
-  }
-
-  # Combine properties from parent, overriding as needed
-  properties <- modifyList(
-    attr(parent, "properties", exact = TRUE) %||% list(),
-    as_properties(properties)
-  )
-
-  if (is.null(constructor)) {
-    constructor <- new_constructor(parent, properties)
-  }
-
-  object <- constructor
-  attr(object, "name") <- name
-  attr(object, "parent") <- parent
-  attr(object, "properties") <- properties
-  attr(object, "constructor") <- constructor
-  attr(object, "validator") <- validator
-  class(object) <- c("R7_class", "R7_object")
-
-  global_variables(names(properties))
-  object
-}
-
-is_class <- function(x) inherits(x, "R7_class")
-
 #' Create a new R7 class
 #'
 #' A class specifies the properties (data) that each of its objects will
@@ -115,6 +76,7 @@ is_class <- function(x) inherits(x, "R7_class")
 #'
 #' r <- range(start = 10, end = 20)
 #' try(r@start <- 25)
+#' @importFrom utils modifyList
 new_class <- function(
     name,
     parent = R7_object,
@@ -122,14 +84,41 @@ new_class <- function(
     constructor = NULL,
     validator = function(x) NULL) {
 
-  R7_class(
-    name = name,
-    parent = parent,
-    constructor = constructor,
-    validator = validator,
-    properties = properties
+  check_name(name)
+
+  parent <- as_class(parent)
+  if (is_union(parent) || isS4(parent)) {
+    not <- if (is_union(parent)) "a class union" else "an S4 class"
+     stop(
+       sprintf(
+         "`parent` must be an R7 class, S3 class, or base type, not %s.", not),
+       call. = FALSE
+     )
+  }
+
+  # Combine properties from parent, overriding as needed
+  properties <- modifyList(
+    attr(parent, "properties", exact = TRUE) %||% list(),
+    as_properties(properties)
   )
+
+  if (is.null(constructor)) {
+    constructor <- new_constructor(parent, properties)
+  }
+
+  object <- constructor
+  attr(object, "name") <- name
+  attr(object, "parent") <- parent
+  attr(object, "properties") <- properties
+  attr(object, "constructor") <- constructor
+  attr(object, "validator") <- validator
+  class(object) <- c("R7_class", "R7_object")
+
+  global_variables(names(properties))
+  object
 }
+
+is_class <- function(x) inherits(x, "R7_class")
 
 #' Retrieve all of the class names for a class
 #'
