@@ -22,7 +22,12 @@ new_base_class <- function(name) {
 
   new_class(
     name = name,
-    constructor = function(.data = default) new_object(.data),
+    constructor = function(.data) {
+      if (missing(.data)) {
+        .data <- default
+      }
+      new_object(.data)
+    },
     validator = function(object) {
       if (!is.type(object)) {
         sprintf("Underlying data must be <%s> not %s", name, obj_desc(data))

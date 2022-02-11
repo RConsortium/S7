@@ -43,17 +43,10 @@ test_that("new_class() checks its inputs", {
 })
 
 test_that("classes can inherit from base types", {
-  types <- c("logical", "integer", "double", "complex", "character", "raw", "list")
-  for (type in types) {
-    f <- match.fun(type)
-    foo <- new_class("foo", parent = type, constructor = function(x = f()) new_object(x))
-    obj <- foo()
-    expect_equal(typeof(r7_data(obj)), type)
+  for (class in base_classes) {
+    foo <- new_class("foo", parent = class)
+    expect_error(foo(), NA)
   }
-
-  foo <- new_class("foo", parent = "function", constructor = function(x = function() NULL, ...) new_object(x))
-  obj <- foo()
-  expect_equal(typeof(r7_data(obj)), "closure")
 })
 
 test_that("classes can't inherit from S4 or class unions", {
