@@ -10,15 +10,15 @@
 # base unions print as expected
 
     Code
-      base_classes$numeric
+      base_unions
     Output
+      $numeric
       <R7_union>: <integer> or <double>
-    Code
-      base_classes$atomic
-    Output
+      
+      $atomic
       <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, or <raw>
-    Code
-      base_classes$vector
-    Output
+      
+      $vector
       <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
+      
 

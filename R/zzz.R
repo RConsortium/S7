@@ -13,19 +13,25 @@ R7_object <- new_class(
 )
 
 new_base_class <- function(name) {
+  default <- switch(name,
+    "function" = function() {},
+    getExportedValue("base", name)()
+  )
+
+  is.type <- getExportedValue("base", paste0("is.", name))
+
   new_class(
     name = name,
-    constructor = function(.data) new_object(.data),
+    constructor = function(.data = default) new_object(.data),
     validator = function(object) {
-      data <- unclass(object)
-      if (!name %in% .class2(data)) {
+      if (!is.type(object)) {
         sprintf("Underlying data must be <%s> not %s", name, obj_desc(data))
       }
     }
   )
 }
 
-# Define simple base types with constructors. See .onLoad() for more
+# Define simple base types with constructors.
 base_types <- setNames(, c(
   "logical", "integer", "double", "complex", "character", "raw",
   "list", "expression",
@@ -33,6 +39,9 @@ base_types <- setNames(, c(
 ))
 base_classes <- lapply(base_types, new_base_class)
 base_constructors <- lapply(base_types, get)
+
+# See .onLoad() for definition
+base_unions <- list()
 
 R7_generic <- new_class(
   name = "R7_generic",
@@ -128,8 +137,7 @@ global_variables(c("name", "parent", "properties", "constructor", "validator"))
 }
 
 .onLoad <- function(...) {
-  base_classes$`NULL` <<- new_base_class("NULL")
-  base_classes$numeric <<- new_union("integer", "double")
-  base_classes$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
-  base_classes$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
+  base_unions$numeric <<- new_union("integer", "double")
+  base_unions$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
+  base_unions$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
 }

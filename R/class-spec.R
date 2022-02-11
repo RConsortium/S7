@@ -39,6 +39,8 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   } else if (is.character(x) && length(x) == 1) {
     if (x %in% names(base_classes)) {
       base_classes[[x]]
+    } else if (x %in% names(base_unions)) {
+      base_unions[[x]]
     } else {
       stop(sprintf("%s. No base classes are called '%s'", error_base, x), call. = FALSE)
     }
