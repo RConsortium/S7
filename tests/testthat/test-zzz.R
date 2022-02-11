@@ -44,8 +44,8 @@ test_that("can construct from S3 and S4 classes", {
   expect_equal(u@classes, list(factor, getClass("s4_union")))
 })
 
-test_that("base_classes can construct by default", {
-  for (class in base_classes) {
-    expect_error(class(), NA)
-  }
+test_that("base classes types check their data", {
+  expect_snapshot(error = TRUE, {
+    base_classes$integer(TRUE)
+  })
 })

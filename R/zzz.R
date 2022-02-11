@@ -30,7 +30,7 @@ new_base_class <- function(name) {
     },
     validator = function(object) {
       if (!is.type(object)) {
-        sprintf("Underlying data must be <%s> not %s", name, obj_desc(data))
+        sprintf("Underlying data must be <%s> not %s", name, obj_desc(unclass(object)))
       }
     }
   )

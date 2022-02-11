@@ -83,8 +83,3 @@
     Error <simpleError>
       `parent` must be an R7 class, S3 class, or base type, not a class union.
 
-# constructor types check their values
-
-    <integer> object is invalid:
-    - Underlying data must be <integer> not <character>
-

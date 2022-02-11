@@ -22,3 +22,11 @@
       <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
       
 
+# base classes types check their data
+
+    Code
+      base_classes$integer(TRUE)
+    Error <simpleError>
+      <integer> object is invalid:
+      - Underlying data must be <integer> not <logical>
+
