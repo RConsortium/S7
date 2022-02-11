@@ -6,11 +6,11 @@ not always desired. For example, you might want to register a
 knitr::knitr_print method to customise how your object is printed in Rmd,
 but your package doesn't use anything else from knitr.
 Instead, you can add the package to Suggests and use
-new_external_generic() along with method_register() to declare an
-&quot;external&quot; generic. new_external_generic() defines the &quot;shape&quot; of the
+new_external_generic() along with external_methods_register() to declare
+an &quot;external&quot; generic. new_external_generic() defines the &quot;shape&quot; of the
 generic without requiring the other package be available. You then call
-method_register() in .onLoad() to dynamically register the methods
-when the other package is loaded."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+external_methods_register() in .onLoad() to dynamically register the
+methods when the other package is loaded."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
@@ -83,24 +83,24 @@ not always desired. For example, you might want to register a
 <code>knitr::knitr_print</code> method to customise how your object is printed in Rmd,
 but your package doesn't use anything else from knitr.</p>
 <p>Instead, you can add the package to <code>Suggests</code> and use
-<code>new_external_generic()</code> along with <code>method_register()</code> to declare an
-"external" generic. <code>new_external_generic()</code> defines the "shape" of the
+<code>new_external_generic()</code> along with <code>external_methods_register()</code> to declare
+an "external" generic. <code>new_external_generic()</code> defines the "shape" of the
 generic without requiring the other package be available. You then call
-<code>method_register()</code> in <code><a href="https://rdrr.io/r/base/ns-hooks.html" class="external-link">.onLoad()</a></code> to dynamically register the methods
-when the other package is loaded.</p>
+<code>external_methods_register()</code> in <code><a href="https://rdrr.io/r/base/ns-hooks.html" class="external-link">.onLoad()</a></code> to dynamically register the
+methods when the other package is loaded.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_external_generic</span><span class="op">(</span><span class="va">package</span>, <span class="va">generic</span>, version <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_external_generic</span><span class="op">(</span><span class="va">package</span>, <span class="va">name</span>, version <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
 
-<span class="fu">method_register</span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<span class="fu">external_methods_register</span><span class="op">(</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>package</dt>
 <dd><p>Package the generic is defined in.</p></dd>
-<dt>generic</dt>
+<dt>name</dt>
 <dd><p>Name of generic, as a string.</p></dd>
 <dt>version</dt>
 <dd><p>An optional version the package must meet for the method to
