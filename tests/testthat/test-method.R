@@ -1,172 +1,94 @@
-test_that("method will fall back to S3 generics if no R7 generic is defined", {
-  expect_equal(
-    method(print, list(text)),
-    base::print.default
-  )
-})
+describe("method registration", {
+  it("adds methods to the generic", {
+    foo <- new_generic("foo", dispatch_args = "x")
+    method(foo, "character") <- function(x) "c"
+    method(foo, "integer") <- function(x) "i"
+    expect_length(methods(foo), 2)
+  })
 
-test_that("method will accept a character vector (#71)", {
-  expect_equal(
-    method(print, "character"),
-    base::print.default
-  )
-})
+  it("adds method for each element of a union", {
+    foo <- new_generic("foo", dispatch_args = "x")
+    method(foo, "numeric") <- function(x) "x"
 
-test_that("method errors on invalid inputs", {
-  expect_snapshot_error(
-    method(print, 1)
-  )
-  expect_snapshot_error(
-    method(print, list(1))
-  )
+    # one method for each union component
+    expect_length(methods(foo), 2)
 
-  expect_snapshot_error(
-    method(print, list(TRUE, FALSE))
-  )
-})
+    # each method has the expected signature
+    expect_equal(method(foo, "integer")@signature, as_signature("integer"))
+    expect_equal(method(foo, "double")@signature, as_signature("double"))
+  })
 
-test_that("method errors if no method is defined for that class", {
-  foo <- new_generic("foo", dispatch_args = "x")
+  it("can register method for external generic from within package", {
+    on.exit(external_methods_reset("R7"), add = TRUE)
 
-  expect_snapshot(error = TRUE, {
-    method(foo, list())
-    method(foo, list("blah"))
+    foo <- new_external_generic("foo", "bar")
+    register_method(foo, "character", function(x, ...) "bar", package = "R7")
+    expect_length(external_methods_get("R7"), 1)
+
+    # and doesn't modify generic
+    expect_s3_class(foo, "R7_external_generic")
+  })
+
+  it("can register method for external generic during development", {
+    bar <- new_class("bar")
+    base_sum <- new_external_generic("base", "sum")
+    register_method(base_sum, bar, function(x, ...) "bar", package = NULL)
+    expect_equal(sum(bar()), "bar")
+  })
+
+  it("can register R7 method for S3 generic", {
+    foo <- new_class("foo")
+    method(sum, foo) <- function(x, ...) "foo"
+    expect_equal(sum(foo()), "foo")
+
+    # and doesn't modify generic
+    expect_equal(sum, base::sum)
+  })
+
+  it("S3 registration requires single R7 class", {
+    foo <- new_class("foo")
+    expect_snapshot(error = TRUE, {
+      method(sum, list(foo, foo)) <- function(x, ...) "foo"
+      method(sum, s3_class("foo")) <- function(x, ...) "foo"
+    })
+  })
+
+  it("checks argument types", {
+    foo <- new_generic("foo", dispatch_args = "x")
+    expect_snapshot(error = TRUE, {
+      x <- 10
+      method(x, "character") <- function(x) ...
+      method(foo, 1) <- function(x) ...
+    })
   })
 })
 
-test_that("methods can be registered for a generic and then called", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  new_method(foo, text, function(x, ...) paste0("foo-", r7_data(x)))
 
-  expect_equal(foo(text("bar")), "foo-bar")
-})
-
-test_that("single inheritance works when searching for methods", {
-  foo2 <- new_generic("foo2", dispatch_args = "x")
-
-  new_method(foo2, "character", function(x, ...) paste0("foo2-", x))
-
-  expect_equal(foo2(text("bar")), "foo2-bar")
-})
-
-test_that("direct multiple dispatch works", {
-  foo3 <- new_generic("foo3", dispatch_args = c("x", "y"))
-  new_method(foo3, list(text, number), function(x, y, ...) paste0(x, y))
-  expect_equal(foo3(text("bar"), number(1)), "bar1")
-})
-
-test_that("inherited multiple dispatch works", {
-  foo4 <- new_generic("foo4", dispatch_args = c("x", "y"))
-  new_method(foo4, list("character", "numeric"), function(x, y, ...) paste0(x, ":", y))
-
-  expect_equal(foo4(text("bar"), number(1)), "bar:1")
-})
-
-test_that("method dispatch works for S3 objects", {
-  foo <- new_generic("foo", dispatch_args = "x")
-  obj <- structure("hi", class = "my_s3")
-  new_method(foo, s3_class("my_s3"), function(x, ...) paste0("foo-", x))
-
-  expect_equal(foo(obj), "foo-hi")
-})
-
-test_that("method dispatch works for S4 objects", {
-  skip_if_not(requireNamespace("methods"))
-
-  foo <- new_generic("foo", dispatch_args = "x")
-
-  Range <- setClass("Range", slots = c(start = "numeric", end = "numeric"))
-  new_method(foo, Range, function(x, ...) paste0("foo-", x@start, "-", x@end))
-
-  obj <- Range(start = 1, end = 10)
-  expect_equal(foo(obj), "foo-1-10")
-})
-
-test_that("new_method works if you use R7 class objects", {
-  foo5 <- new_generic("foo5", dispatch_args = c("x", "y"))
-  new_method(foo5, list(text, number), function(x, y, ...) paste0(x, ":", y))
-
-  expect_equal(foo5(text("bar"), number(1)), "bar:1")
-})
-
-test_that("new_method works if you pass a bare class", {
-  foo6 <- new_generic("foo6", dispatch_args = "x")
-  new_method(foo6, text, function(x, ...) paste0("foo-", x))
-
-  expect_equal(foo6(text("bar")), "foo-bar")
-})
-
-test_that("new_method works if you pass a bare class union", {
-  foo7 <- new_generic("foo7", dispatch_args = "x")
-  new_method(foo7, new_union(text, number), function(x, ...) paste0("foo-", x))
-
-  expect_equal(foo7(text("bar")), "foo-bar")
-  expect_equal(foo7(number(1)), "foo-1")
-
-  # one method for each union component
-  expect_length(methods(foo7), 2)
-  # and methods printed nicely
-  expect_snapshot(foo7)
-})
-
-test_that("next_method works for single dispatch", {
-  foo <- new_generic("foo", dispatch_args = "x")
-
-  new_method(foo, text, function(x, ...) {
-    r7_data(x) <- paste0("foo-", r7_data(x))
-  })
-  new_method(foo, "character", function(x, ...) {
-    as.character(x)
-  })
-
-  expect_equal(foo(text("hi")), "foo-hi")
-})
-
-test_that("next_method works for double dispatch", {
-  foo <- new_generic("foo", dispatch_args = c("x", "y"))
-
-  new_method(foo, list(text, number), function(x, y, ...) {
-    r7_data(x) <- paste0("foo-", r7_data(x), "-", r7_data(y))
-    next_method()(x, y)
-  })
-
-  new_method(foo, list(character, number), function(x, y, ...) {
-    r7_data(y) <- y + 1
-    r7_data(x) <- paste0(r7_data(x), "-", r7_data(y))
-    next_method()(x, y)
-  })
-
-  new_method(foo, list(character, double), function(x, y, ...) {
-    as.character(r7_data(x))
-  })
-
-  expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
-})
-
-test_that("method_compatible returns TRUE if the functions are compatible", {
+test_that("check_method returns TRUE if the functions are compatible", {
   foo <- new_generic("foo", function(x, ...) method_call())
-  expect_true(method_compatible(function(x, ...) x, foo))
+  expect_true(check_method(function(x, ...) x, "character", foo))
   # extra arguments are ignored
-  expect_true(method_compatible(function(x, ..., y) x, foo))
+  expect_true(check_method(function(x, ..., y) x, "character", foo))
 
   foo <- new_generic("foo", function(x) method_call())
-  expect_true(method_compatible(function(x) x, foo))
+  expect_true(check_method(function(x) x, "character", foo))
 })
 
-test_that("method_compatible errors if the functions are not compatible", {
+test_that("check_method errors if the functions are not compatible", {
   expect_snapshot(error = TRUE, {
     foo <- new_generic("foo", dispatch_args = "x")
-    method_compatible(function(y) {}, foo)
-    method_compatible(function(x = "foo") {}, foo)
-    method_compatible(function(x, y, ...) {}, foo)
+    check_method(1, "character", foo)
+    check_method(function(y) {}, "character", foo)
+    check_method(function(x = "foo") {}, "character", foo)
+    check_method(function(x, y, ...) {}, "character", foo)
   })
 })
 
-test_that("method_compatible warn if default arguments don't match", {
+test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
     foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
-    method_compatible(function(x, ..., y = 1) {}, foo)
-    method_compatible(function(x, ..., y = 1, z = 1) {}, foo)
+    check_method(function(x, ..., y = 1) {}, "character", foo)
+    check_method(function(x, ..., y = 1, z = 1) {}, "character", foo)
   })
 })
 

@@ -1,11 +1,9 @@
 foo <- R7::new_external_generic("t1", "foo")
-
-R7::method(foo, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, "-", y)
+R7::method(foo, "character") <- function(x) "foo"
 
 bar <- R7::new_external_generic("t0", "bar")
-
-R7::method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("bar-", x, "-", y)
+R7::method(bar, "character") <- function(x) "bar"
 
 .onLoad <- function(libname, pkgname) {
-  R7::method_register()
+  R7::external_methods_register()
 }

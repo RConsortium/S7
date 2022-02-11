@@ -1,3 +1,22 @@
+test_that("can get and append methods", {
+  on.exit(external_methods_reset("R7"), add = TRUE)
+
+  expect_equal(external_methods_get("R7"), list())
+
+  bar <- new_external_generic("foo", "bar")
+  external_methods_add("R7", bar, list(), function() {})
+  expect_equal(
+    external_methods_get("R7"),
+    list(
+      list(
+        generic = bar,
+        signature = list(),
+        method = function() {}
+      )
+    )
+  )
+})
+
 test_that("new_method works with both hard and soft dependencies", {
   skip_on_os("windows")
   skip_if(quick_test())
@@ -15,14 +34,13 @@ test_that("new_method works with both hard and soft dependencies", {
   })
 
   quick_install(test_path(c("t0", "t1", "t2")))
-
   library("t2")
 
   # t2 has a soft dependency on t1
   library("t1")
-  expect_equal(foo("blah", 1), "foo-blah-1")
+  expect_equal(foo("x"), "foo")
 
   # t2 has a hard dependency on t0
   library("t0")
-  expect_equal(bar("blah", 1), "bar-blah-1")
+  expect_equal(bar("x"), "bar")
 })

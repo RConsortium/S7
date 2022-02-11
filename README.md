@@ -69,8 +69,7 @@ x@middle
 
 # assigning properties verifies the class matches the class of the value
 x@end <- "foo"
-#> Error: <range>@end must be of class <numeric>:
-#> - `value` is of class <character>
+#> Error: <range>@end must be of class <integer> or <double>, not <character>
 
 # assigning properties runs the validator
 x@end <- 0
@@ -80,29 +79,28 @@ x@end <- 0
 # Print methods for both R7_class objects
 object_class(x)
 #> <R7_class>
-#> @name range
-#> @parent <R7_object>
-#> @properties
-#>  $start  <numeric>
-#>  $end    <numeric>
-#>  $length <numeric>
+#> @ name  :  range
+#> @ parent: <R7_object>
+#> @ properties:
+#>  $ start : <integer> or <double>
+#>  $ end   : <integer> or <double>
+#>  $ length: <integer> or <double>
 
 # As well as normal R7_objects
 x
-#> <range> <R7_object>
-#> @start  1
-#> @end    6
-#> @length 5
+#> <range/R7_object>
+#> @ start :  num 1
+#> @ end   :  num 6
+#> @ length:  num 5
 ```
 
 ## Generics and methods
 
 ``` r
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
-
+text <- new_class("text", parent = "character")
 foo <- new_generic("foo", dispatch_args = "x")
-
-method(foo, "text") <- function(x, ...) paste0("foo-", x)
+method(foo, text) <- function(x, ...) paste0("foo-", x)
+#> registered foo(<text>)
 
 foo(text("hi"))
 #> [1] "foo-hi"
@@ -121,13 +119,11 @@ At each level the search iteratively searches along objects class
 vector.
 
 ``` r
-number <- new_class("number", parent = "numeric", constructor = function(x) new_object(.data = x))
-
 bar <- new_generic("bar", dispatch_args = c("x", "y"))
+method(bar, list("character", "double")) <- function(x, y) paste0("foo-", x, ":", y)
+#> registered bar(<character>, <double>)
 
-method(bar, list("character", "numeric")) <- function(x, y, ...) paste0("foo-", x, ":", y)
-
-bar(text("hi"), number(42))
+bar("hi", 42)
 #> [1] "foo-hi:42"
 ```
 
@@ -139,12 +135,13 @@ already been called, then doing a method search with those methods
 excluded. This ensures you cannot call the same method twice.
 
 ``` r
-method(bar, list("text", "number")) <- function(x, y, ...) {
+method(bar, list(text, "double")) <- function(x, y, ...) {
   res <- next_method()(x, y)
   paste0("2 ", res)
 }
+#> registered bar(<text>, <double>)
 
-bar(text("hi"), number(42))
+bar(text("hi"), 42)
 #> [1] "2 foo-hi:42"
 ```
 
@@ -157,7 +154,7 @@ the same as S3.
 ``` r
 subset2 <- new_generic("subset2", dispatch_args = "x")
 
-method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop = FALSE, ...) {
+method(subset2, s3_class("data.frame")) <- function(x, subset = NULL, select = NULL, drop = FALSE) {
   e <- substitute(subset)
   # Unlike S3, R7 creates a frame for the generic, so we need to
   # go one extra level up to get to the user's evaluation environment
@@ -168,6 +165,7 @@ method(subset2, "data.frame") <- function(x, subset = NULL, select = NULL, drop 
   vars <- eval(substitute(select), nl, parent.frame())
   x[r, vars, drop = drop]
 }
+#> registered subset2(<data.frame>)
 
 subset2(mtcars, hp > 200, c(wt, qsec))
 #>                        wt  qsec
@@ -184,19 +182,18 @@ subset2(mtcars, hp > 200, c(wt, qsec))
 
 If you want to define methods for R7 generics defined in another package
 you can use `new_extrenal_generic` to declare the external generic, then
-add `R7::method_register()` to the `.onLoad` function in your package.
-`method_register()` will automatically setup on-load hooks for ‘soft’
-dependencies in `Suggests` so the method will be added when the
-dependency is eventually loaded.
+add `R7::external_methods_register()` to the `.onLoad` function in your
+package. `external_methods_register()` will automatically setup on-load
+hooks for ‘soft’ dependencies in `Suggests` so the method will be added
+when the dependency is eventually loaded.
 
 ``` r
 .onLoad <- function(libname, pkgname) {
-  R7::method_register()
+  R7::external_methods_register()
 }
 
 foo <- new_external_generic("pkg1", "foo")
-
-method(foo, list("text", "numeric")) <- function(x, y, ...) paste0("foo-", x, ": ", y)
+method(foo, "integer") <- function(x) paste0("foo-", x)
 ```
 
 ## Design workflow

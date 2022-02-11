@@ -1,60 +1,146 @@
-#' Retrieve or register an R7 method for a generic
+#' Register a R7 method for a generic
 #'
 #' @description
-#' Generics partition a function into interface (a generic) and implementation
-#' (many methods). `method<-` allows you to register a method, an
-#' implementation for a specified class signature, with a generic.
+#' A generic defines the interface of a function. Once you have created a
+#' generic with [new_generic()], you provide implementations for specific
+#' signatures by registering methods with `method<-`
 #'
-#' `method()` retrieves a method for a given signature. You typically shouldn't
-#' need this function while programming, because calling the generic will
-#' automatically dispatch to the correct method, but it's often useful
-#' interactively in order to see the implementation of a specific method.
+#' The goal is for `method<-` to be the single function you need when working
+#' with R7 generics or R7 classes. This means that as well as registering
+#' methods for R7 classes on R7 generics, you can also register methods for
+#' R7 classes on S3 or S4 generics, and S3 or S4 classes for R7 generics.
+#' But this is not a general method registration function: at least one of
+#' `generic` and `signature` needs to be from R7.
 #'
-#' @param generic A generic function.
-#' @param signature A method signature, a list of R7 class constructors
-#'   (produced by [new_class()]) or names of S3 or S4 classes.
+#' @param generic A generic function, either created by [new_generic()],
+#'   [new_external_generic()], or an existing S3 generic.
+#' @param signature A method signature. For R7 generics that use single
+#'   dispatch, this should be one of the following:
+#'   * An R7 class (created by [new_class()]).
+#'   * An R7 union (created by [new_union()]).
+#'   * An S3 class (created by [s3_class()]).
+#'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
+#'   * A base type specified either with its constructor (`logical`, `integer`,
+#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
+#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
+#'     `"vector"`.
+#'
+#'   For R7 generics that use multiple dispatch, this can be a list of any of
+#'   the above types.
+#'
+#'   For S3 generics, this must be an R7 class.
 #' @param value A function that implements the generic specification for the
-#'   given `signature`. The arguments must be compatible with the generic.
-#' @importFrom utils getS3method
+#'   given `signature`.
 #' @export
 #' @examples
 #' # Create a generic
 #' bizarro <- new_generic("bizarro", dispatch_args = "x")
 #' # Register some methods
-#' method(bizarro, "numeric") <- function(x, ...) rev(x)
-#' method(bizarro, s3_class("factor")) <- function(x, ...) {
-#'   levels(x) <- rev(levels(x))
-#'   x
-#' }
-#' method(bizarro, s3_class("data.frame")) <- function(x, ...) {
+#' method(bizarro, "numeric") <- function(x) rev(x)
+#' method(bizarro, s3_class("data.frame")) <- function(x) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
 #'
 #' # Using a generic calls the methods automatically
-#' bizarro(1)
-#'
-#' # But it can be useful to explicitly retrieve a method in order to
-#' # inspect its implementation
-#' method(bizarro, "double")
-#' method(bizarro, s3_class("factor"))
-method <- function(generic, signature) {
-  # TODO: check that signature doesn't contain any unions
+#' bizarro(head(mtcars))
+`method<-` <- function(generic, signature, value) {
+  package <- packageName(parent.frame())
+  register_method(generic, signature, value, package = package)
+  invisible(generic)
+}
 
+register_method <- function(generic, signature, method, package = NULL) {
   signature <- as_signature(signature)
-  method_impl(generic, signature, ignore = NULL)
+  generic <- as_generic(generic)
+
+  if (is_external_generic(generic)) {
+    if (!is.null(package)) {
+      # method registration within package, so add to lazy registry
+      external_methods_add(package, generic, signature, method)
+    } else {
+      # otherwise find the generic and register
+      generic <- getFromNamespace(generic$name, asNamespace(generic$package))
+      register_method(generic, signature, method)
+    }
+  } else if (is_s3_generic(generic)) {
+    register_s3_method(generic, signature, method)
+  } else {
+    check_method(method, signature, generic)
+    register_r7_method(generic, signature, method)
+  }
+
+  invisible()
 }
 
-methods <- function(generic) {
-  get_all_methods(generic@methods, character())
+register_s3_method <- function(generic, signature, method) {
+  generic_name <- attr(generic, "name")
+
+  if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
+    msg <- sprintf(
+      "When registering methods for S3 generic %s(), signature be a single R7 class",
+      generic_name
+    )
+    stop(msg, call. = FALSE)
+  }
+  class <- signature[[1]]@name
+  registerS3method(generic_name, class, method, envir = parent.frame())
 }
 
-get_all_methods <- function(x, signature) {
-  if(!is.environment(x)) {
+register_r7_method <- function(generic, signature, method) {
+  # Flatten out unions to individual signatures
+  signatures <- flatten_signature(signature)
+
+  # Register each method
+  for (signature in signatures) {
+    method <- R7_method(method, generic = generic, signature = signature)
+    generic_add_method(generic, signature, method)
+  }
+
+  invisible()
+}
+
+flatten_signature <- function(signature) {
+  # Unpack unions
+  sig_is_union <- vlapply(signature, is_union)
+  signature[sig_is_union] <- lapply(signature[sig_is_union], prop, "classes")
+  signature[!sig_is_union] <- lapply(signature[!sig_is_union], list)
+
+  # Create grid of indices
+  indx <- lapply(signature, seq_along)
+  comb <- as.matrix(rev(do.call("expand.grid", rev(indx))))
+  colnames(comb) <- NULL
+
+  rows <- lapply(1:nrow(comb), function(i) comb[i, ])
+  lapply(rows, function(row) Map("[[", signature, row))
+}
+
+as_generic <- function(x) {
+  if (inherits(x, "R7_generic") || is_external_generic(x)) {
     return(x)
   }
 
-  unlist(lapply(names(x), function(class) get_all_methods(x[[class]], c(signature, class))), recursive = FALSE)
+  if (!is.function(x)) {
+    msg <- sprintf("`generic` must be a function, not a %s", obj_desc(x))
+    stop(msg, call. = FALSE)
+  }
+
+  # For now, assume that it's an S3 generic
+  attr(x, "name") <- find_generic_name(x)
+  class(x) <- "R7_S3_generic"
+  x
+}
+is_s3_generic <- function(x) inherits(x, "R7_S3_generic")
+
+find_generic_name <- function(generic) {
+  env <- environment(generic) %||% baseenv()
+  for (nme in names(env)) {
+    if (identical(generic, env[[nme]])) {
+      return(nme)
+    }
+  }
+
+  stop("Can't find name of S3 `generic`", call. = FALSE)
 }
 
 as_signature <- function(signature) {
@@ -68,78 +154,15 @@ as_signature <- function(signature) {
   signature
 }
 
-method_impl <- function(generic, signature, ignore) {
-  out <- .Call(method_, generic, signature, ignore)
-  if (!is.null(out)) {
-    return(out)
+check_method <- function(method, signature, generic) {
+  signature <- as_signature(signature)
+  method_name <- method_name(generic, signature)
+
+  if (!is.function(method)) {
+    stop(sprintf("%s must be a function", method_name), call. = FALSE)
   }
 
-  # If no R7 method is found, see if there are any S3 methods registered
-  if (inherits(generic, "R7_generic")) {
-    args <- generic@dispatch_args
-    generic <- generic@name
-  } else {
-    args <- setdiff(names(formals(generic)), "...")
-    generic <- find_function_name(generic, topenv(environment(generic)))
-  }
-
-  if (length(signature) > 1) {
-    out <- getS3method(generic, s3_class_name(signature[[1]]), optional = TRUE)
-    if (!is.null(out)) {
-      return(out)
-    }
-  }
-
-  # If no method found check if the generic has a default method
-  out <- getS3method(generic, "default", optional = TRUE)
-  if (!is.null(out)) {
-    return(out)
-  }
-
-  method_lookup_error(generic, args, signature)
-}
-
-find_function_name <- function(x, env) {
-  nms <- ls(env, all.names = TRUE, sorted = FALSE)
-  for (name in nms) {
-    if (identical(get0(name, envir = env, mode = "function", inherits = FALSE), x)) {
-      return(name)
-    }
-  }
-  NULL
-}
-
-#' Retrieve the next applicable method after the current one
-#'
-#' @export
-next_method <- function() {
-  current_method <- sys.function(sys.parent(1))
-
-  methods <- list()
-  i <- 1
-  while (!inherits(current_method, "R7_generic")) {
-    methods <- c(methods, current_method)
-    i <- i + 1
-    current_method <- sys.function(sys.parent(i))
-  }
-
-  generic <- current_method
-
-  # Find signature
-  dispatch_on <- setdiff(generic@dispatch_args, "...")
-  vals <- mget(dispatch_on, envir = parent.frame())
-  signature <- lapply(vals, object_class)
-
-  method_impl(generic, signature, ignore = methods)
-}
-
-method_compatible <- function(method, generic) {
-  generic_formals <- suppressWarnings(formals(args(generic)))
-  # This can happen for some primitive functions such as `[`
-  if (length(generic_formals) == 0) {
-    return()
-  }
-
+  generic_formals <- formals(args(generic))
   method_formals <- formals(method)
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
@@ -148,106 +171,56 @@ method_compatible <- function(method, generic) {
   has_dispatch <- length(method_formals) >= n_dispatch &&
     identical(method_args[1:n_dispatch], generic@dispatch_args)
   if (!has_dispatch) {
-    stop("`method` doesn't match generic dispatch arg", call. = FALSE)
+    msg <- sprintf(
+      "%s() dispatches on %s, but %s has arguments %s",
+      generic@name,
+      arg_names(generic@dispatch_args),
+      method_name,
+      arg_names(method_args)
+    )
+    stop(msg, call. = FALSE)
   }
   if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
-    stop("... must immediately follow dispatch args", call. = FALSE)
+    msg <- sprintf(
+      "In %s, `...` must come immediately after dispatch args (%s)",
+      method_name,
+      arg_names(generic@dispatch_args)
+    )
+    stop(msg, call. = FALSE)
   }
   empty_dispatch <- vlapply(method_formals[generic@dispatch_args], identical, quote(expr = ))
   if (any(!empty_dispatch)) {
-    stop("Dispatch arguments must not have default values", call. = FALSE)
+    msg <- sprintf(
+      "In %s, dispatch arguments (%s) must not have default values",
+      method_name,
+      arg_names(generic@dispatch_args)
+    )
+    stop(msg, call. = FALSE)
   }
 
   extra_args <- setdiff(names(generic_formals), c(generic@dispatch_args, "..."))
   for (arg in extra_args) {
     if (!arg %in% method_args) {
-      warning(sprintf("Argument `%s` is missing from method", arg), call. = FALSE)
+      warning(sprintf("%s doesn't have argument `%s`", method_name, arg), call. = FALSE)
     } else if (!identical(generic_formals[[arg]], method_formals[[arg]])) {
-      warning(sprintf("Default value is not the same as the generic\n- Generic: %s = %s\n- Method:  %s = %s", arg, deparse1(generic_formals[[arg]]), arg, deparse1(method_formals[[arg]])), call. = FALSE)
+      msg <- sprintf(
+        paste0(
+          "In %s, default value of `%s` is not the same as the generic\n",
+          "- Generic: %s\n",
+          "- Method:  %s"
+        ),
+        method_name,
+        arg,
+        deparse1(generic_formals[[arg]]),
+        deparse1(method_formals[[arg]])
+      )
+      warning(msg, call. = FALSE)
     }
   }
 
-  TRUE
+  invisible(TRUE)
 }
 
-new_method <- function(generic, signature, method, package = NULL) {
-  signature <- as_signature(signature)
-
-  if (inherits(generic, "R7_external_generic")) {
-    # Get current package, if any
-    if (!is.null(package)) {
-      tbl <- asNamespace(package)[[".__S3MethodsTable__."]]
-      if (is.null(tbl[[".R7_methods"]])) {
-        tbl[[".R7_methods"]] <- list()
-      }
-      tbl[[".R7_methods"]] <- append(tbl[[".R7_methods"]], list(list(generic = generic$generic, package = generic$package, signature = signature, method = method, version = generic$version)))
-
-      return(invisible())
-    }
-    generic <- getFromNamespace(generic$generic, asNamespace(generic$package))
-  }
-
-  if (!is.character(signature) && !inherits(signature, "list")) {
-    signature <- list(signature)
-  }
-
-  generic <- as_generic(generic)
-
-  method_compatible(method, generic)
-
-  if (!inherits(method, "R7_method")) {
-    method <- R7_method(generic, signature, method)
-  }
-
-  if (inherits(generic, "S3_generic")) {
-    class <- s3_class_name(signature[[1]])
-    registerS3method(attr(generic, "name"), class, method, envir = parent.frame())
-    return(invisible(generic))
-  }
-
-  generic_name <- generic@name
-
-  p_tbl <- generic@methods
-
-
-  for (i in seq_along(signature)) {
-    # Register one method for each class in union
-    if (inherits(signature[[i]], "R7_union")) {
-      this_sig <- signature
-      for (class in signature[[i]]@classes) {
-        this_sig[[i]] <- class
-        method <- R7_method(generic, this_sig, method)
-        new_method(generic, this_sig, method, package = package)
-      }
-      return(invisible(generic))
-    }
-
-    class_name <- r7_class_name(signature[[i]])
-    if (i == length(signature)) {
-      p_tbl[[class_name]] <- method
-    } else {
-      tbl <- p_tbl[[class_name]]
-      if (is.null(tbl)) {
-        tbl <- new.env(hash = TRUE, parent = emptyenv())
-        p_tbl[[class_name]] <- tbl
-      }
-      p_tbl <- tbl
-    }
-  }
-
-  invisible(generic)
-}
-
-# Class name when registering an S3 method
-s3_class_name <- function(x) {
-  switch(class_type(x),
-   s3 = class(x),
-   s4 = class(x),
-   r7 = x@name,
-   r7_base = typeof(x),
-   stop("Unsupported")
-  )
-}
 # Class name when registering an R7 method
 r7_class_name <- function(x) {
   switch(class_type(x),
@@ -259,35 +232,6 @@ r7_class_name <- function(x) {
   )
 }
 
-#' @rdname method
-#'
-#' @export
-`method<-` <- function(generic, signature, value) {
-  new_method(generic, signature, value, package = packageName(parent.frame()))
-}
-
-find_generic_name <- function(generic) {
-  env <- environment(generic) %||% baseenv()
-  for (nme in names(env)) {
-    if (identical(generic, env[[nme]])) {
-      return(nme)
-    }
-  }
-}
-
-as_generic <- function(generic) {
-  if (length(generic) == 1 && is.character(generic)) {
-    fun <- match.fun(generic)
-    generic <- fun
-  }
-  if (!inherits(generic, "R7_generic")) {
-    attr(generic, "name") <- find_generic_name(generic)
-    class(generic) <- "S3_generic"
-  }
-
-  generic
-}
-
 #' @export
 print.R7_method <- function(x, ...) {
   signature <- method_signature(x@generic, x@signature)
@@ -295,4 +239,13 @@ print.R7_method <- function(x, ...) {
 
   attributes(x) <- NULL
   print(x)
+}
+
+arg_names <- function(x) {
+  paste0(encodeString(x, quote = "`"), collapse = ", ")
+}
+
+method_name <- function(generic, signature) {
+  method_args <- paste0(vcapply(signature, class_desc), collapse =", ")
+  sprintf("%s(%s)", generic@name, method_args)
 }

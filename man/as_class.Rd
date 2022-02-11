@@ -7,11 +7,12 @@
 as_class(x, arg = deparse(substitute(x)))
 }
 \arguments{
-\item{x}{A class specification.
+\item{x}{A class specification. One of the following:
 \itemize{
-\item An R7 class object or class union.
-\item An S3 class object, created by \code{s3_class()}.
-\item An S4 class object.
+\item An R7 class (created by \code{\link[=new_class]{new_class()}}).
+\item An R7 union (created by \code{\link[=new_union]{new_union()}}).
+\item An S3 class (created by \code{\link[=s3_class]{s3_class()}}).
+\item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base type specified either with its constructor (\code{logical}, \code{integer},
 \code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
 \item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
