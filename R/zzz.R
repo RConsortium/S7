@@ -11,6 +11,7 @@ R7_object <- new_class(
      out
   }
 )
+methods::setOldClass(class_names(R7_object))
 
 new_base_class <- function(name) {
   default <- switch(name,
@@ -67,6 +68,7 @@ R7_generic <- new_class(
     )
   }
 )
+methods::setOldClass(class_names(R7_generic))
 
 R7_method <- new_class("R7_method",
   parent = "function",
@@ -75,6 +77,7 @@ R7_method <- new_class("R7_method",
     signature = "list"
   )
 )
+methods::setOldClass(class_names(R7_method))
 
 R7_union <- new_class(
   name = "R7_union",
