@@ -60,7 +60,7 @@ object_class <- function(object) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  str(x)
+  str.R7_object(x)
   invisible(x)
 }
 

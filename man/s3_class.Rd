@@ -4,7 +4,7 @@
 \alias{s3_class}
 \title{Declare an S3 class}
 \usage{
-s3_class(class, constructor = NULL)
+s3_class(class, constructor = NULL, validator = NULL)
 }
 \arguments{
 \item{class}{Character vector of S3 classes}
@@ -14,43 +14,46 @@ objects of the specified class. This is only needed if you wish to
 have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be \code{.data}
 (the base type whose attributes will be modified).}
+
+\item{validator}{An optional validator that can be used to check that
+the S3 object is correct.}
 }
 \description{
 The S3 class system is informal so lacks a formal specification of
 inheritance and expected attributes. These are needed for to use S3
 objects with R7, so \code{s3_class()} gives you a way to formally specify
 the properties of the S3 class.
-
-Validation is not currently supported.
 }
-\details{
-There are four ways that you can use S3 with R7:
+\section{Simple uses}{
+Three ways of using S3 with R7 one require you to specify the S3 class
+vector:
 \itemize{
-\item To provide an S3 method for an R7 generic.
-\item To restrict an R7 property to an S3 class.
-\item To use an S3 class in R7 union.
-\item To extend an S3 class with an R7 class.
+\item Registering a S3 method for an R7 generic.
+\item Restricting an R7 property to an S3 class.
+\item Using an an S3 class in R7 union.
 }
 
-The first three uses only need the S3 class vector, which is straightforward
-to determine and supply:\if{html}{\out{<div class="sourceCode R">}}\preformatted{method(my_generic, s3_class("factor")) <- function(x) "A factor"
+This is typically straightforward to determine and supply:\if{html}{\out{<div class="sourceCode R">}}\preformatted{method(my_generic, s3_class("factor")) <- function(x) "A factor"
 new_class("my_class", properties = list(types = s3_class("factor")))
 new_union("character", s3_class("factor"))
 }\if{html}{\out{</div>}}
-
-Creating an R7 class that inherits behaviour from an S3 method requires
-more work. You'll need to provide a constructor for the S3 class that
-follows R7 conventions. This means:
-\itemize{
-\item The first argument should always be \code{.data}.
-\item There should be one additional argument for each attribute used by the
-class.
-\item The constructor should check that all arguments have the correct types.
 }
+
+\section{Extending an S3 class}{
+Creating an R7 class that extends an S3 class requires more work. You'll
+also need to provide a constructor for the S3 class that follows R7
+conventions. This means the first argument should be \code{.data}, and it
+should be followed by one argument for each attribute used by the class.
 
 This is often challenging because S3 classes typically quite heavily wrapped
 for user convenience. For example, the factor class is an integer vector
 with a character vector of \code{levels}, but there's no base R function that
 takes an integer vector of values and character vector of levels and creates
 a factor object.
+
+You may optionally want to also provide a \code{validator} function which will
+ensure the \code{\link[=validate]{validate()}} confirms the validity of any R7 classes that build
+on this class. Unlike an R7 validator, you are responsible for validating
+the types of the attributes.
 }
+

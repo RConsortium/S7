@@ -110,6 +110,23 @@ class_construct <- function(.x, ...) {
   class_constructor(.x)(...)
 }
 
+class_validate <- function(class, object) {
+  validator <- switch(class_type(class),
+    NULL = NULL,
+    s3 = class$validator,
+    s4 = methods::validObject,
+    r7 = class@validator,
+    r7_base = class@validator,
+    r7_union = NULL,
+  )
+
+  if (is.null(validator)) {
+    NULL
+  } else {
+    validator(object)
+  }
+}
+
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
@@ -129,10 +146,10 @@ class_names <- function(x) {
 
   switch(class_type(x),
     NULL = NULL,
-    s3 = c(x$class, "R7_object"),
+    s3 = c("R7_object", x$class),
     s4 = as.character(x@className),
     r7 = c(x@name, class_names(x@parent)),
-    r7_base = c(x@name, "R7_object"),
+    r7_base = c("R7_object", x@name),
     r7_union = unique(unlist(lapply(x@classes, class_names)), fromLast = TRUE)
   )
 }
