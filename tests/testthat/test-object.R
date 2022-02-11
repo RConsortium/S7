@@ -18,6 +18,10 @@ test_that("Additional attributes storing properties defined by the class, access
 })
 
 describe("new_object", {
+  it("reports all property type errors", {
+    expect_snapshot(range(start = "x", end = "y"), error = TRUE)
+  })
+
   it("checks new objects for validity", {
     expect_error(range(start = 10, end = 1), "`end` must be greater than or equal to `start`")
   })
@@ -25,13 +29,6 @@ describe("new_object", {
   it("can instantiate a new object that inherits from a basic type", {
     y <- text("foo")
     expect_equal(r7_data(y), as_class("character")("foo"))
-  })
-
-  it("errors if given an invalid property", {
-    expect_error(
-      range(1, "foo"),
-      "must be of class"
-    )
   })
 
   it("checks are arguments are properties", {
@@ -60,7 +57,7 @@ describe("new_object", {
     text2 <- new_class("text2", parent = "character")
     my_class <- new_class("my_class",
       parent = text2,
-      properties = c("name" = "character"),
+      properties = list(name = "character"),
       constructor = function(x, name) new_object(text2(x), name = name)
     )
     obj <- my_class("foo", "bar")
@@ -68,26 +65,18 @@ describe("new_object", {
   })
 })
 
-test_that("printing R7 objects work", {
-  x <- range(1, 10)
-
-  expect_snapshot(print(x))
+test_that("print()/str() gives useful display", {
+  expect_snapshot({
+    str(range(1, 10))
+    str(list(text("b"), number(50)))
+  })
 })
+test_that("print()/str() nests properties correctly", {
+  klass <- new_class("klass", properties = list(x = "numeric", y = range))
 
-test_that("printing R7 classes work", {
-  expect_snapshot(range)
-})
-
-test_that("str with simple R7 objects work", {
-  expect_snapshot(str(range(1, 2)))
-})
-
-test_that("str with R7 objects of base classes work", {
-  expect_snapshot(str(list(text("b"), number(50))))
-})
-
-test_that("str R7 classes work", {
-  expect_snapshot(str(range))
+  expect_snapshot({
+    str(klass(x = 10, y = range(1, 10)))
+  })
 })
 
 test_that("object_class returns itself for R7_class objects", {

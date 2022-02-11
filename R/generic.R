@@ -1,9 +1,11 @@
 #' Define a new generic
 #'
 #' @description
-#' A generic function uses different implementations depending on the class
-#' of one or more arguments (the `signature`). Create a new generic with
-#' `new_generic()` then use [method<-] to add methods to it.
+#' A generic function uses different implementations (_methods_) depending on
+#' the class of one or more arguments (the _signature_). Create a new generic
+#' with `new_generic()` then use [method<-] to add methods to it. The body of
+#' the generic always contains `method_call()`, which takes care of finding and
+#' calling the appropriate method.
 #'
 #' @section Dispatch arguments:
 #' The arguments that are used to pick the method are called the **dispatch
@@ -17,8 +19,8 @@
 #'
 #' @param name The name of the generic. This should be the same as the object
 #'   that you assign it to.
-#' @param dispatch_args A character vector providing the names of arguments to
-#'   dispatch on.
+#' @param dispatch_args A character vector giving the names of the arguments
+#'   that form the signature, i.e. the arguments used for method dispatch.
 #'
 #'   If `dispatch_args` are omitted, but `fun` is supplied, will default to the
 #'   arguments that appear before `...` in `fun`. If there are no dots, it will
@@ -33,6 +35,7 @@
 #' @seealso [new_external_generic()] to define a method for a generic
 #'  in another package without taking a strong dependency on it.
 #' @export
+#' @order 1
 #' @examples
 #' # A simple generic with methods for some base types and S3 classes
 #' type_of <- new_generic("type_of", dispatch_args = "x")
@@ -60,6 +63,8 @@
 #' }
 #'
 new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
+  check_name(name)
+
   if (is.null(dispatch_args) && is.null(fun)) {
     stop(
       "Must call `new_generic()` with at least one of `dispatch_args` or `fun`",
@@ -171,4 +176,38 @@ has_call <- function(x, name) {
     }
   }
   FALSE
+}
+
+
+methods <- function(generic) {
+  methods_rec(generic@methods, character())
+}
+methods_rec <- function(x, signature) {
+  if (!is.environment(x)) {
+    return(x)
+  }
+
+  # Recursively collapse environments to a list
+  methods <- lapply(names(x), function(class) methods_rec(x[[class]], c(signature, class)))
+  unlist(methods, recursive = FALSE)
+}
+
+generic_add_method <- function(generic, signature, method) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, r7_class_name)
+
+  for (i in seq_along(chr_signature)) {
+    class_name <- chr_signature[[i]]
+    if (i != length(chr_signature)) {
+      # Iterated dispatch, so create another nested environment
+      tbl <- p_tbl[[class_name]]
+      if (is.null(tbl)) {
+        tbl <- new.env(hash = TRUE, parent = emptyenv())
+        p_tbl[[class_name]] <- tbl
+      }
+      p_tbl <- tbl
+    } else {
+      p_tbl[[class_name]] <- method
+    }
+  }
 }

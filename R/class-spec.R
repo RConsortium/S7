@@ -4,12 +4,15 @@
 #' you to use R7 classes and methods with base types, informal S3 classes, and
 #' formal S4 classes.
 #'
-#' @param x A class specification.
-#'    * An R7 class object or class union.
-#'    * An S3 class object, created by `s3_class()`.
-#'    * An S4 class object.
-#'    * A base type specified either with its constructor (`logical`, `integer`,
-#'      `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
+#' @param x A class specification. One of the following:
+#'   * An R7 class (created by [new_class()]).
+#'   * An R7 union (created by [new_union()]).
+#'   * An S3 class (created by [s3_class()]).
+#'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
+#'   * A base type specified either with its constructor (`logical`, `integer`,
+#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
+#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
+#'      `"vector"`.
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
@@ -25,10 +28,8 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     x
   } else if (is_s3_class(x)) {
     x
-  } else if (isS4(x) && methods::is(x, "classGeneratorFunction")) {
-    methods::getClass(as.character(x@className))
-  } else if (isS4(x) && methods::is(x, "classRepresentation")) {
-    x
+  } else if (isS4(x)) {
+    as_S4_class(x, error_base)
   } else if (is.function(x)) {
     candidate <- Filter(function(y) identical(x, y), base_constructors)
     if (length(candidate) == 0) {
@@ -38,6 +39,8 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   } else if (is.character(x) && length(x) == 1) {
     if (x %in% names(base_classes)) {
       base_classes[[x]]
+    } else if (x %in% names(base_unions)) {
+      base_unions[[x]]
     } else {
       stop(sprintf("%s. No base classes are called '%s'", error_base, x), call. = FALSE)
     }
@@ -46,6 +49,32 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   }
 }
 
+as_S4_class <- function(x, error_base) {
+  # Silence R CMD check false postives
+  distance <- subClass <- className <- package <- NULL
+
+  # Convert generator function to class
+  if (methods::is(x, "classGeneratorFunction")) {
+    return(as_S4_class(methods::getClass(as.character(x@className)), error_base))
+  }
+
+  if (methods::is(x, "ClassUnionRepresentation")) {
+    subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
+    subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
+    do.call("new_union", subclasses)
+  } else if (methods::is(x, "classRepresentation")) {
+    if (x@package == "methods" && x@className %in% names(base_classes)) {
+      # Convert S4 representation of base types to R7 representation
+      base_classes[[x@className]]
+    } else if (x@package == "methods" && x@className == "NULL") {
+      NULL
+    } else {
+      x
+    }
+  } else {
+    stop(sprintf("%s. Unsupported S4 object: must be a class generator or a class definition, not a %s.", error_base, obj_desc(x)), call. = FALSE)
+  }
+}
 
 class_type <- function(x) {
   if (is_class(x)) {

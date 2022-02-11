@@ -27,27 +27,26 @@ describe("R7_class", {
   it("str yields all details when used at top-level", {
     expect_snapshot({
       str(my_class)
-      str(list(my_class))
+      str(range)
     })
+  })
+  it("str() summarises when nested", {
+    expect_snapshot(list(range))
+  })
+})
+
+test_that("new_class() checks its inputs", {
+  expect_snapshot(error = TRUE, {
+    new_class(1)
+    new_class("foo", 1)
   })
 })
 
 test_that("classes can inherit from base types", {
-  types <- c("logical", "integer", "complex", "character", "raw", "list")
-  for (type in types) {
-    f <- match.fun(type)
-    foo <- new_class("foo", parent = type, constructor = function(x = f()) new_object(x))
-    obj <- foo()
-    expect_equal(typeof(r7_data(obj)), type)
+  for (class in base_classes) {
+    foo <- new_class("foo", parent = class)
+    expect_error(foo(), NA)
   }
-
-  foo <- new_class("foo", parent = "numeric", constructor = function(x = numeric()) new_object(x))
-  obj <- foo()
-  expect_equal(typeof(r7_data(obj)), "double")
-
-  foo <- new_class("foo", parent = "function", constructor = function(x = function() NULL, ...) new_object(x))
-  obj <- foo()
-  expect_equal(typeof(r7_data(obj)), "closure")
 })
 
 test_that("classes can't inherit from S4 or class unions", {
@@ -56,13 +55,6 @@ test_that("classes can't inherit from S4 or class unions", {
     new_class("test", parent = parentS4)
     new_class("test", parent = new_union("character"))
   })
-})
-
-test_that("can supply literal examples of base types", {
-  foo <- new_class("foo", parent = integer)
-  obj <- foo(1L)
-  expect_s3_class(obj, "integer")
-  expect_type(r7_data(obj), "integer")
 })
 
 test_that("default constructor works", {
@@ -75,8 +67,4 @@ test_that("default constructor works", {
   text2 <- new_class("text2", parent = text1, properties = list(y = "numeric"))
   expect_s3_class(text1("abc"), "text1")
   expect_s3_class(text2("abc", y = 1), "text2")
-})
-
-test_that("constructor  types check their values", {
-  expect_snapshot_error(new_class("foo", parent = integer)("abc"))
 })

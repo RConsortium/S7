@@ -9,21 +9,21 @@
 #' but your package doesn't use anything else from knitr.
 #'
 #' Instead, you can add the package to `Suggests` and use
-#' `new_external_generic()` along with `method_register()` to declare an
-#' "external" generic. `new_external_generic()` defines the "shape" of the
+#' `new_external_generic()` along with `external_methods_register()` to declare
+#' an "external" generic. `new_external_generic()` defines the "shape" of the
 #' generic without requiring the other package be available. You then call
-#' `method_register()` in `.onLoad()` to dynamically register the methods
-#' when the other package is loaded.
+#' `external_methods_register()` in `.onLoad()` to dynamically register the
+#' methods when the other package is loaded.
 #'
 #' @param package Package the generic is defined in.
-#' @param generic Name of generic, as a string.
+#' @param name Name of generic, as a string.
 #' @param version An optional version the package must meet for the method to
 #'   be registered.
 #' @export
-new_external_generic <- function(package, generic, version = NULL) {
+new_external_generic <- function(package, name, version = NULL) {
   out <- list(
     package = package,
-    generic = generic,
+    name = name,
     version = version
   )
 
@@ -31,28 +31,75 @@ new_external_generic <- function(package, generic, version = NULL) {
   out
 }
 
+#' @export
+print.R7_external_generic <- function(x, ...) {
+  cat(
+    "<R7_external_generic> ",
+    x$package, "::", x$name, "()",
+    if (!is.null(x$version)) paste0(" (>= ", x$version, ")"),
+    "\n",
+    sep = ""
+  )
+  invisible(x)
+}
+
+is_external_generic <- function(x) {
+  inherits(x, "R7_external_generic")
+}
+
 #' @importFrom utils getFromNamespace packageName
 #' @rdname new_external_generic
 #' @export
-method_register <- function() {
+external_methods_register <- function() {
   package <- packageName(parent.frame())
-  tbl <- asNamespace(package)[[".__S3MethodsTable__."]][[".R7_methods"]]
+  tbl <- external_methods_get(package)
+
   for (x in tbl) {
-    if (isNamespaceLoaded(x$package)) {
-      ns <- asNamespace(x$package)
-      new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
+    hook <- registrar(x$generic, x$signature, x$method)
+
+    if (isNamespaceLoaded(x$generic$package)) {
+      hook()
     } else {
-      setHook(packageEvent(x$package, "onLoad"),
-        local({
-          x <- x
-          function(...) {
-            ns <- asNamespace(x$package)
-            if (is.null(x$version) || getNamespaceVersion(ns) >= x$version) {
-              new_method(getFromNamespace(x$generic, ns), x$signature, x$method)
-            }
-          }
-        })
-      )
+      setHook(packageEvent(x$generic$package, "onLoad"), hook)
     }
   }
+}
+
+registrar <- function(generic, signature, method) {
+  # Force all arguments
+  list(generic, signature, method)
+
+  function(...) {
+    ns <- asNamespace(generic$package)
+    if (is.null(generic$version) || getNamespaceVersion(ns) >= generic$version) {
+      generic_fun <- getFromNamespace(generic$name, ns)
+      register_method(generic_fun, signature, method)
+    }
+  }
+}
+
+external_methods_get <- function(package) {
+  s3_methods_table(package)[[".R7_methods"]] %||% list()
+}
+
+external_methods_reset <- function(package) {
+  tbl <- s3_methods_table(package)
+  tbl[[".R7_methods"]] <- list()
+  invisible()
+}
+
+external_methods_add <- function(package, generic, signature, method) {
+  tbl <- s3_methods_table(package)
+
+  methods <- append(
+    tbl[[".R7_methods"]] %||% list(),
+    list(list(generic = generic, signature = signature, method = method))
+  )
+
+  tbl[[".R7_methods"]] <- methods
+  invisible()
+}
+
+s3_methods_table <- function(package) {
+  asNamespace(package)[[".__S3MethodsTable__."]]
 }

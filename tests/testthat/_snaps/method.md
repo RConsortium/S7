@@ -1,61 +1,59 @@
-# method errors on invalid inputs
-
-    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
-
----
-
-    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
-
----
-
-    Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <logical>.
-
-# method errors if no method is defined for that class
-
-    Can't convert `signature[[1]]` to a valid class. No base classes are called 'blah'
-
-# new_method works if you pass a bare class union
+# method registration: S3 registration requires single R7 class
 
     Code
-      foo7
-    Output
-      <R7_generic> function (x, ...)  with 2 methods:
-      1: method(foo7, number)
-      2: method(foo7, text)
+      method(sum, list(foo, foo)) <- (function(x, ...) "foo")
+    Error <simpleError>
+      When registering methods for S3 generic sum(), signature be a single R7 class
+    Code
+      method(sum, s3_class("foo")) <- (function(x, ...) "foo")
+    Error <simpleError>
+      When registering methods for S3 generic sum(), signature be a single R7 class
 
-# method_compatible errors if the functions are not compatible
+# method registration: checks argument types
+
+    Code
+      x <- 10
+      method(x, "character") <- (function(x) ...)
+    Error <simpleError>
+      `generic` must be a function, not a <double>
+    Code
+      method(foo, 1) <- (function(x) ...)
+    Error <simpleError>
+      Can't convert `signature[[1]]` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+
+# check_method errors if the functions are not compatible
 
     Code
       foo <- new_generic("foo", dispatch_args = "x")
-      method_compatible(function(y) { }, foo)
+      check_method(1, "character", foo)
     Error <simpleError>
-      `method` doesn't match generic dispatch arg
+      foo(<character>) must be a function
     Code
-      method_compatible(function(x = "foo") { }, foo)
+      check_method(function(y) { }, "character", foo)
     Error <simpleError>
-      Dispatch arguments must not have default values
+      foo() dispatches on `x`, but foo(<character>) has arguments `y`
     Code
-      method_compatible(function(x, y, ...) { }, foo)
+      check_method(function(x = "foo") { }, "character", foo)
     Error <simpleError>
-      ... must immediately follow dispatch args
+      In foo(<character>), dispatch arguments (`x`) must not have default values
+    Code
+      check_method(function(x, y, ...) { }, "character", foo)
+    Error <simpleError>
+      In foo(<character>), `...` must come immediately after dispatch args (`x`)
 
-# method_compatible warn if default arguments don't match
+# check_method warn if default arguments don't match
 
     Code
       foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
-      method_compatible(function(x, ..., y = 1) { }, foo)
+      check_method(function(x, ..., y = 1) { }, "character", foo)
     Warning <simpleWarning>
-      Argument `z` is missing from method
-    Output
-      [1] TRUE
+      foo(<character>) doesn't have argument `z`
     Code
-      method_compatible(function(x, ..., y = 1, z = 1) { }, foo)
+      check_method(function(x, ..., y = 1, z = 1) { }, "character", foo)
     Warning <simpleWarning>
-      Default value is not the same as the generic
-      - Generic: z = 2
-      - Method:  z = 1
-    Output
-      [1] TRUE
+      In foo(<character>), default value of `z` is not the same as the generic
+      - Generic: 2
+      - Method:  1
 
 # R7_method printing
 

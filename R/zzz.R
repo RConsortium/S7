@@ -13,16 +13,40 @@ R7_object <- new_class(
 )
 
 new_base_class <- function(name) {
-  R7_class(name = name, constructor = function(.data) new_object(.data))
+  default <- switch(name,
+    "function" = function() {},
+    getExportedValue("base", name)()
+  )
+
+  is.type <- getExportedValue("base", paste0("is.", name))
+
+  new_class(
+    name = name,
+    constructor = function(.data) {
+      if (missing(.data)) {
+        .data <- default
+      }
+      new_object(.data)
+    },
+    validator = function(object) {
+      if (!is.type(object)) {
+        sprintf("Underlying data must be <%s> not %s", name, obj_desc(unclass(object)))
+      }
+    }
+  )
 }
 
-base_types <- setNames(, c("logical", "integer", "double", "numeric", "complex", "character", "raw", "function", "list", "environment"))
-
+# Define simple base types with constructors.
+base_types <- setNames(, c(
+  "logical", "integer", "double", "complex", "character", "raw",
+  "list", "expression",
+  "function", "environment"
+))
 base_classes <- lapply(base_types, new_base_class)
-base_classes[["NULL"]] <- new_base_class("NULL")
-
 base_constructors <- lapply(base_types, get)
 
+# See .onLoad() for definition
+base_unions <- list()
 
 R7_generic <- new_class(
   name = "R7_generic",
@@ -44,16 +68,12 @@ R7_generic <- new_class(
   }
 )
 
-R7_method <- new_class(
-  name = "R7_method",
-  properties = list(generic = R7_generic, signature = "list", fun = "function"),
+R7_method <- new_class("R7_method",
   parent = "function",
-  constructor = function(generic, signature, fun) {
-    if (is.character(signature)) {
-      signature <- list(signature)
-    }
-    new_object(generic = generic, signature = signature, .data = fun)
-  }
+  properties = list(
+    generic = R7_generic,
+    signature = "list"
+  )
 )
 
 R7_union <- new_class(
@@ -71,6 +91,19 @@ R7_union <- new_class(
     new_object(classes = list(...))
   }
 )
+
+#' @export
+str.R7_union <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  cat("<R7_union>: ", class_desc(object), sep = "")
+  cat("\n")
+
+  if (nest.lev == 0) {
+    props <- props(object)
+    str_list(props, ..., prefix = "@", nest.lev = nest.lev)
+  }
+}
+
 
 class_flatten <- function(x) {
   x <- lapply(x, as_class)
@@ -106,4 +139,10 @@ global_variables(c("name", "parent", "properties", "constructor", "validator"))
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
   env[[".conflicts.OK"]] <- TRUE
+}
+
+.onLoad <- function(...) {
+  base_unions$numeric <<- new_union("integer", "double")
+  base_unions$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
+  base_unions$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
 }
