@@ -43,17 +43,10 @@ test_that("new_class() checks its inputs", {
 })
 
 test_that("classes can inherit from base types", {
-  types <- c("logical", "integer", "double", "complex", "character", "raw", "list")
-  for (type in types) {
-    f <- match.fun(type)
-    foo <- new_class("foo", parent = type, constructor = function(x = f()) new_object(x))
-    obj <- foo()
-    expect_equal(typeof(r7_data(obj)), type)
+  for (class in base_classes) {
+    foo <- new_class("foo", parent = class)
+    expect_error(foo(), NA)
   }
-
-  foo <- new_class("foo", parent = "function", constructor = function(x = function() NULL, ...) new_object(x))
-  obj <- foo()
-  expect_equal(typeof(r7_data(obj)), "closure")
 })
 
 test_that("classes can't inherit from S4 or class unions", {
@@ -62,13 +55,6 @@ test_that("classes can't inherit from S4 or class unions", {
     new_class("test", parent = parentS4)
     new_class("test", parent = new_union("character"))
   })
-})
-
-test_that("can supply literal examples of base types", {
-  foo <- new_class("foo", parent = integer)
-  obj <- foo(1L)
-  expect_s3_class(obj, "integer")
-  expect_type(r7_data(obj), "integer")
 })
 
 test_that("default constructor works", {
@@ -81,8 +67,4 @@ test_that("default constructor works", {
   text2 <- new_class("text2", parent = text1, properties = list(y = "numeric"))
   expect_s3_class(text1("abc"), "text1")
   expect_s3_class(text2("abc", y = 1), "text2")
-})
-
-test_that("constructor types check their values", {
-  expect_snapshot_error(new_class("foo", parent = integer)("abc"))
 })

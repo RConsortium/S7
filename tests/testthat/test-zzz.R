@@ -33,9 +33,7 @@ test_that("can construct from unions", {
 
 test_that("base unions print as expected", {
   expect_snapshot({
-    base_classes$numeric
-    base_classes$atomic
-    base_classes$vector
+    base_unions
   })
 })
 
@@ -44,4 +42,10 @@ test_that("can construct from S3 and S4 classes", {
   s4_union <- methods::setClass("s4_union")
   u <- new_union(factor, s4_union)
   expect_equal(u@classes, list(factor, getClass("s4_union")))
+})
+
+test_that("base classes types check their data", {
+  expect_snapshot(error = TRUE, {
+    base_classes$integer(TRUE)
+  })
 })
