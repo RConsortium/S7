@@ -1,19 +1,18 @@
 #' Declare an S3 class
 #'
-#' The S3 class system is informal so lacks a formal specification of
-#' inheritance and expected attributes. These are needed for to use S3
-#' objects with R7, so `s3_class()` gives you a way to formally specify
-#' the properties of the S3 class.
+#' To use an S3 class with R7, you must explicitly declare it using
+#' `s3_class()` because S3 lacks a formal class definition.
 #'
-#' # Simple uses
-#' Three ways of using S3 with R7 one require you to specify the S3 class
+#' # Method dispatch, properties, and unions
+#' There are three ways of using S3 with R7 that only require the S3 class
 #' vector:
 #'
 #' * Registering a S3 method for an R7 generic.
 #' * Restricting an R7 property to an S3 class.
 #' * Using an an S3 class in R7 union.
 #'
-#' This is typically straightforward to determine and supply:
+#' This is easy, and you can usually include the `s3_class()`
+#' call inline:
 #'
 #' ```R
 #' method(my_generic, s3_class("factor")) <- function(x) "A factor"
@@ -25,19 +24,38 @@
 #'
 #' Creating an R7 class that extends an S3 class requires more work. You'll
 #' also need to provide a constructor for the S3 class that follows R7
-#' conventions. This means the first argument should be `.data`, and it
-#' should be followed by one argument for each attribute used by the class.
+#' conventions. This means the first argument to the constructor should be
+#' `.data`, and it should be followed by one argument for each attribute used
+#' by the class.
 #'
-#' This is often challenging because S3 classes typically quite heavily wrapped
-#' for user convenience. For example, the factor class is an integer vector
-#' with a character vector of `levels`, but there's no base R function that
-#' takes an integer vector of values and character vector of levels and creates
-#' a factor object.
+#' This can be because base S3 classes are usually heavily wrapped for user
+#' convenience and no low level constructor is available. For example, the
+#' factor class is an integer vector with a character vector of `levels`, but
+#' there's no base R function that takes an integer vector of values and
+#' character vector of levels, verifies that they are consistent, then
+#' creates a factor object.
 #'
 #' You may optionally want to also provide a `validator` function which will
 #' ensure the [validate()] confirms the validity of any R7 classes that build
 #' on this class. Unlike an R7 validator, you are responsible for validating
 #' the types of the attributes.
+#'
+#' The following code shows how you might wrap the base Date class.
+#' A Date is a numeric vector with class `Date` that can be constructed with
+#' `.Date()`.
+#'
+#' ```R
+#' S3_Date <- s3_class("Date",
+#'   function(.data) {
+#'     .Date(.data)
+#'   },
+#'   function(object) {
+#'     if (!is.numeric(object)) {
+#'       "Underlying data must be numeric"
+#'     }
+#'   }
+#' )
+#' ```
 #'
 #' @export
 #' @param class Character vector of S3 classes
@@ -70,6 +88,16 @@ s3_class <- function(class, constructor = NULL, validator = NULL) {
   )
 }
 
+#' @export
+print.r7_s3_class <- function(x, ...) {
+  cat(
+    "S3 class <", paste(x$class, collapse = "/"), ">\n",
+    sep = ""
+  )
+  invisible(x)
+}
+
+
 check_constructor <- function(constructor) {
   arg_names <- names(formals(constructor))
   if (arg_names[[1]] != ".data") {
@@ -98,17 +126,6 @@ s3_factor <- s3_class("factor",
       if (!is.character(attr(object, "levels")))
         "attr(, 'levels') must be a character vector"
     )
-  }
-)
-
-s3_Date <- s3_class("Date",
-  function(.data) {
-    .Date(.data)
-  },
-  function(object) {
-    if (!is.numeric(object)) {
-      "Underlying data must be numeric"
-    }
   }
 )
 

@@ -1,3 +1,7 @@
+test_that("s3_class has a print method", {
+  expect_snapshot(s3_class(c("ordered", "factor")))
+})
+
 test_that("can construct objects that extend S3 classes", {
   foo <- s3_class("foo", function(.data) structure(list(), class = "foo"))
   foo2 <- new_class("foo2", foo)
