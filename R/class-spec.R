@@ -67,6 +67,8 @@ as_S4_class <- function(x, error_base) {
     if (x@package == "methods" && x@className %in% names(base_classes)) {
       # Convert S4 representation of base types to R7 representation
       base_classes[[x@className]]
+    } else if (x@package == "methods" && x@className == "NULL") {
+      NULL
     } else {
       x
     }
