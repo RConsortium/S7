@@ -1,6 +1,17 @@
-# new_generic needs fun or dispatch_args
+# new_generic checks its inputs
 
-    Must call `new_generic()` with at least one of `dispatch_args` or `fun`
+    Code
+      new_generic(1)
+    Error <simpleError>
+      `name` must be a single string
+    Code
+      new_generic("")
+    Error <simpleError>
+      `name` must not be "" or NA
+    Code
+      new_generic("foo")
+    Error <simpleError>
+      Must call `new_generic()` with at least one of `dispatch_args` or `fun`
 
 # check_dispatch_args() produces informative errors
 

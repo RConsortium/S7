@@ -35,6 +35,13 @@ describe("R7_class", {
   })
 })
 
+test_that("new_class() checks its inputs", {
+  expect_snapshot(error = TRUE, {
+    new_class(1)
+    new_class("foo", 1)
+  })
+})
+
 test_that("classes can inherit from base types", {
   types <- c("logical", "integer", "double", "complex", "character", "raw", "list")
   for (type in types) {

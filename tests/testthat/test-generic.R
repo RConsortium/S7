@@ -1,5 +1,9 @@
-test_that("new_generic needs fun or dispatch_args", {
-  expect_snapshot_error(new_generic())
+test_that("new_generic checks its inputs", {
+  expect_snapshot(error = TRUE, {
+    new_generic(1)
+    new_generic("")
+    new_generic("foo")
+  })
 })
 
 test_that("dispatch_args overrules derived", {

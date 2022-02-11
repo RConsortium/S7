@@ -61,6 +61,17 @@
        $ length: <integer> or <double>
       
 
+# new_class() checks its inputs
+
+    Code
+      new_class(1)
+    Error <simpleError>
+      `name` must be a single string
+    Code
+      new_class("foo", 1)
+    Error <simpleError>
+      Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+
 # classes can't inherit from S4 or class unions
 
     Code

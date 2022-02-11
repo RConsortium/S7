@@ -63,6 +63,8 @@
 #' }
 #'
 new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
+  check_name(name)
+
   if (is.null(dispatch_args) && is.null(fun)) {
     stop(
       "Must call `new_generic()` with at least one of `dispatch_args` or `fun`",

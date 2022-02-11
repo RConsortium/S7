@@ -1,6 +1,8 @@
 #' @importFrom utils modifyList
 R7_class <- function(name, parent = R7_object, constructor = NULL, validator = function(x) NULL, properties = list()) {
 
+  check_name(name)
+
   parent <- as_class(parent)
   if (is_union(parent) || isS4(parent)) {
     not <- if (is_union(parent)) "a class union" else "an S4 class"
