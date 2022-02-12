@@ -179,7 +179,7 @@ We next define a `R7_subset` generic function, and then a R7 method for that fun
 The subsets the individual components appropriately and then returns a new `annotated_df` object with them.
 
 ```{r}
-subset_R7 <- new_generic("R7_subset", dispatch_args = c("object", "row", "column"))
+subset_R7 <- new_generic("R7_subset", c("object", "row", "column"))
 
 method(subset_R7, list(annotated_df, "integer", "integer")) <- function(object, row, column, ...) {
   data <- r7_data(object)[row, column]

@@ -1,13 +1,13 @@
 describe("method registration", {
   it("adds methods to the generic", {
-    foo <- new_generic("foo", dispatch_args = "x")
+    foo <- new_generic("foo", "x")
     method(foo, "character") <- function(x) "c"
     method(foo, "integer") <- function(x) "i"
     expect_length(methods(foo), 2)
   })
 
   it("adds method for each element of a union", {
-    foo <- new_generic("foo", dispatch_args = "x")
+    foo <- new_generic("foo", "x")
     method(foo, "numeric") <- function(x) "x"
 
     # one method for each union component
@@ -62,7 +62,7 @@ describe("method registration", {
   })
 
   it("checks argument types", {
-    foo <- new_generic("foo", dispatch_args = "x")
+    foo <- new_generic("foo", "x")
     expect_snapshot(error = TRUE, {
       x <- 10
       method(x, "character") <- function(x) ...
@@ -73,18 +73,18 @@ describe("method registration", {
 
 
 test_that("check_method returns TRUE if the functions are compatible", {
-  foo <- new_generic("foo", function(x, ...) method_call())
+  foo <- new_generic("foo", fun = function(x, ...) method_call())
   expect_true(check_method(function(x, ...) x, "character", foo))
   # extra arguments are ignored
   expect_true(check_method(function(x, ..., y) x, "character", foo))
 
-  foo <- new_generic("foo", function(x) method_call())
+  foo <- new_generic("foo", fun = function(x) method_call())
   expect_true(check_method(function(x) x, "character", foo))
 })
 
 test_that("check_method errors if the functions are not compatible", {
   expect_snapshot(error = TRUE, {
-    foo <- new_generic("foo", dispatch_args = "x")
+    foo <- new_generic("foo", "x")
     check_method(1, "character", foo)
     check_method(function(y) {}, "character", foo)
     check_method(function(x = "foo") {}, "character", foo)
@@ -94,14 +94,14 @@ test_that("check_method errors if the functions are not compatible", {
 
 test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
-    foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
+    foo <- new_generic("foo", fun = function(x, ..., z = 2, y = 1) method_call())
     check_method(function(x, ..., y = 1) {}, "character", foo)
     check_method(function(x, ..., y = 1, z = 1) {}, "character", foo)
   })
 })
 
 test_that("R7_method printing", {
-  foo <- new_generic(name="foo", dispatch_args = c("x", "y"))
+  foo <- new_generic("foo", c("x", "y"))
   method(foo, list(text, "integer")) <- function(x, y, ...) paste0("bar:", x, y)
   expect_snapshot(
     method(foo, list(text, "integer")),

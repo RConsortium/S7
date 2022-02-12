@@ -49,7 +49,7 @@
 #'
 #' # If you want to require methods implement additional arguments, supply
 #' # them after ... in the call
-#' mean2 <- new_generic("mean2", function(x, ..., na.rm = TRUE) {
+#' mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
 #'    method_call()
 #' })
 #' method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
@@ -62,7 +62,7 @@
 #'   stop("Not supported")
 #' }
 #'
-new_generic <- function(name, fun = NULL, dispatch_args = NULL) {
+new_generic <- function(name, dispatch_args = NULL, fun = NULL) {
   check_name(name)
 
   if (is.null(dispatch_args) && is.null(fun)) {

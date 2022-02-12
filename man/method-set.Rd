@@ -45,7 +45,7 @@ But this is not a general method registration function: at least one of
 }
 \examples{
 # Create a generic
-bizarro <- new_generic("bizarro", dispatch_args = "x")
+bizarro <- new_generic("bizarro", "x")
 # Register some methods
 method(bizarro, "numeric") <- function(x) rev(x)
 method(bizarro, s3_class("data.frame")) <- function(x) {
