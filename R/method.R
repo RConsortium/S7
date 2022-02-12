@@ -45,32 +45,39 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
-  package <- packageName(parent.frame())
-  register_method(generic, signature, value, package = package)
+
+  register_method(generic, signature, value, env = parent.frame())
   invisible(generic)
 }
 
-register_method <- function(generic, signature, method, package = NULL) {
+register_method <- function(generic, signature, method, env = parent.frame()) {
+  package <- packageName(env)
   signature <- as_signature(signature)
   generic <- as_generic(generic)
 
   if (is_external_generic(generic)) {
-    if (!is.null(package)) {
-      # method registration within package, so add to lazy registry
-      external_methods_add(package, generic, signature, method)
-    } else {
-      # otherwise find the generic and register
-      generic <- getFromNamespace(generic$name, asNamespace(generic$package))
-      register_method(generic, signature, method)
-    }
+    register_external_method(generic, signature, method, package)
   } else if (is_s3_generic(generic)) {
     register_s3_method(generic, signature, method)
+  } else if (inherits(generic, "genericFunction")) {
+    register_s4_method(generic, signature, method, env)
   } else {
     check_method(method, signature, generic)
     register_r7_method(generic, signature, method)
   }
 
   invisible()
+}
+
+register_external_method <- function(generic, signature, method, package = NULL) {
+  if (!is.null(package)) {
+    # method registration within package, so add to lazy registry
+    external_methods_add(package, generic, signature, method)
+  } else {
+    # otherwise find the generic and register
+    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
+    register_method(generic, signature, method)
+  }
 }
 
 register_s3_method <- function(generic, signature, method) {
@@ -201,6 +208,34 @@ r7_class_name <- function(x) {
     stop("Unsupported")
   )
 }
+
+register_s4_method <- function(generic, signature, method, env = parent.frame()) {
+  s4_env <- topenv(env)
+
+  s4_signature <- lapply(signature, s4_class, s4_env = s4_env)
+  methods::setMethod(generic, s4_signature, method, where = s4_env)
+
+}
+
+s4_class <- function(x, s4_env) {
+  if (is_base_class(x)) {
+    x@name
+  } else if (is_s4_class(x)) {
+    x
+  } else if (is_class(x) || is_s3_class(x)) {
+    class <- class_names(x)
+    methods::setOldClass(class, where = s4_env)
+    methods::getClass(class)
+  }
+}
+S4_env <- function() {
+  if (identical(Sys.getenv("TESTTHAT"), "true")) {
+    S4_test_env
+  } else {
+    topenv(parent.frame(2))
+  }
+}
+S4_test_env <- new.env(parent = emptyenv())
 
 #' @export
 print.R7_method <- function(x, ...) {

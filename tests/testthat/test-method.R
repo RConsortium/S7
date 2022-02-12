@@ -22,7 +22,7 @@ describe("method registration", {
     on.exit(external_methods_reset("R7"), add = TRUE)
 
     foo <- new_external_generic("foo", "bar")
-    register_method(foo, "character", function(x, ...) "bar", package = "R7")
+    register_external_method(foo, "character", function(x, ...) "bar", package = "R7")
     expect_length(external_methods_get("R7"), 1)
 
     # and doesn't modify generic
@@ -32,7 +32,7 @@ describe("method registration", {
   it("can register method for external generic during development", {
     bar <- new_class("bar")
     base_sum <- new_external_generic("base", "sum")
-    register_method(base_sum, bar, function(x, ...) "bar", package = NULL)
+    register_external_method(base_sum, bar, function(x, ...) "bar", package = NULL)
     expect_equal(sum(bar()), "bar")
   })
 
@@ -51,6 +51,14 @@ describe("method registration", {
       method(sum, list(foo, foo)) <- function(x, ...) "foo"
       method(sum, s3_class("foo")) <- function(x, ...) "foo"
     })
+  })
+
+  it("can register R7 method for S4 generic", {
+    methods::setGeneric("bar", function(x) standardGeneric("bar"))
+    foo <- new_class("foo")
+    method(bar, foo) <- function(x) "foo"
+
+    expect_equal(bar(foo()), "foo")
   })
 
   it("checks argument types", {
