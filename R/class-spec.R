@@ -77,20 +77,22 @@ as_S4_class <- function(x, error_base) {
   }
 }
 
+is_s4_class <- function(x) inherits(x, "classRepresentation")
+is_base_class <- function(x) is_class(x) && utils::hasName(base_classes, x@name)
+
+
 class_type <- function(x) {
-  if (is_class(x)) {
-    if (utils::hasName(base_classes, x@name)) {
-      "r7_base"
-    } else {
-      "r7"
-    }
+  if (is.null(x)) {
+    "NULL"
+  } else if (is_base_class(x)) {
+    "r7_base"
+  } else if (is_class(x)) {
+    "r7"
   } else if (is_union(x)) {
     "r7_union"
-  } else if (is.null(x)) {
-    "NULL"
   } else if (is_s3_class(x)) {
     "s3"
-  } else if (isS4(x)) {
+  } else if (is_s4_class(x)) {
     "s4"
   } else {
     stop("`x` is not standard R7 class", call. = FALSE)

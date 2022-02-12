@@ -103,7 +103,7 @@ test_that("object_class returns class for S3 types", {
 })
 
 test_that("object_class returns the class for S4 types", {
-  foo <- methods::setClass("foo", representation = "character")
-  obj <- foo("hi")
+  foo2 <- methods::setClass("foo2", representation = "character")
+  obj <- foo2("hi")
   expect_equal(object_class(obj), methods::extends(class(obj)))
 })

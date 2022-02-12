@@ -38,18 +38,6 @@ test_that("handles NULL", {
   expect_equal(class_inherits("x", NULL), TRUE)
 })
 
-test_that("can work with S4 constructors", {
-  klass <- methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
-  expect_equal(class_type(klass), "s4")
-  expect_equal(class_desc(klass), "<Range>")
-  expect_equal(class_deparse(klass), "Range")
-
-  obj <- klass(start = 1, end = 1)
-  expect_equal(obj_type(obj), "s4")
-  expect_equal(obj_desc(obj), "<Range>")
-  expect_equal(class_inherits(obj, klass), TRUE)
-})
-
 test_that("can work with S4 classes", {
   methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   klass <- methods::getClass("Range")
