@@ -7,6 +7,7 @@
 #' @inheritParams prop
 #' @param value Object used to replace the underlying data.
 #' @export
+#' @keywords internal
 #' @examples
 #' text <- new_class("text", parent = "character")
 #' y <- text(c(foo = "bar"))

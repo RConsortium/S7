@@ -2,7 +2,7 @@
 % Please edit documentation in R/class.R
 \name{new_class}
 \alias{new_class}
-\title{Create a new R7 class}
+\title{Define a new R7 class}
 \usage{
 new_class(
   name,
