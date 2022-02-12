@@ -1,5 +1,8 @@
 url: https://RConsortium.github.io/OOP-WG
 
+template:
+  bootstrap: 5
+
 reference:
 - title: Key functions
   contents:
