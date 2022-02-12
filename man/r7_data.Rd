@@ -27,3 +27,4 @@ text <- new_class("text", parent = "character")
 y <- text(c(foo = "bar"))
 str(r7_data(y))
 }
+\keyword{internal}

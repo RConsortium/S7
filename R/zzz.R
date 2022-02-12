@@ -1,6 +1,8 @@
 is_union <- function(x) inherits(x, "R7_union")
 
-#' An R7 object
+#' Base R7 class
+#'
+#' @keywords internal
 #' @export
 R7_object <- new_class(
   name = "R7_object",
@@ -125,7 +127,7 @@ print.R7_union <- function(x, ...) {
   invisible(x)
 }
 
-#' Class unions
+#' Define a class union
 #'
 #' A class union represents a list of possible classes. It is used in
 #' properties to allow a property to be one of a set of classes, and in method

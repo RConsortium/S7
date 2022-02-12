@@ -1,4 +1,4 @@
-#' Create a new R7 class
+#' Define a new R7 class
 #'
 #' A class specifies the properties (data) that each of its objects will
 #' possess. The class, and its parent, determines which method will be used

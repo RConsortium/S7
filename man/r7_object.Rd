@@ -2,10 +2,11 @@
 % Please edit documentation in R/zzz.R
 \name{R7_object}
 \alias{R7_object}
-\title{An R7 object}
+\title{Base R7 class}
 \usage{
 R7_object()
 }
 \description{
-An R7 object
+Base R7 class
 }
+\keyword{internal}

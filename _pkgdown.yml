@@ -8,13 +8,16 @@ reference:
   contents:
   - new_class
   - new_generic
-  - method<-
   - new_property
   - new_union
+  - method<-
+  - props
+  - validate
+
+- title: Extensions
+  contents:
   - new_external_generic
-  - r7_data
   - s3_class
-  - R7_object
 
 - title: Introspection
   contents:
@@ -22,10 +25,3 @@ reference:
   - class_names
   - object_class
   - method
-  - props
-  - validate
-
-- title: Method dispatch
-  contents:
-  - next_method
-  - method_call
