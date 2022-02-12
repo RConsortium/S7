@@ -100,8 +100,8 @@ class_type <- function(x) {
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
-    s3 = fmt_classes(x[[1]]),
-    s4 = fmt_classes(x@className),
+    s3 = fmt_classes(x[[1]], "S3"),
+    s4 = fmt_classes(x@className, "S4"),
     r7 = fmt_classes(x@name),
     r7_base = fmt_classes(x@name),
     r7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
@@ -151,9 +151,9 @@ obj_desc <- function(x) {
   switch(obj_type(x),
    NULL = "NULL",
    base = fmt_classes(typeof(x)),
-   s3 = fmt_classes(class(x)[[1]]),
-   s4 = fmt_classes(class(x)),
-   r7 = fmt_classes(object_class(x)@name)
+   s3 = fmt_classes(class(x)[[1]], "S3"),
+   s4 = fmt_classes(class(x), "S4"),
+   r7 = fmt_classes(object_class(x)@name, "R7")
   )
 }
 
@@ -177,8 +177,8 @@ is_s3_class <- function(x) {
 
 # helpers -----------------------------------------------------------------
 
-fmt_classes <- function(classes, collapse = ", ") {
-  paste0("<", classes, ">", collapse = collapse)
+fmt_classes <- function(classes, prefix = NULL) {
+  paste0(prefix, "<", classes, ">", collapse = ", ")
 }
 
 # Suppress @className false positive

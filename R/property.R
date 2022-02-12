@@ -238,11 +238,11 @@ prop_exists <- function(object, name) {
 })
 
 prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
+  sprintf("Can't find property %s@%s", class_desc(object_class(object)), prop_name)
 }
 
 prop_error_type <- function(object, prop_name, expected, actual) {
-  sprintf("%s@%s must be of class %s, not %s",
+  sprintf("%s@%s must be %s, not %s",
     obj_desc(object),
     prop_name,
     class_desc(expected),

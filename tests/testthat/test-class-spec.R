@@ -8,7 +8,7 @@ test_that("can work with R7 classes", {
 
   obj <- klass()
   expect_equal(obj_type(obj), "r7")
-  expect_equal(obj_desc(obj), "<klass>")
+  expect_equal(obj_desc(obj), "R7<klass>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -41,12 +41,12 @@ test_that("handles NULL", {
 test_that("can work with S4 constructors", {
   klass <- methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   expect_equal(class_type(klass), "s4")
-  expect_equal(class_desc(klass), "<Range>")
+  expect_equal(class_desc(klass), "S4<Range>")
   expect_equal(class_deparse(klass), "Range")
 
   obj <- klass(start = 1, end = 1)
   expect_equal(obj_type(obj), "s4")
-  expect_equal(obj_desc(obj), "<Range>")
+  expect_equal(obj_desc(obj), "S4<Range>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -54,12 +54,12 @@ test_that("can work with S4 classes", {
   methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   klass <- methods::getClass("Range")
   expect_equal(class_type(klass), "s4")
-  expect_equal(class_desc(klass), "<Range>")
+  expect_equal(class_desc(klass), "S4<Range>")
   expect_equal(class_deparse(klass), "Range")
 
   obj <- methods::new(klass, start = 1, end = 1)
   expect_equal(obj_type(obj), "s4")
-  expect_equal(obj_desc(obj), "<Range>")
+  expect_equal(obj_desc(obj), "S4<Range>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -85,12 +85,12 @@ test_that("can work with simple S3 classes", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "s3")
-  expect_equal(class_desc(klass), "<data.frame>")
+  expect_equal(class_desc(klass), "S3<data.frame>")
   expect_equal(class_deparse(klass), 's3_class("data.frame")')
 
   obj <- data.frame()
   expect_equal(obj_type(obj), "s3")
-  expect_equal(obj_desc(obj), "<data.frame>")
+  expect_equal(obj_desc(obj), "S3<data.frame>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -99,12 +99,12 @@ test_that("can work with compound s3 classes", {
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "s3")
-  expect_equal(class_desc(klass), "<ordered>")
+  expect_equal(class_desc(klass), "S3<ordered>")
   expect_equal(class_deparse(klass), 's3_class("ordered", "factor")')
 
   obj <- ordered(integer())
   expect_equal(obj_type(obj), "s3")
-  expect_equal(obj_desc(obj), "<ordered>")
+  expect_equal(obj_desc(obj), "S3<ordered>")
   expect_equal(class_inherits(obj, klass), TRUE)
   expect_equal(class_inherits(factor(), klass), FALSE)
 })

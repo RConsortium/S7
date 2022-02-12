@@ -27,6 +27,6 @@
     Code
       base_classes$integer(TRUE)
     Error <simpleError>
-      <integer> object is invalid:
+      R7<integer> object is invalid:
       - Underlying data must be <integer> not <logical>
 

@@ -153,10 +153,10 @@ print.R7_class <- function(x, ...) {
   } else {
     prop_fmt <- ""
   }
-  parent <- prop_safely(x, "parent")
-  parent <- prop_safely(parent, "name") %||% parent %||% ""
 
-  cat(sprintf("<R7_class>\n@ name  :  %s\n@ parent: <%s>\n@ properties:\n%s", x@name, parent, prop_fmt), sep = "")
+  parent <- class_desc(prop_safely(x, "parent"))
+
+  cat(sprintf("<R7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s", x@name, parent, prop_fmt), sep = "")
   invisible(x)
 }
 

@@ -42,10 +42,7 @@ describe("prop<-", {
   })
   it("errors if the value does not match the correct class", {
     x <- range(1, 10)
-    expect_error(
-      prop(x, "start") <- "foo",
-      "must be of class"
-    )
+    expect_error(prop(x, "start") <- "foo", "must be")
   })
   it("does not run the check or validation functions if check = FALSE", {
     x <- range(1, 10)
