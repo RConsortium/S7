@@ -8,7 +8,7 @@
 #' The goal is for `method<-` to be the single function you need when working
 #' with R7 generics or R7 classes. This means that as well as registering
 #' methods for R7 classes on R7 generics, you can also register methods for
-#' R7 classes on S3 or S4 generics, and S3 or S4 classes for R7 generics.
+#' R7 classes on S3 or S4 generics, and S3 or S4 classes on R7 generics.
 #' But this is not a general method registration function: at least one of
 #' `generic` and `signature` needs to be from R7.
 #'
@@ -74,17 +74,15 @@ register_method <- function(generic, signature, method, package = NULL) {
 }
 
 register_s3_method <- function(generic, signature, method) {
-  generic_name <- attr(generic, "name")
-
   if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
     msg <- sprintf(
       "When registering methods for S3 generic %s(), signature be a single R7 class",
-      generic_name
+      generic$name
     )
     stop(msg, call. = FALSE)
   }
   class <- signature[[1]]@name
-  registerS3method(generic_name, class, method, envir = parent.frame())
+  registerS3method(generic$name, class, method, envir = parent.frame())
 }
 
 register_r7_method <- function(generic, signature, method) {
@@ -113,34 +111,6 @@ flatten_signature <- function(signature) {
 
   rows <- lapply(1:nrow(comb), function(i) comb[i, ])
   lapply(rows, function(row) Map("[[", signature, row))
-}
-
-as_generic <- function(x) {
-  if (inherits(x, "R7_generic") || is_external_generic(x)) {
-    return(x)
-  }
-
-  if (!is.function(x)) {
-    msg <- sprintf("`generic` must be a function, not a %s", obj_desc(x))
-    stop(msg, call. = FALSE)
-  }
-
-  # For now, assume that it's an S3 generic
-  attr(x, "name") <- find_generic_name(x)
-  class(x) <- "R7_S3_generic"
-  x
-}
-is_s3_generic <- function(x) inherits(x, "R7_S3_generic")
-
-find_generic_name <- function(generic) {
-  env <- environment(generic) %||% baseenv()
-  for (nme in names(env)) {
-    if (identical(generic, env[[nme]])) {
-      return(nme)
-    }
-  }
-
-  stop("Can't find name of S3 `generic`", call. = FALSE)
 }
 
 as_signature <- function(signature) {

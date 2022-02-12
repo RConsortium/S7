@@ -76,10 +76,10 @@ test_that("check_generic produces informative errors", {
 })
 
 test_that("has_fun handles expected cases", {
-  expect_false(has_call(1, quote(x)))
-  expect_false(has_call(quote(f()), quote(x)))
-  expect_false(has_call(quote(f(a, b, c)), quote(x)))
+  expect_equal(find_call(1, quote(x)), NULL)
+  expect_equal(find_call(quote(f()), quote(x)), NULL)
+  expect_equal(find_call(quote(f(a, b, c)), quote(x)), NULL)
 
-  expect_true(has_call(quote(x()), quote(x)))
-  expect_true(has_call(quote(y(x())), quote(x)))
+  expect_equal(find_call(quote(x(1)), quote(x)), quote(x(1)))
+  expect_equal(find_call(quote(y(x(1))), quote(x)), quote(x(1)))
 })
