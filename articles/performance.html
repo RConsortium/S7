@@ -116,9 +116,9 @@
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 6</span></span>
 <span class="co">#&gt;   expression      min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> foo_R7(x)     9.7µs     13µs    <span style="text-decoration: underline;">59</span>625.    4.44KB     11.9</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> foo_s3(x)     3.4µs    3.9µs   <span style="text-decoration: underline;">225</span>438.        0B     22.5</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> foo_s4(x)     3.9µs      5µs   <span style="text-decoration: underline;">172</span>979.        0B      0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> foo_R7(x)     6.8µs    8.8µs    <span style="text-decoration: underline;">88</span>371.    4.44KB     17.7</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> foo_s3(x)     2.5µs    2.9µs   <span style="text-decoration: underline;">303</span>339.        0B     30.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">3</span> foo_s4(x)     2.9µs    3.5µs   <span style="text-decoration: underline;">256</span>592.        0B      0</span>
 
 <span class="va">bar_R7</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar_R7"</span>, dispatch_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">bar_R7</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">text</span>, <span class="va">number</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"-"</span>, <span class="va">y</span>, <span class="st">"-bar"</span><span class="op">)</span>
@@ -132,8 +132,8 @@
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span>
 <span class="co">#&gt;   expression        min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bar_R7(x, y)   21.2µs     24µs    <span style="text-decoration: underline;">38</span>441.        0B     11.5</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bar_s4(x, y)   12.4µs   14.9µs    <span style="text-decoration: underline;">59</span>911.        0B     12.0</span></code></pre></div>
+<span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bar_R7(x, y)   12.2µs   14.5µs    <span style="text-decoration: underline;">66</span>970.        0B     20.1</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bar_s4(x, y)    8.4µs    9.4µs   <span style="text-decoration: underline;">102</span>404.        0B     20.5</span></code></pre></div>
 <p>A potential optimization is caching based on the class names, but lookup should be fast without this.</p>
 <p>The following benchmark generates a class hierarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hiearchy vs the time to dispatch on the last class.</p>
 <p>We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.</p>
@@ -185,26 +185,26 @@
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 8</span></span>
 <span class="co">#&gt;    expression num_classes class_nchar      min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> best                 3          15   10.8µs   13.4µs    <span style="text-decoration: underline;">67</span>806.        0B    20.3 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> worst                3          15   11.5µs   14.2µs    <span style="text-decoration: underline;">62</span>926.        0B    18.9 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> best                 5          15   10.9µs   13.4µs    <span style="text-decoration: underline;">70</span>819.        0B    21.3 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> worst                5          15   11.6µs   14.1µs    <span style="text-decoration: underline;">65</span>892.        0B    19.8 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> best                10          15   10.6µs   13.2µs    <span style="text-decoration: underline;">68</span>357.        0B    20.5 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> worst               10          15   11.9µs   14.5µs    <span style="text-decoration: underline;">63</span>863.        0B    19.2 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> best                50          15   11.7µs   14.1µs    <span style="text-decoration: underline;">66</span>207.        0B    19.9 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> worst               50          15   14.8µs   19.6µs    <span style="text-decoration: underline;">47</span>087.        0B    14.1 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> best               100          15   12.4µs   14.6µs    <span style="text-decoration: underline;">63</span>349.        0B    19.0 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">10</span> worst              100          15     25µs   28.9µs    <span style="text-decoration: underline;">31</span>455.        0B     9.44</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">11</span> best                 3         100     11µs   13.9µs    <span style="text-decoration: underline;">65</span>017.        0B    19.5 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">12</span> worst                3         100   11.6µs   14.2µs    <span style="text-decoration: underline;">63</span>499.        0B    19.1 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">13</span> best                 5         100     11µs   13.2µs    <span style="text-decoration: underline;">70</span>003.        0B    21.0 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">14</span> worst                5         100   11.9µs   14.9µs    <span style="text-decoration: underline;">60</span>456.        0B    18.1 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">15</span> best                10         100   11.5µs     14µs    <span style="text-decoration: underline;">66</span>169.        0B    19.9 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">16</span> worst               10         100   13.1µs   15.9µs    <span style="text-decoration: underline;">56</span>689.        0B    17.0 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">17</span> best                50         100   12.1µs   14.6µs    <span style="text-decoration: underline;">63</span>334.        0B    19.0 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">18</span> worst               50         100   20.9µs     24µs    <span style="text-decoration: underline;">37</span>798.        0B    11.3 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">19</span> best               100         100   12.1µs   15.2µs    <span style="text-decoration: underline;">61</span>561.        0B    18.5 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">20</span> worst              100         100   32.6µs   36.2µs    <span style="text-decoration: underline;">24</span>972.        0B     7.49</span></code></pre></div>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> best                 3          15    6.8µs    8.4µs   <span style="text-decoration: underline;">114</span>803.        0B     34.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> worst                3          15    7.1µs    8.8µs   <span style="text-decoration: underline;">111</span>232.        0B     33.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> best                 5          15    7.2µs    8.7µs   <span style="text-decoration: underline;">111</span>954.        0B     33.6</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> worst                5          15    7.1µs    8.9µs   <span style="text-decoration: underline;">109</span>202.        0B     32.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> best                10          15    6.9µs    8.5µs   <span style="text-decoration: underline;">113</span>307.        0B     34.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> worst               10          15    7.9µs    9.4µs   <span style="text-decoration: underline;">104</span>243.        0B     31.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> best                50          15    7.7µs    9.2µs   <span style="text-decoration: underline;">106</span>206.        0B     31.9</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> worst               50          15   10.9µs   12.5µs    <span style="text-decoration: underline;">78</span>705.        0B     23.6</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> best               100          15    7.7µs    9.5µs   <span style="text-decoration: underline;">102</span>822.        0B     30.9</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">10</span> worst              100          15   13.8µs   15.8µs    <span style="text-decoration: underline;">62</span>225.        0B     18.7</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">11</span> best                 3         100    7.1µs    8.5µs   <span style="text-decoration: underline;">114</span>502.        0B     34.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">12</span> worst                3         100    7.3µs    8.7µs   <span style="text-decoration: underline;">110</span>864.        0B     33.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">13</span> best                 5         100    6.8µs    8.4µs   <span style="text-decoration: underline;">115</span>129.        0B     34.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">14</span> worst                5         100    7.5µs    9.1µs   <span style="text-decoration: underline;">105</span>382.        0B     31.6</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">15</span> best                10         100    6.9µs    8.4µs   <span style="text-decoration: underline;">114</span>638.        0B     34.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">16</span> worst               10         100    8.1µs    9.7µs    <span style="text-decoration: underline;">99</span>946.        0B     30.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">17</span> best                50         100    7.1µs    8.8µs   <span style="text-decoration: underline;">109</span>167.        0B     32.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">18</span> worst               50         100   13.2µs   15.3µs    <span style="text-decoration: underline;">63</span>164.        0B     19.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">19</span> best               100         100    7.7µs    9.5µs   <span style="text-decoration: underline;">101</span>500.        0B     30.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">20</span> worst              100         100     20µs   22.9µs    <span style="text-decoration: underline;">42</span>727.        0B     12.8</span></code></pre></div>
 <p>And the same benchmark using double-dispatch</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">bench</span><span class="fu">::</span><span class="fu"><a href="http://bench.r-lib.org/reference/press.html" class="external-link">press</a></span><span class="op">(</span>
@@ -245,26 +245,26 @@
 <span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 8</span></span>
 <span class="co">#&gt;    expression num_classes class_nchar      min   median `itr/sec` mem_alloc `gc/sec`</span>
 <span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;bch:expr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:tm&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;bch:byt&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> best                 3          15   11.9µs   14.4µs    <span style="text-decoration: underline;">62</span>811.        0B    18.8 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> worst                3          15   13.3µs   16.3µs    <span style="text-decoration: underline;">56</span>103.        0B    22.5 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> best                 5          15   12.7µs   15.5µs    <span style="text-decoration: underline;">58</span>011.        0B    17.4 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> worst                5          15   13.1µs   16.3µs    <span style="text-decoration: underline;">56</span>158.        0B    22.5 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> best                10          15   11.7µs     14µs    <span style="text-decoration: underline;">66</span>935.        0B    20.1 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> worst               10          15   13.9µs   16.1µs    <span style="text-decoration: underline;">58</span>007.        0B    23.2 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> best                50          15   12.6µs   14.9µs    <span style="text-decoration: underline;">59</span>615.        0B    23.9 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> worst               50          15   22.2µs   25.5µs    <span style="text-decoration: underline;">34</span>505.        0B    10.4 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> best               100          15   14.1µs   17.2µs    <span style="text-decoration: underline;">51</span>719.        0B    20.7 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">10</span> worst              100          15   32.6µs   38.3µs    <span style="text-decoration: underline;">23</span>926.        0B     9.57</span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">11</span> best                 3         100   11.6µs   14.7µs    <span style="text-decoration: underline;">64</span>356.        0B    19.3 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">12</span> worst                3         100     13µs   15.6µs    <span style="text-decoration: underline;">58</span>033.        0B    23.2 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">13</span> best                 5         100   10.6µs   14.7µs    <span style="text-decoration: underline;">62</span>524.        0B    25.0 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">14</span> worst                5         100     14µs   17.2µs    <span style="text-decoration: underline;">53</span>096.        0B    15.9 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">15</span> best                10         100   12.2µs   15.3µs    <span style="text-decoration: underline;">60</span>209.        0B    24.1 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">16</span> worst               10         100   15.1µs   18.1µs    <span style="text-decoration: underline;">50</span>512.        0B    15.2 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">17</span> best                50         100   13.2µs     16µs    <span style="text-decoration: underline;">55</span>685.        0B    16.7 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">18</span> worst               50         100   28.2µs     33µs    <span style="text-decoration: underline;">28</span>151.        0B    11.3 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">19</span> best               100         100   14.3µs   17.1µs    <span style="text-decoration: underline;">51</span>653.        0B    20.7 </span>
-<span class="co">#&gt; <span style="color: #BCBCBC;">20</span> worst              100         100   48.7µs   52.3µs    <span style="text-decoration: underline;">17</span>337.        0B     8.22</span></code></pre></div>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> best                 3          15    7.4µs    9.3µs   <span style="text-decoration: underline;">103</span>800.        0B     31.1</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> worst                3          15    8.3µs    9.8µs    <span style="text-decoration: underline;">98</span>960.        0B     39.6</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> best                 5          15    7.3µs    9.1µs   <span style="text-decoration: underline;">106</span>009.        0B     31.8</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> worst                5          15    7.9µs    9.4µs   <span style="text-decoration: underline;">102</span>708.        0B     41.1</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> best                10          15    7.3µs    8.4µs   <span style="text-decoration: underline;">116</span>664.        0B     35.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> worst               10          15    8.5µs    9.6µs   <span style="text-decoration: underline;">101</span>093.        0B     40.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> best                50          15    8.1µs    9.1µs   <span style="text-decoration: underline;">106</span>439.        0B     42.6</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> worst               50          15   13.8µs   15.3µs    <span style="text-decoration: underline;">64</span>489.        0B     19.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> best               100          15      9µs   10.4µs    <span style="text-decoration: underline;">93</span>206.        0B     37.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">10</span> worst              100          15   20.7µs   23.1µs    <span style="text-decoration: underline;">42</span>416.        0B     17.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">11</span> best                 3         100    7.4µs    8.8µs   <span style="text-decoration: underline;">108</span>032.        0B     32.4</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">12</span> worst                3         100    8.1µs    9.4µs   <span style="text-decoration: underline;">102</span>454.        0B     41.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">13</span> best                 5         100    7.3µs    8.7µs   <span style="text-decoration: underline;">110</span>688.        0B     44.3</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">14</span> worst                5         100    8.5µs     10µs    <span style="text-decoration: underline;">96</span>681.        0B     29.0</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">15</span> best                10         100    7.5µs    8.7µs   <span style="text-decoration: underline;">110</span>365.        0B     44.2</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">16</span> worst               10         100    9.6µs     11µs    <span style="text-decoration: underline;">88</span>211.        0B     26.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">17</span> best                50         100    8.3µs    9.6µs    <span style="text-decoration: underline;">99</span>713.        0B     29.9</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">18</span> worst               50         100   18.6µs   20.9µs    <span style="text-decoration: underline;">46</span>761.        0B     18.7</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">19</span> best               100         100    9.1µs   10.5µs    <span style="text-decoration: underline;">91</span>335.        0B     36.5</span>
+<span class="co">#&gt; <span style="color: #BCBCBC;">20</span> worst              100         100   31.2µs   34.6µs    <span style="text-decoration: underline;">28</span>483.        0B     11.4</span></code></pre></div>
   </main>
 </div>
 
