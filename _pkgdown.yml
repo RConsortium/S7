@@ -8,11 +8,16 @@ reference:
   contents:
   - new_class
   - new_generic
-  - new_property
   - new_union
   - method<-
-  - props
   - validate
+
+- title: Properties
+  contents:
+  - new_property
+  - prop
+  - prop_names
+  - props
 
 - title: Extensions
   contents:

@@ -2,26 +2,11 @@
 % Please edit documentation in R/property.R
 \name{prop}
 \alias{prop}
-\alias{prop_safely}
-\alias{prop_names}
-\alias{props}
-\alias{props<-}
-\alias{prop_exists}
 \alias{prop<-}
 \alias{@}
-\title{Get or set value of a property}
+\title{Get/set a property}
 \usage{
 prop(object, name)
-
-prop_safely(object, name)
-
-prop_names(object)
-
-props(object)
-
-props(object) <- value
-
-prop_exists(object, name)
 
 prop(object, name, check = TRUE) <- value
 
@@ -33,24 +18,18 @@ object@name
 \item{name}{The name of the parameter as a character. Partial matching
 is not performed.}
 
-\item{value}{For \verb{prop<-}, a replacement value for the property;
-for \verb{props<-}, a named list of values. The object is automatically
-checked for validity after the replacement is done.}
-
 \item{check}{If \code{TRUE}, check that \code{value} is of the correct type and run
 \code{\link[=validate]{validate()}} on the object before returning.}
+
+\item{value}{A new value for the property. The object is automatically
+checked for validity after the replacement is done.}
 }
 \description{
 \itemize{
-\item \code{prop()} and \code{@}, gets the value of the given property, throwing an
-error if the property doesn't exist for that object.
-\item \code{prop_safely()} returns \code{NULL} if a property doesn't exist,
-rather than throwing an error.
-\item \verb{prop<-} and \verb{@<-} set a new value for the given property.
-\item \code{props()} returns a list of all properties
-\item \verb{props<-} sets multiple properties at once, validating once after all are set.
-\item \code{prop_names()} returns the names of the properties
-\item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
+\item \code{prop(x, "name")} / \code{prop@name} get the value of the a property,
+erroring if it the property doesn't exist.
+\item \code{prop(x, "name") <- value} / \code{prop@name <- value} set the value of
+a property.
 }
 }
 \examples{
@@ -65,7 +44,4 @@ prop(lexington, "colour")
 
 lexington@height <- 14
 prop(lexington, "height") <- 15
-
-try(prop(lexington, "age"))
-prop_safely(lexington, "age")
 }
