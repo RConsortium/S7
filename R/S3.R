@@ -9,7 +9,7 @@
 #'
 #' * Registering a S3 method for an R7 generic.
 #' * Restricting an R7 property to an S3 class.
-#' * Using an an S3 class in R7 union.
+#' * Using an S3 class in an R7 union.
 #'
 #' This is easy, and you can usually include the `s3_class()`
 #' call inline:
@@ -28,7 +28,7 @@
 #' `.data`, and it should be followed by one argument for each attribute used
 #' by the class.
 #'
-#' This can be because base S3 classes are usually heavily wrapped for user
+#' This can be awkward because base S3 classes are usually heavily wrapped for user
 #' convenience and no low level constructor is available. For example, the
 #' factor class is an integer vector with a character vector of `levels`, but
 #' there's no base R function that takes an integer vector of values and
@@ -36,7 +36,7 @@
 #' creates a factor object.
 #'
 #' You may optionally want to also provide a `validator` function which will
-#' ensure the [validate()] confirms the validity of any R7 classes that build
+#' ensure that [validate()] confirms the validity of any R7 classes that build
 #' on this class. Unlike an R7 validator, you are responsible for validating
 #' the types of the attributes.
 #'
@@ -64,7 +64,7 @@
 #'   have an R7 class inherit from an S3 class. It must be specified in the
 #'   same way as a R7 constructor: the first argument should be `.data`
 #'   (the base type whose attributes will be modified).
-#' @param validator An optional validator that can be used to check that
+#' @param validator An optional validator that can be used by [validate()] to check that
 #'   the S3 object is correct.
 s3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.character(class)) {
@@ -104,7 +104,7 @@ check_constructor <- function(constructor) {
     stop("First argument to `constructor` must be .data", call. = FALSE)
   }
   if ("..." %in% arg_names) {
-    stop("`constructor` can not use ...", call. = FALSE)
+    stop("`constructor` can not use `...`", call. = FALSE)
   }
 }
 

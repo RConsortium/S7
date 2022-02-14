@@ -103,7 +103,7 @@ class_constructor <- function(.x, ...) {
     s4 = function(...) methods::new(.x, ...),
     r7 = .x,
     r7_base = .x,
-    r7_union = .x@classes[[1]],
+    r7_union = class_constructor(.x@classes[[1]]),
   )
 }
 class_construct <- function(.x, ...) {
