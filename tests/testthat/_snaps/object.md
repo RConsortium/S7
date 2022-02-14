@@ -4,8 +4,8 @@
       range(start = "x", end = "y")
     Error <simpleError>
       <range> object properties are invalid:
-      - <range>@start must be <integer> or <double>, not <character>
-      - <range>@end must be <integer> or <double>, not <character>
+      - @start must be <integer> or <double>, not <character>
+      - @end must be <integer> or <double>, not <character>
 
 # new_object: checks are arguments are properties
 
