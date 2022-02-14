@@ -40,8 +40,8 @@
       str(list(text("b"), number(50)))
     Output
       List of 2
-       $ : <text/character/R7_object> chr "b"
-       $ : <number/double/R7_object> num 50
+       $ : <text/R7_object/character> chr "b"
+       $ : <number/R7_object/double> num 50
 
 # print()/str() nests properties correctly
 

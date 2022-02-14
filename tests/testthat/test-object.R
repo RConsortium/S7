@@ -107,3 +107,11 @@ test_that("object_class returns the class for S4 types", {
   obj <- foo2("hi")
   expect_equal(object_class(obj), methods::extends(class(obj)))
 })
+
+test_that("can inherit from an S3 class", {
+  ordered2 <- new_class("ordered2", parent = s3_factor)
+  x <- ordered2(c(1L, 2L, 1L), letters[1:3])
+  expect_equal(class(x), c("ordered2", "R7_object", "factor"))
+  expect_equal(prop_names(x), character())
+  expect_error(x@levels, "Can't find property")
+})
