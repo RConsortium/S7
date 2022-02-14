@@ -118,16 +118,6 @@ prop <- function(object, name) {
   }
 }
 
-prop_safely <- function(object, name) {
-  if (!inherits(object, "R7_object")) {
-    NULL
-  } else if (!prop_exists(object, name)) {
-    NULL
-  } else {
-    prop_val(object, name)
-  }
-}
-
 # Internal helper that assumes the property exists
 prop_val <- function(object, name) {
   val <- attr(object, name, exact = TRUE)

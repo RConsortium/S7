@@ -82,7 +82,12 @@ validate <- function(object, properties = TRUE) {
   errors <- character()
   while(!is.null(class)) {
     errors <- c(errors, class_validate(class, object))
-    class <- prop_safely(class, "parent")
+
+    if (prop_exists(class, "parent")) {
+      class <- class@parent
+    } else {
+      class <- NULL
+    }
   }
 
   # If needed, report errors
