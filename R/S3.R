@@ -64,8 +64,12 @@
 #'   have an R7 class inherit from an S3 class. It must be specified in the
 #'   same way as a R7 constructor: the first argument should be `.data`
 #'   (the base type whose attributes will be modified).
-#' @param validator An optional validator that can be used by [validate()] to check that
-#'   the S3 object is correct.
+#' @param validator An optional validator used by [validate()] to check that
+#'   the R7 object adheres to the constraints of the S3 class.
+#'
+#'   A validator is a single argument function that takes the object to
+#'   validate and returns `NULL` if the object is valid. If the object is
+#'   invalid, it returns a character vector of problems.
 s3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.character(class)) {
     stop("`class` must be a character vector", call. = FALSE)

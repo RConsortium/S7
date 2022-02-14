@@ -15,8 +15,12 @@ have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be \code{.data}
 (the base type whose attributes will be modified).}
 
-\item{validator}{An optional validator that can be used by \code{\link[=validate]{validate()}} to check that
-the S3 object is correct.}
+\item{validator}{An optional validator used by \code{\link[=validate]{validate()}} to check that
+the R7 object adheres to the constraints of the S3 class.
+
+A validator is a single argument function that takes the object to
+validate and returns \code{NULL} if the object is valid. If the object is
+invalid, it returns a character vector of problems.}
 }
 \description{
 To use an S3 class with R7, you must explicitly declare it using
