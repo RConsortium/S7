@@ -12,7 +12,7 @@
       validate(obj)
     Error <simpleError>
       <klass> object properties are invalid:
-      - <klass>@x must be of class <double>, not <character>
+      - @x must be <double>, not <character>
 
 ---
 
@@ -29,8 +29,8 @@
       validate(obj)
     Error <simpleError>
       <klass2> object properties are invalid:
-      - <klass2>@x must be of class <double>, not <character>
-      - <klass2>@z must be of class <double>, not <character>
+      - @x must be <double>, not <character>
+      - @z must be <double>, not <character>
 
 # validate checks base type
 

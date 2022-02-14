@@ -46,8 +46,8 @@
       @ properties:
        $ anything: <ANY>                 
        $ base    : <integer>             
-       $ s3      : <factor>              
-       $ s4      : <class_s4>            
+       $ s3      : S3<factor>            
+       $ s4      : S4<class_s4>          
        $ r7      : <class_r7>            
        $ r7_union: <integer> or <logical>
 
@@ -56,23 +56,23 @@
     Code
       my_obj@base <- "x"
     Error <simpleError>
-      <my_class>@base must be of class <integer>, not <character>
+      <my_class>@base must be <integer>, not <character>
     Code
       my_obj@s3 <- "x"
     Error <simpleError>
-      <my_class>@s3 must be of class <factor>, not <character>
+      <my_class>@s3 must be S3<factor>, not <character>
     Code
       my_obj@s4 <- "x"
     Error <simpleError>
-      <my_class>@s4 must be of class <class_s4>, not <character>
+      <my_class>@s4 must be S4<class_s4>, not <character>
     Code
       my_obj@r7 <- "x"
     Error <simpleError>
-      <my_class>@r7 must be of class <class_r7>, not <character>
+      <my_class>@r7 must be <class_r7>, not <character>
     Code
       my_obj@r7_union <- "x"
     Error <simpleError>
-      <my_class>@r7_union must be of class <integer> or <logical>, not <character>
+      <my_class>@r7_union must be <integer> or <logical>, not <character>
 
 # as_properties() gives useful error messages
 

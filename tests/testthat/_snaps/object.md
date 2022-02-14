@@ -4,8 +4,8 @@
       range(start = "x", end = "y")
     Error <simpleError>
       <range> object properties are invalid:
-      - <range>@start must be of class <integer> or <double>, not <character>
-      - <range>@end must be of class <integer> or <double>, not <character>
+      - @start must be <integer> or <double>, not <character>
+      - @end must be <integer> or <double>, not <character>
 
 # new_object: checks are arguments are properties
 
@@ -32,7 +32,7 @@
     Code
       str(range(1, 10))
     Output
-      <range/R7_object>
+      <range>
       @ start :  num 1
       @ end   :  num 10
       @ length:  num 9
@@ -40,17 +40,17 @@
       str(list(text("b"), number(50)))
     Output
       List of 2
-       $ : <text/R7_object/character> chr "b"
-       $ : <number/R7_object/double> num 50
+       $ : <text> chr "b"
+       $ : <number> num 50
 
 # print()/str() nests properties correctly
 
     Code
       str(klass(x = 10, y = range(1, 10)))
     Output
-      <klass/R7_object>
+      <klass>
       @ x:  num 10
-      @ y:  <range/R7_object>
+      @ y:  <range>
        .. @ start :  num 1
        .. @ end   :  num 10
        .. @ length:  num 9

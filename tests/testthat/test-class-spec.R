@@ -47,15 +47,16 @@ test_that("handles NULL", {
 test_that("can work with S4 classes", {
   methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   klass <- methods::getClass("Range")
+
   expect_equal(class_type(klass), "s4")
   expect_equal(class_names(klass), "Range")
   expect_s4_class(class_construct(klass, start = 1, end = 2), "Range")
-  expect_equal(class_desc(klass), "<Range>")
+  expect_equal(class_desc(klass), "S4<Range>")
   expect_equal(class_deparse(klass), "Range")
 
   obj <- methods::new(klass, start = 1, end = 1)
   expect_equal(obj_type(obj), "s4")
-  expect_equal(obj_desc(obj), "<Range>")
+  expect_equal(obj_desc(obj), "S4<Range>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -82,13 +83,13 @@ test_that("can work with simple S3 classes", {
 
   expect_equal(class_type(klass), "s3")
   expect_equal(class_names(klass), c("R7_object", "data.frame"))
+  expect_equal(class_desc(klass), "S3<data.frame>")
   expect_equal(class_construct(klass, list(x = 1)), data.frame(x = 1))
-  expect_equal(class_desc(klass), "<data.frame>")
   expect_equal(class_deparse(klass), 's3_class("data.frame")')
 
   obj <- data.frame()
   expect_equal(obj_type(obj), "s3")
-  expect_equal(obj_desc(obj), "<data.frame>")
+  expect_equal(obj_desc(obj), "S3<data.frame>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -101,13 +102,13 @@ test_that("can work with compound s3 classes", {
 
   expect_equal(class_type(klass), "s3")
   expect_equal(class_names(klass), c("R7_object", "ordered", "factor"))
-  expect_equal(class_desc(klass), "<ordered>")
+  expect_equal(class_desc(klass), "S3<ordered>")
   expect_equal(class_construct(klass), ordered(numeric()))
   expect_equal(class_deparse(klass), 's3_class("ordered", "factor")')
 
   obj <- ordered(integer())
   expect_equal(obj_type(obj), "s3")
-  expect_equal(obj_desc(obj), "<ordered>")
+  expect_equal(obj_desc(obj), "S3<ordered>")
   expect_equal(class_inherits(obj, klass), TRUE)
   expect_equal(class_inherits(factor(), klass), FALSE)
 })

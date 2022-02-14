@@ -67,7 +67,7 @@ print.R7_object <- function(x, ...) {
 #' @export
 str.R7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<", paste0(class(object), collapse = "/"), ">", sep = "")
+  cat(obj_desc(object))
 
   if (typeof(object) != "S4") {
     bare <- object

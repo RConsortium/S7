@@ -106,7 +106,7 @@ validate_properties <- function(object, class) {
 
     value <- prop(object, prop$name)
     if (!class_inherits(value, prop$class)) {
-      errors <- c(errors, prop_error_type(object, prop$name, prop$class, value))
+      errors <- c(errors, prop_error_type(object, prop$name, prop$class, value, show_type = FALSE))
     }
     prop
   }
