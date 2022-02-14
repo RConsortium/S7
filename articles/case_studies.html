@@ -153,7 +153,7 @@
 <span class="co">#&gt; [1] 29</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">boss</span>
-<span class="co">#&gt; &lt;Person/R7_object&gt;</span>
+<span class="co">#&gt; &lt;Person&gt;</span>
 <span class="co">#&gt; @ name     :  chr "Jane Doe"</span>
 <span class="co">#&gt; @ birthdate:  Date[1:1], format: "1982-03-04"</span>
 <span class="co">#&gt; @ age      :  num 39</span></code></pre></div>
@@ -189,9 +189,9 @@
 <span class="co">#&gt; @ name  :  annotated_df</span>
 <span class="co">#&gt; @ parent: &lt;R7_object&gt;</span>
 <span class="co">#&gt; @ properties:</span>
-<span class="co">#&gt;  $ data   : &lt;tbl_df&gt;</span>
-<span class="co">#&gt;  $ rows   : &lt;tbl_df&gt;</span>
-<span class="co">#&gt;  $ columns: &lt;tbl_df&gt;</span></code></pre></div>
+<span class="co">#&gt;  $ data   : S3&lt;tbl_df&gt;</span>
+<span class="co">#&gt;  $ rows   : S3&lt;tbl_df&gt;</span>
+<span class="co">#&gt;  $ columns: S3&lt;tbl_df&gt;</span></code></pre></div>
 <p>To instantiate an instance of <code>annotated_df</code> we first need to get some data to put in it. As an example we will use the mtcars dataset. This requires some manipulation to get the <code>rows</code> and <code>columns</code> data in the right formats.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mt</span> <span class="op">&lt;-</span> <span class="va">mtcars</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">32</span>, <span class="fl">4</span><span class="op">)</span>, <span class="op">]</span>
