@@ -1,27 +1,31 @@
 url: https://RConsortium.github.io/OOP-WG
 
+template:
+  bootstrap: 5
+
 reference:
 - title: Key functions
   contents:
   - new_class
   - new_generic
-  - method<-
-  - new_property
   - new_union
+  - method<-
+  - validate
+
+- title: Properties
+  contents:
+  - new_property
+  - prop
+  - prop_names
+  - props
+
+- title: Extensions
+  contents:
   - new_external_generic
-  - r7_data
   - s3_class
-  - R7_object
 
 - title: Introspection
   contents:
   - as_class
   - object_class
   - method
-  - props
-  - validate
-
-- title: Method dispatch
-  contents:
-  - next_method
-  - method_call

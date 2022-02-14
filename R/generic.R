@@ -153,29 +153,25 @@ check_generic <- function(fun) {
     stop("`fun` must be a function", call. = FALSE)
   }
 
-  if (!has_call(body(fun), quote(method_call))) {
+  method_call <- find_call(body(fun), quote(method_call))
+  if (is.null(method_call)) {
     stop("`fun` must contain a call to `method_call()`", call. = FALSE)
   }
 }
-has_call <- function(x, name) {
-  if (!is.call(x)) {
-    return(FALSE)
-  }
-
-  if (identical(x[[1]], name)) {
-    return(TRUE)
-  }
-
-  if (length(x) == 1) {
-    return(FALSE)
-  }
-
-  for (i in seq(2, length(x))) {
-    if (has_call(x[[i]], name)) {
-      return(TRUE)
+find_call <- function(x, name) {
+  if (is.call(x)) {
+    if (identical(x[[1]], name)) {
+      return(x)
+    } else if (length(x) > 1) {
+      for (i in seq(2, length(x))) {
+        call <- find_call(x[[i]], name)
+        if (!is.null(call)) {
+          return(call)
+        }
+      }
     }
   }
-  FALSE
+  NULL
 }
 
 

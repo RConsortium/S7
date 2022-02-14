@@ -55,6 +55,7 @@ method_call <- function() {
 #' Retrieve the next applicable method after the current one
 #'
 #' @export
+#' @keywords internal
 next_method <- function() {
   current_method <- sys.function(sys.parent(1))
 

@@ -44,3 +44,9 @@ test_that("base classes types check their data", {
     base_classes$integer(TRUE)
   })
 })
+
+test_that("register S4 classes for key components", {
+  expect_s4_class(getClass("R7_object"), "classRepresentation")
+  expect_s4_class(getClass("R7_method"), "classRepresentation")
+  expect_s4_class(getClass("R7_generic"), "classRepresentation")
+})
