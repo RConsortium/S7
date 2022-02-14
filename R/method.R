@@ -216,7 +216,6 @@ register_s4_method <- function(generic, signature, method, env = parent.frame())
   methods::setMethod(generic, s4_signature, method, where = s4_env)
 
 }
-
 s4_class <- function(x, s4_env) {
   if (is_base_class(x)) {
     x@name
@@ -228,14 +227,6 @@ s4_class <- function(x, s4_env) {
     methods::getClass(class)
   }
 }
-S4_env <- function() {
-  if (identical(Sys.getenv("TESTTHAT"), "true")) {
-    S4_test_env
-  } else {
-    topenv(parent.frame(2))
-  }
-}
-S4_test_env <- new.env(parent = emptyenv())
 
 #' @export
 print.R7_method <- function(x, ...) {
