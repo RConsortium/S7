@@ -11,7 +11,7 @@
 #' @export
 #' @examples
 #' # Create a generic and register some methods
-#' bizarro <- new_generic("bizarro", dispatch_args = "x")
+#' bizarro <- new_generic("bizarro", "x")
 #' method(bizarro, "numeric") <- function(x) rev(x)
 #' method(bizarro, s3_class("factor")) <- function(x) {
 #'   levels(x) <- rev(levels(x))

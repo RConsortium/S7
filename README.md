@@ -73,7 +73,7 @@ x@end <- "foo"
 
 # assigning properties runs the validator
 x@end <- 0
-#> Error: Invalid <range> object:
+#> Error: <range> object is invalid:
 #> - <range>@end must be greater than or equal to <range>@start
 
 # Print methods for both R7_class objects
@@ -98,9 +98,8 @@ x
 
 ``` r
 text <- new_class("text", parent = "character")
-foo <- new_generic("foo", dispatch_args = "x")
+foo <- new_generic("foo", "x")
 method(foo, text) <- function(x, ...) paste0("foo-", x)
-#> registered foo(<text>)
 
 foo(text("hi"))
 #> [1] "foo-hi"
@@ -119,9 +118,8 @@ At each level the search iteratively searches along objects class
 vector.
 
 ``` r
-bar <- new_generic("bar", dispatch_args = c("x", "y"))
+bar <- new_generic("bar", c("x", "y"))
 method(bar, list("character", "double")) <- function(x, y) paste0("foo-", x, ":", y)
-#> registered bar(<character>, <double>)
 
 bar("hi", 42)
 #> [1] "foo-hi:42"
@@ -139,7 +137,6 @@ method(bar, list(text, "double")) <- function(x, y, ...) {
   res <- next_method()(x, y)
   paste0("2 ", res)
 }
-#> registered bar(<text>, <double>)
 
 bar(text("hi"), 42)
 #> [1] "2 foo-hi:42"
@@ -152,7 +149,7 @@ same way as `UseMethod()`, so non-standard evaluation works basically
 the same as S3.
 
 ``` r
-subset2 <- new_generic("subset2", dispatch_args = "x")
+subset2 <- new_generic("subset2", "x")
 
 method(subset2, s3_class("data.frame")) <- function(x, subset = NULL, select = NULL, drop = FALSE) {
   e <- substitute(subset)
@@ -165,7 +162,6 @@ method(subset2, s3_class("data.frame")) <- function(x, subset = NULL, select = N
   vars <- eval(substitute(select), nl, parent.frame())
   x[r, vars, drop = drop]
 }
-#> registered subset2(<data.frame>)
 
 subset2(mtcars, hp > 200, c(wt, qsec))
 #>                        wt  qsec

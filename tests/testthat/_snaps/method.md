@@ -24,7 +24,7 @@
 # check_method errors if the functions are not compatible
 
     Code
-      foo <- new_generic("foo", dispatch_args = "x")
+      foo <- new_generic("foo", "x")
       check_method(1, "character", foo)
     Error <simpleError>
       foo(<character>) must be a function
@@ -44,7 +44,7 @@
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", function(x, ..., z = 2, y = 1) method_call())
+      foo <- new_generic("foo", fun = function(x, ..., z = 2, y = 1) method_call())
       check_method(function(x, ..., y = 1) { }, "character", foo)
     Warning <simpleWarning>
       foo(<character>) doesn't have argument `z`
