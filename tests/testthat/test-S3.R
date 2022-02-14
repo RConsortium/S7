@@ -31,5 +31,5 @@ test_that("s3_class() checks its inputs", {
 
 test_that("default s3_class constructor errors", {
   # constructor errors if needed
-  expect_snapshot(class_construct(s3_class("foo")), error = TRUE)
+  expect_snapshot(class_construct(s3_class("foo"), 1), error = TRUE)
 })

@@ -77,7 +77,7 @@ s3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.null(constructor)) {
     check_constructor(constructor)
   } else {
-    constructor <- function() {
+    constructor <- function(.data) {
       stop(sprintf("S3 class <%s> doesn't have a constructor", class[[1]]), call. = FALSE)
     }
   }
