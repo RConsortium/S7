@@ -15,7 +15,7 @@ have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be \code{.data}
 (the base type whose attributes will be modified).}
 
-\item{validator}{An optional validator that can be used to check that
+\item{validator}{An optional validator that can be used by \code{\link[=validate]{validate()}} to check that
 the S3 object is correct.}
 }
 \description{
@@ -28,7 +28,7 @@ vector:
 \itemize{
 \item Registering a S3 method for an R7 generic.
 \item Restricting an R7 property to an S3 class.
-\item Using an an S3 class in R7 union.
+\item Using an S3 class in an R7 union.
 }
 
 This is easy, and you can usually include the \code{s3_class()}
@@ -45,7 +45,7 @@ conventions. This means the first argument to the constructor should be
 \code{.data}, and it should be followed by one argument for each attribute used
 by the class.
 
-This can be because base S3 classes are usually heavily wrapped for user
+This can be awkward because base S3 classes are usually heavily wrapped for user
 convenience and no low level constructor is available. For example, the
 factor class is an integer vector with a character vector of \code{levels}, but
 there's no base R function that takes an integer vector of values and
@@ -53,7 +53,7 @@ character vector of levels, verifies that they are consistent, then
 creates a factor object.
 
 You may optionally want to also provide a \code{validator} function which will
-ensure the \code{\link[=validate]{validate()}} confirms the validity of any R7 classes that build
+ensure that \code{\link[=validate]{validate()}} confirms the validity of any R7 classes that build
 on this class. Unlike an R7 validator, you are responsible for validating
 the types of the attributes.
 
