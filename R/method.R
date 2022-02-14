@@ -8,7 +8,7 @@
 #' The goal is for `method<-` to be the single function you need when working
 #' with R7 generics or R7 classes. This means that as well as registering
 #' methods for R7 classes on R7 generics, you can also register methods for
-#' R7 classes on S3 or S4 generics, and S3 or S4 classes for R7 generics.
+#' R7 classes on S3 or S4 generics, and S3 or S4 classes on R7 generics.
 #' But this is not a general method registration function: at least one of
 #' `generic` and `signature` needs to be from R7.
 #'
@@ -34,7 +34,7 @@
 #' @export
 #' @examples
 #' # Create a generic
-#' bizarro <- new_generic("bizarro", dispatch_args = "x")
+#' bizarro <- new_generic("bizarro", "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x) rev(x)
 #' method(bizarro, s3_class("data.frame")) <- function(x) {
@@ -45,26 +45,22 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
-  package <- packageName(parent.frame())
-  register_method(generic, signature, value, package = package)
+
+  register_method(generic, signature, value, env = parent.frame())
   invisible(generic)
 }
 
-register_method <- function(generic, signature, method, package = NULL) {
+register_method <- function(generic, signature, method, env = parent.frame()) {
+  package <- packageName(env)
   signature <- as_signature(signature)
   generic <- as_generic(generic)
 
   if (is_external_generic(generic)) {
-    if (!is.null(package)) {
-      # method registration within package, so add to lazy registry
-      external_methods_add(package, generic, signature, method)
-    } else {
-      # otherwise find the generic and register
-      generic <- getFromNamespace(generic$name, asNamespace(generic$package))
-      register_method(generic, signature, method)
-    }
+    register_external_method(generic, signature, method, package)
   } else if (is_s3_generic(generic)) {
     register_s3_method(generic, signature, method)
+  } else if (inherits(generic, "genericFunction")) {
+    register_s4_method(generic, signature, method, env)
   } else {
     check_method(method, signature, generic)
     register_r7_method(generic, signature, method)
@@ -73,18 +69,27 @@ register_method <- function(generic, signature, method, package = NULL) {
   invisible()
 }
 
-register_s3_method <- function(generic, signature, method) {
-  generic_name <- attr(generic, "name")
+register_external_method <- function(generic, signature, method, package = NULL) {
+  if (!is.null(package)) {
+    # method registration within package, so add to lazy registry
+    external_methods_add(package, generic, signature, method)
+  } else {
+    # otherwise find the generic and register
+    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
+    register_method(generic, signature, method)
+  }
+}
 
+register_s3_method <- function(generic, signature, method) {
   if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
     msg <- sprintf(
       "When registering methods for S3 generic %s(), signature be a single R7 class",
-      generic_name
+      generic$name
     )
     stop(msg, call. = FALSE)
   }
   class <- signature[[1]]@name
-  registerS3method(generic_name, class, method, envir = parent.frame())
+  registerS3method(generic$name, class, method, envir = parent.frame())
 }
 
 register_r7_method <- function(generic, signature, method) {
@@ -115,36 +120,8 @@ flatten_signature <- function(signature) {
   lapply(rows, function(row) Map("[[", signature, row))
 }
 
-as_generic <- function(x) {
-  if (inherits(x, "R7_generic") || is_external_generic(x)) {
-    return(x)
-  }
-
-  if (!is.function(x)) {
-    msg <- sprintf("`generic` must be a function, not a %s", obj_desc(x))
-    stop(msg, call. = FALSE)
-  }
-
-  # For now, assume that it's an S3 generic
-  attr(x, "name") <- find_generic_name(x)
-  class(x) <- "R7_S3_generic"
-  x
-}
-is_s3_generic <- function(x) inherits(x, "R7_S3_generic")
-
-find_generic_name <- function(generic) {
-  env <- environment(generic) %||% baseenv()
-  for (nme in names(env)) {
-    if (identical(generic, env[[nme]])) {
-      return(nme)
-    }
-  }
-
-  stop("Can't find name of S3 `generic`", call. = FALSE)
-}
-
 as_signature <- function(signature) {
-  if (!is.list(signature)) {
+  if (!is.list(signature) || is.object(signature)) {
     signature <- list(signature)
   }
 
@@ -224,12 +201,31 @@ check_method <- function(method, signature, generic) {
 # Class name when registering an R7 method
 r7_class_name <- function(x) {
   switch(class_type(x),
-    s3 = x,
+    s3 = x$class,
     s4 = x@className,
     r7 = x@name,
     r7_base = x@name,
     stop("Unsupported")
   )
+}
+
+register_s4_method <- function(generic, signature, method, env = parent.frame()) {
+  s4_env <- topenv(env)
+
+  s4_signature <- lapply(signature, s4_class, s4_env = s4_env)
+  methods::setMethod(generic, s4_signature, method, where = s4_env)
+
+}
+s4_class <- function(x, s4_env) {
+  if (is_base_class(x)) {
+    x@name
+  } else if (is_s4_class(x)) {
+    x
+  } else if (is_class(x) || is_s3_class(x)) {
+    class <- class_names(x)
+    methods::setOldClass(class, where = s4_env)
+    methods::getClass(class)
+  }
 }
 
 #' @export

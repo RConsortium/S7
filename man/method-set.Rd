@@ -39,13 +39,13 @@ signatures by registering methods with \verb{method<-}
 The goal is for \verb{method<-} to be the single function you need when working
 with R7 generics or R7 classes. This means that as well as registering
 methods for R7 classes on R7 generics, you can also register methods for
-R7 classes on S3 or S4 generics, and S3 or S4 classes for R7 generics.
+R7 classes on S3 or S4 generics, and S3 or S4 classes on R7 generics.
 But this is not a general method registration function: at least one of
 \code{generic} and \code{signature} needs to be from R7.
 }
 \examples{
 # Create a generic
-bizarro <- new_generic("bizarro", dispatch_args = "x")
+bizarro <- new_generic("bizarro", "x")
 # Register some methods
 method(bizarro, "numeric") <- function(x) rev(x)
 method(bizarro, s3_class("data.frame")) <- function(x) {

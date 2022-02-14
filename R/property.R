@@ -83,23 +83,17 @@ str.R7_property <- function(object, ..., nest.lev = 0) {
   str_list(object, nest.lev = nest.lev)
 }
 
-#' Get or set value of a property
+#' Get/set a property
 #'
-#' - `prop()` and `@`, gets the value of the given property, throwing an
-#'   error if the property doesn't exist for that object.
-#' - `prop_safely()` returns `NULL` if a property doesn't exist,
-#'   rather than throwing an error.
-#' - `prop<-` and `@<-` set a new value for the given property.
-#' - `props()` returns a list of all properties
-#' - `props<-` sets multiple properties at once, validating once after all are set.
-#' - `prop_names()` returns the names of the properties
-#' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
+#' - `prop(x, "name")` / `prop@name` get the value of the a property,
+#'   erroring if it the property doesn't exist.
+#' - `prop(x, "name") <- value` / `prop@name <- value` set the value of
+#'   a property.
 #'
 #' @param object An object from a R7 class
 #' @param name The name of the parameter as a character. Partial matching
 #'   is not performed.
-#' @param value For `prop<-`, a replacement value for the property;
-#'   for `props<-`, a named list of values. The object is automatically
+#' @param value A new value for the property. The object is automatically
 #'   checked for validity after the replacement is done.
 #' @export
 #' @examples
@@ -114,9 +108,6 @@ str.R7_property <- function(object, ..., nest.lev = 0) {
 #'
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
-#'
-#' try(prop(lexington, "age"))
-#' prop_safely(lexington, "age")
 prop <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     stop("`object` is not an <R7_object>")
@@ -127,8 +118,6 @@ prop <- function(object, name) {
   }
 }
 
-#' @rdname prop
-#' @export
 prop_safely <- function(object, name) {
   if (!inherits(object, "R7_object")) {
     NULL
@@ -155,53 +144,6 @@ prop_val <- function(object, name) {
 prop_obj <- function(object, name) {
   class <- object_class(object)
   attr(class, "properties")[[name]]
-}
-
-#' @rdname prop
-#' @export
-prop_names <- function(object) {
-  if (inherits(object, "R7_class")) {
-    names(attributes(object))
-  } else {
-    class <- object_class(object)
-    props <- attr(class, "properties", exact = TRUE)
-    if (length(props) == 0) {
-      character()
-    } else {
-      names(props)
-    }
-  }
-}
-
-#' @importFrom stats setNames
-#' @rdname prop
-#' @export
-props <- function(object) {
-  prop_names <- prop_names(object)
-  if (length(prop_names) == 0) {
-    list()
-  } else {
-    setNames(lapply(prop_names, prop_safely, object = object), prop_names)
-  }
-}
-
-#' @rdname prop
-#' @export
-`props<-` <- function(object, value) {
-  stopifnot(is.list(value))
-
-  for (name in names(value)) {
-    prop(object, name, check = FALSE) <- value[[name]]
-  }
-  validate(object)
-
-  object
-}
-
-#' @rdname prop
-#' @export
-prop_exists <- function(object, name) {
-  name %in% prop_names(object)
 }
 
 #' @rdname prop
@@ -269,6 +211,76 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
   prop(object, nme) <- value
 
   invisible(object)
+}
+
+
+#' Property introspection
+#'
+#' - `prop_names(x)` returns the names of the properties
+#' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
+#'
+#' @inheritParams prop
+#' @export
+prop_names <- function(object) {
+  if (inherits(object, "R7_class")) {
+    names(attributes(object))
+  } else {
+    class <- object_class(object)
+    props <- attr(class, "properties", exact = TRUE)
+    if (length(props) == 0) {
+      character()
+    } else {
+      names(props)
+    }
+  }
+}
+
+#' @rdname prop_names
+#' @export
+prop_exists <- function(object, name) {
+  name %in% prop_names(object)
+}
+
+#' Get/set multiple properties
+#'
+#' - `props(x)` returns all properties.
+#' - `props(x) <- list(name1 = val1, name2 = val2)` sets multiple properties.
+#'
+#' @importFrom stats setNames
+#' @inheritParams prop
+#' @export
+#' @examples
+#' horse <- new_class("horse", properties = list(
+#'   name = "character",
+#'   colour = "character",
+#'   height = "numeric"
+#' ))
+#' lexington <- horse(colour = "bay", height = 15, name = "Lex")
+#'
+#' props(lexington)
+#' props(lexington) <- list(height = 14, name = "Lexigonton")
+#' lexington
+props <- function(object) {
+  prop_names <- prop_names(object)
+  if (length(prop_names) == 0) {
+    list()
+  } else {
+    setNames(lapply(prop_names, prop, object = object), prop_names)
+  }
+}
+#' @rdname props
+#' @export
+#' @param value A named list of values. The object is checked for validity
+#'   only after all replacements are performed.
+`props<-` <- function(object, value) {
+  stopifnot(is.list(value))
+
+  for (name in names(value)) {
+    prop(object, name, check = FALSE) <- value[[name]]
+  }
+  validate(object)
+
+  object
 }
 
 as_properties <- function(x) {

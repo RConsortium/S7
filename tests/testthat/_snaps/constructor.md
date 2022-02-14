@@ -27,3 +27,19 @@
       new_object(foo2(.data = .data))
       <environment: 0x0>
 
+# can generate constructors for S3 classes
+
+    Code
+      new_constructor(s3_factor, list())
+    Output
+      function (.data, levels) 
+      new_object(new_factor(.data = .data, levels = levels))
+      <environment: 0x0>
+    Code
+      new_constructor(s3_factor, as_properties(list(x = "numeric", y = "numeric")))
+    Output
+      function (.data, levels, x, y) 
+      new_object(new_factor(.data = .data, levels = levels), x = x, 
+          y = y)
+      <environment: 0x0>
+

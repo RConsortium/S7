@@ -61,7 +61,6 @@ as_S4_class <- function(x, error_base) {
   if (methods::is(x, "ClassUnionRepresentation")) {
     subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
     subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
-
     do.call("new_union", subclasses)
   } else if (methods::is(x, "classRepresentation")) {
     if (x@package == "methods" && x@className %in% names(base_classes)) {
@@ -77,30 +76,63 @@ as_S4_class <- function(x, error_base) {
   }
 }
 
+is_s4_class <- function(x) inherits(x, "classRepresentation")
+is_base_class <- function(x) is_class(x) && utils::hasName(base_classes, x@name)
+
+
 class_type <- function(x) {
-  if (is_class(x)) {
-    if (utils::hasName(base_classes, x@name)) {
-      "r7_base"
-    } else {
-      "r7"
-    }
+  if (is.null(x)) {
+    "NULL"
+  } else if (is_base_class(x)) {
+    "r7_base"
+  } else if (is_class(x)) {
+    "r7"
   } else if (is_union(x)) {
     "r7_union"
-  } else if (is.null(x)) {
-    "NULL"
   } else if (is_s3_class(x)) {
     "s3"
-  } else if (isS4(x)) {
+  } else if (is_s4_class(x)) {
     "s4"
   } else {
     stop("`x` is not standard R7 class", call. = FALSE)
   }
 }
 
+class_constructor <- function(.x, ...) {
+  switch(class_type(.x),
+    NULL = function() NULL,
+    s3 = .x$constructor,
+    s4 = function(...) methods::new(.x, ...),
+    r7 = .x,
+    r7_base = .x,
+    r7_union = class_constructor(.x@classes[[1]]),
+  )
+}
+class_construct <- function(.x, ...) {
+  class_constructor(.x)(...)
+}
+
+class_validate <- function(class, object) {
+  validator <- switch(class_type(class),
+    NULL = NULL,
+    s3 = class$validator,
+    s4 = methods::validObject,
+    r7 = class@validator,
+    r7_base = class@validator,
+    r7_union = NULL,
+  )
+
+  if (is.null(validator)) {
+    NULL
+  } else {
+    validator(object)
+  }
+}
+
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
-    s3 = fmt_classes(x[[1]], "S3"),
+    s3 = fmt_classes(x$class[[1]], "S3"),
     s4 = fmt_classes(x@className, "S4"),
     r7 = fmt_classes(x@name),
     r7_base = fmt_classes(x@name),
@@ -108,11 +140,23 @@ class_desc <- function(x) {
   )
 }
 
+# Return complete vector of class names
+class_names <- function(x) {
+  switch(class_type(x),
+    NULL = NULL,
+    s3 = c("R7_object", x$class),
+    s4 = as.character(x@className),
+    r7 = c(x@name, if (prop_exists(x, "parent")) class_names(x@parent)),
+    r7_base = c("R7_object", x@name),
+    r7_union = unique(unlist(lapply(x@classes, class_names)), fromLast = TRUE)
+  )
+}
+
 # Used when printing method signature to generate executable code
 class_deparse <- function(x) {
   switch(class_type(x),
     NULL = "",
-    s3 = paste0("s3_class(", paste(encodeString(x, quote = '"'), collapse = ", "), ")"),
+    s3 = paste0("s3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
     s4 = as.character(x@className),
     r7 = x@name,
     r7_base = encodeString(x@name, quote = '"'),
@@ -126,7 +170,7 @@ class_deparse <- function(x) {
 class_inherits <- function(x, what) {
   switch(class_type(what),
     NULL = TRUE,
-    s3 = !isS4(x) && is_prefix(what, class(x)),
+    s3 = !isS4(x) && is_prefix(what$class, class(x)),
     s4 = isS4(x) && methods::is(x, what),
     r7 = inherits(x, "R7_object") && inherits(x, what@name),
     r7_base = what@name %in% .class2(x),
@@ -155,24 +199,6 @@ obj_desc <- function(x) {
    s4 = fmt_classes(class(x), "S4"),
    r7 = fmt_classes(object_class(x)@name)
   )
-}
-
-#' Declare an S3 class vector
-#'
-#' The S3 class system is informal so doesn't have a way to formally register
-#' a class. This helper allows you to use S3 classes within R7.
-#'
-#' @export
-#' @param class Character vector of S3 classes
-s3_class <- function(class) {
-  if (!is.character(class)) {
-    stop("`class` must be a character vector", call. = FALSE)
-  }
-  structure(class, class = "r7_s3_class")
-}
-
-is_s3_class <- function(x) {
-  inherits(x, "r7_s3_class")
 }
 
 # helpers -----------------------------------------------------------------

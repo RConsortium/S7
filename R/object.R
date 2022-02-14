@@ -28,7 +28,7 @@ new_object <- function(.data = NULL, ...) {
   if (!is.null(.data)) {
     object <- .data
   } else {
-    object <- obj_cls@parent@constructor()
+    object <- class_construct(obj_cls@parent)
   }
 
   class(object) <- "R7_object"
@@ -60,7 +60,7 @@ object_class <- function(object) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  str(x)
+  str.R7_object(x)
   invisible(x)
 }
 

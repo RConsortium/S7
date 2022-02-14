@@ -106,20 +106,17 @@ Here is the definition of the class.
 tbl_df <- s3_class(c("tbl_df", "tbl", "data.frame"))
 
 annotated_df <- new_class("annotated_df",
-  parent = tbl_df,
   properties = list(
+    data = tbl_df,
     rows = tbl_df,
     columns = tbl_df
-    ),
+  ),
   validator = function(object) {
-    if (nrow(object) != nrow(object@rows)) {
+    if (nrow(object@data) != nrow(object@rows)) {
       "`nrow(<annotated_df>@rows)` must be equal to `nrow(<annotated_df>)`"
-    } else if (ncol(object) != nrow(object@columns)) {
+    } else if (ncol(object@data) != nrow(object@columns)) {
       "`nrow(<annotated_df>@columns)` must be equal to `ncol(<annotated_df>)`"
     }
-  },
-  constructor = function(data, rows, columns) {
-    new_object(data, rows = rows, columns = columns)
   }
 )
 ```
@@ -168,7 +165,7 @@ We can then create an instance using the constructor function.
 
 ```{r}
 obj <- annotated_df(mt, row_info, col_info)
-obj
+obj@data
 
 obj@rows
 
@@ -179,10 +176,10 @@ We next define a `R7_subset` generic function, and then a R7 method for that fun
 The subsets the individual components appropriately and then returns a new `annotated_df` object with them.
 
 ```{r}
-subset_R7 <- new_generic("R7_subset", dispatch_args = c("object", "row", "column"))
+subset_R7 <- new_generic("R7_subset", c("object", "row", "column"))
 
 method(subset_R7, list(annotated_df, "integer", "integer")) <- function(object, row, column, ...) {
-  data <- r7_data(object)[row, column]
+  data <- object@data[row, column]
   rows <- object@rows[row, ]
   columns <-  object@columns[column, ]
   annotated_df(data, rows, columns)
@@ -194,7 +191,7 @@ When we subset using this function we can see the consistency is retained for ou
 ```{r}
 obj2 <- subset_R7(obj, 1:3, 1:5)
 
-obj2
+obj2@data
 
 obj2@rows
 

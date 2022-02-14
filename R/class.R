@@ -1,4 +1,4 @@
-#' Create a new R7 class
+#' Define a new R7 class
 #'
 #' A class specifies the properties (data) that each of its objects will
 #' possess. The class, and its parent, determines which method will be used
@@ -119,29 +119,6 @@ new_class <- function(
 }
 
 is_class <- function(x) inherits(x, "R7_class")
-
-#' Retrieve all of the class names for a class
-#'
-#' @param object The R7 object to query
-#' @return A character vector of all the class names for a given R7 class.
-#' @export
-class_names <- function(object) {
-  parent <- object
-  classes <- character()
-  while(!is.null(parent)) {
-    if (inherits(parent, "R7_union")) {
-      for (class in parent@classes) {
-        classes <- c(classes, class_names(class))
-      }
-    } else if (inherits(parent, "R7_class")) {
-      classes <- c(classes, parent@name, "R7_object")
-    } else {
-      classes <- c(classes, parent)
-    }
-    parent <- prop_safely(parent, "parent")
-  }
-  unique(classes, fromLast = TRUE)
-}
 
 #' @export
 print.R7_class <- function(x, ...) {

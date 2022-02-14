@@ -9,3 +9,4 @@ next_method()
 \description{
 Retrieve the next applicable method after the current one
 }
+\keyword{internal}

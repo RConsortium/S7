@@ -5,19 +5,13 @@
 \alias{method_call}
 \title{Define a new generic}
 \usage{
-new_generic(name, fun = NULL, dispatch_args = NULL)
+new_generic(name, dispatch_args = NULL, fun = NULL)
 
 method_call()
 }
 \arguments{
 \item{name}{The name of the generic. This should be the same as the object
 that you assign it to.}
-
-\item{fun}{An optional specification of the generic, which must call
-\code{method_call()} to dispatch to methods. This is usually generated
-automatically from the \code{dispatch_args}, but you may want to supply it if
-you want to add additional required arguments, or perform some standardised
-computation in the generic.}
 
 \item{dispatch_args}{A character vector giving the names of the arguments
 that form the signature, i.e. the arguments used for method dispatch.
@@ -26,6 +20,12 @@ If \code{dispatch_args} are omitted, but \code{fun} is supplied, will default to
 arguments that appear before \code{...} in \code{fun}. If there are no dots, it will
 default to the first argument. If both \code{fun} and \code{dispatch_args} are
 supplied, the \code{dispatch_args} must appear at the start of \code{fun}'s formals.}
+
+\item{fun}{An optional specification of the generic, which must call
+\code{method_call()} to dispatch to methods. This is usually generated
+automatically from the \code{dispatch_args}, but you may want to supply it if
+you want to add additional required arguments, or perform some standardised
+computation in the generic.}
 }
 \description{
 A generic function uses different implementations (\emph{methods}) depending on
@@ -59,7 +59,7 @@ type_of(mean)
 
 # If you want to require methods implement additional arguments, supply
 # them after ... in the call
-mean2 <- new_generic("mean2", function(x, ..., na.rm = TRUE) {
+mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
    method_call()
 })
 method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {

@@ -34,6 +34,18 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore)
       }
       classes = Rf_getAttrib(classes, parent_sym);
     }
+  } else if (Rf_inherits(classes, "r7_s3_class")) {
+    SEXP klasses = VECTOR_ELT(classes, 0);
+    for (R_xlen_t i = 0; i < Rf_xlength(klasses); ++i) {
+      SEXP klass = Rf_install(CHAR(STRING_ELT(klasses, i)));
+      SEXP val = Rf_findVarInFrame(table, klass);
+      if (TYPEOF(val) == ENVSXP) {
+        val = method_rec(val, signature, signature_itr + 1, ignore);
+      }
+      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
+        return val;
+      }
+    }
   } else {
     for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
       SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));

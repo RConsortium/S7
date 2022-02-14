@@ -11,7 +11,7 @@
 #' @export
 #' @examples
 #' # Create a generic and register some methods
-#' bizarro <- new_generic("bizarro", dispatch_args = "x")
+#' bizarro <- new_generic("bizarro", "x")
 #' method(bizarro, "numeric") <- function(x) rev(x)
 #' method(bizarro, s3_class("factor")) <- function(x) {
 #'   levels(x) <- rev(levels(x))
@@ -55,6 +55,7 @@ method_call <- function() {
 #' Retrieve the next applicable method after the current one
 #'
 #' @export
+#' @keywords internal
 next_method <- function() {
   current_method <- sys.function(sys.parent(1))
 

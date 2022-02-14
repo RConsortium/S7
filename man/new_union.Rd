@@ -2,7 +2,7 @@
 % Please edit documentation in R/zzz.R
 \name{new_union}
 \alias{new_union}
-\title{Class unions}
+\title{Define a class union}
 \usage{
 new_union(...)
 }

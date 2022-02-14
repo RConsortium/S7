@@ -1,6 +1,8 @@
 is_union <- function(x) inherits(x, "R7_union")
 
-#' An R7 object
+#' Base R7 class
+#'
+#' @keywords internal
 #' @export
 R7_object <- new_class(
   name = "R7_object",
@@ -11,7 +13,6 @@ R7_object <- new_class(
      out
   }
 )
-methods::setOldClass(class_names(R7_object))
 
 new_base_class <- function(name) {
   default <- switch(name,
@@ -68,7 +69,6 @@ R7_generic <- new_class(
     )
   }
 )
-methods::setOldClass(class_names(R7_generic))
 
 R7_method <- new_class("R7_method",
   parent = "function",
@@ -77,7 +77,6 @@ R7_method <- new_class("R7_method",
     signature = "list"
   )
 )
-methods::setOldClass(class_names(R7_method))
 
 R7_union <- new_class(
   name = "R7_union",
@@ -125,7 +124,7 @@ print.R7_union <- function(x, ...) {
   invisible(x)
 }
 
-#' Class unions
+#' Define a class union
 #'
 #' A class union represents a list of possible classes. It is used in
 #' properties to allow a property to be one of a set of classes, and in method

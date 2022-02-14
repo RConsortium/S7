@@ -7,15 +7,15 @@ test_that("new_generic checks its inputs", {
 })
 
 test_that("dispatch_args overrules derived", {
-  g <- new_generic("g", function(x, y, ...) method_call())
+  g <- new_generic("g", fun = function(x, y, ...) method_call())
   expect_equal(g@dispatch_args, c("x", "y"))
 
-  g <- new_generic("g", function(x, ...) method_call(), dispatch_args = "x")
+  g <- new_generic("g", fun = function(x, ...) method_call(), dispatch_args = "x")
   expect_equal(g@dispatch_args, "x")
 })
 
 test_that("derived fun always includes ...", {
-  g <- new_generic("g", dispatch_args = "x")
+  g <- new_generic("g", "x")
   expect_equal(names(formals(g)), c("x", "..."))
 })
 
@@ -43,11 +43,11 @@ test_that("check_dispatch_args() produces informative errors", {
 })
 
 test_that("R7_generic printing", {
-  foo1 <- new_generic(name = "foo1", dispatch_args = c("x", "y", "z"))
+  foo1 <- new_generic("foo1", c("x", "y", "z"))
   method(foo1, list("character")) <- function(x, y, z, ...) 1
   method(foo1, list(text)) <- function(x, y, z, ...) 2
 
-  foo3 <- new_generic(name = "foo3", dispatch_args = c("x", "y", "z"))
+  foo3 <- new_generic("foo3", c("x", "y", "z"))
   method(foo3, list("character", text, "character")) <- function(x, y, z, ...) 1
   method(foo3, list("character", "integer", "character")) <- function(x, y, z, ...) 2
   method(foo3, list("character", "integer", "logical")) <- function(x, y, z, ...) 3
@@ -59,7 +59,7 @@ test_that("R7_generic printing", {
 })
 
 test_that("R7_generic printing with long / many arguments", {
-  foo <- new_generic(name = "foo", dispatch_args = letters)
+  foo <- new_generic("foo", letters)
   expect_snapshot(
     foo
   )
@@ -76,10 +76,10 @@ test_that("check_generic produces informative errors", {
 })
 
 test_that("has_fun handles expected cases", {
-  expect_false(has_call(1, quote(x)))
-  expect_false(has_call(quote(f()), quote(x)))
-  expect_false(has_call(quote(f(a, b, c)), quote(x)))
+  expect_equal(find_call(1, quote(x)), NULL)
+  expect_equal(find_call(quote(f()), quote(x)), NULL)
+  expect_equal(find_call(quote(f(a, b, c)), quote(x)), NULL)
 
-  expect_true(has_call(quote(x()), quote(x)))
-  expect_true(has_call(quote(y(x())), quote(x)))
+  expect_equal(find_call(quote(x(1)), quote(x)), quote(x(1)))
+  expect_equal(find_call(quote(y(x(1))), quote(x)), quote(x(1)))
 })
