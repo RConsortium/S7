@@ -19,7 +19,6 @@
       @ properties :  list()
       @ constructor:  function ()  
       @ validator  :  function (x)  
-      @ class      :  chr [1:2] "R7_class" "R7_object"
     Code
       str(range)
     Output
@@ -44,7 +43,6 @@
        .. .. $ setter:  function (x, value)  
       @ constructor:  function (start, end)  
       @ validator  :  function (x)  
-      @ class      :  chr [1:2] "R7_class" "R7_object"
 
 # R7_class: str() summarises when nested
 

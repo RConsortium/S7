@@ -80,15 +80,11 @@ validate <- function(object, properties = TRUE) {
 
   # Next, recursively validate the object
   errors <- character()
-  while(!is.null(class)) {
+  repeat({
     errors <- c(errors, class_validate(class, object))
-
-    if (prop_exists(class, "parent")) {
-      class <- class@parent
-    } else {
-      class <- NULL
-    }
-  }
+    if (!is_class(class)) break
+    class <- class@parent
+  })
 
   # If needed, report errors
   if (length(errors) > 0) {

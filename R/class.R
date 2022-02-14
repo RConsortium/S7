@@ -107,6 +107,7 @@ new_class <- function(
   }
 
   object <- constructor
+  # Must synchronise with prop_names
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "properties") <- properties
@@ -131,13 +132,14 @@ print.R7_class <- function(x, ...) {
     prop_fmt <- ""
   }
 
-  if (prop_exists(x, "parent")) {
-    parent <- class_desc(x@parent)
-  } else {
-    parent <- "NULL"
-  }
-
-  cat(sprintf("<R7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s", x@name, parent, prop_fmt), sep = "")
+  cat(
+    sprintf("<R7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s",
+      x@name,
+      class_desc(x@parent),
+      prop_fmt
+    ),
+    sep = ""
+  )
   invisible(x)
 }
 
@@ -148,8 +150,6 @@ str.R7_class <- function(object, ..., nest.lev = 0) {
   cat("\n")
 
   if (nest.lev == 0) {
-    props <- props(object)
-    props$srcref <- NULL
-    str_list(props, ..., prefix = "@", nest.lev = nest.lev)
+    str_list(props(object), ..., prefix = "@", nest.lev = nest.lev)
   }
 }

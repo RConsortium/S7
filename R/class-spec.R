@@ -146,7 +146,7 @@ class_names <- function(x) {
     NULL = NULL,
     s3 = c("R7_object", x$class),
     s4 = as.character(x@className),
-    r7 = c(x@name, if (prop_exists(x, "parent")) class_names(x@parent)),
+    r7 = c(x@name, class_names(x@parent)),
     r7_base = c("R7_object", x@name),
     r7_union = unique(unlist(lapply(x@classes, class_names)), fromLast = TRUE)
   )

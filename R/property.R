@@ -213,7 +213,8 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' @export
 prop_names <- function(object) {
   if (inherits(object, "R7_class")) {
-    names(attributes(object))
+    # R7_class isn't a R7_class (somewhat obviously) so we fake the property names
+    c("name", "parent", "properties", "constructor", "validator")
   } else {
     class <- object_class(object)
     props <- attr(class, "properties", exact = TRUE)
