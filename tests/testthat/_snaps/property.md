@@ -56,23 +56,23 @@
     Code
       my_obj@base <- "x"
     Error <simpleError>
-      R7<my_class>@base must be <integer>, not <character>
+      <my_class>@base must be <integer>, not <character>
     Code
       my_obj@s3 <- "x"
     Error <simpleError>
-      R7<my_class>@s3 must be S3<factor>, not <character>
+      <my_class>@s3 must be S3<factor>, not <character>
     Code
       my_obj@s4 <- "x"
     Error <simpleError>
-      R7<my_class>@s4 must be S4<class_s4>, not <character>
+      <my_class>@s4 must be S4<class_s4>, not <character>
     Code
       my_obj@r7 <- "x"
     Error <simpleError>
-      R7<my_class>@r7 must be <class_r7>, not <character>
+      <my_class>@r7 must be <class_r7>, not <character>
     Code
       my_obj@r7_union <- "x"
     Error <simpleError>
-      R7<my_class>@r7_union must be <integer> or <logical>, not <character>
+      <my_class>@r7_union must be <integer> or <logical>, not <character>
 
 # as_properties() gives useful error messages
 

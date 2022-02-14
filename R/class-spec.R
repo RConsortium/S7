@@ -153,7 +153,7 @@ obj_desc <- function(x) {
    base = fmt_classes(typeof(x)),
    s3 = fmt_classes(class(x)[[1]], "S3"),
    s4 = fmt_classes(class(x), "S4"),
-   r7 = fmt_classes(object_class(x)@name, "R7")
+   r7 = fmt_classes(object_class(x)@name)
   )
 }
 

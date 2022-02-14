@@ -8,7 +8,7 @@ test_that("can work with R7 classes", {
 
   obj <- klass()
   expect_equal(obj_type(obj), "r7")
-  expect_equal(obj_desc(obj), "R7<klass>")
+  expect_equal(obj_desc(obj), "<klass>")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
