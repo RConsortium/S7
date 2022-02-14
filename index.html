@@ -142,7 +142,7 @@
 
 <span class="co"># assigning properties runs the validator</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">0</span>
-<span class="co">#&gt; Error: Invalid &lt;range&gt; object:</span>
+<span class="co">#&gt; Error: &lt;range&gt; object is invalid:</span>
 <span class="co">#&gt; - &lt;range&gt;@end must be greater than or equal to &lt;range&gt;@start</span>
 
 <span class="co"># Print methods for both R7_class objects</span>
@@ -167,9 +167,8 @@
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"text"</span>, parent <span class="op">=</span> <span class="st">"character"</span><span class="op">)</span>
-<span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"foo"</span>, dispatch_args <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span>
+<span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"foo"</span>, <span class="st">"x"</span><span class="op">)</span>
 <span class="fu"><a href="reference/method.html">method</a></span><span class="op">(</span><span class="va">foo</span>, <span class="va">text</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"foo-"</span>, <span class="va">x</span><span class="op">)</span>
-<span class="co">#&gt; registered foo(&lt;text&gt;)</span>
 
 <span class="fu">foo</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="st">"hi"</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt; [1] "foo-hi"</span></code></pre></div>
@@ -181,9 +180,8 @@
 <p>For <code>method(foo, c("character", "numeric"))</code> the method would be stored at <code>foo@methods[["character"]][["numeric"]]</code>.</p>
 <p>At each level the search iteratively searches along objects class vector.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">bar</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar"</span>, dispatch_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">bar</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="reference/method.html">method</a></span><span class="op">(</span><span class="va">bar</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="st">"double"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"foo-"</span>, <span class="va">x</span>, <span class="st">":"</span>, <span class="va">y</span><span class="op">)</span>
-<span class="co">#&gt; registered bar(&lt;character&gt;, &lt;double&gt;)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/grDevices/plotmath.html" class="external-link">bar</a></span><span class="op">(</span><span class="st">"hi"</span>, <span class="fl">42</span><span class="op">)</span>
 <span class="co">#&gt; [1] "foo-hi:42"</span></code></pre></div>
@@ -197,7 +195,6 @@
   <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/next_method.html">next_method</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span>
   <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"2 "</span>, <span class="va">res</span><span class="op">)</span>
 <span class="op">}</span>
-<span class="co">#&gt; registered bar(&lt;text&gt;, &lt;double&gt;)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/grDevices/plotmath.html" class="external-link">bar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="st">"hi"</span><span class="op">)</span>, <span class="fl">42</span><span class="op">)</span>
 <span class="co">#&gt; [1] "2 foo-hi:42"</span></code></pre></div>
@@ -207,7 +204,7 @@
 </h2>
 <p><code><a href="reference/new_generic.html">method_call()</a></code> retains promises for dispatch arguments in basically the same way as <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>, so non-standard evaluation works basically the same as S3.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">subset2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"subset2"</span>, dispatch_args <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">subset2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"subset2"</span>, <span class="st">"x"</span><span class="op">)</span>
 
 <span class="fu"><a href="reference/method.html">method</a></span><span class="op">(</span><span class="va">subset2</span>, <span class="fu"><a href="reference/s3_class.html">s3_class</a></span><span class="op">(</span><span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">subset</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">select</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute</a></span><span class="op">(</span><span class="va">subset</span><span class="op">)</span>
@@ -220,7 +217,6 @@
   <span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">eval</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">substitute</a></span><span class="op">(</span><span class="va">select</span><span class="op">)</span>, <span class="va">nl</span>, <span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
   <span class="va">x</span><span class="op">[</span><span class="va">r</span>, <span class="va">vars</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span>
 <span class="op">}</span>
-<span class="co">#&gt; registered subset2(&lt;data.frame&gt;)</span>
 
 <span class="fu">subset2</span><span class="op">(</span><span class="va">mtcars</span>, <span class="va">hp</span> <span class="op">&gt;</span> <span class="fl">200</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">wt</span>, <span class="va">qsec</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt;                        wt  qsec</span>
