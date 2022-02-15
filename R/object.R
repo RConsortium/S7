@@ -1,8 +1,10 @@
-#' Initialize a new object
-#' @keywords internal
+#' @rdname new_class
 #' @export
 new_object <- function(.data = NULL, ...) {
   obj_cls <- object_class(sys.function(-1))
+  if (!inherits(obj_cls, "R7_class")) {
+    stop("`new_object()` must be called from within a constructor")
+  }
 
   args <- list(...)
   nms <- names(args)

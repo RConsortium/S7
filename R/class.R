@@ -13,6 +13,8 @@
 #'
 #' @param constructor The constructor function. This is optional, unless
 #'   you want to control which properties can be set on constructor.
+#'
+#'   A custom constructor should always conclude by calling `new_object()`
 #' @param validator A function taking a single argument, the object to validate.
 #'
 #'   The job of a validator is to determine whether the object is valid,
@@ -35,6 +37,7 @@
 #'   allowing greater flexibility.
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
+#' @order 1
 #' @export
 #' @examples
 #' # Create an class that represents a range using a numeric start and end
