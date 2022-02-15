@@ -1,0 +1,201 @@
+---
+title: "Proposal"
+description: > 
+  Proposal to RConsortium to create the working group.
+---
+
+## Executive summary
+  
+Object-oriented programming enables R developers to implement
+abstractions, introduce domain-specific data models, and interface
+with external systems, among other things. Unlike other modern
+programming languages, R lacks a dominant approach to
+object-oriented programming. The competition between existing
+approaches is unproductive and contributes to social fragmentation of
+the community and technical hurdles when integrating across
+different systems.
+
+We propose to form a working group that will develop a design
+proposal for a system that will combine the most important elements
+from the existing approaches while remaining compatible with
+them. We will involve key technical experts and community
+stakeholders, including R Core and the tidyverse. Upon publishing
+the design proposal, we will invite the entire community to
+contribute feedback. Finally, we will conclude the working group by
+developing and releasing a strategy for implementing, maintaining,
+and adopting the framework.
+
+## Background
+  
+In R, everything is an object. That principle facilitates
+interacting with data, because a dataset is modeled as a tangible,
+real world object. The user can display the contents of an object,
+introspect its structure and manipulate it in various ways.
+
+R provides all of the basic types of objects necessary for
+statistical computing. To more effectively reason about a domain,
+like genomics, we need to specialize the data types to more richly
+model the semantics particular to that domain. Once we have a
+specialized set of data structures, we recognize the need for
+/abstraction/, which models commonality across data
+types. Abstraction is also useful for existing data types, where a
+package could provide an alternative implementation, for example,
+based on a database or distributed computing system. Abstraction
+requires a system of classification, where each object corresponds
+to a specific class, and each class derives from another. The
+classification system transcends the class instances (the objects),
+and it is helpful to explicitly refer to classes when programming.
+
+Fundamentally, a class-based object-oriented system has two
+requirements:
+* There is a centrally defined class hierarchy, and
+* Every object is an instance of a class.
+
+A class is defined by the contract governing its structure and
+contents. The contract extends the contract of the parent class in
+order to add semantics through additional constraints while
+remaining compatible with the parent contract. Code manipulating
+objects will often make assumptions about the structure and content
+of objects. To mitigate risk, such low-level code benfits from a
+validation function, essentially a codification of the class
+contract, to verify its assumptions.
+
+While there is intrinsic value in formal modeling of data, for
+software to fully take advantage of the richer semantics, it
+requires /polymorphism/, where the behavior of the software
+with respect to an object depends on the class of the object.
+
+Most object-oriented languages implement message-passing OOP, where
+classes define their own behavior by holding functions, called
+methods, in addition to fields. When one class calls a method in
+another class, it passes a message.
+
+R has a few systems based on message-passing, most notably the R6
+package and reference classes in the methods package. These rely on
+message-passing in part because their objects are mutable and it is
+easier to reason about code when we can typically assume that it is
+the receiver being mutated. We exclude from our scope systems with
+mutable objects, because immutable objects are generally preferable
+for interactive data analysis, relegating mutable systems to niche
+applications, such as GUIs and caching mechanims.
+
+As appropriate for a statistical computing language, R has
+functional roots, and the most prevalent object-oriented approaches
+in R are functional systems, namely S3 and S4, corresponding to the
+third and fourth version of the S language, respectively. Objects
+tend to be immutable, and top-level functions can be generic, which
+means means they dispatch to another function, called a method,
+based on the types of the passed arguments. The simplest type of
+generic dispatches on a single argument. While single dispatch
+supports most applications of polymorphism, there are many cases
+where the behavior depends on the interaction of two or more
+classes. Typical examples include arithmetic, converting an object
+from one class to another and combining two different types of
+object.
+
+From these considerations, we conclude that a good object-oriented
+system would support:
+* An explicit class hierarchy (represented by reified objects) with
+* Sytematic instance construction and validation;
+* Multiple, at least double, dispatch, and
+* Objects with a transparent, introspectable structure.
+
+## Problem statement
+  
+The two major OOP frameworks in R, S3 and S4, each have their own
+limitations, with neither one being sufficiently applicable to gain
+dominance. This had led to social fracturing in the community and
+technical impediments to compatibility and interoperability. We
+summarize those limitations in the table below.
+
+  | S3 limitations                  | S4 limitations                                       | S4 implementation issues |
+  |---------------------------------+------------------------------------------------------+--------------------------|
+  | Classes are only implicit       | Multiple inheritance and dispatch hard to understand | Poor performance         |
+  | No systematic object validation | Syntax is unusual (side effects) | Difficult to maintain    |
+  | Single dispatch only            | Lack of transparency of object structure and methods |                          |
+
+S3 defines classes implicitly at the instance level, so there is no
+explicit class hierarchy.  While the S3 system supports tracking the
+class of every object, there is no systematic means of constructing
+and validating them to ensure correctness. S3 only supports single
+dispatch, so it is difficult to write polymorphic code for
+arithmetic, merging objects, converting objects, etc.
+
+S4 has solutions to all of those problems, but it is quite
+ambitious, introducing significant complexity, unusual syntax
+and loss of transparency. Multiple inheritance, while expressive and
+powerful, allows for multiple overlapping taxonomies, which is
+difficult to reason about, and the difficulty increases
+quadratically when combined with multiple dispatch, where method
+selection uses a distance calculation in /n/ dimensions where /n/ is
+the number of arguments. The syntax for defining classes and methods
+is non-idiomatic and relies on side effects. Finally, the S4
+convention (although not a requirement) is to hide slots behind an
+API, which improves encapsulation but prevents the basic
+introspection capabilities that are desirable when analyzing data
+and that R users have come to expect.
+
+Somewhat tangentionally, but still motivating, there are also
+technical issues with the methods package, the only implementation
+of the S4 system. Its incremental growth over the decades has led to
+excessive complexity, as well as performance
+issues. In the absence of a new system, we would need to reimplement
+S4, so there will be implementation effort regardless.
+
+Documentation limitations afflict both S3 and S4. It is difficult to
+describe a programming interface when it consists of generic
+functions not coupled to each other or any class. Any package can
+define a method on a generic or extend a class, so the documentation
+needs to adapt according to which packages are loaded.
+  
+## Proposal
+
+We believe there may be a better way, but the solutions are not
+obvious.  Across popular programming languages, with the notable
+exception of Julia, functional OOP is much less common and less well
+developed than message-passing, so there are few examples for R to
+follow and any advances will likely require research. Therefore, we
+propose to bring together a panel of experts to more formally assess
+the situation and design a solution. Since we are aiming for this
+solution to unify the community, we aim for widespread adoption,
+which will require involvement by key community leaders. We will
+invite the community to review the proposal and to contribute
+feedback and ideas. The working group will integrate the feedback
+and finalize the proposal. It will conclude after developing a
+strategy for implementation, adoption and long-term maintenance, for
+which it will not be directly responsible.
+
+No funding is required nor requested for this effort.
+  
+## Objectives
+
+* Release a finalized design specification for a unifying
+ object-oriented programming system,
+* Recommend to the ISC a strategy for implementing and maintaining
+ the system, as well as driving its adoption.
+  
+##  Milestones
+
+* Finalize membership,
+* Agree upon and prioritize system requirements,
+* Iterate through design proposals,
+* Release a proposal for community review and contribution,
+* Incorporate community contributions,
+* Submit the finalized proposal,
+* Develop and submit the implementation and adoption strategy.
+
+## Membership
+
+The founding members are:
+
+* Michael Lawrence :: Representing R-core and (S4-based) Bioconductor,
+    and a maintainer of the methods package;
+* Hadley Wickham :: Representing RStudio and the tidyverse project,
+    which relies heavily on S3;
+* Martin Maechler :: Representing R-core, maintainer of the
+    S4-based Matrix and Rmpfr packages, and a maintainer of the
+    methods package.
+
+We have also invited representatives from the R Ladies and ROpenSci
+communities.  We will collaborate with others in R Core,
+keeping them informed of our plans and incorporating any feedback.

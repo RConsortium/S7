@@ -7,11 +7,38 @@
 new_union(...)
 }
 \arguments{
-\item{...}{The classes to include in the union, either looked up by named or
-by passing the \code{R7_class} objects directly.}
+\item{...}{The classes to include in the union. See \code{\link[=as_class]{as_class()}} for
+permitted definitions}
 }
 \description{
-A class union represents a list of possible classes. It is used in
-properties to allow a property to be one of a set of classes, and in method
-dispatch as a convenience for defining a method for multiple classes.
+A class union represents a list of possible classes. It can be used in two
+places:
+\itemize{
+\item To allow a property to be one of a set of classes,
+\code{new_property("x", new_union("integer", Range))}.
+\item As a convenient short-hand to define methods for multiple classes.
+\code{method(foo, new_union(X, Y)) <- f} is short-hand for
+\verb{method(foo, X) <- f; method(foo, Y) <- foo}
+}
+
+R7 includes built-in unions for "numeric" (integer and double vectors),
+"atomic" (logical, numeric, character, and raw vectors) and
+"vector" (atomic vectors, lists, and expressions).
+}
+\examples{
+logical_or_character <- new_union("logical", "character")
+logical_or_character
+
+Foo <- new_class("Foo", properties = list(x = logical_or_character))
+Foo(x = TRUE)
+Foo(x = letters[1:5])
+try(Foo(1:3))
+
+bar <- new_generic("bar", "x")
+# Use built-in union
+method(bar, "atomic") <- function(x) "Hi!"
+bar
+bar(TRUE)
+bar(letters)
+try(bar(NULL))
 }

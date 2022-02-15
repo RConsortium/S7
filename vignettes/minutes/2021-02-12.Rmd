@@ -1,0 +1,61 @@
+---
+title: "Minutes 2021-02-12"
+---
+
+## Process check-in
+
+Minor stuff I'm just doing.
+Bigger changes I get Davis to review.
+No semantic changes without discussion in issues
+
+## Changes
+
+-   Non R7 classes
+    -   `as_class()` centralises all handling of classes (base types, S3, S4, and R7)
+    -   Strings now only refer to base types (previously used for S3 + R7 class in parent frame) `new_class( parent = "function")`
+    -   Numeric, atomic, and vector "types" as R7 unions.
+        -   Should we provide some wrappers to base unions and consider if we could get rid of string representation altogether? (e.g. `base_atomic`)
+    -   New `s3_class()` to define S3 classes.
+        -   <https://github.com/RConsortium/OOP-WG/pull/148> makes it possible for R7 class to extend an S3 class
+        -   Should we export the S3 class definitions for common base S3 classes? And then provide with `base_factor` etc.
+    -   S4 unions converted to R7 unions
+-   Method registration
+    -   Clarify difference between registration and dispatch. Will flow into refactoring of C code in near future.
+    -   Dispatch is base/S3/S4/R7 class with R7 generic.
+    -   Registration is base/S3/S4/R7 class with R7 generic AND R7 class with S3/S4 generic.
+    -   All combinations now tested.
+    -   Thorough refactoring of method registration
+-   Method dispatch
+    -   In generic, `signature` -> `dispatch_args`.
+    -   Simplified evaluation and restricted dispatch args (probably too much, but we relax as needed)
+    -   Should we provide a default dispatch argument name? `x`
+-   Validation
+    -   Validate types, then call `validator()`
+    -   Also call `validator()` for all super classes
+    -   New `props<-` for multi-assignment. Only validates at end.
+-   General QoL improvements to `print()` and `str()` methods
+
+## Next up
+
+-   Refactor method dispatch
+-   Defaults for properties, to get to point where `constructor()` without any argument usually works
+-   Dispatch on Missing/Any
+-   Coercion (`cast()`)
+-   Eliminate `next_method()` (`up_cast()`)
+-   Documentation
+
+## Discussion
+
+-   Speak about at rstudio::conf or useR?
+    -   Still need a real world application
+
+    -   Hadley to submit proposals to useR + rstudio::conf; and determine speakers and topics closer to the time
+
+    -   Next time we meet, we should discuss other ways to advertise
+-   Ok to rename default branch from master to main? \~5 minutes work and unlikely to cause any problems.
+-   Ok to eliminate `prop_safely()`? <https://github.com/RConsortium/OOP-WG/issues/156>
+-   Convention for displaying class names: <https://github.com/RConsortium/OOP-WG/issues/133> / <https://github.com/RConsortium/OOP-WG/pull/161>
+    -   Only show for S3/S4
+-   Name of sentinel for missing/any dispatch: <https://github.com/RConsortium/OOP-WG/issues/67>
+    -   `_arg` looks good
+-   Coercion: <https://github.com/RConsortium/OOP-WG/issues/136>

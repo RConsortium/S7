@@ -1,10 +1,8 @@
 ---
-editor_options:
-  markdown:
-    mode: gfm
+title: "Design specification"
+description: >
+  Design specification used to guide the implementation.
 ---
-
-# Design specification
 
 This document presents a broad overview of the R7 object-oriented programming toolkit.
 (Please note that R7 is a working name and may change in the future.)
@@ -178,7 +176,7 @@ While it would be tempting to support public vs. private scoping on properties, 
 Nor is it clear whether the package should define the boundary, when packages sometimes define methods on classes defined in other packages and want to take advantage of their internal representations.
 We believe that the encapsulation afforded by properties is a good compromise.
 
-## Generic
+## Generics
 
 A generic separates function interface from implementation: the generic defines the interface, and methods provide the implementation.
 For introspection purposes, it knows its name and the names of the arguments in its signature (the arguments considered during dispatch).
@@ -261,23 +259,19 @@ publish <- function(x, y, ...) {
 
 Alternatively, the generics could just call `UseMethod()`, which would gain support for nested dispatch.
 
-# Compatibility
+## Compatibility
 
-## S3
+### S3
 
 Since the class attribute has the same semantics as S3, S3 dispatch should be fully compatible.
 The new generics should also be able to handle legacy S3 objects.
 
-## S4
-
-### Generics
+### S4
 
 In principle, we could modify the methods package so that S4 generics can operate on the new class definitions.
 Since the new generics will fallback to S3 dispatch, they should support S4 objects just as S3 generics support them now.
 
-### Classes
-
-# Documentation
+## Documentation
 
 The primary challenge is that the availability of methods and classes depends on which packages are installed, so we will need to generate index pages that list the methods for a generic or the methods with a particular class in their signature.
 The documentation blurbs could be lazily scraped at runtime to build an index, similar to how the help search index is created now.

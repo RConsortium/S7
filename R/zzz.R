@@ -8,9 +8,7 @@ R7_object <- new_class(
   name = "R7_object",
   parent = NULL,
   constructor = function() {
-     out <- .Call(R7_object_)
-     class(out) <- "R7_object"
-     out
+    .Call(R7_object_)
   }
 )
 check_R7 <- function(x, arg = deparse(substitute(x))) {
@@ -132,15 +130,41 @@ print.R7_union <- function(x, ...) {
 
 #' Define a class union
 #'
-#' A class union represents a list of possible classes. It is used in
-#' properties to allow a property to be one of a set of classes, and in method
-#' dispatch as a convenience for defining a method for multiple classes.
+#' @description
+#' A class union represents a list of possible classes. It can be used in two
+#' places:
 #'
-#' @param ... The classes to include in the union, either looked up by named or
-#'   by passing the `R7_class` objects directly.
+#' * To allow a property to be one of a set of classes,
+#'   `new_property("x", new_union("integer", Range))`.
+#'
+#' * As a convenient short-hand to define methods for multiple classes.
+#'   `method(foo, new_union(X, Y)) <- f` is short-hand for
+#'   `method(foo, X) <- f; method(foo, Y) <- foo`
+#'
+#' R7 includes built-in unions for "numeric" (integer and double vectors),
+#' "atomic" (logical, numeric, character, and raw vectors) and
+#' "vector" (atomic vectors, lists, and expressions).
+#'
+#' @param ... The classes to include in the union. See [as_class()] for
+#'   permitted definitions
 #' @export
+#' @examples
+#' logical_or_character <- new_union("logical", "character")
+#' logical_or_character
+#'
+#' Foo <- new_class("Foo", properties = list(x = logical_or_character))
+#' Foo(x = TRUE)
+#' Foo(x = letters[1:5])
+#' try(Foo(1:3))
+#'
+#' bar <- new_generic("bar", "x")
+#' # Use built-in union
+#' method(bar, "atomic") <- function(x) "Hi!"
+#' bar
+#' bar(TRUE)
+#' bar(letters)
+#' try(bar(NULL))
 new_union <- R7_union
-
 
 global_variables(c("name", "parent", "properties", "constructor", "validator"))
 
