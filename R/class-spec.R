@@ -7,7 +7,7 @@
 #' @param x A class specification. One of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
-#'   * An S3 class (created by [s3_class()]).
+#'   * An S3 class (created by [S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type specified either with its constructor (`logical`, `integer`,
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
@@ -16,7 +16,7 @@
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
-#'   as [s3_class], or a S4 class.
+#'   as [S3_class], or a S4 class.
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class", arg)
 
@@ -26,7 +26,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     x
   } else if (is_union(x)) {
     x
-  } else if (is_s3_class(x)) {
+  } else if (is_S3_class(x)) {
     x
   } else if (isS4(x)) {
     as_S4_class(x, error_base)
@@ -45,7 +45,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
       stop(sprintf("%s. No base classes are called '%s'", error_base, x), call. = FALSE)
     }
   } else {
-    stop(sprintf("%s. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a %s.", error_base, obj_desc(x)), call. = FALSE)
+    stop(sprintf("%s. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a %s.", error_base, obj_desc(x)), call. = FALSE)
   }
 }
 
@@ -76,7 +76,7 @@ as_S4_class <- function(x, error_base) {
   }
 }
 
-is_s4_class <- function(x) inherits(x, "classRepresentation")
+is_S4_class <- function(x) inherits(x, "classRepresentation")
 is_base_class <- function(x) is_class(x) && utils::hasName(base_classes, x@name)
 
 
@@ -84,15 +84,15 @@ class_type <- function(x) {
   if (is.null(x)) {
     "NULL"
   } else if (is_base_class(x)) {
-    "r7_base"
+    "R7_base"
   } else if (is_class(x)) {
-    "r7"
+    "R7"
   } else if (is_union(x)) {
-    "r7_union"
-  } else if (is_s3_class(x)) {
-    "r7_s3"
-  } else if (is_s4_class(x)) {
-    "s4"
+    "R7_union"
+  } else if (is_S3_class(x)) {
+    "R7_S3"
+  } else if (is_S4_class(x)) {
+    "S4"
   } else {
     stop("`x` is not standard R7 class", call. = FALSE)
   }
@@ -101,11 +101,11 @@ class_type <- function(x) {
 class_constructor <- function(.x, ...) {
   switch(class_type(.x),
     NULL = function() NULL,
-    s4 = function(...) methods::new(.x, ...),
-    r7 = .x,
-    r7_base = .x,
-    r7_union = class_constructor(.x@classes[[1]]),
-    r7_s3 = .x$constructor,
+    S4 = function(...) methods::new(.x, ...),
+    R7 = .x,
+    R7_base = .x,
+    R7_union = class_constructor(.x@classes[[1]]),
+    R7_S3 = .x$constructor,
   )
 }
 class_construct <- function(.x, ...) {
@@ -115,11 +115,11 @@ class_construct <- function(.x, ...) {
 class_validate <- function(class, object) {
   validator <- switch(class_type(class),
     NULL = NULL,
-    s4 = methods::validObject,
-    r7 = class@validator,
-    r7_base = class@validator,
-    r7_union = NULL,
-    r7_s3 = class$validator,
+    S4 = methods::validObject,
+    R7 = class@validator,
+    R7_base = class@validator,
+    R7_union = NULL,
+    R7_S3 = class$validator,
   )
 
   if (is.null(validator)) {
@@ -132,11 +132,11 @@ class_validate <- function(class, object) {
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
-    s4 = fmt_classes(x@className, "S4"),
-    r7 = fmt_classes(x@name),
-    r7_base = fmt_classes(x@name),
-    r7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
-    r7_s3 = fmt_classes(x$class[[1]], "S3"),
+    S4 = fmt_classes(x@className, "S4"),
+    R7 = fmt_classes(x@name),
+    R7_base = fmt_classes(x@name),
+    R7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
+    R7_S3 = fmt_classes(x$class[[1]], "S3"),
   )
 }
 
@@ -144,10 +144,10 @@ class_desc <- function(x) {
 class_dispatch <- function(x) {
   switch(class_type(x),
     NULL = NULL,
-    s4 = s4_strip_union(methods::extends(x)),
-    r7 = c(x@name, class_dispatch(x@parent)),
-    r7_base = c("R7_object", x@name),
-    r7_s3 = c("R7_object", x$class),
+    S4 = S4_strip_union(methods::extends(x)),
+    R7 = c(x@name, class_dispatch(x@parent)),
+    R7_base = c("R7_object", x@name),
+    R7_S3 = c("R7_object", x$class),
     stop("Unsupported")
   )
 }
@@ -156,10 +156,10 @@ class_dispatch <- function(x) {
 class_register <- function(x) {
   switch(class_type(x),
     NULL = "NULL",
-    s4 = as.character(x@className),
-    r7 = x@name,
-    r7_base = x@name,
-    r7_s3 = x$class[[1]],
+    S4 = as.character(x@className),
+    R7 = x@name,
+    R7_base = x@name,
+    R7_S3 = x$class[[1]],
     stop("Unsupported")
   )
 }
@@ -168,25 +168,25 @@ class_register <- function(x) {
 class_deparse <- function(x) {
   switch(class_type(x),
     NULL = "",
-    s4 = as.character(x@className),
-    r7 = x@name,
-    r7_base = encodeString(x@name, quote = '"'),
-    r7_union = {
+    S4 = as.character(x@className),
+    R7 = x@name,
+    R7_base = encodeString(x@name, quote = '"'),
+    R7_union = {
       classes <- vcapply(x@classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
-    r7_s3 = paste0("s3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
+    R7_S3 = paste0("S3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
   )
 }
 
 class_inherits <- function(x, what) {
   switch(class_type(what),
     NULL = TRUE,
-    s4 = isS4(x) && methods::is(x, what),
-    r7 = inherits(x, "R7_object") && inherits(x, what@name),
-    r7_base = what@name %in% .class2(x),
-    r7_union = any(vlapply(what@classes, class_inherits, x = x)),
-    r7_s3 = !isS4(x) && is_prefix(what$class, class(x)),
+    S4 = isS4(x) && methods::is(x, what),
+    R7 = inherits(x, "R7_object") && inherits(x, what@name),
+    R7_base = what@name %in% .class2(x),
+    R7_union = any(vlapply(what@classes, class_inherits, x = x)),
+    R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
   )
 }
 
@@ -194,11 +194,11 @@ obj_type <- function(x) {
   if (is.null(x)) {
     "NULL"
   } else if (inherits(x, "R7_object")) {
-    "r7"
+    "R7"
   } else if (isS4(x)) {
-    "s4"
+    "S4"
   } else if (is.object(x)) {
-    "s3"
+    "S3"
   } else {
     "base"
   }
@@ -207,24 +207,24 @@ obj_desc <- function(x) {
   switch(obj_type(x),
    NULL = "NULL",
    base = fmt_classes(typeof(x)),
-   s3 = fmt_classes(class(x)[[1]], "S3"),
-   s4 = fmt_classes(class(x), "S4"),
-   r7 = class_desc(object_class(x))
+   S3 = fmt_classes(class(x)[[1]], "S3"),
+   S4 = fmt_classes(class(x), "S4"),
+   R7 = class_desc(object_class(x))
   )
 }
 obj_dispatch <- function(x) {
   switch(obj_type(x),
     NULL = "NULL",
     base = .class2(x),
-    s3 = class(x),
-    s4 = s4_strip_union(methods::is(x)),
-    r7 = class(x) # = class_dispatch(object_class(x))
+    S3 = class(x),
+    S4 = S4_strip_union(methods::is(x)),
+    R7 = class(x) # = class_dispatch(object_class(x))
   )
 }
 
 # R7 handles unions at method registration time, where as S4 handles them at
 # dispatch time.
-s4_strip_union <- function(class_names) {
+S4_strip_union <- function(class_names) {
   classes <- lapply(class_names, methods::getClass)
   is_union <- vlapply(classes, methods::is, "ClassUnionRepresentation")
 

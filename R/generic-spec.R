@@ -29,7 +29,7 @@ S3_generic <- function(generic, name) {
   structure(list(generic = generic, name = name), class = "R7_S3_generic")
 }
 
-is_s3_generic <- function(x) inherits(x, "R7_S3_generic")
+is_S3_generic <- function(x) inherits(x, "R7_S3_generic")
 
 
 # Internal generics -------------------------------------------------------

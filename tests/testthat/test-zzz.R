@@ -34,9 +34,9 @@ test_that("base unions print as expected", {
 })
 
 test_that("can construct from S3 and S4 classes", {
-  s4_union <- methods::setClass("s4_union")
-  u <- new_union(s3_factor, s4_union)
-  expect_equal(u@classes, list(s3_factor, getClass("s4_union")))
+  S4_union <- methods::setClass("S4_union")
+  u <- new_union(S3_factor, S4_union)
+  expect_equal(u@classes, list(S3_factor, getClass("S4_union")))
 })
 
 test_that("base classes types check their data", {

@@ -1,7 +1,7 @@
 #' Declare an S3 class
 #'
 #' To use an S3 class with R7, you must explicitly declare it using
-#' `s3_class()` because S3 lacks a formal class definition.
+#' `S3_class()` because S3 lacks a formal class definition.
 #'
 #' # Method dispatch, properties, and unions
 #' There are three ways of using S3 with R7 that only require the S3 class
@@ -11,13 +11,13 @@
 #' * Restricting an R7 property to an S3 class.
 #' * Using an S3 class in an R7 union.
 #'
-#' This is easy, and you can usually include the `s3_class()`
+#' This is easy, and you can usually include the `S3_class()`
 #' call inline:
 #'
 #' ```R
-#' method(my_generic, s3_class("factor")) <- function(x) "A factor"
-#' new_class("my_class", properties = list(types = s3_class("factor")))
-#' new_union("character", s3_class("factor"))
+#' method(my_generic, S3_class("factor")) <- function(x) "A factor"
+#' new_class("my_class", properties = list(types = S3_class("factor")))
+#' new_union("character", S3_class("factor"))
 #' ```
 #'
 #' # Extending an S3 class
@@ -45,7 +45,7 @@
 #' `.Date()`.
 #'
 #' ```R
-#' S3_Date <- s3_class("Date",
+#' S3_Date <- S3_class("Date",
 #'   function(.data) {
 #'     .Date(.data)
 #'   },
@@ -70,7 +70,7 @@
 #'   A validator is a single argument function that takes the object to
 #'   validate and returns `NULL` if the object is valid. If the object is
 #'   invalid, it returns a character vector of problems.
-s3_class <- function(class, constructor = NULL, validator = NULL) {
+S3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.character(class)) {
     stop("`class` must be a character vector", call. = FALSE)
   }
@@ -88,12 +88,12 @@ s3_class <- function(class, constructor = NULL, validator = NULL) {
       constructor = constructor,
       validator = validator
     ),
-    class = "r7_s3_class"
+    class = "R7_S3_class"
   )
 }
 
 #' @export
-print.r7_s3_class <- function(x, ...) {
+print.R7_S3_class <- function(x, ...) {
   cat(
     "S3 class <", paste(x$class, collapse = "/"), ">\n",
     sep = ""
@@ -112,14 +112,14 @@ check_constructor <- function(constructor) {
   }
 }
 
-is_s3_class <- function(x) {
-  inherits(x, "r7_s3_class")
+is_S3_class <- function(x) {
+  inherits(x, "R7_S3_class")
 }
 
 # -------------------------------------------------------------------------
 # Define a few base examples
 
-s3_factor <- s3_class("factor",
+S3_factor <- S3_class("factor",
   function(.data, levels) {
     structure(.data, levels = levels, class = "factor")
   },
@@ -133,7 +133,7 @@ s3_factor <- s3_class("factor",
   }
 )
 
-s3_POSIXct <- s3_class(
+S3_POSIXct <- S3_class(
   c("POSIXct", "POSIXt"),
   function(.data, tz = "") {
     .POSIXct(.data, tz = tz)
@@ -148,7 +148,7 @@ s3_POSIXct <- s3_class(
   }
 )
 
-s3_data.frame <- s3_class("data.frame",
+S3_data.frame <- S3_class("data.frame",
   function(.data, row.names = NULL) {
     if (is.null(row.names)) {
       list2DF(.data)

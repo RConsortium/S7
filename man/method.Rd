@@ -15,7 +15,7 @@ dispatch, this should be one of the following:
 \itemize{
 \item An R7 class (created by \code{\link[=new_class]{new_class()}}).
 \item An R7 union (created by \code{\link[=new_union]{new_union()}}).
-\item An S3 class (created by \code{\link[=s3_class]{s3_class()}}).
+\item An S3 class (created by \code{\link[=S3_class]{S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base type specified either with its constructor (\code{logical}, \code{integer},
 \code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
@@ -42,7 +42,7 @@ of a specific method.
 # Create a generic and register some methods
 bizarro <- new_generic("bizarro", "x")
 method(bizarro, "numeric") <- function(x) rev(x)
-method(bizarro, s3_class("factor")) <- function(x) {
+method(bizarro, S3_class("factor")) <- function(x) {
   levels(x) <- rev(levels(x))
   x
 }
@@ -52,5 +52,5 @@ bizarro
 
 # And you can use method() to inspect specific implementations
 method(bizarro, "integer")
-method(bizarro, s3_class("factor"))
+method(bizarro, S3_class("factor"))
 }

@@ -79,17 +79,17 @@ registrar <- function(generic, signature, method) {
 }
 
 external_methods_get <- function(package) {
-  s3_methods_table(package)[[".R7_methods"]] %||% list()
+  S3_methods_table(package)[[".R7_methods"]] %||% list()
 }
 
 external_methods_reset <- function(package) {
-  tbl <- s3_methods_table(package)
+  tbl <- S3_methods_table(package)
   tbl[[".R7_methods"]] <- list()
   invisible()
 }
 
 external_methods_add <- function(package, generic, signature, method) {
-  tbl <- s3_methods_table(package)
+  tbl <- S3_methods_table(package)
 
   methods <- append(
     tbl[[".R7_methods"]] %||% list(),
@@ -100,6 +100,6 @@ external_methods_add <- function(package, generic, signature, method) {
   invisible()
 }
 
-s3_methods_table <- function(package) {
+S3_methods_table <- function(package) {
   asNamespace(package)[[".__S3MethodsTable__."]]
 }

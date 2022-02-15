@@ -46,10 +46,10 @@
       @ properties:
        $ anything: <ANY>                 
        $ base    : <integer>             
-       $ s3      : S3<factor>            
-       $ s4      : S4<class_s4>          
-       $ r7      : <class_r7>            
-       $ r7_union: <integer> or <logical>
+       $ S3      : S3<factor>            
+       $ S4      : S4<class_S4>          
+       $ R7      : <class_R7>            
+       $ R7_union: <integer> or <logical>
 
 ---
 
@@ -58,21 +58,21 @@
     Error <simpleError>
       <my_class>@base must be <integer>, not <character>
     Code
-      my_obj@s3 <- "x"
+      my_obj@S3 <- "x"
     Error <simpleError>
-      <my_class>@s3 must be S3<factor>, not <character>
+      <my_class>@S3 must be S3<factor>, not <character>
     Code
-      my_obj@s4 <- "x"
+      my_obj@S4 <- "x"
     Error <simpleError>
-      <my_class>@s4 must be S4<class_s4>, not <character>
+      <my_class>@S4 must be S4<class_S4>, not <character>
     Code
-      my_obj@r7 <- "x"
+      my_obj@R7 <- "x"
     Error <simpleError>
-      <my_class>@r7 must be <class_r7>, not <character>
+      <my_class>@R7 must be <class_R7>, not <character>
     Code
-      my_obj@r7_union <- "x"
+      my_obj@R7_union <- "x"
     Error <simpleError>
-      <my_class>@r7_union must be <integer> or <logical>, not <character>
+      <my_class>@R7_union must be <integer> or <logical>, not <character>
 
 # as_properties() gives useful error messages
 
@@ -87,7 +87,7 @@
     Code
       as_properties(list(x = 1))
     Error <simpleError>
-      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `s3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <double>.
     Code
       as_properties(list(x = "character", x = "character"))
     Error <simpleError>

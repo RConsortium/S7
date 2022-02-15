@@ -14,8 +14,8 @@ describe("single dispatch", {
   })
 
   it("works for S3 objects", {
-    obj <- structure("hi", class = "my_s3")
-    method(foo, s3_class("my_s3")) <- function(x) "S3"
+    obj <- structure("hi", class = "my_S3")
+    method(foo, S3_class("my_S3")) <- function(x) "S3"
 
     expect_equal(foo(obj), "S3")
   })
@@ -149,7 +149,7 @@ test_that("next_method works for single dispatch", {
   foo <- new_generic("foo", "x")
 
   method(foo, text) <- function(x, ...) {
-    r7_data(x) <- paste0("foo-", r7_data(x))
+    R7_data(x) <- paste0("foo-", R7_data(x))
   }
   method(foo, "character") <- function(x, ...) {
     as.character(x)
@@ -162,18 +162,18 @@ test_that("next_method works for double dispatch", {
   foo <- new_generic("foo", c("x", "y"))
 
   method(foo, list(text, number)) <- function(x, y, ...) {
-    r7_data(x) <- paste0("foo-", r7_data(x), "-", r7_data(y))
+    R7_data(x) <- paste0("foo-", R7_data(x), "-", R7_data(y))
     next_method()(x, y)
   }
 
   method(foo, list(character, number)) <- function(x, y, ...) {
-    r7_data(y) <- y + 1
-    r7_data(x) <- paste0(r7_data(x), "-", r7_data(y))
+    R7_data(y) <- y + 1
+    R7_data(x) <- paste0(R7_data(x), "-", R7_data(y))
     next_method()(x, y)
   }
 
   method(foo, list(character, double)) <- function(x, y, ...) {
-    as.character(r7_data(x))
+    as.character(R7_data(x))
   }
 
   expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")

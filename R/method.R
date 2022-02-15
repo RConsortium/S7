@@ -18,7 +18,7 @@
 #'   dispatch, this should be one of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
-#'   * An S3 class (created by [s3_class()]).
+#'   * An S3 class (created by [S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type specified either with its constructor (`logical`, `integer`,
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
@@ -37,7 +37,7 @@
 #' bizarro <- new_generic("bizarro", "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x) rev(x)
-#' method(bizarro, s3_class("data.frame")) <- function(x) {
+#' method(bizarro, S3_class("data.frame")) <- function(x) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
@@ -57,13 +57,13 @@ register_method <- function(generic, signature, method, env = parent.frame()) {
 
   if (is_external_generic(generic)) {
     register_external_method(generic, signature, method, package)
-  } else if (is_s3_generic(generic)) {
-    register_s3_method(generic, signature, method)
+  } else if (is_S3_generic(generic)) {
+    register_S3_method(generic, signature, method)
   } else if (inherits(generic, "genericFunction")) {
-    register_s4_method(generic, signature, method, env)
+    register_S4_method(generic, signature, method, env)
   } else {
     check_method(method, signature, generic)
-    register_r7_method(generic, signature, method)
+    register_R7_method(generic, signature, method)
   }
 
   invisible()
@@ -80,8 +80,8 @@ register_external_method <- function(generic, signature, method, package = NULL)
   }
 }
 
-register_s3_method <- function(generic, signature, method) {
-  if (length(signature) != 1 || class_type(signature[[1]]) != "r7") {
+register_S3_method <- function(generic, signature, method) {
+  if (length(signature) != 1 || class_type(signature[[1]]) != "R7") {
     msg <- sprintf(
       "When registering methods for S3 generic %s(), signature be a single R7 class",
       generic$name
@@ -92,7 +92,7 @@ register_s3_method <- function(generic, signature, method) {
   registerS3method(generic$name, class, method, envir = parent.frame())
 }
 
-register_r7_method <- function(generic, signature, method) {
+register_R7_method <- function(generic, signature, method) {
   # Flatten out unions to individual signatures
   signatures <- flatten_signature(signature)
 
@@ -198,21 +198,21 @@ check_method <- function(method, signature, generic) {
   invisible(TRUE)
 }
 
-register_s4_method <- function(generic, signature, method, env = parent.frame()) {
-  s4_env <- topenv(env)
+register_S4_method <- function(generic, signature, method, env = parent.frame()) {
+  S4_env <- topenv(env)
 
-  s4_signature <- lapply(signature, s4_class, s4_env = s4_env)
-  methods::setMethod(generic, s4_signature, method, where = s4_env)
+  S4_signature <- lapply(signature, S4_class, S4_env = S4_env)
+  methods::setMethod(generic, S4_signature, method, where = S4_env)
 
 }
-s4_class <- function(x, s4_env) {
+S4_class <- function(x, S4_env) {
   if (is_base_class(x)) {
     x@name
-  } else if (is_s4_class(x)) {
+  } else if (is_S4_class(x)) {
     x
-  } else if (is_class(x) || is_s3_class(x)) {
+  } else if (is_class(x) || is_S3_class(x)) {
     class <- class_dispatch(x)
-    methods::setOldClass(class, where = s4_env)
+    methods::setOldClass(class, where = S4_env)
     methods::getClass(class)
   }
 }

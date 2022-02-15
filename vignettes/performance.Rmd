@@ -30,11 +30,11 @@ y <- number(1)
 foo_R7 <- new_generic("foo_R7", "x")
 method(foo_R7, text) <- function(x, ...) paste0(x, "-foo")
 
-foo_s3 <- function(x, ...) {
-  UseMethod("foo_s3")
+foo_S3 <- function(x, ...) {
+  UseMethod("foo_S3")
 }
 
-foo_s3.text <- function(x, ...) {
+foo_S3.text <- function(x, ...) {
   paste0(x, "-foo")
 }
 
@@ -42,20 +42,20 @@ library(methods)
 setOldClass(c("number", "numeric", "R7_object"))
 setOldClass(c("text", "character", "R7_object"))
 
-setGeneric("foo_s4", function(x, ...) standardGeneric("foo_s4"))
-setMethod("foo_s4", c("text"), function(x, ...) paste0(x, "-foo"))
+setGeneric("foo_S4", function(x, ...) standardGeneric("foo_S4"))
+setMethod("foo_S4", c("text"), function(x, ...) paste0(x, "-foo"))
 
 # Measure performance of single dispatch
-bench::mark(foo_R7(x), foo_s3(x), foo_s4(x))
+bench::mark(foo_R7(x), foo_S3(x), foo_S4(x))
 
 bar_R7 <- new_generic("bar_R7", c("x", "y"))
 method(bar_R7, list(text, number)) <- function(x, y, ...) paste0(x, "-", y, "-bar")
 
-setGeneric("bar_s4", function(x, y, ...) standardGeneric("bar_s4"))
-setMethod("bar_s4", c("text", "number"), function(x, y, ...) paste0(x, "-", y, "-bar"))
+setGeneric("bar_S4", function(x, y, ...) standardGeneric("bar_S4"))
+setMethod("bar_S4", c("text", "number"), function(x, y, ...) paste0(x, "-", y, "-bar"))
 
 # Measure performance of double dispatch
-bench::mark(bar_R7(x, y), bar_s4(x, y))
+bench::mark(bar_R7(x, y), bar_S4(x, y))
 ```
 
 A potential optimization is caching based on the class names, but lookup should be fast without this.

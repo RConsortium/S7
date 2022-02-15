@@ -47,7 +47,7 @@ test_that("generates meaningful constructors", {
 
 test_that("can generate constructors for S3 classes", {
   expect_snapshot({
-    new_constructor(s3_factor, list())
-    new_constructor(s3_factor, as_properties(list(x = "numeric", y = "numeric")))
+    new_constructor(S3_factor, list())
+    new_constructor(S3_factor, as_properties(list(x = "numeric", y = "numeric")))
   }, transform = scrub_environment)
 })

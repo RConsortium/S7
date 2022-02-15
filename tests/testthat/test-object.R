@@ -28,7 +28,7 @@ describe("new_object", {
 
   it("can instantiate a new object that inherits from a basic type", {
     y <- text("foo")
-    expect_equal(r7_data(y), "foo")
+    expect_equal(R7_data(y), "foo")
   })
 
   it("checks are arguments are properties", {
@@ -61,7 +61,7 @@ describe("new_object", {
       constructor = function(x, name) new_object(text2(x), name = name)
     )
     obj <- my_class("foo", "bar")
-    expect_equal(r7_data(obj), "foo")
+    expect_equal(R7_data(obj), "foo")
   })
 })
 
@@ -80,7 +80,7 @@ test_that("print()/str() nests properties correctly", {
 })
 
 test_that("can inherit from an S3 class", {
-  ordered2 <- new_class("ordered2", parent = s3_factor)
+  ordered2 <- new_class("ordered2", parent = S3_factor)
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
   expect_equal(class(x), c("ordered2", "R7_object", "factor"))
   expect_equal(prop_names(x), character())

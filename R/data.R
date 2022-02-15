@@ -11,8 +11,8 @@
 #' @examples
 #' text <- new_class("text", parent = "character")
 #' y <- text(c(foo = "bar"))
-#' str(r7_data(y))
-r7_data <- function(object) {
+#' str(R7_data(y))
+R7_data <- function(object) {
   check_R7(object)
 
   # Remove properties, return the rest
@@ -26,8 +26,8 @@ r7_data <- function(object) {
 }
 
 #' @export
-#' @rdname r7_data
-`r7_data<-` <- function(object, check = TRUE, value) {
+#' @rdname R7_data
+`R7_data<-` <- function(object, check = TRUE, value) {
   attrs <- attributes(object)
   object <- value
   attributes(object) <- attrs

@@ -122,7 +122,7 @@ bar(text("hi"), 42)
 ```{r}
 subset2 <- new_generic("subset2", "x")
 
-method(subset2, s3_class("data.frame")) <- function(x, subset = NULL, select = NULL, drop = FALSE) {
+method(subset2, S3_class("data.frame")) <- function(x, subset = NULL, select = NULL, drop = FALSE) {
   e <- substitute(subset)
   # Unlike S3, R7 creates a frame for the generic, so we need to
   # go one extra level up to get to the user's evaluation environment
