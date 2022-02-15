@@ -102,7 +102,7 @@ test_that("can work with simple S3 classes", {
   klass <- s3_data.frame
   expect_equal(as_class(klass), klass)
 
-  expect_equal(class_type(klass), "s3")
+  expect_equal(class_type(klass), "r7_s3")
   expect_equal(class_dispatch(klass), c("R7_object", "data.frame"))
   expect_equal(class_register(klass), "data.frame")
   expect_equal(class_desc(klass), "S3<data.frame>")
@@ -123,7 +123,7 @@ test_that("can work with s3 subclasses", {
   )
   expect_equal(as_class(klass), klass)
 
-  expect_equal(class_type(klass), "s3")
+  expect_equal(class_type(klass), "r7_s3")
   expect_equal(class_dispatch(klass), c("R7_object", "ordered", "factor"))
   expect_equal(class_register(klass), "ordered")
   expect_equal(class_desc(klass), "S3<ordered>")
