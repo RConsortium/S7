@@ -192,7 +192,7 @@ User responsible for ensuring that `x + y` equivalent to `y + x` (types should a
 
 ```{r}
 double_dispatch <- function(x, y, generic = "+") {
-  grid <- tidyr::expand_grid(sloop::s3_class(x), sloop::s3_class(y))
+  grid <- rev(expand.grid(sloop::s3_class(y), sloop::s3_class(x)))
   writeLines(paste0("* ", generic, ".", grid[[1]], ".", grid[[2]]))
 }
 
