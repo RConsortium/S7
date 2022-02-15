@@ -22,40 +22,14 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore)
 
   SEXP classes = VECTOR_ELT(signature, signature_itr);
 
-  if (Rf_inherits(classes, "R7_class")) {
-    while(classes != R_NilValue) {
-      SEXP klass = Rf_install(CHAR(STRING_ELT(Rf_getAttrib(classes, name_sym), 0)));
-      SEXP val = Rf_findVarInFrame(table, klass);
-      if (TYPEOF(val) == ENVSXP) {
-        val = method_rec(val, signature, signature_itr + 1, ignore);
-      }
-      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
-        return val;
-      }
-      classes = Rf_getAttrib(classes, parent_sym);
+  for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
+    SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
+    SEXP val = Rf_findVarInFrame(table, klass);
+    if (TYPEOF(val) == ENVSXP) {
+      val = method_rec(val, signature, signature_itr + 1, ignore);
     }
-  } else if (Rf_inherits(classes, "r7_s3_class")) {
-    SEXP klasses = VECTOR_ELT(classes, 0);
-    for (R_xlen_t i = 0; i < Rf_xlength(klasses); ++i) {
-      SEXP klass = Rf_install(CHAR(STRING_ELT(klasses, i)));
-      SEXP val = Rf_findVarInFrame(table, klass);
-      if (TYPEOF(val) == ENVSXP) {
-        val = method_rec(val, signature, signature_itr + 1, ignore);
-      }
-      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
-        return val;
-      }
-    }
-  } else {
-    for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
-      SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
-      SEXP val = Rf_findVarInFrame(table, klass);
-      if (TYPEOF(val) == ENVSXP) {
-        val = method_rec(val, signature, signature_itr + 1, ignore);
-      }
-      if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
-        return val;
-      }
+    if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
+      return val;
     }
   }
   return R_NilValue;
@@ -83,6 +57,9 @@ SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
   }
 
   SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
+  if (TYPEOF(table) != ENVSXP) {
+    Rf_error("Corrupt R7_generic: @methods isn't an environment");
+  }
 
   SEXP m = method_rec(table, signature, 0, ignore);
   if (m == R_NilValue) {
@@ -92,42 +69,19 @@ SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
   return m;
 }
 
-SEXP get_class(SEXP object, SEXP envir) {
-    static SEXP fun = NULL;
-    if (fun == NULL) {
-      fun = Rf_findVarInFrame(R_BaseEnv, Rf_install(".class2"));
-    }
-    SEXP call = PROTECT(Rf_lang2(fun, object));
-    SEXP res = Rf_eval(call, envir);
-    UNPROTECT(1);
-    return res;
-}
+SEXP R7_obj_dispatch(SEXP object) {
+  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
 
-SEXP object_class_(SEXP object, SEXP envir) {
-  if (Rf_inherits(object, "R7_class")) {
-    return object;
+  static SEXP obj_dispatch_fun = NULL;
+  if (obj_dispatch_fun == NULL) {
+    obj_dispatch_fun = Rf_findVarInFrame(ns, Rf_install("obj_dispatch"));
   }
 
-  if (Rf_inherits(object, "R7_object")) {
-    return Rf_getAttrib(object, Rf_install("object_class"));
-  }
+  SEXP methods_extends_call = PROTECT(Rf_lang2(obj_dispatch_fun, object));
+  SEXP res = Rf_eval(methods_extends_call, ns);
+  UNPROTECT(1);
 
-  SEXP klass = get_class(object, envir);
-
-    // We need to call `methods::extends(class(object))` for S4 objects, so use the S3 klass value we just obtained.
-  if (IS_S4_OBJECT(object)) {
-    static SEXP methods_extends_fun = NULL;
-    if (methods_extends_fun == NULL) {
-      SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("methods"));
-      methods_extends_fun = Rf_findVarInFrame(ns, Rf_install("extends"));
-    }
-    SEXP methods_extends_call = PROTECT(Rf_lang2(methods_extends_fun, klass));
-    SEXP res = Rf_eval(methods_extends_call, envir);
-    UNPROTECT(1);
-    return res;
-  }
-
-  return klass;
+  return res;
 }
 
 SEXP R7_object_() {
@@ -172,7 +126,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
 
         // Determine class string to use for method look up
-        SET_VECTOR_ELT(dispatch_classes, i, object_class_(val, envir));
+        SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
       } else {
         SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));

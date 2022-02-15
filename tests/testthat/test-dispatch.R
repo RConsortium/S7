@@ -178,3 +178,17 @@ test_that("next_method works for double dispatch", {
 
   expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
 })
+
+test_that("obj_dispatch works for different OO families", {
+  expect_equal(obj_dispatch("foo"), "character")
+
+  S3 <- structure(list(), class = "foo")
+  expect_equal(obj_dispatch(S3), "foo")
+
+  foo2 <- methods::setClass("foo2", representation = "character")
+  S4 <- foo2("hi")
+  expect_equal(obj_dispatch(S4), methods::extends(class(S4)))
+
+  R7 <- new_class("text", parent = "character")
+  expect_equal(obj_dispatch(R7()), c("text", "R7_object", "character"))
+})

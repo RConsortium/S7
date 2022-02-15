@@ -2,7 +2,7 @@
 #' @keywords internal
 #' @export
 new_object <- function(.data = NULL, ...) {
-  obj_cls <- class_dispatch(sys.function(-1))
+  obj_cls <- sys.function(-1)
 
   args <- list(...)
   nms <- names(args)
@@ -57,10 +57,6 @@ object_class <- function(object) {
   class(object) <- class_names(value)
 
   invisible(object)
-}
-
-class_dispatch <- function(object) {
-  .Call(object_class_, object, parent.frame())
 }
 
 #' @export
