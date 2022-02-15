@@ -1,6 +1,12 @@
 # R7 0.0.0.9000
 
-## Jan 2020
+## Feb 2022
+
+* Revamp website. README now shows brief example and more info in 
+  `vignette("R7")`. Initial design docs and minutes are now articles so
+  they appear on the website.
+
+## Jan 2022
 
 * New `props<-` for setting multiple properties simultaneously and validating
   afterwards (#149).

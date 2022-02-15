@@ -29,3 +29,21 @@ reference:
   - as_class
   - object_class
   - method
+
+articles:
+- title: Learn R7
+  navbar: ~
+  contents:
+  - R7
+  - case_studies
+  - performance
+
+- title: Initial design and specification
+  contents:
+  - spec/proposal
+  - spec/requirements
+  - spec/design
+  - spec/dispatch
+
+- title: Minutes
+  contents: starts_with("minutes/")

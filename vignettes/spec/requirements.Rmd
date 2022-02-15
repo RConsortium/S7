@@ -1,3 +1,10 @@
+---
+title: "Requirements"
+description: >
+  Initial technical requirements brainstorming.
+---
+
+
 This page is for brainstorming on the technical requirements for solving our [problem](https://github.com/RConsortium/OOP-WG/wiki/Problem-Statement).
 Once we align on the requirements, we can start the design process.
 

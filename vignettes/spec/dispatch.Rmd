@@ -1,13 +1,11 @@
 ---
-output: github_document
+title: "Dispatch"
+description: Initial notes on dispatch design
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(comment = "#>", collapse = TRUE)
-options(rlang_trace_top_env = rlang::current_env())
 ```
-
-# Dispatch
 
 ## Single dispatch
 
