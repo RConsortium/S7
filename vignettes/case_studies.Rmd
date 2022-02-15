@@ -103,13 +103,11 @@ In particular the number of rows of the `rows` property matches the number of ro
 
 Here is the definition of the class.
 ```{r}
-tbl_df <- S3_class(c("tbl_df", "tbl", "data.frame"))
-
 annotated_df <- new_class("annotated_df",
   properties = list(
-    data = tbl_df,
-    rows = tbl_df,
-    columns = tbl_df
+    data = S3_class("tbl_df"),
+    rows = S3_class("tbl_df"),
+    columns = S3_class("tbl_df")
   ),
   validator = function(object) {
     if (nrow(object@data) != nrow(object@rows)) {

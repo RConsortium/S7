@@ -1,5 +1,5 @@
 test_that("S3_class has a print method", {
-  expect_snapshot(S3_class(c("ordered", "factor")))
+  expect_snapshot(S3_class("ordered"))
 })
 
 test_that("can construct objects that extend S3 classes", {

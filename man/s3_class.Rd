@@ -7,7 +7,8 @@
 S3_class(class, constructor = NULL, validator = NULL)
 }
 \arguments{
-\item{class}{Character vector of S3 classes}
+\item{class}{Name of S3 class. This should be the first element of the
+\code{class()} of the object.}
 
 \item{constructor}{An optional constructor that can be used to create
 objects of the specified class. This is only needed if you wish to
