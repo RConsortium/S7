@@ -2,7 +2,7 @@
 #' @keywords internal
 #' @export
 new_object <- function(.data = NULL, ...) {
-  obj_cls <- object_class(sys.function(-1))
+  obj_cls <- class_dispatch(sys.function(-1))
 
   args <- list(...)
   nms <- names(args)
@@ -45,17 +45,22 @@ new_object <- function(.data = NULL, ...) {
 #' @param object The R7 object
 #' @export
 object_class <- function(object) {
-  .Call(object_class_, object, parent.frame())
+  attr(object, "object_class", exact = TRUE)
 }
 
 `object_class<-` <- function(object, value) {
+  if (!inherits(value, "R7_class")) {
+    stop("`value` must be an <R7_class>")
+  }
+
   attr(object, "object_class") <- value
-
-  nms <- class_names(object_class(object))
-
-  class(object) <- nms
+  class(object) <- class_names(value)
 
   invisible(object)
+}
+
+class_dispatch <- function(object) {
+  .Call(object_class_, object, parent.frame())
 }
 
 #' @export

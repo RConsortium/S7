@@ -79,33 +79,33 @@ test_that("print()/str() nests properties correctly", {
   })
 })
 
-test_that("object_class returns itself for R7_class objects", {
+test_that("class_dispatch returns itself for R7_class objects", {
   text <- new_class("text", parent = "character")
 
-  expect_equal(object_class(text), text)
+  expect_equal(class_dispatch(text), text)
 })
 
-test_that("object_class returns the object class property for R7_object objects", {
+test_that("class_dispatch returns the object class property for R7_object objects", {
   text <- new_class("text", parent = "character")
 
   obj <- text("hi")
 
-  expect_equal(object_class(obj), text)
+  expect_equal(class_dispatch(obj), text)
 })
 
-test_that("object_class returns class for basic types", {
-  expect_equal(object_class("foo"), "character")
+test_that("class_dispatch returns class for basic types", {
+  expect_equal(class_dispatch("foo"), "character")
 })
 
-test_that("object_class returns class for S3 types", {
+test_that("class_dispatch returns class for S3 types", {
   foo <- structure(list(), class = "foo")
-  expect_equal(object_class(foo), "foo")
+  expect_equal(class_dispatch(foo), "foo")
 })
 
-test_that("object_class returns the class for S4 types", {
+test_that("class_dispatch returns the class for S4 types", {
   foo2 <- methods::setClass("foo2", representation = "character")
   obj <- foo2("hi")
-  expect_equal(object_class(obj), methods::extends(class(obj)))
+  expect_equal(class_dispatch(obj), methods::extends(class(obj)))
 })
 
 test_that("can inherit from an S3 class", {
