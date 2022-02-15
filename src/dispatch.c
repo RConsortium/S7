@@ -77,8 +77,8 @@ SEXP R7_obj_dispatch(SEXP object) {
     obj_dispatch_fun = Rf_findVarInFrame(ns, Rf_install("obj_dispatch"));
   }
 
-  SEXP methods_extends_call = PROTECT(Rf_lang2(obj_dispatch_fun, object));
-  SEXP res = Rf_eval(methods_extends_call, ns);
+  SEXP obj_dispatch_call = PROTECT(Rf_lang2(obj_dispatch_fun, object));
+  SEXP res = Rf_eval(obj_dispatch_call, ns);
   UNPROTECT(1);
 
   return res;
