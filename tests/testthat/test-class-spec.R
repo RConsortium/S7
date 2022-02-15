@@ -94,6 +94,21 @@ test_that("can work with S4 subclasses of base classes", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("can work with S4 multiple inheritance", {
+  methods::setClass("Foo4", contains = "character")
+  methods::setClass("Foo5")
+  methods::setClass("Foo6", contains = c("Foo4", "Foo5"))
+  klass <- methods::getClass("Foo6")
+
+  expect_equal(class_type(klass), "s4")
+  expect_equal(class_dispatch(klass), c("Foo6", "Foo4", "Foo5", "character"))
+  expect_equal(class_register(klass), "Foo6")
+
+  obj <- methods::new(klass, "x")
+  expect_equal(obj_dispatch(obj), c("Foo6", "Foo4", "Foo5", "character"))
+  expect_equal(class_inherits(obj, klass), TRUE)
+})
+
 test_that("converts S4 base classes to R7 base classes", {
   expect_equal(as_class(getClass("NULL")), base_classes[["NULL"]])
   expect_equal(as_class(getClass("character")), base_classes$character)
