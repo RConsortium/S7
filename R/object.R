@@ -31,8 +31,9 @@ new_object <- function(.data = NULL, ...) {
     object <- class_construct(obj_cls@parent)
   }
 
-  class(object) <- "R7_object"
-  object_class(object) <- obj_cls
+  attr(object, "object_class") <- obj_cls
+  class(object) <- class_dispatch(obj_cls)
+
   for (nme in nms) {
     prop(object, nme, check = FALSE) <- args[[nme]]
   }
@@ -46,17 +47,6 @@ new_object <- function(.data = NULL, ...) {
 #' @export
 object_class <- function(object) {
   attr(object, "object_class", exact = TRUE)
-}
-
-`object_class<-` <- function(object, value) {
-  if (!inherits(value, "R7_class")) {
-    stop("`value` must be an <R7_class>")
-  }
-
-  attr(object, "object_class") <- value
-  class(object) <- class_dispatch(value)
-
-  invisible(object)
 }
 
 #' @export

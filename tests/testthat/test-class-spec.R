@@ -166,6 +166,20 @@ test_that("can work with s3 subclasses", {
   expect_equal(class_inherits(factor(), klass), FALSE)
 })
 
+test_that("can work with R7 classes that extend S3 classes", {
+  Date <- s3_class("Date", constructor = function(.data = numeric()) .Date(.data))
+  Date2 <- new_class("Date2", parent = Date, properties = list(x = "numeric"))
+
+  expect_equal(class_type(Date2), "r7")
+  expect_equal(class_dispatch(Date2), c("Date2", "R7_object", "Date"))
+
+  obj <- Date2(x = 1)
+  expect_equal(obj_type(obj), "r7")
+  expect_equal(obj_desc(obj), "<Date2>")
+  expect_equal(obj_dispatch(obj), c("Date2", "R7_object", "Date"))
+  expect_equal(class_inherits(obj, Date2), TRUE)
+})
+
 test_that("can work with base types", {
   expect_equal(as_class("character"), base_classes$character)
   expect_equal(as_class(character), base_classes$character)

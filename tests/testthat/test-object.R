@@ -28,7 +28,7 @@ describe("new_object", {
 
   it("can instantiate a new object that inherits from a basic type", {
     y <- text("foo")
-    expect_equal(r7_data(y), as_class("character")("foo"))
+    expect_equal(r7_data(y), "foo")
   })
 
   it("checks are arguments are properties", {
@@ -61,7 +61,7 @@ describe("new_object", {
       constructor = function(x, name) new_object(text2(x), name = name)
     )
     obj <- my_class("foo", "bar")
-    expect_equal(r7_data(obj), text2("foo"))
+    expect_equal(r7_data(obj), "foo")
   })
 })
 
