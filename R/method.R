@@ -198,17 +198,6 @@ check_method <- function(method, signature, generic) {
   invisible(TRUE)
 }
 
-# Class name when registering an R7 method
-r7_class_name <- function(x) {
-  switch(class_type(x),
-    s3 = x$class,
-    s4 = x@className,
-    r7 = x@name,
-    r7_base = x@name,
-    stop("Unsupported")
-  )
-}
-
 register_s4_method <- function(generic, signature, method, env = parent.frame()) {
   s4_env <- topenv(env)
 
@@ -222,7 +211,7 @@ s4_class <- function(x, s4_env) {
   } else if (is_s4_class(x)) {
     x
   } else if (is_class(x) || is_s3_class(x)) {
-    class <- class_names(x)
+    class <- class_dispatch(x)
     methods::setOldClass(class, where = s4_env)
     methods::getClass(class)
   }

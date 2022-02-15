@@ -90,7 +90,7 @@ class_type <- function(x) {
   } else if (is_union(x)) {
     "r7_union"
   } else if (is_s3_class(x)) {
-    "s3"
+    "r7_s3"
   } else if (is_s4_class(x)) {
     "s4"
   } else {
@@ -101,11 +101,11 @@ class_type <- function(x) {
 class_constructor <- function(.x, ...) {
   switch(class_type(.x),
     NULL = function() NULL,
-    s3 = .x$constructor,
     s4 = function(...) methods::new(.x, ...),
     r7 = .x,
     r7_base = .x,
     r7_union = class_constructor(.x@classes[[1]]),
+    r7_s3 = .x$constructor,
   )
 }
 class_construct <- function(.x, ...) {
@@ -115,11 +115,11 @@ class_construct <- function(.x, ...) {
 class_validate <- function(class, object) {
   validator <- switch(class_type(class),
     NULL = NULL,
-    s3 = class$validator,
     s4 = methods::validObject,
     r7 = class@validator,
     r7_base = class@validator,
     r7_union = NULL,
+    r7_s3 = class$validator,
   )
 
   if (is.null(validator)) {
@@ -132,23 +132,35 @@ class_validate <- function(class, object) {
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
-    s3 = fmt_classes(x$class[[1]], "S3"),
     s4 = fmt_classes(x@className, "S4"),
     r7 = fmt_classes(x@name),
     r7_base = fmt_classes(x@name),
     r7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
+    r7_s3 = fmt_classes(x$class[[1]], "S3"),
   )
 }
 
-# Return complete vector of class names
-class_names <- function(x) {
+# Vector of class names; used in method introspection
+class_dispatch <- function(x) {
   switch(class_type(x),
     NULL = NULL,
-    s3 = c("R7_object", x$class),
-    s4 = as.character(x@className),
-    r7 = c(x@name, class_names(x@parent)),
+    s4 = s4_strip_union(methods::extends(x)),
+    r7 = c(x@name, class_dispatch(x@parent)),
     r7_base = c("R7_object", x@name),
-    r7_union = unique(unlist(lapply(x@classes, class_names)), fromLast = TRUE)
+    r7_s3 = c("R7_object", x$class),
+    stop("Unsupported")
+  )
+}
+
+# Class name when registering an R7 method
+class_register <- function(x) {
+  switch(class_type(x),
+    NULL = "NULL",
+    s4 = as.character(x@className),
+    r7 = x@name,
+    r7_base = x@name,
+    r7_s3 = x$class[[1]],
+    stop("Unsupported")
   )
 }
 
@@ -156,25 +168,25 @@ class_names <- function(x) {
 class_deparse <- function(x) {
   switch(class_type(x),
     NULL = "",
-    s3 = paste0("s3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
     s4 = as.character(x@className),
     r7 = x@name,
     r7_base = encodeString(x@name, quote = '"'),
     r7_union = {
       classes <- vcapply(x@classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")
-    }
+    },
+    r7_s3 = paste0("s3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
   )
 }
 
 class_inherits <- function(x, what) {
   switch(class_type(what),
     NULL = TRUE,
-    s3 = !isS4(x) && is_prefix(what$class, class(x)),
     s4 = isS4(x) && methods::is(x, what),
     r7 = inherits(x, "R7_object") && inherits(x, what@name),
     r7_base = what@name %in% .class2(x),
-    r7_union = any(vlapply(what@classes, class_inherits, x = x))
+    r7_union = any(vlapply(what@classes, class_inherits, x = x)),
+    r7_s3 = !isS4(x) && is_prefix(what$class, class(x)),
   )
 }
 
@@ -197,8 +209,26 @@ obj_desc <- function(x) {
    base = fmt_classes(typeof(x)),
    s3 = fmt_classes(class(x)[[1]], "S3"),
    s4 = fmt_classes(class(x), "S4"),
-   r7 = fmt_classes(object_class(x)@name)
+   r7 = class_desc(object_class(x))
   )
+}
+obj_dispatch <- function(x) {
+  switch(obj_type(x),
+    NULL = "NULL",
+    base = .class2(x),
+    s3 = class(x),
+    s4 = s4_strip_union(methods::is(x)),
+    r7 = class(x) # = class_dispatch(object_class(x))
+  )
+}
+
+# R7 handles unions at method registration time, where as S4 handles them at
+# dispatch time.
+s4_strip_union <- function(class_names) {
+  classes <- lapply(class_names, methods::getClass)
+  is_union <- vlapply(classes, methods::is, "ClassUnionRepresentation")
+
+  setdiff(class_names[!is_union], "vector")
 }
 
 # helpers -----------------------------------------------------------------

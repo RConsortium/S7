@@ -35,7 +35,8 @@ method <- function(generic, signature) {
     stop("Can't dispatch on unions; must be a concrete type")
   }
 
-  .Call(method_, generic, signature, NULL)
+  dispatch <- lapply(signature, class_dispatch)
+  .Call(method_, generic, dispatch, NULL)
 }
 
 # Called from C
@@ -59,6 +60,7 @@ method_call <- function() {
 next_method <- function() {
   current_method <- sys.function(sys.parent(1))
 
+  # Travel up the call stack, finding all methods that have already been called
   methods <- list()
   i <- 1
   while (!inherits(current_method, "R7_generic")) {
@@ -70,9 +72,7 @@ next_method <- function() {
   generic <- current_method
 
   # Find signature
-  dispatch_on <- setdiff(generic@dispatch_args, "...")
-  vals <- mget(dispatch_on, envir = parent.frame())
-  signature <- lapply(vals, object_class)
-
-  .Call(method_, generic, signature, ignore = methods)
+  vals <- mget(generic@dispatch_args, envir = parent.frame())
+  dispatch <- lapply(vals, obj_dispatch)
+  .Call(method_, generic, dispatch, ignore = methods)
 }

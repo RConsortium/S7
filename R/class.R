@@ -149,7 +149,7 @@ print.R7_class <- function(x, ...) {
 #' @export
 str.R7_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<", paste0(class_names(object), collapse = "/"), "> constructor", sep = "")
+  cat("<", paste0(class_dispatch(object), collapse = "/"), "> constructor", sep = "")
   cat("\n")
 
   if (nest.lev == 0) {

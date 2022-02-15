@@ -11,6 +11,12 @@ R7_object <- new_class(
     .Call(R7_object_)
   }
 )
+check_R7 <- function(x, arg = deparse(substitute(x))) {
+  if (!inherits(x, "R7_object")) {
+    stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
+  }
+}
+
 
 new_base_class <- function(name) {
   default <- switch(name,

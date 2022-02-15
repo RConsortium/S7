@@ -28,7 +28,7 @@ describe("new_object", {
 
   it("can instantiate a new object that inherits from a basic type", {
     y <- text("foo")
-    expect_equal(r7_data(y), as_class("character")("foo"))
+    expect_equal(r7_data(y), "foo")
   })
 
   it("checks are arguments are properties", {
@@ -61,7 +61,7 @@ describe("new_object", {
       constructor = function(x, name) new_object(text2(x), name = name)
     )
     obj <- my_class("foo", "bar")
-    expect_equal(r7_data(obj), text2("foo"))
+    expect_equal(r7_data(obj), "foo")
   })
 })
 
@@ -77,35 +77,6 @@ test_that("print()/str() nests properties correctly", {
   expect_snapshot({
     str(klass(x = 10, y = range(1, 10)))
   })
-})
-
-test_that("object_class returns itself for R7_class objects", {
-  text <- new_class("text", parent = "character")
-
-  expect_equal(object_class(text), text)
-})
-
-test_that("object_class returns the object class property for R7_object objects", {
-  text <- new_class("text", parent = "character")
-
-  obj <- text("hi")
-
-  expect_equal(object_class(obj), text)
-})
-
-test_that("object_class returns class for basic types", {
-  expect_equal(object_class("foo"), "character")
-})
-
-test_that("object_class returns class for S3 types", {
-  foo <- structure(list(), class = "foo")
-  expect_equal(object_class(foo), "foo")
-})
-
-test_that("object_class returns the class for S4 types", {
-  foo2 <- methods::setClass("foo2", representation = "character")
-  obj <- foo2("hi")
-  expect_equal(object_class(obj), methods::extends(class(obj)))
 })
 
 test_that("can inherit from an S3 class", {

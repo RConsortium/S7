@@ -13,14 +13,14 @@
 #' y <- text(c(foo = "bar"))
 #' str(r7_data(y))
 r7_data <- function(object) {
+  check_R7(object)
+
   # Remove properties, return the rest
   for (name in prop_names(object)) {
     attr(object, name) <- NULL
   }
-
-  obj_cls <- object_class(object)
-  class(object) <- setdiff(class_names(obj_cls@parent), obj_cls@name)
-  object_class(object) <- object_class(obj_cls@parent)
+  attr(object, "object_class") <- NULL
+  class(object) <- NULL
 
   object
 }

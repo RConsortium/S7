@@ -190,7 +190,7 @@ methods_rec <- function(x, signature) {
 
 generic_add_method <- function(generic, signature, method) {
   p_tbl <- generic@methods
-  chr_signature <- vcapply(signature, r7_class_name)
+  chr_signature <- vcapply(signature, class_register)
 
   for (i in seq_along(chr_signature)) {
     class_name <- chr_signature[[i]]

@@ -3,7 +3,7 @@
 #' @rdname new_class
 #' @export
 new_object <- function(.data = NULL, ...) {
-  obj_cls <- object_class(sys.function(-1))
+  obj_cls <- sys.function(-1)
   if (!inherits(obj_cls, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
   }
@@ -35,8 +35,9 @@ new_object <- function(.data = NULL, ...) {
     object <- class_construct(obj_cls@parent)
   }
 
-  class(object) <- "R7_object"
-  object_class(object) <- obj_cls
+  attr(object, "object_class") <- obj_cls
+  class(object) <- class_dispatch(obj_cls)
+
   for (nme in nms) {
     prop(object, nme, check = FALSE) <- args[[nme]]
   }
@@ -49,17 +50,7 @@ new_object <- function(.data = NULL, ...) {
 #' @param object The R7 object
 #' @export
 object_class <- function(object) {
-  .Call(object_class_, object, parent.frame())
-}
-
-`object_class<-` <- function(object, value) {
-  attr(object, "object_class") <- value
-
-  nms <- class_names(object_class(object))
-
-  class(object) <- nms
-
-  invisible(object)
+  attr(object, "object_class", exact = TRUE)
 }
 
 #' @export

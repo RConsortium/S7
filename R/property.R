@@ -109,9 +109,9 @@ str.R7_property <- function(object, ..., nest.lev = 0) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
-  if (!inherits(object, "R7_object")) {
-    stop("`object` is not an <R7_object>")
-  } else if (!prop_exists(object, name)) {
+  check_R7(object)
+
+  if (!prop_exists(object, name)) {
     stop(prop_error_unknown(object, name))
   } else {
     prop_val(object, name)
@@ -145,6 +145,8 @@ prop_obj <- function(object, name) {
   setter_property <- NULL
 
   function(object, name, check = TRUE, value) {
+    check_R7(object)
+
     prop <- prop_obj(object, name)
     if (is.null(prop)) {
       stop(prop_error_unknown(object, name))
@@ -212,6 +214,8 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' @inheritParams prop
 #' @export
 prop_names <- function(object) {
+  check_R7(object)
+
   if (inherits(object, "R7_class")) {
     # R7_class isn't a R7_class (somewhat obviously) so we fake the property names
     c("name", "parent", "properties", "constructor", "validator")
@@ -229,6 +233,7 @@ prop_names <- function(object) {
 #' @rdname prop_names
 #' @export
 prop_exists <- function(object, name) {
+  check_R7(object)
   name %in% prop_names(object)
 }
 
@@ -252,6 +257,7 @@ prop_exists <- function(object, name) {
 #' props(lexington) <- list(height = 14, name = "Lexigonton")
 #' lexington
 props <- function(object) {
+  check_R7(object)
   prop_names <- prop_names(object)
   if (length(prop_names) == 0) {
     list()
@@ -264,6 +270,7 @@ props <- function(object) {
 #' @param value A named list of values. The object is checked for validity
 #'   only after all replacements are performed.
 `props<-` <- function(object, value) {
+  check_R7(object)
   stopifnot(is.list(value))
 
   for (name in names(value)) {

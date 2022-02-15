@@ -61,6 +61,8 @@
 #' }
 #' rightwards(r, 20)
 validate <- function(object, properties = TRUE) {
+  check_R7(object)
+
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))
   }

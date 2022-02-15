@@ -9,9 +9,6 @@ describe("R7_class", {
   it("is an instance of R7_class and object", {
     expect_equal(class(my_class), c("R7_class", "R7_object"))
   })
-  it("are first class R7 objects themselves", {
-    expect_equal(object_class(my_class), my_class)
-  })
   it("has a constructor function", {
     expect_type(my_class@constructor, "closure")
   })
