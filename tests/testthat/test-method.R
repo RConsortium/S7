@@ -49,7 +49,7 @@ describe("method registration", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {
       method(sum, list(foo, foo)) <- function(x, ...) "foo"
-      method(sum, S3_class("foo")) <- function(x, ...) "foo"
+      method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
     })
   })
 

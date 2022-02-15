@@ -13,7 +13,7 @@
 * Validation now happens recursively, and validates types before validating 
   the object (#149)
 * Classes (base types, S3, S4, and R7) are handled consistently wherever they
-  are used. Strings now only refer to base types. New explicit `S3_class()` for 
+  are used. Strings now only refer to base types. New explicit `new_S3_class()` for 
   referring to S3 classes (#134). S4 unions are converted to R7 unions (#150).
 * Base numeric, atomic, and vector "types" are now represented as class unions
   (#147).

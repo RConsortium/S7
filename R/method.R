@@ -18,7 +18,7 @@
 #'   dispatch, this should be one of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
-#'   * An S3 class (created by [S3_class()]).
+#'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type specified either with its constructor (`logical`, `integer`,
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
@@ -37,7 +37,7 @@
 #' bizarro <- new_generic("bizarro", "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x) rev(x)
-#' method(bizarro, S3_class("data.frame")) <- function(x) {
+#' method(bizarro, new_S3_class("data.frame")) <- function(x) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
@@ -210,7 +210,7 @@ S4_class <- function(x, S4_env) {
     x@name
   } else if (is_S4_class(x)) {
     x
-  } else if (is_class(x) || is_S3_class(x)) {
+  } else if (is_class(x) || is_new_S3_class(x)) {
     class <- class_dispatch(x)
     methods::setOldClass(class, where = S4_env)
     methods::getClass(class)

@@ -87,7 +87,7 @@
     Code
       as_properties(list(x = 1))
     Error <simpleError>
-      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
     Code
       as_properties(list(x = "character", x = "character"))
     Error <simpleError>
