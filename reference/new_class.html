@@ -22,7 +22,10 @@ when an object is passed to a generic."><!-- mathjax --><script src="https://cdn
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/R7.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
@@ -30,6 +33,8 @@ when an object is passed to a generic."><!-- mathjax --><script src="https://cdn
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/case_studies.html">Case Studies</a>
     <a class="dropdown-item" href="../articles/performance.html">Performance</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/index.html">More articles...</a>
   </div>
 </li>
 <li class="nav-item">
@@ -52,7 +57,7 @@ when an object is passed to a generic."><!-- mathjax --><script src="https://cdn
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Define a new R7 class</h1>
-      <small class="dont-index">Source: <a href="https://github.com/RConsortium/OOP-WG/blob/HEAD/R/class.R" class="external-link"><code>R/class.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/RConsortium/OOP-WG/blob/HEAD/R/class.R" class="external-link"><code>R/class.R</code></a>, <a href="https://github.com/RConsortium/OOP-WG/blob/HEAD/R/object.R" class="external-link"><code>R/object.R</code></a></small>
       <div class="d-none name"><code>new_class.Rd</code></div>
     </div>
 
@@ -70,7 +75,9 @@ when an object is passed to a generic.</p>
   properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,
   constructor <span class="op">=</span> <span class="cn">NULL</span>,
   validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+<span class="op">)</span>
+
+<span class="fu">new_object</span><span class="op">(</span>.data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -89,7 +96,8 @@ a named string (specifying the class), or a call to <code><a href="new_property.
 allowing greater flexibility.</p></dd>
 <dt>constructor</dt>
 <dd><p>The constructor function. This is optional, unless
-you want to control which properties can be set on constructor.</p></dd>
+you want to control which properties can be set on constructor.</p>
+<p>A custom constructor should always conclude by calling <code>new_object()</code></p></dd>
 <dt>validator</dt>
 <dd><p>A function taking a single argument, the object to validate.</p>
 <p>The job of a validator is to determine whether the object is valid,

@@ -19,6 +19,9 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/R7.html">Get started</a>
+</li>
+<li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
@@ -26,6 +29,8 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/case_studies.html">Case Studies</a>
     <a class="dropdown-item" href="../articles/performance.html">Performance</a>
+    <div class="dropdown-divider"></div>
+    <a class="dropdown-item" href="../articles/index.html">More articles...</a>
   </div>
 </li>
 <li class="active nav-item">
@@ -54,7 +59,11 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="r7-0009000">R7 0.0.0.9000<a class="anchor" aria-label="anchor" href="#r7-0009000"></a></h2>
 <div class="section level3">
-<h3 id="jan-0-0-0-9000">Jan 2020<a class="anchor" aria-label="anchor" href="#jan-0-0-0-9000"></a></h3>
+<h3 id="feb-0-0-0-9000">Feb 2022<a class="anchor" aria-label="anchor" href="#feb-0-0-0-9000"></a></h3>
+<ul><li>Revamp website. README now shows brief example and more info in <code><a href="../articles/R7.html">vignette("R7")</a></code>. Initial design docs and minutes are now articles so they appear on the website.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="jan-0-0-0-9000">Jan 2022<a class="anchor" aria-label="anchor" href="#jan-0-0-0-9000"></a></h3>
 <ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/RConsortium/OOP-WG/issues/149" class="external-link">#149</a>).</li>
 <li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/RConsortium/OOP-WG/issues/149" class="external-link">#149</a>)</li>
 <li>Classes (base types, S3, S4, and R7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/s3_class.html">s3_class()</a></code> for referring to S3 classes (<a href="https://github.com/RConsortium/OOP-WG/issues/134" class="external-link">#134</a>). S4 unions are converted to R7 unions (<a href="https://github.com/RConsortium/OOP-WG/issues/150" class="external-link">#150</a>).</li>

@@ -10,13 +10,34 @@
     <loc>https://RConsortium.github.io/OOP-WG/LICENSE.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/R7.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/articles/case_studies.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/articles/index.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/minutes/2020-05-18.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/minutes/2021-02-12.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/articles/performance.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/spec/design.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/spec/dispatch.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/spec/proposal.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/spec/requirements.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/authors.html</loc>
@@ -47,9 +68,6 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/new_generic.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/new_object.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/new_property.html</loc>

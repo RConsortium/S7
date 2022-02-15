@@ -2,9 +2,16 @@ pandoc: 2.14.2
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
+  R7: R7.html
   case_studies: case_studies.html
+  '2020-05-18': minutes/2020-05-18.html
+  '2021-02-12': minutes/2021-02-12.html
   performance: performance.html
-last_built: 2022-02-15T15:28Z
+  design: spec/design.html
+  dispatch: spec/dispatch.html
+  proposal: spec/proposal.html
+  requirements: spec/requirements.html
+last_built: 2022-02-15T17:05Z
 urls:
   reference: https://RConsortium.github.io/OOP-WG/reference
   article: https://RConsortium.github.io/OOP-WG/articles
