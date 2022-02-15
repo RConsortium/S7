@@ -144,7 +144,7 @@ class_desc <- function(x) {
 class_dispatch <- function(x) {
   switch(class_type(x),
     NULL = NULL,
-    s4 = methods::extends(x),
+    s4 = s4_strip_union(methods::extends(x)),
     r7 = c(x@name, class_dispatch(x@parent)),
     r7_base = c("R7_object", x@name),
     r7_s3 = c("R7_object", x$class),
@@ -217,9 +217,18 @@ obj_dispatch <- function(x) {
     NULL = "NULL",
     base = .class2(x),
     s3 = class(x),
-    s4 = methods::is(x),
+    s4 = s4_strip_union(methods::is(x)),
     r7 = class(x) # = class_dispatch(object_class(x))
   )
+}
+
+# R7 handles unions at method registration time, where as S4 handles them at
+# dispatch time.
+s4_strip_union <- function(class_names) {
+  classes <- lapply(class_names, methods::getClass)
+  is_union <- vlapply(classes, methods::is, "ClassUnionRepresentation")
+
+  setdiff(class_names[!is_union], "vector")
 }
 
 # helpers -----------------------------------------------------------------

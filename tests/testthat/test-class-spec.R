@@ -63,7 +63,7 @@ test_that("can work with S4 classes", {
   obj <- methods::new(klass, start = 1, end = 1)
   expect_equal(obj_type(obj), "s4")
   expect_equal(obj_desc(obj), "S4<Range>")
-  expect_equal(obj_dispatch(obj), methods::is(obj))
+  expect_equal(obj_dispatch(obj), "Range")
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
@@ -77,7 +77,20 @@ test_that("can work with S4 subclasses", {
   expect_equal(class_register(klass), "Foo2")
 
   obj <- methods::new(klass, start = 1, end = 1)
-  expect_equal(obj_dispatch(obj), methods::is(obj))
+  expect_equal(obj_dispatch(obj), c("Foo2", "Foo1"))
+  expect_equal(class_inherits(obj, klass), TRUE)
+})
+
+test_that("can work with S4 subclasses of base classes", {
+  methods::setClass("Foo3", contains = "character")
+  klass <- methods::getClass("Foo3")
+
+  expect_equal(class_type(klass), "s4")
+  expect_equal(class_dispatch(klass), c("Foo3", "character"))
+  expect_equal(class_register(klass), "Foo3")
+
+  obj <- methods::new(klass, "x")
+  expect_equal(obj_dispatch(obj), c("Foo3", "character"))
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
