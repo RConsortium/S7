@@ -157,6 +157,17 @@ test_that("property setters can set themselves", {
   expect_equal(x@bar, "foo-bar")
 })
 
+test_that("properties can be NULL", {
+  foo <- new_class("foo", properties = list(x = NULL))
+  x <- foo(x = NULL)
+  expect_equal(x@x, NULL)
+  x@x <- 1
+  expect_equal(x@x, 1)
+  x@x <- NULL
+  expect_equal(x@x, NULL)
+  expect_equal(prop_names(x), "x")
+  expect_equal(props(x), list(x = NULL))
+})
 
 test_that("new_property validates name", {
   expect_snapshot(error = TRUE, {
