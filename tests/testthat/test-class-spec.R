@@ -172,6 +172,7 @@ test_that("can work with R7 classes that extend S3 classes", {
 
   expect_equal(class_type(Date2), "r7")
   expect_equal(class_dispatch(Date2), c("Date2", "R7_object", "Date"))
+  expect_equal(class_register(Date2), "Date2")
 
   obj <- Date2(x = 1)
   expect_equal(obj_type(obj), "r7")
