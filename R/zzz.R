@@ -8,9 +8,7 @@ R7_object <- new_class(
   name = "R7_object",
   parent = NULL,
   constructor = function() {
-     out <- .Call(R7_object_)
-     class(out) <- "R7_object"
-     out
+    .Call(R7_object_)
   }
 )
 

@@ -131,7 +131,11 @@ SEXP object_class_(SEXP object, SEXP envir) {
 }
 
 SEXP R7_object_() {
-  return Rf_allocSExp(S4SXP);
+  SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
+  Rf_classgets(obj, Rf_mkString("R7_object"));
+  UNPROTECT(1);
+
+  return obj;
 }
 
 SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
