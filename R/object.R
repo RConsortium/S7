@@ -54,7 +54,7 @@ object_class <- function(object) {
   }
 
   attr(object, "object_class") <- value
-  class(object) <- class_names(value)
+  class(object) <- class_dispatch(value)
 
   invisible(object)
 }

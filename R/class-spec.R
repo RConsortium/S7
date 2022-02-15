@@ -140,15 +140,27 @@ class_desc <- function(x) {
   )
 }
 
-# Return complete vector of class names
-class_names <- function(x) {
+# Vector of class names; used in method introspection
+class_dispatch <- function(x) {
   switch(class_type(x),
     NULL = NULL,
     s3 = c("R7_object", x$class),
     s4 = as.character(x@className),
-    r7 = c(x@name, class_names(x@parent)),
+    r7 = c(x@name, class_dispatch(x@parent)),
     r7_base = c("R7_object", x@name),
-    r7_union = unique(unlist(lapply(x@classes, class_names)), fromLast = TRUE)
+    stop("Unsupported")
+  )
+}
+
+# Class name when registering an R7 method
+class_register <- function(x) {
+  switch(class_type(x),
+    NULL = "NULL",
+    s3 = x$class[[1]],
+    s4 = as.character(x@className),
+    r7 = x@name,
+    r7_base = x@name,
+    stop("Unsupported")
   )
 }
 
@@ -198,6 +210,15 @@ obj_desc <- function(x) {
    s3 = fmt_classes(class(x)[[1]], "S3"),
    s4 = fmt_classes(class(x), "S4"),
    r7 = class_desc(object_class(x))
+  )
+}
+obj_dispatch <- function(x) {
+  switch(obj_type(x),
+    NULL = "NULL",
+    base = .class2(x),
+    s3 = class(x),
+    s4 = methods::is(x),
+    r7 = class(x) # = class_dispatch(object_class(x))
   )
 }
 

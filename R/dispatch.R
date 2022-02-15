@@ -35,7 +35,7 @@ method <- function(generic, signature) {
     stop("Can't dispatch on unions; must be a concrete type")
   }
 
-  dispatch <- lapply(signature, class_names)
+  dispatch <- lapply(signature, class_dispatch)
   .Call(method_, generic, dispatch, NULL)
 }
 
@@ -51,16 +51,6 @@ method_lookup_error <- function(name, args, signatures) {
 #' @export
 method_call <- function() {
   .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
-}
-
-obj_dispatch <- function(x) {
-  switch(obj_type(x),
-    NULL = "NULL",
-    base = .class2(x),
-    s3 = class(x),
-    s4 = is(x),
-    r7 = class(x)
-  )
 }
 
 #' Retrieve the next applicable method after the current one
