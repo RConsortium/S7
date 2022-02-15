@@ -145,7 +145,7 @@ class_dispatch <- function(x) {
   switch(class_type(x),
     NULL = NULL,
     s3 = c("R7_object", x$class),
-    s4 = as.character(x@className),
+    s4 = methods::extends(x),
     r7 = c(x@name, class_dispatch(x@parent)),
     r7_base = c("R7_object", x@name),
     stop("Unsupported")
