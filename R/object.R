@@ -1,3 +1,5 @@
+#' @param .data,... Parent object and named properties used to construct the
+#'   object.
 #' @rdname new_class
 #' @export
 new_object <- function(.data = NULL, ...) {

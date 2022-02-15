@@ -51,6 +51,9 @@ problem. It's generally helpful to report as many problems at once
 as possible.
 
 See \code{validate()} for more details and examples.}
+
+\item{.data, ...}{Parent object and named properties used to construct the
+object.}
 }
 \value{
 A object constructor, a function that can be used to create objects
