@@ -5,11 +5,12 @@
 #' when an object is passed to a generic.
 #'
 #' @param name The name of the class, as a string.
-#' @param parent The parent class.
+#' @param parent The parent class to inherit behavior from. All R7 objects
+#'   eventually inherit from There are three options:
 #'
-#'   * To inherit behaviour from an R7 class, pass the class object.
-#'   * To inherit behaviour from a base type, pass the function you'd use
-#'     to construct the object, e.g. `character`, `integer`.
+#'   * The R7 base class, [R7_object].
+#'   * A S3 class wrapped by [S3_class()].
+#'   * A base type, like `logical`, `double`, or `character`.
 #'
 #' @param constructor The constructor function. This is optional, unless
 #'   you want to control which properties can be set on constructor.

@@ -18,11 +18,12 @@ new_object(.data = NULL, ...)
 \arguments{
 \item{name}{The name of the class, as a string.}
 
-\item{parent}{The parent class.
+\item{parent}{The parent class to inherit behavior from. All R7 objects
+eventually inherit from There are three options:
 \itemize{
-\item To inherit behaviour from an R7 class, pass the class object.
-\item To inherit behaviour from a base type, pass the function you'd use
-to construct the object, e.g. \code{character}, \code{integer}.
+\item The R7 base class, \link{R7_object}.
+\item A S3 class wrapped by \code{\link[=S3_class]{S3_class()}}.
+\item A base type, like \code{logical}, \code{double}, or \code{character}.
 }}
 
 \item{properties}{A list specifying the properties (data) that
