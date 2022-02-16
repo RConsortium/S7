@@ -141,7 +141,7 @@ class_desc <- function(x) {
     R7 = fmt_classes(x@name),
     R7_base = fmt_classes(x$class),
     R7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
-    R7_S3 = fmt_classes(x$class[[1]], "S3"),
+    R7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
   )
 }
 
@@ -212,7 +212,7 @@ obj_desc <- function(x) {
   switch(obj_type(x),
    NULL = "NULL",
    base = fmt_classes(typeof(x)),
-   S3 = fmt_classes(class(x)[[1]], "S3"),
+   S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
    S4 = fmt_classes(class(x), "S4"),
    R7 = class_desc(object_class(x))
   )
