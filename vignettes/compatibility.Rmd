@@ -1,0 +1,70 @@
+---
+title: "Compatibility"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Compatibility}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+R7 is designed to be compatible with S3 and S4. This vignette discusses the details.
+
+```{r setup}
+library(R7)
+```
+
+## S3
+
+* R7 can register methods for:
+  * R7 class and S3 generic
+  * S3 class and R7 generic
+* R7 classes can extend S3 classes
+* S3 classes can extend R7 classes
+
+### Methods
+
+`method()` is designed to be the single tool for method registration that you need when working with R7 classes. You can also register a method for an R7 class and S3 generic without using R7, because all R7 objects have S3 classes, and S3 dispatch will operate on them normally.
+
+```{r}
+foo <- new_class("foo")
+class(foo())
+
+mean.foo <- function(x, ...) {
+  "mean of foo"
+}
+mean(foo)
+```
+
+### Classes
+
+It's also possible to extend an R7 class with S3, but I'm not sure that it's ever worth it.
+
+## S4
+
+* R7 classes can not extend S4 classes 
+* S4 classes can extend S3 classes
+* R7 can register methods for:
+  * R7 class and S4 generic
+  * S4 class and R7 generic
+
+### Unions
+
+S4 unions are automatically converted to R7 unions. There's an important difference in the way that class unions are handled in S4 and R7. In S4, they're handled at method dispatch time, so when you create `setUnion("u1", c("class1", "class2"))`, `class1` and `class2` now extend `u1`. In R7, unions are handled at method registration time so that registering a method for a union is just short-hand for registering a method for each of the classes.
+
+```{r}
+class1 <- new_class("class1")
+class2 <- new_class("class2")
+union1 <- new_union(class1, class2)
+
+foo <- new_generic("foo", "x")
+method(foo, union1) <- function(x) ""
+foo
+```
+
