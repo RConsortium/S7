@@ -47,7 +47,8 @@ method <- function(generic, classes = NULL, objects = NULL) {
 
     dispatch <- lapply(signature, class_dispatch)
   } else {
-    if (generic_n_dispatch(generic) == 1) {
+    n <- generic_n_dispatch(generic)
+    if (n == 1) {
       objects <- list(objects)
     } else {
       check_signature_list(objects, n = n, arg = "objects")

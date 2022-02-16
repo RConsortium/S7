@@ -135,7 +135,6 @@ describe("method introspection", {
   })
 
   it("errors on invalid inputs", {
-
     expect_snapshot(error = TRUE, {
       method(print, 1)
 
@@ -143,6 +142,9 @@ describe("method introspection", {
       method(foo)
       method(foo, 1)
       method(foo, new_union("integer", "double"))
+
+      foo2 <- new_generic("foo2", c("x", "y"))
+      method(foo2, objects = list("character"))
     })
   })
 

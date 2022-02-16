@@ -39,6 +39,11 @@
       method(foo, new_union("integer", "double"))
     Error <simpleError>
       Can't dispatch on unions; must be a concrete type
+    Code
+      foo2 <- new_generic("foo2", c("x", "y"))
+      method(foo2, objects = list("character"))
+    Error <simpleError>
+      `objects` must be length 2
 
 # errors if no method found
 
