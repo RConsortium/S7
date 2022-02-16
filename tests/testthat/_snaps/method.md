@@ -1,7 +1,7 @@
 # method registration: S3 registration requires a R7 class
 
     Code
-      method(sum, S3_class("foo")) <- (function(x, ...) "foo")
+      method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
     Error <simpleError>
       When registering methods for S3 generic sum(), signature must be an R7 class
 
@@ -15,14 +15,14 @@
     Code
       method(foo, 1) <- (function(x) ...)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
 
 # as_signature(): forbids list for single dispatch
 
     Code
       as_signature(list(1), foo)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <list>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <list>.
 
 # as_signature(): requires a list of the correct length for multiple dispatch
 

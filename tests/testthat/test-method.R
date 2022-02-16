@@ -48,7 +48,7 @@ describe("method registration", {
   it("S3 registration requires a R7 class", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {
-      method(sum, S3_class("foo")) <- function(x, ...) "foo"
+      method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
     })
   })
 

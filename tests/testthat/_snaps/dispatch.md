@@ -41,9 +41,9 @@
     Code
       method(foo, list())
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <list>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <list>.
     Code
       method(foo, list("blah"))
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <list>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <list>.
 
