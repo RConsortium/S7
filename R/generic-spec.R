@@ -1,5 +1,5 @@
 as_generic <- function(x) {
-  if (inherits(x, "R7_generic") || is_external_generic(x)) {
+  if (is_generic(x) || is_external_generic(x)) {
     x
   } else if (inherits(x, "genericFunction")) {
     x
@@ -31,6 +31,20 @@ S3_generic <- function(generic, name) {
 
 is_S3_generic <- function(x) inherits(x, "R7_S3_generic")
 
+
+generic_n_dispatch <- function(x) {
+  if (is_S3_generic(x)) {
+    1
+  } else if (is_generic(x)) {
+    length(x@dispatch_args)
+  } else if (is_external_generic(x)) {
+    length(x$dispatch_args)
+  } else if (methods::is(x, "genericFunction")) {
+    length(x@signature)
+  } else {
+    stop(sprintf("Invalid input %", obj_desc(x)), call. = FALSE)
+  }
+}
 
 # Internal generics -------------------------------------------------------
 

@@ -7,7 +7,7 @@
 #' @param x A class specification. One of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
-#'   * An S3 class (created by [S3_class()]).
+#'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type specified either with its constructor (`logical`, `integer`,
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
@@ -16,7 +16,7 @@
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
-#'   as [S3_class], or a S4 class.
+#'   as [new_S3_class], or a S4 class.
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class", arg)
 
@@ -41,7 +41,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
       stop(sprintf("%s. No base classes are called '%s'", error_base, x), call. = FALSE)
     }
   } else {
-    stop(sprintf("%s. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a %s.", error_base, obj_desc(x)), call. = FALSE)
+    stop(sprintf("%s. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a %s.", error_base, obj_desc(x)), call. = FALSE)
   }
 }
 
@@ -58,6 +58,8 @@ as_S4_class <- function(x, error_base) {
     subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
     subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
     do.call("new_union", subclasses)
+  } else if (methods::extends(x, "oldClass")) {
+    new_S3_class(as.character(x@className))
   } else if (methods::is(x, "classRepresentation")) {
     if (x@package == "methods" && x@className %in% names(base_classes)) {
       # Convert S4 representation of base types to R7 representation
@@ -180,7 +182,7 @@ class_deparse <- function(x) {
       classes <- vcapply(x$classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
-    R7_S3 = paste0("S3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
+    R7_S3 = paste0("new_S3_class(", encodeString(x$class, quote = '"'), ")"),
   )
 }
 

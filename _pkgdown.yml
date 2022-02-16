@@ -22,7 +22,7 @@ reference:
 - title: Extensions
   contents:
   - new_external_generic
-  - S3_class
+  - new_S3_class
 
 - title: Introspection
   contents:

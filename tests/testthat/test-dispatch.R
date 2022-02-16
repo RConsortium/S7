@@ -15,7 +15,7 @@ describe("single dispatch", {
 
   it("works for S3 objects", {
     obj <- structure("hi", class = "my_S3")
-    method(foo, S3_class("my_S3")) <- function(x) "S3"
+    method(foo, new_S3_class("my_S3")) <- function(x) "S3"
 
     expect_equal(foo(obj), "S3")
   })

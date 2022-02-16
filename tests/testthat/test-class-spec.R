@@ -126,6 +126,10 @@ test_that("converts S4 unions to R7 unions", {
   expect_equal(as_class(Union2), new_union(getClass("Foo1"), getClass("Foo2"), getClass("Foo3")))
 })
 
+test_that("converts S4 representation of S3 classes to R7 representation", {
+  expect_equal(as_class(getClass("Date")), new_S3_class("Date"), ignore_function_env = TRUE)
+})
+
 test_that("can work with simple S3 classes", {
   klass <- S3_data.frame
   expect_equal(as_class(klass), klass)
@@ -135,7 +139,7 @@ test_that("can work with simple S3 classes", {
   expect_equal(class_register(klass), "data.frame")
   expect_equal(class_desc(klass), "S3<data.frame>")
   expect_equal(class_construct(klass, list(x = 1)), data.frame(x = 1))
-  expect_equal(class_deparse(klass), 'S3_class("data.frame")')
+  expect_equal(class_deparse(klass), 'new_S3_class("data.frame")')
 
   obj <- data.frame()
   expect_equal(obj_type(obj), "S3")
@@ -145,18 +149,17 @@ test_that("can work with simple S3 classes", {
 })
 
 test_that("can work with S3 subclasses", {
-  klass <- S3_class(
-    class = c("ordered", "factor"),
+  klass <- new_S3_class("ordered",
     constructor = function(.data = numeric(), levels) ordered(.data, levels)
   )
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "R7_S3")
-  expect_equal(class_dispatch(klass), c("R7_object", "ordered", "factor"))
+  expect_equal(class_dispatch(klass), c("R7_object", "ordered"))
   expect_equal(class_register(klass), "ordered")
   expect_equal(class_desc(klass), "S3<ordered/factor>")
   expect_equal(class_construct(klass), ordered(numeric()))
-  expect_equal(class_deparse(klass), 'S3_class("ordered", "factor")')
+  expect_equal(class_deparse(klass), 'new_S3_class("ordered")')
 
   obj <- ordered(integer())
   expect_equal(obj_type(obj), "S3")
@@ -167,7 +170,7 @@ test_that("can work with S3 subclasses", {
 })
 
 test_that("can work with R7 classes that extend S3 classes", {
-  Date <- S3_class("Date", constructor = function(.data = numeric()) .Date(.data))
+  Date <- new_S3_class("Date", constructor = function(.data = numeric()) .Date(.data))
   Date2 <- new_class("Date2", parent = Date, properties = list(x = "numeric"))
 
   expect_equal(class_type(Date2), "R7")

@@ -53,9 +53,9 @@
     Code
       foo1
     Output
-      <R7_generic> function (x, y, z, ...)  with 2 methods:
-      1: method(foo1, list("character"))
-      2: method(foo1, list(text))
+      <R7_generic> function (x, ...)  with 2 methods:
+      1: method(foo1, "character")
+      2: method(foo1, text)
     Code
       foo3
     Output
