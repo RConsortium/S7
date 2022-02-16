@@ -210,7 +210,7 @@ S4_class <- function(x, S4_env) {
     x@name
   } else if (is_S4_class(x)) {
     x
-  } else if (is_class(x) || is_new_S3_class(x)) {
+  } else if (is_class(x) || is_S3_class(x)) {
     class <- class_dispatch(x)
     methods::setOldClass(class, where = S4_env)
     methods::getClass(class)

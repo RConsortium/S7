@@ -26,7 +26,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     x
   } else if (is_union(x)) {
     x
-  } else if (is_new_S3_class(x)) {
+  } else if (is_S3_class(x)) {
     x
   } else if (isS4(x)) {
     as_S4_class(x, error_base)
@@ -89,7 +89,7 @@ class_type <- function(x) {
     "R7"
   } else if (is_union(x)) {
     "R7_union"
-  } else if (is_new_S3_class(x)) {
+  } else if (is_S3_class(x)) {
     "R7_S3"
   } else if (is_S4_class(x)) {
     "S4"

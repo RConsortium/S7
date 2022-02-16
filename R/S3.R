@@ -89,12 +89,12 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
       constructor = constructor,
       validator = validator
     ),
-    class = "R7_new_S3_class"
+    class = "R7_S3_class"
   )
 }
 
 #' @export
-print.R7_new_S3_class <- function(x, ...) {
+print.R7_S3_class <- function(x, ...) {
   cat(
     "S3 class <", paste(x$class, collapse = "/"), ">\n",
     sep = ""
@@ -113,8 +113,8 @@ check_constructor <- function(constructor) {
   }
 }
 
-is_new_S3_class <- function(x) {
-  inherits(x, "R7_new_S3_class")
+is_S3_class <- function(x) {
+  inherits(x, "R7_S3_class")
 }
 
 # -------------------------------------------------------------------------
