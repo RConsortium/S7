@@ -58,8 +58,9 @@
 #' ```
 #'
 #' @export
-#' @param class Name of S3 class. This should be the first element of the
-#'   `class()` of the object.
+#' @param class S3 class vector (i.e. the what `class()` return). For method
+#'   registration, you can abbreviate this to a single string, the S3 class
+#'   name.
 #' @param constructor An optional constructor that can be used to create
 #'   objects of the specified class. This is only needed if you wish to
 #'   have an R7 class inherit from an S3 class. It must be specified in the
@@ -72,8 +73,8 @@
 #'   validate and returns `NULL` if the object is valid. If the object is
 #'   invalid, it returns a character vector of problems.
 new_S3_class <- function(class, constructor = NULL, validator = NULL) {
-  if (!is.character(class) || length(class) != 1) {
-    stop("`class` must be a string", call. = FALSE)
+  if (!is.character(class)) {
+    stop("`class` must be a character vector", call. = FALSE)
   }
   if (!is.null(constructor)) {
     check_constructor(constructor)

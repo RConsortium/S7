@@ -7,8 +7,9 @@
 new_S3_class(class, constructor = NULL, validator = NULL)
 }
 \arguments{
-\item{class}{Name of S3 class. This should be the first element of the
-\code{class()} of the object.}
+\item{class}{S3 class vector (i.e. the what \code{class()} return). For method
+registration, you can abbreviate this to a single string, the S3 class
+name.}
 
 \item{constructor}{An optional constructor that can be used to create
 objects of the specified class. This is only needed if you wish to
