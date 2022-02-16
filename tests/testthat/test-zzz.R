@@ -38,3 +38,8 @@ test_that("can construct from S3 and S4 classes", {
   u <- new_union(S3_factor, S4_union)
   expect_equal(u@classes, list(S3_factor, getClass("S4_union")))
 })
+
+test_that("R7_class validates its underlying data", {
+  x <- new_class("X")()
+  expect_snapshot_error(R7_data(x) <- 1)
+})

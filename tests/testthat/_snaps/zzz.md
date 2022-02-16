@@ -22,3 +22,8 @@
       <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
       
 
+# R7_class validates its underlying data
+
+    <X> object is invalid:
+    - Underlying data is corrupt
+
