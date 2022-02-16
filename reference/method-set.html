@@ -99,7 +99,7 @@ But this is not a general method registration function: at least one of
 <dd><p>A method signature. For R7 generics that use single
 dispatch, this should be one of the following:</p><ul><li><p>An R7 class (created by <code><a href="new_class.html">new_class()</a></code>).</p></li>
 <li><p>An R7 union (created by <code><a href="new_union.html">new_union()</a></code>).</p></li>
-<li><p>An S3 class (created by <code><a href="s3_class.html">S3_class()</a></code>).</p></li>
+<li><p>An S3 class (created by <code><a href="new_S3_class.html">new_S3_class()</a></code>).</p></li>
 <li><p>An S4 class (created by <code><a href="https://rdrr.io/r/methods/getClass.html" class="external-link">methods::getClass()</a></code> or <code><a href="https://rdrr.io/r/methods/new.html" class="external-link">methods::new()</a></code>).</p></li>
 <li><p>A base type specified either with its constructor (<code>logical</code>, <code>integer</code>,
 <code>double</code> etc) or its name (<code>"logical"</code>, <code>"integer"</code>, "<code>double</code>" etc).</p></li>
@@ -119,7 +119,7 @@ given <code>signature</code>.</p></dd>
 <span class="r-in"><span class="va">bizarro</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bizarro"</span>, <span class="st">"x"</span><span class="op">)</span></span>
 <span class="r-in"><span class="co"># Register some methods</span></span>
 <span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bizarro</span>, <span class="st">"numeric"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bizarro</span>, <span class="fu"><a href="s3_class.html">S3_class</a></span><span class="op">(</span><span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bizarro</span>, <span class="fu"><a href="new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in">  <span class="va">x</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">bizarro</span><span class="op">)</span></span>
 <span class="r-in">  <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">}</span></span>
