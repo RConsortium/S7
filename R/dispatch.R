@@ -35,7 +35,7 @@ method <- function(generic, classes = NULL, objects = NULL) {
     stop("`generic` must be an <R7_generic>")
   }
   if (!xor(is.null(classes), is.null(objects))) {
-    stop("Must supply one of `classes` and `objects`")
+    stop("Must supply exactly one of `classes` and `objects`")
   }
 
   if (!is.null(classes)) {
@@ -50,7 +50,7 @@ method <- function(generic, classes = NULL, objects = NULL) {
     if (generic_n_dispatch(generic) == 1) {
       objects <- list(objects)
     } else {
-      check_signature_list(objects, "objects")
+      check_signature_list(objects, n = n, arg = "objects")
     }
     dispatch <- lapply(objects, obj_dispatch)
   }
