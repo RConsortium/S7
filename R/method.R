@@ -128,17 +128,20 @@ as_signature <- function(signature, generic) {
   if (n == 1) {
     new_signature(list(as_class(signature, arg = "signature")))
   } else {
-    if (!is.list(signature) || is.object(signature)) {
-      stop("`signature` must be a list for multidispatch generics", call. = FALSE)
-    }
-    if (length(signature) != n) {
-      stop(sprintf("`signature` must be length %i", n), call. = FALSE)
-    }
-
+    check_signature_list(signature, n)
     for (i in seq_along(signature)) {
       signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
     }
     new_signature(signature)
+  }
+}
+
+check_signature_list <- function(x, n, arg = "signature") {
+  if (!is.list(x) || is.object(x)) {
+    stop(sprintf("`%s` must be a list for multidispatch generics", arg), call. = FALSE)
+  }
+  if (length(x) != n) {
+    stop(sprintf("`%s` must be length %i", arg, n), call. = FALSE)
   }
 }
 

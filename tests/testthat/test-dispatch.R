@@ -123,15 +123,28 @@ test_that("method lookup fails with informative messages", {
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
 })
 
-describe("method()", {
-  it("errors on invalid inputs", {
+describe("method introspection", {
+  test_that("can dispatch by class or object", {
+    foo <- new_generic("foo", "x")
+    method(foo, "character") <- function(x) "c"
 
+    expect_equal(
+      method(foo, class = "character"),
+      method(foo, object = "x")
+    )
+  })
+
+  it("errors on invalid inputs", {
     expect_snapshot(error = TRUE, {
       method(print, 1)
 
-      foo <- function(x) {}
+      foo <- new_generic("foo", "x")
+      method(foo)
       method(foo, 1)
       method(foo, new_union("integer", "double"))
+
+      foo2 <- new_generic("foo2", c("x", "y"))
+      method(foo2, object = list("character"))
     })
   })
 
