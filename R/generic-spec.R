@@ -37,8 +37,12 @@ generic_n_dispatch <- function(x) {
     1
   } else if (is_generic(x)) {
     length(x@dispatch_args)
-  } else {
+  } else if (is_external_generic(x)) {
+    length(x$dispatch_args)
+  } else if (methods::is(x, "genericFunction")) {
     length(x@signature)
+  } else {
+    stop(sprintf("Invalid input %", obj_desc(x)), call. = FALSE)
   }
 }
 

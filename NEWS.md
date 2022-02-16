@@ -2,6 +2,9 @@
 
 ## Feb 2022
 
+* `new_external_generic()` now requires `dispatch_args` so we can eagerly 
+  check the signature.
+
 * Revamp website. README now shows brief example and more info in 
   `vignette("R7")`. Initial design docs and minutes are now articles so
   they appear on the website.

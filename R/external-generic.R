@@ -17,13 +17,15 @@
 #'
 #' @param package Package the generic is defined in.
 #' @param name Name of generic, as a string.
+#' @param dispatch_args Character vector giving arguments used for dispatch.
 #' @param version An optional version the package must meet for the method to
 #'   be registered.
 #' @export
-new_external_generic <- function(package, name, version = NULL) {
+new_external_generic <- function(package, name, dispatch_args, version = NULL) {
   out <- list(
     package = package,
     name = name,
+    dispatch_args = dispatch_args,
     version = version
   )
 
@@ -35,7 +37,7 @@ new_external_generic <- function(package, name, version = NULL) {
 print.R7_external_generic <- function(x, ...) {
   cat(
     "<R7_external_generic> ",
-    x$package, "::", x$name, "()",
+    x$package, "::", x$name, "(", paste(x$dispatch_args, collapse = ", "), ")",
     if (!is.null(x$version)) paste0(" (>= ", x$version, ")"),
     "\n",
     sep = ""

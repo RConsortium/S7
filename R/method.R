@@ -120,9 +120,13 @@ flatten_signature <- function(signature) {
 }
 
 as_signature <- function(signature, generic) {
+  if (inherits(signature, "R7_signature")) {
+    return(signature)
+  }
+
   n <- generic_n_dispatch(generic)
   if (n == 1) {
-    signature <- list(as_class(signature, arg = "signature"))
+    new_signature(list(as_class(signature, arg = "signature")))
   } else {
     if (!is.list(signature) || is.object(signature)) {
       stop("`signature` must be a list for multidispatch generics", call. = FALSE)
@@ -134,9 +138,11 @@ as_signature <- function(signature, generic) {
     for (i in seq_along(signature)) {
       signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
     }
-    signature
+    new_signature(signature)
   }
 }
+
+new_signature <- function(x) structure(x, class = "R7_signature")
 
 check_method <- function(method, generic, name = paste0(generic@name, "(???)")) {
   if (!is.function(method)) {

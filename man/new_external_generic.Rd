@@ -5,7 +5,7 @@
 \alias{external_methods_register}
 \title{Generics in suggested packages}
 \usage{
-new_external_generic(package, name, version = NULL)
+new_external_generic(package, name, dispatch_args, version = NULL)
 
 external_methods_register()
 }
@@ -13,6 +13,8 @@ external_methods_register()
 \item{package}{Package the generic is defined in.}
 
 \item{name}{Name of generic, as a string.}
+
+\item{dispatch_args}{Character vector giving arguments used for dispatch.}
 
 \item{version}{An optional version the package must meet for the method to
 be registered.}
