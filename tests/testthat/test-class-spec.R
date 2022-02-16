@@ -149,21 +149,21 @@ test_that("can work with simple S3 classes", {
 })
 
 test_that("can work with S3 subclasses", {
-  klass <- new_S3_class("ordered",
+  klass <- new_S3_class(c("ordered", "factor"),
     constructor = function(.data = numeric(), levels) ordered(.data, levels)
   )
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "R7_S3")
-  expect_equal(class_dispatch(klass), c("R7_object", "ordered"))
+  expect_equal(class_dispatch(klass), c("R7_object", "ordered", "factor"))
   expect_equal(class_register(klass), "ordered")
-  expect_equal(class_desc(klass), "S3<ordered>")
+  expect_equal(class_desc(klass), "S3<ordered/factor>")
   expect_equal(class_construct(klass), ordered(numeric()))
-  expect_equal(class_deparse(klass), 'new_S3_class("ordered")')
+  expect_equal(class_deparse(klass), 'new_S3_class(c("ordered", "factor"))')
 
   obj <- ordered(integer())
   expect_equal(obj_type(obj), "S3")
-  expect_equal(obj_desc(obj), "S3<ordered>")
+  expect_equal(obj_desc(obj), "S3<ordered/factor>")
   expect_equal(obj_dispatch(obj), c("ordered", "factor"))
   expect_equal(class_inherits(obj, klass), TRUE)
   expect_equal(class_inherits(factor(), klass), FALSE)
@@ -194,7 +194,7 @@ test_that("can work with base types", {
   expect_equal(class_dispatch(klass), c("R7_object", "character"))
   expect_equal(class_register(klass), "character")
   expect_equal(class_desc(klass), "<character>")
-  expect_equal(class_construct(klass, "x"), base_classes$character("x"))
+  expect_equal(class_construct(klass, "x"), "x")
   expect_equal(class_deparse(klass), '"character"')
 
   obj <- "x"

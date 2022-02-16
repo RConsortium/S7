@@ -96,13 +96,15 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
 
 #' @export
 print.R7_S3_class <- function(x, ...) {
-  cat(
-    "S3 class <", paste(x$class, collapse = "/"), ">\n",
-    sep = ""
-  )
+  cat("<R7_S3_class>: ", class_desc(x), "\n", sep = "")
   invisible(x)
 }
 
+#' @export
+str.R7_S3_class <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  print(object)
+}
 
 check_constructor <- function(constructor) {
   arg_names <- names(formals(constructor))

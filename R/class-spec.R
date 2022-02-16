@@ -22,11 +22,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
 
   if (is.null(x)) {
     x
-  } else if (is_class(x)) {
-    x
-  } else if (is_union(x)) {
-    x
-  } else if (is_S3_class(x)) {
+  } else if (is_class(x) || is_base_class(x) || is_S3_class(x) || is_union(x)) {
     x
   } else if (isS4(x)) {
     as_S4_class(x, error_base)
@@ -79,8 +75,6 @@ as_S4_class <- function(x, error_base) {
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
-is_base_class <- function(x) is_class(x) && utils::hasName(base_classes, x@name)
-
 
 class_type <- function(x) {
   if (is.null(x)) {
@@ -100,13 +94,24 @@ class_type <- function(x) {
   }
 }
 
+class_friendly <- function(x) {
+  switch(class_type(x),
+    NULL = "NULL",
+    S4 = "an S4 class",
+    R7 = "an R7 class",
+    R7_base = "a base type",
+    R7_union = "an R7 union",
+    R7_S3 = "an S3 class",
+  )
+}
+
 class_constructor <- function(.x, ...) {
   switch(class_type(.x),
     NULL = function() NULL,
     S4 = function(...) methods::new(.x, ...),
     R7 = .x,
-    R7_base = .x,
-    R7_union = class_constructor(.x@classes[[1]]),
+    R7_base = .x$constructor,
+    R7_union = class_constructor(.x$classes[[1]]),
     R7_S3 = .x$constructor,
   )
 }
@@ -119,7 +124,7 @@ class_validate <- function(class, object) {
     NULL = NULL,
     S4 = methods::validObject,
     R7 = class@validator,
-    R7_base = class@validator,
+    R7_base = class$validator,
     R7_union = NULL,
     R7_S3 = class$validator,
   )
@@ -136,9 +141,9 @@ class_desc <- function(x) {
     NULL = "<ANY>",
     S4 = fmt_classes(x@className, "S4"),
     R7 = fmt_classes(x@name),
-    R7_base = fmt_classes(x@name),
-    R7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
-    R7_S3 = fmt_classes(x$class[[1]], "S3"),
+    R7_base = fmt_classes(x$class),
+    R7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
+    R7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
   )
 }
 
@@ -148,7 +153,7 @@ class_dispatch <- function(x) {
     NULL = NULL,
     S4 = S4_strip_union(methods::extends(x)),
     R7 = c(x@name, class_dispatch(x@parent)),
-    R7_base = c("R7_object", x@name),
+    R7_base = c("R7_object", x$class),
     R7_S3 = c("R7_object", x$class),
     stop("Unsupported")
   )
@@ -160,7 +165,7 @@ class_register <- function(x) {
     NULL = "NULL",
     S4 = as.character(x@className),
     R7 = x@name,
-    R7_base = x@name,
+    R7_base = x$class,
     R7_S3 = x$class[[1]],
     stop("Unsupported")
   )
@@ -172,12 +177,12 @@ class_deparse <- function(x) {
     NULL = "",
     S4 = as.character(x@className),
     R7 = x@name,
-    R7_base = encodeString(x@name, quote = '"'),
+    R7_base = encodeString(x$class, quote = '"'),
     R7_union = {
-      classes <- vcapply(x@classes, class_deparse)
+      classes <- vcapply(x$classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
-    R7_S3 = paste0("new_S3_class(", encodeString(x$class, quote = '"'), ")"),
+    R7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
   )
 }
 
@@ -186,8 +191,8 @@ class_inherits <- function(x, what) {
     NULL = TRUE,
     S4 = isS4(x) && methods::is(x, what),
     R7 = inherits(x, "R7_object") && inherits(x, what@name),
-    R7_base = what@name %in% .class2(x),
-    R7_union = any(vlapply(what@classes, class_inherits, x = x)),
+    R7_base = what$class %in% .class2(x),
+    R7_union = any(vlapply(what$classes, class_inherits, x = x)),
     R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
   )
 }
@@ -209,7 +214,7 @@ obj_desc <- function(x) {
   switch(obj_type(x),
    NULL = "NULL",
    base = fmt_classes(typeof(x)),
-   S3 = fmt_classes(class(x)[[1]], "S3"),
+   S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
    S4 = fmt_classes(class(x), "S4"),
    R7 = class_desc(object_class(x))
   )

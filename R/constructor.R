@@ -14,6 +14,10 @@ new_constructor <- function(parent, properties) {
     parent_name <- parent@name
     parent_fun <- parent
     args <- missing_args(union(arg_info$parent, arg_info$self))
+  } else if (is_base_class(parent)) {
+    parent_name <- parent$class
+    parent_fun <- parent$constructor
+    args <- missing_args(union(arg_info$parent, arg_info$self))
   } else if (is_S3_class(parent)) {
     parent_name <- paste0("new_", parent$class[[1]])
     parent_fun <- parent$constructor

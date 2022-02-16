@@ -5,11 +5,12 @@
 #' when an object is passed to a generic.
 #'
 #' @param name The name of the class, as a string.
-#' @param parent The parent class.
+#' @param parent The parent class to inherit behavior from.
+#'   There are four options:
 #'
-#'   * To inherit behaviour from an R7 class, pass the class object.
-#'   * To inherit behaviour from a base type, pass the function you'd use
-#'     to construct the object, e.g. `character`, `integer`.
+#'   * The R7 class, like [R7_object].
+#'   * An S3 class wrapped by [new_S3_class()].
+#'   * A base type, like `logical`, `double`, or `character`.
 #'
 #' @param constructor The constructor function. This is optional, unless
 #'   you want to control which properties can be set on constructor.
@@ -79,7 +80,6 @@
 #'
 #' r <- range(start = 10, end = 20)
 #' try(r@start <- 25)
-#' @importFrom utils modifyList
 new_class <- function(
     name,
     parent = R7_object,
@@ -90,37 +90,37 @@ new_class <- function(
   check_name(name)
 
   parent <- as_class(parent)
-  if (is_union(parent) || isS4(parent)) {
-    not <- if (is_union(parent)) "a class union" else "an S4 class"
+  if (!can_inherit(parent)) {
      stop(
        sprintf(
-         "`parent` must be an R7 class, S3 class, or base type, not %s.", not),
+         "`parent` must be an R7 class, S3 class, or base type, not %s.", class_friendly(parent)),
        call. = FALSE
      )
   }
 
   # Combine properties from parent, overriding as needed
-  properties <- modifyList(
-    attr(parent, "properties", exact = TRUE) %||% list(),
-    as_properties(properties)
-  )
+  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
+  new_props <- as_properties(properties)
+  all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
-    constructor <- new_constructor(parent, properties)
+    constructor <- new_constructor(parent, all_props)
   }
 
   object <- constructor
   # Must synchronise with prop_names
   attr(object, "name") <- name
   attr(object, "parent") <- parent
-  attr(object, "properties") <- properties
+  attr(object, "properties") <- all_props
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("R7_class", "R7_object")
 
-  global_variables(names(properties))
+  global_variables(names(all_props))
   object
 }
+
+can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x) || is.null(x)
 
 is_class <- function(x) inherits(x, "R7_class")
 

@@ -107,7 +107,7 @@ register_R7_method <- function(generic, signature, method) {
 flatten_signature <- function(signature) {
   # Unpack unions
   sig_is_union <- vlapply(signature, is_union)
-  signature[sig_is_union] <- lapply(signature[sig_is_union], prop, "classes")
+  signature[sig_is_union] <- lapply(signature[sig_is_union], "[[", "classes")
   signature[!sig_is_union] <- lapply(signature[!sig_is_union], list)
 
   # Create grid of indices
