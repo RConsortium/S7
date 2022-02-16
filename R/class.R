@@ -90,11 +90,10 @@ new_class <- function(
   check_name(name)
 
   parent <- as_class(parent)
-  if (is_union(parent) || isS4(parent)) {
-    not <- if (is_union(parent)) "a class union" else "an S4 class"
+  if (!can_inherit(parent)) {
      stop(
        sprintf(
-         "`parent` must be an R7 class, S3 class, or base type, not %s.", not),
+         "`parent` must be an R7 class, S3 class, or base type, not %s.", class_friendly(parent)),
        call. = FALSE
      )
   }
@@ -121,6 +120,8 @@ new_class <- function(
   global_variables(names(properties))
   object
 }
+
+can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x) || is.null(x)
 
 is_class <- function(x) inherits(x, "R7_class")
 
