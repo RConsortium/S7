@@ -30,7 +30,7 @@
       foo <- new_generic("foo", "x")
       method(foo)
     Error <simpleError>
-      Must supply one of `classes` and `objects`
+      Must supply exactly one of `classes` and `objects`
     Code
       method(foo, 1)
     Error <simpleError>
