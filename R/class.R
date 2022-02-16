@@ -9,7 +9,7 @@
 #'   eventually inherit from There are three options:
 #'
 #'   * The R7 base class, [R7_object].
-#'   * A S3 class wrapped by [S3_class()].
+#'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like `logical`, `double`, or `character`.
 #'
 #' @param constructor The constructor function. This is optional, unless
