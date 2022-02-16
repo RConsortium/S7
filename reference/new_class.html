@@ -85,9 +85,10 @@ when an object is passed to a generic.</p>
     <dl><dt>name</dt>
 <dd><p>The name of the class, as a string.</p></dd>
 <dt>parent</dt>
-<dd><p>The parent class.</p><ul><li><p>To inherit behaviour from an R7 class, pass the class object.</p></li>
-<li><p>To inherit behaviour from a base type, pass the function you'd use
-to construct the object, e.g. <code>character</code>, <code>integer</code>.</p></li>
+<dd><p>The parent class to inherit behavior from.
+There are four options:</p><ul><li><p>The R7 class, like <a href="r7_object.html">R7_object</a>.</p></li>
+<li><p>An S3 class wrapped by <code><a href="new_S3_class.html">new_S3_class()</a></code>.</p></li>
+<li><p>A base type, like <code>logical</code>, <code>double</code>, or <code>character</code>.</p></li>
 </ul></dd>
 <dt>properties</dt>
 <dd><p>A list specifying the properties (data) that
