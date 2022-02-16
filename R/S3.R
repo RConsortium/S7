@@ -58,7 +58,7 @@
 #' ```
 #'
 #' @export
-#' @param class S3 class vector (i.e. the what `class()` return). For method
+#' @param class S3 class vector (i.e. what `class()` return). For method
 #'   registration, you can abbreviate this to a single string, the S3 class
 #'   name.
 #' @param constructor An optional constructor that can be used to create

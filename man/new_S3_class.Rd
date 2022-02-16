@@ -7,7 +7,7 @@
 new_S3_class(class, constructor = NULL, validator = NULL)
 }
 \arguments{
-\item{class}{S3 class vector (i.e. the what \code{class()} return). For method
+\item{class}{S3 class vector (i.e. what \code{class()} return). For method
 registration, you can abbreviate this to a single string, the S3 class
 name.}
 
