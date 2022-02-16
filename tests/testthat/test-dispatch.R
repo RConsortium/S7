@@ -129,8 +129,8 @@ describe("method introspection", {
     method(foo, "character") <- function(x) "c"
 
     expect_equal(
-      method(foo, classes = "character"),
-      method(foo, objects = "x")
+      method(foo, class = "character"),
+      method(foo, object = "x")
     )
   })
 
@@ -144,7 +144,7 @@ describe("method introspection", {
       method(foo, new_union("integer", "double"))
 
       foo2 <- new_generic("foo2", c("x", "y"))
-      method(foo2, objects = list("character"))
+      method(foo2, object = list("character"))
     })
   })
 

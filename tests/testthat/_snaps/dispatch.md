@@ -30,7 +30,7 @@
       foo <- new_generic("foo", "x")
       method(foo)
     Error <simpleError>
-      Must supply exactly one of `classes` and `objects`
+      Must supply exactly one of `class` and `object`
     Code
       method(foo, 1)
     Error <simpleError>
@@ -41,9 +41,9 @@
       Can't dispatch on unions; must be a concrete type
     Code
       foo2 <- new_generic("foo2", c("x", "y"))
-      method(foo2, objects = list("character"))
+      method(foo2, object = list("character"))
     Error <simpleError>
-      `objects` must be length 2
+      `object` must be length 2
 
 # errors if no method found
 

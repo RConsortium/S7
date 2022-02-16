@@ -8,10 +8,10 @@
 #'
 #' @inheritParams method<-
 #' @returns A function with class <R7_method>.
-#' @param classes,objects Perform introspection either with `classes`
+#' @param class,object Perform introspection either with `classes`
 #'   (processed with [as_class()]) or a concrete objects.
 #'
-#'   If `generic` does multiple dispatch both `objects` and `classes` need
+#'   If `generic` does multiple dispatch both `object` and `class` need
 #'   to be wrapped in a list.
 #' @export
 #' @examples
@@ -27,19 +27,19 @@
 #' bizarro
 #'
 #' # And you can use method() to inspect specific implementations
-#' method(bizarro, classes = "integer")
-#' method(bizarro, objects = 1)
-#' method(bizarro, classes = S3_class("factor"))
-method <- function(generic, classes = NULL, objects = NULL) {
+#' method(bizarro, class = "integer")
+#' method(bizarro, object = 1)
+#' method(bizarro, class = S3_class("factor"))
+method <- function(generic, class = NULL, object = NULL) {
   if (!inherits(generic, "R7_generic")) {
     stop("`generic` must be an <R7_generic>")
   }
-  if (!xor(is.null(classes), is.null(objects))) {
-    stop("Must supply exactly one of `classes` and `objects`")
+  if (!xor(is.null(class), is.null(object))) {
+    stop("Must supply exactly one of `class` and `object`")
   }
 
-  if (!is.null(classes)) {
-    signature <- as_signature(classes, generic)
+  if (!is.null(class)) {
+    signature <- as_signature(class, generic)
     is_union <- vlapply(signature, is_union)
     if (any(is_union)) {
       stop("Can't dispatch on unions; must be a concrete type")
@@ -49,11 +49,11 @@ method <- function(generic, classes = NULL, objects = NULL) {
   } else {
     n <- generic_n_dispatch(generic)
     if (n == 1) {
-      objects <- list(objects)
+      object <- list(object)
     } else {
-      check_signature_list(objects, n = n, arg = "objects")
+      check_signature_list(object, n = n, arg = "object")
     }
-    dispatch <- lapply(objects, obj_dispatch)
+    dispatch <- lapply(object, obj_dispatch)
   }
 
   .Call(method_, generic, dispatch, NULL)

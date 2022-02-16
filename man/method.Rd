@@ -4,16 +4,16 @@
 \alias{method}
 \title{Retrieve a method for an R7 generic}
 \usage{
-method(generic, classes = NULL, objects = NULL)
+method(generic, class = NULL, object = NULL)
 }
 \arguments{
 \item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{classes, objects}{Perform introspection either with \code{classes}
+\item{class, object}{Perform introspection either with \code{classes}
 (processed with \code{\link[=as_class]{as_class()}}) or a concrete objects.
 
-If \code{generic} does multiple dispatch both \code{objects} and \code{classes} need
+If \code{generic} does multiple dispatch both \code{object} and \code{class} need
 to be wrapped in a list.}
 }
 \value{
@@ -39,7 +39,7 @@ method(bizarro, S3_class("factor")) <- function(x) {
 bizarro
 
 # And you can use method() to inspect specific implementations
-method(bizarro, classes = "integer")
-method(bizarro, objects = 1)
-method(bizarro, classes = S3_class("factor"))
+method(bizarro, class = "integer")
+method(bizarro, object = 1)
+method(bizarro, class = S3_class("factor"))
 }
