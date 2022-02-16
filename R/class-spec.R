@@ -62,6 +62,8 @@ as_S4_class <- function(x, error_base) {
     subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
     subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
     do.call("new_union", subclasses)
+  } else if (methods::extends(x, "oldClass")) {
+    new_S3_class(as.character(x@className))
   } else if (methods::is(x, "classRepresentation")) {
     if (x@package == "methods" && x@className %in% names(base_classes)) {
       # Convert S4 representation of base types to R7 representation

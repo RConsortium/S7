@@ -126,6 +126,10 @@ test_that("converts S4 unions to R7 unions", {
   expect_equal(as_class(Union2), new_union(getClass("Foo1"), getClass("Foo2"), getClass("Foo3")))
 })
 
+test_that("converts S4 representation of S3 classes to R7 representation", {
+  expect_equal(as_class(getClass("Date")), new_S3_class("Date"), ignore_function_env = TRUE)
+})
+
 test_that("can work with simple S3 classes", {
   klass <- S3_data.frame
   expect_equal(as_class(klass), klass)

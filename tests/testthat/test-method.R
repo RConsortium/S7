@@ -14,8 +14,8 @@ describe("method registration", {
     expect_length(methods(foo), 2)
 
     # each method has the expected signature
-    expect_equal(method(foo, "integer")@signature, as_signature("integer"))
-    expect_equal(method(foo, "double")@signature, as_signature("double"))
+    expect_equal(method(foo, "integer")@signature, list(as_class("integer")))
+    expect_equal(method(foo, "double")@signature, list(as_class("double")))
   })
 
   it("can register method for external generic from within package", {
@@ -45,10 +45,9 @@ describe("method registration", {
     expect_equal(sum, base::sum)
   })
 
-  it("S3 registration requires single R7 class", {
+  it("S3 registration requires a R7 class", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {
-      method(sum, list(foo, foo)) <- function(x, ...) "foo"
       method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
     })
   })
@@ -71,32 +70,59 @@ describe("method registration", {
   })
 })
 
+describe("as_signature()", {
+  it("returns a list that matches length of dispatch args", {
+    foo1 <- new_generic("foo1", "x")
+    sig1 <- as_signature("numeric", foo1)
+    expect_type(sig1, "list")
+    expect_length(sig1, 1)
+
+    foo2 <- new_generic("foo2", c("x", "y"))
+    sig2 <- as_signature(list("numeric", "character"), foo2)
+    expect_type(sig2, "list")
+    expect_length(sig2, 2)
+  })
+
+  it("forbids list for single dispatch", {
+    foo <- new_generic("foo", "x")
+    expect_snapshot(as_signature(list(1), foo), error = TRUE)
+  })
+
+  it("requires a list of the correct length for multiple dispatch", {
+    foo <- new_generic("foo", c("x", "y"))
+    expect_snapshot(error = TRUE, {
+      as_signature("character", foo)
+      as_signature(list("character"), foo)
+    })
+  })
+
+})
 
 test_that("check_method returns TRUE if the functions are compatible", {
   foo <- new_generic("foo", fun = function(x, ...) method_call())
-  expect_true(check_method(function(x, ...) x, "character", foo))
+  expect_true(check_method(function(x, ...) x, foo))
   # extra arguments are ignored
-  expect_true(check_method(function(x, ..., y) x, "character", foo))
+  expect_true(check_method(function(x, ..., y) x, foo))
 
   foo <- new_generic("foo", fun = function(x) method_call())
-  expect_true(check_method(function(x) x, "character", foo))
+  expect_true(check_method(function(x) x, foo))
 })
 
 test_that("check_method errors if the functions are not compatible", {
   expect_snapshot(error = TRUE, {
     foo <- new_generic("foo", "x")
-    check_method(1, "character", foo)
-    check_method(function(y) {}, "character", foo)
-    check_method(function(x = "foo") {}, "character", foo)
-    check_method(function(x, y, ...) {}, "character", foo)
+    check_method(1, foo)
+    check_method(function(y) {}, foo)
+    check_method(function(x = "foo") {}, foo)
+    check_method(function(x, y, ...) {}, foo)
   })
 })
 
 test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
     foo <- new_generic("foo", fun = function(x, ..., z = 2, y = 1) method_call())
-    check_method(function(x, ..., y = 1) {}, "character", foo)
-    check_method(function(x, ..., y = 1, z = 1) {}, "character", foo)
+    check_method(function(x, ..., y = 1) {}, foo)
+    check_method(function(x, ..., y = 1, z = 1) {}, foo)
   })
 })
 
