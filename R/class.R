@@ -80,7 +80,6 @@
 #'
 #' r <- range(start = 10, end = 20)
 #' try(r@start <- 25)
-#' @importFrom utils modifyList
 new_class <- function(
     name,
     parent = R7_object,
@@ -100,25 +99,24 @@ new_class <- function(
   }
 
   # Combine properties from parent, overriding as needed
-  properties <- modifyList(
-    attr(parent, "properties", exact = TRUE) %||% list(),
-    as_properties(properties)
-  )
+  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
+  new_props <- as_properties(properties)
+  all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
-    constructor <- new_constructor(parent, properties)
+    constructor <- new_constructor(parent, all_props)
   }
 
   object <- constructor
   # Must synchronise with prop_names
   attr(object, "name") <- name
   attr(object, "parent") <- parent
-  attr(object, "properties") <- properties
+  attr(object, "properties") <- all_props
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("R7_class", "R7_object")
 
-  global_variables(names(properties))
+  global_variables(names(all_props))
   object
 }
 

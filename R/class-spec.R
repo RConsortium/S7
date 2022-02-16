@@ -109,7 +109,7 @@ class_constructor <- function(.x, ...) {
     S4 = function(...) methods::new(.x, ...),
     R7 = .x,
     R7_base = .x$constructor,
-    R7_union = class_constructor(.x@classes[[1]]),
+    R7_union = class_constructor(.x$classes[[1]]),
     R7_S3 = .x$constructor,
   )
 }
@@ -140,7 +140,7 @@ class_desc <- function(x) {
     S4 = fmt_classes(x@className, "S4"),
     R7 = fmt_classes(x@name),
     R7_base = fmt_classes(x$class),
-    R7_union = oxford_or(unlist(lapply(x@classes, class_desc))),
+    R7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     R7_S3 = fmt_classes(x$class[[1]], "S3"),
   )
 }
@@ -177,7 +177,7 @@ class_deparse <- function(x) {
     R7 = x@name,
     R7_base = encodeString(x$class, quote = '"'),
     R7_union = {
-      classes <- vcapply(x@classes, class_deparse)
+      classes <- vcapply(x$classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
     R7_S3 = paste0("S3_class(", paste(encodeString(x$class, quote = '"'), collapse = ", "), ")"),
@@ -190,7 +190,7 @@ class_inherits <- function(x, what) {
     S4 = isS4(x) && methods::is(x, what),
     R7 = inherits(x, "R7_object") && inherits(x, what@name),
     R7_base = what$class %in% .class2(x),
-    R7_union = any(vlapply(what@classes, class_inherits, x = x)),
+    R7_union = any(vlapply(what$classes, class_inherits, x = x)),
     R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
   )
 }
