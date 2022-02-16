@@ -1,7 +1,7 @@
-foo <- R7::new_external_generic("t1", "foo")
+foo <- R7::new_external_generic("t1", "foo", "x")
 R7::method(foo, "character") <- function(x) "foo"
 
-bar <- R7::new_external_generic("t0", "bar")
+bar <- R7::new_external_generic("t0", "bar", "x")
 R7::method(bar, "character") <- function(x) "bar"
 
 .onLoad <- function(libname, pkgname) {
