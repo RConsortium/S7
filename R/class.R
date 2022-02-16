@@ -5,10 +5,10 @@
 #' when an object is passed to a generic.
 #'
 #' @param name The name of the class, as a string.
-#' @param parent The parent class to inherit behavior from. All R7 objects
-#'   eventually inherit from There are three options:
+#' @param parent The parent class to inherit behavior from.
+#'   There are four options:
 #'
-#'   * The R7 base class, [R7_object].
+#'   * The R7 class, like [R7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like `logical`, `double`, or `character`.
 #'

@@ -18,11 +18,11 @@ new_object(.data = NULL, ...)
 \arguments{
 \item{name}{The name of the class, as a string.}
 
-\item{parent}{The parent class to inherit behavior from. All R7 objects
-eventually inherit from There are three options:
+\item{parent}{The parent class to inherit behavior from.
+There are four options:
 \itemize{
-\item The R7 base class, \link{R7_object}.
-\item A S3 class wrapped by \code{\link[=S3_class]{S3_class()}}.
+\item The R7 class, like \link{R7_object}.
+\item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \code{logical}, \code{double}, or \code{character}.
 }}
 
