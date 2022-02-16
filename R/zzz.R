@@ -73,6 +73,7 @@ R7_generic <- new_class(
     )
   }
 )
+is_generic <- function(x) inherits(x, "R7_generic")
 
 R7_method <- new_class("R7_method",
   parent = "function",

@@ -29,7 +29,7 @@ method <- function(generic, signature) {
     stop("`generic` must be an <R7_generic>")
   }
 
-  signature <- as_signature(signature)
+  signature <- as_signature(signature, generic)
   is_union <- vlapply(signature, is_union)
   if (any(is_union)) {
     stop("Can't dispatch on unions; must be a concrete type")

@@ -45,15 +45,14 @@
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
-
   register_method(generic, signature, value, env = parent.frame())
   invisible(generic)
 }
 
 register_method <- function(generic, signature, method, env = parent.frame()) {
   package <- packageName(env)
-  signature <- as_signature(signature)
   generic <- as_generic(generic)
+  signature <- as_signature(signature, generic)
 
   if (is_external_generic(generic)) {
     register_external_method(generic, signature, method, package)
@@ -62,7 +61,7 @@ register_method <- function(generic, signature, method, env = parent.frame()) {
   } else if (inherits(generic, "genericFunction")) {
     register_S4_method(generic, signature, method, env)
   } else {
-    check_method(method, signature, generic)
+    check_method(method, generic, name = method_name(generic, signature))
     register_R7_method(generic, signature, method)
   }
 
@@ -81,9 +80,9 @@ register_external_method <- function(generic, signature, method, package = NULL)
 }
 
 register_S3_method <- function(generic, signature, method) {
-  if (length(signature) != 1 || class_type(signature[[1]]) != "R7") {
+  if (class_type(signature[[1]]) != "R7") {
     msg <- sprintf(
-      "When registering methods for S3 generic %s(), signature be a single R7 class",
+      "When registering methods for S3 generic %s(), signature must be an R7 class",
       generic$name
     )
     stop(msg, call. = FALSE)
@@ -120,23 +119,28 @@ flatten_signature <- function(signature) {
   lapply(rows, function(row) Map("[[", signature, row))
 }
 
-as_signature <- function(signature) {
-  if (!is.list(signature) || is.object(signature)) {
-    signature <- list(signature)
-  }
+as_signature <- function(signature, generic) {
+  n <- generic_n_dispatch(generic)
+  if (n == 1) {
+    signature <- list(as_class(signature, arg = "signature"))
+  } else {
+    if (!is.list(signature) || is.object(signature)) {
+      stop("`signature` must be a list for multidispatch generics", call. = FALSE)
+    }
+    if (length(signature) != n) {
+      stop(sprintf("`signature` must be length %i", n), call. = FALSE)
+    }
 
-  for (i in seq_along(signature)) {
-    signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
+    for (i in seq_along(signature)) {
+      signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
+    }
+    signature
   }
-  signature
 }
 
-check_method <- function(method, signature, generic) {
-  signature <- as_signature(signature)
-  method_name <- method_name(generic, signature)
-
+check_method <- function(method, generic, name = paste0(generic@name, "(???)")) {
   if (!is.function(method)) {
-    stop(sprintf("%s must be a function", method_name), call. = FALSE)
+    stop(sprintf("%s must be a function", name), call. = FALSE)
   }
 
   generic_formals <- formals(args(generic))
@@ -152,7 +156,7 @@ check_method <- function(method, signature, generic) {
       "%s() dispatches on %s, but %s has arguments %s",
       generic@name,
       arg_names(generic@dispatch_args),
-      method_name,
+      name,
       arg_names(method_args)
     )
     stop(msg, call. = FALSE)
@@ -160,7 +164,7 @@ check_method <- function(method, signature, generic) {
   if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
     msg <- sprintf(
       "In %s, `...` must come immediately after dispatch args (%s)",
-      method_name,
+      name,
       arg_names(generic@dispatch_args)
     )
     stop(msg, call. = FALSE)
@@ -169,7 +173,7 @@ check_method <- function(method, signature, generic) {
   if (any(!empty_dispatch)) {
     msg <- sprintf(
       "In %s, dispatch arguments (%s) must not have default values",
-      method_name,
+      name,
       arg_names(generic@dispatch_args)
     )
     stop(msg, call. = FALSE)
@@ -178,7 +182,7 @@ check_method <- function(method, signature, generic) {
   extra_args <- setdiff(names(generic_formals), c(generic@dispatch_args, "..."))
   for (arg in extra_args) {
     if (!arg %in% method_args) {
-      warning(sprintf("%s doesn't have argument `%s`", method_name, arg), call. = FALSE)
+      warning(sprintf("%s doesn't have argument `%s`", name, arg), call. = FALSE)
     } else if (!identical(generic_formals[[arg]], method_formals[[arg]])) {
       msg <- sprintf(
         paste0(
@@ -186,7 +190,7 @@ check_method <- function(method, signature, generic) {
           "- Generic: %s\n",
           "- Method:  %s"
         ),
-        method_name,
+        name,
         arg,
         deparse1(generic_formals[[arg]]),
         deparse1(method_formals[[arg]])
