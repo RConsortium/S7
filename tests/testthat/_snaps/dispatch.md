@@ -20,21 +20,25 @@
     - x: <tbl_df>, <tbl>, <data.frame>
     - y: <POSIXct>, <POSIXt>
 
-# method(): errors on invalid inputs
+# method introspection: errors on invalid inputs
 
     Code
       method(print, 1)
     Error <simpleError>
       `generic` must be an <R7_generic>
     Code
-      foo <- (function(x) { })
+      foo <- new_generic("foo", "x")
+      method(foo)
+    Error <simpleError>
+      Must supply one of `classes` and `objects`
+    Code
       method(foo, 1)
     Error <simpleError>
-      `generic` must be an <R7_generic>
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `S3_class()`, an S4 class object, or a base constructor function, not a <double>.
     Code
       method(foo, new_union("integer", "double"))
     Error <simpleError>
-      `generic` must be an <R7_generic>
+      Can't dispatch on unions; must be a concrete type
 
 # errors if no method found
 

@@ -8,6 +8,11 @@
 #'
 #' @inheritParams method<-
 #' @returns A function with class <R7_method>.
+#' @param classes,objects Perform introspection either with `classes`
+#'   (processed with [as_class()]) or a concrete objects.
+#'
+#'   If `generic` does multiple dispatch both `objects` and `classes` need
+#'   to be wrapped in a list.
 #' @export
 #' @examples
 #' # Create a generic and register some methods
@@ -22,22 +27,37 @@
 #' bizarro
 #'
 #' # And you can use method() to inspect specific implementations
-#' method(bizarro, "integer")
-#' method(bizarro, S3_class("factor"))
-method <- function(generic, signature) {
+#' method(bizarro, classes = "integer")
+#' method(bizarro, objects = 1)
+#' method(bizarro, classes = S3_class("factor"))
+method <- function(generic, classes = NULL, objects = NULL) {
   if (!inherits(generic, "R7_generic")) {
     stop("`generic` must be an <R7_generic>")
   }
-
-  signature <- as_signature(signature, generic)
-  is_union <- vlapply(signature, is_union)
-  if (any(is_union)) {
-    stop("Can't dispatch on unions; must be a concrete type")
+  if (!xor(is.null(classes), is.null(objects))) {
+    stop("Must supply one of `classes` and `objects`")
   }
 
-  dispatch <- lapply(signature, class_dispatch)
+  if (!is.null(classes)) {
+    signature <- as_signature(classes, generic)
+    is_union <- vlapply(signature, is_union)
+    if (any(is_union)) {
+      stop("Can't dispatch on unions; must be a concrete type")
+    }
+
+    dispatch <- lapply(signature, class_dispatch)
+  } else {
+    if (generic_n_dispatch(generic) == 1) {
+      objects <- list(objects)
+    } else {
+      check_signature_list(objects, "objects")
+    }
+    dispatch <- lapply(objects, obj_dispatch)
+  }
+
   .Call(method_, generic, dispatch, NULL)
 }
+
 
 # Called from C
 method_lookup_error <- function(name, args, signatures) {

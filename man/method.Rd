@@ -4,29 +4,17 @@
 \alias{method}
 \title{Retrieve a method for an R7 generic}
 \usage{
-method(generic, signature)
+method(generic, classes = NULL, objects = NULL)
 }
 \arguments{
 \item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{signature}{A method signature. For R7 generics that use single
-dispatch, this should be one of the following:
-\itemize{
-\item An R7 class (created by \code{\link[=new_class]{new_class()}}).
-\item An R7 union (created by \code{\link[=new_union]{new_union()}}).
-\item An S3 class (created by \code{\link[=S3_class]{S3_class()}}).
-\item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
-\item A base type specified either with its constructor (\code{logical}, \code{integer},
-\code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
-\item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
-\code{"vector"}.
-}
+\item{classes, objects}{Perform introspection either with \code{classes}
+(processed with \code{\link[=as_class]{as_class()}}) or a concrete objects.
 
-For R7 generics that use multiple dispatch, this can be a list of any of
-the above types.
-
-For S3 generics, this must be an R7 class.}
+If \code{generic} does multiple dispatch both \code{objects} and \code{classes} need
+to be wrapped in a list.}
 }
 \value{
 A function with class <R7_method>.
@@ -51,6 +39,7 @@ method(bizarro, S3_class("factor")) <- function(x) {
 bizarro
 
 # And you can use method() to inspect specific implementations
-method(bizarro, "integer")
-method(bizarro, S3_class("factor"))
+method(bizarro, classes = "integer")
+method(bizarro, objects = 1)
+method(bizarro, classes = S3_class("factor"))
 }
