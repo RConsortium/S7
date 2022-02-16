@@ -182,7 +182,7 @@ class_deparse <- function(x) {
       classes <- vcapply(x$classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
-    R7_S3 = paste0("new_S3_class(", encodeString(x$class, quote = '"'), ")"),
+    R7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
   )
 }
 
