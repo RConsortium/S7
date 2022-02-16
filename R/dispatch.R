@@ -18,7 +18,7 @@
 #' # Create a generic and register some methods
 #' bizarro <- new_generic("bizarro", "x")
 #' method(bizarro, "numeric") <- function(x) rev(x)
-#' method(bizarro, S3_class("factor")) <- function(x) {
+#' method(bizarro, new_S3_class("factor")) <- function(x) {
 #'   levels(x) <- rev(levels(x))
 #'   x
 #' }
@@ -29,7 +29,7 @@
 #' # And you can use method() to inspect specific implementations
 #' method(bizarro, class = "integer")
 #' method(bizarro, object = 1)
-#' method(bizarro, class = S3_class("factor"))
+#' method(bizarro, new_S3_class("factor"))
 method <- function(generic, class = NULL, object = NULL) {
   if (!inherits(generic, "R7_generic")) {
     stop("`generic` must be an <R7_generic>")

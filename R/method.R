@@ -18,7 +18,7 @@
 #'   dispatch, this should be one of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
-#'   * An S3 class (created by [S3_class()]).
+#'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type specified either with its constructor (`logical`, `integer`,
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
@@ -37,7 +37,7 @@
 #' bizarro <- new_generic("bizarro", "x")
 #' # Register some methods
 #' method(bizarro, "numeric") <- function(x) rev(x)
-#' method(bizarro, S3_class("data.frame")) <- function(x) {
+#' method(bizarro, new_S3_class("data.frame")) <- function(x) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
 #' }
@@ -120,15 +120,19 @@ flatten_signature <- function(signature) {
 }
 
 as_signature <- function(signature, generic) {
+  if (inherits(signature, "R7_signature")) {
+    return(signature)
+  }
+
   n <- generic_n_dispatch(generic)
   if (n == 1) {
-    signature <- list(as_class(signature, arg = "signature"))
+    new_signature(list(as_class(signature, arg = "signature")))
   } else {
     check_signature_list(signature, n)
     for (i in seq_along(signature)) {
       signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
     }
-    signature
+    new_signature(signature)
   }
 }
 
@@ -140,6 +144,8 @@ check_signature_list <- function(x, n, arg = "signature") {
     stop(sprintf("`%s` must be length %i", arg, n), call. = FALSE)
   }
 }
+
+new_signature <- function(x) structure(x, class = "R7_signature")
 
 check_method <- function(method, generic, name = paste0(generic@name, "(???)")) {
   if (!is.function(method)) {

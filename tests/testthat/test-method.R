@@ -21,8 +21,8 @@ describe("method registration", {
   it("can register method for external generic from within package", {
     on.exit(external_methods_reset("R7"), add = TRUE)
 
-    foo <- new_external_generic("foo", "bar")
-    register_external_method(foo, "character", function(x, ...) "bar", package = "R7")
+    foo <- new_external_generic("foo", "bar" ,"x")
+    register_external_method(foo, "character", function(x) "bar", package = "R7")
     expect_length(external_methods_get("R7"), 1)
 
     # and doesn't modify generic
@@ -31,7 +31,7 @@ describe("method registration", {
 
   it("can register method for external generic during development", {
     bar <- new_class("bar")
-    base_sum <- new_external_generic("base", "sum")
+    base_sum <- new_external_generic("base", "sum", "x")
     register_external_method(base_sum, bar, function(x, ...) "bar", package = NULL)
     expect_equal(sum(bar()), "bar")
   })
@@ -48,7 +48,7 @@ describe("method registration", {
   it("S3 registration requires a R7 class", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {
-      method(sum, S3_class("foo")) <- function(x, ...) "foo"
+      method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
     })
   })
 
@@ -74,13 +74,17 @@ describe("as_signature()", {
   it("returns a list that matches length of dispatch args", {
     foo1 <- new_generic("foo1", "x")
     sig1 <- as_signature("numeric", foo1)
-    expect_type(sig1, "list")
+    expect_s3_class(sig1, "R7_signature")
     expect_length(sig1, 1)
 
     foo2 <- new_generic("foo2", c("x", "y"))
     sig2 <- as_signature(list("numeric", "character"), foo2)
-    expect_type(sig2, "list")
+    expect_s3_class(sig1, "R7_signature")
     expect_length(sig2, 2)
+  })
+
+  it("is idempotent", {
+    expect_equal(as_signature(new_signature(10)), new_signature(10))
   })
 
   it("forbids list for single dispatch", {
