@@ -46,15 +46,14 @@ is_union <- function(x) inherits(x, "R7_union")
 
 #' @export
 print.R7_union <- function(x, ...) {
-  cat(sprintf("<R7_union>: %s", class_desc(x)), "\n", sep = "")
+  cat("<R7_union>: ", class_desc(x), "\n", sep = "")
   invisible(x)
 }
 
 #' @export
 str.R7_union <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<R7_union>: ", class_desc(object), sep = "")
-  cat("\n")
+  print(object)
 }
 
 class_flatten <- function(x) {

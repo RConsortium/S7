@@ -31,11 +31,14 @@ is_base_class <- function(x) inherits(x, "R7_base_class")
 
 #' @export
 print.R7_base_class <- function(x, ...) {
-  cat(
-    "Base class <", paste(x$class, collapse = "/"), ">\n",
-    sep = ""
-  )
+  cat("<R7_base_class>: ", class_desc(x), "\n", sep = "")
   invisible(x)
+}
+
+#' @export
+str.R7_base_class <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  print(object)
 }
 
 # Define simple base types with constructors.
