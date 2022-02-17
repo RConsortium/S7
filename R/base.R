@@ -34,7 +34,7 @@ print.R7_base_class <- function(x, ...) {
 #' @export
 str.R7_base_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  print(object)
+  print(object, ..., nest.lev = nest.lev)
 }
 
 base_classes <- list(

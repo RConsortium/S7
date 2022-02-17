@@ -27,20 +27,20 @@
       @ parent     :  <R7_object> constructor
       @ properties : List of 3
        .. $ start : <R7_property> 
-       .. .. $ name  :  chr "start"
-       .. .. $ class :  <R7_union>: <integer> or <double>
-       .. .. $ getter:  NULL
-       .. .. $ setter:  NULL
+       ..  ..$ name  :  chr "start"
+       ..  ..$ class :  <R7_union>: <integer> or <double>
+       ..  ..$ getter:  NULL
+       ..  ..$ setter:  NULL
        .. $ end   : <R7_property> 
-       .. .. $ name  :  chr "end"
-       .. .. $ class :  <R7_union>: <integer> or <double>
-       .. .. $ getter:  NULL
-       .. .. $ setter:  NULL
+       ..  ..$ name  :  chr "end"
+       ..  ..$ class :  <R7_union>: <integer> or <double>
+       ..  ..$ getter:  NULL
+       ..  ..$ setter:  NULL
        .. $ length: <R7_property> 
-       .. .. $ name  :  chr "length"
-       .. .. $ class :  <R7_union>: <integer> or <double>
-       .. .. $ getter:  function (x)  
-       .. .. $ setter:  function (x, value)  
+       ..  ..$ name  :  chr "length"
+       ..  ..$ class :  <R7_union>: <integer> or <double>
+       ..  ..$ getter:  function (x)  
+       ..  ..$ setter:  function (x, value)  
       @ constructor:  function (start, end)  
       @ validator  :  function (x)  
 

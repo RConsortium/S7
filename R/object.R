@@ -55,10 +55,9 @@ object_class <- function(object) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  str.R7_object(x)
+  str.R7_object(x, ...)
   invisible(x)
 }
-
 #' @export
 str.R7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")

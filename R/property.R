@@ -77,10 +77,15 @@ check_name <- function(name) {
 is_property <- function(x) inherits(x, "R7_property")
 
 #' @export
+print.R7_property <- function(x, ...) {
+  cat("<R7_property> \n")
+  str_list(x, ...)
+}
+
+#' @export
 str.R7_property <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<R7_property> \n")
-  str_list(object, nest.lev = nest.lev)
+  print(object, ..., nest.lev = nest.lev)
 }
 
 #' Get/set a property

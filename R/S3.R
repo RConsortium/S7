@@ -103,7 +103,7 @@ print.R7_S3_class <- function(x, ...) {
 #' @export
 str.R7_S3_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  print(object)
+  print(object, ..., nest.lev = nest.lev)
 }
 
 check_constructor <- function(constructor) {

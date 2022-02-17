@@ -161,6 +161,14 @@ test_that("new_property validates name", {
   })
 })
 
+test_that("displays nicely", {
+  x <- new_property("foo", "integer")
+  expect_snapshot({
+    print(x)
+    str(list(x))
+  })
+})
+
 test_that("properties can be base, S3, S4, R7, or R7 union", {
   class_R7 <- new_class("class_R7")
   class_S4 <- methods::setClass("class_S4", slots = c(x = "numeric"))
