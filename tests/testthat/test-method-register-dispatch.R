@@ -1,6 +1,14 @@
 describe("single dispatch", {
   foo <- new_generic("foo", "x")
 
+  it("works for specials", {
+    method(foo, missing_class) <- function(x) "missing"
+    method(foo, any_class) <- function(x) "fallback"
+
+    expect_equal(foo(), "missing")
+    expect_equal(foo(1), "fallback")
+  })
+
   it("works for base types", {
     method(foo, "character") <- function(x) "base"
 

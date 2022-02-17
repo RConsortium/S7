@@ -4,7 +4,13 @@
 \alias{new_property}
 \title{Define a new property}
 \usage{
-new_property(name, class = NULL, getter = NULL, setter = NULL, default = NULL)
+new_property(
+  name,
+  class = any_class,
+  getter = NULL,
+  setter = NULL,
+  default = NULL
+)
 }
 \arguments{
 \item{name}{Property name, primarily used for error messages.}
