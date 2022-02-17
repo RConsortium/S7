@@ -82,8 +82,9 @@ register_external_method <- function(generic, signature, method, package = NULL)
 register_S3_method <- function(generic, signature, method) {
   if (class_type(signature[[1]]) != "R7") {
     msg <- sprintf(
-      "When registering methods for S3 generic %s(), signature must be an R7 class",
-      generic$name
+      "When registering methods for S3 generic %s(), signature must be an R7 class, not %s.",
+      generic$name,
+      class_friendly(signature[[1]])
     )
     stop(msg, call. = FALSE)
   }

@@ -3,7 +3,7 @@
     Code
       method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
     Error <simpleError>
-      When registering methods for S3 generic sum(), signature must be an R7 class
+      When registering methods for S3 generic sum(), signature must be an R7 class, not an S3 class.
 
 # method registration: checks argument types
 
