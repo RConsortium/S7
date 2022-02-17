@@ -2,6 +2,9 @@
 
 ## Feb 2022
 
+* When creating a class, unspecified properties are initialized with their 
+  default value (#67).
+
 * `new_external_generic()` now requires `dispatch_args` so we can eagerly 
   check the signature.
 
