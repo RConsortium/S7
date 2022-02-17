@@ -20,7 +20,7 @@ property has a \code{class} the class of the value is validated.}
 should take the object and new value as its two parameters and return the
 modified object. The value is \emph{not} automatically checked.}
 
-\item{default}{When an object is create and the property is not supplied,
+\item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, defaults to the "empty" instance
 of \code{class}.}
 }
@@ -36,12 +36,15 @@ behaviour when modified.
 \examples{
 # Simple properties store data inside an object
 pizza <- new_class("pizza", properties = list(
-  new_property("slices", "numeric")
+  new_property("slices", "numeric", default = 10)
 ))
 my_pizza <- pizza(slices = 6)
 my_pizza@slices
 my_pizza@slices <- 5
 my_pizza@slices
+
+your_pizza <- pizza()
+your_pizza@slices
 
 # Dynamic properties can compute on demand
 clock <- new_class("clock", properties = list(

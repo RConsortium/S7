@@ -18,19 +18,22 @@
 #' @param setter An optional function used to set the value. The function
 #'   should take the object and new value as its two parameters and return the
 #'   modified object. The value is _not_ automatically checked.
-#' @param default When an object is create and the property is not supplied,
+#' @param default When an object is created and the property is not supplied,
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
 #' pizza <- new_class("pizza", properties = list(
-#'   new_property("slices", "numeric")
+#'   new_property("slices", "numeric", default = 10)
 #' ))
 #' my_pizza <- pizza(slices = 6)
 #' my_pizza@slices
 #' my_pizza@slices <- 5
 #' my_pizza@slices
+#'
+#' your_pizza <- pizza()
+#' your_pizza@slices
 #'
 #' # Dynamic properties can compute on demand
 #' clock <- new_class("clock", properties = list(
