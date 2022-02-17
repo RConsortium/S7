@@ -46,7 +46,7 @@
 #'
 #' ```R
 #' S3_Date <- new_S3_class("Date",
-#'   function(.data) {
+#'   function(.data = integer()) {
 #'     .Date(.data)
 #'   },
 #'   function(object) {
@@ -66,6 +66,9 @@
 #'   have an R7 class inherit from an S3 class. It must be specified in the
 #'   same way as a R7 constructor: the first argument should be `.data`
 #'   (the base type whose attributes will be modified).
+#'
+#'   When called with no arguments, the constructor should return an "empty"
+#'   object.
 #' @param validator An optional validator used by [validate()] to check that
 #'   the R7 object adheres to the constraints of the S3 class.
 #'
@@ -138,7 +141,7 @@ S3_factor <- new_S3_class("factor",
 )
 
 S3_POSIXct <- new_S3_class("POSIXct",
-  function(.data, tz = "") {
+  function(.data = double(), tz = "") {
     .POSIXct(.data, tz = tz)
   },
   function(object) {
@@ -152,7 +155,7 @@ S3_POSIXct <- new_S3_class("POSIXct",
 )
 
 S3_data.frame <- new_S3_class("data.frame",
-  function(.data, row.names = NULL) {
+  function(.data = list(), row.names = NULL) {
     if (is.null(row.names)) {
       list2DF(.data)
     } else {

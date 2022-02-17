@@ -15,7 +15,10 @@ name.}
 objects of the specified class. This is only needed if you wish to
 have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be \code{.data}
-(the base type whose attributes will be modified).}
+(the base type whose attributes will be modified).
+
+When called with no arguments, the constructor should return an "empty"
+object.}
 
 \item{validator}{An optional validator used by \code{\link[=validate]{validate()}} to check that
 the R7 object adheres to the constraints of the S3 class.
@@ -66,7 +69,7 @@ the types of the attributes.
 The following code shows how you might wrap the base Date class.
 A Date is a numeric vector with class \code{Date} that can be constructed with
 \code{.Date()}.\if{html}{\out{<div class="sourceCode R">}}\preformatted{S3_Date <- new_S3_class("Date",
-  function(.data) \{
+  function(.data = integer()) \{
     .Date(.data)
   \},
   function(object) \{
