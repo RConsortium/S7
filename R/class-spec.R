@@ -13,6 +13,7 @@
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
 #'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
 #'      `"vector"`.
+#'   * A "special", either [missing_class] or [any_class].
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
@@ -21,8 +22,10 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
 
   if (is.null(x)) {
+    # NULL is handled specially because you can't assign a class to it,
+    # so it can't be wrapped in new_base_class
     x
-  } else if (is_class(x) || is_base_class(x) || is_S3_class(x) || is_union(x)) {
+  } else if (is_foundation_class(x)) {
     x
   } else if (isS4(x)) {
     S4_to_R7_class(x, error_base)
@@ -47,9 +50,22 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   }
 }
 
+is_foundation_class <- function(x) {
+  is_class(x) ||
+    is_union(x) ||
+    is_base_class(x) ||
+    is_S3_class(x) ||
+    is_missing_class(x) ||
+    is_any_class(x)
+}
+
 class_type <- function(x) {
   if (is.null(x)) {
     "NULL"
+  } else if (is_missing_class(x)) {
+    "missing"
+  } else if (is_any_class(x)) {
+    "any"
   } else if (is_base_class(x)) {
     "R7_base"
   } else if (is_class(x)) {
@@ -68,6 +84,8 @@ class_type <- function(x) {
 class_friendly <- function(x) {
   switch(class_type(x),
     NULL = "NULL",
+    missing = "a missing argument",
+    any = "any type",
     S4 = "an S4 class",
     R7 = "an R7 class",
     R7_base = "a base type",
@@ -84,6 +102,7 @@ class_constructor <- function(.x, ...) {
     R7_base = .x$constructor,
     R7_union = class_constructor(.x$classes[[1]]),
     R7_S3 = .x$constructor,
+    stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
   )
 }
 class_construct <- function(.x, ...) {
@@ -92,12 +111,11 @@ class_construct <- function(.x, ...) {
 
 class_validate <- function(class, object) {
   validator <- switch(class_type(class),
-    NULL = NULL,
     S4 = methods::validObject,
     R7 = class@validator,
     R7_base = class$validator,
-    R7_union = NULL,
     R7_S3 = class$validator,
+    NULL
   )
 
   if (is.null(validator)) {
@@ -109,7 +127,9 @@ class_validate <- function(class, object) {
 
 class_desc <- function(x) {
   switch(class_type(x),
-    NULL = "<ANY>",
+    NULL = "<NULL>",
+    missing = "<MISSING>",
+    any = "<ANY>",
     S4 = paste0("S4<", x@className, ">"),
     R7 = paste0("<", x@name, ">"),
     R7_base = paste0("<", x$class, ">"),
@@ -120,12 +140,16 @@ class_desc <- function(x) {
 
 # Vector of class names; used in method introspection
 class_dispatch <- function(x) {
+  if (identical(x, R7_object)) return(c("R7_object", "ANY"))
+
   switch(class_type(x),
-    NULL = NULL,
-    S4 = S4_strip_union(methods::extends(x)),
+    NULL = c("NULL", "ANY"),
+    missing = "MISSING",
+    any = "ANY",
+    S4 = c(S4_strip_union(methods::extends(x)), "ANY"),
     R7 = c(x@name, class_dispatch(x@parent)),
-    R7_base = c("R7_object", x$class),
-    R7_S3 = c("R7_object", x$class),
+    R7_base = c("R7_object", x$class, "ANY"),
+    R7_S3 = c("R7_object", x$class, "ANY"),
     stop("Unsupported")
   )
 }
@@ -134,6 +158,8 @@ class_dispatch <- function(x) {
 class_register <- function(x) {
   switch(class_type(x),
     NULL = "NULL",
+    missing = "MISSING",
+    any = "ANY",
     S4 = as.character(x@className),
     R7 = x@name,
     R7_base = x$class,
@@ -145,7 +171,9 @@ class_register <- function(x) {
 # Used when printing method signature to generate executable code
 class_deparse <- function(x) {
   switch(class_type(x),
-    NULL = "",
+    "NULL" = "NULL",
+    missing = "missing_class",
+    any = "any_class",
     S4 = as.character(x@className),
     R7 = x@name,
     R7_base = encodeString(x$class, quote = '"'),
@@ -159,7 +187,9 @@ class_deparse <- function(x) {
 
 class_inherits <- function(x, what) {
   switch(class_type(what),
-    NULL = TRUE,
+    "NULL" = is.null(x),
+    missing = FALSE,
+    any = TRUE,
     S4 = isS4(x) && methods::is(x, what),
     R7 = inherits(x, "R7_object") && inherits(x, what@name),
     R7_base = what$class %in% .class2(x),
@@ -169,9 +199,7 @@ class_inherits <- function(x, what) {
 }
 
 obj_type <- function(x) {
-  if (is.null(x)) {
-    "NULL"
-  } else if (inherits(x, "R7_object")) {
+  if (inherits(x, "R7_object")) {
     "R7"
   } else if (isS4(x)) {
     "S4"
@@ -183,7 +211,6 @@ obj_type <- function(x) {
 }
 obj_desc <- function(x) {
   switch(obj_type(x),
-   NULL = "NULL",
    base = paste0("<", typeof(x), ">"),
    S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
    S4 = paste0("S4<", class(x), ">"),
@@ -192,11 +219,10 @@ obj_desc <- function(x) {
 }
 obj_dispatch <- function(x) {
   switch(obj_type(x),
-    NULL = "NULL",
-    base = .class2(x),
-    S3 = class(x),
-    S4 = S4_strip_union(methods::is(x)),
-    R7 = class(x) # = class_dispatch(object_class(x))
+    base = c(.class2(x), "ANY"),
+    S3 = c(class(x), "ANY"),
+    S4 = c(S4_strip_union(methods::is(x)), "ANY"),
+    R7 = c(class(x), "ANY") # = class_dispatch(object_class(x))
   )
 }
 

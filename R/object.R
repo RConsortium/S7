@@ -36,7 +36,7 @@ new_object <- function(.data = NULL, ...) {
   }
 
   attr(object, "object_class") <- obj_cls
-  class(object) <- class_dispatch(obj_cls)
+  class(object) <- setdiff(class_dispatch(obj_cls), "ANY")
 
   for (nme in nms) {
     prop(object, nme, check = FALSE) <- args[[nme]]

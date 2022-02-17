@@ -55,7 +55,7 @@
 #' hadley <- person(first_name = "Hadley")
 #' hadley@firstName
 #' hadley@first_name
-new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
+new_property <- function(name, class = any_class, getter = NULL, setter = NULL) {
   check_name(name)
 
   class <- as_class(class)

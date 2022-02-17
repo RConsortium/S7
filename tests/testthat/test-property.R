@@ -143,7 +143,7 @@ test_that("property setters can set themselves", {
 })
 
 test_that("properties can be NULL", {
-  foo <- new_class("foo", properties = list(x = NULL))
+  foo <- new_class("foo", properties = list(x = any_class))
   x <- foo(x = NULL)
   expect_equal(x@x, NULL)
   x@x <- 1
@@ -175,7 +175,8 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
 
   my_class <- new_class("my_class",
     properties = list(
-      anything = NULL,
+      anything = any_class,
+      null = NULL,
       base = "integer",
       S3 = new_S3_class("factor"),
       S4 = class_S4,
@@ -186,6 +187,7 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
   expect_snapshot(my_class)
   my_obj <- my_class(
     anything = TRUE,
+    null = NULL,
     base = 1L,
     S3 = factor(),
     S4 = class_S4(x = 1),
@@ -203,6 +205,7 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
 
   # Then capture the error messages for human inspection
   expect_snapshot(error = TRUE, {
+    my_obj@null <- "x"
     my_obj@base <- "x"
     my_obj@S3 <- "x"
     my_obj@S4 <- "x"
