@@ -139,9 +139,9 @@ class_validate <- function(class, object) {
 class_desc <- function(x) {
   switch(class_type(x),
     NULL = "<ANY>",
-    S4 = fmt_classes(x@className, "S4"),
-    R7 = fmt_classes(x@name),
-    R7_base = fmt_classes(x$class),
+    S4 = paste0("S4<", x@className, ">"),
+    R7 = paste0("<", x@name, ">"),
+    R7_base = paste0("<", x$class, ">"),
     R7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     R7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
   )
@@ -213,10 +213,10 @@ obj_type <- function(x) {
 obj_desc <- function(x) {
   switch(obj_type(x),
    NULL = "NULL",
-   base = fmt_classes(typeof(x)),
+   base = paste0("<", typeof(x), ">"),
    S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
-   S4 = fmt_classes(class(x), "S4"),
-   R7 = class_desc(object_class(x))
+   S4 = paste0("S4<", class(x), ">"),
+   R7 = paste0("<", class(x)[[1]], ">")
   )
 }
 obj_dispatch <- function(x) {
@@ -239,10 +239,6 @@ S4_strip_union <- function(class_names) {
 }
 
 # helpers -----------------------------------------------------------------
-
-fmt_classes <- function(classes, prefix = NULL) {
-  paste0(prefix, "<", classes, ">", collapse = ", ")
-}
 
 # Suppress @className false positive
 globalVariables("className")

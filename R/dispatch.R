@@ -63,6 +63,10 @@ method <- function(generic, class = NULL, object = NULL) {
 # Called from C
 method_lookup_error <- function(name, args, signatures) {
   args <- setdiff(args, "...")
+
+  fmt_classes <- function(classes, prefix = NULL) {
+    paste0(prefix, "<", classes, ">", collapse = ", ")
+  }
   types <- paste0("- ", args, ": ", vcapply(signatures, fmt_classes), collapse = "\n")
   stop(sprintf("Can't find method for generic `%s()` with classes:\n%s", name, types), call. = FALSE)
 }
