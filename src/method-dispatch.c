@@ -123,21 +123,24 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         // Evaluate the original promise so we can look up its class
         SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
-        // And update the value of the promise to avoid evaluating it
-        // again in the method body. If it's an upcast, we get the actual value
-        if (Rf_inherits(val, "R7_up_cast")) {
+        if (!Rf_inherits(val, "R7_upclass")) {
+          // And update the value of the promise to avoid evaluating it
+          // again in the method body.
+          SET_PRVALUE(arg, val);
+          // Then add to arguments of method call
+          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+
+          // Determine class string to use for method look up
+          SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
+        } else {
+          // If it's an upcast, we get the stored value and dispatch class
           SEXP true_val = VECTOR_ELT(val, 0);
           SET_PRVALUE(arg, true_val);
-        } else {
-          SET_PRVALUE(arg, val);
+          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+          SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
         }
         UNPROTECT(1);
 
-        // Then add to arguments of method call
-        SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
-
-        // Determine class string to use for method look up
-        SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
       } else {
         SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));

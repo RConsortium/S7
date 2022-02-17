@@ -8,10 +8,11 @@ up_cast <- function(object, class) {
     stop(msg)
   }
 
+  # Must not change order of these fields as C code indexes by position
   structure(
     list(
       object = object,
-      class = class
+      dispatch = class_register(class)
     ),
     class = "R7_upclass"
   )
