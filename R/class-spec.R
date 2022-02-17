@@ -18,19 +18,18 @@
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
 #'   as [new_S3_class], or a S4 class.
 as_class <- function(x, arg = deparse(substitute(x))) {
-  error_base <- sprintf("Can't convert `%s` to a valid class", arg)
+  error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
 
   if (is.null(x)) {
     x
   } else if (is_class(x) || is_base_class(x) || is_S3_class(x) || is_union(x)) {
     x
   } else if (isS4(x)) {
-    as_S4_class(x, error_base)
+    S4_to_R7_class(x, error_base)
   } else if (is.function(x)) {
     candidate <- find_base_name(x, names(base_classes))
     if (is.na(candidate)) {
-      msg <- sprintf("%s. No matching base class.", error_base)
-      stop(msg, call. = FALSE)
+      stop(paste0(error_base, "No matching base class."), call. = FALSE)
     }
     base_classes[[candidate]]
   } else if (is.character(x) && length(x) == 1) {
@@ -39,43 +38,14 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     } else if (x %in% names(base_unions)) {
       base_unions[[x]]
     } else {
-      stop(sprintf("%s. No base classes are called '%s'", error_base, x), call. = FALSE)
+      msg <- sprintf("No base classes are called '%s'", x)
+      stop(paste0(error_base, msg), call. = FALSE)
     }
   } else {
-    stop(sprintf("%s. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a %s.", error_base, obj_desc(x)), call. = FALSE)
+    msg <- sprintf("Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a %s.", obj_desc(x))
+    stop(paste0(error_base, msg), call. = FALSE)
   }
 }
-
-as_S4_class <- function(x, error_base) {
-  # Silence R CMD check false postives
-  distance <- subClass <- className <- package <- NULL
-
-  # Convert generator function to class
-  if (methods::is(x, "classGeneratorFunction")) {
-    return(as_S4_class(methods::getClass(as.character(x@className)), error_base))
-  }
-
-  if (methods::is(x, "ClassUnionRepresentation")) {
-    subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
-    subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
-    do.call("new_union", subclasses)
-  } else if (methods::extends(x, "oldClass")) {
-    new_S3_class(as.character(x@className))
-  } else if (methods::is(x, "classRepresentation")) {
-    if (x@package == "methods" && x@className %in% names(base_classes)) {
-      # Convert S4 representation of base types to R7 representation
-      base_classes[[x@className]]
-    } else if (x@package == "methods" && x@className == "NULL") {
-      NULL
-    } else {
-      x
-    }
-  } else {
-    stop(sprintf("%s. Unsupported S4 object: must be a class generator or a class definition, not a %s.", error_base, obj_desc(x)), call. = FALSE)
-  }
-}
-
-is_S4_class <- function(x) inherits(x, "classRepresentation")
 
 class_type <- function(x) {
   if (is.null(x)) {
@@ -228,15 +198,6 @@ obj_dispatch <- function(x) {
     S4 = S4_strip_union(methods::is(x)),
     R7 = class(x) # = class_dispatch(object_class(x))
   )
-}
-
-# R7 handles unions at method registration time, where as S4 handles them at
-# dispatch time.
-S4_strip_union <- function(class_names) {
-  classes <- lapply(class_names, methods::getClass)
-  is_union <- vlapply(classes, methods::is, "ClassUnionRepresentation")
-
-  setdiff(class_names[!is_union], "vector")
 }
 
 # helpers -----------------------------------------------------------------
