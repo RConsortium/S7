@@ -49,6 +49,86 @@ test_that("handles NULL", {
   expect_equal(class_inherits("x", NULL), TRUE)
 })
 
+# base --------------------------------------------------------------------
+
+test_that("can work with base types", {
+  expect_equal(as_class("character"), base_classes$character)
+  expect_equal(as_class(character), base_classes$character)
+  expect_equal(as_class(double), base_classes$double)
+
+  klass <- as_class("character")
+  expect_equal(class_type(klass), "R7_base")
+  expect_equal(class_dispatch(klass), c("R7_object", "character"))
+  expect_equal(class_register(klass), "character")
+  expect_equal(class_desc(klass), "<character>")
+  expect_equal(class_construct(klass, "x"), "x")
+  expect_equal(class_deparse(klass), '"character"')
+
+  obj <- "x"
+  expect_equal(obj_type(obj), "base")
+  expect_equal(obj_desc(obj), "<character>")
+  expect_equal(obj_dispatch(obj), "character")
+  expect_equal(class_inherits(obj, klass), TRUE)
+})
+
+test_that("class_inherits handles variation in class names", {
+  expect_true(class_inherits(1, base_classes$double))
+
+  expect_true(class_inherits(1L, base_classes$numeric))
+  expect_true(class_inherits(1, base_classes$numeric))
+
+  expect_true(class_inherits(function() {}, base_classes$`function`))
+  expect_true(class_inherits(sum, base_classes$`function`))
+  expect_true(class_inherits(`[`, base_classes$`function`))
+})
+
+test_that("can get class from base constructor", {
+  expect_equal(as_class(character), base_classes$character)
+  expect_equal(as_class(`function`), base_classes$`function`)
+
+  expect_snapshot_error(as_class(mean))
+})
+
+# S3 ----------------------------------------------------------------------
+
+test_that("can work with S3 classes", {
+  klass <- new_S3_class(c("ordered", "factor"),
+    constructor = function(.data = numeric(), levels) ordered(.data, levels)
+  )
+  expect_equal(as_class(klass), klass)
+
+  expect_equal(class_type(klass), "R7_S3")
+  expect_equal(class_dispatch(klass), c("R7_object", "ordered", "factor"))
+  expect_equal(class_register(klass), "ordered")
+  expect_equal(class_desc(klass), "S3<ordered/factor>")
+  expect_equal(class_construct(klass), ordered(numeric()))
+  expect_equal(class_deparse(klass), 'new_S3_class(c("ordered", "factor"))')
+
+  obj <- ordered(integer())
+  expect_equal(obj_type(obj), "S3")
+  expect_equal(obj_desc(obj), "S3<ordered/factor>")
+  expect_equal(obj_dispatch(obj), c("ordered", "factor"))
+  expect_equal(class_inherits(obj, klass), TRUE)
+  expect_equal(class_inherits(factor(), klass), FALSE)
+})
+
+test_that("can work with R7 classes that extend S3 classes", {
+  Date <- new_S3_class("Date", constructor = function(.data = numeric()) .Date(.data))
+  Date2 <- new_class("Date2", parent = Date, properties = list(x = "numeric"))
+
+  expect_equal(class_type(Date2), "R7")
+  expect_equal(class_dispatch(Date2), c("Date2", "R7_object", "Date"))
+  expect_equal(class_register(Date2), "Date2")
+
+  obj <- Date2(x = 1)
+  expect_equal(obj_type(obj), "R7")
+  expect_equal(obj_desc(obj), "<Date2>")
+  expect_equal(obj_dispatch(obj), c("Date2", "R7_object", "Date"))
+  expect_equal(class_inherits(obj, Date2), TRUE)
+})
+
+# S4 ----------------------------------------------------------------------
+
 test_that("can work with S4 classes", {
   methods::setClass("Range", slots = c(start = "numeric", end = "numeric"))
   klass <- methods::getClass("Range")
@@ -107,98 +187,6 @@ test_that("can work with S4 multiple inheritance", {
   obj <- methods::new(klass, "x")
   expect_equal(obj_dispatch(obj), c("Foo6", "Foo4", "Foo5", "character"))
   expect_equal(class_inherits(obj, klass), TRUE)
-})
-
-test_that("can work with simple S3 classes", {
-  klass <- S3_data.frame
-  expect_equal(as_class(klass), klass)
-
-  expect_equal(class_type(klass), "R7_S3")
-  expect_equal(class_dispatch(klass), c("R7_object", "data.frame"))
-  expect_equal(class_register(klass), "data.frame")
-  expect_equal(class_desc(klass), "S3<data.frame>")
-  expect_equal(class_construct(klass, list(x = 1)), data.frame(x = 1))
-  expect_equal(class_deparse(klass), 'new_S3_class("data.frame")')
-
-  obj <- data.frame()
-  expect_equal(obj_type(obj), "S3")
-  expect_equal(obj_desc(obj), "S3<data.frame>")
-  expect_equal(obj_dispatch(obj), "data.frame")
-  expect_equal(class_inherits(obj, klass), TRUE)
-})
-
-test_that("can work with S3 subclasses", {
-  klass <- new_S3_class(c("ordered", "factor"),
-    constructor = function(.data = numeric(), levels) ordered(.data, levels)
-  )
-  expect_equal(as_class(klass), klass)
-
-  expect_equal(class_type(klass), "R7_S3")
-  expect_equal(class_dispatch(klass), c("R7_object", "ordered", "factor"))
-  expect_equal(class_register(klass), "ordered")
-  expect_equal(class_desc(klass), "S3<ordered/factor>")
-  expect_equal(class_construct(klass), ordered(numeric()))
-  expect_equal(class_deparse(klass), 'new_S3_class(c("ordered", "factor"))')
-
-  obj <- ordered(integer())
-  expect_equal(obj_type(obj), "S3")
-  expect_equal(obj_desc(obj), "S3<ordered/factor>")
-  expect_equal(obj_dispatch(obj), c("ordered", "factor"))
-  expect_equal(class_inherits(obj, klass), TRUE)
-  expect_equal(class_inherits(factor(), klass), FALSE)
-})
-
-test_that("can work with R7 classes that extend S3 classes", {
-  Date <- new_S3_class("Date", constructor = function(.data = numeric()) .Date(.data))
-  Date2 <- new_class("Date2", parent = Date, properties = list(x = "numeric"))
-
-  expect_equal(class_type(Date2), "R7")
-  expect_equal(class_dispatch(Date2), c("Date2", "R7_object", "Date"))
-  expect_equal(class_register(Date2), "Date2")
-
-  obj <- Date2(x = 1)
-  expect_equal(obj_type(obj), "R7")
-  expect_equal(obj_desc(obj), "<Date2>")
-  expect_equal(obj_dispatch(obj), c("Date2", "R7_object", "Date"))
-  expect_equal(class_inherits(obj, Date2), TRUE)
-})
-
-test_that("can work with base types", {
-  expect_equal(as_class("character"), base_classes$character)
-  expect_equal(as_class(character), base_classes$character)
-  expect_equal(as_class(double), base_classes$double)
-
-  klass <- as_class("character")
-  expect_equal(class_type(klass), "R7_base")
-  expect_equal(class_dispatch(klass), c("R7_object", "character"))
-  expect_equal(class_register(klass), "character")
-  expect_equal(class_desc(klass), "<character>")
-  expect_equal(class_construct(klass, "x"), "x")
-  expect_equal(class_deparse(klass), '"character"')
-
-  obj <- "x"
-  expect_equal(obj_type(obj), "base")
-  expect_equal(obj_desc(obj), "<character>")
-  expect_equal(obj_dispatch(obj), "character")
-  expect_equal(class_inherits(obj, klass), TRUE)
-})
-
-test_that("class_inherits handles variation in class names", {
-  expect_true(class_inherits(1, base_classes$double))
-
-  expect_true(class_inherits(1L, base_classes$numeric))
-  expect_true(class_inherits(1, base_classes$numeric))
-
-  expect_true(class_inherits(function() {}, base_classes$`function`))
-  expect_true(class_inherits(sum, base_classes$`function`))
-  expect_true(class_inherits(`[`, base_classes$`function`))
-})
-
-test_that("can get class from base constructor", {
-  expect_equal(as_class(character), base_classes$character)
-  expect_equal(as_class(`function`), base_classes$`function`)
-
-  expect_snapshot_error(as_class(mean))
 })
 
 # input validation -------------------------------------------------------------
