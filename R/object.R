@@ -9,7 +9,6 @@ new_object <- function(.data, ...) {
   }
 
   args <- list(...)
-
   nms <- names(args)
   if (length(args) > 0 && (is.null(nms) || any(nms == ""))) {
     stop(
