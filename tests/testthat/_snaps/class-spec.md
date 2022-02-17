@@ -1,6 +1,6 @@
 # can get class from base constructor
 
-    Can't convert `mean` to a valid class. Could not find base class corresponding to supplied constructor function
+    Can't convert `mean` to a valid class. No matching base class.
 
 # as_class gives informative errors
 

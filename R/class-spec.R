@@ -27,11 +27,12 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   } else if (isS4(x)) {
     as_S4_class(x, error_base)
   } else if (is.function(x)) {
-    candidate <- Filter(function(y) identical(x, y), base_constructors)
-    if (length(candidate) == 0) {
-      stop(sprintf("%s. Could not find base class corresponding to supplied constructor function", error_base), call. = FALSE)
+    candidate <- find_base_name(x, names(base_classes))
+    if (is.na(candidate)) {
+      msg <- sprintf("%s. No matching base class.", error_base)
+      stop(msg, call. = FALSE)
     }
-    base_classes[[names(candidate)[[1]]]]
+    base_classes[[candidate]]
   } else if (is.character(x) && length(x) == 1) {
     if (x %in% names(base_classes)) {
       base_classes[[x]]

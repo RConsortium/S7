@@ -1,8 +1,4 @@
-new_base_class <- function(name) {
-  default <- switch(name,
-    "function" = function() {},
-    getExportedValue("base", name)()
-  )
+new_base_class <- function(name, default) {
   constructor <- function(.data) {
     if (missing(.data)) {
       .data <- default
@@ -41,11 +37,18 @@ str.R7_base_class <- function(object, ..., nest.lev = 0) {
   print(object)
 }
 
-# Define simple base types with constructors.
-base_types <- setNames(, c(
-  "logical", "integer", "double", "complex", "character", "raw",
-  "list", "expression",
-  "function", "environment"
-))
-base_classes <- lapply(base_types, new_base_class)
-base_constructors <- lapply(base_types, get)
+base_classes <- list(
+  logical = new_base_class("logical", logical()),
+  integer = new_base_class("integer", integer()),
+  double = new_base_class("double", double()),
+  complex = new_base_class("complex", complex()),
+  character = new_base_class("character", character()),
+  raw = new_base_class("raw", raw()),
+
+  list = new_base_class("list", list()),
+  expression = new_base_class("expression", expression()),
+
+  `function` = new_base_class("function", function() {}),
+  # TODO: create a new environment in the constructor
+  environment = new_base_class("environment", new.env(parent = emptyenv()))
+)

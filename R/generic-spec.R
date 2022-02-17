@@ -16,7 +16,7 @@ as_S3_generic <- function(x) {
   if (!is.null(use_method)) {
     return(S3_generic(x, as.character(use_method[[2]])))
   } else {
-    name <- find_generic_name(x)
+    name <- find_base_name(x)
     if (!is.na(name) && is_internal_generic(name)) {
       return(S3_generic(x, name))
     }
@@ -48,11 +48,12 @@ generic_n_dispatch <- function(x) {
 
 # Internal generics -------------------------------------------------------
 
-find_generic_name <- function(generic) {
+find_base_name <- function(f, candidates = NULL) {
   env <- baseenv()
-  for (nme in names(env)) {
-    if (identical(generic, env[[nme]])) {
-      return(nme)
+  candidates <- candidates %||% names(env)
+  for (name in candidates) {
+    if (identical(f, env[[name]])) {
+      return(name)
     }
   }
 
