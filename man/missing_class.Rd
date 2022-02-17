@@ -17,7 +17,7 @@ any_class
 }
 \description{
 \itemize{
-\item Use \code{missing_class} when you the user has not supplied an argument
+\item Use \code{missing_class} when the user has not supplied an argument
 \item Use \code{any_class} for a default method that is called only if no other
 methods are matched
 }
