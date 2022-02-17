@@ -32,7 +32,8 @@ Person <- new_class("Person",
       setter = function(object, value) {
         object@birthdate <- as.Date(value)
         object
-      }
+      },
+      default = as.Date(NA)
     ),
     new_property(
       name = "age",
@@ -48,10 +49,6 @@ Person <- new_class("Person",
     if (length(object@name) != length(object@birthdate)) {
       "@name and @birthdate must be the same length"
     }
-  },
-  constructor = function(name, birthdate = NA) {
-    birthdate <- as.Date(birthdate)
-    new_object(name = name, birthdate = birthdate)
   }
 )
 

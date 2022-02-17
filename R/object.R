@@ -2,7 +2,7 @@
 #'   object.
 #' @rdname new_class
 #' @export
-new_object <- function(.data = NULL, ...) {
+new_object <- function(.data, ...) {
   obj_cls <- sys.function(-1)
   if (!inherits(obj_cls, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
