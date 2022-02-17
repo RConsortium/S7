@@ -90,13 +90,7 @@ new_class <- function(
   check_name(name)
 
   parent <- as_class(parent)
-  if (!can_inherit(parent)) {
-     stop(
-       sprintf(
-         "`parent` must be an R7 class, S3 class, or base type, not %s.", class_friendly(parent)),
-       call. = FALSE
-     )
-  }
+  check_can_inherit(parent)
 
   # Combine properties from parent, overriding as needed
   all_props <- attr(parent, "properties", exact = TRUE) %||% list()
@@ -121,6 +115,17 @@ new_class <- function(
 }
 
 can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x) || is.null(x)
+
+check_can_inherit <- function(x, arg = deparse(substitute(x))) {
+  if (!can_inherit(x)) {
+    msg <- sprintf(
+      "`%s` must be an R7 class, S3 class, or base type, not %s.",
+      arg,
+      class_friendly(x)
+    )
+    stop(msg, call. = FALSE)
+  }
+}
 
 is_class <- function(x) inherits(x, "R7_class")
 

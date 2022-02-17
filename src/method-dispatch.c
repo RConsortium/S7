@@ -121,10 +121,17 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
     if (i < n_dispatch) {
       if (PRCODE(arg) != R_MissingArg) {
         // Evaluate the original promise so we can look up its class
-        SEXP val = Rf_eval(arg, R_EmptyEnv);
+        SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
+
         // And update the value of the promise to avoid evaluating it
-        // again in the method body
-        SET_PRVALUE(arg, val);
+        // again in the method body. If it's an upcast, we get the actual value
+        if (Rf_inherits(val, "R7_up_cast")) {
+          SEXP true_val = VECTOR_ELT(val, 0);
+          SET_PRVALUE(arg, true_val);
+        } else {
+          SET_PRVALUE(arg, val);
+        }
+        UNPROTECT(1);
 
         // Then add to arguments of method call
         SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));

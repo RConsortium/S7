@@ -171,6 +171,8 @@ class_inherits <- function(x, what) {
 obj_type <- function(x) {
   if (is.null(x)) {
     "NULL"
+  } else if (is_up_cast(x)) {
+    "up_cast"
   } else if (inherits(x, "R7_object")) {
     "R7"
   } else if (isS4(x)) {
@@ -184,6 +186,7 @@ obj_type <- function(x) {
 obj_desc <- function(x) {
   switch(obj_type(x),
    NULL = "NULL",
+   up_cast = class_type(x$class),
    base = paste0("<", typeof(x), ">"),
    S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
    S4 = paste0("S4<", class(x), ">"),
@@ -193,6 +196,7 @@ obj_desc <- function(x) {
 obj_dispatch <- function(x) {
   switch(obj_type(x),
     NULL = "NULL",
+    up_cast = class_dispatch(x$class),
     base = .class2(x),
     S3 = class(x),
     S4 = S4_strip_union(methods::is(x)),
