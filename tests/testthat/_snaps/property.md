@@ -45,6 +45,7 @@
       @ parent: <R7_object>
       @ properties:
        $ anything: <ANY>                 
+       $ null    : <NULL>                
        $ base    : <integer>             
        $ S3      : S3<factor>            
        $ S4      : S4<class_S4>          
@@ -53,6 +54,10 @@
 
 ---
 
+    Code
+      my_obj@null <- "x"
+    Error <simpleError>
+      <my_class>@null must be <NULL>, not <character>
     Code
       my_obj@base <- "x"
     Error <simpleError>

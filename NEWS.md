@@ -2,6 +2,9 @@
 
 ## Feb 2022
 
+* `any_class` and `missing_any` make it possible to dispatch on absent
+  arguments and arguments of any class (#67).
+
 * `new_external_generic()` now requires `dispatch_args` so we can eagerly 
   check the signature.
 
