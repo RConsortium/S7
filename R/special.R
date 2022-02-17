@@ -1,6 +1,6 @@
 #' Special dispatch types
 #'
-#' * Use `missing_class` when you the user has not supplied an argument
+#' * Use `missing_class` when the user has not supplied an argument
 #' * Use `any_class` for a default method that is called only if no other
 #'   methods are matched
 #'
