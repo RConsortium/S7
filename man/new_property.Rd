@@ -4,7 +4,7 @@
 \alias{new_property}
 \title{Define a new property}
 \usage{
-new_property(name, class = NULL, getter = NULL, setter = NULL)
+new_property(name, class = NULL, getter = NULL, setter = NULL, default = NULL)
 }
 \arguments{
 \item{name}{Property name, primarily used for error messages.}
@@ -19,6 +19,10 @@ property has a \code{class} the class of the value is validated.}
 \item{setter}{An optional function used to set the value. The function
 should take the object and new value as its two parameters and return the
 modified object. The value is \emph{not} automatically checked.}
+
+\item{default}{When an object is create and the property is not supplied,
+what should it default to? If \code{NULL}, defaults to the "empty" instance
+of \code{class}.}
 }
 \description{
 A property defines a named component of an object. Properties are

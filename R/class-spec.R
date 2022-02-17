@@ -79,6 +79,7 @@ class_friendly <- function(x) {
 class_constructor <- function(.x, ...) {
   switch(class_type(.x),
     NULL = function() NULL,
+    any = function() NULL,
     S4 = function(...) methods::new(.x, ...),
     R7 = .x,
     R7_base = .x$constructor,

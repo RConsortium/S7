@@ -24,7 +24,7 @@
     Error <simpleError>
       trying to get slot "blah" from an object of a basic class ("NULL") with no slots
 
-# new_property validates name
+# new_property(): validates name
 
     Code
       new_property(1)
@@ -35,25 +35,34 @@
     Error <simpleError>
       `name` must not be "" or NA
 
-# displays nicely
+# new_property(): validates default
+
+    Code
+      new_property("foo", class = "integer", default = "x")
+    Error <simpleError>
+      `default` must be an instance of <integer>, not a <character>
+
+# new_property(): displays nicely
 
     Code
       print(x)
     Output
       <R7_property> 
-      $ name  :  chr "foo"
-      $ class :  <R7_base_class>: <integer>
-      $ getter:  NULL
-      $ setter:  NULL
+      $ name   :  chr "foo"
+      $ class  :  <R7_base_class>: <integer>
+      $ getter :  NULL
+      $ setter :  NULL
+      $ default:  NULL
     Code
       str(list(x))
     Output
       List of 1
        $ : <R7_property> 
-        ..$ name  :  chr "foo"
-        ..$ class :  <R7_base_class>: <integer>
-        ..$ getter:  NULL
-        ..$ setter:  NULL
+        ..$ name   :  chr "foo"
+        ..$ class  :  <R7_base_class>: <integer>
+        ..$ getter :  NULL
+        ..$ setter :  NULL
+        ..$ default:  NULL
 
 # properties can be base, S3, S4, R7, or R7 union
 

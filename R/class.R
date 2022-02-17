@@ -105,6 +105,8 @@ new_class <- function(
 
   if (is.null(constructor)) {
     constructor <- new_constructor(parent, all_props)
+  } else {
+    # TODO: check constructor contains call to new_object
   }
 
   object <- constructor

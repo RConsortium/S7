@@ -18,6 +18,9 @@
 #' @param setter An optional function used to set the value. The function
 #'   should take the object and new value as its two parameters and return the
 #'   modified object. The value is _not_ automatically checked.
+#' @param default When an object is create and the property is not supplied,
+#'   what should it default to? If `NULL`, defaults to the "empty" instance
+#'   of `class`.
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
@@ -55,11 +58,17 @@
 #' hadley <- person(first_name = "Hadley")
 #' hadley@firstName
 #' hadley@first_name
-new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
+new_property <- function(name, class = NULL, getter = NULL, setter = NULL, default = NULL) {
   check_name(name)
 
   class <- as_class(class)
-  out <- list(name = name, class = class, getter = getter, setter = setter)
+  if (!is.null(default) && !class_inherits(default, class)) {
+    msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
+    stop(msg)
+  }
+
+  class <- as_class(class)
+  out <- list(name = name, class = class, getter = getter, setter = setter, default = default)
   class(out) <- "R7_property"
 
   out
@@ -86,6 +95,10 @@ print.R7_property <- function(x, ...) {
 str.R7_property <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object, ..., nest.lev = nest.lev)
+}
+
+prop_default <- function(prop) {
+  prop$default %||% class_construct(prop$class)
 }
 
 #' Get/set a property

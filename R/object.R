@@ -9,6 +9,7 @@ new_object <- function(.data = NULL, ...) {
   }
 
   args <- list(...)
+
   nms <- names(args)
   if (length(args) > 0 && (is.null(nms) || any(nms == ""))) {
     stop(
@@ -27,6 +28,11 @@ new_object <- function(.data = NULL, ...) {
       ),
       call. = FALSE
     )
+  }
+
+  missing_props <- nms[vlapply(args, is.null)]
+  for(prop in missing_props) {
+    args[[prop]] <- prop_default(obj_cls@properties[[prop]])
   }
 
   if (!is.null(.data)) {

@@ -9,21 +9,21 @@
     Code
       new_constructor(R7_object, as_properties(list(x = "numeric", y = "numeric")))
     Output
-      function (x, y) 
+      function (x = NULL, y = NULL) 
       new_object(NULL, x = x, y = y)
       <environment: namespace:R7>
     Code
       foo <- new_class("foo", parent = "character")
       new_constructor(foo, list())
     Output
-      function (.data) 
+      function (.data = NULL) 
       new_object(foo(.data = .data))
       <environment: 0x0>
     Code
       foo2 <- new_class("foo2", parent = foo)
       new_constructor(foo2, list())
     Output
-      function (.data) 
+      function (.data = NULL) 
       new_object(foo2(.data = .data))
       <environment: 0x0>
 
@@ -32,13 +32,14 @@
     Code
       new_constructor(S3_factor, list())
     Output
-      function (.data, levels) 
+      function (.data = integer(), levels = character()) 
       new_object(new_factor(.data = .data, levels = levels))
       <environment: 0x0>
     Code
       new_constructor(S3_factor, as_properties(list(x = "numeric", y = "numeric")))
     Output
-      function (.data, levels, x, y) 
+      function (.data = integer(), levels = character(), x = NULL, 
+          y = NULL) 
       new_object(new_factor(.data = .data, levels = levels), x = x, 
           y = y)
       <environment: 0x0>

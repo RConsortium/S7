@@ -124,7 +124,7 @@ is_S3_class <- function(x) {
 # Define a few base examples
 
 S3_factor <- new_S3_class("factor",
-  function(.data, levels) {
+  function(.data = integer(), levels = character()) {
     structure(.data, levels = levels, class = "factor")
   },
   function(object) {

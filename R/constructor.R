@@ -4,7 +4,7 @@ new_constructor <- function(parent, properties) {
 
   if (identical(parent, R7_object)) {
     return(new_function(
-      args = missing_args(arg_info$self),
+      args = null_args(arg_info$self),
       body = new_call("new_object", c(list(NULL), self_args)),
       env = asNamespace("R7")
     ))
@@ -13,16 +13,16 @@ new_constructor <- function(parent, properties) {
   if (is_class(parent)) {
     parent_name <- parent@name
     parent_fun <- parent
-    args <- missing_args(union(arg_info$parent, arg_info$self))
+    args <- null_args(union(arg_info$parent, arg_info$self))
   } else if (is_base_class(parent)) {
     parent_name <- parent$class
     parent_fun <- parent$constructor
-    args <- missing_args(union(arg_info$parent, arg_info$self))
+    args <- null_args(union(arg_info$parent, arg_info$self))
   } else if (is_S3_class(parent)) {
     parent_name <- paste0("new_", parent$class[[1]])
     parent_fun <- parent$constructor
     args <- formals(parent$constructor)
-    args[arg_info$self] <- missing_args(arg_info$self)
+    args[arg_info$self] <- null_args(arg_info$self)
   } else {
     # user facing error in R7_class()
     stop("Unsupported `parent` type", call. = FALSE)
@@ -70,6 +70,11 @@ new_function <- function(args, body, env) {
 missing_args <- function(names) {
   lapply(setNames(, names), function(i) quote(expr = ))
 }
+null_args <- function(names) {
+  lapply(setNames(, names), function(i) NULL)
+}
+
+
 new_call <- function(call, args) {
   as.call(c(list(as.name(call)), args))
 }

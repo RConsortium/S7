@@ -16,6 +16,7 @@ new_base_class <- function(name, default) {
   structure(
     list(
       class = name,
+      default = default,
       constructor = constructor,
       validator = validator
     ),
