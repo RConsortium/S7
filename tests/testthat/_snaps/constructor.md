@@ -16,14 +16,14 @@
       foo <- new_class("foo", parent = "character")
       new_constructor(foo, list())
     Output
-      function (.data = NULL) 
+      function (.data = missing_class) 
       new_object(foo(.data = .data))
       <environment: 0x0>
     Code
       foo2 <- new_class("foo2", parent = foo)
       new_constructor(foo2, list())
     Output
-      function (.data = NULL) 
+      function (.data = missing_class) 
       new_object(foo2(.data = .data))
       <environment: 0x0>
 

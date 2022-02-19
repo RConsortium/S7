@@ -14,7 +14,6 @@ new_constructor <- function(parent, properties) {
     parent_name <- parent@name
     parent_fun <- parent
     args <- missing_args(union(arg_info$parent, arg_info$self))
-    args[".data"] <- list(NULL)
   } else if (is_base_class(parent)) {
     parent_name <- parent$class
     parent_fun <- parent$constructor
