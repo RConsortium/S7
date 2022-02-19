@@ -9,7 +9,7 @@
     Code
       new_constructor(R7_object, as_properties(list(x = "numeric", y = "numeric")))
     Output
-      function (x = NULL, y = NULL) 
+      function (x = missing_class, y = missing_class) 
       new_object(NULL, x = x, y = y)
       <environment: namespace:R7>
     Code
@@ -38,8 +38,8 @@
     Code
       new_constructor(S3_factor, as_properties(list(x = "numeric", y = "numeric")))
     Output
-      function (.data = integer(), levels = character(), x = NULL, 
-          y = NULL) 
+      function (.data = integer(), levels = character(), x = missing_class, 
+          y = missing_class) 
       new_object(new_factor(.data = .data, levels = levels), x = x, 
           y = y)
       <environment: 0x0>

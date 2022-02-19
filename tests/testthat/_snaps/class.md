@@ -44,7 +44,7 @@
        ..  ..$ getter :  function (x)  
        ..  ..$ setter :  function (x, value)  
        ..  ..$ default:  NULL
-      @ constructor:  function (start = NULL, end = NULL)  
+      @ constructor:  function (start = missing_class, end = missing_class)  
       @ validator  :  function (x)  
 
 # R7_class: str() summarises when nested

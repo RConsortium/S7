@@ -29,7 +29,7 @@ new_object <- function(.data, ...) {
     )
   }
 
-  missing_props <- nms[vlapply(args, is.null)]
+  missing_props <- nms[vlapply(args, is_missing_class)]
   for(prop in missing_props) {
     args[[prop]] <- prop_default(obj_cls@properties[[prop]])
   }
