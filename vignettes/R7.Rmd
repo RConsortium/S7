@@ -100,15 +100,13 @@ method(bar, list("character", "double")) <- function(x, y) paste0("foo-", x, ":"
 bar("hi", 42)
 ```
 
-## Calling the next method
+## Calling the method for a parent class
 
-`next_method()` is used to call the next method for the arguments.
-This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
-This ensures you cannot call the same method twice.
+Sometimes you want to implement a method in terms of behaviour of the superclass. You can use `up_cast()` to dispatch to a method from parent class:
 
 ```{r}
 method(bar, list(text, "double")) <- function(x, y, ...) {
-  res <- next_method()(x, y)
+  res <- bar(up_cast(x, "character"), y)
   paste0("2 ", res)
 }
 

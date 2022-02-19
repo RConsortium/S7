@@ -1,3 +1,4 @@
+#' @export
 up_cast <- function(object, class) {
   check_R7(object)
 

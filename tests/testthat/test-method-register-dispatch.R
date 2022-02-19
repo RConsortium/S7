@@ -122,37 +122,3 @@ test_that("method lookup fails with informative messages", {
   expect_snapshot_error(foo(TRUE, list()))
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
 })
-
-test_that("next_method works for single dispatch", {
-  foo <- new_generic("foo", "x")
-
-  method(foo, text) <- function(x, ...) {
-    R7_data(x) <- paste0("foo-", R7_data(x))
-  }
-  method(foo, "character") <- function(x, ...) {
-    as.character(x)
-  }
-
-  expect_equal(foo(text("hi")), "foo-hi")
-})
-
-test_that("next_method works for double dispatch", {
-  foo <- new_generic("foo", c("x", "y"))
-
-  method(foo, list(text, number)) <- function(x, y, ...) {
-    R7_data(x) <- paste0("foo-", R7_data(x), "-", R7_data(y))
-    next_method()(x, y)
-  }
-
-  method(foo, list(character, number)) <- function(x, y, ...) {
-    R7_data(y) <- y + 1
-    R7_data(x) <- paste0(R7_data(x), "-", R7_data(y))
-    next_method()(x, y)
-  }
-
-  method(foo, list(character, double)) <- function(x, y, ...) {
-    as.character(R7_data(x))
-  }
-
-  expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
-})
