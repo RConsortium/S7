@@ -71,6 +71,13 @@ describe("default constructor", {
     obj <- text1()
     expect_equal(R7_data(obj), character())
   })
+
+  it("initializes property with R7 object", {
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2", properties = list(x = foo1))
+    x <- foo2()
+    expect_s3_class(x@x, "foo1")
+  })
 })
 
 test_that("default constructor works", {
