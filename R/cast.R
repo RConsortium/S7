@@ -15,8 +15,8 @@ up_cast <- function(object, class) {
       object = object,
       dispatch = class_register(class)
     ),
-    class = "R7_upclass"
+    class = "R7_up_class"
   )
 }
 
-is_up_cast <- function(x) inherits(x, "R7_upclass")
+is_up_cast <- function(x) inherits(x, "R7_up_class")
