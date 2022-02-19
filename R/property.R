@@ -70,8 +70,13 @@ new_property <- function(name, class = any_class, getter = NULL, setter = NULL, 
     stop(msg)
   }
 
-  class <- as_class(class)
-  out <- list(name = name, class = class, getter = getter, setter = setter, default = default)
+  out <- list(
+    name = name,
+    class = class,
+    getter = getter,
+    setter = setter,
+    default = default
+  )
   class(out) <- "R7_property"
 
   out
