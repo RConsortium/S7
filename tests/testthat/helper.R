@@ -63,3 +63,20 @@ quick_test_enable <- function() {
 scrub_environment <- function(x) {
   gsub("environment: 0x[0-9a-f]+", "environment: 0x0", x)
 }
+
+
+expect_r7_class <- function(object, class) {
+  class <- as_class(class)
+  act <- testthat::quasi_label(rlang::enquo(object), arg = "object")
+
+  if (!inherits(act$val, "R7_object")) {
+    fail(sprintf("%s is a %s, not an R7 object", obj_desc(act$val), act$lab))
+  } else {
+    expect(
+      class_inherits(act$val, class),
+      sprintf("%s is a %s not a %s.", act$lab, obj_desc(act$val), class_desc(class))
+    )
+  }
+
+  invisible(act$val)
+}
