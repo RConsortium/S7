@@ -2,14 +2,14 @@
 % Please edit documentation in R/cast.R
 \name{up_cast}
 \alias{up_cast}
-\title{Force method dispatch to use a superclass}
+\title{Force R7 method dispatch to use a superclass}
 \usage{
-up_cast(object, class = NULL)
+up_cast(from, to = NULL)
 }
 \arguments{
-\item{object}{An R7 object}
+\item{from}{An R7 object to cast.}
 
-\item{class}{An R7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
+\item{to}{An R7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
 superclass of \code{object}. If not specified, defaults to the parent of
 \code{object}.}
 }
@@ -18,11 +18,16 @@ An \code{R7_up_class} object which should always be passed
 immediately to a generic. It has no other special behavior.
 }
 \description{
-When implementing a method, it's often useful to borrow some of the
-implementation from the method for a superclass. \code{up_cast()} lets you
-re-call a generic, forcing method dispatch to use the method for a parent,
-without modifying (and hence making a copy) of the object that you're
-working with.
+\code{up_cast()} is a variant of \code{cast()} that avoids creating a copy of \code{from}
+when you want to re-call a generic, forcing method dispatch to find an
+implementation for a superclass.
+
+\code{cast()} must create a copy because it changes the class attribute of \code{from}.
+In most cases this copy will be cheap, because the properties will be copied
+by reference (and only duplicated on modification). It might be expensive,
+however, if the underlying data is a large vector or if you have a very
+large number of properties. \code{up_cast()} avoids the copy, but only works
+for method dispatch.
 }
 \section{Compared to S3 and S4}{
 \code{up_cast()} performs a similar role to \code{\link[=NextMethod]{NextMethod()}} in S3 or

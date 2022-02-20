@@ -10,7 +10,7 @@ extern SEXP object_class_(SEXP, SEXP);
 extern SEXP R7_object_();
 
 static const R_CallMethodDef CallEntries[] = {
-    {"method_", (DL_FUNC) &method_, 2},
+    {"method_", (DL_FUNC) &method_, 3},
     {"method_call_", (DL_FUNC) &method_call_, 3},
     {"R7_object_", (DL_FUNC) &R7_object_, 0},
     {NULL, NULL, 0}

@@ -42,7 +42,7 @@ void R7_method_lookup_error(SEXP generic, SEXP signature) {
   while(1);
 }
 
-SEXP method_(SEXP generic, SEXP signature) {
+SEXP method_(SEXP generic, SEXP signature, SEXP error_) {
   if (!Rf_inherits(generic, "R7_generic")) {
     return R_NilValue;
   }
@@ -52,8 +52,10 @@ SEXP method_(SEXP generic, SEXP signature) {
     Rf_error("Corrupt R7_generic: @methods isn't an environment");
   }
 
+  int error = Rf_asInteger(error_);
+
   SEXP m = method_rec(table, signature, 0);
-  if (m == R_NilValue) {
+  if (m == R_NilValue && error) {
     R7_method_lookup_error(generic, signature);
   }
 
@@ -148,7 +150,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes);
+  SEXP m = method_(generic, dispatch_classes, Rf_ScalarLogical(1));
   SETCAR(mcall, m);
 
   // And then call it

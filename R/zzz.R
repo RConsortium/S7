@@ -57,6 +57,8 @@ R7_method <- new_class("R7_method",
 }
 
 .onLoad <- function(...) {
+  cast <<- R7_generic("cast", c("from", "to"), cast)
+
   base_unions$numeric <<- new_union("integer", "double")
   base_unions$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
   base_unions$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")

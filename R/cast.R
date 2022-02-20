@@ -1,11 +1,58 @@
-#' Force method dispatch to use a superclass
+#' Cast an object from one type to another
 #'
 #' @description
-#' When implementing a method, it's often useful to borrow some of the
-#' implementation from the method for a superclass. `up_cast()` lets you
-#' re-call a generic, forcing method dispatch to use the method for a parent,
-#' without modifying (and hence making a copy) of the object that you're
-#' working with.
+#' `cast()` is a non-standard generic: it dispatch on the terminal class of
+#' `from` and `to` (and unlike normal dispatch, `to` is a class, not an object).
+#'
+#' `cast()` provides an automatic fallback if `from` inherits from `to`. You
+#' can override this if you need some special behavior other than simply
+#' stripping class.
+#'
+#' @param from An R7 object to cast.
+#' @param to An R7 class specification, passed to [as_class()].
+#' @param ... Other arguments passed to custom `cast()` methods.
+#' @export
+cast <- function(from, to, ...) {
+  to <- as_class(to)
+  check_can_inherit(to)
+
+  dispatch <- list(obj_dispatch(from)[[1]], class_register(to))
+  cast <- .Call(method_, cast, dispatch, FALSE)
+
+  if (!is.null(cast)) {
+    cast(from, to, ...)
+  } else if (class_inherits(from, to)) {
+    if (is_base_class(to)) {
+      R7_data(from)
+    } else if (is_class(to)) {
+      attr(from, "object_class") <- to
+      class(from) <- class_dispatch(to)
+      from
+    } else if (is_S3_class(to)) {
+      class(from) <- to$class
+      from
+    } else {
+      stop("Unreachable")
+    }
+  } else {
+    method_lookup_error("cast", c("from", "to"), dispatch)
+  }
+}
+# Converted to R7_generic on .onLoad
+
+#' Force R7 method dispatch to use a superclass
+#'
+#' @description
+#' `up_cast()` is a variant of `cast()` that avoids creating a copy of `from`
+#' when you want to re-call a generic, forcing method dispatch to find an
+#' implementation for a superclass.
+#'
+#' `cast()` must create a copy because it changes the class attribute of `from`.
+#' In most cases this copy will be cheap, because the properties will be copied
+#' by reference (and only duplicated on modification). It might be expensive,
+#' however, if the underlying data is a large vector or if you have a very
+#' large number of properties. `up_cast()` avoids the copy, but only works
+#' for method dispatch.
 #'
 #' # Compared to S3 and S4
 #' `up_cast()` performs a similar role to [NextMethod()] in S3 or
@@ -19,8 +66,8 @@
 #' about. It also avoids some of the dynamism of `nextMethod()`: registering
 #' methods for a parent class can not method dispatch for a child class.
 #'
-#' @param object An R7 object
-#' @param class An R7 class specification, passed to [as_class()]. Must be a
+#' @param from An R7 object to cast.
+#' @param to An R7 class specification, passed to [as_class()]. Must be a
 #'   superclass of `object`. If not specified, defaults to the parent of
 #'   `object`.
 #' @returns An `R7_up_class` object which should always be passed
@@ -40,19 +87,19 @@
 #' method(total, foo2) <- function(x) total(up_cast(x)) + x@z
 #'
 #' total(foo2(1, 2, 3))
-up_cast <- function(object, class = NULL) {
-  check_R7(object)
+up_cast <- function(from, to = NULL) {
+  check_R7(from)
 
-  if (is.null(class)) {
-    class <- object_class(object)@parent
-    if (is.null(class)) {
+  if (is.null(to)) {
+    to <- object_class(from)@parent
+    if (is.null(to)) {
       stop("R7_object has no parent class")
     }
   } else {
-    class <- as_class(class)
-    check_can_inherit(class)
-    if (!class_inherits(object, class)) {
-      msg <- sprintf("`object` %s does not inherit from %s", obj_desc(object), class_desc(class))
+    to <- as_class(to)
+    check_can_inherit(to)
+    if (!class_inherits(from, to)) {
+      msg <- sprintf("`object` %s does not inherit from %s", obj_desc(from), class_desc(to))
       stop(msg)
     }
   }
@@ -60,8 +107,8 @@ up_cast <- function(object, class = NULL) {
   # Must not change order of these fields as C code indexes by position
   structure(
     list(
-      object = object,
-      dispatch = class_register(class)
+      object = from,
+      dispatch = class_register(to)
     ),
     class = "R7_up_class"
   )
