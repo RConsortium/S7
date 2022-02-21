@@ -114,16 +114,26 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
     if (i < n_dispatch) {
       if (PRCODE(arg) != R_MissingArg) {
         // Evaluate the original promise so we can look up its class
-        SEXP val = Rf_eval(arg, R_EmptyEnv);
-        // And update the value of the promise to avoid evaluating it
-        // again in the method body
-        SET_PRVALUE(arg, val);
+        SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
-        // Then add to arguments of method call
-        SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+        if (!Rf_inherits(val, "R7_cast_next")) {
+          // Update the value of the promise to avoid evaluating it
+          // again in the method body
+          SET_PRVALUE(arg, val);
 
-        // Determine class string to use for method look up
-        SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
+          // Then add to arguments of method call
+          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+
+          // Determine class string to use for method look up
+          SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
+        } else {
+          // If it's transient cast, we get the stored value and dispatch class
+          SEXP true_val = VECTOR_ELT(val, 0);
+          SET_PRVALUE(arg, true_val);
+          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+          SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
+        }
+        UNPROTECT(1);
       } else {
         SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
@@ -140,7 +150,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes, R_NilValue);
+  SEXP m = method_(generic, dispatch_classes, Rf_ScalarLogical(1));
   SETCAR(mcall, m);
 
   // And then call it

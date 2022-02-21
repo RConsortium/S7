@@ -2,6 +2,8 @@
 
 ## Feb 2022
 
+* `cast()` and `cast_next()` for persistent and transient casts (#110, #136).
+
 * When creating a class, unspecified properties are initialized with their 
   default value (#67). DISCUSS: to achieve this, the constructor arguments
   default to `missing_class`.
