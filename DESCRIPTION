@@ -1,5 +1,5 @@
 Package: R7
-Title: S3 Extended with S4 Features
+Title: A New OO System for R
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Henrik",
