@@ -85,7 +85,7 @@ new_generic <- function(name, dispatch_args = NULL, fun = NULL) {
     }
   }
 
-  R7_generic(name = name, dispatch_args = dispatch_args, fun = fun)
+  R7_generic(fun, name = name, dispatch_args = dispatch_args)
 }
 
 guess_dispatch_args <- function(fun) {

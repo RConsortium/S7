@@ -29,15 +29,7 @@ R7_generic <- new_class(
     methods = "environment",
     dispatch_args = "character"
   ),
-  parent = "function",
-  constructor = function(name, dispatch_args, fun) {
-    new_object(
-      name = name,
-      dispatch_args = dispatch_args,
-      methods = new.env(parent = emptyenv(), hash = TRUE),
-      .data = fun
-    )
-  }
+  parent = "function"
 )
 is_generic <- function(x) inherits(x, "R7_generic")
 
