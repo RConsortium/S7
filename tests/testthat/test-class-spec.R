@@ -17,6 +17,8 @@ test_that("can work with R7 classes", {
 })
 
 test_that("can work with unions", {
+  text <- new_class("text", character)
+  number <- new_class("number", double)
   klass <- new_union(text, number)
   expect_equal(as_class(klass), klass)
 

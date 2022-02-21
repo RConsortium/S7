@@ -72,9 +72,9 @@
 # R7_method printing
 
     Code
-      method(foo, list(text, "integer"))
+      method(foo, list(integer, integer))
     Output
-      <R7_method> method(foo, list(text, "integer"))
+      <R7_method> method(foo, list("integer", "integer"))
       function (x, y, ...) 
       paste0("bar:", x, y)
       <environment: 0x0>

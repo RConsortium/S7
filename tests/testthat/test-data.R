@@ -1,4 +1,5 @@
 describe("R7_data", {
+  text <- new_class("text", parent = "character")
   it("retrieves .data", {
     x <- text("hi")
     expect_equal(R7_data(x), "hi")

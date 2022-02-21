@@ -69,10 +69,6 @@ describe("new_object()", {
       foo(-1)
     })
   })
-
-  it("checks new objects for validity", {
-    expect_error(range(start = 10, end = 1), "`end` must be greater than or equal to `start`")
-  })
 })
 
 describe("R7 object", {

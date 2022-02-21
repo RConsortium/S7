@@ -44,6 +44,8 @@ test_that("check_dispatch_args() produces informative errors", {
 
 test_that("R7_generic printing", {
   foo1 <- new_generic("foo1", "x")
+  text <- new_class("text")
+
   method(foo1, "character") <- function(x) 1
   method(foo1, text) <- function(x) 2
 

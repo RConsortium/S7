@@ -1,6 +1,3 @@
-text <- new_class("text", parent = "character")
-number <- new_class("number", parent = "double")
-
 range <- new_class("range",
   validator = function(x) {
     if (x@end < x@start) {
