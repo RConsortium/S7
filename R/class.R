@@ -178,11 +178,11 @@ is_class <- function(x) inherits(x, "R7_class")
 
 # Object ------------------------------------------------------------------
 
-#' @param .data,... Parent object and named properties used to construct the
+#' @param .parent,... Parent object and named properties used to construct the
 #'   object.
 #' @rdname new_class
 #' @export
-new_object <- function(.data, ...) {
+new_object <- function(.parent, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
@@ -196,12 +196,7 @@ new_object <- function(.data, ...) {
     args[[prop]] <- prop_default(class@properties[[prop]])
   }
 
-  if (!is.null(.data)) {
-    object <- .data
-  } else {
-    object <- class_construct(class@parent)
-  }
-
+  object <- .parent %||% class_construct(class@parent)
   attr(object, "object_class") <- class
   class(object) <- setdiff(class_dispatch(class), "ANY")
 

@@ -13,7 +13,7 @@ new_class(
   validator = NULL
 )
 
-new_object(.data, ...)
+new_object(.parent, ...)
 }
 \arguments{
 \item{name}{The name of the class, as a string.}
@@ -55,7 +55,7 @@ as possible.
 
 See \code{validate()} for more details and examples.}
 
-\item{.data, ...}{Parent object and named properties used to construct the
+\item{.parent, ...}{Parent object and named properties used to construct the
 object.}
 }
 \value{
