@@ -31,10 +31,11 @@ every object of the class will possess. Each property can either be
 a named string (specifying the class), or a call to \code{\link[=new_property]{new_property()}},
 allowing greater flexibility.}
 
-\item{constructor}{The constructor function. This is optional, unless
-you want to control which properties can be set on constructor.
+\item{constructor}{The constructor function. Advanced use only.
 
-A custom constructor should always conclude by calling \code{new_object()}}
+A custom constructor should call \code{new_object()} to create the R7 object.
+The first argument, \code{.data}, should an instance of the parent class. The
+subsequent arguments are used to set the properties.}
 
 \item{validator}{A function taking a single argument, the object to validate.
 

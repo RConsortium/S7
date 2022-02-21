@@ -81,7 +81,7 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     stop("`class` must be a character vector", call. = FALSE)
   }
   if (!is.null(constructor)) {
-    check_constructor(constructor)
+    check_S3_constructor(constructor)
   } else {
     constructor <- function(.data) {
       stop(sprintf("S3 class <%s> doesn't have a constructor", class[[1]]), call. = FALSE)
@@ -110,7 +110,7 @@ str.R7_S3_class <- function(object, ..., nest.lev = 0) {
   print(object, ..., nest.lev = nest.lev)
 }
 
-check_constructor <- function(constructor) {
+check_S3_constructor <- function(constructor) {
   arg_names <- names(formals(constructor))
   if (arg_names[[1]] != ".data") {
     stop("First argument to `constructor` must be .data", call. = FALSE)

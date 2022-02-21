@@ -46,6 +46,14 @@
       new_class("foo", 1)
     Error <simpleError>
       Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Code
+      new_class("foo", constructor = 1)
+    Error <simpleError>
+      `constructor` must be a function
+    Code
+      new_class("foo", constructor = function() { })
+    Error <simpleError>
+      `constructor` must contain a call to `new_object()`
 
 # R7 classes: can't inherit from S4 or class unions
 

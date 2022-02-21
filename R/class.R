@@ -12,10 +12,11 @@
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like `logical`, `double`, or `character`.
 #'
-#' @param constructor The constructor function. This is optional, unless
-#'   you want to control which properties can be set on constructor.
+#' @param constructor The constructor function. Advanced use only.
 #'
-#'   A custom constructor should always conclude by calling `new_object()`
+#'   A custom constructor should call `new_object()` to create the R7 object.
+#'   The first argument, `.data`, should an instance of the parent class. The
+#'   subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, the object to validate.
 #'
 #'   The job of a validator is to determine whether the object is valid,
@@ -97,6 +98,10 @@ new_class <- function(
      )
   }
 
+  if (!is.null(constructor) && !is.null(parent)) {
+    check_R7_constructor(constructor)
+  }
+
   # Combine properties from parent, overriding as needed
   all_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
@@ -119,6 +124,16 @@ new_class <- function(
   object
 }
 
+check_R7_constructor <- function(constructor) {
+  if (!is.function(constructor)) {
+    stop("`constructor` must be a function", call. = FALSE)
+  }
+
+  method_call <- find_call(body(constructor), quote(new_object))
+  if (is.null(method_call)) {
+    stop("`constructor` must contain a call to `new_object()`", call. = FALSE)
+  }
+}
 
 #' @export
 print.R7_class <- function(x, ...) {
@@ -164,45 +179,27 @@ is_class <- function(x) inherits(x, "R7_class")
 #' @rdname new_class
 #' @export
 new_object <- function(.data, ...) {
-  obj_cls <- sys.function(-1)
-  if (!inherits(obj_cls, "R7_class")) {
+  class <- sys.function(-1)
+  if (!inherits(class, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
   }
 
   args <- list(...)
   nms <- names(args)
-  if (length(args) > 0 && (is.null(nms) || any(nms == ""))) {
-    stop(
-      sprintf("All arguments to <%s> constructor must be named", obj_cls@name),
-      call. = FALSE
-    )
-  }
-
-  bad_names <- setdiff(nms, names(obj_cls@properties))
-  if (length(bad_names) > 0) {
-    stop(
-      sprintf(
-        "All arguments to <%s> constructor must be properties: %s",
-        obj_cls@name,
-        paste0(bad_names, collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  }
 
   missing_props <- nms[vlapply(args, is_missing_class)]
   for(prop in missing_props) {
-    args[[prop]] <- prop_default(obj_cls@properties[[prop]])
+    args[[prop]] <- prop_default(class@properties[[prop]])
   }
 
   if (!is.null(.data)) {
     object <- .data
   } else {
-    object <- class_construct(obj_cls@parent)
+    object <- class_construct(class@parent)
   }
 
-  attr(object, "object_class") <- obj_cls
-  class(object) <- setdiff(class_dispatch(obj_cls), "ANY")
+  attr(object, "object_class") <- class
+  class(object) <- setdiff(class_dispatch(class), "ANY")
 
   for (nme in nms) {
     prop(object, nme, check = FALSE) <- args[[nme]]

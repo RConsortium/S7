@@ -27,6 +27,9 @@ describe("R7 classes", {
     expect_snapshot(error = TRUE, {
       new_class(1)
       new_class("foo", 1)
+
+      new_class("foo", constructor = 1)
+      new_class("foo", constructor = function() {})
     })
   })
 
