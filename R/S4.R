@@ -1,3 +1,19 @@
+#' Register an R7 class with S4
+#'
+#' If you want to use [method<-] to register an method for an S4 generic with
+#' an R7 class, you need to call `S4_register()` once.
+#'
+#' @param class An R7 class created with [new_class()].
+#' @param env Expert use only. Environment where S4 class will be registered.
+#' @export
+S4_register <- function(class, env = parent.frame()) {
+  if (!is_class(class)) {
+    msg <- sprintf("`class` must be an R7 class, not a %s", obj_desc(class))
+  }
+
+  methods::setOldClass(class_dispatch(class), where = topenv(env))
+}
+
 is_S4_class <- function(x) inherits(x, "classRepresentation")
 
 S4_to_R7_class <- function(x, error_base = "") {

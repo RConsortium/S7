@@ -27,6 +27,7 @@ reference:
   - new_S3_class
   - missing_class
   - object_class
+  - S4_register
 
 articles:
 - title: Learn R7
