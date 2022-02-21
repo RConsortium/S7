@@ -164,12 +164,13 @@ S3_data.frame <- new_S3_class("data.frame",
       out
     }
   },
-  function(object) {
+  function(self) {
+    rn <- attr(self, "row.names")
     c(
-      if (!is.list(.data))
+      if (!is.list(self))
         "Underlying data must be a <list>",
-      if (!is.character(row.names) || !is.integer(row.names) || !is.null(row.names))
-        "attr(, 'rownames') must be a character vector, integer vector, or NULL"
+      if (!is.character(rn) && !is.integer(rn))
+        "attr(, 'rownames') must be a character or integer vector"
     )
   }
 )

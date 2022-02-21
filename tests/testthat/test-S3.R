@@ -35,3 +35,9 @@ test_that("default new_S3_class constructor errors", {
   # constructor errors if needed
   expect_snapshot(class_construct(new_S3_class("foo"), 1), error = TRUE)
 })
+
+test_that("can construct data frame subclass", {
+  dataframe2 <- new_class("dataframe2", S3_data.frame)
+  df <- dataframe2(list(x = 1:3))
+  expect_s3_class(df, "data.frame")
+})
