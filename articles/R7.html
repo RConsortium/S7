@@ -93,11 +93,8 @@
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"range"</span>,
-  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">start</span>, <span class="va">end</span><span class="op">)</span> <span class="op">{</span>
-    <span class="fu"><a href="../reference/new_class.html">new_object</a></span><span class="op">(</span>start <span class="op">=</span> <span class="va">start</span>, end <span class="op">=</span> <span class="va">end</span><span class="op">)</span>
-  <span class="op">}</span>,
-  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="kw">if</span> <span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span>
+  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span>
+    <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span>
       <span class="st">"&lt;range&gt;@end must be greater than or equal to &lt;range&gt;@start"</span>
     <span class="op">}</span>
   <span class="op">}</span>,
@@ -107,57 +104,65 @@
     <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
       name <span class="op">=</span> <span class="st">"length"</span>,
       class <span class="op">=</span> <span class="st">"numeric"</span>,
-      getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">-</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span>,
-      setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span>
-        <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">+</span> <span class="va">value</span>
-        <span class="va">x</span>
+      getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">-</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span>,
+      setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span>
+        <span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span> <span class="op">+</span> <span class="va">value</span>
+        <span class="va">self</span>
       <span class="op">}</span>
     <span class="op">)</span>
   <span class="op">)</span>
 <span class="op">)</span>
 
 <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">1</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
-<span class="co">#&gt; Error in new_object(start = start, end = end): argument ".data" is missing, with no default</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">start</span>
-<span class="co">#&gt; Error in x@start: object 'x' not found</span>
+<span class="co">#&gt; [1] 1</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">end</span>
-<span class="co">#&gt; Error in x@end: object 'x' not found</span>
+<span class="co">#&gt; [1] 10</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">length</span>
-<span class="co">#&gt; Error in x@length: object 'x' not found</span>
+<span class="co">#&gt; [1] 9</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">length</span> <span class="op">&lt;-</span> <span class="fl">5</span>
-<span class="co">#&gt; Error in x@length &lt;- 5: object 'x' not found</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">length</span>
-<span class="co">#&gt; Error in x@length: object 'x' not found</span>
-
-<span class="co"># incorrect properties throws an error</span>
+<span class="co">#&gt; [1] 5</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># incorrect properties throws an error</span>
 <span class="va">x</span><span class="op">@</span><span class="va">middle</span>
-<span class="co">#&gt; Error in x@middle: object 'x' not found</span>
+<span class="co">#&gt; Error in prop(object, name): Can't find property &lt;range&gt;@middle</span>
 
 <span class="co"># assigning properties verifies the class matches the class of the value</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="st">"foo"</span>
-<span class="co">#&gt; Error in x@end &lt;- "foo": object 'x' not found</span>
+<span class="co">#&gt; Error: &lt;range&gt;@end must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
 
 <span class="co"># assigning properties runs the validator</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">0</span>
-<span class="co">#&gt; Error in x@end &lt;- 0: object 'x' not found</span>
-
-<span class="co"># Print methods for both R7_class objects</span>
-<span class="fu"><a href="../reference/object_class.html">object_class</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="co">#&gt; Error in object_class(x): object 'x' not found</span>
+<span class="co">#&gt; Error: &lt;range&gt; object is invalid:</span>
+<span class="co">#&gt; - &lt;range&gt;@end must be greater than or equal to &lt;range&gt;@start</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># Print methods for both R7_class objects</span>
+<span class="va">range</span>
+<span class="co">#&gt; &lt;R7_class&gt;</span>
+<span class="co">#&gt; @ name  :  range</span>
+<span class="co">#&gt; @ parent: &lt;R7_object&gt;</span>
+<span class="co">#&gt; @ properties:</span>
+<span class="co">#&gt;  $ start : &lt;integer&gt; or &lt;double&gt;</span>
+<span class="co">#&gt;  $ end   : &lt;integer&gt; or &lt;double&gt;</span>
+<span class="co">#&gt;  $ length: &lt;integer&gt; or &lt;double&gt;</span>
 
 <span class="co"># As well as normal R7_objects</span>
 <span class="va">x</span>
-<span class="co">#&gt; Error in eval(expr, envir, enclos): object 'x' not found</span></code></pre></div>
+<span class="co">#&gt; &lt;range&gt;</span>
+<span class="co">#&gt; @ start :  num 1</span>
+<span class="co">#&gt; @ end   :  num 6</span>
+<span class="co">#&gt; @ length:  num 5</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="generics-and-methods">Generics and methods<a class="anchor" aria-label="anchor" href="#generics-and-methods"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"text"</span>, parent <span class="op">=</span> <span class="st">"character"</span><span class="op">)</span>
 <span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"foo"</span>, <span class="st">"x"</span><span class="op">)</span>
 <span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">foo</span>, <span class="va">text</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"foo-"</span>, <span class="va">x</span><span class="op">)</span>
@@ -171,7 +176,7 @@
 <p>Multiple dispatch uses a table stored in the <code>methods</code> property of the generic. This table is a nested set of hashed environments based on the classes of the methods. e.g.</p>
 <p>For <code>method(foo, c("character", "numeric"))</code> the method would be stored at <code>foo@methods[["character"]][["numeric"]]</code>.</p>
 <p>At each level the search iteratively searches along objects class vector.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">bar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">bar</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="st">"double"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"foo-"</span>, <span class="va">x</span>, <span class="st">":"</span>, <span class="va">y</span><span class="op">)</span>
 
@@ -182,7 +187,7 @@
 <h2 id="calling-the-next-method">Calling the next method<a class="anchor" aria-label="anchor" href="#calling-the-next-method"></a>
 </h2>
 <p><code><a href="../reference/next_method.html">next_method()</a></code> is used to call the next method for the arguments. This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded. This ensures you cannot call the same method twice.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">bar</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">text</span>, <span class="st">"double"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span>
   <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/next_method.html">next_method</a></span><span class="op">(</span><span class="op">)</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span>
   <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"2 "</span>, <span class="va">res</span><span class="op">)</span>
@@ -195,7 +200,7 @@
 <h2 id="non-standard-evaluation">Non-standard evaluation<a class="anchor" aria-label="anchor" href="#non-standard-evaluation"></a>
 </h2>
 <p><code><a href="../reference/new_generic.html">method_call()</a></code> retains promises for dispatch arguments in basically the same way as <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>, so non-standard evaluation works basically the same as S3.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">subset2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"subset2"</span>, <span class="st">"x"</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">subset2</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">subset</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">select</span> <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
@@ -223,7 +228,7 @@
 <h3 id="external-generics">External generics<a class="anchor" aria-label="anchor" href="#external-generics"></a>
 </h3>
 <p>If you want to define methods for R7 generics defined in another package you can use <code>new_extrenal_generic</code> to declare the external generic, then add <code><a href="../reference/new_external_generic.html">R7::external_methods_register()</a></code> to the <code>.onLoad</code> function in your package. <code><a href="../reference/new_external_generic.html">external_methods_register()</a></code> will automatically setup on-load hooks for ‘soft’ dependencies in <code>Suggests</code> so the method will be added when the dependency is eventually loaded.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">.onLoad</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">libname</span>, <span class="va">pkgname</span><span class="op">)</span> <span class="op">{</span>
   <span class="fu">R7</span><span class="fu">::</span><span class="fu"><a href="../reference/new_external_generic.html">external_methods_register</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">}</span>

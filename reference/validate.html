@@ -116,8 +116,8 @@ executing the validator.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># A range class might validate that the start is less than the end</span></span>
 <span class="r-in"><span class="va">Range</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Range"</span>,</span>
 <span class="r-in">  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"double"</span>, end <span class="op">=</span> <span class="st">"double"</span><span class="op">)</span>,</span>
-<span class="r-in">  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">    <span class="kw">if</span> <span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">start</span> <span class="op">&gt;=</span> <span class="va">object</span><span class="op">@</span><span class="va">end</span><span class="op">)</span> <span class="st">"start must be smaller than end"</span></span>
+<span class="r-in">  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span>
+<span class="r-in">    <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">start</span> <span class="op">&gt;=</span> <span class="va">self</span><span class="op">@</span><span class="va">end</span><span class="op">)</span> <span class="st">"start must be smaller than end"</span></span>
 <span class="r-in">  <span class="op">}</span></span>
 <span class="r-in"><span class="op">)</span></span>
 <span class="r-in"><span class="co"># You can't construct an invalid object:</span></span>
