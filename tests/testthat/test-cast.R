@@ -1,3 +1,16 @@
+test_that("can register cast methods", {
+  casttest <- new_class("casttest")
+  method(cast, list(casttest, character)) <- function(from, to, ...) "c"
+  method(cast, list(casttest, integer)) <- function(from, to, ...) "i"
+
+  obj <- casttest()
+  expect_equal(cast(obj, character), "c")
+  expect_equal(cast(obj, integer), "i")
+
+  # Errors if none found
+  expect_snapshot(cast(obj, double), error = TRUE)
+})
+
 test_that("fallback casts work", {
   foo1 <- new_class("foo1")
   foo2 <- new_class("foo2", foo1)
