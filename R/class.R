@@ -102,7 +102,9 @@ new_class <- function(
   if (!is.null(constructor) && !is.null(parent)) {
     check_R7_constructor(constructor)
   }
-  check_validator(validator)
+  if (!is.null(validator)) {
+    check_function(validator, alist(self = ))
+  }
 
   # Combine properties from parent, overriding as needed
   all_props <- attr(parent, "properties", exact = TRUE) %||% list()
@@ -134,20 +136,6 @@ check_R7_constructor <- function(constructor) {
   method_call <- find_call(body(constructor), quote(new_object))
   if (is.null(method_call)) {
     stop("`constructor` must contain a call to `new_object()`", call. = FALSE)
-  }
-}
-
-check_validator <- function(validator) {
-  if (is.null(validator)) {
-    return()
-  }
-
-  if (!is.function(validator)) {
-    stop("`validator` must be a function", call. = FALSE)
-  }
-
-  if (!identical(formals(validator), pairlist(self = quote(expr = )))) {
-    stop("`validator` must have signature `function(self)`", call. = FALSE)
   }
 }
 

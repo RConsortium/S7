@@ -10,10 +10,10 @@ range <- new_class("range",
     new_property(
       name = "length",
       class = "numeric",
-      getter = function(x) x@end - x@start,
-      setter = function(x, value) {
-        x@end <- x@start + value
-        x
+      getter = function(self) self@end - self@start,
+      setter = function(self, value) {
+        self@end <- self@start + value
+        self
       }
     )
   )

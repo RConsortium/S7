@@ -19,12 +19,12 @@ new_property(
 (or \link[=new_union]{class union}).}
 
 \item{getter}{An optional function used to get the value. The function
-should take the object as its sole argument and return the value. If the
+should take \code{self}  as its sole argument and return the value. If the
 property has a \code{class} the class of the value is validated.}
 
 \item{setter}{An optional function used to set the value. The function
-should take the object and new value as its two parameters and return the
-modified object. The value is \emph{not} automatically checked.}
+should take \code{self} and \code{value} and return a modified object. The value is
+\emph{not} automatically checked.}
 
 \item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, defaults to the "empty" instance
@@ -54,7 +54,7 @@ your_pizza@slices
 
 # Dynamic properties can compute on demand
 clock <- new_class("clock", properties = list(
-  new_property("now", getter = function(x) Sys.time())
+  new_property("now", getter = function(self) Sys.time())
 ))
 my_clock <- clock()
 my_clock@now; Sys.sleep(1)
@@ -65,13 +65,14 @@ person <- new_class("person", properties = list(
   first_name = "character",
   new_property(
      "firstName",
-     getter = function(x) {
+     getter = function(self) {
        warning("@firstName is deprecated; please use @first_name instead")
-       x@first_name
+       self@first_name
      },
-     setter = function(x, value) {
+     setter = function(self, value) {
        warning("@firstName is deprecated; please use @first_name instead")
-       x@first_name <- value
+       self@first_name <- value
+       self
      }
    )
 ))

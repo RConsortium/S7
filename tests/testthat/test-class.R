@@ -30,6 +30,8 @@ describe("R7 classes", {
 
       new_class("foo", constructor = 1)
       new_class("foo", constructor = function() {})
+
+      new_class("foo", validator = function() {})
     })
   })
 

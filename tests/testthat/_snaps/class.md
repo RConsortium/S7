@@ -54,6 +54,10 @@
       new_class("foo", constructor = function() { })
     Error <simpleError>
       `constructor` must contain a call to `new_object()`
+    Code
+      new_class("foo", validator = function() { })
+    Error <simpleError>
+      `validator` must be function(self), not function()
 
 # R7 classes: can't inherit from S4 or class unions
 

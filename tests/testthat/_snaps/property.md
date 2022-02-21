@@ -35,6 +35,17 @@
     Error <simpleError>
       `name` must not be "" or NA
 
+# new_property(): validates getter and settor
+
+    Code
+      new_property("x", getter = function(x) { })
+    Error <simpleError>
+      `getter` must be function(self), not function(x)
+    Code
+      new_property("x", setter = function(x, y, z) { })
+    Error <simpleError>
+      `setter` must be function(self, value), not function(x, y, z)
+
 # new_property(): validates default
 
     Code

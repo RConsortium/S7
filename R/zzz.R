@@ -27,10 +27,8 @@ R7_generic <- new_class(
   properties = list(
     name = "character",
     methods = "environment",
-    dispatch_args = new_property(
-      name = "dispatch_args",
-      getter = function(x) formals(R7_data(x))
-  )),
+    dispatch_args = "character"
+  ),
   parent = "function",
   constructor = function(name, dispatch_args, fun) {
     new_object(

@@ -79,3 +79,31 @@ str_function <- function(object, ..., nest.lev = 0) {
   }
   str(object, ..., nest.lev = nest.lev)
 }
+
+check_function <- function(f, args, arg = deparse(substitute(f))) {
+  if (!is.function(f)) {
+    msg <- sprintf("`%s` must be a function", arg)
+    stop(msg, call. = FALSE)
+  }
+
+  args <- as.pairlist(args)
+  if (!identical(formals(f), args)) {
+    msg <- sprintf(
+      "`%s` must be %s, not %s",
+      arg,
+      show_args(args),
+      show_args(formals(f))
+    )
+    stop(msg, call. = FALSE)
+  }
+}
+show_args <- function(x) {
+  if (length(x) == 0) {
+    args <- ""
+  } else {
+    val <- vcapply(x, deparse1)
+    args <- paste0(names(x), ifelse(val == "", "", " = "), val, collapse = ", ")
+  }
+
+  paste0("function(", args, ")")
+}

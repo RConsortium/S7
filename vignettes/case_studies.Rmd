@@ -29,19 +29,19 @@ Person <- new_class("Person",
     new_property(
       name = "birthdate",
       class = new_S3_class("Date"),
-      setter = function(object, value) {
-        object@birthdate <- as.Date(value)
-        object
+      setter = function(self, value) {
+        self@birthdate <- as.Date(value)
+        self
       },
       default = as.Date(NA)
     ),
     new_property(
       name = "age",
       class = "numeric",
-      getter = function(object) {
+      getter = function(self) {
         # This is not correct because of leap years,
         # see https://stackoverflow.com/questions/3611314/calculate-ages-in-r/25450756#25450756 for a correct implementation.
-        as.double(Sys.Date() - object@birthdate) %/% 365
+        as.double(Sys.Date() - self@birthdate) %/% 365
       }
     )
   ),

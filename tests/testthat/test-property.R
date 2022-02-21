@@ -89,7 +89,7 @@ describe("property access", {
 
   it("can access dynamic properties", {
     foo <- new_class("foo", properties = list(
-      new_property("x", getter = function(x) 10),
+      new_property("x", getter = function(self) 10),
       new_property("y")
     ))
     x <- foo(y = 2)
@@ -130,9 +130,9 @@ test_that("property setters can set themselves", {
       new_property(
         name = "bar",
         class = "character",
-        setter = function(object, value) {
-          object@bar <- paste0(value, "-bar")
-          object
+        setter = function(self, value) {
+          self@bar <- paste0(value, "-bar")
+          self
         }
       )
     )
@@ -159,6 +159,13 @@ describe("new_property()", {
     expect_snapshot(error = TRUE, {
       new_property(1)
       new_property("")
+    })
+  })
+
+  it("validates getter and settor", {
+    expect_snapshot(error = TRUE, {
+      new_property("x", getter = function(x) {})
+      new_property("x", setter = function(x, y, z) {})
     })
   })
 

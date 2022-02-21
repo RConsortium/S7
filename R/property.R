@@ -13,11 +13,11 @@
 #' @param class If specified, any values must be one of these classes
 #'   (or [class union][new_union]).
 #' @param getter An optional function used to get the value. The function
-#'   should take the object as its sole argument and return the value. If the
+#'   should take `self`  as its sole argument and return the value. If the
 #'   property has a `class` the class of the value is validated.
 #' @param setter An optional function used to set the value. The function
-#'   should take the object and new value as its two parameters and return the
-#'   modified object. The value is _not_ automatically checked.
+#'   should take `self` and `value` and return a modified object. The value is
+#'   _not_ automatically checked.
 #' @param default When an object is created and the property is not supplied,
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
@@ -37,7 +37,7 @@
 #'
 #' # Dynamic properties can compute on demand
 #' clock <- new_class("clock", properties = list(
-#'   new_property("now", getter = function(x) Sys.time())
+#'   new_property("now", getter = function(self) Sys.time())
 #' ))
 #' my_clock <- clock()
 #' my_clock@now; Sys.sleep(1)
@@ -48,13 +48,14 @@
 #'   first_name = "character",
 #'   new_property(
 #'      "firstName",
-#'      getter = function(x) {
+#'      getter = function(self) {
 #'        warning("@firstName is deprecated; please use @first_name instead")
-#'        x@first_name
+#'        self@first_name
 #'      },
-#'      setter = function(x, value) {
+#'      setter = function(self, value) {
 #'        warning("@firstName is deprecated; please use @first_name instead")
-#'        x@first_name <- value
+#'        self@first_name <- value
+#'        self
 #'      }
 #'    )
 #' ))
@@ -68,6 +69,13 @@ new_property <- function(name, class = any_class, getter = NULL, setter = NULL, 
   if (!is.null(default) && !class_inherits(default, class)) {
     msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
     stop(msg)
+  }
+
+  if (!is.null(getter)) {
+    check_function(getter, alist(self = ))
+  }
+  if (!is.null(setter)) {
+    check_function(setter, alist(self = , value = ))
   }
 
   out <- list(
