@@ -1,10 +1,7 @@
-text <- new_class("text", parent = "character", constructor = function(text = character()) new_object(.data = text))
-number <- new_class("number", parent = "double", constructor = function(x) new_object(.data = x))
+text <- new_class("text", parent = "character")
+number <- new_class("number", parent = "double")
 
 range <- new_class("range",
-  constructor = function(start, end) {
-    new_object(start = start, end = end)
-  },
   validator = function(x) {
     if (x@end < x@start) {
       "`end` must be greater than or equal to `start`"

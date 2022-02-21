@@ -21,8 +21,8 @@ library(R7)
 The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in a package there is some overhead due to `.Call` vs `.Primitive`.
 
 ```{r performance, cache = FALSE}
-text <- new_class("text", parent = "character", constructor = function(text) new_object(.data = text))
-number <- new_class("number", parent = "double", constructor = function(x) new_object(.data = x))
+text <- new_class("text", parent = "character")
+number <- new_class("number", parent = "double")
 
 x <- text("hi")
 y <- number(1)

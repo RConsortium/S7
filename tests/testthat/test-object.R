@@ -41,6 +41,14 @@ describe("new_object", {
     })
   })
 
+  it("can initialise a property to NULL", {
+    foo <- new_class("foo", properties = list(
+      new_property("x", default = 10)
+    ))
+    x <- foo(x = NULL)
+    expect_equal(x@x, NULL)
+  })
+
   it("combines properties for parent classes", {
     foo1 <- new_class("foo1", properties = list(x = "numeric"))
     foo2 <- new_class("foo2", foo1, properties = list(y = "numeric"))

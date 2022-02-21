@@ -54,6 +54,32 @@ test_that("classes can't inherit from S4 or class unions", {
   })
 })
 
+describe("default constructor", {
+  it("initializes properties with defaults", {
+    foo1 <- new_class("foo1", properties = list(x = "integer"))
+    obj <- foo1()
+    expect_equal(obj@x, integer())
+
+    foo2 <- new_class("foo2", foo1, properties = list(y = "integer"))
+    obj <- foo2()
+    expect_equal(obj@x, integer())
+    expect_equal(obj@y, integer())
+  })
+
+  it("initializes data with defaults", {
+    text1 <- new_class("text1", parent = "character")
+    obj <- text1()
+    expect_equal(R7_data(obj), character())
+  })
+
+  it("initializes property with R7 object", {
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2", properties = list(x = foo1))
+    x <- foo2()
+    expect_s3_class(x@x, "foo1")
+  })
+})
+
 test_that("default constructor works", {
   foo1 <- new_class("foo1", properties = list(x = "numeric"))
   foo2 <- new_class("foo2", parent = foo1, properties = list(y = "numeric"))

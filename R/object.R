@@ -2,7 +2,7 @@
 #'   object.
 #' @rdname new_class
 #' @export
-new_object <- function(.data = NULL, ...) {
+new_object <- function(.data, ...) {
   obj_cls <- sys.function(-1)
   if (!inherits(obj_cls, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
@@ -27,6 +27,11 @@ new_object <- function(.data = NULL, ...) {
       ),
       call. = FALSE
     )
+  }
+
+  missing_props <- nms[vlapply(args, is_missing_class)]
+  for(prop in missing_props) {
+    args[[prop]] <- prop_default(obj_cls@properties[[prop]])
   }
 
   if (!is.null(.data)) {

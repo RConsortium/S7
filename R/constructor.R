@@ -68,7 +68,7 @@ new_function <- function(args, body, env) {
   f
 }
 missing_args <- function(names) {
-  lapply(setNames(, names), function(i) quote(expr = ))
+  lapply(setNames(, names), function(i) quote(missing_class))
 }
 new_call <- function(call, args) {
   as.call(c(list(as.name(call)), args))

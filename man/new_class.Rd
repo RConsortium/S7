@@ -13,7 +13,7 @@ new_class(
   validator = function(x) NULL
 )
 
-new_object(.data = NULL, ...)
+new_object(.data, ...)
 }
 \arguments{
 \item{name}{The name of the class, as a string.}

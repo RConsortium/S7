@@ -154,18 +154,26 @@ test_that("properties can be NULL", {
   expect_equal(props(x), list(x = NULL))
 })
 
-test_that("new_property validates name", {
-  expect_snapshot(error = TRUE, {
-    new_property(1)
-    new_property("")
+describe("new_property()", {
+  it("validates name", {
+    expect_snapshot(error = TRUE, {
+      new_property(1)
+      new_property("")
+    })
   })
-})
 
-test_that("displays nicely", {
-  x <- new_property("foo", "integer")
-  expect_snapshot({
-    print(x)
-    str(list(x))
+  it("validates default", {
+    expect_snapshot(error = TRUE, {
+      new_property("foo", class = "integer", default = "x")
+    })
+  })
+
+  it("displays nicely", {
+    x <- new_property("foo", "integer")
+    expect_snapshot({
+      print(x)
+      str(list(x))
+    })
   })
 })
 
