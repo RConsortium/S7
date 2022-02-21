@@ -15,11 +15,11 @@ name.}
 objects of the specified class. This is only needed if you wish to
 have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be \code{.data}
-(the base type whose attributes will be modified) and it should
-default to an empty object.
+(the base type whose attributes will be modified).
 
-When called with no arguments, the constructor should return an "empty"
-object.}
+All arguments to the constructor should have default values so that
+when the constructor is called with no arguments, it returns returns
+an "empty", but valid, object.}
 
 \item{validator}{An optional validator used by \code{\link[=validate]{validate()}} to check that
 the R7 object adheres to the constraints of the S3 class.
