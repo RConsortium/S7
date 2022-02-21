@@ -5,17 +5,8 @@
 extern SEXP parent_sym;
 extern SEXP name_sym;
 
-Rboolean should_ignore(SEXP value, SEXP ignore) {
-  for (R_xlen_t i = 0; i < Rf_xlength(ignore); ++i) {
-    if (R_compute_identical(value, VECTOR_ELT(ignore, i), 16) == TRUE) {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 // Recursively walk through method table to perform iterated dispatch
-SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore) {
+SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   if (signature_itr >= Rf_xlength(signature)) {
     return R_NilValue;
   }
@@ -26,9 +17,9 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore)
     SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
     SEXP val = Rf_findVarInFrame(table, klass);
     if (TYPEOF(val) == ENVSXP) {
-      val = method_rec(val, signature, signature_itr + 1, ignore);
+      val = method_rec(val, signature, signature_itr + 1);
     }
-    if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
+    if (TYPEOF(val) == CLOSXP) {
       return val;
     }
   }
@@ -51,7 +42,7 @@ void R7_method_lookup_error(SEXP generic, SEXP signature) {
   while(1);
 }
 
-SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
+SEXP method_(SEXP generic, SEXP signature, SEXP error_) {
   if (!Rf_inherits(generic, "R7_generic")) {
     return R_NilValue;
   }
@@ -61,8 +52,10 @@ SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
     Rf_error("Corrupt R7_generic: @methods isn't an environment");
   }
 
-  SEXP m = method_rec(table, signature, 0, ignore);
-  if (m == R_NilValue) {
+  SEXP m = method_rec(table, signature, 0);
+
+  int error = Rf_asInteger(error_);
+  if (error && m == R_NilValue) {
     R7_method_lookup_error(generic, signature);
   }
 

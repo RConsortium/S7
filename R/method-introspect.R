@@ -56,5 +56,5 @@ method <- function(generic, class = NULL, object = NULL) {
     dispatch <- lapply(object, obj_dispatch)
   }
 
-  .Call(method_, generic, dispatch, NULL)
+  .Call(method_, generic, dispatch, TRUE)
 }

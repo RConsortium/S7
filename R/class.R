@@ -91,19 +91,16 @@ new_class <- function(
   check_name(name)
 
   parent <- as_class(parent)
-  if (!can_inherit(parent)) {
-     stop(
-       sprintf(
-         "`parent` must be an R7 class, S3 class, or base type, not %s.", class_friendly(parent)),
-       call. = FALSE
-     )
-  }
 
-  if (!is.null(constructor) && !is.null(parent)) {
-    check_R7_constructor(constructor)
-  }
-  if (!is.null(validator)) {
-    check_function(validator, alist(self = ))
+  # Don't check arguments for R7_object
+  if (!is.null(parent)) {
+    check_can_inherit(parent)
+    if (!is.null(constructor)) {
+      check_R7_constructor(constructor)
+    }
+    if (!is.null(validator)) {
+      check_function(validator, alist(self = ))
+    }
   }
 
   # Combine properties from parent, overriding as needed
@@ -172,7 +169,18 @@ str.R7_class <- function(object, ..., nest.lev = 0) {
   }
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x) || is.null(x)
+can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+
+check_can_inherit <- function(x, arg = deparse(substitute(x))) {
+  if (!can_inherit(x)) {
+    msg <- sprintf(
+      "`%s` must be an R7 class, S3 class, or base type, not %s.",
+      arg,
+      class_friendly(x)
+    )
+    stop(msg, call. = FALSE)
+  }
+}
 
 is_class <- function(x) inherits(x, "R7_class")
 
