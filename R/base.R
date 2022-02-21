@@ -13,14 +13,13 @@ new_base_class <- function(name) {
     }
   }
 
-  structure(
-    list(
-      class = name,
-      constructor = constructor,
-      validator = validator
-    ),
-    class = "R7_base_class"
+  out <- list(
+    class = name,
+    constructor = constructor,
+    validator = validator
   )
+  class(out) <- "R7_base_class"
+  out
 }
 
 base_default <- function(type) {

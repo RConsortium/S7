@@ -88,14 +88,13 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     }
   }
 
-  structure(
-    list(
-      class = class,
-      constructor = constructor,
-      validator = validator
-    ),
-    class = "R7_S3_class"
+  out <- list(
+    class = class,
+    constructor = constructor,
+    validator = validator
   )
+  class(out) <- "R7_S3_class"
+  out
 }
 
 #' @export

@@ -146,7 +146,10 @@ check_signature_list <- function(x, n, arg = "signature") {
   }
 }
 
-new_signature <- function(x) structure(x, class = "R7_signature")
+new_signature <- function(x) {
+  class(x) <- "R7_signature"
+  x
+}
 
 check_method <- function(method, generic, name = paste0(generic@name, "(???)")) {
   if (!is.function(method)) {
