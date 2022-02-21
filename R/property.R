@@ -96,7 +96,7 @@ is_property <- function(x) inherits(x, "R7_property")
 #' @export
 print.R7_property <- function(x, ...) {
   cat("<R7_property> \n")
-  str_list(x, ...)
+  str_nest(x, "$", ...)
 }
 
 #' @export

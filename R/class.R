@@ -153,6 +153,6 @@ str.R7_class <- function(object, ..., nest.lev = 0) {
   cat("\n")
 
   if (nest.lev == 0) {
-    str_list(props(object), ..., prefix = "@", nest.lev = nest.lev)
+    str_nest(props(object), "@", ..., nest.lev = nest.lev)
   }
 }

@@ -85,3 +85,33 @@ oxford_or <- function (x)  {
     paste0(x, collapse = ", ")
   }
 }
+
+str_nest <- function(
+    object,
+    prefix,
+    ...,
+    nest.lev = 0,
+    indent.str = paste(rep.int(" ", max(0, nest.lev + 1)), collapse = "..")
+) {
+
+  names <- format(names(object))
+
+  for (i in seq_along(object)) {
+    cat(if (nest.lev > 0) indent.str, prefix, " ", names[[i]], ": ", sep = "")
+
+    xi <- object[[i]]
+    if (is.function(xi)) {
+      str_function(xi, nest.lev = nest.lev + 1)
+    } else {
+      str(xi, ..., nest.lev = nest.lev + 1)
+    }
+  }
+}
+
+str_function <- function(object, ..., nest.lev = 0) {
+  attr(object, "srcref") <- NULL
+  if (identical(class(object), "function")) {
+    cat(" ")
+  }
+  str(object, ..., nest.lev = nest.lev)
+}
