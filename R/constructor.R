@@ -73,3 +73,10 @@ missing_args <- function(names) {
 new_call <- function(call, args) {
   as.call(c(list(as.name(call)), args))
 }
+
+as_names <- function(x, named = FALSE) {
+  if (named) {
+    names(x) <- x
+  }
+  lapply(x, as.name)
+}

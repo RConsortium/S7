@@ -81,7 +81,7 @@ new_generic <- function(name, dispatch_args = NULL, fun = NULL) {
     if (is.null(fun)) {
       args <- c(dispatch_args, "...")
       args <- setNames(lapply(args, function(i) quote(expr = )), args)
-      fun <- make_function(args, quote(method_call()), topenv(environment()))
+      fun <- new_function(args, quote(method_call()), topenv(environment()))
     }
   }
 
@@ -135,7 +135,7 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
 #' @export
 print.R7_generic <- function(x, ...) {
   methods <- methods(x)
-  formals <- collapse(head(format(args(x)), n = -1), by = "\n")
+  formals <- paste0(head(format(args(x)), n = -1), collapse = "\n")
   cat(sprintf("<R7_generic> %s with %i methods:\n", formals, length(methods)), sep = "")
 
   if (length(methods) > 0) {
