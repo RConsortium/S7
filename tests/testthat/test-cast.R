@@ -41,7 +41,7 @@ describe("cast_next()", {
     method(bar, foo1) <- function(x) 1
     method(bar, foo3) <- function(x) 3
 
-    expect_error(bar(cast_next(foo3(), foo2)), "Can't find method")
+    expect_error(bar(cast_next(foo3())), "Can't find method")
     expect_equal(bar(cast_next(foo3(), foo1)), 1)
   })
 
@@ -59,5 +59,13 @@ describe("cast_next()", {
 
     expect_equal(bar2(cast_next(foo2(), foo1)), c(1, 2))
     expect_equal(bar2(cast(foo2(), foo1)), c(1, 1))
+  })
+
+  it("checks to", {
+    expect_snapshot(error = TRUE, {
+      cast_next(R7_object)
+      foo <- new_class("foo")
+      cast_next(foo(), character)
+    })
   })
 })

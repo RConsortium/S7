@@ -84,16 +84,17 @@ cast_next <- function(from, to = NULL) {
   check_R7(from)
 
   if (is.null(to)) {
-    to <- object_class(from)@parent
-    if (is.null(to)) {
-      stop("R7_object has no parent class")
+    from_class <- object_class(from)
+    if (is.null(from_class)) {
+      stop("Can't cast: R7_object has no parent class")
     }
+    to <- from_class@parent
   } else {
     to <- as_class(to)
     check_can_inherit(to)
     if (!class_inherits(from, to)) {
       msg <- sprintf(
-        "`object` %s does not inherit from %s",
+        "Can't cast: %s doesn't inherit from %s",
         obj_desc(from),
         class_desc(to)
       )
