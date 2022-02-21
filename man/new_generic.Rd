@@ -20,7 +20,10 @@ arguments used to find the method.}
 \code{method_call()} to dispatch to methods. This is usually generated
 automatically from the \code{dispatch_args}, but you may want to supply it if
 you want to add additional required arguments, omit \code{...}, or perform
-some standardised computation in the generic.}
+some standardised computation in the generic.
+
+The \code{dispatch_args} must be the first arguments to \code{fun}, and, if present,
+\code{...} must immediately follow them.}
 }
 \description{
 A generic function uses different implementations (\emph{methods}) depending on

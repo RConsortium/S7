@@ -28,6 +28,9 @@
 #'  automatically from the `dispatch_args`, but you may want to supply it if
 #'  you want to add additional required arguments, omit `...`, or perform
 #'  some standardised computation in the generic.
+#'
+#'  The `dispatch_args` must be the first arguments to `fun`, and, if present,
+#'  `...` must immediately follow them.
 #' @seealso [new_external_generic()] to define a method for a generic
 #'  in another package without taking a strong dependency on it.
 #' @export
