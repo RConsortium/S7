@@ -16,6 +16,8 @@ R7_object <- new_class(
     }
   }
 )
+methods::setOldClass("R7_object")
+
 check_R7 <- function(x, arg = deparse(substitute(x))) {
   if (!inherits(x, "R7_object")) {
     stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
@@ -31,6 +33,7 @@ R7_generic <- new_class(
   ),
   parent = "function"
 )
+methods::setOldClass(c("R7_generic", "function", "R7_object"))
 is_generic <- function(x) inherits(x, "R7_generic")
 
 R7_method <- new_class("R7_method",
@@ -40,6 +43,7 @@ R7_method <- new_class("R7_method",
     signature = "list"
   )
 )
+methods::setOldClass(c("R7_method", "function", "R7_object"))
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
