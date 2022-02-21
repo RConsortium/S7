@@ -9,3 +9,10 @@ test_that("base class display as expected", {
     str(base_classes)
   })
 })
+
+test_that("classes can inherit from base types", {
+  for (class in base_classes) {
+    foo <- new_class("foo", parent = class)
+    expect_error(foo(), NA)
+  }
+})
