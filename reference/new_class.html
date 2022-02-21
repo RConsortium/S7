@@ -77,7 +77,7 @@ when an object is passed to a generic.</p>
   validator <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span>
 
-<span class="fu">new_object</span><span class="op">(</span><span class="va">.data</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+<span class="fu">new_object</span><span class="op">(</span><span class="va">.parent</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -115,7 +115,7 @@ should return a character vector where each element describes a single
 problem. It's generally helpful to report as many problems at once
 as possible.</p>
 <p>See <code><a href="validate.html">validate()</a></code> for more details and examples.</p></dd>
-<dt>.data, ...</dt>
+<dt>.parent, ...</dt>
 <dd><p>Parent object and named properties used to construct the
 object.</p></dd>
 </dl></div>
