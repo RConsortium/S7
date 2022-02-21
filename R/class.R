@@ -17,7 +17,8 @@
 #'   A custom constructor should call `new_object()` to create the R7 object.
 #'   The first argument, `.data`, should an instance of the parent class. The
 #'   subsequent arguments are used to set the properties.
-#' @param validator A function taking a single argument, the object to validate.
+#' @param validator A function taking a single argument, `self`, the object
+#'   to validate.
 #'
 #'   The job of a validator is to determine whether the object is valid,
 #'   i.e. if the current property values form an allowed combination. The
@@ -65,12 +66,12 @@
 #'     start = "numeric",
 #'     end = "numeric"
 #'   ),
-#'   validator = function(x) {
-#'     if (length(x@start) != 1) {
+#'   validator = function(self) {
+#'     if (length(self@start) != 1) {
 #'       "@start must be a single number"
-#'     } else if (length(x@end) != 1) {
+#'     } else if (length(self@end) != 1) {
 #'       "@end must be a single number"
-#'     } else if (x@end < x@start) {
+#'     } else if (self@end < self@start) {
 #'       "@end must be great than or equal to @start"
 #'     }
 #'   }
@@ -85,7 +86,7 @@ new_class <- function(
     parent = R7_object,
     properties = list(),
     constructor = NULL,
-    validator = function(x) NULL) {
+    validator = NULL) {
 
   check_name(name)
 
@@ -101,6 +102,7 @@ new_class <- function(
   if (!is.null(constructor) && !is.null(parent)) {
     check_R7_constructor(constructor)
   }
+  check_validator(validator)
 
   # Combine properties from parent, overriding as needed
   all_props <- attr(parent, "properties", exact = TRUE) %||% list()
@@ -132,6 +134,20 @@ check_R7_constructor <- function(constructor) {
   method_call <- find_call(body(constructor), quote(new_object))
   if (is.null(method_call)) {
     stop("`constructor` must contain a call to `new_object()`", call. = FALSE)
+  }
+}
+
+check_validator <- function(validator) {
+  if (is.null(validator)) {
+    return()
+  }
+
+  if (!is.function(validator)) {
+    stop("`validator` must be a function", call. = FALSE)
+  }
+
+  if (!identical(formals(validator), pairlist(self = quote(expr = )))) {
+    stop("`validator` must have signature `function(self)`", call. = FALSE)
   }
 }
 

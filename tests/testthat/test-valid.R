@@ -1,10 +1,10 @@
 test_that("validate() validates object and type recursively", {
   klass <- new_class("klass",
     properties = list(x = "double", y = "double"),
-    validator = function(object) {
+    validator = function(self) {
       c(
-        if (object@x < 0) "x must be positive",
-        if (object@y > 0) "y must be negative"
+        if (self@x < 0) "x must be positive",
+        if (self@y > 0) "y must be negative"
       )
     }
   )

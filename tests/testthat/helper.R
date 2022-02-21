@@ -1,6 +1,6 @@
 range <- new_class("range",
-  validator = function(x) {
-    if (x@end < x@start) {
+  validator = function(self) {
+    if (self@end < self@start) {
       "`end` must be greater than or equal to `start`"
     }
   },

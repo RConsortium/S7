@@ -10,8 +10,8 @@ R7_object <- new_class(
   constructor = function() {
     .Call(R7_object_)
   },
-  validator = function(object) {
-    if (typeof(object) != "S4") {
+  validator = function(self) {
+    if (typeof(self) != "S4") {
       "Underlying data is corrupt"
     }
   }

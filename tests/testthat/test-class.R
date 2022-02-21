@@ -1,6 +1,6 @@
 describe("R7 classes", {
   it("possess expected properties", {
-    foo <- new_class("foo")
+    foo <- new_class("foo", validator = function(self) NULL)
 
     expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
     expect_type(foo@name, "character")

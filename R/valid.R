@@ -23,8 +23,8 @@
 #' # A range class might validate that the start is less than the end
 #' Range <- new_class("Range",
 #'   properties = list(start = "double", end = "double"),
-#'   validator = function(object) {
-#'     if (object@start >= object@end) "start must be smaller than end"
+#'   validator = function(self) {
+#'     if (self@start >= self@end) "start must be smaller than end"
 #'   }
 #' )
 #' # You can't construct an invalid object:

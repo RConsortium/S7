@@ -45,8 +45,8 @@ Person <- new_class("Person",
       }
     )
   ),
-  validator = function(object) {
-    if (length(object@name) != length(object@birthdate)) {
+  validator = function(self) {
+    if (length(self@name) != length(self@birthdate)) {
       "@name and @birthdate must be the same length"
     }
   }
@@ -106,10 +106,10 @@ annotated_df <- new_class("annotated_df",
     rows = new_S3_class("tbl_df"),
     columns = new_S3_class("tbl_df")
   ),
-  validator = function(object) {
-    if (nrow(object@data) != nrow(object@rows)) {
+  validator = function(self) {
+    if (nrow(self@data) != nrow(self@rows)) {
       "`nrow(<annotated_df>@rows)` must be equal to `nrow(<annotated_df>)`"
-    } else if (ncol(object@data) != nrow(object@columns)) {
+    } else if (ncol(self@data) != nrow(self@columns)) {
       "`nrow(<annotated_df>@columns)` must be equal to `ncol(<annotated_df>)`"
     }
   }

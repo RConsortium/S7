@@ -29,7 +29,7 @@
        ..  ..$ setter :  NULL
        ..  ..$ default:  NULL
       @ constructor:  function (x = missing_class, y = missing_class)  
-      @ validator  :  function (x)  
+      @ validator  :  NULL
     Code
       str(list(foo2))
     Output
