@@ -15,7 +15,8 @@ name.}
 objects of the specified class. This is only needed if you wish to
 have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be \code{.data}
-(the base type whose attributes will be modified).
+(the base type whose attributes will be modified) and it should
+default to an empty object.
 
 When called with no arguments, the constructor should return an "empty"
 object.}
