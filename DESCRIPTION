@@ -22,11 +22,12 @@ Authors@R:
              role = "aut"),
       person(given = "Hadley",
              family = "Wickham",
-             role = "aut"),
+             role = c("aut", "cre"),
+             email = "hadley@rstudio.com"
+             ),
       person(given = "Jim",
              family = "Hester",
-             role = c("aut", "cre"),
-             email = "jim.hester@rstudio.com",
+             role = "aut",
              comment = c(ORCID = "0000-0002-2739-7082")))
 Description: Prototype implementation of an extension to S3 that
     provides explicit class definitions and a form of multiple dispatch.
