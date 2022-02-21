@@ -11,6 +11,14 @@ test_that("can register cast methods", {
   expect_snapshot(cast(obj, double), error = TRUE)
 })
 
+test_that("doesn't cast to subclass", {
+  casttest1 <- new_class("casttest1")
+  casttest2 <- new_class("casttest2", casttest1)
+
+  method(cast, list(integer, casttest1)) <- function(from, to, ...) "i"
+  expect_error(cast(integer, casttest2), "Can't find method")
+})
+
 test_that("fallback casts work", {
   foo1 <- new_class("foo1")
   foo2 <- new_class("foo2", foo1)
