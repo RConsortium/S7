@@ -1,60 +1,22 @@
-describe("prop", {
-  it("retrieves the property", {
-    x <- range(1, 10)
-    expect_equal(prop(x, "start"), 1)
-    expect_equal(prop(x, "end"), 10)
+describe("property retrieval", {
+  it("retrieves the properties that exist & errors otherwise", {
+    foo <- new_class("foo", properties = list(xyz = double))
+    obj <- foo(1)
+    expect_equal(prop(obj, "xyz"), 1)
+    expect_equal(obj@xyz, 1)
+
+    expect_snapshot_error(prop(obj, "x"))
+    expect_snapshot_error(obj@x)
   })
   it("evalutes dynamic properties", {
-    x <- range(1, 10)
-    expect_equal(prop(x, "length"), 9)
+    foo <- new_class("foo", properties = list(
+      new_property("x", getter = function(self) 1)
+    ))
+    obj <- foo()
+    expect_equal(prop(obj, "x"), 1)
+    expect_equal(obj@x, 1)
   })
-  it("does not use partial matching", {
-    x <- range(1, 10)
-    expect_snapshot_error(prop(x, "st"))
-  })
-})
 
-describe("prop<-", {
-  it("sets the property", {
-    x <- range(1, 10)
-    expect_equal(prop(x, "start"), 1)
-    prop(x, "start") <- 2
-    expect_equal(prop(x, "start"), 2)
-  })
-  it("errors if the property doesn't exist", {
-    x <- range(1, 10)
-    expect_snapshot(error = TRUE, x@foo <- 10)
-  })
-  it("errors if the value does not match the correct class", {
-    x <- range(1, 10)
-    expect_error(prop(x, "start") <- "foo", "must be")
-  })
-  it("does not run the check or validation functions if check = FALSE", {
-    x <- range(1, 10)
-    prop(x, "end", check = FALSE) <- "foo"
-    expect_equal(x@end, "foo")
-  })
-})
-
-describe("props<-", {
-  it("validates after setting all properties", {
-    x <- range(1, 2)
-    props(x) <- list(start = 5, end = 10)
-    expect_equal(x@start, 5)
-    expect_equal(x@end, 10)
-  })
-})
-
-describe("@", {
-  it("retrieves the property", {
-    x <- range(1, 10)
-    expect_equal(x@start, 1)
-    expect_equal(x@end, 10)
-  })
-  it("does not use partial matching", {
-    x <- range(1, 10)
-    expect_snapshot_error(x@st)
-  })
   it("falls back to `base::@` for non-R7 objects", {
     expect_snapshot(error = TRUE, {
       "foo"@blah
@@ -63,16 +25,63 @@ describe("@", {
   })
 })
 
-describe("@<-", {
-  it("sets the property", {
-    x <- range(1, 10)
-    expect_equal(x@start, 1)
-    x@start <- 2
-    expect_equal(x@start, 2)
+describe("prop setting", {
+  it("can set a property", {
+    foo <- new_class("foo", properties = list(xyz = double))
+    obj <- foo(1)
+
+    prop(obj, "xyz") <- 2
+    expect_equal(obj@xyz, 2)
+
+    obj@xyz <- 3
+    expect_equal(obj@xyz, 3)
   })
+
+  it("can set dynamic properties", {
+    foo <- new_class("foo", properties = list(
+      new_property("x", setter = function(self, value) {
+        self@x <- value * 2
+        self
+      })
+    ))
+    obj <- foo()
+    obj@x <- 1
+    expect_equal(obj@x, 2)
+  })
+
+  it("errors if the property doesn't exist or is wrong class", {
+    foo <- new_class("foo", properties = list(x = double))
+    obj <- foo(123)
+    expect_snapshot(error = TRUE, {
+      x@foo <- 10
+      x@x <- "x"
+    })
+  })
+
+  it("does not run the check or validation functions if check = FALSE", {
+    foo <- new_class("foo", properties = list(x = double))
+    obj <- foo(123)
+    prop(obj, "x", check = FALSE) <- "foo"
+    expect_equal(obj@x, "foo")
+  })
+
   it("falls back to `base::@` for non-R7 objects", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
+  })
+})
+
+describe("props<-", {
+  it("validates after setting all properties", {
+    foo <- new_class("foo",
+      properties = list(x = double, y = double),
+      validator = function(self) if (self@x > self@y) "bad"
+    )
+
+    obj <- foo(1, 2)
+    props(obj) <- list(x = 5, y = 10)
+    expect_equal(obj@x, 5)
+    expect_equal(obj@y, 10)
   })
 })
 
@@ -102,45 +111,17 @@ describe("property access", {
     expect_equal(props(x), list())
     expect_equal(prop_exists(x, "y"), FALSE)
   })
+
+  it("ignore attributes that are not properties", {
+    x <- new_class("x")()
+    attr(x, "extra") <- 1
+
+    expect_equal(prop_names(x), character())
+    expect_equal(props(x), list())
+    expect_false(prop_exists(x, "extra"))
+  })
 })
 
-test_that("properties ignore attributes", {
-  x <- new_class("x")()
-  attr(x, "extra") <- 1
-
-  expect_equal(prop_names(x), character())
-  expect_equal(props(x), list())
-  expect_false(prop_exists(x, "extra"))
-})
-
-test_that("properties can be getter functions", {
-  x <- range(1, 10)
-  expect_equal(x@length, 10 - 1)
-})
-
-test_that("properties can be setter functions", {
-  x <- range(1, 10)
-  x@length <- 5
-  expect_equal(x@length, 5)
-})
-
-test_that("property setters can set themselves", {
-  foo <- new_class("foo",
-    properties = list(
-      new_property(
-        name = "bar",
-        class = "character",
-        setter = function(self, value) {
-          self@bar <- paste0(value, "-bar")
-          self
-        }
-      )
-    )
-  )
-
-  x <- foo(bar = "foo")
-  expect_equal(x@bar, "foo-bar")
-})
 
 test_that("properties can be NULL", {
   foo <- new_class("foo", properties = list(x = any_class))

@@ -1,19 +1,12 @@
-# prop: does not use partial matching
+# property retrieval: retrieves the properties that exist & errors otherwise
 
-    Can't find property <range>@st
+    Can't find property <foo>@x
 
-# prop<-: errors if the property doesn't exist
+---
 
-    Code
-      x@foo <- 10
-    Error <simpleError>
-      Can't find property <range>@foo
+    Can't find property <foo>@x
 
-# @: does not use partial matching
-
-    Can't find property <range>@st
-
-# @: falls back to `base::@` for non-R7 objects
+# property retrieval: falls back to `base::@` for non-R7 objects
 
     Code
       "foo"@blah
@@ -23,6 +16,17 @@
       NULL@blah
     Error <simpleError>
       trying to get slot "blah" from an object of a basic class ("NULL") with no slots
+
+# prop setting: errors if the property doesn't exist or is wrong class
+
+    Code
+      x@foo <- 10
+    Error <simpleError>
+      object 'x' not found
+    Code
+      x@x <- "x"
+    Error <simpleError>
+      object 'x' not found
 
 # new_property(): validates name
 

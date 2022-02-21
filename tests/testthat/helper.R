@@ -1,24 +1,3 @@
-range <- new_class("range",
-  validator = function(self) {
-    if (self@end < self@start) {
-      "`end` must be greater than or equal to `start`"
-    }
-  },
-  properties = list(
-    start = "numeric",
-    end = "numeric",
-    new_property(
-      name = "length",
-      class = "numeric",
-      getter = function(self) self@end - self@start,
-      setter = function(self, value) {
-        self@end <- self@start + value
-        self
-      }
-    )
-  )
-)
-
 quick_install <- function(package) {
   for (p in package) {
     install.packages(p, repos = NULL, type = "source", quiet = TRUE,
