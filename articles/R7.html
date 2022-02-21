@@ -117,50 +117,42 @@
 <span class="op">)</span>
 
 <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">1</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
+<span class="co">#&gt; Error in new_object(start = start, end = end): argument ".data" is missing, with no default</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">start</span>
-<span class="co">#&gt; [1] 1</span>
+<span class="co">#&gt; Error in x@start: object 'x' not found</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">end</span>
-<span class="co">#&gt; [1] 10</span>
+<span class="co">#&gt; Error in x@end: object 'x' not found</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">length</span>
-<span class="co">#&gt; [1] 9</span>
+<span class="co">#&gt; Error in x@length: object 'x' not found</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">length</span> <span class="op">&lt;-</span> <span class="fl">5</span>
+<span class="co">#&gt; Error in x@length &lt;- 5: object 'x' not found</span>
 
 <span class="va">x</span><span class="op">@</span><span class="va">length</span>
-<span class="co">#&gt; [1] 5</span>
+<span class="co">#&gt; Error in x@length: object 'x' not found</span>
 
 <span class="co"># incorrect properties throws an error</span>
 <span class="va">x</span><span class="op">@</span><span class="va">middle</span>
-<span class="co">#&gt; Error in prop(object, name): Can't find property &lt;range&gt;@middle</span>
+<span class="co">#&gt; Error in x@middle: object 'x' not found</span>
 
 <span class="co"># assigning properties verifies the class matches the class of the value</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="st">"foo"</span>
-<span class="co">#&gt; Error: &lt;range&gt;@end must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
+<span class="co">#&gt; Error in x@end &lt;- "foo": object 'x' not found</span>
 
 <span class="co"># assigning properties runs the validator</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">0</span>
-<span class="co">#&gt; Error: &lt;range&gt; object is invalid:</span>
-<span class="co">#&gt; - &lt;range&gt;@end must be greater than or equal to &lt;range&gt;@start</span>
+<span class="co">#&gt; Error in x@end &lt;- 0: object 'x' not found</span>
 
 <span class="co"># Print methods for both R7_class objects</span>
 <span class="fu"><a href="../reference/object_class.html">object_class</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="co">#&gt; &lt;R7_class&gt;</span>
-<span class="co">#&gt; @ name  :  range</span>
-<span class="co">#&gt; @ parent: &lt;R7_object&gt;</span>
-<span class="co">#&gt; @ properties:</span>
-<span class="co">#&gt;  $ start : &lt;integer&gt; or &lt;double&gt;</span>
-<span class="co">#&gt;  $ end   : &lt;integer&gt; or &lt;double&gt;</span>
-<span class="co">#&gt;  $ length: &lt;integer&gt; or &lt;double&gt;</span>
+<span class="co">#&gt; Error in object_class(x): object 'x' not found</span>
 
 <span class="co"># As well as normal R7_objects</span>
 <span class="va">x</span>
-<span class="co">#&gt; &lt;range&gt;</span>
-<span class="co">#&gt; @ start :  num 1</span>
-<span class="co">#&gt; @ end   :  num 6</span>
-<span class="co">#&gt; @ length:  num 5</span></code></pre></div>
+<span class="co">#&gt; Error in eval(expr, envir, enclos): object 'x' not found</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="generics-and-methods">Generics and methods<a class="anchor" aria-label="anchor" href="#generics-and-methods"></a>

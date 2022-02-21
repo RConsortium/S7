@@ -102,7 +102,8 @@
       setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span>
         <span class="va">object</span><span class="op">@</span><span class="va">birthdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span>
         <span class="va">object</span>
-      <span class="op">}</span>
+      <span class="op">}</span>,
+      default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="cn">NA</span><span class="op">)</span>
     <span class="op">)</span>,
     <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
       name <span class="op">=</span> <span class="st">"age"</span>,
@@ -118,10 +119,6 @@
     <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">name</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">birthdate</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
       <span class="st">"@name and @birthdate must be the same length"</span>
     <span class="op">}</span>
-  <span class="op">}</span>,
-  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">name</span>, <span class="va">birthdate</span> <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">birthdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">birthdate</span><span class="op">)</span>
-    <span class="fu"><a href="../reference/new_class.html">new_object</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">name</span>, birthdate <span class="op">=</span> <span class="va">birthdate</span><span class="op">)</span>
   <span class="op">}</span>
 <span class="op">)</span>
 

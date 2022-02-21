@@ -80,7 +80,10 @@ name.</p></dd>
 objects of the specified class. This is only needed if you wish to
 have an R7 class inherit from an S3 class. It must be specified in the
 same way as a R7 constructor: the first argument should be <code>.data</code>
-(the base type whose attributes will be modified).</p></dd>
+(the base type whose attributes will be modified).</p>
+<p>All arguments to the constructor should have default values so that
+when the constructor is called with no arguments, it returns returns
+an "empty", but valid, object.</p></dd>
 <dt>validator</dt>
 <dd><p>An optional validator used by <code><a href="validate.html">validate()</a></code> to check that
 the R7 object adheres to the constraints of the S3 class.</p>
@@ -119,7 +122,7 @@ the types of the attributes.</p>
 <p>The following code shows how you might wrap the base Date class.
 A Date is a numeric vector with class <code>Date</code> that can be constructed with
 <code><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date()</a></code>.</p><div class="sourceCode R"><pre><code><span class="va">S3_Date</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"Date"</span>,
-  <span class="kw">function</span><span class="op">(</span><span class="va">.data</span><span class="op">)</span> <span class="op">{</span>
+  <span class="kw">function</span><span class="op">(</span><span class="va">.data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
     <span class="fu"><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date</a></span><span class="op">(</span><span class="va">.data</span><span class="op">)</span>
   <span class="op">}</span>,
   <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>

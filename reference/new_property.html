@@ -78,7 +78,13 @@ behaviour when modified.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_property</span><span class="op">(</span><span class="va">name</span>, class <span class="op">=</span> <span class="va">any_class</span>, getter <span class="op">=</span> <span class="cn">NULL</span>, setter <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_property</span><span class="op">(</span>
+  <span class="va">name</span>,
+  class <span class="op">=</span> <span class="va">any_class</span>,
+  getter <span class="op">=</span> <span class="cn">NULL</span>,
+  setter <span class="op">=</span> <span class="cn">NULL</span>,
+  default <span class="op">=</span> <span class="cn">NULL</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -96,13 +102,17 @@ property has a <code>class</code> the class of the value is validated.</p></dd>
 <dd><p>An optional function used to set the value. The function
 should take the object and new value as its two parameters and return the
 modified object. The value is <em>not</em> automatically checked.</p></dd>
+<dt>default</dt>
+<dd><p>When an object is created and the property is not supplied,
+what should it default to? If <code>NULL</code>, defaults to the "empty" instance
+of <code>class</code>.</p></dd>
 </dl></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># Simple properties store data inside an object</span></span>
 <span class="r-in"><span class="va">pizza</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"pizza"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span class="r-in">  <span class="fu">new_property</span><span class="op">(</span><span class="st">"slices"</span>, <span class="st">"numeric"</span><span class="op">)</span></span>
+<span class="r-in">  <span class="fu">new_property</span><span class="op">(</span><span class="st">"slices"</span>, <span class="st">"numeric"</span>, default <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">my_pizza</span> <span class="op">&lt;-</span> <span class="fu">pizza</span><span class="op">(</span>slices <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span>
@@ -111,15 +121,19 @@ modified object. The value is <em>not</em> automatically checked.</p></dd>
 <span class="r-in"><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5</span>
 <span class="r-in"></span>
+<span class="r-in"><span class="va">your_pizza</span> <span class="op">&lt;-</span> <span class="fu">pizza</span><span class="op">(</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">your_pizza</span><span class="op">@</span><span class="va">slices</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 10</span>
+<span class="r-in"></span>
 <span class="r-in"><span class="co"># Dynamic properties can compute on demand</span></span>
 <span class="r-in"><span class="va">clock</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"clock"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span class="r-in">  <span class="fu">new_property</span><span class="op">(</span><span class="st">"now"</span>, getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">my_clock</span> <span class="op">&lt;-</span> <span class="fu">clock</span><span class="op">(</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span>; <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-02-17 23:54:17 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-02-21 13:14:13 UTC"</span>
 <span class="r-in"><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-02-17 23:54:18 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-02-21 13:14:14 UTC"</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># These can be useful if you want to deprecate a property</span></span>
 <span class="r-in"><span class="va">person</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"person"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
