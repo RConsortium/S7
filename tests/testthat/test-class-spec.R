@@ -16,7 +16,7 @@ test_that("can work with R7 classes", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
-test_that("can work with packages R7 classes", {
+test_that("can work with R7 classes in packages", {
   klass <- new_class("klass", package = "pkg")
   expect_equal(as_class(klass), klass)
 
