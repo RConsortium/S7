@@ -33,6 +33,33 @@ S4_to_R7_class <- function(x, error_base = "") {
   }
 }
 
+# Find all non-virtual classes
+S4_class_dispatch <- function(x) {
+  x <- methods::getClass(x)
+  self <- S4_class_name(x@className, x@package)
+
+  # Find all extended classes, stripping self
+  extends <- unname(methods::extends(x, fullInfo = TRUE))
+  extends <- Filter(function(x) methods::is(x, "SClassExtension"), extends)
+
+  classes <- lapply(extends, function(x) methods::getClass(x@superClass))
+  classes <- Filter(function(x) !x@virtual, classes)
+
+  c(self, vcapply(classes, function(x) S4_class_name(x@className, x@package)))
+}
+
+S4_class_name <- function(class, package = NULL) {
+  package <- package %||% attr(class, "package")
+
+  if (identical(package, "methods") && class %in% names(base_classes)) {
+    class
+  } else if (is.null(package) || identical(package, ".GlobalEnv")) {
+    paste0("S4/", class)
+  } else {
+    paste0("S4/", package, "::", class)
+  }
+}
+
 # R7 handles unions at method registration time, where as S4 handles them at
 # dispatch time.
 S4_strip_union <- function(class_names) {
@@ -40,4 +67,10 @@ S4_strip_union <- function(class_names) {
   is_union <- vlapply(classes, methods::is, "ClassUnionRepresentation")
 
   setdiff(class_names[!is_union], "vector")
+}
+
+S4_remove_classes <- function(classes, where = parent.frame()) {
+  for (class in classes) {
+    methods::removeClass(class, topenv(where))
+  }
 }

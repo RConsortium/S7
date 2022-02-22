@@ -33,3 +33,68 @@ test_that("converts S4 representation of S3 classes to R7 representation", {
 test_that("errors on non-S4 classes", {
   expect_snapshot(S4_to_R7_class(1), error = TRUE)
 })
+
+
+describe("S4_class_dispatch", {
+  it("returns name of base class", {
+    on.exit(S4_remove_classes("Foo1"))
+    setClass("Foo1", slots = list("x" = "numeric"))
+    expect_equal(S4_class_dispatch("Foo1"), "S4/Foo1")
+  })
+
+  it("respects single inheritance hierarchy", {
+    on.exit(S4_remove_classes(c("Foo1", "Foo2","Foo3")))
+
+    setClass("Foo1", slots = list("x" = "numeric"))
+    setClass("Foo2", contains = "Foo1")
+    setClass("Foo3", contains = "Foo2")
+    expect_equal(S4_class_dispatch("Foo3"), c("S4/Foo3", "S4/Foo2", "S4/Foo1"))
+  })
+
+  it("performs breadth first search for multiple dispatch", {
+    on.exit(S4_remove_classes(c("Foo1a", "Foo1b","Foo2a", "Foo2b", "Foo3")))
+    setClass("Foo1a", slots = list("x" = "numeric"))
+    setClass("Foo1b", contains = "Foo1a")
+    setClass("Foo2a", slots = list("x" = "numeric"))
+    setClass("Foo2b", contains = "Foo2a")
+    setClass("Foo3", contains = c("Foo1b", "Foo2b"))
+    expect_equal(
+      S4_class_dispatch("Foo3"),
+      c("S4/Foo3", "S4/Foo1b", "S4/Foo2b", "S4/Foo1a", "S4/Foo2a")
+    )
+  })
+
+  it("handles extensions of base classes", {
+    on.exit(S4_remove_classes("Foo1"))
+    setClass("Foo1", contains = "character")
+    expect_equal(S4_class_dispatch("Foo1"), c("S4/Foo1", "character"))
+  })
+
+  it("ignores unions", {
+    on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
+
+    setClass("Foo1", slots = list("x" = "numeric"))
+    setClass("Foo2", slots = list("x" = "numeric"))
+    setClassUnion("Foo3", c("Foo1", "Foo2"))
+
+    expect_equal(S4_class_dispatch("Foo1"), "S4/Foo1")
+    expect_equal(S4_class_dispatch("Foo2"), "S4/Foo2")
+  })
+
+  it("captures explicit package name", {
+    on.exit(S4_remove_classes("Foo1"))
+    setClass("Foo1", package = "pkg")
+    expect_equal(S4_class_dispatch("Foo1"), "S4/pkg::Foo1")
+  })
+
+  it("captures implicit package name", {
+    on.exit(S4_remove_classes("Foo1", env))
+
+    env <- new.env()
+    env$.packageName <- "mypkg"
+    setClass("Foo1", where = env)
+    expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
+  })
+
+})
+
