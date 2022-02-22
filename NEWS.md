@@ -2,7 +2,7 @@
 
 ## Feb 2022
 
-* `cast()` and `cast_next()` for persistent and transient casts (#110, #136).
+* `cast()` and `super()` for persistent and transient casts (#110, #136).
 
 * `new_generic()` now requires `dispatch_args` (180). This means that 
   `new_generic()` will typically be called without names. Either 

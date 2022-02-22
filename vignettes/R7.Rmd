@@ -104,11 +104,11 @@ bar("hi", 42)
 ## Calling the method for a parent class
 
 Sometimes you want to implement a method in terms of behavior already provided by its superclass.
-If you need to access a method for a superclass that your class is overriding, you can use `cast_next()`:
+If you need to access a method for a superclass that your class is overriding, you can use `super()`:
 
 ```{r}
 method(bar, list(text, "double")) <- function(x, y, ...) {
-  res <- bar(cast_next(x), y)
+  res <- bar(super(x), y)
   paste0("2 ", res)
 }
 ```

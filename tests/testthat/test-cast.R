@@ -31,7 +31,7 @@ test_that("fallback casts work", {
   expect_equal(cast(character2("x"), character), "x")
 })
 
-describe("cast_next()", {
+describe("super()", {
   it("overrides dispatch, matching exact class", {
     foo1 <- new_class("foo1")
     foo2 <- new_class("foo2", foo1)
@@ -41,8 +41,8 @@ describe("cast_next()", {
     method(bar, foo1) <- function(x) 1
     method(bar, foo3) <- function(x) 3
 
-    expect_error(bar(cast_next(foo3())), "Can't find method")
-    expect_equal(bar(cast_next(foo3(), foo1)), 1)
+    expect_error(bar(super(foo3())), "Can't find method")
+    expect_equal(bar(super(foo3(), foo1)), 1)
   })
 
   it("only affects one dispatch", {
@@ -57,15 +57,15 @@ describe("cast_next()", {
     method(bar2, foo1) <- function(x) c(1, bar1(x))
     method(bar2, foo2) <- function(x) c(2, bar1(x))
 
-    expect_equal(bar2(cast_next(foo2(), foo1)), c(1, 2))
+    expect_equal(bar2(super(foo2(), foo1)), c(1, 2))
     expect_equal(bar2(cast(foo2(), foo1)), c(1, 1))
   })
 
   it("checks to", {
     expect_snapshot(error = TRUE, {
-      cast_next(R7_object)
+      super(R7_object)
       foo <- new_class("foo")
-      cast_next(foo(), character)
+      super(foo(), character)
     })
   })
 })

@@ -44,27 +44,27 @@ cast <- function(from, to, ...) {
 #' Force one method dispatch to use a superclass
 #'
 #' @description
-#' `cast_next()` is a variant of `cast()` that only affects the dispatch
+#' `super()` is a variant of `cast()` that only affects the dispatch
 #' for single generic. It is useful when you want to re-call a generic,
 #' forcing method dispatch to find an implementation for a superclass.
 #'
 #' # Compared to S3 and S4
-#' `cast_next()` performs a similar role to [NextMethod()] in S3 or
+#' `super()` performs a similar role to [NextMethod()] in S3 or
 #' [methods::callNextMethod()] in S4, but is much more explicit:
 #'
-#' * The class that `cast_next()` will dispatch to is known at the time you
-#'   write `cast_next()`, not only when it's called.
+#' * The class that `super()` will dispatch to is known at the time you
+#'   write `super()`, not only when it's called.
 #' * All arguments to the generic are explicit; they are not automatically
 #'   passed along.
 #'
-#' This makes `cast_next()` more verbose, but substantially easier to
+#' This makes `super()` more verbose, but substantially easier to
 #' understand and reason about.
 #'
 #' @param from An R7 object to cast.
 #' @param to An R7 class specification, passed to [as_class()]. Must be a
 #'   superclass of `object`. If not specified, defaults to the parent of
 #'   `from`.
-#' @returns An `R7_cast_next` object which should always be passed
+#' @returns An `R7_super` object which should always be passed
 #'   immediately to a generic. It has no other special behavior.
 #' @export
 #' @examples
@@ -78,11 +78,11 @@ cast <- function(from, to, ...) {
 #' method(total, foo2) <- function(x) total(x) + x@z
 #'
 #' # This ensures the nested total calls the parent method
-#' method(total, foo2) <- function(x) total(cast_next(x)) + x@z
+#' method(total, foo2) <- function(x) total(super(x)) + x@z
 #'
 #' total(foo2(1, 2, 3))
 #'
-#' # To see the difference between cast() and cast_next() we need a
+#' # To see the difference between cast() and super() we need a
 #' # method that calls another generic
 #'
 #' bar1 <- new_generic("bar1", "x")
@@ -97,9 +97,9 @@ cast <- function(from, to, ...) {
 #' bar2(obj)
 #' # cast() affects every generic:
 #' bar2(cast(obj, foo1))
-#' # cast_next() only affects the _next_ generic:
-#' bar2(cast_next(obj, foo1))
-cast_next <- function(from, to = NULL) {
+#' # super() only affects the _next_ generic:
+#' bar2(super(obj, foo1))
+super <- function(from, to = NULL) {
   check_R7(from)
 
   if (is.null(to)) {
@@ -127,6 +127,6 @@ cast_next <- function(from, to = NULL) {
       object = from,
       dispatch = class_register(to)
     ),
-    class = "R7_cast_next"
+    class = "R7_super"
   )
 }

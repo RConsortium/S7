@@ -116,7 +116,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         // Evaluate the original promise so we can look up its class
         SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
-        if (!Rf_inherits(val, "R7_cast_next")) {
+        if (!Rf_inherits(val, "R7_super")) {
           // Update the value of the promise to avoid evaluating it
           // again in the method body
           SET_PRVALUE(arg, val);
