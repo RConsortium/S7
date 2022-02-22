@@ -147,7 +147,7 @@ class_dispatch <- function(x) {
     NULL = c("NULL", "ANY"),
     missing = "MISSING",
     any = "ANY",
-    S4 = c(S4_strip_union(methods::extends(x)), "ANY"),
+    S4 = c(S4_class_dispatch(methods::extends(x)), "ANY"),
     R7 = c(x@name, class_dispatch(x@parent)),
     R7_base = c(x$class, "R7_object", "ANY"),
     R7_S3 = c(x$class, "R7_object", "ANY"),
@@ -161,7 +161,7 @@ class_register <- function(x) {
     NULL = "NULL",
     missing = "MISSING",
     any = "ANY",
-    S4 = as.character(x@className),
+    S4 = S4_class_name(x),
     R7 = x@name,
     R7_base = x$class,
     R7_S3 = x$class[[1]],
@@ -222,7 +222,7 @@ obj_dispatch <- function(x) {
   switch(obj_type(x),
     base = c(.class2(x), "ANY"),
     S3 = c(class(x), "ANY"),
-    S4 = c(S4_strip_union(methods::is(x)), "ANY"),
+    S4 = c(S4_class_dispatch(methods::getClass(class(x))), "ANY"),
     R7 = c(class(x), "ANY") # = class_dispatch(object_class(x))
   )
 }
