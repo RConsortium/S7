@@ -2,6 +2,9 @@
 
 ## Feb 2022
 
+* Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
+  R7 classes in different packages (#48, #163).
+
 * `new_generic()` now requires `dispatch_args` (180). This means that 
   `new_generic()` will typically be called without names. Either 
   `new_generic("foo", "x")` for a "standard" generic, or 

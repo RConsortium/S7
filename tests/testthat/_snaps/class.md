@@ -15,6 +15,7 @@
       <foo2/foo1/R7_object> constructor
       @ name       :  chr "foo2"
       @ parent     :  <foo1/R7_object> constructor
+      @ package    :  NULL
       @ properties : List of 2
        .. $ x: <R7_property> 
        ..  ..$ name   :  chr "x"
@@ -46,6 +47,10 @@
       new_class("foo", 1)
     Error <simpleError>
       Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Code
+      new_class("foo", package = 1)
+    Error <simpleError>
+      `package` must be a single string
     Code
       new_class("foo", constructor = 1)
     Error <simpleError>

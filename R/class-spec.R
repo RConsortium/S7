@@ -132,7 +132,7 @@ class_desc <- function(x) {
     missing = "<MISSING>",
     any = "<ANY>",
     S4 = paste0("S4<", x@className, ">"),
-    R7 = paste0("<", x@name, ">"),
+    R7 = paste0("<", R7_class_name(x), ">"),
     R7_base = paste0("<", x$class, ">"),
     R7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     R7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
@@ -147,8 +147,8 @@ class_dispatch <- function(x) {
     NULL = c("NULL", "ANY"),
     missing = "MISSING",
     any = "ANY",
-    S4 = c(S4_strip_union(methods::extends(x)), "ANY"),
-    R7 = c(x@name, class_dispatch(x@parent)),
+    S4 = c(S4_class_dispatch(methods::extends(x)), "ANY"),
+    R7 = c(R7_class_name(x), class_dispatch(x@parent)),
     R7_base = c(x$class, "R7_object", "ANY"),
     R7_S3 = c(x$class, "R7_object", "ANY"),
     stop("Unsupported")
@@ -161,8 +161,8 @@ class_register <- function(x) {
     NULL = "NULL",
     missing = "MISSING",
     any = "ANY",
-    S4 = as.character(x@className),
-    R7 = x@name,
+    S4 = S4_class_name(x),
+    R7 = R7_class_name(x),
     R7_base = x$class,
     R7_S3 = x$class[[1]],
     stop("Unsupported")
@@ -176,7 +176,7 @@ class_deparse <- function(x) {
     missing = "missing_class",
     any = "any_class",
     S4 = as.character(x@className),
-    R7 = x@name,
+    R7 = R7_class_name(x),
     R7_base = encodeString(x$class, quote = '"'),
     R7_union = {
       classes <- vcapply(x$classes, class_deparse)
@@ -192,7 +192,7 @@ class_inherits <- function(x, what) {
     missing = FALSE,
     any = TRUE,
     S4 = isS4(x) && methods::is(x, what),
-    R7 = inherits(x, "R7_object") && inherits(x, what@name),
+    R7 = inherits(x, "R7_object") && inherits(x, R7_class_name(what)),
     R7_base = what$class %in% .class2(x),
     R7_union = any(vlapply(what$classes, class_inherits, x = x)),
     R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
@@ -222,7 +222,7 @@ obj_dispatch <- function(x) {
   switch(obj_type(x),
     base = c(.class2(x), "ANY"),
     S3 = c(class(x), "ANY"),
-    S4 = c(S4_strip_union(methods::is(x)), "ANY"),
+    S4 = c(S4_class_dispatch(methods::getClass(class(x))), "ANY"),
     R7 = c(class(x), "ANY") # = class_dispatch(object_class(x))
   )
 }
