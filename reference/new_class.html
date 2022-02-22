@@ -72,6 +72,7 @@ when an object is passed to a generic.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_class</span><span class="op">(</span>
   <span class="va">name</span>,
   parent <span class="op">=</span> <span class="va">R7_object</span>,
+  package <span class="op">=</span> <span class="cn">NULL</span>,
   properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,
   constructor <span class="op">=</span> <span class="cn">NULL</span>,
   validator <span class="op">=</span> <span class="cn">NULL</span>
@@ -90,6 +91,12 @@ There are four options:</p><ul><li><p>The R7 class, like <a href="r7_object.html
 <li><p>An S3 class wrapped by <code><a href="new_S3_class.html">new_S3_class()</a></code>.</p></li>
 <li><p>A base type, like <code>logical</code>, <code>double</code>, or <code>character</code>.</p></li>
 </ul></dd>
+<dt>package</dt>
+<dd><p>Package name. It is good practice to set the package
+name when exporting an R7 class from a package because it includes
+the package name in the class name when it's used for dispatch. This
+allows different packages to use the same name to refer to different
+classes.</p></dd>
 <dt>properties</dt>
 <dd><p>A list specifying the properties (data) that
 every object of the class will possess. Each property can either be
