@@ -3,9 +3,11 @@
 #' @description
 #' A generic function uses different implementations (_methods_) depending on
 #' the class of one or more arguments (the _signature_). Create a new generic
-#' with `new_generic()` then use [method<-] to add methods to it. The body of
-#' the generic always contains `method_call()`, which takes care of finding and
-#' calling the appropriate method.
+#' with `new_generic()` then use [method<-] to add methods to it.
+#'
+#' Method dispatch is performed by `method_call()`, which must always be
+#' included in the body of the generic, but in most cases `new_generic()` will
+#' generate this for you.
 #'
 #' @section Dispatch arguments:
 #' The arguments that are used to pick the method are called the **dispatch
@@ -19,19 +21,16 @@
 #'
 #' @param name The name of the generic. This should be the same as the object
 #'   that you assign it to.
-#' @param dispatch_args A character vector giving the names of the arguments
-#'   that form the signature, i.e. the arguments used for method dispatch.
-#'
-#'   If `dispatch_args` are omitted, but `fun` is supplied, will default to the
-#'   arguments that appear before `...` in `fun`. If there are no dots, it will
-#'   default to the first argument. If both `fun` and `dispatch_args` are
-#'   supplied, the `dispatch_args` must appear at the start of `fun`'s formals.
-#'
+#' @param dispatch_args A character vector giving the names of one or more
+#'   arguments used to find the method.
 #' @param fun An optional specification of the generic, which must call
 #'  `method_call()` to dispatch to methods. This is usually generated
 #'  automatically from the `dispatch_args`, but you may want to supply it if
-#'  you want to add additional required arguments, or perform some standardised
-#'  computation in the generic.
+#'  you want to add additional required arguments, omit `...`, or perform
+#'  some standardised computation in the generic.
+#'
+#'  The `dispatch_args` must be the first arguments to `fun`, and, if present,
+#'  `...` must immediately follow them.
 #' @seealso [new_external_generic()] to define a method for a generic
 #'  in another package without taking a strong dependency on it.
 #' @export
@@ -47,57 +46,35 @@
 #' type_of(letters)
 #' type_of(mean)
 #'
-#' # If you want to require methods implement additional arguments, supply
-#' # them after ... in the call
-#' mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
+#' # If you want to require that methods implement additional arguments,
+#' # you can use a custom function:
+#' mean2 <- new_generic("mean2", "x", function(x, ..., na.rm = FALSE) {
 #'    method_call()
 #' })
-#' method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
+#'
+#' method(mean2, "numeric") <- function(x, ..., na.rm = FALSE) {
 #'   if (na.rm) {
 #'     x <- x[!is.na(x)]
 #'   }
 #'   sum(x) / length(x)
 #' }
-#' method(mean2, "character") <- function(x, ..., na.rm = TRUE) {
+#'
+#' # You'll be warned if you forget the argument:
+#' method(mean2, "character") <- function(x, ...) {
 #'   stop("Not supported")
 #' }
-#'
-new_generic <- function(name, dispatch_args = NULL, fun = NULL) {
+new_generic <- function(name, dispatch_args, fun = NULL) {
   check_name(name)
 
-  if (is.null(dispatch_args) && is.null(fun)) {
-    stop(
-      "Must call `new_generic()` with at least one of `dispatch_args` or `fun`",
-      call. = FALSE
-    )
-  }
+  dispatch_args <- check_dispatch_args(dispatch_args, fun)
 
-  if (is.null(dispatch_args)) {
-    check_generic(fun)
-    dispatch_args <- guess_dispatch_args(fun)
-  } else {
-    dispatch_args <- check_dispatch_args(dispatch_args, fun)
-
-    if (is.null(fun)) {
-      args <- c(dispatch_args, "...")
-      args <- setNames(lapply(args, function(i) quote(expr = )), args)
-      fun <- new_function(args, quote(method_call()), topenv(environment()))
-    }
+  if (is.null(fun)) {
+    args <- c(dispatch_args, "...")
+    args <- setNames(lapply(args, function(i) quote(expr = )), args)
+    fun <- new_function(args, quote(method_call()), topenv(environment()))
   }
 
   R7_generic(fun, name = name, dispatch_args = dispatch_args)
-}
-
-guess_dispatch_args <- function(fun) {
-  formals <- formals(fun)
-  # all arguments before ...
-  if (length(formals) == 0) {
-    character()
-  } else if ("..." %in% names(formals)) {
-    names(formals)[seq_len(which(names(formals) == "...") - 1)]
-  } else {
-    names(formals)[[1]]
-  }
 }
 
 check_dispatch_args <- function(dispatch_args, fun = NULL) {
