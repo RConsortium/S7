@@ -41,23 +41,24 @@ cast <- function(from, to, ...) {
 # Converted to R7_generic on .onLoad
 
 
-#' Force next method dispatch to use a superclass
+#' Force one method dispatch to use a superclass
 #'
 #' @description
-#' `cast_next()` is a variant of `cast()` that only affects the next method
-#' dispatch. It is useful when you want to re-call a generic, forcing method
-#' dispatch to find an implementation for a superclass.
+#' `cast_next()` is a variant of `cast()` that only affects the dispatch
+#' for single generic. It is useful when you want to re-call a generic,
+#' forcing method dispatch to find an implementation for a superclass.
 #'
 #' # Compared to S3 and S4
 #' `cast_next()` performs a similar role to [NextMethod()] in S3 or
-#' [methods::callNextMethod()] in S4. It has two main differences:
+#' [methods::callNextMethod()] in S4, but is much more explicit:
 #'
-#' * It casts to a class that is known at definition-time.
-#' * You must manually pass along all of the arguments.
+#' * The class that `cast_next()` will dispatch to is known at the time you
+#'   write `cast_next()`, not only when it's called.
+#' * All arguments to the generic are explicit; they are not automatically
+#'   passed along.
 #'
-#' This makes `cast_next()` more verbose, but substantially easier to reason
-#' about. It also avoids some of the dynamism of `NextMethod()`: registering
-#' methods for a parent class can not method dispatch for a child class.
+#' This makes `cast_next()` more verbose, but substantially easier to
+#' understand and reason about.
 #'
 #' @param from An R7 object to cast.
 #' @param to An R7 class specification, passed to [as_class()]. Must be a
@@ -80,6 +81,24 @@ cast <- function(from, to, ...) {
 #' method(total, foo2) <- function(x) total(cast_next(x)) + x@z
 #'
 #' total(foo2(1, 2, 3))
+#'
+#' # To see the difference between cast() and cast_next() we need a
+#' # method that calls another generic
+#'
+#' bar1 <- new_generic("bar1", "x")
+#' method(bar1, foo1) <- function(x) 1
+#' method(bar1, foo2) <- function(x) 2
+#'
+#' bar2 <- new_generic("bar2", "x")
+#' method(bar2, foo1) <- function(x) c(1, bar1(x))
+#' method(bar2, foo2) <- function(x) c(2, bar1(x))
+#'
+#' obj <- foo2(1, 2, 3)
+#' bar2(obj)
+#' # cast() affects every generic:
+#' bar2(cast(obj, foo1))
+#' # cast_next() only affects the _next_ generic:
+#' bar2(cast_next(obj, foo1))
 cast_next <- function(from, to = NULL) {
   check_R7(from)
 

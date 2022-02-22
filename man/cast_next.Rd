@@ -2,7 +2,7 @@
 % Please edit documentation in R/cast.R
 \name{cast_next}
 \alias{cast_next}
-\title{Force next method dispatch to use a superclass}
+\title{Force one method dispatch to use a superclass}
 \usage{
 cast_next(from, to = NULL)
 }
@@ -18,21 +18,22 @@ An \code{R7_cast_next} object which should always be passed
 immediately to a generic. It has no other special behavior.
 }
 \description{
-\code{cast_next()} is a variant of \code{cast()} that only affects the next method
-dispatch. It is useful when you want to re-call a generic, forcing method
-dispatch to find an implementation for a superclass.
+\code{cast_next()} is a variant of \code{cast()} that only affects the dispatch
+for single generic. It is useful when you want to re-call a generic,
+forcing method dispatch to find an implementation for a superclass.
 }
 \section{Compared to S3 and S4}{
 \code{cast_next()} performs a similar role to \code{\link[=NextMethod]{NextMethod()}} in S3 or
-\code{\link[methods:NextMethod]{methods::callNextMethod()}} in S4. It has two main differences:
+\code{\link[methods:NextMethod]{methods::callNextMethod()}} in S4, but is much more explicit:
 \itemize{
-\item It casts to a class that is known at definiton-time.
-\item You must manually pass along all of the arguments.
+\item The class that \code{cast_next()} will dispatch to is known at the time you
+write \code{cast_next()}, not only when it's called.
+\item All arguments to the generic are explicit; they are not automatically
+passed along.
 }
 
-This makes \code{cast_next()} more verbose, but substantially easier to reason
-about. It also avoids some of the dynamism of \code{NextMethod()}: registering
-methods for a parent class can not method dispatch for a child class.
+This makes \code{cast_next()} more verbose, but substantially easier to
+understand and reason about.
 }
 
 \examples{
@@ -49,4 +50,22 @@ method(total, foo2) <- function(x) total(x) + x@z
 method(total, foo2) <- function(x) total(cast_next(x)) + x@z
 
 total(foo2(1, 2, 3))
+
+# To see the difference between cast() and cast_next() we need a
+# method that calls another generic
+
+bar1 <- new_generic("bar1", "x")
+method(bar1, foo1) <- function(x) 1
+method(bar1, foo2) <- function(x) 2
+
+bar2 <- new_generic("bar2", "x")
+method(bar2, foo1) <- function(x) c(1, bar1(x))
+method(bar2, foo2) <- function(x) c(2, bar1(x))
+
+obj <- foo2(1, 2, 3)
+bar2(obj)
+# cast() affects every generic:
+bar2(cast(obj, foo1))
+# cast_next() only affects the _next_ generic:
+bar2(cast_next(obj, foo1))
 }
