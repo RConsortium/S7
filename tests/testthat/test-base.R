@@ -27,6 +27,6 @@ describe("environments", {
 
   it("can be printed", {
     env <- new_class("env", "environment", properties = list(x = double))
-    expect_snapshot(env(x = 1))
+    expect_snapshot(env(x = 1), transform = scrub_environment)
   })
 })
