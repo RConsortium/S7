@@ -1,4 +1,5 @@
 test_that("can work with classGenerators", {
+  on.exit(S4_remove_classes("Foo"))
   Foo <- setClass("Foo")
   expect_equal(S4_to_R7_class(Foo), getClass("Foo"))
 })
@@ -9,6 +10,8 @@ test_that("converts S4 base classes to R7 base classes", {
 })
 
 test_that("converts S4 unions to R7 unions", {
+  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Union1", "Union2")))
+
   setClass("Foo1", slots = "x")
   setClass("Foo2", slots = "x")
 
@@ -68,6 +71,15 @@ describe("S4_class_dispatch", {
     on.exit(S4_remove_classes("Foo1"))
     setClass("Foo1", contains = "character")
     expect_equal(S4_class_dispatch("Foo1"), c("S4/Foo1", "character"))
+  })
+
+  it("handles extensions of S3 classes", {
+    on.exit(S4_remove_classes(c("Soo1", "Foo2", "Foo3")))
+
+    setOldClass(c("Soo1", "Soo"))
+    setClass("Foo2", contains = "Soo1")
+    setClass("Foo3", contains = "Foo2")
+    expect_equal(S4_class_dispatch("Foo3"), c("S4/Foo3", "S4/Foo2", "Soo1", "Soo"))
   })
 
   it("ignores unions", {

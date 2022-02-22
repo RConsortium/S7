@@ -36,20 +36,29 @@ S4_to_R7_class <- function(x, error_base = "") {
 # Find all non-virtual classes
 S4_class_dispatch <- function(x) {
   x <- methods::getClass(x)
-  self <- S4_class_name(x@className, x@package)
+  self <- S4_class_name(x)
 
   # Find all extended classes, stripping self
   extends <- unname(methods::extends(x, fullInfo = TRUE))
   extends <- Filter(function(x) methods::is(x, "SClassExtension"), extends)
 
   classes <- lapply(extends, function(x) methods::getClass(x@superClass))
-  classes <- Filter(function(x) !x@virtual, classes)
+  classes <- Filter(function(x) !x@virtual || is_oldClass(x), classes)
 
-  c(self, vcapply(classes, function(x) S4_class_name(x@className, x@package)))
+  c(self, vcapply(classes, S4_class_name))
 }
 
-S4_class_name <- function(class, package = NULL) {
-  package <- package %||% attr(class, "package")
+is_oldClass <- function(x) {
+  x@virtual && methods::extends(x, "oldClass") && x@className != "oldClass"
+}
+
+S4_class_name <- function(x) {
+  if (is_oldClass(x)) {
+    return(x@className)
+  }
+
+  class <- x@className
+  package <- x@package %||% attr(class, "package")
 
   if (identical(package, "methods") && class %in% names(base_classes)) {
     class
