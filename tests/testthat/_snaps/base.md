@@ -55,3 +55,11 @@
        $ function   : <R7_base_class>: <function>
        $ environment: <R7_base_class>: <environment>
 
+# environments: can be printed
+
+    Code
+      env(x = 1)
+    Output
+      <env><environment: 0x7fe79bfda5d0> 
+      @ x:  num 1
+

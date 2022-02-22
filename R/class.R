@@ -210,7 +210,7 @@ new_object <- function(.parent, ...) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  str.R7_object(x, ...)
+  str(x, ...)
   invisible(x)
 }
 #' @export
@@ -219,9 +219,10 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
   cat(obj_desc(object))
 
   if (typeof(object) != "S4") {
-    bare <- object
-    attributes(bare) <- NULL
-    str(bare, nest.lev = nest.lev + 1)
+    attrs <- attributes(object)
+    attributes(object) <- NULL
+    str(object, nest.lev = nest.lev + 1)
+    attributes(object) <- attrs
   } else {
     cat("\n")
   }
