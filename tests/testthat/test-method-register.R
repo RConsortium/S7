@@ -132,9 +132,9 @@ test_that("check_method warn if default arguments don't match", {
 
 test_that("R7_method printing", {
   foo <- new_generic("foo", c("x", "y"))
-  method(foo, list(text, "integer")) <- function(x, y, ...) paste0("bar:", x, y)
+  method(foo, list(integer, integer)) <- function(x, y, ...) paste0("bar:", x, y)
   expect_snapshot(
-    method(foo, list(text, "integer")),
+    method(foo, list(integer, integer)),
     transform = scrub_environment
   )
 })

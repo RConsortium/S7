@@ -46,7 +46,7 @@
 #'
 #' ```R
 #' S3_Date <- new_S3_class("Date",
-#'   function(.data) {
+#'   function(.data = integer()) {
 #'     .Date(.data)
 #'   },
 #'   function(object) {
@@ -66,6 +66,10 @@
 #'   have an R7 class inherit from an S3 class. It must be specified in the
 #'   same way as a R7 constructor: the first argument should be `.data`
 #'   (the base type whose attributes will be modified).
+#'
+#'   All arguments to the constructor should have default values so that
+#'   when the constructor is called with no arguments, it returns returns
+#'   an "empty", but valid, object.
 #' @param validator An optional validator used by [validate()] to check that
 #'   the R7 object adheres to the constraints of the S3 class.
 #'
@@ -77,21 +81,20 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     stop("`class` must be a character vector", call. = FALSE)
   }
   if (!is.null(constructor)) {
-    check_constructor(constructor)
+    check_S3_constructor(constructor)
   } else {
     constructor <- function(.data) {
       stop(sprintf("S3 class <%s> doesn't have a constructor", class[[1]]), call. = FALSE)
     }
   }
 
-  structure(
-    list(
-      class = class,
-      constructor = constructor,
-      validator = validator
-    ),
-    class = "R7_S3_class"
+  out <- list(
+    class = class,
+    constructor = constructor,
+    validator = validator
   )
+  class(out) <- "R7_S3_class"
+  out
 }
 
 #' @export
@@ -106,7 +109,7 @@ str.R7_S3_class <- function(object, ..., nest.lev = 0) {
   print(object, ..., nest.lev = nest.lev)
 }
 
-check_constructor <- function(constructor) {
+check_S3_constructor <- function(constructor) {
   arg_names <- names(formals(constructor))
   if (arg_names[[1]] != ".data") {
     stop("First argument to `constructor` must be .data", call. = FALSE)
@@ -124,7 +127,7 @@ is_S3_class <- function(x) {
 # Define a few base examples
 
 S3_factor <- new_S3_class("factor",
-  function(.data, levels) {
+  function(.data = integer(), levels = character()) {
     structure(.data, levels = levels, class = "factor")
   },
   function(object) {
@@ -138,7 +141,7 @@ S3_factor <- new_S3_class("factor",
 )
 
 S3_POSIXct <- new_S3_class("POSIXct",
-  function(.data, tz = "") {
+  function(.data = double(), tz = "") {
     .POSIXct(.data, tz = tz)
   },
   function(object) {
@@ -152,7 +155,7 @@ S3_POSIXct <- new_S3_class("POSIXct",
 )
 
 S3_data.frame <- new_S3_class("data.frame",
-  function(.data, row.names = NULL) {
+  function(.data = list(), row.names = NULL) {
     if (is.null(row.names)) {
       list2DF(.data)
     } else {
@@ -161,12 +164,13 @@ S3_data.frame <- new_S3_class("data.frame",
       out
     }
   },
-  function(object) {
+  function(self) {
+    rn <- attr(self, "row.names")
     c(
-      if (!is.list(.data))
+      if (!is.list(self))
         "Underlying data must be a <list>",
-      if (!is.character(row.names) || !is.integer(row.names) || !is.null(row.names))
-        "attr(, 'rownames') must be a character vector, integer vector, or NULL"
+      if (!is.character(rn) && !is.integer(rn))
+        "attr(, 'rownames') must be a character or integer vector"
     )
   }
 )

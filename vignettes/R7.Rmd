@@ -20,13 +20,10 @@ library(R7)
 
 ## Classes and objects
 
-```{r error = TRUE}
+```{r}
 range <- new_class("range",
-  constructor = function(start, end) {
-    new_object(start = start, end = end)
-  },
-  validator = function(x) {
-    if (x@end < x@start) {
+  validator = function(self) {
+    if (self@end < self@start) {
       "<range>@end must be greater than or equal to <range>@start"
     }
   },
@@ -36,10 +33,10 @@ range <- new_class("range",
     new_property(
       name = "length",
       class = "numeric",
-      getter = function(x) x@end - x@start,
-      setter = function(x, value) {
-        x@end <- x@start + value
-        x
+      getter = function(self) self@end - self@start,
+      setter = function(self, value) {
+        self@end <- self@start + value
+        self
       }
     )
   )
@@ -56,7 +53,9 @@ x@length
 x@length <- 5
 
 x@length
+```
 
+```{r error = TRUE}
 # incorrect properties throws an error
 x@middle
 
@@ -65,9 +64,11 @@ x@end <- "foo"
 
 # assigning properties runs the validator
 x@end <- 0
+```
 
+```{r}
 # Print methods for both R7_class objects
-object_class(x)
+range
 
 # As well as normal R7_objects
 x

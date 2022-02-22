@@ -1,7 +1,7 @@
-new_base_class <- function(name, default) {
-  constructor <- function(.data) {
-    if (missing(.data)) {
-      .data <- default
+new_base_class <- function(name) {
+  constructor <- function(.data = missing_class) {
+    if (is_missing_class(.data)) {
+      .data <- base_default(name)
     }
     .data
   }
@@ -13,15 +13,30 @@ new_base_class <- function(name, default) {
     }
   }
 
-  structure(
-    list(
-      class = name,
-      constructor = constructor,
-      validator = validator
-    ),
-    class = "R7_base_class"
+  out <- list(
+    class = name,
+    constructor = constructor,
+    validator = validator
   )
+  class(out) <- "R7_base_class"
+  out
 }
+
+base_default <- function(type) {
+  switch(type,
+    logical = logical(),
+    integer = integer(),
+    double = double(),
+    complex = complex(),
+    character = character(),
+    raw = raw(),
+    list = list(),
+    expression = expression(),
+
+    `function` = function() {},
+    environment = new.env(parent = emptyenv())
+)}
+
 
 is_base_class <- function(x) inherits(x, "R7_base_class")
 
@@ -38,17 +53,16 @@ str.R7_base_class <- function(object, ..., nest.lev = 0) {
 }
 
 base_classes <- list(
-  logical = new_base_class("logical", logical()),
-  integer = new_base_class("integer", integer()),
-  double = new_base_class("double", double()),
-  complex = new_base_class("complex", complex()),
-  character = new_base_class("character", character()),
-  raw = new_base_class("raw", raw()),
+  logical = new_base_class("logical"),
+  integer = new_base_class("integer"),
+  double = new_base_class("double"),
+  complex = new_base_class("complex"),
+  character = new_base_class("character"),
+  raw = new_base_class("raw"),
 
-  list = new_base_class("list", list()),
-  expression = new_base_class("expression", expression()),
+  list = new_base_class("list"),
+  expression = new_base_class("expression"),
 
-  `function` = new_base_class("function", function() {}),
-  # TODO: create a new environment in the constructor
-  environment = new_base_class("environment", new.env(parent = emptyenv()))
+  `function` = new_base_class("function"),
+  environment = new_base_class("environment")
 )

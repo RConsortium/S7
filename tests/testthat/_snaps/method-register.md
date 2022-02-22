@@ -69,20 +69,12 @@
       - Generic: 2
       - Method:  1
 
----
-
-    Code
-      foo <- new_generic("foo", "x", function(x, y = 1) method_call())
-      check_method(function(x) { }, foo)
-    Error <simpleError>
-      foo(???) doesn't have argument `y`
-
 # R7_method printing
 
     Code
-      method(foo, list(text, "integer"))
+      method(foo, list(integer, integer))
     Output
-      <R7_method> method(foo, list(text, "integer"))
+      <R7_method> method(foo, list("integer", "integer"))
       function (x, y, ...) 
       paste0("bar:", x, y)
       <environment: 0x0>

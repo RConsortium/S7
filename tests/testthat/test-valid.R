@@ -1,10 +1,10 @@
 test_that("validate() validates object and type recursively", {
   klass <- new_class("klass",
     properties = list(x = "double", y = "double"),
-    validator = function(object) {
+    validator = function(self) {
       c(
-        if (object@x < 0) "x must be positive",
-        if (object@y > 0) "y must be negative"
+        if (self@x < 0) "x must be positive",
+        if (self@y > 0) "y must be negative"
       )
     }
   )
@@ -39,30 +39,30 @@ test_that("validate checks base type", {
 })
 
 test_that("valid eventually calls the validation function only at the end", {
-  obj <- range(1, 10)
+  foo <- new_class("foo",
+    properties = list(x = double),
+    validator = function(self) if (self@x < 0) "must be positive"
+  )
+  obj <- foo(10)
 
-  obj <- valid_eventually(
-    obj,
-    function(x) {
-      x@start <- 11
-      x@start <- 1
-      x
-    })
-
+  obj <- valid_eventually(obj, function(self) {
+    self@x <- -1
+    self@x <- 1
+    self
+  })
   expect_error(validate(obj), NA)
 })
 
 test_that("valid implicitly does _not_ call the validation function", {
-  obj <- range(1, 10)
-
-  obj <- valid_implicitly(
-    obj,
-    function(x) {
-      x@start <- 11
-      x
-    })
-
-  expect_error(validate(obj),
-    "must be greater than"
+  foo <- new_class("foo",
+    properties = list(x = double),
+    validator = function(self) if (self@x < 0) "must be positive"
   )
+  obj <- foo(10)
+
+  obj <- valid_implicitly(obj, function(self) {
+    self@x <- -1
+    self
+  })
+  expect_error(validate(obj), "must be positive")
 })

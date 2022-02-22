@@ -3,9 +3,11 @@ test_that("new_S3_class has a print method", {
 })
 
 test_that("can construct objects that extend S3 classes", {
-  foo <- new_S3_class("foo", function(.data) structure(list(), class = "foo"))
-  foo2 <- new_class("foo2", foo)
-  expect_s3_class(foo2(), "foo")
+  ordered2 <- new_class("ordered2", parent = S3_factor)
+  x <- ordered2(c(1L, 2L, 1L), letters[1:3])
+  expect_equal(class(x), c("ordered2", "factor", "R7_object"))
+  expect_equal(prop_names(x), character())
+  expect_error(x@levels, "Can't find property")
 })
 
 test_that("subclasses inherit validator", {
@@ -32,4 +34,10 @@ test_that("new_S3_class() checks its inputs", {
 test_that("default new_S3_class constructor errors", {
   # constructor errors if needed
   expect_snapshot(class_construct(new_S3_class("foo"), 1), error = TRUE)
+})
+
+test_that("can construct data frame subclass", {
+  dataframe2 <- new_class("dataframe2", S3_data.frame)
+  df <- dataframe2(list(x = 1:3))
+  expect_s3_class(df, "data.frame")
 })

@@ -26,7 +26,7 @@ test_that("displays nicely", {
 
 test_that("new_method works with both hard and soft dependencies", {
   skip_on_os("windows")
-  # skip_if(quick_test())
+  skip_if(quick_test())
 
   tmp_lib <- tempfile()
   dir.create(tmp_lib)

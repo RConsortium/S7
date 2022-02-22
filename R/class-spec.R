@@ -97,6 +97,7 @@ class_friendly <- function(x) {
 class_constructor <- function(.x, ...) {
   switch(class_type(.x),
     NULL = function() NULL,
+    any = function() NULL,
     S4 = function(...) methods::new(.x, ...),
     R7 = .x,
     R7_base = .x$constructor,
@@ -148,8 +149,8 @@ class_dispatch <- function(x) {
     any = "ANY",
     S4 = c(S4_strip_union(methods::extends(x)), "ANY"),
     R7 = c(x@name, class_dispatch(x@parent)),
-    R7_base = c("R7_object", x$class, "ANY"),
-    R7_S3 = c("R7_object", x$class, "ANY"),
+    R7_base = c(x$class, "R7_object", "ANY"),
+    R7_S3 = c(x$class, "R7_object", "ANY"),
     stop("Unsupported")
   )
 }

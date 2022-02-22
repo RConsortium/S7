@@ -16,6 +16,7 @@ describe("single dispatch", {
   })
 
   it("works for R7 objects", {
+    text <- new_class("text", character)
     method(foo, text) <- function(x) "R7"
 
     expect_equal(foo(text("bar")), "R7")
@@ -36,25 +37,26 @@ describe("single dispatch", {
   })
 
   it("works for unions", {
-    method(foo, new_union(number, "integer")) <- function(x) "union"
+    method(foo, new_union("integer", "logical")) <- function(x) "union"
 
-    expect_equal(foo(number(1)), "union")
+    expect_equal(foo(TRUE), "union")
     expect_equal(foo(1L), "union")
   })
 })
 
 describe("multiple dispatch", {
-  it("works directly", {
-    foo <- new_generic("foo3", c("x", "y"))
-    method(foo, list(text, number)) <- function(x, y) paste0(x, y)
-    expect_equal(foo(text("bar"), number(1)), "bar1")
-  })
+  it("works", {
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2", foo1)
 
-  it("works via inheritance", {
-    foo <- new_generic("foo", c("x", "y"))
-    method(foo, list("character", "numeric")) <- function(x, y) paste0(x, ":", y)
+    bar <- new_generic("bar", c("x", "y"))
+    method(bar, list(foo1, foo1)) <- function(x, y) c(1, 1)
+    method(bar, list(foo2, foo2)) <- function(x, y) c(2, 2)
 
-    expect_equal(foo(text("bar"), number(1)), "bar:1")
+    expect_equal(bar(foo1(), foo1()), c(1, 1))
+    expect_equal(bar(foo1(), foo2()), c(1, 1))
+    expect_equal(bar(foo2(), foo1()), c(1, 1))
+    expect_equal(bar(foo2(), foo2()), c(2, 2))
   })
 })
 
@@ -132,20 +134,20 @@ test_that("method lookup fails with informative messages", {
 })
 
 test_that("next_method works for single dispatch", {
-  foo <- new_generic("foo", "x")
+  foo1 <- new_class("foo1")
+  foo2 <- new_class("foo2", foo1)
 
-  method(foo, text) <- function(x, ...) {
-    R7_data(x) <- paste0("foo-", R7_data(x))
-  }
-  method(foo, "character") <- function(x, ...) {
-    as.character(x)
-  }
+  bar <- new_generic("bar", "x")
+  method(bar, foo1) <- function(x) 1
+  method(bar, foo2) <- function(x) next_method()(x)
 
-  expect_equal(foo(text("hi")), "foo-hi")
+  expect_equal(bar(foo2()), 1)
 })
 
 test_that("next_method works for double dispatch", {
   foo <- new_generic("foo", c("x", "y"))
+  text <- new_class("text", character)
+  number <- new_class("number", double)
 
   method(foo, list(text, number)) <- function(x, y, ...) {
     R7_data(x) <- paste0("foo-", R7_data(x), "-", R7_data(y))

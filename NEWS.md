@@ -2,6 +2,10 @@
 
 ## Feb 2022
 
+* When creating a class, unspecified properties are initialized with their 
+  default value (#67). DISCUSS: to achieve this, the constructor arguments
+  default to `missing_class`.
+  
 * `any_class` and `missing_any` make it possible to dispatch on absent
   arguments and arguments of any class (#67).
 

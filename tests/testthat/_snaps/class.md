@@ -1,65 +1,42 @@
-# R7_class: can be printed
+# R7 classes: print nicely
 
     Code
-      my_class
+      foo2
     Output
       <R7_class>
-      @ name  :  my_class
-      @ parent: <R7_object>
+      @ name  :  foo2
+      @ parent: <foo1>
       @ properties:
-
-# R7_class: str yields all details when used at top-level
-
+       $ x: <integer>
+       $ y: <integer>
     Code
-      str(my_class)
+      str(foo2)
     Output
-      <my_class/R7_object> constructor
-      @ name       :  chr "my_class"
-      @ parent     :  <R7_object> constructor
-      @ properties :  list()
-      @ constructor:  function ()  
-      @ validator  :  function (x)  
+      <foo2/foo1/R7_object> constructor
+      @ name       :  chr "foo2"
+      @ parent     :  <foo1/R7_object> constructor
+      @ properties : List of 2
+       .. $ x: <R7_property> 
+       ..  ..$ name   :  chr "x"
+       ..  ..$ class  :  <R7_base_class>: <integer>
+       ..  ..$ getter :  NULL
+       ..  ..$ setter :  NULL
+       ..  ..$ default:  NULL
+       .. $ y: <R7_property> 
+       ..  ..$ name   :  chr "y"
+       ..  ..$ class  :  <R7_base_class>: <integer>
+       ..  ..$ getter :  NULL
+       ..  ..$ setter :  NULL
+       ..  ..$ default:  NULL
+      @ constructor:  function (x = missing_class, y = missing_class)  
+      @ validator  :  NULL
     Code
-      str(range)
+      str(list(foo2))
     Output
-      <range/R7_object> constructor
-      @ name       :  chr "range"
-      @ parent     :  <R7_object> constructor
-      @ properties : List of 3
-       .. $ start : <R7_property> 
-       ..  ..$ name  :  chr "start"
-       ..  ..$ class :  <R7_union>: <integer> or <double>
-       ..  ..$ getter:  NULL
-       ..  ..$ setter:  NULL
-       .. $ end   : <R7_property> 
-       ..  ..$ name  :  chr "end"
-       ..  ..$ class :  <R7_union>: <integer> or <double>
-       ..  ..$ getter:  NULL
-       ..  ..$ setter:  NULL
-       .. $ length: <R7_property> 
-       ..  ..$ name  :  chr "length"
-       ..  ..$ class :  <R7_union>: <integer> or <double>
-       ..  ..$ getter:  function (x)  
-       ..  ..$ setter:  function (x, value)  
-      @ constructor:  function (start, end)  
-      @ validator  :  function (x)  
+      List of 1
+       $ : <foo2/foo1/R7_object> constructor
 
-# R7_class: str() summarises when nested
-
-    Code
-      list(range)
-    Output
-      [[1]]
-      <R7_class>
-      @ name  :  range
-      @ parent: <R7_object>
-      @ properties:
-       $ start : <integer> or <double>
-       $ end   : <integer> or <double>
-       $ length: <integer> or <double>
-      
-
-# new_class() checks its inputs
+# R7 classes: checks inputs
 
     Code
       new_class(1)
@@ -69,8 +46,20 @@
       new_class("foo", 1)
     Error <simpleError>
       Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+    Code
+      new_class("foo", constructor = 1)
+    Error <simpleError>
+      `constructor` must be a function
+    Code
+      new_class("foo", constructor = function() { })
+    Error <simpleError>
+      `constructor` must contain a call to `new_object()`
+    Code
+      new_class("foo", validator = function() { })
+    Error <simpleError>
+      `validator` must be function(self), not function()
 
-# classes can't inherit from S4 or class unions
+# R7 classes: can't inherit from S4 or class unions
 
     Code
       new_class("test", parent = parentS4)
@@ -80,4 +69,54 @@
       new_class("test", parent = new_union("character"))
     Error <simpleError>
       `parent` must be an R7 class, S3 class, or base type, not an R7 union.
+
+# new_object(): gives useful error if called directly
+
+    Code
+      new_object()
+    Error <simpleError>
+      `new_object()` must be called from within a constructor
+
+# new_object(): validates object
+
+    Code
+      foo("x")
+    Error <simpleError>
+      <foo> object properties are invalid:
+      - @x must be <double>, not <character>
+    Code
+      foo(-1)
+    Error <simpleError>
+      <foo> object is invalid:
+      - x must be positive
+
+# R7 object: displays nicely
+
+    Code
+      foo <- new_class("foo", properties = list(x = double, y = double))
+      foo()
+    Output
+      <foo>
+      @ x:  num(0) 
+      @ y:  num(0) 
+    Code
+      str(list(foo()))
+    Output
+      List of 1
+       $ : <foo>
+        ..@ x:  num(0) 
+        ..@ y:  num(0) 
+
+# R7 object: displays objects with data nicely
+
+    Code
+      text <- new_class("text", character)
+      text("x")
+    Output
+      <text> chr "x"
+    Code
+      str(list(text("x")))
+    Output
+      List of 1
+       $ : <text> chr "x"
 

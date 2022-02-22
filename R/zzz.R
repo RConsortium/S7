@@ -10,12 +10,14 @@ R7_object <- new_class(
   constructor = function() {
     .Call(R7_object_)
   },
-  validator = function(object) {
-    if (typeof(object) != "S4") {
+  validator = function(self) {
+    if (typeof(self) != "S4") {
       "Underlying data is corrupt"
     }
   }
 )
+methods::setOldClass("R7_object")
+
 check_R7 <- function(x, arg = deparse(substitute(x))) {
   if (!inherits(x, "R7_object")) {
     stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
@@ -27,20 +29,11 @@ R7_generic <- new_class(
   properties = list(
     name = "character",
     methods = "environment",
-    dispatch_args = new_property(
-      name = "dispatch_args",
-      getter = function(x) formals(R7_data(x))
-  )),
-  parent = "function",
-  constructor = function(name, dispatch_args, fun) {
-    new_object(
-      name = name,
-      dispatch_args = dispatch_args,
-      methods = new.env(parent = emptyenv(), hash = TRUE),
-      .data = fun
-    )
-  }
+    dispatch_args = "character"
+  ),
+  parent = "function"
 )
+methods::setOldClass(c("R7_generic", "function", "R7_object"))
 is_generic <- function(x) inherits(x, "R7_generic")
 
 R7_method <- new_class("R7_method",
@@ -50,6 +43,7 @@ R7_method <- new_class("R7_method",
     signature = "list"
   )
 )
+methods::setOldClass(c("R7_method", "function", "R7_object"))
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))

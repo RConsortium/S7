@@ -36,10 +36,9 @@
 #' try(bar(NULL))
 new_union <- function(...) {
   classes <- class_flatten(list(...))
-  structure(
-    list(classes = classes),
-    class = "R7_union"
-  )
+  out <- list(classes = classes)
+  class(out) <- "R7_union"
+  out
 }
 
 is_union <- function(x) inherits(x, "R7_union")
