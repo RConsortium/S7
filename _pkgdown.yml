@@ -22,6 +22,7 @@ reference:
 - title: Method dispatch
   contents:
   - cast
+  - cast_next
   - as_class
   - method
   - new_external_generic
