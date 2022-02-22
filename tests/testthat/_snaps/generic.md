@@ -8,10 +8,6 @@
       new_generic("")
     Error <simpleError>
       `name` must not be "" or NA
-    Code
-      new_generic("foo")
-    Error <simpleError>
-      Must call `new_generic()` with at least one of `dispatch_args` or `fun`
 
 # check_dispatch_args() produces informative errors
 

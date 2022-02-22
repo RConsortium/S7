@@ -35,7 +35,7 @@
     Error <simpleError>
       `signature` must be length 2
 
-# check_method errors if the functions are not compatible
+# check_method complains if the functions are not compatible
 
     Code
       foo <- new_generic("foo", "x")
@@ -58,7 +58,7 @@
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", fun = function(x, ..., z = 2, y = 1) method_call())
+      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) method_call())
       check_method(function(x, ..., y = 1) { }, foo)
     Warning <simpleWarning>
       foo(???) doesn't have argument `z`
