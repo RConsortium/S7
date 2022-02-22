@@ -1,5 +1,3 @@
-global_variables(c("name", "parent", "properties", "constructor", "validator"))
-
 #' Base R7 class
 #'
 #' @keywords internal

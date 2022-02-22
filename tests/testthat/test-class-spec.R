@@ -16,6 +16,24 @@ test_that("can work with R7 classes", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("can work with packages R7 classes", {
+  klass <- new_class("klass", package = "pkg")
+  expect_equal(as_class(klass), klass)
+
+  expect_equal(class_type(klass), "R7")
+  expect_equal(class_dispatch(klass), c("pkg::klass", "R7_object", "ANY"))
+  expect_equal(class_register(klass), "pkg::klass")
+  expect_equal(class_construct(klass), klass())
+  expect_equal(class_desc(klass), "<pkg::klass>")
+  expect_equal(class_deparse(klass), "pkg::klass")
+
+  obj <- klass()
+  expect_equal(obj_type(obj), "R7")
+  expect_equal(obj_desc(obj), "<pkg::klass>")
+  expect_equal(obj_dispatch(obj), c("pkg::klass", "R7_object", "ANY"))
+  expect_equal(class_inherits(obj, klass), TRUE)
+})
+
 test_that("can work with unions", {
   text <- new_class("text", character)
   number <- new_class("number", double)

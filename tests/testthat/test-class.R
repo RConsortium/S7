@@ -1,6 +1,6 @@
 describe("R7 classes", {
   it("possess expected properties", {
-    foo <- new_class("foo", validator = function(self) NULL)
+    foo <- new_class("foo", package = "R7", validator = function(self) NULL)
 
     expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
     expect_type(foo@name, "character")
@@ -27,6 +27,8 @@ describe("R7 classes", {
     expect_snapshot(error = TRUE, {
       new_class(1)
       new_class("foo", 1)
+
+      new_class("foo", package = 1)
 
       new_class("foo", constructor = 1)
       new_class("foo", constructor = function() {})

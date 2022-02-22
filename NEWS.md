@@ -2,6 +2,9 @@
 
 ## Feb 2022
 
+* Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
+  R7 classes in different packages (#48, #163).
+
 * When creating a class, unspecified properties are initialized with their 
   default value (#67). DISCUSS: to achieve this, the constructor arguments
   default to `missing_class`.
