@@ -33,16 +33,15 @@ S4_to_R7_class <- function(x, error_base = "") {
   }
 }
 
-# Find all non-virtual classes
 S4_class_dispatch <- function(x) {
   x <- methods::getClass(x)
   self <- S4_class_name(x)
 
-  # Find all extended classes
+  # Find class objects for super classes
   extends <- unname(methods::extends(x, fullInfo = TRUE))
   extends <- Filter(function(x) methods::is(x, "SClassExtension"), extends)
-
   classes <- lapply(extends, function(x) methods::getClass(x@superClass))
+
   # Remove virtual classes that aren't S3. This removes unions because R7
   # handles them in method registration, not dispatch.
   classes <- Filter(function(x) !x@virtual || is_oldClass(x), classes)
