@@ -2,6 +2,12 @@
 
 ## Feb 2022
 
+* `new_generic()` now requires `dispatch_args` (180). This means that 
+  `new_generic()` will typically be called without names. Either 
+  `new_generic("foo", "x")` for a "standard" generic, or 
+  `new_generic("foo", "x", function(x, y) call_method())` for 
+  a non-standard method.
+
 * When creating a class, unspecified properties are initialized with their 
   default value (#67). DISCUSS: to achieve this, the constructor arguments
   default to `missing_class`.
