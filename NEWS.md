@@ -2,7 +2,9 @@
 
 ## Feb 2022
 
-* `cast()` and `super()` for persistent and transient casts (#110, #136).
+* `cast()` allows you to convert an object into another class (#136).
+
+* `super()` replaces `next_method()` (#110).
 
 * Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
   R7 classes in different packages (#48, #163).
