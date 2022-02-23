@@ -8,6 +8,7 @@
 new_class(
   name,
   parent = R7_object,
+  package = NULL,
   properties = list(),
   constructor = NULL,
   validator = NULL
@@ -25,6 +26,12 @@ There are four options:
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \code{logical}, \code{double}, or \code{character}.
 }}
+
+\item{package}{Package name. It is good practice to set the package
+name when exporting an R7 class from a package because it includes
+the package name in the class name when it's used for dispatch. This
+allows different packages to use the same name to refer to different
+classes.}
 
 \item{properties}{A list specifying the properties (data) that
 every object of the class will possess. Each property can either be

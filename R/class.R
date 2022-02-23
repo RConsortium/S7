@@ -11,7 +11,11 @@
 #'   * The R7 class, like [R7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like `logical`, `double`, or `character`.
-#'
+#' @param package Package name. It is good practice to set the package
+#'   name when exporting an R7 class from a package because it includes
+#'   the package name in the class name when it's used for dispatch. This
+#'   allows different packages to use the same name to refer to different
+#'   classes.
 #' @param constructor The constructor function. Advanced use only.
 #'
 #'   A custom constructor should call `new_object()` to create the R7 object.
@@ -84,6 +88,7 @@
 new_class <- function(
     name,
     parent = R7_object,
+    package = NULL,
     properties = list(),
     constructor = NULL,
     validator = NULL) {
@@ -95,6 +100,9 @@ new_class <- function(
   # Don't check arguments for R7_object
   if (!is.null(parent)) {
     check_can_inherit(parent)
+    if (!is.null(package)) {
+      check_name(package)
+    }
     if (!is.null(constructor)) {
       check_R7_constructor(constructor)
     }
@@ -116,6 +124,7 @@ new_class <- function(
   # Must synchronise with prop_names
   attr(object, "name") <- name
   attr(object, "parent") <- parent
+  attr(object, "package") <- package
   attr(object, "properties") <- all_props
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
@@ -123,6 +132,11 @@ new_class <- function(
 
   global_variables(names(all_props))
   object
+}
+globalVariables(c("name", "parent", "package", "properties", "constructor", "validator"))
+
+R7_class_name <- function(x) {
+  paste(c(x@package, x@name), collapse = "::")
 }
 
 check_R7_constructor <- function(constructor) {
@@ -218,7 +232,7 @@ new_object <- function(.parent, ...) {
 
 #' @export
 print.R7_object <- function(x, ...) {
-  str.R7_object(x, ...)
+  str(x, ...)
   invisible(x)
 }
 #' @export
@@ -227,9 +241,10 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
   cat(obj_desc(object))
 
   if (typeof(object) != "S4") {
-    bare <- object
-    attributes(bare) <- NULL
-    str(bare, nest.lev = nest.lev + 1)
+    attrs <- attributes(object)
+    attributes(object) <- NULL
+    str(object, nest.lev = nest.lev + 1)
+    attributes(object) <- attrs
   } else {
     cat("\n")
   }

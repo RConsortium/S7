@@ -90,12 +90,14 @@ new_property <- function(name, class = any_class, getter = NULL, setter = NULL, 
   out
 }
 
-check_name <- function(name) {
+check_name <- function(name, arg = deparse(substitute(name))) {
   if (length(name) != 1 || !is.character(name)) {
-    stop("`name` must be a single string", call. = FALSE)
+    msg <- sprintf("`%s` must be a single string", arg)
+    stop(msg, call. = FALSE)
   }
   if (is.na(name) || name == "") {
-    stop("`name` must not be \"\" or NA", call. = FALSE)
+    msg <- sprintf("`%s` must not be \"\" or NA", arg)
+    stop(msg, call. = FALSE)
   }
 }
 
@@ -252,7 +254,7 @@ prop_names <- function(object) {
 
   if (inherits(object, "R7_class")) {
     # R7_class isn't a R7_class (somewhat obviously) so we fake the property names
-    c("name", "parent", "properties", "constructor", "validator")
+    c("name", "parent", "package", "properties", "constructor", "validator")
   } else {
     class <- object_class(object)
     props <- attr(class, "properties", exact = TRUE)
