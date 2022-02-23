@@ -1,7 +1,7 @@
 #' Cast an object from one type to another
 #'
 #' @description
-#' `cast()` is a non-standard generic: it dispatch on the terminal class of
+#' `cast()` is a non-standard generic: it uses double dispatch on the first class of
 #' `from` and `to` (and unlike normal dispatch, `to` is a class, not an object).
 #'
 #' `cast()` provides an automatic fallback if `from` inherits from `to`. You

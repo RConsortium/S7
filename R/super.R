@@ -2,8 +2,8 @@
 #'
 #' @description
 #' `super()` causes the dispatch for the next generic to use the method for
-#' the specified class. It is useful when you want to implement a method
-#' in terms of the implementation its superclass.
+#' the specified superclass. It is useful when you want to implement a method
+#' in terms of the implementation of its superclass.
 #'
 #' # Compared to S3 and S4
 #' `super()` performs a similar role to [NextMethod()] in S3 or
@@ -62,7 +62,7 @@ super <- function(from, to = NULL) {
   if (is.null(to)) {
     from_class <- object_class(from)
     if (is.null(from_class)) {
-      stop("Can't cast: R7_object has no parent class")
+      stop("Can't cast: <R7_object> has no parent class")
     }
     to <- from_class@parent
   } else {
