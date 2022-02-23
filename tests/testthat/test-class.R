@@ -82,7 +82,7 @@ describe("R7 object", {
   it("has an R7 and S3 class", {
     foo <- new_class("foo")
     x <- foo()
-    expect_equal(object_class(x), foo)
+    expect_equal(R7_class(x), foo)
     expect_equal(class(x), c("foo", "R7_object"))
   })
 

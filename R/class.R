@@ -212,7 +212,7 @@ new_object <- function(.parent, ...) {
   }
 
   object <- .parent %||% class_construct(class@parent)
-  attr(object, "object_class") <- class
+  attr(object, "R7_class") <- class
   class(object) <- setdiff(class_dispatch(class), "ANY")
 
   for (nme in nms) {
@@ -248,6 +248,6 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
 #' Retrieve the R7 class of an object
 #' @param object The R7 object
 #' @export
-object_class <- function(object) {
-  attr(object, "object_class", exact = TRUE)
+R7_class <- function(object) {
+  attr(object, "R7_class", exact = TRUE)
 }

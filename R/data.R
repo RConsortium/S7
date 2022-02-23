@@ -19,7 +19,7 @@ R7_data <- function(object) {
   for (name in prop_names(object)) {
     attr(object, name) <- NULL
   }
-  attr(object, "object_class") <- NULL
+  attr(object, "R7_class") <- NULL
   class(object) <- NULL
 
   object
