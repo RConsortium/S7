@@ -1,4 +1,4 @@
-# validation gives useful message
+# validation uses typeof
 
     Code
       base_classes$integer$validator(TRUE)
