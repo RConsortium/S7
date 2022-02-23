@@ -45,9 +45,8 @@ method(total, foo1) <- function(x) x@x + x@y
 # This doesn't work because it'll be stuck in an infinite loop:
 method(total, foo2) <- function(x) total(x) + x@z
 
-# This ensures the nested total calls the parent method
+# So instead we use `super()` to call the method for the parent class:
 method(total, foo2) <- function(x) total(super(x, foo1)) + x@z
-
 total(foo2(1, 2, 3))
 
 # To see the difference between cast() and super() we need a
