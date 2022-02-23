@@ -9,7 +9,7 @@ describe("super()", {
     method(bar, foo1) <- function(x) 1
     method(bar, foo3) <- function(x) 3
 
-    expect_error(bar(super(foo3())), "Can't find method")
+    expect_error(bar(super(foo3(), foo2)), "Can't find method")
     expect_equal(bar(super(foo3(), foo1)), 1)
   })
 
@@ -31,7 +31,6 @@ describe("super()", {
 
   it("checks to", {
     expect_snapshot(error = TRUE, {
-      super(R7_object)
       foo <- new_class("foo")
       super(foo(), character)
     })

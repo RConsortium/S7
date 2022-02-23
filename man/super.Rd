@@ -4,14 +4,13 @@
 \alias{super}
 \title{Force method dispatch to use a superclass}
 \usage{
-super(from, to = NULL)
+super(from, to)
 }
 \arguments{
 \item{from}{An R7 object to cast.}
 
 \item{to}{An R7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
-superclass of \code{object}. If not specified, defaults to the parent of
-\code{from}.}
+superclass of \code{object}.}
 }
 \value{
 An \code{R7_super} object which should always be passed
@@ -47,7 +46,7 @@ method(total, foo1) <- function(x) x@x + x@y
 method(total, foo2) <- function(x) total(x) + x@z
 
 # This ensures the nested total calls the parent method
-method(total, foo2) <- function(x) total(super(x)) + x@z
+method(total, foo2) <- function(x) total(super(x, foo1)) + x@z
 
 total(foo2(1, 2, 3))
 

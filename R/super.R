@@ -19,8 +19,7 @@
 #'
 #' @param from An R7 object to cast.
 #' @param to An R7 class specification, passed to [as_class()]. Must be a
-#'   superclass of `object`. If not specified, defaults to the parent of
-#'   `from`.
+#'   superclass of `object`.
 #' @returns An `R7_super` object which should always be passed
 #'   immediately to a generic. It has no other special behavior.
 #' @export
@@ -34,9 +33,8 @@
 #' # This doesn't work because it'll be stuck in an infinite loop:
 #' method(total, foo2) <- function(x) total(x) + x@z
 #'
-#' # This ensures the nested total calls the parent method
-#' method(total, foo2) <- function(x) total(super(x)) + x@z
-#'
+#' # So instead we use `super()` to call the method for the parent class:
+#' method(total, foo2) <- function(x) total(super(x, foo1)) + x@z
 #' total(foo2(1, 2, 3))
 #'
 #' # To see the difference between cast() and super() we need a
@@ -56,26 +54,18 @@
 #' bar2(cast(obj, foo1))
 #' # super() only affects the _next_ generic:
 #' bar2(super(obj, foo1))
-super <- function(from, to = NULL) {
+super <- function(from, to) {
   check_R7(from)
 
-  if (is.null(to)) {
-    from_class <- object_class(from)
-    if (is.null(from_class)) {
-      stop("Can't cast: <R7_object> has no parent class")
-    }
-    to <- from_class@parent
-  } else {
-    to <- as_class(to)
-    check_can_inherit(to)
-    if (!class_inherits(from, to)) {
-      msg <- sprintf(
-        "Can't cast: %s doesn't inherit from %s",
-        obj_desc(from),
-        class_desc(to)
-      )
-      stop(msg)
-    }
+  to <- as_class(to)
+  check_can_inherit(to)
+  if (!class_inherits(from, to)) {
+    msg <- sprintf(
+      "Can't cast: %s doesn't inherit from %s",
+      obj_desc(from),
+      class_desc(to)
+    )
+    stop(msg)
   }
 
   # Must not change order of these fields as C code indexes by position
