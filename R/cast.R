@@ -23,17 +23,18 @@ cast <- function(from, to, ...) {
     cast(from, to, ...)
   } else if (class_inherits(from, to)) {
     if (is_base_class(to)) {
-      R7_data(from)
+      attr(from, "object_class") <- NULL
+      class(from) <- NULL
+    } else if (is_S3_class(to)) {
+      attr(from, "object_class") <- NULL
+      class(from) <- to$class
     } else if (is_class(to)) {
       attr(from, "object_class") <- to
       class(from) <- setdiff(class_dispatch(to), "ANY")
-      from
-    } else if (is_S3_class(to)) {
-      class(from) <- to$class
-      from
     } else {
       stop("Unreachable")
     }
+    from
   } else {
     method_lookup_error("cast", c("from", "to"), dispatch)
   }

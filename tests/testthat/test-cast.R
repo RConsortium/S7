@@ -22,11 +22,17 @@ test_that("doesn't cast to subclass", {
 test_that("fallback casts work", {
   foo1 <- new_class("foo1")
   foo2 <- new_class("foo2", foo1)
-  expect_equal(class(cast(foo2(), foo1)), c("foo1", "R7_object"))
+  obj <- cast(foo2(), foo1)
+  expect_equal(class(obj), c("foo1", "R7_object"))
+  expect_equal(object_class(obj), foo1)
 
   factor2 <- new_class("factor2", S3_factor)
-  expect_s3_class(cast(factor2(1, "x"), S3_factor), "factor")
+  obj <- cast(factor2(1, "x"), S3_factor)
+  expect_equal(class(obj), "factor")
+  expect_equal(object_class(factor2), NULL)
 
   character2 <- new_class("character2", "character")
-  expect_equal(cast(character2("x"), character), "x")
+  obj <- cast(character2("x"), character)
+  expect_equal(attr(obj, "class"), NULL)
+  expect_equal(object_class(obj), NULL)
 })
