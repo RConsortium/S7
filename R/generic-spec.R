@@ -1,5 +1,5 @@
 as_generic <- function(x) {
-  if (inherits(x, "R7_generic") || is_external_generic(x)) {
+  if (is_generic(x) || is_external_generic(x)) {
     x
   } else if (inherits(x, "genericFunction")) {
     x
@@ -16,7 +16,7 @@ as_S3_generic <- function(x) {
   if (!is.null(use_method)) {
     return(S3_generic(x, as.character(use_method[[2]])))
   } else {
-    name <- find_generic_name(x)
+    name <- find_base_name(x)
     if (!is.na(name) && is_internal_generic(name)) {
       return(S3_generic(x, name))
     }
@@ -26,19 +26,36 @@ as_S3_generic <- function(x) {
 }
 
 S3_generic <- function(generic, name) {
-  structure(list(generic = generic, name = name), class = "R7_S3_generic")
+  out <- list(generic = generic, name = name)
+  class(out) <- "R7_S3_generic"
+  out
 }
 
 is_S3_generic <- function(x) inherits(x, "R7_S3_generic")
 
 
+generic_n_dispatch <- function(x) {
+  if (is_S3_generic(x)) {
+    1
+  } else if (is_generic(x)) {
+    length(x@dispatch_args)
+  } else if (is_external_generic(x)) {
+    length(x$dispatch_args)
+  } else if (methods::is(x, "genericFunction")) {
+    length(x@signature)
+  } else {
+    stop(sprintf("Invalid input %", obj_desc(x)), call. = FALSE)
+  }
+}
+
 # Internal generics -------------------------------------------------------
 
-find_generic_name <- function(generic) {
+find_base_name <- function(f, candidates = NULL) {
   env <- baseenv()
-  for (nme in names(env)) {
-    if (identical(generic, env[[nme]])) {
-      return(nme)
+  candidates <- candidates %||% names(env)
+  for (name in candidates) {
+    if (identical(f, env[[name]])) {
+      return(name)
     }
   }
 

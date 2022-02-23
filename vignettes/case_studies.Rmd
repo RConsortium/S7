@@ -28,30 +28,27 @@ Person <- new_class("Person",
     name = "character",
     new_property(
       name = "birthdate",
-      class = S3_class("Date"),
-      setter = function(object, value) {
-        object@birthdate <- as.Date(value)
-        object
-      }
+      class = new_S3_class("Date"),
+      setter = function(self, value) {
+        self@birthdate <- as.Date(value)
+        self
+      },
+      default = as.Date(NA)
     ),
     new_property(
       name = "age",
       class = "numeric",
-      getter = function(object) {
+      getter = function(self) {
         # This is not correct because of leap years,
         # see https://stackoverflow.com/questions/3611314/calculate-ages-in-r/25450756#25450756 for a correct implementation.
-        as.double(Sys.Date() - object@birthdate) %/% 365
+        as.double(Sys.Date() - self@birthdate) %/% 365
       }
     )
   ),
-  validator = function(object) {
-    if (length(object@name) != length(object@birthdate)) {
+  validator = function(self) {
+    if (length(self@name) != length(self@birthdate)) {
       "@name and @birthdate must be the same length"
     }
-  },
-  constructor = function(name, birthdate = NA) {
-    birthdate <- as.Date(birthdate)
-    new_object(name = name, birthdate = birthdate)
   }
 )
 
@@ -103,18 +100,16 @@ In particular the number of rows of the `rows` property matches the number of ro
 
 Here is the definition of the class.
 ```{r}
-tbl_df <- S3_class(c("tbl_df", "tbl", "data.frame"))
-
 annotated_df <- new_class("annotated_df",
   properties = list(
-    data = tbl_df,
-    rows = tbl_df,
-    columns = tbl_df
+    data = new_S3_class("tbl_df"),
+    rows = new_S3_class("tbl_df"),
+    columns = new_S3_class("tbl_df")
   ),
-  validator = function(object) {
-    if (nrow(object@data) != nrow(object@rows)) {
+  validator = function(self) {
+    if (nrow(self@data) != nrow(self@rows)) {
       "`nrow(<annotated_df>@rows)` must be equal to `nrow(<annotated_df>)`"
-    } else if (ncol(object@data) != nrow(object@columns)) {
+    } else if (ncol(self@data) != nrow(self@columns)) {
       "`nrow(<annotated_df>@columns)` must be equal to `ncol(<annotated_df>)`"
     }
   }

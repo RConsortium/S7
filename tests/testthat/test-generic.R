@@ -2,31 +2,12 @@ test_that("new_generic checks its inputs", {
   expect_snapshot(error = TRUE, {
     new_generic(1)
     new_generic("")
-    new_generic("foo")
   })
-})
-
-test_that("dispatch_args overrules derived", {
-  g <- new_generic("g", fun = function(x, y, ...) method_call())
-  expect_equal(g@dispatch_args, c("x", "y"))
-
-  g <- new_generic("g", fun = function(x, ...) method_call(), dispatch_args = "x")
-  expect_equal(g@dispatch_args, "x")
 })
 
 test_that("derived fun always includes ...", {
   g <- new_generic("g", "x")
   expect_equal(names(formals(g)), c("x", "..."))
-})
-
-test_that("guesses dispatch_args from args after dots arguments", {
-  expect_equal(guess_dispatch_args(function() {}), character())
-  expect_equal(guess_dispatch_args(function(x) {}), "x")
-  expect_equal(guess_dispatch_args(function(x, y) {}), "x")
-
-  expect_equal(guess_dispatch_args(function(...) {}), character())
-  expect_equal(guess_dispatch_args(function(x, y, ...) {}), c("x", "y"))
-  expect_equal(guess_dispatch_args(function(x, ..., y = 1) {}), "x")
 })
 
 test_that("check_dispatch_args() produces informative errors", {
@@ -43,9 +24,11 @@ test_that("check_dispatch_args() produces informative errors", {
 })
 
 test_that("R7_generic printing", {
-  foo1 <- new_generic("foo1", c("x", "y", "z"))
-  method(foo1, list("character")) <- function(x, y, z, ...) 1
-  method(foo1, list(text)) <- function(x, y, z, ...) 2
+  foo1 <- new_generic("foo1", "x")
+  text <- new_class("text")
+
+  method(foo1, "character") <- function(x) 1
+  method(foo1, text) <- function(x) 2
 
   foo3 <- new_generic("foo3", c("x", "y", "z"))
   method(foo3, list("character", text, "character")) <- function(x, y, z, ...) 1

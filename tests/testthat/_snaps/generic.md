@@ -8,10 +8,6 @@
       new_generic("")
     Error <simpleError>
       `name` must not be "" or NA
-    Code
-      new_generic("foo")
-    Error <simpleError>
-      Must call `new_generic()` with at least one of `dispatch_args` or `fun`
 
 # check_dispatch_args() produces informative errors
 
@@ -53,9 +49,9 @@
     Code
       foo1
     Output
-      <R7_generic> function (x, y, z, ...)  with 2 methods:
-      1: method(foo1, list("character"))
-      2: method(foo1, list(text))
+      <R7_generic> function (x, ...)  with 2 methods:
+      1: method(foo1, "character")
+      2: method(foo1, text)
     Code
       foo3
     Output

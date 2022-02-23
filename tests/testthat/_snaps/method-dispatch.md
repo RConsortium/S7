@@ -1,0 +1,22 @@
+# generics pass ... to methods
+
+    unused argument (z = 2)
+
+# method lookup fails with informative messages
+
+    Can't find method for generic `foo()` with dispatch classes:
+    - x: logical, ANY
+    - y: MISSING
+
+---
+
+    Can't find method for generic `foo()` with dispatch classes:
+    - x: logical, ANY
+    - y: list, ANY
+
+---
+
+    Can't find method for generic `foo()` with dispatch classes:
+    - x: tbl_df, tbl, data.frame, ANY
+    - y: POSIXct, POSIXt, ANY
+

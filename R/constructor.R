@@ -14,6 +14,10 @@ new_constructor <- function(parent, properties) {
     parent_name <- parent@name
     parent_fun <- parent
     args <- missing_args(union(arg_info$parent, arg_info$self))
+  } else if (is_base_class(parent)) {
+    parent_name <- parent$class
+    parent_fun <- parent$constructor
+    args <- missing_args(union(arg_info$parent, arg_info$self))
   } else if (is_S3_class(parent)) {
     parent_name <- paste0("new_", parent$class[[1]])
     parent_fun <- parent$constructor
@@ -64,8 +68,15 @@ new_function <- function(args, body, env) {
   f
 }
 missing_args <- function(names) {
-  lapply(setNames(, names), function(i) quote(expr = ))
+  lapply(setNames(, names), function(i) quote(missing_class))
 }
 new_call <- function(call, args) {
   as.call(c(list(as.name(call)), args))
+}
+
+as_names <- function(x, named = FALSE) {
+  if (named) {
+    names(x) <- x
+  }
+  lapply(x, as.name)
 }

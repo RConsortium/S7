@@ -11,19 +11,20 @@ as_class(x, arg = deparse(substitute(x)))
 \itemize{
 \item An R7 class (created by \code{\link[=new_class]{new_class()}}).
 \item An R7 union (created by \code{\link[=new_union]{new_union()}}).
-\item An S3 class (created by \code{\link[=S3_class]{S3_class()}}).
+\item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base type specified either with its constructor (\code{logical}, \code{integer},
 \code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
 \item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
 \code{"vector"}.
+\item A "special", either \link{missing_class} or \link{any_class}.
 }}
 
 \item{arg}{Argument name used when generating errors.}
 }
 \value{
 A standardised class: either \code{NULL}, an R7 class, an R7 union,
-as \link{S3_class}, or a S4 class.
+as \link{new_S3_class}, or a S4 class.
 }
 \description{
 This is used as the interface between R7 and R's other OO systems, allowing

@@ -3,7 +3,7 @@ test_that("can get and append methods", {
 
   expect_equal(external_methods_get("R7"), list())
 
-  bar <- new_external_generic("foo", "bar")
+  bar <- new_external_generic("foo", "bar", "x")
   external_methods_add("R7", bar, list(), function() {})
   expect_equal(
     external_methods_get("R7"),
@@ -15,6 +15,13 @@ test_that("can get and append methods", {
       )
     )
   )
+})
+
+test_that("displays nicely", {
+  bar <- new_external_generic("foo", "bar", "x")
+  expect_snapshot({
+    print(bar)
+  })
 })
 
 test_that("new_method works with both hard and soft dependencies", {

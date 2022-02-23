@@ -19,16 +19,14 @@ reference:
   - prop_names
   - props
 
-- title: Extensions
-  contents:
-  - new_external_generic
-  - S3_class
-
-- title: Introspection
+- title: Method dispatch
   contents:
   - as_class
-  - object_class
   - method
+  - new_external_generic
+  - new_S3_class
+  - missing_class
+  - object_class
 
 articles:
 - title: Learn R7

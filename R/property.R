@@ -13,25 +13,31 @@
 #' @param class If specified, any values must be one of these classes
 #'   (or [class union][new_union]).
 #' @param getter An optional function used to get the value. The function
-#'   should take the object as its sole argument and return the value. If the
+#'   should take `self`  as its sole argument and return the value. If the
 #'   property has a `class` the class of the value is validated.
 #' @param setter An optional function used to set the value. The function
-#'   should take the object and new value as its two parameters and return the
-#'   modified object. The value is _not_ automatically checked.
+#'   should take `self` and `value` and return a modified object. The value is
+#'   _not_ automatically checked.
+#' @param default When an object is created and the property is not supplied,
+#'   what should it default to? If `NULL`, defaults to the "empty" instance
+#'   of `class`.
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
 #' pizza <- new_class("pizza", properties = list(
-#'   new_property("slices", "numeric")
+#'   new_property("slices", "numeric", default = 10)
 #' ))
 #' my_pizza <- pizza(slices = 6)
 #' my_pizza@slices
 #' my_pizza@slices <- 5
 #' my_pizza@slices
 #'
+#' your_pizza <- pizza()
+#' your_pizza@slices
+#'
 #' # Dynamic properties can compute on demand
 #' clock <- new_class("clock", properties = list(
-#'   new_property("now", getter = function(x) Sys.time())
+#'   new_property("now", getter = function(self) Sys.time())
 #' ))
 #' my_clock <- clock()
 #' my_clock@now; Sys.sleep(1)
@@ -42,45 +48,75 @@
 #'   first_name = "character",
 #'   new_property(
 #'      "firstName",
-#'      getter = function(x) {
+#'      getter = function(self) {
 #'        warning("@firstName is deprecated; please use @first_name instead")
-#'        x@first_name
+#'        self@first_name
 #'      },
-#'      setter = function(x, value) {
+#'      setter = function(self, value) {
 #'        warning("@firstName is deprecated; please use @first_name instead")
-#'        x@first_name <- value
+#'        self@first_name <- value
+#'        self
 #'      }
 #'    )
 #' ))
 #' hadley <- person(first_name = "Hadley")
 #' hadley@firstName
 #' hadley@first_name
-new_property <- function(name, class = NULL, getter = NULL, setter = NULL) {
+new_property <- function(name, class = any_class, getter = NULL, setter = NULL, default = NULL) {
   check_name(name)
 
   class <- as_class(class)
-  out <- list(name = name, class = class, getter = getter, setter = setter)
+  if (!is.null(default) && !class_inherits(default, class)) {
+    msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
+    stop(msg)
+  }
+
+  if (!is.null(getter)) {
+    check_function(getter, alist(self = ))
+  }
+  if (!is.null(setter)) {
+    check_function(setter, alist(self = , value = ))
+  }
+
+  out <- list(
+    name = name,
+    class = class,
+    getter = getter,
+    setter = setter,
+    default = default
+  )
   class(out) <- "R7_property"
 
   out
 }
 
-check_name <- function(name) {
+check_name <- function(name, arg = deparse(substitute(name))) {
   if (length(name) != 1 || !is.character(name)) {
-    stop("`name` must be a single string", call. = FALSE)
+    msg <- sprintf("`%s` must be a single string", arg)
+    stop(msg, call. = FALSE)
   }
   if (is.na(name) || name == "") {
-    stop("`name` must not be \"\" or NA", call. = FALSE)
+    msg <- sprintf("`%s` must not be \"\" or NA", arg)
+    stop(msg, call. = FALSE)
   }
 }
 
 is_property <- function(x) inherits(x, "R7_property")
 
 #' @export
+print.R7_property <- function(x, ...) {
+  cat("<R7_property> \n")
+  str_nest(x, "$", ...)
+}
+
+#' @export
 str.R7_property <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<R7_property> \n")
-  str_list(object, nest.lev = nest.lev)
+  print(object, ..., nest.lev = nest.lev)
+}
+
+prop_default <- function(prop) {
+  prop$default %||% class_construct(prop$class)
 }
 
 #' Get/set a property
@@ -218,7 +254,7 @@ prop_names <- function(object) {
 
   if (inherits(object, "R7_class")) {
     # R7_class isn't a R7_class (somewhat obviously) so we fake the property names
-    c("name", "parent", "properties", "constructor", "validator")
+    c("name", "parent", "package", "properties", "constructor", "validator")
   } else {
     class <- object_class(object)
     props <- attr(class, "properties", exact = TRUE)

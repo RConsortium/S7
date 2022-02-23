@@ -2,6 +2,25 @@
 
 ## Feb 2022
 
+* Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
+  R7 classes in different packages (#48, #163).
+
+* `new_generic()` now requires `dispatch_args` (180). This means that 
+  `new_generic()` will typically be called without names. Either 
+  `new_generic("foo", "x")` for a "standard" generic, or 
+  `new_generic("foo", "x", function(x, y) call_method())` for 
+  a non-standard method.
+
+* When creating a class, unspecified properties are initialized with their 
+  default value (#67). DISCUSS: to achieve this, the constructor arguments
+  default to `missing_class`.
+  
+* `any_class` and `missing_any` make it possible to dispatch on absent
+  arguments and arguments of any class (#67).
+
+* `new_external_generic()` now requires `dispatch_args` so we can eagerly 
+  check the signature.
+
 * Revamp website. README now shows brief example and more info in 
   `vignette("R7")`. Initial design docs and minutes are now articles so
   they appear on the website.
@@ -13,7 +32,7 @@
 * Validation now happens recursively, and validates types before validating 
   the object (#149)
 * Classes (base types, S3, S4, and R7) are handled consistently wherever they
-  are used. Strings now only refer to base types. New explicit `S3_class()` for 
+  are used. Strings now only refer to base types. New explicit `new_S3_class()` for 
   referring to S3 classes (#134). S4 unions are converted to R7 unions (#150).
 * Base numeric, atomic, and vector "types" are now represented as class unions
   (#147).
