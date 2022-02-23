@@ -14,7 +14,7 @@ cast(from, to, ...)
 \item{...}{Other arguments passed to custom \code{cast()} methods.}
 }
 \description{
-\code{cast()} is a non-standard generic: it dispatch on the terminal class of
+\code{cast()} is a non-standard generic: it uses double dispatch on the first class of
 \code{from} and \code{to} (and unlike normal dispatch, \code{to} is a class, not an object).
 
 \code{cast()} provides an automatic fallback if \code{from} inherits from \code{to}. You

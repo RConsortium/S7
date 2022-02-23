@@ -2,7 +2,7 @@
 % Please edit documentation in R/super.R
 \name{super}
 \alias{super}
-\title{Force one method dispatch to use a superclass}
+\title{Force method dispatch to use a superclass}
 \usage{
 super(from, to = NULL)
 }
@@ -19,8 +19,8 @@ immediately to a generic. It has no other special behavior.
 }
 \description{
 \code{super()} causes the dispatch for the next generic to use the method for
-the specified class. It is useful when you want to implement a method
-in terms of the implementation its superclass.
+the specified superclass. It is useful when you want to implement a method
+in terms of the implementation of its superclass.
 }
 \section{Compared to S3 and S4}{
 \code{super()} performs a similar role to \code{\link[=NextMethod]{NextMethod()}} in S3 or
