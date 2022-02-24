@@ -1,6 +1,11 @@
-test_that("validation gives useful message", {
+test_that("validation uses typeof", {
   expect_equal(base_classes$integer$validator(1L), NULL)
+  expect_equal(base_classes$integer$validator(factor()), NULL)
   expect_snapshot(base_classes$integer$validator(TRUE))
+
+  expect_equal(base_classes$`function`$validator(`[`), NULL)
+  expect_equal(base_classes$`function`$validator(sum), NULL)
+  expect_equal(base_classes$`function`$validator(mean), NULL)
 })
 
 test_that("base class display as expected", {

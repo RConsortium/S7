@@ -50,17 +50,17 @@ to validate.
 The job of a validator is to determine whether the object is valid,
 i.e. if the current property values form an allowed combination. The
 types of the properties are always automatically validated so the job of
-the validator is to verify that the value of individual properties is
+the validator is to verify that the \emph{values} of individual properties are
 ok (i.e. maybe a property should have length 1, or should always be
-positive), or that the combination of values of multiple properties is ok.
+positive), or that the \emph{combination} of values of multiple properties is ok.
 It is called after construction and whenever any property is set.
 
 The validator should return \code{NULL} if the object is valid. If not, it
 should return a character vector where each element describes a single
-problem. It's generally helpful to report as many problems at once
-as possible.
+problem, using \verb{@prop_name} to describe where the problem lies.
 
-See \code{validate()} for more details and examples.}
+See \code{validate()} for more details, examples, and how to temporarily
+suppress validation when needed.}
 
 \item{.parent, ...}{Parent object and named properties used to construct the
 object.}

@@ -23,13 +23,13 @@ cast <- function(from, to, ...) {
     cast(from, to, ...)
   } else if (class_inherits(from, to)) {
     if (is_base_class(to)) {
-      attr(from, "object_class") <- NULL
+      attr(from, "R7_class") <- NULL
       class(from) <- NULL
     } else if (is_S3_class(to)) {
-      attr(from, "object_class") <- NULL
+      attr(from, "R7_class") <- NULL
       class(from) <- to$class
     } else if (is_class(to)) {
-      attr(from, "object_class") <- to
+      attr(from, "R7_class") <- to
       class(from) <- setdiff(class_dispatch(to), "ANY")
     } else {
       stop("Unreachable")
