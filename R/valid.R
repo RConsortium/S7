@@ -67,7 +67,7 @@ validate <- function(object, properties = TRUE) {
     return(invisible(object))
   }
 
-  class <- object_class(object)
+  class <- R7_class(object)
 
   # First, check property types - if these are incorrect, the validator
   # is likely to return spurious errors

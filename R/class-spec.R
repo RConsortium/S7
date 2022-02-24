@@ -223,7 +223,7 @@ obj_dispatch <- function(x) {
     base = c(.class2(x), "ANY"),
     S3 = c(class(x), "ANY"),
     S4 = c(S4_class_dispatch(methods::getClass(class(x))), "ANY"),
-    R7 = c(class(x), "ANY") # = class_dispatch(object_class(x))
+    R7 = c(class(x), "ANY") # = class_dispatch(R7_class(x))
   )
 }
 

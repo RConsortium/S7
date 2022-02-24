@@ -6,7 +6,7 @@
 /* .Call calls */
 extern SEXP method_(SEXP, SEXP, SEXP);
 extern SEXP method_call_(SEXP, SEXP, SEXP);
-extern SEXP object_class_(SEXP, SEXP);
+extern SEXP R7_class_(SEXP, SEXP);
 extern SEXP R7_object_();
 
 static const R_CallMethodDef CallEntries[] = {

@@ -26,7 +26,7 @@ reference:
   - new_external_generic
   - new_S3_class
   - missing_class
-  - object_class
+  - R7_class
 
 articles:
 - title: Learn R7
