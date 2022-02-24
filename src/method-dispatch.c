@@ -127,7 +127,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
           // Determine class string to use for method look up
           SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
         } else {
-          // If it's transient cast, we get the stored value and dispatch class
+          // If it's a superclass, we get the stored value and dispatch class
           SEXP true_val = VECTOR_ELT(val, 0);
           SET_PRVALUE(arg, true_val);
           SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));

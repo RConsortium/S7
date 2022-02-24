@@ -49,7 +49,7 @@ methods::setOldClass(c("R7_method", "function", "R7_object"))
 }
 
 .onLoad <- function(...) {
-  cast <<- R7_generic(cast, name = "cast", dispatch_args = c("from", "to"))
+  convert <<- R7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
 
   base_unions$numeric <<- new_union("integer", "double")
   base_unions$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")

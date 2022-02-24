@@ -22,7 +22,7 @@ reference:
 
 - title: Method dispatch
   contents:
-  - cast
+  - convert
   - super
   - as_class
   - method

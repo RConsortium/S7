@@ -49,7 +49,7 @@ method(total, foo2) <- function(x) total(x) + x@z
 method(total, foo2) <- function(x) total(super(x, foo1)) + x@z
 total(foo2(1, 2, 3))
 
-# To see the difference between cast() and super() we need a
+# To see the difference between convert() and super() we need a
 # method that calls another generic
 
 bar1 <- new_generic("bar1", "x")
@@ -62,8 +62,8 @@ method(bar2, foo2) <- function(x) c(2, bar1(x))
 
 obj <- foo2(1, 2, 3)
 bar2(obj)
-# cast() affects every generic:
-bar2(cast(obj, foo1))
+# convert() affects every generic:
+bar2(convert(obj, foo1))
 # super() only affects the _next_ generic:
 bar2(super(obj, foo1))
 }

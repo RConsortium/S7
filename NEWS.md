@@ -2,7 +2,7 @@
 
 ## Feb 2022
 
-* `cast()` allows you to convert an object into another class (#136).
+* `convert()` allows you to convert an object into another class (#136).
 
 * `super()` replaces `next_method()` (#110).
 

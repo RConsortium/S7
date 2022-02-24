@@ -1,26 +1,26 @@
-#' Cast an object from one type to another
+#' Convert an object from one type to another
 #'
 #' @description
-#' `cast()` is a non-standard generic: it uses double dispatch on the first class of
+#' `convert()` is a non-standard generic: it uses double dispatch on the first class of
 #' `from` and `to` (and unlike normal dispatch, `to` is a class, not an object).
 #'
-#' `cast()` provides an automatic fallback if `from` inherits from `to`. You
+#' `convert()` provides an automatic fallback if `from` inherits from `to`. You
 #' can override this if you need some special behavior other than simply
 #' stripping class.
 #'
-#' @param from An R7 object to cast.
+#' @param from An R7 object to convert.
 #' @param to An R7 class specification, passed to [as_class()].
-#' @param ... Other arguments passed to custom `cast()` methods.
+#' @param ... Other arguments passed to custom `convert()` methods.
 #' @export
-cast <- function(from, to, ...) {
+convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
   dispatch <- list(obj_dispatch(from)[[1]], class_register(to))
-  cast <- .Call(method_, cast, dispatch, FALSE)
+  convert <- .Call(method_, convert, dispatch, FALSE)
 
-  if (!is.null(cast)) {
-    cast(from, to, ...)
+  if (!is.null(convert)) {
+    convert(from, to, ...)
   } else if (class_inherits(from, to)) {
     from_class <- R7_class(from)
     if (is.null(from_class)) {
@@ -43,7 +43,7 @@ cast <- function(from, to, ...) {
     }
     from
   } else {
-    method_lookup_error("cast", c("from", "to"), dispatch)
+    method_lookup_error("convert", c("from", "to"), dispatch)
   }
 }
 # Converted to R7_generic on .onLoad
