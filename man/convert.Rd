@@ -14,10 +14,12 @@ convert(from, to, ...)
 \item{...}{Other arguments passed to custom \code{convert()} methods.}
 }
 \description{
-\code{convert()} is a non-standard generic: it uses double dispatch on the first class of
-\code{from} and \code{to} (and unlike normal dispatch, \code{to} is a class, not an object).
+\code{convert()} uses double-dispatch, because conversion depends on both \code{from}
+and \code{to}. The dispatch is non-standard, because \code{to} is a class (not an
+object), and it does not take advantage of inheritance (because if you
+convert \code{x} to \code{superFoo} you shouldn't get an instance of \code{Foo} back).
 
-\code{convert()} provides an automatic fallback if \code{from} inherits from \code{to}. You
-can override this if you need some special behavior other than simply
-stripping class.
+\code{convert()} provides built-in implementations if \code{from} inherits from \code{to}.
+This default strips any properties that \code{from} possesses that \code{to} does not,
+and resets the class.
 }

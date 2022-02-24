@@ -1,12 +1,14 @@
 #' Convert an object from one type to another
 #'
 #' @description
-#' `convert()` is a non-standard generic: it uses double dispatch on the first class of
-#' `from` and `to` (and unlike normal dispatch, `to` is a class, not an object).
+#' `convert()` uses double-dispatch, because conversion depends on both `from`
+#' and `to`. The dispatch is non-standard, because `to` is a class (not an
+#' object), and it does not take advantage of inheritance (because if you
+#' convert `x` to `superFoo` you shouldn't get an instance of `Foo` back).
 #'
-#' `convert()` provides an automatic fallback if `from` inherits from `to`. You
-#' can override this if you need some special behavior other than simply
-#' stripping class.
+#' `convert()` provides built-in implementations if `from` inherits from `to`.
+#' This default strips any properties that `from` possesses that `to` does not,
+#' and resets the class.
 #'
 #' @param from An R7 object to convert.
 #' @param to An R7 class specification, passed to [as_class()].
@@ -16,7 +18,7 @@ convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
-  dispatch <- list(obj_dispatch(from)[[1]], class_register(to))
+  dispatch <- list(obj_dispatch(from), class_register(to))
   convert <- .Call(method_, convert, dispatch, FALSE)
 
   if (!is.null(convert)) {
