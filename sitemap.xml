@@ -49,6 +49,9 @@
     <loc>https://RConsortium.github.io/OOP-WG/news/index.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_class.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/as_class.html</loc>
   </url>
   <url>
@@ -83,9 +86,6 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/next_method.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/object_class.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/prop.html</loc>
