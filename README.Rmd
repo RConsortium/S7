@@ -16,15 +16,18 @@ knitr::opts_chunk$set(
 # R7
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+
+[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+
 <!-- badges: end -->
 
-The R7 package is a new OOP system designed to be a successor to S3 and S4. It it is designed and implemented collaboratively by the RConsortium Object-oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.
+The R7 package is a new OOP system designed to be a successor to S3 and S4.
+It it is designed and implemented collaboratively by the RConsortium Object-oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.
 
 ## Installation
 
-The long-term goal of this project is to merge R7 in to base R. For now, you can experiment with the development version from GitHub:
+The long-term goal of this project is to merge R7 in to base R.
+For now, you can experiment with the development version from GitHub:
 
 ```{r, eval = FALSE}
 # install.packages("remotes")
@@ -33,51 +36,86 @@ remotes::install_github("r-consortium/OOP-WG")
 
 ## Usage
 
-```{r error = TRUE}
+```{r}
 library(R7)
+```
 
-# Define a class
-Range <- new_class("Range",
-  properties = list(start = "numeric", end = "numeric"),
-  validator = function(x) {
-    if (length(x@start) != 1) {
+R7 classes have a formal definition, which includes a list of properties and an optional validator.
+You create a class with `new_class()`:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = double, 
+    end = double
+  ),
+  validator = function(self) {
+    if (length(self@start) != 1) {
       "@start must be length 1"
-    } else if (length(x@end) != 1) {
+    } else if (length(self@end) != 1) {
       "@end must be length 1"
-    } else if (x@end < x@start) {
+    } else if (self@end < self@start) {
       "@end must be greater than or equal to @start"
     }
   }
 )
+```
 
-# Create an object from that class
-x <- Range(start = 1, end = 10)
+`new_class()` returns the class object, a constructor which you can use to create objects that are instances of that type:
+
+```{r}
+x <- range(start = 1, end = 10)
 x
+```
 
-# Get and set properties
+R7 objects use `@` to get and set properties:
+
+```{r}
 x@start
 x@end <- 20
 x
+```
 
-# Can't set invalid properties
+Properties are automatically validated against their type and with the validator specified in the class definition:
+
+```{r, error = TRUE}
 x@end <- "x"
 x@end <- -1
+```
 
-# Define methods for existing S3 generics
-method(format, Range) <- function(x, ...) paste0("[", x@start, ", ", x@end, "]")
-format(x)
+Generics are defined by `new_generic()`.
+The first argument is the generic name (used in error messages) and the second defines the arguments that will be used for dispatch.
+The third, and optional argument, supplies the body of the generic.
+This is only needed if your generic has additional arguments that aren't dispatch on.
 
-method(mean, Range) <- function(x, ...) (x@start + x@end) / 2
-mean(x)
-
-# Create a new generic
+```{r}
 inside <- new_generic("inside", "x", function(x, y) {
   # Actually finds and calls the appropriate method
   method_call()
 })
 # Add a method for our class
-method(inside, Range) <- function(x, y) y >= x@start & y <= x@end
+method(inside, range) <- function(x, y) {
+  y >= x@start & y <= x@end
+}
 inside
 
 inside(x, c(0, 5, 10, 15))
 ```
+
+R7 generics support a limited form of multiple dispatch; see `vignette("dispatch")` for details.
+
+You can also use `method<-` to register methods for R7 objects on S3 or S4 generics:
+
+```{r}
+method(format, range) <- function(x, ...) {
+  paste0("[", x@start, ", ", x@end, "]")
+}
+format(x)
+
+method(mean, range) <- function(x, ...) {
+  (x@start + x@end) / 2
+}
+mean(x)
+```
+
+Learn more in `vignettte("R7")`.
