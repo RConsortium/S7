@@ -89,9 +89,15 @@ and all properties.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">text</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"text"</span>, parent <span class="op">=</span> <span class="st">"character"</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>foo <span class="op">=</span> <span class="st">"bar"</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu">R7_data</span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Named chr "bar"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  - attr(*, "names")= chr "foo"</span>
+<span class="r-in"><span class="va">y</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;text&gt; chr "bar"</span>
+<span class="r-in"><span class="fu">R7_data</span><span class="op">(</span><span class="va">y</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   foo </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> "bar" </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="fu">R7_data</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">y</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;text&gt; chr [1:2] "a" "b"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
