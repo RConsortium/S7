@@ -30,25 +30,29 @@ describe("fallback cast", {
   })
 
   it("can cast to super class", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 <- new_class("foo1", properties = list(x = double))
+    foo2 <- new_class("foo2", foo1, properties = list(y = double))
 
-    obj <- cast(foo2(), foo1)
+    obj <- cast(foo2(1, 2), foo1)
     expect_equal(class(obj), c("foo1", "R7_object"))
     expect_equal(R7_class(obj), foo1)
+    expect_equal(props(obj), list(x = 1))
+    expect_equal(attr(obj, "y"), NULL)
   })
 
   it("can cast to S3 class", {
-    factor2 <- new_class("factor2", S3_factor)
-    obj <- cast(factor2(1, "x"), S3_factor)
+    factor2 <- new_class("factor2", S3_factor, properties = list(x = double))
+    obj <- cast(factor2(1, "x", x = 1), S3_factor)
     expect_equal(class(obj), "factor")
-    expect_equal(R7_class(factor2), NULL)
+    expect_equal(R7_class(obj), NULL)
+    expect_equal(attr(obj, "x"), NULL)
   })
 
   it("can cast to base type", {
-    character2 <- new_class("character2", "character")
-    obj <- cast(character2("x"), character)
+    character2 <- new_class("character2", "character", properties = list(x = double))
+    obj <- cast(character2("x", x = 1), character)
     expect_equal(attr(obj, "class"), NULL)
     expect_equal(R7_class(obj), NULL)
+    expect_equal(attr(obj, "x"), NULL)
   })
 })

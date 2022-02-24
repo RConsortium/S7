@@ -22,13 +22,20 @@ cast <- function(from, to, ...) {
   if (!is.null(cast)) {
     cast(from, to, ...)
   } else if (class_inherits(from, to)) {
+    from_class <- R7_class(from)
+    if (is.null(from_class)) {
+      from_props <- character()
+    } else {
+      from_props <- names(from_class@properties)
+    }
+
     if (is_base_class(to)) {
-      attr(from, "R7_class") <- NULL
-      class(from) <- NULL
+      from <- zap_attr(from, c(from_props, "R7_class", "class"))
     } else if (is_S3_class(to)) {
-      attr(from, "R7_class") <- NULL
+      from <- zap_attr(from, c(from_props, "R7_class"))
       class(from) <- to$class
     } else if (is_class(to)) {
+      from <- zap_attr(from, setdiff(from_props, names(to@properties)))
       attr(from, "R7_class") <- to
       class(from) <- setdiff(class_dispatch(to), "ANY")
     } else {
