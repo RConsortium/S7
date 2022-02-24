@@ -66,7 +66,9 @@ test_that("can substitute() args", {
   method(foo, "character") <- function(x, ..., z = 1) substitute(x)
   expect_equal(foo(letters), quote(letters))
 
-  method(foo, "character") <- function(x, ..., z = 1, y) substitute(y)
+  suppressMessages(
+    method(foo, "character") <- function(x, ..., z = 1, y) substitute(y)
+  )
   expect_equal(foo("x", y = letters), quote(letters))
 
   # Doesn't work currently
@@ -114,10 +116,12 @@ test_that("generics pass extra args to methods", {
 
 test_that("can dispatch on base 'union' types", {
   foo <- new_generic("foo", "x")
-  method(foo, "vector") <- function(x) "v"
-  method(foo, "atomic") <- function(x) "a"
-  method(foo, "numeric") <- function(x) "n"
-  method(foo, "integer") <- function(x) "i"
+  suppressMessages({
+    method(foo, "vector") <- function(x) "v"
+    method(foo, "atomic") <- function(x) "a"
+    method(foo, "numeric") <- function(x) "n"
+    method(foo, "integer") <- function(x) "i"
+  })
 
   expect_equal(foo(list()), "v")
   expect_equal(foo(character()), "a")
