@@ -113,15 +113,15 @@ to validate.</p>
 <p>The job of a validator is to determine whether the object is valid,
 i.e. if the current property values form an allowed combination. The
 types of the properties are always automatically validated so the job of
-the validator is to verify that the value of individual properties is
+the validator is to verify that the <em>values</em> of individual properties are
 ok (i.e. maybe a property should have length 1, or should always be
-positive), or that the combination of values of multiple properties is ok.
+positive), or that the <em>combination</em> of values of multiple properties is ok.
 It is called after construction and whenever any property is set.</p>
 <p>The validator should return <code>NULL</code> if the object is valid. If not, it
 should return a character vector where each element describes a single
-problem. It's generally helpful to report as many problems at once
-as possible.</p>
-<p>See <code><a href="validate.html">validate()</a></code> for more details and examples.</p></dd>
+problem, using <code>@prop_name</code> to describe where the problem lies.</p>
+<p>See <code><a href="validate.html">validate()</a></code> for more details, examples, and how to temporarily
+suppress validation when needed.</p></dd>
 <dt>.parent, ...</dt>
 <dd><p>Parent object and named properties used to construct the
 object.</p></dd>
