@@ -25,6 +25,8 @@
   `vignette("R7")`. Initial design docs and minutes are now articles so
   they appear on the website.
 
+* A property with a getter but no setter is read-only (#168).
+
 ## Jan 2022
 
 * New `props<-` for setting multiple properties simultaneously and validating

@@ -20,7 +20,9 @@ new_property(
 
 \item{getter}{An optional function used to get the value. The function
 should take \code{self}  as its sole argument and return the value. If the
-property has a \code{class} the class of the value is validated.}
+property has a \code{class} the class of the value is validated.
+
+If a property has a getter but doesn't have a setter, it is read only.}
 
 \item{setter}{An optional function used to set the value. The function
 should take \code{self} and \code{value} and return a modified object. The value is
@@ -59,6 +61,8 @@ clock <- new_class("clock", properties = list(
 my_clock <- clock()
 my_clock@now; Sys.sleep(1)
 my_clock@now
+# This property is read only
+try(my_clock@now <- 10)
 
 # These can be useful if you want to deprecate a property
 person <- new_class("person", properties = list(
@@ -66,11 +70,11 @@ person <- new_class("person", properties = list(
   new_property(
      "firstName",
      getter = function(self) {
-       warning("@firstName is deprecated; please use @first_name instead")
+       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name
      },
      setter = function(self, value) {
-       warning("@firstName is deprecated; please use @first_name instead")
+       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name <- value
        self
      }
@@ -78,5 +82,6 @@ person <- new_class("person", properties = list(
 ))
 hadley <- person(first_name = "Hadley")
 hadley@firstName
+hadley@firstName <- "John"
 hadley@first_name
 }

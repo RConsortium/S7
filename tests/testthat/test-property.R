@@ -49,6 +49,14 @@ describe("prop setting", {
     expect_equal(obj@x, 2)
   })
 
+  it("can't set read-only properties", {
+    foo <- new_class("foo", properties = list(
+      new_property("x", getter = function(self) 1
+    )))
+    obj <- foo()
+    expect_snapshot(obj@x <- 1, error = TRUE)
+  })
+
   it("errors if the property doesn't exist or is wrong class", {
     foo <- new_class("foo", properties = list(x = double))
     obj <- foo(123)

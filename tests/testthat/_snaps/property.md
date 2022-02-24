@@ -17,6 +17,13 @@
     Error <simpleError>
       trying to get slot "blah" from an object of a basic class ("NULL") with no slots
 
+# prop setting: can't set read-only properties
+
+    Code
+      obj@x <- 1
+    Error <simpleError>
+      Can't set read-only property <foo>@x
+
 # prop setting: errors if the property doesn't exist or is wrong class
 
     Code

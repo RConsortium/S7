@@ -15,6 +15,8 @@
 #' @param getter An optional function used to get the value. The function
 #'   should take `self`  as its sole argument and return the value. If the
 #'   property has a `class` the class of the value is validated.
+#'
+#'   If a property has a getter but doesn't have a setter, it is read only.
 #' @param setter An optional function used to set the value. The function
 #'   should take `self` and `value` and return a modified object. The value is
 #'   _not_ automatically checked.
@@ -42,6 +44,8 @@
 #' my_clock <- clock()
 #' my_clock@now; Sys.sleep(1)
 #' my_clock@now
+#' # This property is read only
+#' try(my_clock@now <- 10)
 #'
 #' # These can be useful if you want to deprecate a property
 #' person <- new_class("person", properties = list(
@@ -49,11 +53,11 @@
 #'   new_property(
 #'      "firstName",
 #'      getter = function(self) {
-#'        warning("@firstName is deprecated; please use @first_name instead")
+#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
 #'        self@first_name
 #'      },
 #'      setter = function(self, value) {
-#'        warning("@firstName is deprecated; please use @first_name instead")
+#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
 #'        self@first_name <- value
 #'        self
 #'      }
@@ -61,6 +65,7 @@
 #' ))
 #' hadley <- person(first_name = "Hadley")
 #' hadley@firstName
+#' hadley@firstName <- "John"
 #' hadley@first_name
 new_property <- function(name, class = any_class, getter = NULL, setter = NULL, default = NULL) {
   check_name(name)
@@ -185,7 +190,12 @@ prop_obj <- function(object, name) {
 
     prop <- prop_obj(object, name)
     if (is.null(prop)) {
-      stop(prop_error_unknown(object, name))
+      stop(prop_error_unknown(object, name), call. = FALSE)
+    }
+
+    if (!is.null(prop$getter) && is.null(prop$setter)) {
+      msg <- sprintf("Can't set read-only property %s@%s", obj_desc(object), name)
+      stop(msg, call. = FALSE)
     }
 
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
