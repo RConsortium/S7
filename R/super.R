@@ -77,3 +77,14 @@ super <- function(from, to) {
     class = "R7_super"
   )
 }
+
+#' @export
+print.R7_super <- function(x, ...) {
+  str(x, ...)
+  invisible(x)
+}
+#' @export
+str.R7_super <- function(object, ..., nest.lev = 0) {
+  cat(if (nest.lev > 0) " ")
+  cat("super(", obj_desc(object$object), ", <", object$dispatch, ">)", sep = "")
+}

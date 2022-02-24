@@ -35,4 +35,16 @@ describe("super()", {
       super(foo(), character)
     })
   })
+
+  it("displays nicely", {
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2", foo1)
+
+    expect_snapshot({
+      f1 <- super(foo2(), foo1)
+      f1
+      str(list(f1))
+    })
+
+  })
 })
