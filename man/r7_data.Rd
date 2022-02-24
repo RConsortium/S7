@@ -25,6 +25,9 @@ and all properties.
 \examples{
 text <- new_class("text", parent = "character")
 y <- text(c(foo = "bar"))
-str(R7_data(y))
+y
+R7_data(y)
+
+R7_data(y) <- c("a", "b")
+y
 }
-\keyword{internal}
