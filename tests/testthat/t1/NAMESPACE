@@ -2,4 +2,3 @@
 
 export(foo)
 importFrom(R7,method)
-importFrom(R7,object_class)
