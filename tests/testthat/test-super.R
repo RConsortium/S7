@@ -25,8 +25,8 @@ describe("super()", {
     method(bar2, foo1) <- function(x) c(1, bar1(x))
     method(bar2, foo2) <- function(x) c(2, bar1(x))
 
-    expect_equal(bar2(super(foo2(), foo1)), c(1, 2))
-    expect_equal(bar2(convert(foo2(), foo1)), c(1, 1))
+    expect_equal(bar2(super(foo2(), to = foo1)), c(1, 2))
+    expect_equal(bar2(convert(foo2(), to = foo1)), c(1, 1))
   })
 
   it("checks to", {

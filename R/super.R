@@ -51,7 +51,7 @@
 #' obj <- foo2(1, 2, 3)
 #' bar2(obj)
 #' # convert() affects every generic:
-#' bar2(convert(obj, foo1))
+#' bar2(convert(obj, to = foo1))
 #' # super() only affects the _next_ generic:
 #' bar2(super(obj, foo1))
 super <- function(from, to) {
