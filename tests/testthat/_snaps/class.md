@@ -29,6 +29,7 @@
        ..  ..$ getter :  NULL
        ..  ..$ setter :  NULL
        ..  ..$ default:  NULL
+      @ methods    :  list()
       @ constructor:  function (x = missing_class, y = missing_class)  
       @ validator  :  NULL
     Code
