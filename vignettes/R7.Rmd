@@ -22,39 +22,42 @@ library(R7)
 
 ## Basics
 
+We'll start with an quick overview of the most important parts of R7: classes and object, generics and methods, and the basics of method dispatch and inheritance.
+
 ### Classes and objects
 
-All R7 classes have a formal definition that describes the key properties of an object.
-A class is created with `new_class()`.
-The first argument is the name of the class.
-The next most important argument is properties.
-We'll see more complex usage of properties later, but the simplest way to get started is to provide a named list.
-The names of the list give the names of the properties and the values are the types they must have.
+R7 classes have a formal definition that you create with `new_class()`.
+There are two arguments that you'll use with almost every class:
+
+-   The `name`, of the class, supplied in the first argument.
+-   The class `properties`, which is the data associated with each instance of each instance of the class. The easiest way to define properties is to supply a named list where the values define the valid types of the property.
+
+The following code defines a simple `pet` class with two properties: a character `name` and a double `age`.
 
 ```{r}
-pet <- new_class("pet", properties = list(
+dog <- new_class("dog", properties = list(
   name = character,
   age = double
 ))
+dog
 ```
 
 Note that I've assigned the return value of `new_class()` to an object with the same name as the class.
-This is important.
-That object represents the class and is what you use to construct new objects of that type.
+This is important because that object represents the class and is what you use to construct instances of the class:
 
 ```{r}
-lola <- pet(name = "Lola", age = 11)
+lola <- dog(name = "Lola", age = 11)
 lola
 ```
 
-You can get and set properties of the object using `@`:
+Once you have an R7 object, you can get and set properties using `@`:
 
 ```{r}
 lola@age <- 11
 lola@age
 ```
 
-R7 automatically validates the type of the property:
+And R7 automatically validates the type of the property:
 
 ```{r, error = TRUE}
 lola@age <- "twelve"
@@ -63,27 +66,84 @@ lola@age <- "twelve"
 ### Generics and methods
 
 A function that behaves differently depending on the class of its inputs is called a **generic**.
-It's simple to create a basic generic with R7: you just need to supply the name of the generic (used in error messages) and the name of the argument it should dispatch:
+It's simple to create a basic generic with R7: you just need to supply the name of the generic (used in error messages) and the name of the argument it should use to find the method:
 
 ```{r}
-foo <- new_generic("foo", "x")
+speak <- new_generic("speak", "x")
 ```
 
-R7 generics support a limited form of multiple dispatch; see `vignette("dispatch")` for details.
+Like with `new_class()`, you should always assign the result of `new_generic()` to an variable of the same name.
 
-### Inheritance
+You register methods with `method<-`:
 
 ```{r}
+method(speak, dog) <- function(x) {
+  "Woof"
+}
+```
+
+Once you've register a method, you can use an object of that class with the generic:
+
+```{r}
+speak(lola)
+```
+
+We could define another class, and add another method to the generic:
+
+```{r}
+cat <- new_class("cat", properties = list(
+  name = character,
+  age = double
+))
+method(speak, cat) <- function(x) {
+  "Meow"
+}
+
+fluffy <- cat(name = "Fluffy", age = 5)
+speak(fluffy)
+```
+
+If you call the generic with a class that isn't registered, you'll get an error:
+
+```{r, error = TRUE}
+speak(1)
+```
+
+### Method dispatch and inheritance
+
+The `cat` and `dog` classes share the same properties, so we could use a common parent class to extract out the duplicated specification.
+Now we use the second argument to `new_class` to define a `parent`:
+
+```{r}
+pet <- new_class("pet", properties = list(
+  name = character,
+  age = double
+)) 
 cat <- new_class("cat", pet)
 dog <- new_class("dog", pet)
 
-speak <- new_generic("speak", "x")
-method(speak, cat) <- function(x) "Meow"
-method(speak, dog) <- function(x) "Woof"
+cat
+```
+
+Method dispatch takes advantage of the hierarchy of parent classes: if a method is not defined for a class, it will next try the parent class:
+
+```{r}
+describe <- new_generic("describe", "x")
+method(describe, pet) <- function(x) {
+  paste0(x@name, " is ", x@age, " years old")
+}
+method(describe, dog) <- function(x) {
+  paste0(x@name, " is a ", x@age, " year old dog")
+}
 
 lola <- dog(name = "Lola", age = 11)
-speak(lola)
+fluffy <- cat(name = "Fluffy", age = 5)
+
+describe(lola)
+describe(fluffy)
 ```
+
+R7 generics support a limited form of multiple dispatch; see `vignette("dispatch")` for details.
 
 ## Validation
 

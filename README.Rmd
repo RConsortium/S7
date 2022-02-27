@@ -61,7 +61,7 @@ range <- new_class("range",
 )
 ```
 
-`new_class()` returns the class object, a constructor which you can use to create objects that are instances of that type:
+`new_class()` returns the class object, a constructor which you can use to create objects that are instances of that class:
 
 ```{r}
 x <- range(start = 1, end = 10)
@@ -76,7 +76,7 @@ x@end <- 20
 x
 ```
 
-Properties are automatically validated against their type and with the validator specified in the class definition:
+Properties are automatically validated against their type and with the class validator:
 
 ```{r, error = TRUE}
 x@end <- "x"
@@ -86,7 +86,7 @@ x@end <- -1
 Generics are defined by `new_generic()`.
 The first argument is the generic name (used in error messages) and the second defines the arguments that will be used for dispatch.
 The third, and optional argument, supplies the body of the generic.
-This is only needed if your generic has additional arguments that aren't dispatch on.
+This is only needed if your generic has additional arguments that aren't used for dispatch.
 
 ```{r}
 inside <- new_generic("inside", "x", function(x, y) {
