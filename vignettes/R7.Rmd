@@ -143,7 +143,7 @@ describe(lola)
 describe(fluffy)
 ```
 
-R7 generics support a limited form of multiple dispatch; see `vignette("dispatch")` for details.
+R7 generics can do multiple dispatch; see `vignette("dispatch")` for details.
 
 ## Validation
 
@@ -227,10 +227,36 @@ shift(range(1, 10), 10)
 
 The object is still validated, but it's only validated once, after all the properties have been modified.
 
-## Dynamic properties
+## Properties
 
-By defining properties with the full form using `new_property()` you can also create dynamic properties that have special behavior when setting or getting.
-The following code illustrates the basic idea by adding a dynamic `length` property to the range class.
+So far we've focused on the simplest form of property specification where you use a named list to supply the desired type for each property.
+You can also use a more complex form with `new_property()`.
+It allows you to define a define value or
+
+### Default value
+
+### Computed properties
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = "numeric",
+    end = "numeric",
+    new_property(
+      name = "length",
+      getter = function(self) self@end - self@start,
+    )
+  )
+)
+
+range(start = 1, end = 10)
+```
+
+### Dynamic properties
+
+By default, a property with a `getter` is read-only.
+You can make it read-write by supplying a `settor`.
+For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
 
 ```{r}
 range <- new_class("range",
@@ -272,3 +298,4 @@ Properties:
 -   `props(x)` gets all properties as a list.
 -   `prop(x, "name")` and `prop(x, "name") <- value` set a property using a string name.
 -   `prop_exists(x, "name")` tells you if a property exists.
+
