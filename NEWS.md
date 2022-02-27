@@ -2,6 +2,8 @@
 
 ## Feb 2022
 
+* New `method_explain()` to explain dispatch (#194).
+
 * Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
   R7 classes in different packages (#48, #163).
 

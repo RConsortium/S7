@@ -141,7 +141,9 @@ class_desc <- function(x) {
 
 # Vector of class names; used in method introspection
 class_dispatch <- function(x) {
-  if (identical(x, R7_object)) return(c("R7_object", "ANY"))
+  if (is_class(x) && x@name == "R7_object") {
+    return(c("R7_object", "ANY"))
+  }
 
   switch(class_type(x),
     NULL = c("NULL", "ANY"),

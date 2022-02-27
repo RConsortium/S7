@@ -34,3 +34,22 @@
     Error <simpleError>
       Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <list>.
 
+# method explanation: shows all possible methods along with matches
+
+       add([foo2], [foo2])
+    -> add([foo2], [foo1])
+       add([foo2], [R7_object])
+       add([foo2], [ANY])
+       add([foo1], [foo2])
+    *  add([foo1], [foo1])
+       add([foo1], [R7_object])
+       add([foo1], [ANY])
+       add([R7_object], [foo2])
+       add([R7_object], [foo1])
+       add([R7_object], [R7_object])
+       add([R7_object], [ANY])
+       add([ANY], [foo2])
+       add([ANY], [foo1])
+       add([ANY], [R7_object])
+       add([ANY], [ANY])
+
