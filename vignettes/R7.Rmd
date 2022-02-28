@@ -63,9 +63,16 @@ And R7 automatically validates the type of the property:
 lola@age <- "twelve"
 ```
 
+You can retrieve the class that the object is an instance of with `R7_class()`:
+
+```{r}
+R7_class(lola)
+```
+
 ### Generics and methods
 
-A function that behaves differently depending on the class of its inputs is called a **generic**.
+R7, like S3 and S4, is built around the idea of a **generic function**.
+A generic function, or generic for short, behaves differently depending on the class of its inputs.
 It's simple to create a basic generic with R7: you just need to supply the name of the generic (used in error messages) and the name of the argument it should use to find the method:
 
 ```{r}
@@ -74,7 +81,8 @@ speak <- new_generic("speak", "x")
 
 Like with `new_class()`, you should always assign the result of `new_generic()` to an variable of the same name.
 
-You register methods with `method<-`:
+Once you have a generic, you can register methods for specific classes with `method<-`.
+The first argument is the generic, and the second is the class.
 
 ```{r}
 method(speak, dog) <- function(x) {
@@ -82,13 +90,13 @@ method(speak, dog) <- function(x) {
 }
 ```
 
-Once you've register a method, you can use an object of that class with the generic:
+Once registered, you can call the generic with an instance of that class to use the method:
 
 ```{r}
 speak(lola)
 ```
 
-We could define another class, and add another method to the generic:
+Let's define another class, this one for cats, and define another method:
 
 ```{r}
 cat <- new_class("cat", properties = list(
@@ -109,10 +117,14 @@ If you call the generic with a class that isn't registered, you'll get an error:
 speak(1)
 ```
 
+### Base generics and base types
+
+You can also use `method()` to define a method for a base generic and an R7 class, or an R7 generic and a base class.
+
 ### Method dispatch and inheritance
 
 The `cat` and `dog` classes share the same properties, so we could use a common parent class to extract out the duplicated specification.
-Now we use the second argument to `new_class` to define a `parent`:
+Now we use the second argument to `new_class` to specify the `parent` class:
 
 ```{r}
 pet <- new_class("pet", properties = list(
@@ -125,7 +137,8 @@ dog <- new_class("dog", pet)
 cat
 ```
 
-Method dispatch takes advantage of the hierarchy of parent classes: if a method is not defined for a class, it will next try the parent class:
+Method dispatch takes advantage of the hierarchy of parent classes: if a method is not defined for a class, it will next try the method for the parent class, and so on.
+This inheritance makes it easy to share code across classes.
 
 ```{r}
 describe <- new_generic("describe", "x")
@@ -143,11 +156,36 @@ describe(lola)
 describe(fluffy)
 ```
 
-R7 generics can do multiple dispatch; see `vignette("dispatch")` for details.
+You can define a fallback for any R7 class by implementing a method for R7_object:
+
+```{r}
+method(describe, R7_object) <- function(x) {
+  "An R7 object"
+}
+
+cocktail <- new_class("cocktail", 
+  properties = list(
+    ingredients = character
+  )
+)
+martini <- cocktail(ingredients = c("gin", "vermouth"))
+describe(martini)
+```
+
+Printing a generic will show you which methods are currently defined:
+
+```{r}
+describe
+```
+
+Learn more about method dispatch in `vignette("dispatch")`.
 
 ## Validation
 
-R7 classes can have an optional `validator` that checks that the values of the properties:
+R7 classes can have an optional `validator` that checks that the values of the properties.
+A `validator` is a function that takes an object (called `self`) and either returns `NULL` if the object is valid or returns a character vector listing the problems.
+You can typically write a validator as a series of `if`-`else` statements, but note that the order of the statements is important.
+For example, in the code below, we can't check that `self@end < self@start` before we've checked that `@start` and `@end` are length 1.
 
 ```{r}
 range <- new_class("range",
@@ -171,11 +209,6 @@ range <- new_class("range",
 )
 ```
 
-A `validator` is a function that takes an object (called `self`) that either returns `NULL` if it's valid or returns a character vector listing the reasons that it's not valid.
-Typically you can construct it as a series of `if`-`else` statements.
-The order of these statements is important.
-In the example above, we can't do `self@end < self@start` before we've checked that `@start` and `@end` are the correct length.
-
 Objects are validated automatically when constructed and when any property is modified:
 
 ```{r, error = TRUE}
@@ -186,7 +219,7 @@ x <- range(1, 10)
 x@start <- 20
 ```
 
-You can also manually `validate()` an object if you use a low-level R function to modify the object directly:
+You can manually `validate()` an object if you use a low-level R function to modify the object directly:
 
 ```{r, error = TRUE}
 x <- range(1, 2)
@@ -230,32 +263,79 @@ The object is still validated, but it's only validated once, after all the prope
 ## Properties
 
 So far we've focused on the simplest form of property specification where you use a named list to supply the desired type for each property.
-You can also use a more complex form with `new_property()`.
-It allows you to define a define value or
+This is short-hand for a call to `new_property()`.
+For example, the property definition of range above is short-hand for:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = new_property("numeric"),
+    end = new_property("numeric")
+  )
+)
+```
+
+Using `new_property()` allows you to control aspects of the property apart from its type.
+The following sections show you to provide a default value, compute the property value on demand, and provide a fully dynamic property.
 
 ### Default value
 
+The defaults of `new_class()` create an class that can be constructed with no arguments:
+
+```{r}
+empty <- new_class("empty", 
+  properties = list(
+    x = double,
+    y = character,
+    z = logical
+  ))
+empty()
+```
+
+The default values of the properties will be filled in with empty instances of their types.
+You can provide your own default by using the `default` argument to `new_property()`:
+
+```{r}
+empty <- new_class("empty", 
+  properties = list(
+    x = new_property(numeric, default = 0),
+    y = new_property(character, default = ""),
+    z = new_property(logical, default = NA)
+  )
+)
+empty()
+```
+
 ### Computed properties
+
+It's sometimes useful to have a property that is computed on demand.
+For example, it'd be convenient to pretend that our range has a length, which is just the distance between `@start` and `@end`.
+You can dynamically compute the value of a property by defining a `getter`:
 
 ```{r}
 range <- new_class("range",
   properties = list(
     start = "numeric",
     end = "numeric",
-    new_property(
-      name = "length",
+    length = new_property(
       getter = function(self) self@end - self@start,
     )
   )
 )
 
-range(start = 1, end = 10)
+x <- range(start = 1, end = 10)
+x
+```
+
+A property with a `getter` is read-only:
+
+```{r, error = TRUE}
+x@length <- 20
 ```
 
 ### Dynamic properties
 
-By default, a property with a `getter` is read-only.
-You can make it read-write by supplying a `settor`.
+You can make a computed property fully dynamic so that it can be read and written by supplying a `setter`.
 For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
 
 ```{r}
@@ -263,8 +343,7 @@ range <- new_class("range",
   properties = list(
     start = "numeric",
     end = "numeric",
-    new_property(
-      name = "length",
+    length = new_property(
       class = "numeric",
       getter = function(self) self@end - self@start,
       setter = function(self, value) {
@@ -282,20 +361,6 @@ x@length <- 5
 x
 ```
 
-## Introspection
+A `setter` is a function with arguments `self` and `value` that returns a modified object.
 
-Objects:
-
--   `R7_class()` returns the class object associated with an R7 object.
-
-Classes:
-
--   `class@parent` gives the superclass.
-
-Properties:
-
--   `prop_names(x)` gives character of property names.
--   `props(x)` gets all properties as a list.
--   `prop(x, "name")` and `prop(x, "name") <- value` set a property using a string name.
--   `prop_exists(x, "name")` tells you if a property exists.
-
+## 
