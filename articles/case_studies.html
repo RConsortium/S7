@@ -96,8 +96,7 @@
 <code class="sourceCode R"><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Person"</span>,
   properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>
     name <span class="op">=</span> <span class="st">"character"</span>,
-    <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
-      name <span class="op">=</span> <span class="st">"birthdate"</span>,
+    birthdate <span class="op">=</span> <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
       class <span class="op">=</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"Date"</span><span class="op">)</span>,
       setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span>
         <span class="va">self</span><span class="op">@</span><span class="va">birthdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span>
@@ -105,8 +104,7 @@
       <span class="op">}</span>,
       default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="cn">NA</span><span class="op">)</span>
     <span class="op">)</span>,
-    <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
-      name <span class="op">=</span> <span class="st">"age"</span>,
+    age <span class="op">=</span> <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span>
       class <span class="op">=</span> <span class="st">"numeric"</span>,
       getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span>
         <span class="co"># This is not correct because of leap years,</span>
@@ -132,9 +130,10 @@
 <p>We can modify objects after creation by assigning to a property. Unlike in S4 the validity is automatically checked on assignment, not just on object creation.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">jane</span><span class="op">@</span><span class="va">birthdate</span> <span class="op">&lt;-</span> <span class="st">"1982-03-04"</span>
+<span class="co">#&gt; Error: &lt;Person&gt;@birthdate must be S3&lt;Date&gt;, not &lt;character&gt;</span>
 
 <span class="va">jane</span><span class="op">@</span><span class="va">age</span>
-<span class="co">#&gt; [1] 40</span>
+<span class="co">#&gt; [1] NA</span>
 
 <span class="va">jane</span><span class="op">@</span><span class="va">birthdate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2001-01-01"</span>, <span class="st">"2002-02-02"</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt; Error: &lt;Person&gt; object is invalid:</span>
@@ -157,8 +156,8 @@
 <span class="va">x</span><span class="op">@</span><span class="va">boss</span>
 <span class="co">#&gt; &lt;Person&gt;</span>
 <span class="co">#&gt; @ name     :  chr "Jane Doe"</span>
-<span class="co">#&gt; @ birthdate:  Date[1:1], format: "1982-03-04"</span>
-<span class="co">#&gt; @ age      :  num 40</span></code></pre></div>
+<span class="co">#&gt; @ birthdate:  Date[1:1], format: NA</span>
+<span class="co">#&gt; @ age      :  num NA</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="annotated-data-frame">Annotated Data Frame<a class="anchor" aria-label="anchor" href="#annotated-data-frame"></a>

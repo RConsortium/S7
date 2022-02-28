@@ -98,10 +98,10 @@ the package name in the class name when it's used for dispatch. This
 allows different packages to use the same name to refer to different
 classes.</p></dd>
 <dt>properties</dt>
-<dd><p>A list specifying the properties (data) that
-every object of the class will possess. Each property can either be
-a named string (specifying the class), or a call to <code><a href="new_property.html">new_property()</a></code>,
-allowing greater flexibility.</p></dd>
+<dd><p>A named list specifying the properties (data) that
+belong to each instance of the class. Each element of the list can
+either be a type specification (processed by <code><a href="as_class.html">as_class()</a></code>) or a
+full property specification created <code><a href="new_property.html">new_property()</a></code>.</p></dd>
 <dt>constructor</dt>
 <dd><p>The constructor function. Advanced use only.</p>
 <p>A custom constructor should call <code>new_object()</code> to create the R7 object.
