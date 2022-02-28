@@ -30,8 +30,7 @@ range <- new_class("range",
   properties = list(
     start = "numeric",
     end = "numeric",
-    new_property(
-      name = "length",
+    length = new_property(
       class = "numeric",
       getter = function(self) self@end - self@start,
       setter = function(self, value) {

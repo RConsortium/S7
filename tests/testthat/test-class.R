@@ -67,7 +67,7 @@ describe("new_object()", {
 
   it("validates object", {
     foo <- new_class("foo",
-      properties = list(new_property("x", double)),
+      properties = list(x = new_property(double)),
       validator = function(self) if (self@x < 0) "x must be positive"
     )
 
@@ -121,7 +121,7 @@ describe("default constructor", {
 
   it("can initialise a property to NULL", {
     foo <- new_class("foo", properties = list(
-      new_property("x", default = 10)
+      x = new_property(default = 10)
     ))
     x <- foo(x = NULL)
     expect_equal(x@x, NULL)

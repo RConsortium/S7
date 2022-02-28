@@ -10,7 +10,7 @@ describe("property retrieval", {
   })
   it("evalutes dynamic properties", {
     foo <- new_class("foo", properties = list(
-      new_property("x", getter = function(self) 1)
+      x = new_property(getter = function(self) 1)
     ))
     obj <- foo()
     expect_equal(prop(obj, "x"), 1)
@@ -39,7 +39,7 @@ describe("prop setting", {
 
   it("can set dynamic properties", {
     foo <- new_class("foo", properties = list(
-      new_property("x", setter = function(self, value) {
+      x = new_property(setter = function(self, value) {
         self@x <- value * 2
         self
       })
@@ -51,7 +51,7 @@ describe("prop setting", {
 
   it("can't set read-only properties", {
     foo <- new_class("foo", properties = list(
-      new_property("x", getter = function(self) 1
+      x = new_property(getter = function(self) 1
     )))
     obj <- foo()
     expect_snapshot(obj@x <- 1, error = TRUE)
@@ -59,9 +59,20 @@ describe("prop setting", {
 
   it("errors if the property doesn't exist or is wrong class", {
     foo <- new_class("foo", properties = list(x = double))
-    obj <- foo(123)
     expect_snapshot(error = TRUE, {
-      x@foo <- 10
+      obj <- foo(123)
+      obj@foo <- 10
+      obj@x <- "x"
+    })
+
+    foo2 <- new_class("foo2", properties = list(x =
+      new_property(
+        double,
+        setter = function(self, value) self
+      )
+    ))
+    expect_snapshot(error = TRUE, {
+      obj <- foo2(123)
       x@x <- "x"
     })
   })
@@ -106,8 +117,8 @@ describe("property access", {
 
   it("can access dynamic properties", {
     foo <- new_class("foo", properties = list(
-      new_property("x", getter = function(self) 10),
-      new_property("y")
+      x = new_property(getter = function(self) 10),
+      y = new_property()
     ))
     x <- foo(y = 2)
     expect_equal(props(x), list(x = 10, y = 2))
@@ -144,28 +155,21 @@ test_that("properties can be NULL", {
 })
 
 describe("new_property()", {
-  it("validates name", {
-    expect_snapshot(error = TRUE, {
-      new_property(1)
-      new_property("")
-    })
-  })
-
   it("validates getter and settor", {
     expect_snapshot(error = TRUE, {
-      new_property("x", getter = function(x) {})
-      new_property("x", setter = function(x, y, z) {})
+      new_property(getter = function(x) {})
+      new_property(setter = function(x, y, z) {})
     })
   })
 
   it("validates default", {
     expect_snapshot(error = TRUE, {
-      new_property("foo", class = "integer", default = "x")
+      new_property(class = "integer", default = "x")
     })
   })
 
   it("displays nicely", {
-    x <- new_property("foo", "integer")
+    x <- new_property("integer", name = "foo")
     expect_snapshot({
       print(x)
       str(list(x))
@@ -221,12 +225,12 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
 test_that("as_properties normalises properties", {
   expect_equal(as_properties(NULL), list())
   expect_equal(
-    as_properties(list(new_property("y"))),
-    list(y = new_property("y")
+    as_properties(list(x = "numeric")),
+    list(x = new_property("numeric", name = "x")
   ))
   expect_equal(
-    as_properties(list(x = "numeric")),
-    list(x = new_property("x", "numeric")
+    as_properties(list(x = new_property(class = "numeric"))),
+    list(x = new_property("numeric", name = "x")
   ))
 })
 
@@ -234,6 +238,7 @@ test_that("as_properties() gives useful error messages", {
   expect_snapshot(error = TRUE, {
     as_properties(1)
     as_properties(list(1))
+    as_properties(list(new_property("character")))
     as_properties(list(x = 1))
     as_properties(list(x = "character", x = "character"))
   })

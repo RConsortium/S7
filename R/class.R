@@ -38,10 +38,10 @@
 #'
 #'   See `validate()` for more details, examples, and how to temporarily
 #'   suppress validation when needed.
-#' @param properties A list specifying the properties (data) that
-#'   every object of the class will possess. Each property can either be
-#'   a named string (specifying the class), or a call to [new_property()],
-#'   allowing greater flexibility.
+#' @param properties A named list specifying the properties (data) that
+#'   belong to each instance of the class. Each element of the list can
+#'   either be a type specification (processed by [as_class()]) or a
+#'   full property specification created [new_property()].
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
