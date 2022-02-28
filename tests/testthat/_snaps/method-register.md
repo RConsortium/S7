@@ -1,3 +1,11 @@
+# method registration: adds messages when overwriting
+
+    Code
+      method(foo, "character") <- (function(x) "c")
+      method(foo, "character") <- (function(x) "c")
+    Message <simpleMessage>
+      Overwriting method foo(<character>)
+
 # method registration: S3 registration requires a R7 class
 
     Code

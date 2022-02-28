@@ -2,6 +2,10 @@
 
 ## Feb 2022
 
+* Minor property improvements: use same syntax for naming short-hand and
+  full property specifications; input type automatically validated for 
+  custom setters.
+
 * Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
   R7 classes in different packages (#48, #163).
 
@@ -24,6 +28,8 @@
 * Revamp website. README now shows brief example and more info in 
   `vignette("R7")`. Initial design docs and minutes are now articles so
   they appear on the website.
+
+* A property with a getter but no setter is read-only (#168).
 
 ## Jan 2022
 

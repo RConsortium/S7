@@ -27,21 +27,21 @@
 #'   The job of a validator is to determine whether the object is valid,
 #'   i.e. if the current property values form an allowed combination. The
 #'   types of the properties are always automatically validated so the job of
-#'   the validator is to verify that the value of individual properties is
+#'   the validator is to verify that the _values_ of individual properties are
 #'   ok (i.e. maybe a property should have length 1, or should always be
-#'   positive), or that the combination of values of multiple properties is ok.
+#'   positive), or that the _combination_ of values of multiple properties is ok.
 #'   It is called after construction and whenever any property is set.
 #'
 #'   The validator should return `NULL` if the object is valid. If not, it
 #'   should return a character vector where each element describes a single
-#'   problem. It's generally helpful to report as many problems at once
-#'   as possible.
+#'   problem, using `@prop_name` to describe where the problem lies.
 #'
-#'   See `validate()` for more details and examples.
-#' @param properties A list specifying the properties (data) that
-#'   every object of the class will possess. Each property can either be
-#'   a named string (specifying the class), or a call to [new_property()],
-#'   allowing greater flexibility.
+#'   See `validate()` for more details, examples, and how to temporarily
+#'   suppress validation when needed.
+#' @param properties A named list specifying the properties (data) that
+#'   belong to each instance of the class. Each element of the list can
+#'   either be a type specification (processed by [as_class()]) or a
+#'   full property specification created [new_property()].
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
@@ -212,7 +212,7 @@ new_object <- function(.parent, ...) {
   }
 
   object <- .parent %||% class_construct(class@parent)
-  attr(object, "object_class") <- class
+  attr(object, "R7_class") <- class
   class(object) <- setdiff(class_dispatch(class), "ANY")
 
   for (nme in nms) {
@@ -248,6 +248,6 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
 #' Retrieve the R7 class of an object
 #' @param object The R7 object
 #' @export
-object_class <- function(object) {
-  attr(object, "object_class", exact = TRUE)
+R7_class <- function(object) {
+  attr(object, "R7_class", exact = TRUE)
 }

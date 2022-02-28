@@ -15,7 +15,7 @@ A class union represents a list of possible classes. It can be used in two
 places:
 \itemize{
 \item To allow a property to be one of a set of classes,
-\code{new_property("x", new_union("integer", Range))}.
+\code{new_property(new_union("integer", Range))}.
 \item As a convenient short-hand to define methods for multiple classes.
 \code{method(foo, new_union(X, Y)) <- f} is short-hand for
 \verb{method(foo, X) <- f; method(foo, Y) <- foo}

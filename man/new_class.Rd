@@ -33,10 +33,10 @@ the package name in the class name when it's used for dispatch. This
 allows different packages to use the same name to refer to different
 classes.}
 
-\item{properties}{A list specifying the properties (data) that
-every object of the class will possess. Each property can either be
-a named string (specifying the class), or a call to \code{\link[=new_property]{new_property()}},
-allowing greater flexibility.}
+\item{properties}{A named list specifying the properties (data) that
+belong to each instance of the class. Each element of the list can
+either be a type specification (processed by \code{\link[=as_class]{as_class()}}) or a
+full property specification created \code{\link[=new_property]{new_property()}}.}
 
 \item{constructor}{The constructor function. Advanced use only.
 
@@ -50,17 +50,17 @@ to validate.
 The job of a validator is to determine whether the object is valid,
 i.e. if the current property values form an allowed combination. The
 types of the properties are always automatically validated so the job of
-the validator is to verify that the value of individual properties is
+the validator is to verify that the \emph{values} of individual properties are
 ok (i.e. maybe a property should have length 1, or should always be
-positive), or that the combination of values of multiple properties is ok.
+positive), or that the \emph{combination} of values of multiple properties is ok.
 It is called after construction and whenever any property is set.
 
 The validator should return \code{NULL} if the object is valid. If not, it
 should return a character vector where each element describes a single
-problem. It's generally helpful to report as many problems at once
-as possible.
+problem, using \verb{@prop_name} to describe where the problem lies.
 
-See \code{validate()} for more details and examples.}
+See \code{validate()} for more details, examples, and how to temporarily
+suppress validation when needed.}
 
 \item{.parent, ...}{Parent object and named properties used to construct the
 object.}
