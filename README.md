@@ -30,7 +30,9 @@ remotes::install_github("r-consortium/OOP-WG")
 ## Usage
 
 This section gives a very brief overview of the entirety of R7. Learn
-more in `vignettte("R7")`.
+the basics `vignettte("R7")`, the details of method dispatch in
+`vignette("dispatch")`, and compatibility with S3 and S4 in
+`vignette("compatibility")`.
 
 ``` r
 library(R7)
