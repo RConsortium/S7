@@ -358,7 +358,7 @@ x <- range(start = 1, end = 10)
 x
 ```
 
-Computed property are is read-only:
+Computed properties are read-only:
 
 ```{r, error = TRUE}
 x@length <- 20

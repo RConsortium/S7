@@ -23,14 +23,141 @@ library(R7)
 
 ## Supplying `fun`
 
--   Extra required arguments
--   Extra optional arguments
--   ...
--   Method/generic agreement
+Most calls to `new_generic()` will only use the first two arguments: the name of the generic and the argument to dispatch on.
+The function that implements the generic is then automatically generated.
+We can use `R7_data()` to extract the underlying function object to see what's happening:
+
+```{r}
+display <- new_generic("display", "x")
+R7_data(display)
+```
+
+There are two things to note:
+
+-   The arguments include `…`
+-   The body of the generic calls `method_call()`, the function that powers method dispatch.
+
+## Generic-method agreement
+
+While the generic includes `…`, generally the methods should not.
+That ensures that misspelled arguments won't be silently swallowed by the method.
+
+```{r}
+
+```
+
+The exception is methods that need to recall the generic recursively.
+For example, imagine a simple print method like this:
+
+```{r}
+simple_print <- new_generic("simple_print", "x")
+method(simple_print, double) <- function(x, digits = 3) {}
+method(simple_print, character) <- function(x, max_length = 100) {}
+```
+
+What if you want to print a list?
+
+```{r}
+method(simple_print, list) <- function(x, ...) {
+  for (el in x) {
+    simple_print(el, ...)
+  }
+}
+
+simple_print(list(1, 2, 3), digits = 3)
+```
+
+It's fine as long as all the elements of the list are numbers, but as soon as we add a character vector, we get an error:
+
+```{r, error = TRUE, eval = FALSE}
+simple_print(list(1, 2, "x"), digits = 3)
+```
+
+Because the character vector,
+
+```{r}
+method(simple_print, double) <- function(x, ..., digits = 3) {}
+method(simple_print, character) <- function(x, ..., max_length = 100) {}
+
+simple_print(list(1, 2, "x"), digits = 3)
+```
+
+In this case we really do want to silently ignore unknown arguments because they might apply to other methods.
+There's unfortunately no easy way to avoid this problem without relying on fairly esoteric technology (as done by `rlang::check_dots_used()`).
+
+```{r}
+simple_print(list(1, 2, "x"), diggits = 3)
+```
+
+## `fun` special cases
+
+You might want to override this automatically generated function yourself in order to:
+
+-   Add required arguments.
+-   Add optional arguments.
+-   Remove `…`
+-   Perform some standard work.
+
+A custom `fun` must always include a call to `call_method()`, which will usually be the last call.
+
+### Add required arguments
+
+```{r}
+foo <- new_generic("foo", "x", function(x, y) {
+  call_method()
+})
+```
+
+Now all methods will need to provide that `y` argument.
+If not, you'll get a warning:
+
+```{r}
+method(foo, integer) <- function(x, ...) {
+  10
+}
+```
+
+### Add optional arguments
+
+```{r}
+mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
+  call_method()
+})
+method(mean, integer) <- function(x, na.rm = TRUE) {
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
+  sum(x) / length(x)
+}
+```
+
+Forgetting the argument or using a different default value will generate an error.
+
+```{r}
+method(mean, double) <- function(x, na.rm = FALSE) {}
+method(mean, logical) <- function(x) {}
+```
+
+### Remove `…`
+
+By default, generics include `…` so that method can define their own additional arguments.
+Occassionaly it's useful to generic a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
+
+In general, this property is only needed for very low-level functions with precisely defined semantics.
+A good example of such a function is `length()`:
+
+```{r}
+length <- new_generic("length", "x", function(x) {
+  call_method()
+})
+```
+
+Omitting `…` from the generic signature is a strong restriction as it prevents methods from adding extra arguments.
+For this reason, it's should only be used in special situations.
+
+### Do some work
 
 ## Multiple dispatch
-
-### Special sentinels
 
 `any_class()`
 
