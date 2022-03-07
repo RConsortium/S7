@@ -1,8 +1,8 @@
 ---
-title: "dispatch"
+title: "R7 method dispatch"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{dispatch}
+  %\VignetteIndexEntry{R7 method dispatch}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,11 +14,58 @@ knitr::opts_chunk$set(
 )
 ```
 
+This vignette gives more details about method dispatch.
+It assumes you're already familiar with the process of how to create a generic and define a method.
+
 ```{r setup}
 library(R7)
 ```
 
+## Supplying `fun`
+
+-   Extra required arguments
+-   Extra optional arguments
+-   ...
+-   Method/generic agreement
+
 ## Multiple dispatch
+
+### Special sentinels
+
+`any_class()`
+
+`missing_class()`
+
+## `super()`
+
+`next_method()` is used to call the next method for the arguments.
+This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
+This ensures you cannot call the same method twice.
+
+```{r, eval = FALSE}
+method(bar, list(text, "double")) <- function(x, y, ...) {
+  res <- next_method()(x, y)
+  paste0("2 ", res)
+}
+
+bar(text("hi"), 42)
+```
+
+## External generics
+
+If you want to define methods for R7 generics defined in another package you can use `new_extrenal_generic` to declare the external generic, then add `R7::external_methods_register()` to the `.onLoad` function in your package.
+`external_methods_register()` will automatically setup on-load hooks for 'soft' dependencies in `Suggests` so the method will be added when the dependency is eventually loaded.
+
+```{r eval = FALSE}
+.onLoad <- function(libname, pkgname) {
+  R7::external_methods_register()
+}
+
+foo <- new_external_generic("pkg1", "foo")
+method(foo, "integer") <- function(x) paste0("foo-", x)
+```
+
+## Internals
 
 Multiple dispatch uses a table stored in the `methods` property of the generic.
 This table is a nested set of hashed environments based on the classes of the methods.
@@ -35,53 +82,4 @@ method(bar, list("character", "double")) <- function(x, y) paste0("foo-", x, ":"
 bar("hi", 42)
 ```
 
-## Calling the next method
-
-`next_method()` is used to call the next method for the arguments.
-This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
-This ensures you cannot call the same method twice.
-
-```{r, eval = FALSE}
-method(bar, list(text, "double")) <- function(x, y, ...) {
-  res <- next_method()(x, y)
-  paste0("2 ", res)
-}
-
-bar(text("hi"), 42)
-```
-
-## Non-standard evaluation
-
-`method_call()` retains promises for dispatch arguments in basically the same way as `UseMethod()`, so non-standard evaluation works basically the same as S3.
-
-```{r}
-subset2 <- new_generic("subset2", "x")
-
-method(subset2, new_S3_class("data.frame")) <- function(x, subset = NULL, select = NULL, drop = FALSE) {
-  e <- substitute(subset)
-  # Unlike S3, R7 creates a frame for the generic, so we need to
-  # go one extra level up to get to the user's evaluation environment
-  r <- eval(e, x, parent.frame(2))
-  r <- r & !is.na(r)
-  nl <- as.list(seq_along(x))
-  names(nl) <- names(x)
-  vars <- eval(substitute(select), nl, parent.frame())
-  x[r, vars, drop = drop]
-}
-
-subset2(mtcars, hp > 200, c(wt, qsec))
-```
-
-## External generics
-
-If you want to define methods for R7 generics defined in another package you can use `new_extrenal_generic` to declare the external generic, then add `R7::external_methods_register()` to the `.onLoad` function in your package.
-`external_methods_register()` will automatically setup on-load hooks for 'soft' dependencies in `Suggests` so the method will be added when the dependency is eventually loaded.
-
-```{r eval = FALSE}
-.onLoad <- function(libname, pkgname) {
-  R7::external_methods_register()
-}
-
-foo <- new_external_generic("pkg1", "foo")
-method(foo, "integer") <- function(x) paste0("foo-", x)
-```
+## 
