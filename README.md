@@ -12,8 +12,8 @@ coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg
 <!-- badges: end -->
 
 The R7 package is a new OOP system designed to be a successor to S3 and
-S4. It it is designed and implemented collaboratively by the RConsortium
-Object-oriented Programming Working Group, which includes
+S4. It has been designed and implemented collaboratively by the
+RConsortium Object-Oriented Programming Working Group, which includes
 representatives from R-Core, BioConductor, RStudio/tidyverse, and the
 wider R community.
 
@@ -29,12 +29,15 @@ remotes::install_github("r-consortium/OOP-WG")
 
 ## Usage
 
+This section gives a very brief overview of the entirety of R7. Learn
+more in `vignettte("R7")`.
+
 ``` r
 library(R7)
 ```
 
 R7 classes have a formal definition, which includes a list of properties
-and an optional validator. You create a class with `new_class()`:
+and an optional validator. Use `new_class()` to define a class:
 
 ``` r
 range <- new_class("range",
@@ -54,8 +57,8 @@ range <- new_class("range",
 )
 ```
 
-`new_class()` returns the class object, a constructor which you can use
-to create objects that are instances of that type:
+`new_class()` returns the class object, which is a constructor that you
+use to create instances of that class:
 
 ``` r
 x <- range(start = 1, end = 10)
@@ -65,7 +68,8 @@ x
 #> @ end  :  num 10
 ```
 
-R7 objects use `@` to get and set properties:
+The data possessed by an object is called its **properties**. Use `@` to
+get and set properties:
 
 ``` r
 x@start
@@ -77,8 +81,8 @@ x
 #> @ end  :  num 20
 ```
 
-Properties are automatically validated against their type and with the
-validator specified in the class definition:
+Properties are automatically validated against the type declared in
+`new_class()` (`double` in this case), and with the class **validator**:
 
 ``` r
 x@end <- "x"
@@ -88,17 +92,32 @@ x@end <- -1
 #> - @end must be greater than or equal to @start
 ```
 
-Generics are defined by `new_generic()`. The first argument is the
-generic name (used in error messages) and the second defines the
-arguments that will be used for dispatch. The third, and optional
-argument, supplies the body of the generic. This is only needed if your
-generic has additional arguments that aren’t dispatch on.
+Like S3 and S4, R7 uses **functional OOP** where methods belong to
+**generic** functions, and method calls look like all other function
+calls: `generic(object, arg2, arg3)`. This style is called functional
+because from the outside it looks like a regular function call, and
+internally the components are also functions.
+
+Use `new_generic()` to create a new generic: the first argument is the
+generic name (used in error messages) and the second gives the arguments
+used for dispatch. The third, and optional argument, supplies the body
+of the generic. This is only needed if your generic has additional
+arguments that aren’t used for method dispatch.
 
 ``` r
 inside <- new_generic("inside", "x", function(x, y) {
   # Actually finds and calls the appropriate method
   method_call()
 })
+```
+
+R7 generics support multiple dispatch; see `vignette("dispatch")` for
+details.
+
+Once you have a generic, you can define a method for a specific class
+with `method<-`:
+
+``` r
 # Add a method for our class
 method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end
@@ -127,5 +146,3 @@ method(mean, range) <- function(x, ...) {
 mean(x)
 #> [1] 10.5
 ```
-
-Learn more in `vignettte("R7")`.
