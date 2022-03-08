@@ -72,6 +72,8 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
     args <- c(dispatch_args, "...")
     args <- setNames(lapply(args, function(i) quote(expr = )), args)
     fun <- new_function(args, quote(method_call()), topenv(environment()))
+  } else {
+    check_generic(fun)
   }
 
   R7_generic(fun, name = name, dispatch_args = dispatch_args)

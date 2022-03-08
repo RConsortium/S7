@@ -8,6 +8,14 @@
       new_generic("")
     Error <simpleError>
       `name` must not be "" or NA
+    Code
+      new_generic("foo", 1)
+    Error <simpleError>
+      `dispatch_args` must be a character vector
+    Code
+      new_generic("foo", "x", function(x) { })
+    Error <simpleError>
+      `fun` must contain a call to `method_call()`
 
 # check_dispatch_args() produces informative errors
 

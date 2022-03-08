@@ -2,6 +2,8 @@ test_that("new_generic checks its inputs", {
   expect_snapshot(error = TRUE, {
     new_generic(1)
     new_generic("")
+    new_generic("foo", 1)
+    new_generic("foo", "x", function(x) {})
   })
 })
 
