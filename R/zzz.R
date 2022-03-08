@@ -16,6 +16,35 @@ R7_object <- new_class(
 )
 methods::setOldClass("R7_object")
 
+#' @export
+`$.R7_object` <- function(x, name) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- sprintf(
+      "Can't access R7 properties with $. Did you mean %s@%s?",
+      deparse1(substitute(x)),
+      name
+    )
+    stop(msg, call. = FALSE)
+  }
+}
+#' @export
+`$<-.R7_object` <- function(x, name, value) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- sprintf(
+      "Can't access R7 properties with $. Did you mean ...@%s <- %s?",
+      name,
+      deparse1(substitute(value))
+    )
+    stop(msg, call. = FALSE)
+  }
+}
+
+
+
 check_R7 <- function(x, arg = deparse(substitute(x))) {
   if (!inherits(x, "R7_object")) {
     stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
