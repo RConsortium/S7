@@ -195,7 +195,7 @@ class_inherits <- function(x, what) {
     any = TRUE,
     S4 = isS4(x) && methods::is(x, what),
     R7 = inherits(x, "R7_object") && inherits(x, R7_class_name(what)),
-    R7_base = what$class %in% .class2(x),
+    R7_base = what$class == base_class(x),
     R7_union = any(vlapply(what$classes, class_inherits, x = x)),
     R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
   )
@@ -222,10 +222,20 @@ obj_desc <- function(x) {
 }
 obj_dispatch <- function(x) {
   switch(obj_type(x),
-    base = c(.class2(x), "ANY"),
+    base = c(base_class(x), "ANY"),
     S3 = c(class(x), "ANY"),
     S4 = c(S4_class_dispatch(methods::getClass(class(x))), "ANY"),
     R7 = c(class(x), "ANY") # = class_dispatch(R7_class(x))
+  )
+}
+
+base_class <- function(x) {
+  switch(typeof(x),
+    closure = "function",
+    special = "function",
+    builtin = "function",
+    language = "call",
+    typeof(x)
   )
 }
 

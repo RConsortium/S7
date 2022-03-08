@@ -1,4 +1,6 @@
-new_base_class <- function(name, type = name) {
+new_base_class <- function(name) {
+  force(name)
+
   constructor <- function(.data = missing_class) {
     if (is_missing_class(.data)) {
       .data <- base_default(name)
@@ -6,10 +8,9 @@ new_base_class <- function(name, type = name) {
     .data
   }
 
-  force(type)
   validator <- function(object) {
-    if (!typeof(object) %in% type) {
-      sprintf("Underlying data must be <%s> not <%s>", paste0(type, collapse = "/"), typeof(object))
+    if (base_class(object) != name) {
+      sprintf("Underlying data must be <%s> not <%s>", name, base_class(object))
     }
   }
 
@@ -63,6 +64,6 @@ base_classes <- list(
   list = new_base_class("list"),
   expression = new_base_class("expression"),
 
-  `function` = new_base_class("function", c("closure", "special", "builtin")),
+  `function` = new_base_class("function"),
   environment = new_base_class("environment")
 )

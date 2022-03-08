@@ -113,6 +113,23 @@ test_that("can get class from base constructor", {
   expect_snapshot_error(as_class(mean))
 })
 
+test_that("dispatch for base objects use underlying type", {
+  expect_equal(obj_dispatch(1), c("double", "ANY"))
+  expect_equal(obj_dispatch(1L), c("integer", "ANY"))
+
+  expect_equal(obj_dispatch(matrix(1)), c("double", "ANY"))
+  expect_equal(obj_dispatch(matrix(1L)), c("integer", "ANY"))
+
+  expect_equal(obj_dispatch(array(1)), c("double", "ANY"))
+  expect_equal(obj_dispatch(array(1L)), c("integer", "ANY"))
+
+  expect_equal(obj_dispatch(function() {}), c("function", "ANY"))
+  expect_equal(obj_dispatch(sum), c("function", "ANY"))
+  expect_equal(obj_dispatch(`[`), c("function", "ANY"))
+
+  expect_equal(obj_dispatch(quote({})), c("call", "ANY"))
+})
+
 # S3 ----------------------------------------------------------------------
 
 test_that("can work with S3 classes", {
