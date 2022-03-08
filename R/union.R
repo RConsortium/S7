@@ -5,7 +5,7 @@
 #' places:
 #'
 #' * To allow a property to be one of a set of classes,
-#'   `new_property("x", new_union("integer", Range))`.
+#'   `new_property(new_union("integer", Range))`.
 #'
 #' * As a convenient short-hand to define methods for multiple classes.
 #'   `method(foo, new_union(X, Y)) <- f` is short-hand for

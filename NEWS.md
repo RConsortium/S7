@@ -4,6 +4,10 @@
 
 * New `method_explain()` to explain dispatch (#194).
 
+* Minor property improvements: use same syntax for naming short-hand and
+  full property specifications; input type automatically validated for 
+  custom setters.
+
 * Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
   R7 classes in different packages (#48, #163).
 

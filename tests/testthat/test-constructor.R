@@ -11,7 +11,7 @@ test_that("generates correct arguments from parent + properties",  {
 
   # unless they're dynamic
   args <- constructor_args(R7_object,
-    as_properties(list(new_property("x", getter = function(self) 10)))
+    as_properties(list(x = new_property(getter = function(self) 10)))
   )
   expect_equal(args$self, character())
   expect_equal(args$parent, character())

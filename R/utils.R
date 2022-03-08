@@ -80,6 +80,17 @@ str_function <- function(object, ..., nest.lev = 0) {
   str(object, ..., nest.lev = nest.lev)
 }
 
+check_name <- function(name, arg = deparse(substitute(name))) {
+  if (length(name) != 1 || !is.character(name)) {
+    msg <- sprintf("`%s` must be a single string", arg)
+    stop(msg, call. = FALSE)
+  }
+  if (is.na(name) || name == "") {
+    msg <- sprintf("`%s` must not be \"\" or NA", arg)
+    stop(msg, call. = FALSE)
+  }
+}
+
 check_function <- function(f, args, arg = deparse(substitute(f))) {
   if (!is.function(f)) {
     msg <- sprintf("`%s` must be a function", arg)
