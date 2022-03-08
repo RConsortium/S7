@@ -2,6 +2,9 @@
 
 ## Feb 2022
 
+* Add `$.R7_object` and `$<-.R7_object` methods to avoid "object of type 'S4'
+  is not subsettable" (#204).
+
 * New `method_explain()` to explain dispatch (#194).
 
 * Minor property improvements: use same syntax for naming short-hand and
