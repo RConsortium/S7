@@ -2,6 +2,8 @@
 
 ## Feb 2022
 
+* New `method_explain()` to explain dispatch (#194).
+
 * Minor property improvements: use same syntax for naming short-hand and
   full property specifications; input type automatically validated for 
   custom setters.

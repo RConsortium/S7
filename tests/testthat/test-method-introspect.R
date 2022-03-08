@@ -32,3 +32,16 @@ describe("method introspection", {
     })
   })
 })
+
+describe("method explanation", {
+  it("shows all possible methods along with matches", {
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2", foo1)
+
+    add <- new_generic("add", c("x", "y"))
+    method(add, list(foo2, foo1)) <- function(x, y) c(2, 1)
+    method(add, list(foo1, foo1)) <- function(x, y) c(1, 1)
+
+    expect_snapshot_output(method_explain(add, list(foo2, foo2)))
+  })
+})
