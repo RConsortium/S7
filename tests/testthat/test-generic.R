@@ -20,7 +20,6 @@ test_that("check_dispatch_args() produces informative errors", {
     check_dispatch_args(NA_character_)
     check_dispatch_args(c("x", "x"))
     check_dispatch_args("...")
-    check_dispatch_args("x", function(x, y, ...) {})
     check_dispatch_args("y", function(x, ..., y) {})
   })
 })
