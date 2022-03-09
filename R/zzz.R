@@ -22,7 +22,7 @@ methods::setOldClass("R7_object")
     NextMethod()
   } else {
     msg <- sprintf(
-      "Can't access R7 properties with `$`. Did you mean `%s@%s`?",
+      "Can't get R7 properties with `$`. Did you mean `%s@%s`?",
       deparse1(substitute(x)),
       name
     )
@@ -35,7 +35,7 @@ methods::setOldClass("R7_object")
     NextMethod()
   } else {
     msg <- sprintf(
-      "Can't set R7 properties with `$<-`. Did you mean `...@%s <- %s`?",
+      "Can't set R7 properties with `$`. Did you mean `...@%s <- %s`?",
       name,
       deparse1(substitute(value))
     )
