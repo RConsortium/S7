@@ -234,9 +234,15 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
   cat(obj_desc(object))
 
   if (typeof(object) != "S4") {
+    cat(" ")
     attrs <- attributes(object)
-    attributes(object) <- NULL
-    str(object, nest.lev = nest.lev + 1)
+    if (is.environment(object)) {
+      attributes(object) <- NULL
+    } else {
+      attributes(object) <- list(names = names(object))
+    }
+
+    str(object, nest.lev = nest.lev)
     attributes(object) <- attrs
   } else {
     cat("\n")

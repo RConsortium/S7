@@ -68,21 +68,21 @@
       print(x)
     Output
       <R7_property> 
-      $ name   :  chr "foo"
-      $ class  :  <R7_base_class>: <integer>
-      $ getter :  NULL
-      $ setter :  NULL
-      $ default:  NULL
+       $ name   : chr "foo"
+       $ class  : <R7_base_class>: <integer>
+       $ getter : NULL
+       $ setter : NULL
+       $ default: NULL
     Code
       str(list(x))
     Output
       List of 1
        $ : <R7_property> 
-        ..$ name   :  chr "foo"
-        ..$ class  :  <R7_base_class>: <integer>
-        ..$ getter :  NULL
-        ..$ setter :  NULL
-        ..$ default:  NULL
+        ..$ name   : chr "foo"
+        ..$ class  : <R7_base_class>: <integer>
+        ..$ getter : NULL
+        ..$ setter : NULL
+        ..$ default: NULL
 
 # properties can be base, S3, S4, R7, or R7 union
 
