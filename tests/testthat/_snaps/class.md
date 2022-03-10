@@ -118,12 +118,12 @@
       text <- new_class("text", character)
       text("x")
     Output
-      <text>  chr "x"
+      <text> chr "x"
     Code
       str(list(text("x")))
     Output
       List of 1
-       $ : <text>  chr "x"
+       $ : <text> chr "x"
 
 # R7 object: displays list objects nicely
 
