@@ -61,7 +61,7 @@ str_nest <- function(
   names <- format(names(object))
 
   for (i in seq_along(object)) {
-    cat(if (nest.lev > 0) indent.str, prefix, " ", names[[i]], ": ", sep = "")
+    cat(indent.str, prefix, " ", names[[i]], ":", sep = "")
 
     xi <- object[[i]]
     if (is.function(xi)) {

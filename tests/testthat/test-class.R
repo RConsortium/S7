@@ -101,6 +101,23 @@ describe("R7 object", {
       str(list(text("x")))
     })
   })
+
+  it("displays list objects nicely", {
+    foo1 <- new_class(
+      "foo1", "list",
+      properties = list(x = "double", y = "list")
+    )
+    expect_snapshot(
+      foo1(
+        list(
+          x = 1,
+          y = list(a = 21, b = 22)
+        ),
+        x = 3,
+        y = list(a = 41, b = 42)
+      )
+    )
+  })
 })
 
 describe("default constructor", {
