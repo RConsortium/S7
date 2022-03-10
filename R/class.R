@@ -90,6 +90,7 @@ new_class <- function(
     parent = R7_object,
     package = NULL,
     properties = list(),
+    methods = list(),
     constructor = NULL,
     validator = NULL) {
 
@@ -120,6 +121,10 @@ new_class <- function(
   new_props <- as_properties(properties)
   all_props[names(new_props)] <- new_props
 
+  # Combine methods from parent, overriding as needed
+  all_methods <- attr(parent, "methods", exact = TRUE) %||% list()
+  all_methods[names(methods)] <- methods
+
   if (is.null(constructor)) {
     constructor <- new_constructor(parent, all_props)
   }
@@ -130,6 +135,7 @@ new_class <- function(
   attr(object, "parent") <- parent
   attr(object, "package") <- package
   attr(object, "properties") <- all_props
+  attr(object, "methods") <- all_methods
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("R7_class", "R7_object")
@@ -137,7 +143,7 @@ new_class <- function(
   global_variables(names(all_props))
   object
 }
-globalVariables(c("name", "parent", "package", "properties", "constructor", "validator"))
+globalVariables(c("name", "parent", "package", "properties", "methods", "constructor", "validator"))
 
 R7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
