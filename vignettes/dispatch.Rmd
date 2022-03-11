@@ -17,36 +17,60 @@ knitr::opts_chunk$set(
 This vignette gives more details about method dispatch.
 It assumes you're already familiar with the process of how to create a generic and define a method.
 
+Like S3 and S4, R7 uses generic function style OO.
+Like S4 and unlike S4, R7 supports multiple dispatch where the type of more than one argument can be used to select a method.
+
+This vignette first discusses some of the details of creating a generic, and how generic-method agreement works.
+
 ```{r setup}
 library(R7)
 ```
 
-## Supplying `fun`
-
-Most calls to `new_generic()` will only use the first two arguments: the name of the generic and the argument to dispatch on.
-The function that implements the generic is then automatically generated.
-We can use `R7_data()` to extract the underlying function object to see what's happening:
-
-```{r}
-display <- new_generic("display", "x")
-R7_data(display)
-```
-
-There are two things to note:
-
--   The arguments include `…`
--   The body of the generic calls `method_call()`, the function that powers method dispatch.
-
 ## Generic-method agreement
 
+The formal argument of the generic and methods must agree.
+This means that:
+
+-   Any arguments that the generic has, the method must have to. In particular, the arguments of the method start with the arguments that the generic dispatches on, and those arguments must not have default arguments.
+-   The method can contain arguments that the generic does not, as long as the generic includes `…` in the argument list.
+
+### Generic with dots; method without dots
+
+Above, you saw that the standard generic uses `…`.
 While the generic includes `…`, generally the methods should not.
 That ensures that misspelled arguments won't be silently swallowed by the method.
+This is an important difference from S3.
+Take a very simple implementation of `mean()`:
 
 ```{r}
-
+mean <- new_generic("mean", "x")
+method(mean, numeric) <- function(x) sum(x) / length(x)
 ```
 
-The exception is methods that need to recall the generic recursively.
+If we pass an additional argument in, we'll get an error:
+
+```{r, error = TRUE, eval = FALSE}
+mean(100, na.rm = TRUE)
+```
+
+But we can still add additional arguments if we desired:
+
+```{r}
+method(mean, numeric) <- function(x, na.rm = TRUE) {
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
+
+  sum(x) / length(x)
+}
+mean(c(100, NA), na.rm = TRUE)
+```
+
+(We'll come back to the case of requiring that all methods implement a `na.rm = TRUE` argument shortly.)
+
+### Generic and method with dots
+
+There are cases where you do need to take `…` in a method, which is particularly problematic is you need to re-call the generic recursively.
 For example, imagine a simple print method like this:
 
 ```{r}
@@ -63,17 +87,16 @@ method(simple_print, list) <- function(x, ...) {
     simple_print(el, ...)
   }
 }
-
-simple_print(list(1, 2, 3), digits = 3)
 ```
 
 It's fine as long as all the elements of the list are numbers, but as soon as we add a character vector, we get an error:
 
 ```{r, error = TRUE, eval = FALSE}
+simple_print(list(1, 2, 3), digits = 3)
 simple_print(list(1, 2, "x"), digits = 3)
 ```
 
-Because the character vector,
+To solve this situation, methods generally need to ignore arguments that they haven't been specifically designed to handle, i.e. they need to use `…`:
 
 ```{r}
 method(simple_print, double) <- function(x, ..., digits = 3) {}
@@ -89,13 +112,45 @@ There's unfortunately no easy way to avoid this problem without relying on fairl
 simple_print(list(1, 2, "x"), diggits = 3)
 ```
 
-## `fun` special cases
+### Generic and method without dots
+
+Occasionaly it's useful to generic a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
+To create such a generic, you'll need to use the third argument to `new_generic()`: an optional function that powers the generic.
+This function has one key property: it must call `call_method()` to actually perform dispatch.
+
+In general, this property is only needed for very low-level functions with precisely defined semantics.
+A good example of such a function is `length()`:
+
+```{r}
+length <- new_generic("length", "x", function(x) {
+  call_method()
+})
+```
+
+Omitting `…` from the generic signature is a strong restriction as it prevents methods from adding extra arguments.
+For this reason, it's should only be used in special situations.
+
+## Customizing generics
+
+Most calls to `new_generic()` will only use the first two arguments (the name of the generic and the argument (or arguments) to dispatch on), and the body of the generic is automatically generated.
+We can use `R7_data()` to extract the underlying function to see what's happening what is generarted:
+
+```{r}
+display <- new_generic("display", "x")
+R7_data(display)
+```
+
+This automatically generated body has two important features:
+
+-   The arguments include `…`, which means that the methods can accept additional arguments.
+-   The body of the generic calls `method_call()`, the function that powers method dispatch.
+
+We'll first discuss how `…` comes into play, introducing the idea of generic-method agreement, and then go onto explore situations where you might want to customize the body of the generic.
 
 You might want to override this automatically generated function yourself in order to:
 
 -   Add required arguments.
 -   Add optional arguments.
--   Remove `…`
 -   Perform some standard work.
 
 A custom `fun` must always include a call to `call_method()`, which will usually be the last call.
@@ -131,35 +186,49 @@ method(mean, integer) <- function(x, na.rm = TRUE) {
 }
 ```
 
-Forgetting the argument or using a different default value will generate an error.
+Forgetting the argument or using a different default value will generate a warning.
 
 ```{r}
 method(mean, double) <- function(x, na.rm = FALSE) {}
 method(mean, logical) <- function(x) {}
 ```
 
-### Remove `…`
+### Do some work
 
-By default, generics include `…` so that method can define their own additional arguments.
-Occassionaly it's useful to generic a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
-
-In general, this property is only needed for very low-level functions with precisely defined semantics.
-A good example of such a function is `length()`:
+If you're generic has additional arguments, you might want to do some additional work to verify that they're of the expected type.
+For example, our `mean()` function could verify that `na.rm` was correctly specified:
 
 ```{r}
-length <- new_generic("length", "x", function(x) {
+mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
+  if (!identical(na.rm, TRUE) && !identical(na.rm = FALSE)) {
+    stop("`na.rm` must be either TRUE or FALSE")
+  }
   call_method()
 })
 ```
 
-Omitting `…` from the generic signature is a strong restriction as it prevents methods from adding extra arguments.
-For this reason, it's should only be used in special situations.
-
-### Do some work
+The only downside to performing error checking is that you constraint the interface for all methods; if for some reason a method found it useful to allow `na.rm` to be a number or a string, it would have to provide an alternative argument.
 
 ## Multiple dispatch
 
+So far we have focused primarily on single dispatch, that is generics where `dispatch_on` is a single string.
+It is also possible to supply a length 2 (or more!) vector `dispatch_on` to create a generic that performs multiple dispatch, i.e. it uses the classes of more than one object to find the appropriate method.
+
+Multiple dispatch is a feature primarily of S4, although S3 includes some limited special cases for arithmetic operators.
+Multiple dispatch is heavily used in S4; we don't expect it to be heavily used in R7, but it is occasionally useful.
+
+```{r}
+add <- new_generic("add", c("x", "y"))
+method(add, list(integer, integer)) <- function(x, y) x + y
+```
+
+### Matching any class
+
 `any_class()`
+
+### Matching a missing argument
+
+(Not `NA`, but the absence of an argument)
 
 `missing_class()`
 
@@ -192,7 +261,7 @@ foo <- new_external_generic("pkg1", "foo")
 method(foo, "integer") <- function(x) paste0("foo-", x)
 ```
 
-## Internals
+## Implementation details
 
 Multiple dispatch uses a table stored in the `methods` property of the generic.
 This table is a nested set of hashed environments based on the classes of the methods.
