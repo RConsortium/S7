@@ -15,7 +15,7 @@
 #'   name when exporting an R7 class from a package because it includes
 #'   the package name in the class name when it's used for dispatch. This
 #'   allows different packages to use the same name to refer to different
-#'   classes.
+#'   classes. If you see `package`, you _must_ export the constructor.
 #' @param constructor The constructor function. Advanced use only.
 #'
 #'   A custom constructor should call `new_object()` to create the R7 object.
