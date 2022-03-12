@@ -96,7 +96,7 @@ There are four options:</p><ul><li><p>The R7 class, like <a href="r7_object.html
 name when exporting an R7 class from a package because it includes
 the package name in the class name when it's used for dispatch. This
 allows different packages to use the same name to refer to different
-classes.</p></dd>
+classes. If you see <code>package</code>, you <em>must</em> export the constructor.</p></dd>
 <dt>properties</dt>
 <dd><p>A named list specifying the properties (data) that
 belong to each instance of the class. Each element of the list can
