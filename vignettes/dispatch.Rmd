@@ -26,9 +26,9 @@ This vignette first discusses some of the details of creating a generic, and how
 library(R7)
 ```
 
-## Generic-method agreement
+## Generic-method compatibility
 
-The formal argument of the generic and methods must agree.
+The formal arguments of the generic and methods must agree.
 This means that:
 
 -   Any arguments that the generic has, the method must have to. In particular, the arguments of the method start with the arguments that the generic dispatches on, and those arguments must not have default arguments.
@@ -36,8 +36,7 @@ This means that:
 
 ### Generic with dots; method without dots
 
-Above, you saw that the standard generic uses `…`.
-While the generic includes `…`, generally the methods should not.
+The default generic includes `…` but generally the methods should not.
 That ensures that misspelled arguments won't be silently swallowed by the method.
 This is an important difference from S3.
 Take a very simple implementation of `mean()`:
@@ -114,7 +113,7 @@ simple_print(list(1, 2, "x"), diggits = 3)
 
 ### Generic and method without dots
 
-Occasionaly it's useful to generic a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
+Occasional it's useful to generic a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
 To create such a generic, you'll need to use the third argument to `new_generic()`: an optional function that powers the generic.
 This function has one key property: it must call `call_method()` to actually perform dispatch.
 
@@ -123,7 +122,7 @@ A good example of such a function is `length()`:
 
 ```{r}
 length <- new_generic("length", "x", function(x) {
-  call_method()
+  method_call()
 })
 ```
 
@@ -132,34 +131,32 @@ For this reason, it's should only be used in special situations.
 
 ## Customizing generics
 
-Most calls to `new_generic()` will only use the first two arguments (the name of the generic and the argument (or arguments) to dispatch on), and the body of the generic is automatically generated.
-We can use `R7_data()` to extract the underlying function to see what's happening what is generarted:
+In most cases, you'll supply the first two arguments to `new_generic()` and allow it to automatically generate the body of the generic:
 
 ```{r}
 display <- new_generic("display", "x")
 R7_data(display)
 ```
 
-This automatically generated body has two important features:
+The most important part of the body is `method_call()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
 
--   The arguments include `…`, which means that the methods can accept additional arguments.
--   The body of the generic calls `method_call()`, the function that powers method dispatch.
+It can be useful to customize this body.
+The previous section showed one case when you might want to supply the body yourself: dropping `…` from the formals of the generic.
+There are three other useful cases:
 
-We'll first discuss how `…` comes into play, introducing the idea of generic-method agreement, and then go onto explore situations where you might want to customize the body of the generic.
-
-You might want to override this automatically generated function yourself in order to:
-
--   Add required arguments.
--   Add optional arguments.
+-   To add required arguments.
+-   To add optional arguments.
 -   Perform some standard work.
 
 A custom `fun` must always include a call to `call_method()`, which will usually be the last call.
 
 ### Add required arguments
 
+To add required arguments that aren't dispatched upon, you just need to add additional arguments that lack default values:
+
 ```{r}
-foo <- new_generic("foo", "x", function(x, y) {
-  call_method()
+foo <- new_generic("foo", "x", function(x, y, ...) {
+  method_call()
 })
 ```
 
@@ -172,11 +169,17 @@ method(foo, integer) <- function(x, ...) {
 }
 ```
 
+This is a warning, not an error, because the generic might be defined in a different package and is in the process of changing interfaces.
+You'll always want to address this warning when you see it.
+
 ### Add optional arguments
+
+Adding an optional argument is similar, but it should generally come after `…`.
+This ensures that the user must supply the full name of the argument when calling the function, which makes it easier to extend your function in the future.
 
 ```{r}
 mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
-  call_method()
+  method_call()
 })
 method(mean, integer) <- function(x, na.rm = TRUE) {
   if (na.rm) {
@@ -186,7 +189,7 @@ method(mean, integer) <- function(x, na.rm = TRUE) {
 }
 ```
 
-Forgetting the argument or using a different default value will generate a warning.
+Forgetting the argument or using a different default value will again generate a warning.
 
 ```{r}
 method(mean, double) <- function(x, na.rm = FALSE) {}
@@ -203,7 +206,7 @@ mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
   if (!identical(na.rm, TRUE) && !identical(na.rm = FALSE)) {
     stop("`na.rm` must be either TRUE or FALSE")
   }
-  call_method()
+  method_call()
 })
 ```
 
@@ -220,6 +223,31 @@ Multiple dispatch is heavily used in S4; we don't expect it to be heavily used i
 ```{r}
 add <- new_generic("add", c("x", "y"))
 method(add, list(integer, integer)) <- function(x, y) x + y
+```
+
+### A simple example
+
+Inspired by <https://blog.klipse.tech/javascript/2021/10/03/multimethod.html>
+
+Let's take our speak example from `vignette("R7")` and extend it to teach our pets how to speak multiple languages:
+
+```{r}
+pet <- new_class("pet")
+dog <- new_class("dog", pet)
+cat <- new_class("cat", pet)
+
+language <- new_class("language")
+english <- new_class("english", language)
+french <- new_class("french", language)
+
+speak <- new_generic("speak", c("x", "y"))
+method(speak, list(dog, english)) <- function(x, y) "Woof"
+method(speak, list(cat, english)) <- function(x, y) "Meow"
+method(speak, list(dog, french)) <- function(x, y) "Ouaf Ouaf"
+method(speak, list(cat, french)) <- function(x, y) "Miaou"
+
+speak(cat(), english())
+speak(dog(), french())
 ```
 
 ### Matching any class
