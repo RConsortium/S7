@@ -108,7 +108,6 @@ describe("as_signature()", {
       as_signature(list("character"), foo)
     })
   })
-
 })
 
 test_that("check_method returns TRUE if the functions are compatible", {
@@ -128,6 +127,11 @@ test_that("check_method complains if the functions are not compatible", {
     check_method(function(y) {}, foo)
     check_method(function(x = "foo") {}, foo)
     check_method(function(x, y, ...) {}, foo)
+  })
+
+  expect_snapshot(error = TRUE, {
+    foo <- new_generic("foo", "x", function(x) method_call())
+    check_method(function(x, y) {}, foo)
   })
 })
 

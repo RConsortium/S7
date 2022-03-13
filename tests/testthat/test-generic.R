@@ -2,6 +2,8 @@ test_that("new_generic checks its inputs", {
   expect_snapshot(error = TRUE, {
     new_generic(1)
     new_generic("")
+    new_generic("foo", 1)
+    new_generic("foo", "x", function(x) {})
   })
 })
 
@@ -18,7 +20,6 @@ test_that("check_dispatch_args() produces informative errors", {
     check_dispatch_args(NA_character_)
     check_dispatch_args(c("x", "x"))
     check_dispatch_args("...")
-    check_dispatch_args("x", function(x, y, ...) {})
     check_dispatch_args("y", function(x, ..., y) {})
   })
 })

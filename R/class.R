@@ -15,7 +15,7 @@
 #'   name when exporting an R7 class from a package because it includes
 #'   the package name in the class name when it's used for dispatch. This
 #'   allows different packages to use the same name to refer to different
-#'   classes.
+#'   classes. If you see `package`, you _must_ export the constructor.
 #' @param constructor The constructor function. Advanced use only.
 #'
 #'   A custom constructor should call `new_object()` to create the R7 object.
@@ -234,9 +234,17 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
   cat(obj_desc(object))
 
   if (typeof(object) != "S4") {
+    if (!typeof(object) %in% c("numeric", "integer", "character", "double"))
+      cat(" ")
+
     attrs <- attributes(object)
-    attributes(object) <- NULL
-    str(object, nest.lev = nest.lev + 1)
+    if (is.environment(object)) {
+      attributes(object) <- NULL
+    } else {
+      attributes(object) <- list(names = names(object))
+    }
+
+    str(object, nest.lev = nest.lev)
     attributes(object) <- attrs
   } else {
     cat("\n")

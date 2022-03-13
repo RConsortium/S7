@@ -161,6 +161,14 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
 
+  if (!"..." %in% generic_args && !identical(generic_formals, method_formals)) {
+    msg <- sprintf(
+      "%s() lacks `...` so method formals must match generic formals exactly",
+      generic@name
+    )
+    stop(msg, call. = FALSE)
+  }
+
   n_dispatch <- length(generic@dispatch_args)
   has_dispatch <- length(method_formals) >= n_dispatch &&
     identical(method_args[1:n_dispatch], generic@dispatch_args)
@@ -174,14 +182,7 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
     )
     stop(msg, call. = FALSE)
   }
-  if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
-    msg <- sprintf(
-      "In %s, `...` must come immediately after dispatch args (%s)",
-      name,
-      arg_names(generic@dispatch_args)
-    )
-    stop(msg, call. = FALSE)
-  }
+
   empty_dispatch <- vlapply(method_formals[generic@dispatch_args], identical, quote(expr = ))
   if (any(!empty_dispatch)) {
     msg <- sprintf(

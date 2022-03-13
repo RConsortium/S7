@@ -31,7 +31,7 @@ There are four options:
 name when exporting an R7 class from a package because it includes
 the package name in the class name when it's used for dispatch. This
 allows different packages to use the same name to refer to different
-classes.}
+classes. If you see \code{package}, you \emph{must} export the constructor.}
 
 \item{properties}{A named list specifying the properties (data) that
 belong to each instance of the class. Each element of the list can

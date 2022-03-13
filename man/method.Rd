@@ -43,3 +43,6 @@ method(bizarro, class = "integer")
 method(bizarro, object = 1)
 method(bizarro, new_S3_class("factor"))
 }
+\seealso{
+\code{\link[=method_explain]{method_explain()}} to explain why a specific method was picked.
+}

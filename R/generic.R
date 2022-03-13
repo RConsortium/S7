@@ -72,6 +72,8 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
     args <- c(dispatch_args, "...")
     args <- setNames(lapply(args, function(i) quote(expr = )), args)
     fun <- new_function(args, quote(method_call()), topenv(environment()))
+  } else {
+    check_generic(fun)
   }
 
   R7_generic(fun, name = name, dispatch_args = dispatch_args)
@@ -99,10 +101,6 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
 
     if (!is_prefix(dispatch_args, arg_names)) {
       stop("`dispatch_args` must be a prefix of the generic arguments", call. = FALSE)
-    }
-
-    if ("..." %in% arg_names && arg_names[[length(dispatch_args) + 1]] != "...") {
-      stop("If present, ... must immediately follow the `dispatch_args`", call. = FALSE)
     }
   }
 

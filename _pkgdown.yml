@@ -24,6 +24,7 @@ reference:
   contents:
   - as_class
   - method
+  - method_explain
   - new_external_generic
   - new_S3_class
   - missing_class

@@ -8,6 +8,14 @@
       new_generic("")
     Error <simpleError>
       `name` must not be "" or NA
+    Code
+      new_generic("foo", 1)
+    Error <simpleError>
+      `dispatch_args` must be a character vector
+    Code
+      new_generic("foo", "x", function(x) { })
+    Error <simpleError>
+      `fun` must contain a call to `method_call()`
 
 # check_dispatch_args() produces informative errors
 
@@ -35,10 +43,6 @@
       check_dispatch_args("...")
     Error <simpleError>
       Can't dispatch on `...`
-    Code
-      check_dispatch_args("x", function(x, y, ...) { })
-    Error <simpleError>
-      If present, ... must immediately follow the `dispatch_args`
     Code
       check_dispatch_args("y", function(x, ..., y) { })
     Error <simpleError>
