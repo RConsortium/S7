@@ -34,7 +34,8 @@ articles:
   navbar: ~
   contents:
   - R7
-  - case_studies
+  - dispatch
+  - compatibility
   - performance
 
 - title: Initial design and specification
