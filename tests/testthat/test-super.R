@@ -1,6 +1,6 @@
 
 describe("super()", {
-  it("overrides dispatch, matching exact class", {
+  it("overrides dispatch, matching inherited behaviour", {
     foo1 <- new_class("foo1")
     foo2 <- new_class("foo2", foo1)
     foo3 <- new_class("foo3", foo2)
@@ -9,7 +9,7 @@ describe("super()", {
     method(bar, foo1) <- function(x) 1
     method(bar, foo3) <- function(x) 3
 
-    expect_error(bar(super(foo3(), foo2)), "Can't find method")
+    expect_equal(bar(super(foo3(), foo2)), 1)
     expect_equal(bar(super(foo3(), foo1)), 1)
   })
 

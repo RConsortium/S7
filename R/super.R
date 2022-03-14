@@ -72,7 +72,7 @@ super <- function(from, to) {
   structure(
     list(
       object = from,
-      dispatch = class_register(to)
+      dispatch = class_dispatch(to)
     ),
     class = "R7_super"
   )
@@ -86,5 +86,5 @@ print.R7_super <- function(x, ...) {
 #' @export
 str.R7_super <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("super(", obj_desc(object$object), ", <", object$dispatch, ">)", sep = "")
+  cat("super(", obj_desc(object$object), ", <", object$dispatch[[1]], ">)", sep = "")
 }
