@@ -34,7 +34,7 @@
 #' method(total, foo2) <- function(x) total(x) + x@z
 #'
 #' # So instead we use `super()` to call the method for the parent class:
-#' method(total, foo2) <- function(x) total(super(x, foo1)) + x@z
+#' method(total, foo2) <- function(x) total(super(x, to = foo1)) + x@z
 #' total(foo2(1, 2, 3))
 #'
 #' # To see the difference between convert() and super() we need a
@@ -53,7 +53,7 @@
 #' # convert() affects every generic:
 #' bar2(convert(obj, to = foo1))
 #' # super() only affects the _next_ generic:
-#' bar2(super(obj, foo1))
+#' bar2(super(obj, to = foo1))
 super <- function(from, to) {
   check_R7(from)
 

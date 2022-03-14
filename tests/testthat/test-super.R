@@ -9,8 +9,8 @@ describe("super()", {
     method(bar, foo1) <- function(x) 1
     method(bar, foo3) <- function(x) 3
 
-    expect_equal(bar(super(foo3(), foo2)), 1)
-    expect_equal(bar(super(foo3(), foo1)), 1)
+    expect_equal(bar(super(foo3(), to = foo2)), 1)
+    expect_equal(bar(super(foo3(), to = foo1)), 1)
   })
 
   it("only affects one dispatch", {
