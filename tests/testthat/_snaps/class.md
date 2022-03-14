@@ -13,24 +13,24 @@
       str(foo2)
     Output
       <foo2/foo1/R7_object> constructor
-      @ name       :  chr "foo2"
-      @ parent     :  <foo1/R7_object> constructor
-      @ package    :  NULL
-      @ properties : List of 2
+       @ name       : chr "foo2"
+       @ parent     : <foo1/R7_object> constructor
+       @ package    : NULL
+       @ properties :List of 2
        .. $ x: <R7_property> 
-       ..  ..$ name   :  chr "x"
-       ..  ..$ class  :  <R7_base_class>: <integer>
-       ..  ..$ getter :  NULL
-       ..  ..$ setter :  NULL
-       ..  ..$ default:  NULL
+       ..  ..$ name   : chr "x"
+       ..  ..$ class  : <R7_base_class>: <integer>
+       ..  ..$ getter : NULL
+       ..  ..$ setter : NULL
+       ..  ..$ default: NULL
        .. $ y: <R7_property> 
-       ..  ..$ name   :  chr "y"
-       ..  ..$ class  :  <R7_base_class>: <integer>
-       ..  ..$ getter :  NULL
-       ..  ..$ setter :  NULL
-       ..  ..$ default:  NULL
-      @ constructor:  function (x = missing_class, y = missing_class)  
-      @ validator  :  NULL
+       ..  ..$ name   : chr "y"
+       ..  ..$ class  : <R7_base_class>: <integer>
+       ..  ..$ getter : NULL
+       ..  ..$ setter : NULL
+       ..  ..$ default: NULL
+       @ constructor: function (x = missing_class, y = missing_class)  
+       @ validator  : NULL
     Code
       str(list(foo2))
     Output
@@ -102,15 +102,15 @@
       foo()
     Output
       <foo>
-      @ x:  num(0) 
-      @ y:  num(0) 
+       @ x: num(0) 
+       @ y: num(0) 
     Code
       str(list(foo()))
     Output
       List of 1
        $ : <foo>
-        ..@ x:  num(0) 
-        ..@ y:  num(0) 
+        ..@ x: num(0) 
+        ..@ y: num(0) 
 
 # R7 object: displays objects with data nicely
 
@@ -124,4 +124,19 @@
     Output
       List of 1
        $ : <text> chr "x"
+
+# R7 object: displays list objects nicely
+
+    Code
+      foo1(list(x = 1, y = list(a = 21, b = 22)), x = 3, y = list(a = 41, b = 42))
+    Output
+      <foo1> List of 2
+       $ x: num 1
+       $ y:List of 2
+        ..$ a: num 21
+        ..$ b: num 22
+       @ x: num 3
+       @ y:List of 2
+       .. $ a: num 41
+       .. $ b: num 42
 

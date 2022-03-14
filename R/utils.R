@@ -61,7 +61,7 @@ str_nest <- function(
   names <- format(names(object))
 
   for (i in seq_along(object)) {
-    cat(if (nest.lev > 0) indent.str, prefix, " ", names[[i]], ": ", sep = "")
+    cat(indent.str, prefix, " ", names[[i]], ":", sep = "")
 
     xi <- object[[i]]
     if (is.function(xi)) {
@@ -78,6 +78,17 @@ str_function <- function(object, ..., nest.lev = 0) {
     cat(" ")
   }
   str(object, ..., nest.lev = nest.lev)
+}
+
+check_name <- function(name, arg = deparse(substitute(name))) {
+  if (length(name) != 1 || !is.character(name)) {
+    msg <- sprintf("`%s` must be a single string", arg)
+    stop(msg, call. = FALSE)
+  }
+  if (is.na(name) || name == "") {
+    msg <- sprintf("`%s` must not be \"\" or NA", arg)
+    stop(msg, call. = FALSE)
+  }
 }
 
 check_function <- function(f, args, arg = deparse(substitute(f))) {

@@ -6,6 +6,15 @@ describe("method registration", {
     expect_length(methods(foo), 2)
   })
 
+  it("adds messages when overwriting", {
+    foo <- new_generic("foo", "x")
+    expect_snapshot({
+      method(foo, "character") <- function(x) "c"
+      method(foo, "character") <- function(x) "c"
+    })
+    expect_length(methods(foo), 1)
+  })
+
   it("adds method for each element of a union", {
     foo <- new_generic("foo", "x")
     method(foo, "numeric") <- function(x) "x"
@@ -99,7 +108,6 @@ describe("as_signature()", {
       as_signature(list("character"), foo)
     })
   })
-
 })
 
 test_that("check_method returns TRUE if the functions are compatible", {
@@ -119,6 +127,11 @@ test_that("check_method complains if the functions are not compatible", {
     check_method(function(y) {}, foo)
     check_method(function(x = "foo") {}, foo)
     check_method(function(x, y, ...) {}, foo)
+  })
+
+  expect_snapshot(error = TRUE, {
+    foo <- new_generic("foo", "x", function(x) method_call())
+    check_method(function(x, y) {}, foo)
   })
 })
 

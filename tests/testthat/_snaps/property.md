@@ -17,43 +17,48 @@
     Error <simpleError>
       trying to get slot "blah" from an object of a basic class ("NULL") with no slots
 
+# prop setting: can't set read-only properties
+
+    Code
+      obj@x <- 1
+    Error <simpleError>
+      Can't set read-only property <foo>@x
+
 # prop setting: errors if the property doesn't exist or is wrong class
 
     Code
-      x@foo <- 10
+      obj <- foo(123)
+      obj@foo <- 10
     Error <simpleError>
-      object 'x' not found
+      Can't find property <foo>@foo
     Code
+      obj@x <- "x"
+    Error <simpleError>
+      <foo>@x must be <double>, not <character>
+
+---
+
+    Code
+      obj <- foo2(123)
       x@x <- "x"
     Error <simpleError>
       object 'x' not found
 
-# new_property(): validates name
-
-    Code
-      new_property(1)
-    Error <simpleError>
-      `name` must be a single string
-    Code
-      new_property("")
-    Error <simpleError>
-      `name` must not be "" or NA
-
 # new_property(): validates getter and settor
 
     Code
-      new_property("x", getter = function(x) { })
+      new_property(getter = function(x) { })
     Error <simpleError>
       `getter` must be function(self), not function(x)
     Code
-      new_property("x", setter = function(x, y, z) { })
+      new_property(setter = function(x, y, z) { })
     Error <simpleError>
       `setter` must be function(self, value), not function(x, y, z)
 
 # new_property(): validates default
 
     Code
-      new_property("foo", class = "integer", default = "x")
+      new_property(class = "integer", default = "x")
     Error <simpleError>
       `default` must be an instance of <integer>, not a <character>
 
@@ -63,21 +68,21 @@
       print(x)
     Output
       <R7_property> 
-      $ name   :  chr "foo"
-      $ class  :  <R7_base_class>: <integer>
-      $ getter :  NULL
-      $ setter :  NULL
-      $ default:  NULL
+       $ name   : chr "foo"
+       $ class  : <R7_base_class>: <integer>
+       $ getter : NULL
+       $ setter : NULL
+       $ default: NULL
     Code
       str(list(x))
     Output
       List of 1
        $ : <R7_property> 
-        ..$ name   :  chr "foo"
-        ..$ class  :  <R7_base_class>: <integer>
-        ..$ getter :  NULL
-        ..$ setter :  NULL
-        ..$ default:  NULL
+        ..$ name   : chr "foo"
+        ..$ class  : <R7_base_class>: <integer>
+        ..$ getter : NULL
+        ..$ setter : NULL
+        ..$ default: NULL
 
 # properties can be base, S3, S4, R7, or R7 union
 
@@ -131,6 +136,10 @@
       `properties` must be a list
     Code
       as_properties(list(1))
+    Error <simpleError>
+      `property[[1]]` is missing a name
+    Code
+      as_properties(list(new_property("character")))
     Error <simpleError>
       `property[[1]]` is missing a name
     Code

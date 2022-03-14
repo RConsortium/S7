@@ -67,7 +67,7 @@ describe("new_object()", {
 
   it("validates object", {
     foo <- new_class("foo",
-      properties = list(new_property("x", double)),
+      properties = list(x = new_property(double)),
       validator = function(self) if (self@x < 0) "x must be positive"
     )
 
@@ -101,6 +101,23 @@ describe("R7 object", {
       str(list(text("x")))
     })
   })
+
+  it("displays list objects nicely", {
+    foo1 <- new_class(
+      "foo1", "list",
+      properties = list(x = "double", y = "list")
+    )
+    expect_snapshot(
+      foo1(
+        list(
+          x = 1,
+          y = list(a = 21, b = 22)
+        ),
+        x = 3,
+        y = list(a = 41, b = 42)
+      )
+    )
+  })
 })
 
 describe("default constructor", {
@@ -121,7 +138,7 @@ describe("default constructor", {
 
   it("can initialise a property to NULL", {
     foo <- new_class("foo", properties = list(
-      new_property("x", default = 10)
+      x = new_property(default = 10)
     ))
     x <- foo(x = NULL)
     expect_equal(x@x, NULL)

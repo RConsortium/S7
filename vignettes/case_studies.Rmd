@@ -26,8 +26,7 @@ This case study demonstrates creating basic classes with accessors functions, in
 Person <- new_class("Person",
   properties = list(
     name = "character",
-    new_property(
-      name = "birthdate",
+    birthdate = new_property(
       class = new_S3_class("Date"),
       setter = function(self, value) {
         self@birthdate <- as.Date(value)
@@ -35,8 +34,7 @@ Person <- new_class("Person",
       },
       default = as.Date(NA)
     ),
-    new_property(
-      name = "age",
+    age = new_property(
       class = "numeric",
       getter = function(self) {
         # This is not correct because of leap years,

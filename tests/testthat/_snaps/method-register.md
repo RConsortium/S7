@@ -1,3 +1,11 @@
+# method registration: adds messages when overwriting
+
+    Code
+      method(foo, "character") <- (function(x) "c")
+      method(foo, "character") <- (function(x) "c")
+    Message <simpleMessage>
+      Overwriting method foo(<character>)
+
 # method registration: S3 registration requires a R7 class
 
     Code
@@ -52,8 +60,14 @@
       In foo(???), dispatch arguments (`x`) must not have default values
     Code
       check_method(function(x, y, ...) { }, foo)
+
+---
+
+    Code
+      foo <- new_generic("foo", "x", function(x) method_call())
+      check_method(function(x, y) { }, foo)
     Error <simpleError>
-      In foo(???), `...` must come immediately after dispatch args (`x`)
+      foo() lacks `...` so method formals must match generic formals exactly
 
 # check_method warn if default arguments don't match
 
