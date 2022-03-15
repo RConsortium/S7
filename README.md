@@ -81,7 +81,7 @@ mean(x)
 # Create a new generic
 inside <- new_generic("inside", "x", function(x, y) {
   # Actually finds and calls the appropriate method
-  method_call()
+  R7_dispatch()
 })
 # Add a method for our class
 method(inside, Range) <- function(x, y) y >= x@start & y <= x@end

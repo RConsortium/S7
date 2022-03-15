@@ -13,6 +13,6 @@ method_lookup_error <- function(name, args, signatures) {
 #' @rdname new_generic
 #' @order 2
 #' @export
-method_call <- function() {
+R7_dispatch <- function() {
   .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
 }
