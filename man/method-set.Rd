@@ -11,19 +11,17 @@ method(generic, signature) <- value
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
 \item{signature}{A method signature. For R7 generics that use single
-dispatch, this should be one of the following:
+dispatch, this must be one of the following:
 \itemize{
 \item An R7 class (created by \code{\link[=new_class]{new_class()}}).
 \item An R7 union (created by \code{\link[=new_union]{new_union()}}).
 \item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
-\item A base type specified either with its constructor (\code{logical}, \code{integer},
-\code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
-\item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
-\code{"vector"}.
+\item A base type like \link{class_logical}, \link{class_integer}, or \link{class_numeric}.
+\item A special type like \link{class_missing} or \link{class_any}.
 }
 
-For R7 generics that use multiple dispatch, this can be a list of any of
+For R7 generics that use multiple dispatch, this must be a list of any of
 the above types.
 
 For S3 generics, this must be an R7 class.}

@@ -20,11 +20,11 @@ new_object(.parent, ...)
 \item{name}{The name of the class, as a string.}
 
 \item{parent}{The parent class to inherit behavior from.
-There are four options:
+There are three options:
 \itemize{
-\item The R7 class, like \link{R7_object}.
+\item An R7 class, like \link{R7_object}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
-\item A base type, like \code{logical}, \code{double}, or \code{character}.
+\item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
 
 \item{package}{Package name. It is good practice to set the package

@@ -13,8 +13,8 @@ new_property(
 )
 }
 \arguments{
-\item{class}{If specified, any values must be one of these classes
-(or \link[=new_union]{class union}).}
+\item{class}{Class that property must be an instance of.
+See \code{\link[=as_class]{as_class()}} for details.}
 
 \item{getter}{An optional function used to get the value. The function
 should take \code{self}  as its sole argument and return the value. If the

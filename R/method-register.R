@@ -15,17 +15,15 @@
 #' @param generic A generic function, either created by [new_generic()],
 #'   [new_external_generic()], or an existing S3 generic.
 #' @param signature A method signature. For R7 generics that use single
-#'   dispatch, this should be one of the following:
+#'   dispatch, this must be one of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
-#'   * A base type specified either with its constructor (`logical`, `integer`,
-#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
-#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
-#'     `"vector"`.
+#'   * A base type like [class_logical], [class_integer], or [class_numeric].
+#'   * A special type like [class_missing] or [class_any].
 #'
-#'   For R7 generics that use multiple dispatch, this can be a list of any of
+#'   For R7 generics that use multiple dispatch, this must be a list of any of
 #'   the above types.
 #'
 #'   For S3 generics, this must be an R7 class.

@@ -8,7 +8,7 @@ new_union(...)
 }
 \arguments{
 \item{...}{The classes to include in the union. See \code{\link[=as_class]{as_class()}} for
-permitted definitions}
+details.}
 }
 \description{
 A class union represents a list of possible classes. It can be used in two

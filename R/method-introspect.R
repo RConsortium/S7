@@ -9,11 +9,10 @@
 #' @seealso [method_explain()] to explain why a specific method was picked.
 #' @inheritParams method<-
 #' @returns A function with class <R7_method>.
-#' @param class,object Perform introspection either with `classes`
-#'   (processed with [as_class()]) or a concrete objects.
-#'
-#'   If `generic` does multiple dispatch both `object` and `class` need
-#'   to be wrapped in a list.
+#' @param class,object Perform introspection either with a `class`
+#'   (processed with [as_class()]) or a concrete `object`. If `generic` uses
+#'   multiple dispatch then both `object` and `class` must be a list of
+#'   classes/objects.
 #' @export
 #' @examples
 #' # Create a generic and register some methods

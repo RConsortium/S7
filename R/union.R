@@ -16,7 +16,7 @@
 #' "vector" (atomic vectors, lists, and expressions).
 #'
 #' @param ... The classes to include in the union. See [as_class()] for
-#'   permitted definitions
+#'   details.
 #' @export
 #' @examples
 #' logical_or_character <- new_union(class_logical, class_character)

@@ -6,11 +6,11 @@
 #'
 #' @param name The name of the class, as a string.
 #' @param parent The parent class to inherit behavior from.
-#'   There are four options:
+#'   There are three options:
 #'
-#'   * The R7 class, like [R7_object].
+#'   * An R7 class, like [R7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
-#'   * A base type, like `logical`, `double`, or `character`.
+#'   * A base type, like [class_logical], [class_integer], etc.
 #' @param package Package name. It is good practice to set the package
 #'   name when exporting an R7 class from a package because it includes
 #'   the package name in the class name when it's used for dispatch. This
