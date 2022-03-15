@@ -90,5 +90,5 @@ inside
 #> 1: method(inside, Range)
 
 inside(x, c(0, 5, 10, 15))
-#> Error in R7_dispatch(): could not find function "R7_dispatch"
+#> [1] FALSE  TRUE  TRUE  TRUE
 ```
