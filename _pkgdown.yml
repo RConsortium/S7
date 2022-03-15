@@ -22,6 +22,8 @@ reference:
 
 - title: Method dispatch
   contents:
+  - convert
+  - super
   - as_class
   - method
   - method_explain

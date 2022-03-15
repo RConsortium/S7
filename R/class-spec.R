@@ -197,7 +197,10 @@ class_inherits <- function(x, what) {
     R7 = inherits(x, "R7_object") && inherits(x, R7_class_name(what)),
     R7_base = what$class == base_class(x),
     R7_union = any(vlapply(what$classes, class_inherits, x = x)),
-    R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
+    # This is slightly too crude as we really want them to be in the same
+    # order and contiguous, but it's probably close enough for practical
+    # purposees
+    R7_S3 = !isS4(x) && all(what$class %in% class(x)),
   )
 }
 

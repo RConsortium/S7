@@ -33,7 +33,7 @@
 #' method(bizarro, new_S3_class("factor"))
 method <- function(generic, class = NULL, object = NULL) {
   dispatch <- as_dispatch(generic, class = class, object = object)
-  .Call(method_, generic, dispatch, NULL)
+  .Call(method_, generic, dispatch, TRUE)
 }
 
 #' Explain method dispatch

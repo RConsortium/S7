@@ -2,6 +2,10 @@
 
 ## Mar 2022
 
+* `convert()` allows you to convert an object into another class (#136).
+
+* `super()` replaces `next_method()` (#110).
+
 ## Feb 2022
 
 * `any_class` and `missing_any` make it possible to dispatch on absent

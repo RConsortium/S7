@@ -5,17 +5,8 @@
 extern SEXP parent_sym;
 extern SEXP name_sym;
 
-Rboolean should_ignore(SEXP value, SEXP ignore) {
-  for (R_xlen_t i = 0; i < Rf_xlength(ignore); ++i) {
-    if (R_compute_identical(value, VECTOR_ELT(ignore, i), 16) == TRUE) {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 // Recursively walk through method table to perform iterated dispatch
-SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore) {
+SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   if (signature_itr >= Rf_xlength(signature)) {
     return R_NilValue;
   }
@@ -26,9 +17,9 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr, SEXP ignore)
     SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
     SEXP val = Rf_findVarInFrame(table, klass);
     if (TYPEOF(val) == ENVSXP) {
-      val = method_rec(val, signature, signature_itr + 1, ignore);
+      val = method_rec(val, signature, signature_itr + 1);
     }
-    if (TYPEOF(val) == CLOSXP && (ignore == R_NilValue || !should_ignore(val, ignore))) {
+    if (TYPEOF(val) == CLOSXP) {
       return val;
     }
   }
@@ -51,7 +42,7 @@ void R7_method_lookup_error(SEXP generic, SEXP signature) {
   while(1);
 }
 
-SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
+SEXP method_(SEXP generic, SEXP signature, SEXP error_) {
   if (!Rf_inherits(generic, "R7_generic")) {
     return R_NilValue;
   }
@@ -61,8 +52,10 @@ SEXP method_(SEXP generic, SEXP signature, SEXP ignore) {
     Rf_error("Corrupt R7_generic: @methods isn't an environment");
   }
 
-  SEXP m = method_rec(table, signature, 0, ignore);
-  if (m == R_NilValue) {
+  SEXP m = method_rec(table, signature, 0);
+
+  int error = Rf_asInteger(error_);
+  if (error && m == R_NilValue) {
     R7_method_lookup_error(generic, signature);
   }
 
@@ -121,16 +114,26 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
     if (i < n_dispatch) {
       if (PRCODE(arg) != R_MissingArg) {
         // Evaluate the original promise so we can look up its class
-        SEXP val = Rf_eval(arg, R_EmptyEnv);
-        // And update the value of the promise to avoid evaluating it
-        // again in the method body
-        SET_PRVALUE(arg, val);
+        SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
-        // Then add to arguments of method call
-        SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+        if (!Rf_inherits(val, "R7_super")) {
+          // Update the value of the promise to avoid evaluating it
+          // again in the method body
+          SET_PRVALUE(arg, val);
 
-        // Determine class string to use for method look up
-        SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
+          // Then add to arguments of method call
+          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+
+          // Determine class string to use for method look up
+          SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
+        } else {
+          // If it's a superclass, we get the stored value and dispatch class
+          SEXP true_val = VECTOR_ELT(val, 0);
+          SET_PRVALUE(arg, true_val);
+          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+          SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
+        }
+        UNPROTECT(1);
       } else {
         SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
@@ -147,7 +150,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes, R_NilValue);
+  SEXP m = method_(generic, dispatch_classes, Rf_ScalarLogical(1));
   SETCAR(mcall, m);
 
   // And then call it
