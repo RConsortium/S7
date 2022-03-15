@@ -83,6 +83,7 @@
 </h1></div>
 <!-- badges: start -->
 
+<!-- badges: end -->
 <p>The R7 package is a new OOP system designed to be a successor to S3 and S4. It it is designed and implemented collaboratively by the RConsortium Object-oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -101,12 +102,12 @@
 <span class="co"># Define a class</span>
 <span class="va">Range</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Range"</span>,
   properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"numeric"</span>, end <span class="op">=</span> <span class="st">"numeric"</span><span class="op">)</span>,
-  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span>
+  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span>
+    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span>
       <span class="st">"@start must be length 1"</span>
-    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">end</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span>
+    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span>
       <span class="st">"@end must be length 1"</span>
-    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span>
+    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span>
       <span class="st">"@end must be greater than or equal to @start"</span>
     <span class="op">}</span>
   <span class="op">}</span>
@@ -115,22 +116,22 @@
 <span class="co"># Create an object from that class</span>
 <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span>start <span class="op">=</span> <span class="fl">1</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
 <span class="va">x</span>
-<span class="co">#&gt; &lt;Range/R7_object&gt;</span>
-<span class="co">#&gt; @ start:  num 1</span>
-<span class="co">#&gt; @ end  :  num 10</span>
+<span class="co">#&gt; &lt;Range&gt;</span>
+<span class="co">#&gt;  @ start: num 1</span>
+<span class="co">#&gt;  @ end  : num 10</span>
 
 <span class="co"># Get and set properties</span>
 <span class="va">x</span><span class="op">@</span><span class="va">start</span>
 <span class="co">#&gt; [1] 1</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">20</span>
 <span class="va">x</span>
-<span class="co">#&gt; &lt;Range/R7_object&gt;</span>
-<span class="co">#&gt; @ start:  num 1</span>
-<span class="co">#&gt; @ end  :  num 20</span>
+<span class="co">#&gt; &lt;Range&gt;</span>
+<span class="co">#&gt;  @ start: num 1</span>
+<span class="co">#&gt;  @ end  : num 20</span>
 
 <span class="co"># Can't set invalid properties</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="st">"x"</span>
-<span class="co">#&gt; Error: &lt;Range&gt;@end must be of class &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
+<span class="co">#&gt; Error: &lt;Range&gt;@end must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
 <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1</span>
 <span class="co">#&gt; Error: &lt;Range&gt; object is invalid:</span>
 <span class="co">#&gt; - @end must be greater than or equal to @start</span>
