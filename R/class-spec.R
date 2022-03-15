@@ -29,12 +29,6 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     x
   } else if (isS4(x)) {
     S4_to_R7_class(x, error_base)
-  } else if (is.function(x)) {
-    candidate <- find_base_name(x, names(base_classes))
-    if (is.na(candidate)) {
-      stop(paste0(error_base, "No matching base class."), call. = FALSE)
-    }
-    base_classes[[candidate]]
   } else {
     msg <- sprintf("Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a %s.", obj_desc(x))
     stop(paste0(error_base, msg), call. = FALSE)
