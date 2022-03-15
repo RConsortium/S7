@@ -78,8 +78,8 @@ when an object is passed to a generic.
 # Create an class that represents a range using a numeric start and end
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_numeric,
+    end = class_numeric
   )
 )
 r <- range(start = 10, end = 20)
@@ -96,8 +96,8 @@ try(range(start = "hello", end = 20))
 # are length 1, and that start is < end
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_numeric,
+    end = class_numeric
   ),
   validator = function(self) {
     if (length(self@start) != 1) {

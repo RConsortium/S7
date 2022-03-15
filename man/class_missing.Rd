@@ -24,7 +24,7 @@ methods are matched
 }
 \examples{
 foo <- new_generic("foo", "x")
-method(foo, integer) <- function(x) "integer"
+method(foo, class_integer) <- function(x) "integer"
 method(foo, class_missing) <- function(x) "missing"
 method(foo, class_any) <- function(x) "fallback"
 

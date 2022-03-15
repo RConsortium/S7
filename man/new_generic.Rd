@@ -49,9 +49,9 @@ immediately after the dispatch arguments.
 \examples{
 # A simple generic with methods for some base types and S3 classes
 type_of <- new_generic("type_of", dispatch_args = "x")
-method(type_of, "character") <- function(x, ...) "A character vector"
+method(type_of, class_character) <- function(x, ...) "A character vector"
 method(type_of, new_S3_class("data.frame")) <- function(x, ...) "A data frame"
-method(type_of, "function") <- function(x, ...) "A function"
+method(type_of, class_function) <- function(x, ...) "A function"
 
 type_of(mtcars)
 type_of(letters)
@@ -63,7 +63,7 @@ mean2 <- new_generic("mean2", "x", function(x, ..., na.rm = FALSE) {
    method_call()
 })
 
-method(mean2, "numeric") <- function(x, ..., na.rm = FALSE) {
+method(mean2, class_numeric) <- function(x, ..., na.rm = FALSE) {
   if (na.rm) {
     x <- x[!is.na(x)]
   }
@@ -71,7 +71,7 @@ method(mean2, "numeric") <- function(x, ..., na.rm = FALSE) {
 }
 
 # You'll be warned if you forget the argument:
-method(mean2, "character") <- function(x, ...) {
+method(mean2, class_character) <- function(x, ...) {
   stop("Not supported")
 }
 }

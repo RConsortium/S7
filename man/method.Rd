@@ -29,7 +29,7 @@ of a specific method.
 \examples{
 # Create a generic and register some methods
 bizarro <- new_generic("bizarro", "x")
-method(bizarro, "numeric") <- function(x) rev(x)
+method(bizarro, class_numeric) <- function(x) rev(x)
 method(bizarro, new_S3_class("factor")) <- function(x) {
   levels(x) <- rev(levels(x))
   x
@@ -39,7 +39,7 @@ method(bizarro, new_S3_class("factor")) <- function(x) {
 bizarro
 
 # And you can use method() to inspect specific implementations
-method(bizarro, class = "integer")
+method(bizarro, class = class_integer)
 method(bizarro, object = 1)
 method(bizarro, new_S3_class("factor"))
 }

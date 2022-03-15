@@ -36,7 +36,7 @@
 #' # Create a generic
 #' bizarro <- new_generic("bizarro", "x")
 #' # Register some methods
-#' method(bizarro, "numeric") <- function(x) rev(x)
+#' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, new_S3_class("data.frame")) <- function(x) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)

@@ -19,7 +19,7 @@
 #'   permitted definitions
 #' @export
 #' @examples
-#' logical_or_character <- new_union("logical", "character")
+#' logical_or_character <- new_union(class_logical, class_character)
 #' logical_or_character
 #'
 #' Foo <- new_class("Foo", properties = list(x = logical_or_character))
@@ -29,7 +29,7 @@
 #'
 #' bar <- new_generic("bar", "x")
 #' # Use built-in union
-#' method(bar, "atomic") <- function(x) "Hi!"
+#' method(bar, class_atomic) <- function(x) "Hi!"
 #' bar
 #' bar(TRUE)
 #' bar(letters)
