@@ -55,7 +55,16 @@ str.R7_base_class <- function(object, ..., nest.lev = 0) {
 
 #' Base classes
 #'
+#' @description
 #' These classes represent base types allowing them to be used within R7.
+#' Most correspond directly to the obvious base type. There are three
+#' exceptions:
+#'
+#' * `class_numeric` is a union of `class_integer` and `class_double`.
+#' * `class_atomic` is a union of `class_logical`, `class_numeric`,
+#'   `class_complex`, and `class_raw`.
+#' * `class_vector` is a union of `class_atomic`, `class_list`, and
+#'   `class_expression`.
 #'
 #' @name base_classes
 NULL
