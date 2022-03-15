@@ -23,14 +23,14 @@
     Code
       method(foo, 1) <- (function(x) ...)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
 
 # as_signature(): forbids list for single dispatch
 
     Code
       as_signature(list(1), foo)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <list>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
 
 # as_signature(): requires a list of the correct length for multiple dispatch
 

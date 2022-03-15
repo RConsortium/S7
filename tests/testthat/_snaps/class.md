@@ -46,7 +46,7 @@
     Code
       new_class("foo", 1)
     Error <simpleError>
-      Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
       new_class("foo", package = 1)
     Error <simpleError>
@@ -73,7 +73,7 @@
     Code
       new_class("test", parent = new_union("character"))
     Error <simpleError>
-      Can't convert `X[[i]]` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <character>.
+      Can't convert `X[[i]]` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
 # new_object(): gives useful error if called directly
 
