@@ -148,7 +148,7 @@
 <span class="co"># Create a new generic</span>
 <span class="va">inside</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"inside"</span>, <span class="st">"x"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span>
   <span class="co"># Actually finds and calls the appropriate method</span>
-  <span class="fu"><a href="reference/new_generic.html">method_call</a></span><span class="op">(</span><span class="op">)</span>
+  <span class="fu"><a href="reference/new_generic.html">R7_dispatch</a></span><span class="op">(</span><span class="op">)</span>
 <span class="op">}</span><span class="op">)</span>
 <span class="co"># Add a method for our class</span>
 <span class="fu"><a href="reference/method.html">method</a></span><span class="op">(</span><span class="va">inside</span>, <span class="va">Range</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="va">y</span> <span class="op">&gt;=</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">&amp;</span> <span class="va">y</span> <span class="op">&lt;=</span> <span class="va">x</span><span class="op">@</span><span class="va">end</span>
