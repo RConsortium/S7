@@ -9,10 +9,7 @@
 #'   * An R7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
-#'   * A base type specified either with its constructor (`logical`, `integer`,
-#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
-#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
-#'      `"vector"`.
+#'   * A base class, like [class_logical], [class_integer], or [class_double].
 #'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
 #' @export
@@ -21,11 +18,11 @@
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
 
-  if (is.null(x)) {
+  if (is_foundation_class(x)) {
+    x
+  } else if (is.null(x)) {
     # NULL is handled specially because you can't assign a class to it,
     # so it can't be wrapped in new_base_class
-    x
-  } else if (is_foundation_class(x)) {
     x
   } else if (isS4(x)) {
     S4_to_R7_class(x, error_base)
