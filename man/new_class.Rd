@@ -10,6 +10,7 @@ new_class(
   parent = R7_object,
   package = NULL,
   properties = list(),
+  abstract = FALSE,
   constructor = NULL,
   validator = NULL
 )
@@ -37,6 +38,9 @@ classes. If you see \code{package}, you \emph{must} export the constructor.}
 belong to each instance of the class. Each element of the list can
 either be a type specification (processed by \code{\link[=as_class]{as_class()}}) or a
 full property specification created \code{\link[=new_property]{new_property()}}.}
+
+\item{abstract}{Is this an abstract class? An abstract class can not be
+instantiated.}
 
 \item{constructor}{The constructor function. Advanced use only.
 

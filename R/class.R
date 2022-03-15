@@ -16,6 +16,8 @@
 #'   the package name in the class name when it's used for dispatch. This
 #'   allows different packages to use the same name to refer to different
 #'   classes. If you see `package`, you _must_ export the constructor.
+#' @param abstract Is this an abstract class? An abstract class can not be
+#'   instantiated.
 #' @param constructor The constructor function. Advanced use only.
 #'
 #'   A custom constructor should call `new_object()` to create the R7 object.
@@ -90,6 +92,7 @@ new_class <- function(
     parent = R7_object,
     package = NULL,
     properties = list(),
+    abstract = FALSE,
     constructor = NULL,
     validator = NULL) {
 
@@ -109,6 +112,9 @@ new_class <- function(
     if (!is.null(validator)) {
       check_function(validator, alist(self = ))
     }
+    if (abstract && !(parent@abstract || parent@name == "R7_object")) {
+      stop("Abstract classes must have abstract parents")
+    }
   }
 
   # Combine properties from parent, overriding as needed
@@ -126,6 +132,7 @@ new_class <- function(
   attr(object, "parent") <- parent
   attr(object, "package") <- package
   attr(object, "properties") <- all_props
+  attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("R7_class", "R7_object")
@@ -133,7 +140,7 @@ new_class <- function(
   global_variables(names(all_props))
   object
 }
-globalVariables(c("name", "parent", "package", "properties", "constructor", "validator"))
+globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
 
 R7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
@@ -208,6 +215,10 @@ new_object <- function(.parent, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
+  }
+  if (class@abstract) {
+    msg <- sprintf("Can't construct an object from abstract class <%s>", class@name)
+    stop(msg)
   }
 
   args <- list(...)
