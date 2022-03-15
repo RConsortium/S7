@@ -15,7 +15,7 @@
     Code
       new_generic("foo", "x", function(x) { })
     Error <simpleError>
-      `fun` must contain a call to `method_call()`
+      `fun` must contain a call to `R7_dispatch()`
 
 # check_dispatch_args() produces informative errors
 
@@ -81,5 +81,5 @@
     Code
       check_generic(function() { })
     Error <simpleError>
-      `fun` must contain a call to `method_call()`
+      `fun` must contain a call to `R7_dispatch()`
 

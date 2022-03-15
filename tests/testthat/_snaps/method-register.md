@@ -64,7 +64,7 @@
 ---
 
     Code
-      foo <- new_generic("foo", "x", function(x) method_call())
+      foo <- new_generic("foo", "x", function(x) R7_dispatch())
       check_method(function(x, y) { }, foo)
     Error <simpleError>
       foo() lacks `...` so method formals must match generic formals exactly
@@ -72,7 +72,7 @@
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) method_call())
+      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) R7_dispatch())
       check_method(function(x, ..., y = 1) { }, foo)
     Warning <simpleWarning>
       foo(???) doesn't have argument `z`

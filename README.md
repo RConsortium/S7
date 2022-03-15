@@ -8,6 +8,7 @@
 [![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+
 <!-- badges: end -->
 
 The R7 package is a new OOP system designed to be a successor to S3 and
@@ -80,7 +81,7 @@ mean(x)
 # Create a new generic
 inside <- new_generic("inside", "x", function(x, y) {
   # Actually finds and calls the appropriate method
-  method_call()
+  R7_dispatch()
 })
 # Add a method for our class
 method(inside, Range) <- function(x, y) y >= x@start & y <= x@end

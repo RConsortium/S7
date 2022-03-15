@@ -111,12 +111,12 @@ describe("as_signature()", {
 })
 
 test_that("check_method returns TRUE if the functions are compatible", {
-  foo <- new_generic("foo", "x", function(x, ...) method_call())
+  foo <- new_generic("foo", "x", function(x, ...) R7_dispatch())
   expect_true(check_method(function(x, ...) x, foo))
   # extra arguments are ignored
   expect_true(check_method(function(x, ..., y) x, foo))
 
-  foo <- new_generic("foo", "x", function(x) method_call())
+  foo <- new_generic("foo", "x", function(x) R7_dispatch())
   expect_true(check_method(function(x) x, foo))
 })
 
@@ -130,14 +130,14 @@ test_that("check_method complains if the functions are not compatible", {
   })
 
   expect_snapshot(error = TRUE, {
-    foo <- new_generic("foo", "x", function(x) method_call())
+    foo <- new_generic("foo", "x", function(x) R7_dispatch())
     check_method(function(x, y) {}, foo)
   })
 })
 
 test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
-    foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) method_call())
+    foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) R7_dispatch())
     check_method(function(x, ..., y = 1) {}, foo)
     check_method(function(x, ..., y = 1, z = 1) {}, foo)
   })

@@ -1,5 +1,7 @@
 # R7 0.0.0.9000
 
+* `method_call()` is now `R7_dispatch()` (#200).
+
 ## Mar 2022
 
 * All built-in wrappers around base types use `class_`. You can no longer
