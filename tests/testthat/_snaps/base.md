@@ -1,7 +1,7 @@
 # validation uses typeof
 
     Code
-      base_classes$integer$validator(TRUE)
+      class_integer$validator(TRUE)
     Output
       [1] "Underlying data must be <integer> not <logical>"
 
@@ -10,50 +10,54 @@
     Code
       base_classes
     Output
-      $logical
+      [[1]]
       <R7_base_class>: <logical>
       
-      $integer
+      [[2]]
       <R7_base_class>: <integer>
       
-      $double
+      [[3]]
       <R7_base_class>: <double>
       
-      $complex
+      [[4]]
       <R7_base_class>: <complex>
       
-      $character
+      [[5]]
       <R7_base_class>: <character>
       
-      $raw
+      [[6]]
       <R7_base_class>: <raw>
       
-      $list
-      <R7_base_class>: <list>
-      
-      $expression
+      [[7]]
       <R7_base_class>: <expression>
       
-      $`function`
+      [[8]]
+      <R7_base_class>: <list>
+      
+      [[9]]
       <R7_base_class>: <function>
       
-      $environment
+      [[10]]
       <R7_base_class>: <environment>
+      
+      [[11]]
+      <R7_base_class>: <expression>
       
     Code
       str(base_classes)
     Output
-      List of 10
-       $ logical    : <R7_base_class>: <logical>
-       $ integer    : <R7_base_class>: <integer>
-       $ double     : <R7_base_class>: <double>
-       $ complex    : <R7_base_class>: <complex>
-       $ character  : <R7_base_class>: <character>
-       $ raw        : <R7_base_class>: <raw>
-       $ list       : <R7_base_class>: <list>
-       $ expression : <R7_base_class>: <expression>
-       $ function   : <R7_base_class>: <function>
-       $ environment: <R7_base_class>: <environment>
+      List of 11
+       $ : <R7_base_class>: <logical>
+       $ : <R7_base_class>: <integer>
+       $ : <R7_base_class>: <double>
+       $ : <R7_base_class>: <complex>
+       $ : <R7_base_class>: <character>
+       $ : <R7_base_class>: <raw>
+       $ : <R7_base_class>: <expression>
+       $ : <R7_base_class>: <list>
+       $ : <R7_base_class>: <function>
+       $ : <R7_base_class>: <environment>
+       $ : <R7_base_class>: <expression>
 
 # environments: can be printed
 
