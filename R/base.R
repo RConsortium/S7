@@ -53,17 +53,76 @@ str.R7_base_class <- function(object, ..., nest.lev = 0) {
   print(object, ..., nest.lev = nest.lev)
 }
 
-base_classes <- list(
-  logical = new_base_class("logical"),
-  integer = new_base_class("integer"),
-  double = new_base_class("double"),
-  complex = new_base_class("complex"),
-  character = new_base_class("character"),
-  raw = new_base_class("raw"),
+#' Base classes
+#'
+#' These classes represent base types allowing them to be used within R7.
+#'
+#' @name base_classes
+NULL
 
-  list = new_base_class("list"),
-  expression = new_base_class("expression"),
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_logical <- new_base_class("logical")
 
-  `function` = new_base_class("function"),
-  environment = new_base_class("environment")
-)
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_integer <- new_base_class("integer")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_double <- new_base_class("double")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_complex <- new_base_class("complex")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_character <- new_base_class("character")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_raw <- new_base_class("raw")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_list <- new_base_class("list")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_expression <- new_base_class("expression")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_function <- new_base_class("function")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_environment <- new_base_class("environment")
+
+# Base unions are created .onLoad
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_numeric <- NULL
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_atomic <- NULL
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_vector <- NULL

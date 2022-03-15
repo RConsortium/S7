@@ -35,15 +35,6 @@ as_class <- function(x, arg = deparse(substitute(x))) {
       stop(paste0(error_base, "No matching base class."), call. = FALSE)
     }
     base_classes[[candidate]]
-  } else if (is.character(x) && length(x) == 1) {
-    if (x %in% names(base_classes)) {
-      base_classes[[x]]
-    } else if (x %in% names(base_unions)) {
-      base_unions[[x]]
-    } else {
-      msg <- sprintf("No base classes are called '%s'", x)
-      stop(paste0(error_base, msg), call. = FALSE)
-    }
   } else {
     msg <- sprintf("Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a %s.", obj_desc(x))
     stop(paste0(error_base, msg), call. = FALSE)
