@@ -24,8 +24,8 @@
 #'   immediately to a generic. It has no other special behavior.
 #' @export
 #' @examples
-#' foo1 <- new_class("foo1", properties = list(x = "numeric", y = "numeric"))
-#' foo2 <- new_class("foo2", foo1, properties = list(z = "numeric"))
+#' foo1 <- new_class("foo1", properties = list(x = class_numeric, y = class_numeric))
+#' foo2 <- new_class("foo2", foo1, properties = list(z = class_numeric))
 #'
 #' total <- new_generic("total", "x")
 #' method(total, foo1) <- function(x) x@x + x@y

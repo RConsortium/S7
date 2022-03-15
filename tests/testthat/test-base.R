@@ -10,8 +10,8 @@ test_that("validation uses typeof", {
 
 test_that("base class display as expected", {
   expect_snapshot({
-    base_classes
-    str(base_classes)
+    class_integer
+    str(class_integer)
   })
 })
 

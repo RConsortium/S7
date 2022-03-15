@@ -1,8 +1,8 @@
 # method registration: adds messages when overwriting
 
     Code
-      method(foo, "character") <- (function(x) "c")
-      method(foo, "character") <- (function(x) "c")
+      method(foo, class_character) <- (function(x) "c")
+      method(foo, class_character) <- (function(x) "c")
     Message <simpleMessage>
       Overwriting method foo(<character>)
 
@@ -17,7 +17,7 @@
 
     Code
       x <- 10
-      method(x, "character") <- (function(x) ...)
+      method(x, class_character) <- (function(x) ...)
     Error <simpleError>
       `generic` must be a function, not a <double>
     Code
@@ -35,11 +35,11 @@
 # as_signature(): requires a list of the correct length for multiple dispatch
 
     Code
-      as_signature("character", foo)
+      as_signature(class_character, foo)
     Error <simpleError>
       `signature` must be a list for multidispatch generics
     Code
-      as_signature(list("character"), foo)
+      as_signature(list(class_character), foo)
     Error <simpleError>
       `signature` must be length 2
 
@@ -86,7 +86,7 @@
 # R7_method printing
 
     Code
-      method(foo, list(integer, integer))
+      method(foo, list(class_integer, class_integer))
     Output
       <R7_method> method(foo, list("integer", "integer"))
       function (x, y, ...) 

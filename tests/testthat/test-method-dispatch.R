@@ -10,13 +10,13 @@ describe("single dispatch", {
   })
 
   it("works for base types", {
-    method(foo, "character") <- function(x) "base"
+    method(foo, class_character) <- function(x) "base"
 
     expect_equal(foo("bar"), "base")
   })
 
   it("works for R7 objects", {
-    text <- new_class("text", character)
+    text <- new_class("text", class_character)
     method(foo, text) <- function(x) "R7"
 
     expect_equal(foo(text("bar")), "R7")
@@ -37,7 +37,7 @@ describe("single dispatch", {
   })
 
   it("works for unions", {
-    method(foo, new_union("integer", "logical")) <- function(x) "union"
+    method(foo, new_union(class_integer, class_logical)) <- function(x) "union"
 
     expect_equal(foo(TRUE), "union")
     expect_equal(foo(1L), "union")
@@ -63,16 +63,16 @@ describe("multiple dispatch", {
 
 test_that("can substitute() args", {
   foo <- new_generic("foo", "x", function(x, ..., z = 1) method_call())
-  method(foo, "character") <- function(x, ..., z = 1) substitute(x)
+  method(foo, class_character) <- function(x, ..., z = 1) substitute(x)
   expect_equal(foo(letters), quote(letters))
 
   suppressMessages(
-    method(foo, "character") <- function(x, ..., z = 1, y) substitute(y)
+    method(foo, class_character) <- function(x, ..., z = 1, y) substitute(y)
   )
   expect_equal(foo("x", y = letters), quote(letters))
 
   # Doesn't work currently
-  # method(foo, "character") <- function(x, ..., z = 1) substitute(z)
+  # method(foo, class_character) <- function(x, ..., z = 1) substitute(z)
   # expect_equal(foo("x", z = letters), quote(letters))
 })
 
@@ -81,7 +81,7 @@ test_that("methods get values modified in the generic", {
     y <- 10
     method_call()
   })
-  method(foo, "character") <- function(x, y = 1) y
+  method(foo, class_character) <- function(x, y = 1) y
   expect_equal(foo("x", 1), 10)
 })
 
@@ -95,14 +95,14 @@ test_that("dispatched arguments are evaluated once", {
   })
 
   f <- new_generic("f", "x")
-  method(f, "numeric") <- function(x) x
+  method(f, class_double) <- function(x) x
   expect_equal(f(counter()), 1)
 })
 
 test_that("generics pass ... to methods", {
   foo <- new_generic("foo", "x")
 
-  method(foo, "character") <- function(x, y = 1) y
+  method(foo, class_character) <- function(x, y = 1) y
   expect_equal(foo("x"), 1)
   expect_equal(foo("x", y = 2), 2)
   expect_snapshot_error(foo("x", z = 2))
@@ -110,17 +110,17 @@ test_that("generics pass ... to methods", {
 
 test_that("generics pass extra args to methods", {
   foo <- new_generic("foo", "x", function(x, ..., z = 1) method_call())
-  method(foo, "character") <- function(x, ..., z = 1) z
+  method(foo, class_character) <- function(x, ..., z = 1) z
   expect_equal(foo("x", z = 3), 3)
 })
 
 test_that("can dispatch on base 'union' types", {
   foo <- new_generic("foo", "x")
   suppressMessages({
-    method(foo, "vector") <- function(x) "v"
-    method(foo, "atomic") <- function(x) "a"
-    method(foo, "numeric") <- function(x) "n"
-    method(foo, "integer") <- function(x) "i"
+    method(foo, class_vector) <- function(x) "v"
+    method(foo, class_atomic) <- function(x) "a"
+    method(foo, class_numeric) <- function(x) "n"
+    method(foo, class_integer) <- function(x) "i"
   })
 
   expect_equal(foo(list()), "v")
@@ -131,7 +131,7 @@ test_that("can dispatch on base 'union' types", {
 
 test_that("method lookup fails with informative messages", {
   foo <- new_generic("foo", c("x", "y"))
-  method(foo, list("character", "integer")) <- function(x, y) paste0("bar:", x, y)
+  method(foo, list(class_character, class_integer)) <- function(x, y) paste0("bar:", x, y)
   expect_snapshot_error(foo(TRUE))
   expect_snapshot_error(foo(TRUE, list()))
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))

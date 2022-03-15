@@ -15,8 +15,8 @@
 #' @param ... Other arguments passed to custom `convert()` methods.
 #' @export
 #' @examples
-#' foo1 <- new_class("foo1", properties = list(x = integer))
-#' foo2 <- new_class("foo2", foo1, properties = list(y = double))
+#' foo1 <- new_class("foo1", properties = list(x = class_integer))
+#' foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
 #'
 #' method(convert, list(foo1, integer)) <- function(from, to) from@x
 #' method(convert, list(foo2, double)) <- function(from, to) from@y

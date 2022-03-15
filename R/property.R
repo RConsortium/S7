@@ -28,7 +28,7 @@
 #' @examples
 #' # Simple properties store data inside an object
 #' pizza <- new_class("pizza", properties = list(
-#'   slices = new_property("numeric", default = 10)
+#'   slices = new_property(class_numeric, default = 10)
 #' ))
 #' my_pizza <- pizza(slices = 6)
 #' my_pizza@slices
@@ -50,7 +50,7 @@
 #'
 #' # These can be useful if you want to deprecate a property
 #' person <- new_class("person", properties = list(
-#'   first_name = "character",
+#'   first_name = class_character,
 #'   firstName = new_property(
 #'      getter = function(self) {
 #'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
@@ -126,9 +126,9 @@ prop_default <- function(prop) {
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(
-#'   name = "character",
-#'   colour = "character",
-#'   height = "numeric"
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = class_numeric
 #' ))
 #' lexington <- horse(colour = "bay", height = 15, name = "Lex")
 #' lexington@colour
@@ -281,9 +281,9 @@ prop_exists <- function(object, name) {
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(
-#'   name = "character",
-#'   colour = "character",
-#'   height = "numeric"
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = class_numeric
 #' ))
 #' lexington <- horse(colour = "bay", height = 15, name = "Lex")
 #'

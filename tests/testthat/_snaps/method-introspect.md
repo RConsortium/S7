@@ -14,12 +14,12 @@
     Error <simpleError>
       Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
     Code
-      method(foo, new_union("integer", "double"))
+      method(foo, new_union(class_integer, class_double))
     Error <simpleError>
       Can't dispatch on unions; must be a concrete type
     Code
       foo2 <- new_generic("foo2", c("x", "y"))
-      method(foo2, object = list("character"))
+      method(foo2, object = list(class_character))
     Error <simpleError>
       `object` must be length 2
 

@@ -7,13 +7,13 @@
       new_object(NULL)
       <environment: namespace:R7>
     Code
-      new_constructor(R7_object, as_properties(list(x = "numeric", y = "numeric")))
+      new_constructor(R7_object, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
       function (x = class_missing, y = class_missing) 
       new_object(NULL, x = x, y = y)
       <environment: namespace:R7>
     Code
-      foo <- new_class("foo", parent = "character")
+      foo <- new_class("foo", parent = class_character)
       new_constructor(foo, list())
     Output
       function (.data = class_missing) 
@@ -36,7 +36,7 @@
       new_object(new_factor(.data = .data, levels = levels))
       <environment: 0x0>
     Code
-      new_constructor(S3_factor, as_properties(list(x = "numeric", y = "numeric")))
+      new_constructor(S3_factor, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
       function (.data = integer(), levels = character(), x = class_missing, 
           y = class_missing) 
