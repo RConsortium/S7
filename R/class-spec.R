@@ -13,7 +13,7 @@
 #'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
 #'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
 #'      `"vector"`.
-#'   * A "special", either [missing_class] or [any_class].
+#'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
@@ -55,16 +55,16 @@ is_foundation_class <- function(x) {
     is_union(x) ||
     is_base_class(x) ||
     is_S3_class(x) ||
-    is_missing_class(x) ||
-    is_any_class(x)
+    is_class_missing(x) ||
+    is_class_any(x)
 }
 
 class_type <- function(x) {
   if (is.null(x)) {
     "NULL"
-  } else if (is_missing_class(x)) {
+  } else if (is_class_missing(x)) {
     "missing"
-  } else if (is_any_class(x)) {
+  } else if (is_class_any(x)) {
     "any"
   } else if (is_base_class(x)) {
     "R7_base"
@@ -175,8 +175,8 @@ class_register <- function(x) {
 class_deparse <- function(x) {
   switch(class_type(x),
     "NULL" = "NULL",
-    missing = "missing_class",
-    any = "any_class",
+    missing = "class_missing",
+    any = "class_any",
     S4 = as.character(x@className),
     R7 = R7_class_name(x),
     R7_base = encodeString(x$class, quote = '"'),

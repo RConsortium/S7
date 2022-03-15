@@ -143,7 +143,7 @@ describe("property access", {
 
 
 test_that("properties can be NULL", {
-  foo <- new_class("foo", properties = list(x = any_class))
+  foo <- new_class("foo", properties = list(x = class_any))
   x <- foo(x = NULL)
   expect_equal(x@x, NULL)
   x@x <- 1
@@ -183,7 +183,7 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
 
   my_class <- new_class("my_class",
     properties = list(
-      anything = any_class,
+      anything = class_any,
       null = NULL,
       base = "integer",
       S3 = new_S3_class("factor"),

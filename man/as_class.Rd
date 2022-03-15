@@ -17,7 +17,7 @@ as_class(x, arg = deparse(substitute(x)))
 \code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
 \item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
 \code{"vector"}.
-\item A "special", either \link{missing_class} or \link{any_class}.
+\item A "special", either \link{class_missing} or \link{class_any}.
 }}
 
 \item{arg}{Argument name used when generating errors.}

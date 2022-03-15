@@ -67,7 +67,7 @@
 #' hadley@firstName
 #' hadley@firstName <- "John"
 #' hadley@first_name
-new_property <- function(class = any_class, getter = NULL, setter = NULL, default = NULL, name = NULL) {
+new_property <- function(class = class_any, getter = NULL, setter = NULL, default = NULL, name = NULL) {
   class <- as_class(class)
   if (!is.null(default) && !class_inherits(default, class)) {
     msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))

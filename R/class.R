@@ -213,7 +213,7 @@ new_object <- function(.parent, ...) {
   args <- list(...)
   nms <- names(args)
 
-  missing_props <- nms[vlapply(args, is_missing_class)]
+  missing_props <- nms[vlapply(args, is_class_missing)]
   for(prop in missing_props) {
     args[[prop]] <- prop_default(class@properties[[prop]])
   }

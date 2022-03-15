@@ -1,8 +1,8 @@
 new_base_class <- function(name) {
   force(name)
 
-  constructor <- function(.data = missing_class) {
-    if (is_missing_class(.data)) {
+  constructor <- function(.data = class_missing) {
+    if (is_class_missing(.data)) {
       .data <- base_default(name)
     }
     .data

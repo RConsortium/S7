@@ -5,7 +5,7 @@
 \title{Define a new property}
 \usage{
 new_property(
-  class = any_class,
+  class = class_any,
   getter = NULL,
   setter = NULL,
   default = NULL,
