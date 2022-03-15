@@ -62,7 +62,7 @@ describe("multiple dispatch", {
 
 
 test_that("can substitute() args", {
-  foo <- new_generic("foo", "x", function(x, ..., z = 1) method_call())
+  foo <- new_generic("foo", "x", function(x, ..., z = 1) R7_dispatch())
   method(foo, "character") <- function(x, ..., z = 1) substitute(x)
   expect_equal(foo(letters), quote(letters))
 
@@ -79,7 +79,7 @@ test_that("can substitute() args", {
 test_that("methods get values modified in the generic", {
   foo <- new_generic("foo", "x", function(x, y = 1) {
     y <- 10
-    method_call()
+    R7_dispatch()
   })
   method(foo, "character") <- function(x, y = 1) y
   expect_equal(foo("x", 1), 10)
@@ -109,7 +109,7 @@ test_that("generics pass ... to methods", {
 })
 
 test_that("generics pass extra args to methods", {
-  foo <- new_generic("foo", "x", function(x, ..., z = 1) method_call())
+  foo <- new_generic("foo", "x", function(x, ..., z = 1) R7_dispatch())
   method(foo, "character") <- function(x, ..., z = 1) z
   expect_equal(foo("x", z = 3), 3)
 })

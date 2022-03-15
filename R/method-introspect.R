@@ -2,7 +2,7 @@
 #'
 #' `method()` takes a generic and signature and retrieves the corresponding
 #' method. This is rarely needed because most of the time you'll rely on the
-#' the generic, via [method_call()], to find and call the method for you.
+#' the generic, via [R7_dispatch()], to find and call the method for you.
 #' However, this introspection is useful if you want to see the implementation
 #' of a specific method.
 #'
