@@ -55,7 +55,13 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/R7_class.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_data.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/as_class.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/convert.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/index.html</loc>
@@ -91,9 +97,6 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/new_union.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/next_method.html</loc>
-  </url>
-  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/prop.html</loc>
   </url>
   <url>
@@ -103,10 +106,10 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/props.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/r7_data.html</loc>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/r7_object.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/r7_object.html</loc>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/super.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/validate.html</loc>
