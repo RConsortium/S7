@@ -2,6 +2,9 @@
 
 ## Mar 2022
 
+* All built-in wrappers around base types use `class_`. You can no longer
+  refer to a base type with a string or a constructor function (#170).
+
 * `convert()` allows you to convert an object into another class (#136).
 
 * `super()` replaces `next_method()` (#110).
