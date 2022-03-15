@@ -33,13 +33,13 @@ library(R7)
 
 # Define a class
 Range <- new_class("Range",
-  properties = list(start = "numeric", end = "numeric"),
-  validator = function(x) {
-    if (length(x@start) != 1) {
+  properties = list(start = class_numeric, end = class_numeric),
+  validator = function(self) {
+    if (length(self@start) != 1) {
       "@start must be length 1"
-    } else if (length(x@end) != 1) {
+    } else if (length(self@end) != 1) {
       "@end must be length 1"
-    } else if (x@end < x@start) {
+    } else if (self@end < self@start) {
       "@end must be greater than or equal to @start"
     }
   }
@@ -48,22 +48,22 @@ Range <- new_class("Range",
 # Create an object from that class
 x <- Range(start = 1, end = 10)
 x
-#> <Range/R7_object>
-#> @ start:  num 1
-#> @ end  :  num 10
+#> <Range>
+#>  @ start: num 1
+#>  @ end  : num 10
 
 # Get and set properties
 x@start
 #> [1] 1
 x@end <- 20
 x
-#> <Range/R7_object>
-#> @ start:  num 1
-#> @ end  :  num 20
+#> <Range>
+#>  @ start: num 1
+#>  @ end  : num 20
 
 # Can't set invalid properties
 x@end <- "x"
-#> Error: <Range>@end must be of class <integer> or <double>, not <character>
+#> Error: <Range>@end must be <integer> or <double>, not <character>
 x@end <- -1
 #> Error: <Range> object is invalid:
 #> - @end must be greater than or equal to @start
