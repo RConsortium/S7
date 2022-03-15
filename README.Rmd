@@ -16,15 +16,18 @@ knitr::opts_chunk$set(
 # R7
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+
+[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+
 <!-- badges: end -->
 
-The R7 package is a new OOP system designed to be a successor to S3 and S4. It it is designed and implemented collaboratively by the RConsortium Object-oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.
+The R7 package is a new OOP system designed to be a successor to S3 and S4.
+It it is designed and implemented collaboratively by the RConsortium Object-oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.
 
 ## Installation
 
-The long-term goal of this project is to merge R7 in to base R. For now, you can experiment with the development version from GitHub:
+The long-term goal of this project is to merge R7 in to base R.
+For now, you can experiment with the development version from GitHub:
 
 ```{r, eval = FALSE}
 # install.packages("remotes")
@@ -39,12 +42,12 @@ library(R7)
 # Define a class
 Range <- new_class("Range",
   properties = list(start = "numeric", end = "numeric"),
-  validator = function(x) {
-    if (length(x@start) != 1) {
+  validator = function(self) {
+    if (length(self@start) != 1) {
       "@start must be length 1"
-    } else if (length(x@end) != 1) {
+    } else if (length(self@end) != 1) {
       "@end must be length 1"
-    } else if (x@end < x@start) {
+    } else if (self@end < self@start) {
       "@end must be greater than or equal to @start"
     }
   }
