@@ -73,7 +73,7 @@ describe("abstract classes", {
       new_class("foo2", parent = foo1, abstract = TRUE)
     })
   })
-  it("can constructor concrete subclasses", {
+  it("can construct concrete subclasses", {
     foo1 <- new_class("foo1", abstract = TRUE)
     foo2 <- new_class("foo2", parent = foo1)
     expect_s3_class(foo2(), "foo2")
