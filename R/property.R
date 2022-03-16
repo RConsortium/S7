@@ -140,7 +140,7 @@ prop <- function(object, name) {
   check_R7(object)
 
   if (!prop_exists(object, name)) {
-    stop(prop_error_unknown(object, name))
+    stop(prop_error_unknown(object, name), call. = FALSE)
   } else {
     prop_val(object, name)
   }
