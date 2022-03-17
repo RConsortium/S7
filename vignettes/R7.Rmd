@@ -14,10 +14,10 @@ knitr::opts_chunk$set(
 )
 ```
 
-The R7 package is a new OOP system designed to be a successor to S3 and S4.
+The R7 package is provides a new OOP system designed to be a successor to S3 and S4.
 It has been designed and implemented collaboratively by the RConsortium Object-Oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.
 
-This vignette describes how R7 works, starting with an overview of classes, objects, generics, and methods, before going into the details of validation and properties.
+This vignette describes how R7 works, starting with an overview of classes, objects, generics, and methods, then going into the details of validation and properties.
 
 ```{r setup}
 library(R7)
@@ -32,18 +32,21 @@ We'll start with an quick overview of the most important parts of R7: classes an
 R7 classes have a formal definition that you create with `new_class()`.
 There are two arguments that you'll use with almost every class:
 
--   The `name`, of the class, supplied in the first argument.
--   The class `properties`, which is the data associated with each instance of each instance of the class. The easiest way to define properties is to supply a named list where the values define the valid types of the property.
+-   The `name` of the class, supplied in the first argument.
+-   The class `properties`, the data associated with each instance of the class. The easiest way to define properties is to supply a named list where the values define the valid types of the property.
 
-The following code defines a simple `pet` class with two properties: a character `name` and a double `age`.
+The following code defines a simple `pet` class with two properties: a character `name` and a numeric `age`.
 
 ```{r}
 dog <- new_class("dog", properties = list(
   name = class_character,
-  age = class_double
+  age = class_numeric
 ))
 dog
 ```
+
+R7 provides a number of built-in definitions that allow you to refer to existing base types that are not R7 classes.
+You can recognize these definitions because they all start with `class_`.
 
 Note that I've assigned the return value of `new_class()` to an object with the same name as the class.
 This is important!
@@ -67,20 +70,27 @@ R7 automatically validates the type of the property using the type supplied in `
 lola@age <- "twelve"
 ```
 
-You can retrieve the class that the object is an instance of with `R7_class()`:
+Given an object, you can retrieves its class `R7_class()`:
 
 ```{r}
 R7_class(lola)
 ```
 
+R7 objects also have an S3 `class()`.
+This is used for compatibility with existing S3 generics and you can learn more about it in `vignette("compatibility")`.
+
+```{r}
+class(lola)
+```
+
 ### Generics and methods
 
-R7, like S3 and S4, is built around the idea of a **generic function,** or **generic** for short.
-A generic defines an interface, which uses a different implementation, depending on the class of an argument (usually the first argument).
-The implementation for a specific class is called a **method**, and the generic finds that method by performing **method dispatch**.
+R7, like S3 and S4, is built around the idea of **generic functions,** or **generics** for short.
+A generic defines an interface, which uses a different implementation depending on the class of one or more arguments.
+The implementation for a specific class is called a **method**, and the generic finds that appropriate method by performing **method dispatch**.
 
 Use `new_generic()` to create a R7 generic.
-In its simplest form, it only needs two arguments: the name of the generic (used in error messages) and the name of the argument it should dispatch on:
+In its simplest form, it only needs two arguments: the name of the generic (used in error messages) and the name of the argument used for method dispatch:
 
 ```{r}
 speak <- new_generic("speak", "x")
@@ -88,8 +98,7 @@ speak <- new_generic("speak", "x")
 
 Like with `new_class()`, you should always assign the result of `new_generic()` to an variable with the same name as the first argument.
 
-Once you have a generic, you can register methods for specific classes with `method<-`.
-The first argument to `method<-` is the generic, and the second is the class:
+Once you have a generic, you can register methods for specific classes with `method(generic, class) <- implementation`.
 
 ```{r}
 method(speak, dog) <- function(x) {
@@ -97,13 +106,13 @@ method(speak, dog) <- function(x) {
 }
 ```
 
-Once registered, you can call the generic with an instance of that class to use the method:
+Once the method is registered, the generic will use it when appropriate:
 
 ```{r}
 speak(lola)
 ```
 
-Let's define another class, this one for cats, and define another method:
+Let's define another class, this one for cats, and define another method for `speak()`:
 
 ```{r}
 cat <- new_class("cat", properties = list(
@@ -118,7 +127,7 @@ fluffy <- cat(name = "Fluffy", age = 5)
 speak(fluffy)
 ```
 
-If you call the generic with a class that isn't registered, you'll get an error:
+You get an error if you call the generic with a class that doesn't have a method:
 
 ```{r, error = TRUE}
 speak(1)
@@ -127,15 +136,22 @@ speak(1)
 ### Method dispatch and inheritance
 
 The `cat` and `dog` classes share the same properties, so we could use a common parent class to extract out the duplicated specification.
-Now we use the second argument to `new_class` to specify the `parent` class:
+We first define the parent class:
 
 ```{r}
-pet <- new_class("pet", properties = list(
-  name = class_character,
-  age = class_double
-)) 
-cat <- new_class("cat", pet)
-dog <- new_class("dog", pet)
+pet <- new_class("pet", 
+  properties = list(
+    name = class_character,
+    age = class_numeric
+  )
+) 
+```
+
+Then use the `parent` argument to `new_class:`
+
+```{r}
+cat <- new_class("cat", parent = pet)
+dog <- new_class("dog", parent = pet)
 
 cat
 dog
@@ -148,8 +164,8 @@ lola <- dog(name = "Lola", age = 11)
 fluffy <- cat(name = "Fluffy", age = 5)
 ```
 
-Method dispatch takes advantage of the hierarchy of parent classes: if a method is not defined for a class, it will try the method for the parent class, and so on until it either finds a method or gives up.
-This inheritance makes it possible to share code across classes.
+Method dispatch takes advantage of the hierarchy of parent classes: if a method is not defined for a class, it will try the method for the parent class, and so on until it finds a method or gives up with an error.
+This inheritance is a powerful mechanism for sharing code across classes.
 
 ```{r}
 describe <- new_generic("describe", "x")
@@ -162,16 +178,11 @@ describe(fluffy)
 method(describe, dog) <- function(x) {
   paste0(x@name, " is a ", x@age, " year old dog")
 }
-
 describe(lola)
 describe(fluffy)
 ```
 
-You can define a fallback for any R7 class by implementing a method for `R7_object`:
-||||||| Check method agreement if generic lacks ...
-`next_method()` is used to call the next method for the arguments.
-This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
-This ensures you cannot call the same method twice.
+You can define a fallback method for any R7 object by registering a method for `R7_object`:
 
 ```{r}
 method(describe, R7_object) <- function(x) {
@@ -203,10 +214,12 @@ Learn more about method dispatch in `vignette("dispatch")`.
 
 ## Validation
 
-R7 classes can have an optional **validator** that checks that the values of the properties are ok.
-A validator is a function that takes an object (called `self`) and returns `NULL` if the object is valid, or if not, returns a character vector listing the problems.
+R7 classes can have an optional **validator** that checks that the values of the properties are OK.
+A validator is a function that takes the object (called `self`) and returns `NULL` if its valid or returns a character vector listing the problems.
 
-In the following example we create a range class that enforces that the start and end are single numbers where start is less than end:
+### Basics
+
+In the following example we create a range class that enforces that `@start` and `@end` are single numbers, and that `@start` is less than `@end`:
 
 ```{r}
 range <- new_class("range",
@@ -233,6 +246,8 @@ range <- new_class("range",
 You can typically write a validator as a series of `if`-`else` statements, but note that the order of the statements is important.
 For example, in the code above, we can't check that `self@end < self@start` before we've checked that `@start` and `@end` are length 1.
 
+### When is validation performed?
+
 Objects are validated automatically when constructed and when any property is modified:
 
 ```{r, error = TRUE}
@@ -243,13 +258,15 @@ x <- range(1, 10)
 x@start <- 20
 ```
 
-You can manually `validate()` an object if you use a low-level R function to bypass the usual checks and balances of `@`:
+You can also manually `validate()` an object if you use a low-level R function to bypass the usual checks and balances of `@`:
 
 ```{r, error = TRUE}
 x <- range(1, 2)
 attr(x, "start") <- 3
 validate(x)
 ```
+
+### Avoiding validation
 
 Imagine you wanted to write a function that would shift a property to the left or the right:
 
@@ -287,7 +304,7 @@ The object is still validated, but it's only validated once, after all the prope
 ## Properties
 
 So far we've focused on the simplest form of property specification where you use a named list to supply the desired type for each property.
-This is shorthand for a call to `new_property()`.
+This is a convenient shorthand for a call to `new_property()`.
 For example, the property definition of range above is shorthand for:
 
 ```{r}
@@ -299,19 +316,8 @@ range <- new_class("range",
 )
 ```
 
-Using `new_property()` allows you to control aspects of the property apart from its type.
-The following sections show you to provide a default value, compute the property value on demand, and provide a fully dynamic property.
-
-### Types
-
--   Avoid any restriction with with `class_ayn`.
--   Refer to base types using their constructors: `logical`, `integer`, `double`, `character` etc.
--   Use a string to refer to union base types with `"numeric"` (`integer` or `double`), `"atomic"` (`logical`, `"numeric"`, or `character`), or `"vector"` (`"atomic"` or `list`).
--   Use `new_union()` to create your own set of possible values like `new_union("integer", "NULL")`.
--   Require an S3 class with `new_S3_class("class_name")`.
--   Require an S4 class by providing it a class definition or generator.
-
-See `vignette("compatibility")` for more details about using S3 and S4 with R7.
+Calling `new_property()` explicitly allows you to control aspects of the property other than its type.
+The following sections show you how to provide a default value, compute the property value on demand, or provide a fully dynamic property.
 
 ### Default value
 
@@ -327,8 +333,8 @@ empty <- new_class("empty",
 empty()
 ```
 
-The default values of the properties will be filled in with empty instances of their types.
-You can provide your own default by using the `default` argument to `new_property()`:
+The default values of the properties will be filled in with "empty" instances.
+You can instead provide your own defaults by using the `default` argument:
 
 ```{r}
 empty <- new_class("empty", 
@@ -370,7 +376,7 @@ x@length <- 20
 
 ### Dynamic properties
 
-You can make a computed property fully dynamic so that it can be read and written by supplying a `setter`.
+You can make a computed property fully dynamic so that it can be read and written by also supplying a `setter`.
 For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
 
 ```{r}
