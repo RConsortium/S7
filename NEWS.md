@@ -1,5 +1,7 @@
 # R7 0.0.0.9000
 
+* `new_class()` can create abstract classes (#199).
+
 * `method_call()` is now `R7_dispatch()` (#200).
 
 ## Mar 2022

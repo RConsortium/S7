@@ -60,6 +60,26 @@ describe("inheritance", {
   })
 })
 
+describe("abstract classes", {
+  it("can't be instantiated", {
+    expect_snapshot(error = TRUE, {
+      foo <- new_class("foo", abstract = TRUE)
+      foo()
+    })
+  })
+  it("can't inherit from concrete class", {
+    expect_snapshot(error = TRUE, {
+      foo1 <- new_class("foo1")
+      new_class("foo2", parent = foo1, abstract = TRUE)
+    })
+  })
+  it("can construct concrete subclasses", {
+    foo1 <- new_class("foo1", abstract = TRUE)
+    foo2 <- new_class("foo2", parent = foo1)
+    expect_s3_class(foo2(), "foo2")
+  })
+})
+
 describe("new_object()", {
   it("gives useful error if called directly",{
     expect_snapshot(new_object(), error = TRUE)

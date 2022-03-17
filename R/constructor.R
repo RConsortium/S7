@@ -9,6 +9,13 @@ new_constructor <- function(parent, properties) {
       env = asNamespace("R7")
     ))
   }
+  if (is_class(parent) && parent@abstract) {
+    return(new_function(
+      args = missing_args(arg_info$self),
+      body = new_call("new_object", c(list(quote(R7_object()), self_args))),
+      env = asNamespace("R7")
+    ))
+  }
 
   if (is_class(parent)) {
     parent_name <- parent@name
@@ -42,7 +49,7 @@ constructor_args <- function(parent, properties = list()) {
   parent_args <- names2(formals(class_constructor(parent)))
 
   self_args <- names2(properties)
-  if (is_class(parent)) {
+  if (is_class(parent) && !parent@abstract) {
     # Remove dynamic arguments
     self_args <- self_args[vlapply(properties, function(x) is.null(x$getter))]
     # Remove any parent properties; can't use parent_args() since the constructor

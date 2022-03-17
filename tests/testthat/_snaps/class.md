@@ -29,6 +29,7 @@
        ..  ..$ getter : NULL
        ..  ..$ setter : NULL
        ..  ..$ default: NULL
+       @ abstract   : logi FALSE
        @ constructor: function (x = class_missing, y = class_missing)  
        @ validator  : NULL
     Code
@@ -74,6 +75,22 @@
       new_class("test", parent = new_union("character"))
     Error <simpleError>
       Can't convert `X[[i]]` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
+
+# abstract classes: can't be instantiated
+
+    Code
+      foo <- new_class("foo", abstract = TRUE)
+      foo()
+    Error <simpleError>
+      Can't construct an object from abstract class <foo>
+
+# abstract classes: can't inherit from concrete class
+
+    Code
+      foo1 <- new_class("foo1")
+      new_class("foo2", parent = foo1, abstract = TRUE)
+    Error <simpleError>
+      Abstract classes must have abstract parents
 
 # new_object(): gives useful error if called directly
 

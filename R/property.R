@@ -140,7 +140,7 @@ prop <- function(object, name) {
   check_R7(object)
 
   if (!prop_exists(object, name)) {
-    stop(prop_error_unknown(object, name))
+    stop(prop_error_unknown(object, name), call. = FALSE)
   } else {
     prop_val(object, name)
   }
@@ -252,7 +252,7 @@ prop_names <- function(object) {
 
   if (inherits(object, "R7_class")) {
     # R7_class isn't a R7_class (somewhat obviously) so we fake the property names
-    c("name", "parent", "package", "properties", "constructor", "validator")
+    c("name", "parent", "package", "properties", "abstract", "constructor", "validator")
   } else {
     class <- R7_class(object)
     props <- attr(class, "properties", exact = TRUE)

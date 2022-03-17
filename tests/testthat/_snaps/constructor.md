@@ -44,3 +44,19 @@
           y = y)
       <environment: 0x0>
 
+# can generate constructor for inherited abstract classes
+
+    Code
+      foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = class_double))
+      new_constructor(foo1, list())
+    Output
+      function () 
+      new_object(R7_object(), list())
+      <environment: namespace:R7>
+    Code
+      new_constructor(foo1, as_properties(list(y = class_double)))
+    Output
+      function (y = class_missing) 
+      new_object(R7_object(), list(y = y))
+      <environment: namespace:R7>
+
