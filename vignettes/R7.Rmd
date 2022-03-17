@@ -1,8 +1,8 @@
 ---
-title: "Introducing R7"
+title: "R7 basics"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Introducing R7}
+  %\VignetteIndexEntry{R7 basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
