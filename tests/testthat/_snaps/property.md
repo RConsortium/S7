@@ -40,9 +40,9 @@
 
     Code
       obj <- foo2(123)
-      x@x <- "x"
+      obj@x <- "x"
     Error <simpleError>
-      object 'x' not found
+      <foo2>@x must be <double>, not <character>
 
 # new_property(): validates getter and settor
 
@@ -58,7 +58,7 @@
 # new_property(): validates default
 
     Code
-      new_property(class = "integer", default = "x")
+      new_property(class_integer, default = "x")
     Error <simpleError>
       `default` must be an instance of <integer>, not a <character>
 
@@ -139,15 +139,15 @@
     Error <simpleError>
       `property[[1]]` is missing a name
     Code
-      as_properties(list(new_property("character")))
+      as_properties(list(new_property(class_character)))
     Error <simpleError>
       `property[[1]]` is missing a name
     Code
       as_properties(list(x = 1))
     Error <simpleError>
-      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
-      as_properties(list(x = "character", x = "character"))
+      as_properties(list(x = class_character, x = class_character))
     Error <simpleError>
       `properties` names must be unique
 

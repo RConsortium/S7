@@ -41,7 +41,7 @@ library(R7)
 
 # Define a class
 Range <- new_class("Range",
-  properties = list(start = "numeric", end = "numeric"),
+  properties = list(start = class_numeric, end = class_numeric),
   validator = function(self) {
     if (length(self@start) != 1) {
       "@start must be length 1"

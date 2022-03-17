@@ -8,7 +8,7 @@
 #' @param value Object used to replace the underlying data.
 #' @export
 #' @examples
-#' text <- new_class("text", parent = "character")
+#' text <- new_class("text", parent = class_character)
 #' y <- text(c(foo = "bar"))
 #' y
 #' R7_data(y)

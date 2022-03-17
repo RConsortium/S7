@@ -32,7 +32,7 @@ describe("super()", {
   it("checks to", {
     expect_snapshot(error = TRUE, {
       foo <- new_class("foo")
-      super(foo(), character)
+      super(foo(), class_character)
     })
   })
 

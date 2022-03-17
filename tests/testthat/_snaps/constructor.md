@@ -7,23 +7,23 @@
       new_object(NULL)
       <environment: namespace:R7>
     Code
-      new_constructor(R7_object, as_properties(list(x = "numeric", y = "numeric")))
+      new_constructor(R7_object, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
-      function (x = missing_class, y = missing_class) 
+      function (x = class_missing, y = class_missing) 
       new_object(NULL, x = x, y = y)
       <environment: namespace:R7>
     Code
-      foo <- new_class("foo", parent = "character")
+      foo <- new_class("foo", parent = class_character)
       new_constructor(foo, list())
     Output
-      function (.data = missing_class) 
+      function (.data = class_missing) 
       new_object(foo(.data = .data))
       <environment: 0x0>
     Code
       foo2 <- new_class("foo2", parent = foo)
       new_constructor(foo2, list())
     Output
-      function (.data = missing_class) 
+      function (.data = class_missing) 
       new_object(foo2(.data = .data))
       <environment: 0x0>
 
@@ -36,10 +36,10 @@
       new_object(new_factor(.data = .data, levels = levels))
       <environment: 0x0>
     Code
-      new_constructor(S3_factor, as_properties(list(x = "numeric", y = "numeric")))
+      new_constructor(S3_factor, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
-      function (.data = integer(), levels = character(), x = missing_class, 
-          y = missing_class) 
+      function (.data = integer(), levels = character(), x = class_missing, 
+          y = class_missing) 
       new_object(new_factor(.data = .data, levels = levels), x = x, 
           y = y)
       <environment: 0x0>
@@ -47,16 +47,16 @@
 # can generate constructor for inherited abstract classes
 
     Code
-      foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = double))
+      foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = class_double))
       new_constructor(foo1, list())
     Output
       function () 
       new_object(R7_object(), list())
       <environment: namespace:R7>
     Code
-      new_constructor(foo1, as_properties(list(y = double)))
+      new_constructor(foo1, as_properties(list(y = class_double)))
     Output
-      function (y = missing_class) 
+      function (y = class_missing) 
       new_object(R7_object(), list(y = y))
       <environment: namespace:R7>
 

@@ -4,13 +4,15 @@
 #' possess. The class, and its parent, determines which method will be used
 #' when an object is passed to a generic.
 #'
-#' @param name The name of the class, as a string.
+#' @param name The name of the class, as a string. The result of calling
+#'   `new_class()` should always be assigned to a variable with this name,
+#'   i.e. `foo <- new_class("foo")`.
 #' @param parent The parent class to inherit behavior from.
-#'   There are four options:
+#'   There are three options:
 #'
-#'   * The R7 class, like [R7_object].
+#'   * An R7 class, like [R7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
-#'   * A base type, like `logical`, `double`, or `character`.
+#'   * A base type, like [class_logical], [class_integer], etc.
 #' @param package Package name. It is good practice to set the package
 #'   name when exporting an R7 class from a package because it includes
 #'   the package name in the class name when it's used for dispatch. This
@@ -51,8 +53,8 @@
 #' # Create an class that represents a range using a numeric start and end
 #' range <- new_class("range",
 #'   properties = list(
-#'     start = "numeric",
-#'     end = "numeric"
+#'     start = class_numeric,
+#'     end = class_numeric
 #'   )
 #' )
 #' r <- range(start = 10, end = 20)
@@ -69,8 +71,8 @@
 #' # are length 1, and that start is < end
 #' range <- new_class("range",
 #'   properties = list(
-#'     start = "numeric",
-#'     end = "numeric"
+#'     start = class_numeric,
+#'     end = class_numeric
 #'   ),
 #'   validator = function(self) {
 #'     if (length(self@start) != 1) {
@@ -224,7 +226,7 @@ new_object <- function(.parent, ...) {
   args <- list(...)
   nms <- names(args)
 
-  missing_props <- nms[vlapply(args, is_missing_class)]
+  missing_props <- nms[vlapply(args, is_class_missing)]
   for(prop in missing_props) {
     args[[prop]] <- prop_default(class@properties[[prop]])
   }

@@ -29,8 +29,9 @@ reference:
   - method_explain
   - new_external_generic
   - new_S3_class
-  - missing_class
   - R7_class
+  - base_classes
+  - class_missing
 
 articles:
 - title: Learn R7

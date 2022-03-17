@@ -7,30 +7,30 @@ test_that("has useful print method", {
 })
 
 test_that("can construct from base types", {
-  u1 <- new_union(character)
+  u1 <- new_union(class_character)
   expect_s3_class(u1, "R7_union")
-  expect_equal(u1$classes, list(base_classes$character))
+  expect_equal(u1$classes, list(class_character))
 
-  u2 <- new_union(character, integer)
+  u2 <- new_union(class_character, class_integer)
   expect_s3_class(u2, "R7_union")
-  expect_equal(u2$classes, list(base_classes$character, base_classes$integer))
+  expect_equal(u2$classes, list(class_character, class_integer))
 })
 
 test_that("can construct from unions", {
-  u1 <- new_union(character)
-  u2 <- new_union(integer)
+  u1 <- new_union(class_character)
+  u2 <- new_union(class_integer)
 
   u3 <- new_union(u1, u2)
   expect_s3_class(u3, "R7_union")
-  expect_equal(u3$classes, list(base_classes$character, base_classes$integer))
+  expect_equal(u3$classes, list(class_character, class_integer))
 
-  expect_equal(new_union(u1, integer), u3)
+  expect_equal(new_union(u1, class_integer), u3)
 })
 
 test_that("base unions display as expected", {
   expect_snapshot({
-    base_unions
-    str(base_unions)
+    class_vector
+    str(class_vector)
   })
 })
 

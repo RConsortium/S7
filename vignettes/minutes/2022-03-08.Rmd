@@ -14,10 +14,10 @@ title: "Minutes 2022-03-08"
 
     -   `new_generic("foo", "x", function(x, y) call_method())`
 
--   New `any_class` (could already define methods for `R7_object`) and `missing_class` sentinels.
+-   New `class_any` (could already define methods for `R7_object`) and `class_missing` sentinels.
 
 -   When creating an object, unspecified properties are initialized with their default value (#67).
-    To achieve this, the constructor arguments default to `missing_class`, since `NULL` would prevent a default value of `NULL`, and `missing()` requires too many gymnastics.
+    To achieve this, the constructor arguments default to `class_missing`, since `NULL` would prevent a default value of `NULL`, and `missing()` requires too many gymnastics.
 
     -   `new_class("foo", properties = list(x = integer, y = double))@constructor`
 

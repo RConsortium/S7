@@ -6,13 +6,16 @@
 
 ## Mar 2022
 
+* All built-in wrappers around base types use `class_`. You can no longer
+  refer to a base type with a string or a constructor function (#170).
+
 * `convert()` allows you to convert an object into another class (#136).
 
 * `super()` replaces `next_method()` (#110).
 
 ## Feb 2022
 
-* `any_class` and `missing_any` make it possible to dispatch on absent
+* `class_any` and `class_missing` make it possible to dispatch on absent
   arguments and arguments of any class (#67).
 
 * New `method_explain()` to explain dispatch (#194).
@@ -23,7 +26,7 @@
 
 * When creating an object, unspecified properties are initialized with their 
   default value (#67). DISCUSS: to achieve this, the constructor arguments
-  default to `missing_class`.
+  default to `class_missing`.
 
 * Add `$.R7_object` and `$<-.R7_object` methods to avoid "object of type 'S4'
   is not subsettable" error (#204).

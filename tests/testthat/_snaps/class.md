@@ -30,7 +30,7 @@
        ..  ..$ setter : NULL
        ..  ..$ default: NULL
        @ abstract   : logi FALSE
-       @ constructor: function (x = missing_class, y = missing_class)  
+       @ constructor: function (x = class_missing, y = class_missing)  
        @ validator  : NULL
     Code
       str(list(foo2))
@@ -47,7 +47,7 @@
     Code
       new_class("foo", 1)
     Error <simpleError>
-      Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
       new_class("foo", package = 1)
     Error <simpleError>
@@ -74,7 +74,7 @@
     Code
       new_class("test", parent = new_union("character"))
     Error <simpleError>
-      `parent` must be an R7 class, S3 class, or base type, not an R7 union.
+      Can't convert `X[[i]]` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
 # abstract classes: can't be instantiated
 
@@ -115,7 +115,7 @@
 # R7 object: displays nicely
 
     Code
-      foo <- new_class("foo", properties = list(x = double, y = double))
+      foo <- new_class("foo", properties = list(x = class_double, y = class_double))
       foo()
     Output
       <foo>
@@ -132,7 +132,7 @@
 # R7 object: displays objects with data nicely
 
     Code
-      text <- new_class("text", character)
+      text <- new_class("text", class_character)
       text("x")
     Output
       <text> chr "x"

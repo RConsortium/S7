@@ -2,7 +2,7 @@
 
     Code
       foo <- new_class("foo")
-      super(foo(), character)
+      super(foo(), class_character)
     Error <simpleError>
       <foo> doesn't inherit from <character>
 

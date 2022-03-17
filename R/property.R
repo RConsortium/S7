@@ -9,8 +9,8 @@
 #' "dynamic" so that it's computed when accessed or has some non-standard
 #' behaviour when modified.
 #'
-#' @param class If specified, any values must be one of these classes
-#'   (or [class union][new_union]).
+#' @param class Class that the property must be an instance of.
+#'   See [as_class()] for details.
 #' @param getter An optional function used to get the value. The function
 #'   should take `self`  as its sole argument and return the value. If the
 #'   property has a `class` the class of the value is validated.
@@ -28,7 +28,7 @@
 #' @examples
 #' # Simple properties store data inside an object
 #' pizza <- new_class("pizza", properties = list(
-#'   slices = new_property("numeric", default = 10)
+#'   slices = new_property(class_numeric, default = 10)
 #' ))
 #' my_pizza <- pizza(slices = 6)
 #' my_pizza@slices
@@ -50,7 +50,7 @@
 #'
 #' # These can be useful if you want to deprecate a property
 #' person <- new_class("person", properties = list(
-#'   first_name = "character",
+#'   first_name = class_character,
 #'   firstName = new_property(
 #'      getter = function(self) {
 #'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
@@ -67,7 +67,7 @@
 #' hadley@firstName
 #' hadley@firstName <- "John"
 #' hadley@first_name
-new_property <- function(class = any_class, getter = NULL, setter = NULL, default = NULL, name = NULL) {
+new_property <- function(class = class_any, getter = NULL, setter = NULL, default = NULL, name = NULL) {
   class <- as_class(class)
   if (!is.null(default) && !class_inherits(default, class)) {
     msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
@@ -126,9 +126,9 @@ prop_default <- function(prop) {
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(
-#'   name = "character",
-#'   colour = "character",
-#'   height = "numeric"
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = class_numeric
 #' ))
 #' lexington <- horse(colour = "bay", height = 15, name = "Lex")
 #' lexington@colour
@@ -281,9 +281,9 @@ prop_exists <- function(object, name) {
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(
-#'   name = "character",
-#'   colour = "character",
-#'   height = "numeric"
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = class_numeric
 #' ))
 #' lexington <- horse(colour = "bay", height = 15, name = "Lex")
 #'

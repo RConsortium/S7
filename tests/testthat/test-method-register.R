@@ -1,37 +1,37 @@
 describe("method registration", {
   it("adds methods to the generic", {
     foo <- new_generic("foo", "x")
-    method(foo, "character") <- function(x) "c"
-    method(foo, "integer") <- function(x) "i"
+    method(foo, class_character) <- function(x) "c"
+    method(foo, class_integer) <- function(x) "i"
     expect_length(methods(foo), 2)
   })
 
   it("adds messages when overwriting", {
     foo <- new_generic("foo", "x")
     expect_snapshot({
-      method(foo, "character") <- function(x) "c"
-      method(foo, "character") <- function(x) "c"
+      method(foo, class_character) <- function(x) "c"
+      method(foo, class_character) <- function(x) "c"
     })
     expect_length(methods(foo), 1)
   })
 
   it("adds method for each element of a union", {
     foo <- new_generic("foo", "x")
-    method(foo, "numeric") <- function(x) "x"
+    method(foo, class_numeric) <- function(x) "x"
 
     # one method for each union component
     expect_length(methods(foo), 2)
 
     # each method has the expected signature
-    expect_equal(method(foo, "integer")@signature, list(as_class("integer")))
-    expect_equal(method(foo, "double")@signature, list(as_class("double")))
+    expect_equal(method(foo, class_integer)@signature, list(class_integer))
+    expect_equal(method(foo, class_double)@signature, list(class_double))
   })
 
   it("can register method for external generic from within package", {
     on.exit(external_methods_reset("R7"), add = TRUE)
 
     foo <- new_external_generic("foo", "bar" ,"x")
-    register_external_method(foo, "character", function(x) "bar", package = "R7")
+    register_external_method(foo, class_character, function(x) "bar", package = "R7")
     expect_length(external_methods_get("R7"), 1)
 
     # and doesn't modify generic
@@ -73,7 +73,7 @@ describe("method registration", {
     foo <- new_generic("foo", "x")
     expect_snapshot(error = TRUE, {
       x <- 10
-      method(x, "character") <- function(x) ...
+      method(x, class_character) <- function(x) ...
       method(foo, 1) <- function(x) ...
     })
   })
@@ -82,12 +82,12 @@ describe("method registration", {
 describe("as_signature()", {
   it("returns a list that matches length of dispatch args", {
     foo1 <- new_generic("foo1", "x")
-    sig1 <- as_signature("numeric", foo1)
+    sig1 <- as_signature(class_numeric, foo1)
     expect_s3_class(sig1, "R7_signature")
     expect_length(sig1, 1)
 
     foo2 <- new_generic("foo2", c("x", "y"))
-    sig2 <- as_signature(list("numeric", "character"), foo2)
+    sig2 <- as_signature(list(class_numeric, class_character), foo2)
     expect_s3_class(sig1, "R7_signature")
     expect_length(sig2, 2)
   })
@@ -104,8 +104,8 @@ describe("as_signature()", {
   it("requires a list of the correct length for multiple dispatch", {
     foo <- new_generic("foo", c("x", "y"))
     expect_snapshot(error = TRUE, {
-      as_signature("character", foo)
-      as_signature(list("character"), foo)
+      as_signature(class_character, foo)
+      as_signature(list(class_character), foo)
     })
   })
 })
@@ -145,9 +145,9 @@ test_that("check_method warn if default arguments don't match", {
 
 test_that("R7_method printing", {
   foo <- new_generic("foo", c("x", "y"))
-  method(foo, list(integer, integer)) <- function(x, y, ...) paste0("bar:", x, y)
+  method(foo, list(class_integer, class_integer)) <- function(x, y, ...) paste0("bar:", x, y)
   expect_snapshot(
-    method(foo, list(integer, integer)),
+    method(foo, list(class_integer, class_integer)),
     transform = scrub_environment
   )
 })

@@ -10,17 +10,15 @@ method_explain(generic, class = NULL, object = NULL)
 \item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{class}{Perform introspection either with \code{classes}
-(processed with \code{\link[=as_class]{as_class()}}) or a concrete objects.
+\item{class}{Perform introspection either with a \code{class}
+(processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses
+multiple dispatch then both \code{object} and \code{class} must be a list of
+classes/objects.}
 
-If \code{generic} does multiple dispatch both \code{object} and \code{class} need
-to be wrapped in a list.}
-
-\item{object}{Perform introspection either with \code{classes}
-(processed with \code{\link[=as_class]{as_class()}}) or a concrete objects.
-
-If \code{generic} does multiple dispatch both \code{object} and \code{class} need
-to be wrapped in a list.}
+\item{object}{Perform introspection either with a \code{class}
+(processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses
+multiple dispatch then both \code{object} and \code{class} must be a list of
+classes/objects.}
 }
 \description{
 \code{method_explain()} shows all possible methods that a call to a generic

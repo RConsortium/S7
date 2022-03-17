@@ -25,7 +25,7 @@ This case study demonstrates creating basic classes with accessors functions, in
 ```{r}
 Person <- new_class("Person",
   properties = list(
-    name = "character",
+    name = class_character,
     birthdate = new_property(
       class = new_S3_class("Date"),
       setter = function(self, value) {
@@ -35,7 +35,7 @@ Person <- new_class("Person",
       default = as.Date(NA)
     ),
     age = new_property(
-      class = "numeric",
+      class = class_numeric,
       getter = function(self) {
         # This is not correct because of leap years,
         # see https://stackoverflow.com/questions/3611314/calculate-ages-in-r/25450756#25450756 for a correct implementation.
@@ -171,7 +171,7 @@ The subsets the individual components appropriately and then returns a new `anno
 ```{r}
 subset_R7 <- new_generic("R7_subset", c("object", "row", "column"))
 
-method(subset_R7, list(annotated_df, "integer", "integer")) <- function(object, row, column, ...) {
+method(subset_R7, list(annotated_df, class_integer, class_integer)) <- function(object, row, column, ...) {
   data <- object@data[row, column]
   rows <- object@rows[row, ]
   columns <-  object@columns[column, ]

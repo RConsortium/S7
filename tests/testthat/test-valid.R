@@ -1,6 +1,6 @@
 test_that("validate() validates object and type recursively", {
   klass <- new_class("klass",
-    properties = list(x = "double", y = "double"),
+    properties = list(x = class_double, y = class_double),
     validator = function(self) {
       c(
         if (self@x < 0) "x must be positive",
@@ -18,7 +18,7 @@ test_that("validate() validates object and type recursively", {
     validate(obj)
   })
 
-  klass2 <- new_class("klass2", parent = klass, properties = list(z = "double"))
+  klass2 <- new_class("klass2", parent = klass, properties = list(z = class_double))
   expect_snapshot(error = TRUE, {
     obj <- klass2(1, -1, 1)
     attr(obj, "x") <- -1
@@ -31,7 +31,7 @@ test_that("validate() validates object and type recursively", {
 })
 
 test_that("validate checks base type", {
-  Double <- new_class("Double", parent = "double")
+  Double <- new_class("Double", parent = class_double)
   x <- Double(10)
   mode(x) <- "character"
 
@@ -40,7 +40,7 @@ test_that("validate checks base type", {
 
 test_that("valid eventually calls the validation function only at the end", {
   foo <- new_class("foo",
-    properties = list(x = double),
+    properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "must be positive"
   )
   obj <- foo(10)
@@ -55,7 +55,7 @@ test_that("valid eventually calls the validation function only at the end", {
 
 test_that("valid implicitly does _not_ call the validation function", {
   foo <- new_class("foo",
-    properties = list(x = double),
+    properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "must be positive"
   )
   obj <- foo(10)

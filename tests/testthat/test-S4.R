@@ -5,8 +5,8 @@ test_that("can work with classGenerators", {
 })
 
 test_that("converts S4 base classes to R7 base classes", {
-  expect_equal(S4_to_R7_class(getClass("NULL")), base_classes[["NULL"]])
-  expect_equal(S4_to_R7_class(getClass("character")), base_classes$character)
+  expect_equal(S4_to_R7_class(getClass("NULL")), NULL)
+  expect_equal(S4_to_R7_class(getClass("character")), class_character)
 })
 
 test_that("converts S4 unions to R7 unions", {

@@ -54,20 +54,20 @@ check_R7 <- function(x, arg = deparse(substitute(x))) {
 R7_generic <- new_class(
   name = "R7_generic",
   properties = list(
-    name = "character",
-    methods = "environment",
-    dispatch_args = "character"
+    name = class_character,
+    methods = class_environment,
+    dispatch_args = class_character
   ),
-  parent = "function"
+  parent = class_function
 )
 methods::setOldClass(c("R7_generic", "function", "R7_object"))
 is_generic <- function(x) inherits(x, "R7_generic")
 
 R7_method <- new_class("R7_method",
-  parent = "function",
+  parent = class_function,
   properties = list(
     generic = R7_generic,
-    signature = "list"
+    signature = class_list
   )
 )
 methods::setOldClass(c("R7_method", "function", "R7_object"))
@@ -80,7 +80,7 @@ methods::setOldClass(c("R7_method", "function", "R7_object"))
 .onLoad <- function(...) {
   convert <<- R7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
 
-  base_unions$numeric <<- new_union("integer", "double")
-  base_unions$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
-  base_unions$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
+  class_numeric <<- new_union(class_integer, class_double)
+  class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
+  class_vector <<- new_union(class_atomic, class_expression, class_list)
 }
