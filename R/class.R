@@ -4,7 +4,9 @@
 #' possess. The class, and its parent, determines which method will be used
 #' when an object is passed to a generic.
 #'
-#' @param name The name of the class, as a string.
+#' @param name The name of the class, as a string. The result of calling
+#'   `new_class()` should always be assigned to a variable with this name,
+#'   i.e. `foo <- new_class("foo")`.
 #' @param parent The parent class to inherit behavior from.
 #'   There are three options:
 #'

@@ -18,7 +18,9 @@ new_class(
 new_object(.parent, ...)
 }
 \arguments{
-\item{name}{The name of the class, as a string.}
+\item{name}{The name of the class, as a string. The result of calling
+\code{new_class()} should always be assigned to a variable with this name,
+i.e. \code{foo <- new_class("foo")}.}
 
 \item{parent}{The parent class to inherit behavior from.
 There are three options:
