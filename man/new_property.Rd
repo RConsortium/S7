@@ -13,7 +13,7 @@ new_property(
 )
 }
 \arguments{
-\item{class}{Class that property must be an instance of.
+\item{class}{Class that the property must be an instance of.
 See \code{\link[=as_class]{as_class()}} for details.}
 
 \item{getter}{An optional function used to get the value. The function
