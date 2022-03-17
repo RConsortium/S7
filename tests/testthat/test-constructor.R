@@ -51,3 +51,11 @@ test_that("can generate constructors for S3 classes", {
     new_constructor(S3_factor, as_properties(list(x = "numeric", y = "numeric")))
   }, transform = scrub_environment)
 })
+
+test_that("can generate constructor for inherited abstract classes", {
+  expect_snapshot({
+    foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = double))
+    new_constructor(foo1, list())
+    new_constructor(foo1, as_properties(list(y = double)))
+  }, transform = scrub_environment)
+})
