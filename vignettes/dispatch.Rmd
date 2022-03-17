@@ -43,7 +43,7 @@ Take a very simple implementation of `mean()`:
 
 ```{r}
 mean <- new_generic("mean", "x")
-method(mean, numeric) <- function(x) sum(x) / length(x)
+method(mean, class_numeric) <- function(x) sum(x) / length(x)
 ```
 
 If we pass an additional argument in, we'll get an error:
@@ -55,7 +55,7 @@ mean(100, na.rm = TRUE)
 But we can still add additional arguments if we desired:
 
 ```{r}
-method(mean, numeric) <- function(x, na.rm = TRUE) {
+method(mean, class_numeric) <- function(x, na.rm = TRUE) {
   if (na.rm) {
     x <- x[!is.na(x)]
   }
@@ -74,14 +74,14 @@ For example, imagine a simple print method like this:
 
 ```{r}
 simple_print <- new_generic("simple_print", "x")
-method(simple_print, double) <- function(x, digits = 3) {}
-method(simple_print, character) <- function(x, max_length = 100) {}
+method(simple_print, class_double) <- function(x, digits = 3) {}
+method(simple_print, class_character) <- function(x, max_length = 100) {}
 ```
 
 What if you want to print a list?
 
 ```{r}
-method(simple_print, list) <- function(x, ...) {
+method(simple_print, class_list) <- function(x, ...) {
   for (el in x) {
     simple_print(el, ...)
   }
@@ -98,8 +98,8 @@ simple_print(list(1, 2, "x"), digits = 3)
 To solve this situation, methods generally need to ignore arguments that they haven't been specifically designed to handle, i.e. they need to use `…`:
 
 ```{r}
-method(simple_print, double) <- function(x, ..., digits = 3) {}
-method(simple_print, character) <- function(x, ..., max_length = 100) {}
+method(simple_print, class_double) <- function(x, ..., digits = 3) {}
+method(simple_print, class_character) <- function(x, ..., max_length = 100) {}
 
 simple_print(list(1, 2, "x"), digits = 3)
 ```
@@ -122,7 +122,7 @@ A good example of such a function is `length()`:
 
 ```{r}
 length <- new_generic("length", "x", function(x) {
-  method_call()
+  R7_dispatch()
 })
 ```
 
@@ -138,7 +138,7 @@ display <- new_generic("display", "x")
 R7_data(display)
 ```
 
-The most important part of the body is `method_call()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
+The most important part of the body is `R7_dispatchl()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
 
 It can be useful to customize this body.
 The previous section showed one case when you might want to supply the body yourself: dropping `…` from the formals of the generic.
@@ -156,7 +156,7 @@ To add required arguments that aren't dispatched upon, you just need to add addi
 
 ```{r}
 foo <- new_generic("foo", "x", function(x, y, ...) {
-  method_call()
+  R7_dispatch()
 })
 ```
 
@@ -164,7 +164,7 @@ Now all methods will need to provide that `y` argument.
 If not, you'll get a warning:
 
 ```{r}
-method(foo, integer) <- function(x, ...) {
+method(foo, class_integer) <- function(x, ...) {
   10
 }
 ```
@@ -179,9 +179,9 @@ This ensures that the user must supply the full name of the argument when callin
 
 ```{r}
 mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
-  method_call()
+  R7_dispatch()
 })
-method(mean, integer) <- function(x, na.rm = TRUE) {
+method(mean, class_integer) <- function(x, na.rm = TRUE) {
   if (na.rm) {
     x <- x[!is.na(x)]
   }
@@ -192,8 +192,8 @@ method(mean, integer) <- function(x, na.rm = TRUE) {
 Forgetting the argument or using a different default value will again generate a warning.
 
 ```{r}
-method(mean, double) <- function(x, na.rm = FALSE) {}
-method(mean, logical) <- function(x) {}
+method(mean, class_double) <- function(x, na.rm = FALSE) {}
+method(mean, class_logical) <- function(x) {}
 ```
 
 ### Do some work
@@ -206,7 +206,7 @@ mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
   if (!identical(na.rm, TRUE) && !identical(na.rm = FALSE)) {
     stop("`na.rm` must be either TRUE or FALSE")
   }
-  method_call()
+  R7_dispatch()
 })
 ```
 
@@ -222,7 +222,7 @@ Multiple dispatch is heavily used in S4; we don't expect it to be heavily used i
 
 ```{r}
 add <- new_generic("add", c("x", "y"))
-method(add, list(integer, integer)) <- function(x, y) x + y
+method(add, list(class_integer, class_integer)) <- function(x, y) x + y
 ```
 
 ### A simple example
@@ -252,13 +252,13 @@ speak(dog(), french())
 
 ### Matching any class
 
-`any_class()`
+`class_any()`
 
 ### Matching a missing argument
 
 (Not `NA`, but the absence of an argument)
 
-`missing_class()`
+`class_missing()`
 
 ## `super()`
 

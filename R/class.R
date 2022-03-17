@@ -4,18 +4,22 @@
 #' possess. The class, and its parent, determines which method will be used
 #' when an object is passed to a generic.
 #'
-#' @param name The name of the class, as a string.
+#' @param name The name of the class, as a string. The result of calling
+#'   `new_class()` should always be assigned to a variable with this name,
+#'   i.e. `foo <- new_class("foo")`.
 #' @param parent The parent class to inherit behavior from.
-#'   There are four options:
+#'   There are three options:
 #'
-#'   * The R7 class, like [R7_object].
+#'   * An R7 class, like [R7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
-#'   * A base type, like `logical`, `double`, or `character`.
+#'   * A base type, like [class_logical], [class_integer], etc.
 #' @param package Package name. It is good practice to set the package
 #'   name when exporting an R7 class from a package because it includes
 #'   the package name in the class name when it's used for dispatch. This
 #'   allows different packages to use the same name to refer to different
 #'   classes. If you see `package`, you _must_ export the constructor.
+#' @param abstract Is this an abstract class? An abstract class can not be
+#'   instantiated.
 #' @param constructor The constructor function. Advanced use only.
 #'
 #'   A custom constructor should call `new_object()` to create the R7 object.
@@ -49,8 +53,8 @@
 #' # Create an class that represents a range using a numeric start and end
 #' range <- new_class("range",
 #'   properties = list(
-#'     start = "numeric",
-#'     end = "numeric"
+#'     start = class_numeric,
+#'     end = class_numeric
 #'   )
 #' )
 #' r <- range(start = 10, end = 20)
@@ -67,8 +71,8 @@
 #' # are length 1, and that start is < end
 #' range <- new_class("range",
 #'   properties = list(
-#'     start = "numeric",
-#'     end = "numeric"
+#'     start = class_numeric,
+#'     end = class_numeric
 #'   ),
 #'   validator = function(self) {
 #'     if (length(self@start) != 1) {
@@ -90,29 +94,29 @@ new_class <- function(
     parent = R7_object,
     package = NULL,
     properties = list(),
+    abstract = FALSE,
     constructor = NULL,
     validator = NULL) {
 
   check_name(name)
 
   parent <- as_class(parent)
-  if (!can_inherit(parent)) {
-     stop(
-       sprintf(
-         "`parent` must be an R7 class, S3 class, or base type, not %s.", class_friendly(parent)),
-       call. = FALSE
-     )
-  }
 
-  if (!is.null(package)) {
-    check_name(package)
-  }
-
-  if (!is.null(constructor) && !is.null(parent)) {
-    check_R7_constructor(constructor)
-  }
-  if (!is.null(validator)) {
-    check_function(validator, alist(self = ))
+  # Don't check arguments for R7_object
+  if (!is.null(parent)) {
+    check_can_inherit(parent)
+    if (!is.null(package)) {
+      check_name(package)
+    }
+    if (!is.null(constructor)) {
+      check_R7_constructor(constructor)
+    }
+    if (!is.null(validator)) {
+      check_function(validator, alist(self = ))
+    }
+    if (abstract && !(parent@abstract || parent@name == "R7_object")) {
+      stop("Abstract classes must have abstract parents")
+    }
   }
 
   # Combine properties from parent, overriding as needed
@@ -130,6 +134,7 @@ new_class <- function(
   attr(object, "parent") <- parent
   attr(object, "package") <- package
   attr(object, "properties") <- all_props
+  attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("R7_class", "R7_object")
@@ -137,7 +142,7 @@ new_class <- function(
   global_variables(names(all_props))
   object
 }
-globalVariables(c("name", "parent", "package", "properties", "constructor", "validator"))
+globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
 
 R7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
@@ -187,7 +192,18 @@ str.R7_class <- function(object, ..., nest.lev = 0) {
   }
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x) || is.null(x)
+can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+
+check_can_inherit <- function(x, arg = deparse(substitute(x))) {
+  if (!can_inherit(x)) {
+    msg <- sprintf(
+      "`%s` must be an R7 class, S3 class, or base type, not %s.",
+      arg,
+      class_friendly(x)
+    )
+    stop(msg, call. = FALSE)
+  }
+}
 
 is_class <- function(x) inherits(x, "R7_class")
 
@@ -202,11 +218,15 @@ new_object <- function(.parent, ...) {
   if (!inherits(class, "R7_class")) {
     stop("`new_object()` must be called from within a constructor")
   }
+  if (class@abstract) {
+    msg <- sprintf("Can't construct an object from abstract class <%s>", class@name)
+    stop(msg)
+  }
 
   args <- list(...)
   nms <- names(args)
 
-  missing_props <- nms[vlapply(args, is_missing_class)]
+  missing_props <- nms[vlapply(args, is_class_missing)]
   for(prop in missing_props) {
     args[[prop]] <- prop_default(class@properties[[prop]])
   }

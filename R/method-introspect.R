@@ -2,23 +2,22 @@
 #'
 #' `method()` takes a generic and signature and retrieves the corresponding
 #' method. This is rarely needed because most of the time you'll rely on the
-#' the generic, via [method_call()], to find and call the method for you.
+#' the generic, via [R7_dispatch()], to find and call the method for you.
 #' However, this introspection is useful if you want to see the implementation
 #' of a specific method.
 #'
 #' @seealso [method_explain()] to explain why a specific method was picked.
 #' @inheritParams method<-
 #' @returns A function with class <R7_method>.
-#' @param class,object Perform introspection either with `classes`
-#'   (processed with [as_class()]) or a concrete objects.
-#'
-#'   If `generic` does multiple dispatch both `object` and `class` need
-#'   to be wrapped in a list.
+#' @param class,object Perform introspection either with a `class`
+#'   (processed with [as_class()]) or a concrete `object`. If `generic` uses
+#'   multiple dispatch then both `object` and `class` must be a list of
+#'   classes/objects.
 #' @export
 #' @examples
 #' # Create a generic and register some methods
 #' bizarro <- new_generic("bizarro", "x")
-#' method(bizarro, "numeric") <- function(x) rev(x)
+#' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, new_S3_class("factor")) <- function(x) {
 #'   levels(x) <- rev(levels(x))
 #'   x
@@ -28,12 +27,12 @@
 #' bizarro
 #'
 #' # And you can use method() to inspect specific implementations
-#' method(bizarro, class = "integer")
+#' method(bizarro, class = class_integer)
 #' method(bizarro, object = 1)
 #' method(bizarro, new_S3_class("factor"))
 method <- function(generic, class = NULL, object = NULL) {
   dispatch <- as_dispatch(generic, class = class, object = object)
-  .Call(method_, generic, dispatch, NULL)
+  .Call(method_, generic, dispatch, TRUE)
 }
 
 #' Explain method dispatch

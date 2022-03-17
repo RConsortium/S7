@@ -38,7 +38,7 @@ you are certain a sequence of operations cannot produce an invalid object.
 \examples{
 # A range class might validate that the start is less than the end
 Range <- new_class("Range",
-  properties = list(start = "double", end = "double"),
+  properties = list(start = class_double, end = class_double),
   validator = function(self) {
     if (self@start >= self@end) "start must be smaller than end"
   }

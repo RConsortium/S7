@@ -5,7 +5,7 @@
 \title{Define a new property}
 \usage{
 new_property(
-  class = any_class,
+  class = class_any,
   getter = NULL,
   setter = NULL,
   default = NULL,
@@ -13,8 +13,8 @@ new_property(
 )
 }
 \arguments{
-\item{class}{If specified, any values must be one of these classes
-(or \link[=new_union]{class union}).}
+\item{class}{Class that the property must be an instance of.
+See \code{\link[=as_class]{as_class()}} for details.}
 
 \item{getter}{An optional function used to get the value. The function
 should take \code{self}  as its sole argument and return the value. If the
@@ -45,7 +45,7 @@ behaviour when modified.
 \examples{
 # Simple properties store data inside an object
 pizza <- new_class("pizza", properties = list(
-  slices = new_property("numeric", default = 10)
+  slices = new_property(class_numeric, default = 10)
 ))
 my_pizza <- pizza(slices = 6)
 my_pizza@slices
@@ -67,7 +67,7 @@ try(my_clock@now <- 10)
 
 # These can be useful if you want to deprecate a property
 person <- new_class("person", properties = list(
-  first_name = "character",
+  first_name = class_character,
   firstName = new_property(
      getter = function(self) {
        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)

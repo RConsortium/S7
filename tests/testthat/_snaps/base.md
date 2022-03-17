@@ -1,59 +1,20 @@
 # validation uses typeof
 
     Code
-      base_classes$integer$validator(TRUE)
+      class_integer$validator(TRUE)
     Output
       [1] "Underlying data must be <integer> not <logical>"
 
 # base class display as expected
 
     Code
-      base_classes
+      class_integer
     Output
-      $logical
-      <R7_base_class>: <logical>
-      
-      $integer
       <R7_base_class>: <integer>
-      
-      $double
-      <R7_base_class>: <double>
-      
-      $complex
-      <R7_base_class>: <complex>
-      
-      $character
-      <R7_base_class>: <character>
-      
-      $raw
-      <R7_base_class>: <raw>
-      
-      $list
-      <R7_base_class>: <list>
-      
-      $expression
-      <R7_base_class>: <expression>
-      
-      $`function`
-      <R7_base_class>: <function>
-      
-      $environment
-      <R7_base_class>: <environment>
-      
     Code
-      str(base_classes)
+      str(class_integer)
     Output
-      List of 10
-       $ logical    : <R7_base_class>: <logical>
-       $ integer    : <R7_base_class>: <integer>
-       $ double     : <R7_base_class>: <double>
-       $ complex    : <R7_base_class>: <complex>
-       $ character  : <R7_base_class>: <character>
-       $ raw        : <R7_base_class>: <raw>
-       $ list       : <R7_base_class>: <list>
-       $ expression : <R7_base_class>: <expression>
-       $ function   : <R7_base_class>: <function>
-       $ environment: <R7_base_class>: <environment>
+      <R7_base_class>: <integer>
 
 # environments: can be printed
 

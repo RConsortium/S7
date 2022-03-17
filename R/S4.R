@@ -16,11 +16,13 @@ S4_to_R7_class <- function(x, error_base = "") {
   } else if (methods::is(x, "classRepresentation")) {
     if (methods::extends(x, "oldClass")) {
       new_S3_class(as.character(x@className))
-    } else if (x@package == "methods" && x@className %in% names(base_classes)) {
-      # Convert S4 representation of base types to R7 representation
-      base_classes[[x@className]]
-    } else if (x@package == "methods" && x@className == "NULL") {
-      NULL
+    } else if (x@package == "methods") {
+      base_classes <- S4_base_classes()
+      if (hasName(base_classes, x@className)) {
+        base_classes[[x@className]]
+      } else {
+        x
+      }
     } else {
       x
     }
@@ -31,6 +33,24 @@ S4_to_R7_class <- function(x, error_base = "") {
     )
     stop(paste0(error_base, msg), call. = FALSE)
   }
+}
+
+S4_base_classes <- function() {
+  list(
+    NULL = NULL,
+    logical = class_logical,
+    integer = class_integer,
+    double = class_double,
+    numeric = class_numeric,
+    character = class_character,
+    complex = class_complex,
+    raw = class_raw,
+    list = class_list,
+    expression = class_expression,
+    vector = class_vector,
+    `function` = class_function,
+    environment = class_environment
+  )
 }
 
 S4_class_dispatch <- function(x) {
@@ -61,7 +81,7 @@ S4_class_name <- function(x) {
   class <- x@className
   package <- x@package %||% attr(class, "package")
 
-  if (identical(package, "methods") && class %in% names(base_classes)) {
+  if (identical(package, "methods") && class %in% names(S4_base_classes())) {
     class
   } else if (is.null(package) || identical(package, ".GlobalEnv")) {
     paste0("S4/", class)

@@ -9,11 +9,8 @@
 #'   * An R7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
-#'   * A base type specified either with its constructor (`logical`, `integer`,
-#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
-#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
-#'      `"vector"`.
-#'   * A "special", either [missing_class] or [any_class].
+#'   * A base class, like [class_logical], [class_integer], or [class_double].
+#'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
 #' @export
 #' @return A standardised class: either `NULL`, an R7 class, an R7 union,
@@ -21,31 +18,16 @@
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
 
-  if (is.null(x)) {
+  if (is_foundation_class(x)) {
+    x
+  } else if (is.null(x)) {
     # NULL is handled specially because you can't assign a class to it,
     # so it can't be wrapped in new_base_class
     x
-  } else if (is_foundation_class(x)) {
-    x
   } else if (isS4(x)) {
     S4_to_R7_class(x, error_base)
-  } else if (is.function(x)) {
-    candidate <- find_base_name(x, names(base_classes))
-    if (is.na(candidate)) {
-      stop(paste0(error_base, "No matching base class."), call. = FALSE)
-    }
-    base_classes[[candidate]]
-  } else if (is.character(x) && length(x) == 1) {
-    if (x %in% names(base_classes)) {
-      base_classes[[x]]
-    } else if (x %in% names(base_unions)) {
-      base_unions[[x]]
-    } else {
-      msg <- sprintf("No base classes are called '%s'", x)
-      stop(paste0(error_base, msg), call. = FALSE)
-    }
   } else {
-    msg <- sprintf("Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a %s.", obj_desc(x))
+    msg <- sprintf("Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a %s.", obj_desc(x))
     stop(paste0(error_base, msg), call. = FALSE)
   }
 }
@@ -55,16 +37,16 @@ is_foundation_class <- function(x) {
     is_union(x) ||
     is_base_class(x) ||
     is_S3_class(x) ||
-    is_missing_class(x) ||
-    is_any_class(x)
+    is_class_missing(x) ||
+    is_class_any(x)
 }
 
 class_type <- function(x) {
   if (is.null(x)) {
     "NULL"
-  } else if (is_missing_class(x)) {
+  } else if (is_class_missing(x)) {
     "missing"
-  } else if (is_any_class(x)) {
+  } else if (is_class_any(x)) {
     "any"
   } else if (is_base_class(x)) {
     "R7_base"
@@ -175,8 +157,8 @@ class_register <- function(x) {
 class_deparse <- function(x) {
   switch(class_type(x),
     "NULL" = "NULL",
-    missing = "missing_class",
-    any = "any_class",
+    missing = "class_missing",
+    any = "class_any",
     S4 = as.character(x@className),
     R7 = R7_class_name(x),
     R7_base = encodeString(x$class, quote = '"'),
@@ -197,7 +179,10 @@ class_inherits <- function(x, what) {
     R7 = inherits(x, "R7_object") && inherits(x, R7_class_name(what)),
     R7_base = what$class == base_class(x),
     R7_union = any(vlapply(what$classes, class_inherits, x = x)),
-    R7_S3 = !isS4(x) && is_prefix(what$class, class(x)),
+    # This is slightly too crude as we really want them to be in the same
+    # order and contiguous, but it's probably close enough for practical
+    # purposees
+    R7_S3 = !isS4(x) && all(what$class %in% class(x)),
   )
 }
 

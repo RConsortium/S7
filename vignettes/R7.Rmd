@@ -39,8 +39,8 @@ The following code defines a simple `pet` class with two properties: a character
 
 ```{r}
 dog <- new_class("dog", properties = list(
-  name = character,
-  age = double
+  name = class_character,
+  age = class_double
 ))
 dog
 ```
@@ -107,8 +107,8 @@ Let's define another class, this one for cats, and define another method:
 
 ```{r}
 cat <- new_class("cat", properties = list(
-  name = character,
-  age = double
+  name = class_character,
+  age = class_double
 ))
 method(speak, cat) <- function(x) {
   "Meow"
@@ -131,8 +131,8 @@ Now we use the second argument to `new_class` to specify the `parent` class:
 
 ```{r}
 pet <- new_class("pet", properties = list(
-  name = character,
-  age = double
+  name = class_character,
+  age = class_double
 )) 
 cat <- new_class("cat", pet)
 dog <- new_class("dog", pet)
@@ -168,6 +168,10 @@ describe(fluffy)
 ```
 
 You can define a fallback for any R7 class by implementing a method for `R7_object`:
+||||||| Check method agreement if generic lacks ...
+`next_method()` is used to call the next method for the arguments.
+This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
+This ensures you cannot call the same method twice.
 
 ```{r}
 method(describe, R7_object) <- function(x) {
@@ -176,7 +180,7 @@ method(describe, R7_object) <- function(x) {
 
 cocktail <- new_class("cocktail", 
   properties = list(
-    ingredients = character
+    ingredients = class_character
   )
 )
 martini <- cocktail(ingredients = c("gin", "vermouth"))
@@ -207,8 +211,8 @@ In the following example we create a range class that enforces that the start an
 ```{r}
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_double,
+    end = class_double
   ),
   validator = function(self) {
     if (length(self@start) != 1) {
@@ -289,8 +293,8 @@ For example, the property definition of range above is shorthand for:
 ```{r}
 range <- new_class("range",
   properties = list(
-    start = new_property("numeric"),
-    end = new_property("numeric")
+    start = new_property(class_double),
+    end = new_property(class_double)
   )
 )
 ```
@@ -300,7 +304,7 @@ The following sections show you to provide a default value, compute the property
 
 ### Types
 
--   Avoid any restriction with with `any_class`.
+-   Avoid any restriction with with `class_ayn`.
 -   Refer to base types using their constructors: `logical`, `integer`, `double`, `character` etc.
 -   Use a string to refer to union base types with `"numeric"` (`integer` or `double`), `"atomic"` (`logical`, `"numeric"`, or `character`), or `"vector"` (`"atomic"` or `list`).
 -   Use `new_union()` to create your own set of possible values like `new_union("integer", "NULL")`.
@@ -316,9 +320,9 @@ The defaults of `new_class()` create an class that can be constructed with no ar
 ```{r}
 empty <- new_class("empty", 
   properties = list(
-    x = double,
-    y = character,
-    z = logical
+    x = class_double,
+    y = class_character,
+    z = class_logical
   ))
 empty()
 ```
@@ -329,9 +333,9 @@ You can provide your own default by using the `default` argument to `new_propert
 ```{r}
 empty <- new_class("empty", 
   properties = list(
-    x = new_property(numeric, default = 0),
-    y = new_property(character, default = ""),
-    z = new_property(logical, default = NA)
+    x = new_property(class_numeric, default = 0),
+    y = new_property(class_character, default = ""),
+    z = new_property(class_logical, default = NA)
   )
 )
 empty()
@@ -346,8 +350,8 @@ You can dynamically compute the value of a property by defining a `getter`:
 ```{r}
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric",
+    start = class_double,
+    end = class_double,
     length = new_property(
       getter = function(self) self@end - self@start,
     )
@@ -372,10 +376,10 @@ For example, we could extend the previous example to allow the `@length` to be s
 ```{r}
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric",
+    start = class_double,
+    end = class_double,
     length = new_property(
-      class = "numeric",
+      class = class_double,
       getter = function(self) self@end - self@start,
       setter = function(self, value) {
         self@end <- self@start + value

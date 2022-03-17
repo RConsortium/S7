@@ -35,8 +35,8 @@ test_that("can work with R7 classes in packages", {
 })
 
 test_that("can work with unions", {
-  text <- new_class("text", character)
-  number <- new_class("number", double)
+  text <- new_class("text", class_character)
+  number <- new_class("number", class_double)
   klass <- new_union(text, number)
   expect_equal(as_class(klass), klass)
 
@@ -73,11 +73,7 @@ test_that("handles NULL", {
 # base --------------------------------------------------------------------
 
 test_that("can work with base types", {
-  expect_equal(as_class("character"), base_classes$character)
-  expect_equal(as_class(character), base_classes$character)
-  expect_equal(as_class(double), base_classes$double)
-
-  klass <- as_class("character")
+  klass <- class_character
   expect_equal(class_type(klass), "R7_base")
   expect_equal(class_dispatch(klass), c("character", "R7_object", "ANY"))
   expect_equal(class_register(klass), "character")
@@ -93,24 +89,17 @@ test_that("can work with base types", {
 })
 
 test_that("class_inherits handles variation in class names", {
-  expect_true(class_inherits(1, base_classes$double))
-  expect_false(class_inherits("x", base_unions$double))
+  expect_true(class_inherits(1, class_double))
+  expect_false(class_inherits("x", class_double))
 
-  expect_true(class_inherits(1L, base_unions$numeric))
-  expect_true(class_inherits(1, base_unions$numeric))
-  expect_false(class_inherits("x", base_unions$numeric))
+  expect_true(class_inherits(1L, class_numeric))
+  expect_true(class_inherits(1, class_numeric))
+  expect_false(class_inherits("x", class_numeric))
 
-  expect_true(class_inherits(function() {}, base_classes$`function`))
-  expect_true(class_inherits(sum, base_classes$`function`))
-  expect_true(class_inherits(`[`, base_classes$`function`))
-  expect_false(class_inherits("x", base_classes$`function`))
-})
-
-test_that("can get class from base constructor", {
-  expect_equal(as_class(character), base_classes$character)
-  expect_equal(as_class(`function`), base_classes$`function`)
-
-  expect_snapshot_error(as_class(mean))
+  expect_true(class_inherits(function() {}, class_function))
+  expect_true(class_inherits(sum, class_function))
+  expect_true(class_inherits(`[`, class_function))
+  expect_false(class_inherits("x", class_function))
 })
 
 test_that("dispatch for base objects use underlying type", {
@@ -155,7 +144,7 @@ test_that("can work with S3 classes", {
 
 test_that("can work with R7 classes that extend S3 classes", {
   Date <- new_S3_class("Date", constructor = function(.data = numeric()) .Date(.data))
-  Date2 <- new_class("Date2", parent = Date, properties = list(x = "numeric"))
+  Date2 <- new_class("Date2", parent = Date, properties = list(x = class_numeric))
 
   expect_equal(class_type(Date2), "R7")
   expect_equal(class_dispatch(Date2), c("Date2", "Date", "R7_object", "ANY"))
@@ -165,6 +154,8 @@ test_that("can work with R7 classes that extend S3 classes", {
   expect_equal(obj_type(obj), "R7")
   expect_equal(obj_desc(obj), "<Date2>")
   expect_equal(obj_dispatch(obj), c("Date2", "Date", "R7_object", "ANY"))
+  expect_equal(class_inherits(.Date(1), Date), TRUE)
+  expect_equal(class_inherits(obj, Date), TRUE)
   expect_equal(class_inherits(obj, Date2), TRUE)
 })
 

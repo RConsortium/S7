@@ -97,7 +97,8 @@ There are two ways to convert this to R7.
 You could keep the structure exactly the same, using a `list` as the underlying data structure and using a constructor to enforce the structure:
 
 ```{r}
-new_rle <- new_class("rle", "list", 
+new_rle <- new_class("rle", 
+  parent = class_list, 
   constructor = function(lengths, values) {
     new_object(list(lengths = lengths, values = values))
   }
@@ -109,8 +110,8 @@ Alternatively you could convert it to the most natural representation using R7:
 
 ```{r}
 new_rle <- new_class("rle", properties = list(
-  lengths = "integer",
-  values = "atomic"
+  lengths = class_integer,
+  values = class_atomic
 ))
 ```
 

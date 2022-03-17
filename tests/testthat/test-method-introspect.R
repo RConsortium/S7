@@ -1,10 +1,10 @@
 describe("method introspection", {
   test_that("can dispatch by class or object", {
     foo <- new_generic("foo", "x")
-    method(foo, "character") <- function(x) "c"
+    method(foo, class_character) <- function(x) "c"
 
     expect_equal(
-      method(foo, class = "character"),
+      method(foo, class = class_character),
       method(foo, object = "x")
     )
   })
@@ -16,10 +16,10 @@ describe("method introspection", {
       foo <- new_generic("foo", "x")
       method(foo)
       method(foo, 1)
-      method(foo, new_union("integer", "double"))
+      method(foo, new_union(class_integer, class_double))
 
       foo2 <- new_generic("foo2", c("x", "y"))
-      method(foo2, object = list("character"))
+      method(foo2, object = list(class_character))
     })
   })
 

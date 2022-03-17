@@ -10,6 +10,7 @@ new_class(
   parent = R7_object,
   package = NULL,
   properties = list(),
+  abstract = FALSE,
   constructor = NULL,
   validator = NULL
 )
@@ -17,14 +18,16 @@ new_class(
 new_object(.parent, ...)
 }
 \arguments{
-\item{name}{The name of the class, as a string.}
+\item{name}{The name of the class, as a string. The result of calling
+\code{new_class()} should always be assigned to a variable with this name,
+i.e. \code{foo <- new_class("foo")}.}
 
 \item{parent}{The parent class to inherit behavior from.
-There are four options:
+There are three options:
 \itemize{
-\item The R7 class, like \link{R7_object}.
+\item An R7 class, like \link{R7_object}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
-\item A base type, like \code{logical}, \code{double}, or \code{character}.
+\item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
 
 \item{package}{Package name. It is good practice to set the package
@@ -37,6 +40,9 @@ classes. If you see \code{package}, you \emph{must} export the constructor.}
 belong to each instance of the class. Each element of the list can
 either be a type specification (processed by \code{\link[=as_class]{as_class()}}) or a
 full property specification created \code{\link[=new_property]{new_property()}}.}
+
+\item{abstract}{Is this an abstract class? An abstract class can not be
+instantiated.}
 
 \item{constructor}{The constructor function. Advanced use only.
 
@@ -78,8 +84,8 @@ when an object is passed to a generic.
 # Create an class that represents a range using a numeric start and end
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_numeric,
+    end = class_numeric
   )
 )
 r <- range(start = 10, end = 20)
@@ -96,8 +102,8 @@ try(range(start = "hello", end = 20))
 # are length 1, and that start is < end
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_numeric,
+    end = class_numeric
   ),
   validator = function(self) {
     if (length(self@start) != 1) {

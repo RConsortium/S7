@@ -5,7 +5,7 @@
 #' the class of one or more arguments (the _signature_). Create a new generic
 #' with `new_generic()` then use [method<-] to add methods to it.
 #'
-#' Method dispatch is performed by `method_call()`, which must always be
+#' Method dispatch is performed by `R7_dispatch()`, which must always be
 #' included in the body of the generic, but in most cases `new_generic()` will
 #' generate this for you.
 #'
@@ -24,7 +24,7 @@
 #' @param dispatch_args A character vector giving the names of one or more
 #'   arguments used to find the method.
 #' @param fun An optional specification of the generic, which must call
-#'  `method_call()` to dispatch to methods. This is usually generated
+#'  `R7_dispatch()` to dispatch to methods. This is usually generated
 #'  automatically from the `dispatch_args`, but you may want to supply it if
 #'  you want to add additional required arguments, omit `...`, or perform
 #'  some standardised computation in the generic.
@@ -38,9 +38,9 @@
 #' @examples
 #' # A simple generic with methods for some base types and S3 classes
 #' type_of <- new_generic("type_of", dispatch_args = "x")
-#' method(type_of, "character") <- function(x, ...) "A character vector"
+#' method(type_of, class_character) <- function(x, ...) "A character vector"
 #' method(type_of, new_S3_class("data.frame")) <- function(x, ...) "A data frame"
-#' method(type_of, "function") <- function(x, ...) "A function"
+#' method(type_of, class_function) <- function(x, ...) "A function"
 #'
 #' type_of(mtcars)
 #' type_of(letters)
@@ -49,10 +49,10 @@
 #' # If you want to require that methods implement additional arguments,
 #' # you can use a custom function:
 #' mean2 <- new_generic("mean2", "x", function(x, ..., na.rm = FALSE) {
-#'    method_call()
+#'    R7_dispatch()
 #' })
 #'
-#' method(mean2, "numeric") <- function(x, ..., na.rm = FALSE) {
+#' method(mean2, class_numeric) <- function(x, ..., na.rm = FALSE) {
 #'   if (na.rm) {
 #'     x <- x[!is.na(x)]
 #'   }
@@ -60,7 +60,7 @@
 #' }
 #'
 #' # You'll be warned if you forget the argument:
-#' method(mean2, "character") <- function(x, ...) {
+#' method(mean2, class_character) <- function(x, ...) {
 #'   stop("Not supported")
 #' }
 new_generic <- function(name, dispatch_args, fun = NULL) {
@@ -71,7 +71,7 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
   if (is.null(fun)) {
     args <- c(dispatch_args, "...")
     args <- setNames(lapply(args, function(i) quote(expr = )), args)
-    fun <- new_function(args, quote(method_call()), topenv(environment()))
+    fun <- new_function(args, quote(R7_dispatch()), topenv(environment()))
   } else {
     check_generic(fun)
   }
@@ -128,9 +128,9 @@ check_generic <- function(fun) {
     stop("`fun` must be a function", call. = FALSE)
   }
 
-  method_call <- find_call(body(fun), quote(method_call))
-  if (is.null(method_call)) {
-    stop("`fun` must contain a call to `method_call()`", call. = FALSE)
+  dispatch_call <- find_call(body(fun), quote(R7_dispatch))
+  if (is.null(dispatch_call)) {
+    stop("`fun` must contain a call to `R7_dispatch()`", call. = FALSE)
   }
 }
 find_call <- function(x, name) {

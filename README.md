@@ -44,8 +44,8 @@ and an optional validator. Use `new_class()` to define a class:
 ``` r
 range <- new_class("range",
   properties = list(
-    start = double, 
-    end = double
+    start = class_double, 
+    end = class_double
   ),
   validator = function(self) {
     if (length(self@start) != 1) {
@@ -66,8 +66,8 @@ use to create instances of that class:
 x <- range(start = 1, end = 10)
 x
 #> <range>
-#> @ start:  num 1
-#> @ end  :  num 10
+#>  @ start: num 1
+#>  @ end  : num 10
 ```
 
 The data possessed by an object is called its **properties**. Use `@` to
@@ -79,8 +79,8 @@ x@start
 x@end <- 20
 x
 #> <range>
-#> @ start:  num 1
-#> @ end  :  num 20
+#>  @ start: num 1
+#>  @ end  : num 20
 ```
 
 Properties are automatically validated against the type declared in
@@ -109,7 +109,7 @@ arguments that aren’t used for method dispatch.
 ``` r
 inside <- new_generic("inside", "x", function(x, y) {
   # Actually finds and calls the appropriate method
-  method_call()
+  R7_dispatch()
 })
 ```
 

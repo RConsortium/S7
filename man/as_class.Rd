@@ -13,11 +13,8 @@ as_class(x, arg = deparse(substitute(x)))
 \item An R7 union (created by \code{\link[=new_union]{new_union()}}).
 \item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
-\item A base type specified either with its constructor (\code{logical}, \code{integer},
-\code{double} etc) or its name (\code{"logical"}, \code{"integer"}, "\code{double}" etc).
-\item A base union type specified by its name: \code{"numeric"}, \code{"atomic"}, or
-\code{"vector"}.
-\item A "special", either \link{missing_class} or \link{any_class}.
+\item A base class, like \link{class_logical}, \link{class_integer}, or \link{class_double}.
+\item A "special", either \link{class_missing} or \link{class_any}.
 }}
 
 \item{arg}{Argument name used when generating errors.}

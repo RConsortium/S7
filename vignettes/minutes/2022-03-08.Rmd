@@ -1,0 +1,37 @@
+---
+title: "Minutes 2022-03-08"
+---
+
+## Changes
+
+-   Website updates (<https://rconsortium.github.io/OOP-WG/>): refreshed readme, minutes as articles.
+    Working on documentation overhaul in <https://github.com/RConsortium/OOP-WG/pull/187>.
+
+-   `new_generic()` now requires `dispatch_args`.
+    This means that `new_generic()` will typically be called without names:
+
+    -   `new_generic("foo", "x")`
+
+    -   `new_generic("foo", "x", function(x, y) call_method())`
+
+-   New `class_any` (could already define methods for `R7_object`) and `class_missing` sentinels.
+
+-   When creating an object, unspecified properties are initialized with their default value (#67).
+    To achieve this, the constructor arguments default to `class_missing`, since `NULL` would prevent a default value of `NULL`, and `missing()` requires too many gymnastics.
+
+    -   `new_class("foo", properties = list(x = integer, y = double))@constructor`
+
+    -   <https://github.com/RConsortium/OOP-WG/blob/main/R/class.R#L209-L212>
+
+-   See other minor changes in\
+    <https://github.com/RConsortium/OOP-WG/blob/main/NEWS.md#feb-2022>
+
+## Discussion
+
+-   Rename `method_call()`? <https://github.com/RConsortium/OOP-WG/issues/200> --- `R7_dispatch()` sounds good.
+-   Abstract classes? <https://github.com/RConsortium/OOP-WG/issues/199>. Easy to implement but is it worth it?
+-   What should we call the R7 equivalent of inherits? <https://github.com/RConsortium/OOP-WG/issues/193> --- call it `R7_inherits()` for now; will eventually just be part of inherits. Propose generic extension mechanism for inherits.
+-   Explicit S4 registration: <https://github.com/RConsortium/OOP-WG/pull/182>
+-   New names for base types? <https://github.com/RConsortium/OOP-WG/issues/170> --- `class_` sounds good.
+-   Convert and super: <https://github.com/RConsortium/OOP-WG/pull/181>
+-   Should we offer encapsulated OO? <https://github.com/RConsortium/OOP-WG/issues/202>

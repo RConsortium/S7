@@ -1,15 +1,15 @@
 # can test and print
 
     Code
-      print(missing_class)
+      print(class_missing)
     Output
       <R7_missing>
     Code
-      print(any_class)
+      print(class_any)
     Output
       <R7_any>
     Code
-      str(list(m = missing_class, a = any_class))
+      str(list(m = class_missing, a = class_any))
     Output
       List of 2
        $ m: <R7_missing>
