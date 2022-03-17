@@ -20,7 +20,7 @@ wider R community.
 ## Installation
 
 The long-term goal of this project is to merge R7 in to base R. For now,
-you can experiment with the development version from GitHub:
+you can experiment by installing the in-development version from GitHub:
 
 ``` r
 # install.packages("remotes")
@@ -30,13 +30,15 @@ remotes::install_github("r-consortium/OOP-WG")
 ## Usage
 
 This section gives a very brief overview of the entirety of R7. Learn
-the basics `vignettte("R7")`, the details of method dispatch in
-`vignette("dispatch")`, and compatibility with S3 and S4 in
+more of the basics in `vignettte("R7")`, the details of method dispatch
+in `vignette("dispatch")`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
 ``` r
 library(R7)
 ```
+
+### Classes and objects
 
 R7 classes have a formal definition, which includes a list of properties
 and an optional validator. Use `new_class()` to define a class:
@@ -59,8 +61,8 @@ range <- new_class("range",
 )
 ```
 
-`new_class()` returns the class object, which is a constructor that you
-use to create instances of that class:
+`new_class()` returns the class object, which is also the constructor
+you use to create instances of the class:
 
 ``` r
 x <- range(start = 1, end = 10)
@@ -69,6 +71,8 @@ x
 #>  @ start: num 1
 #>  @ end  : num 10
 ```
+
+### Properties
 
 The data possessed by an object is called its **properties**. Use `@` to
 get and set properties:
@@ -94,6 +98,8 @@ x@end <- -1
 #> - @end must be greater than or equal to @start
 ```
 
+### Generics and methods
+
 Like S3 and S4, R7 uses **functional OOP** where methods belong to
 **generic** functions, and method calls look like all other function
 calls: `generic(object, arg2, arg3)`. This style is called functional
@@ -113,9 +119,6 @@ inside <- new_generic("inside", "x", function(x, y) {
 })
 ```
 
-R7 generics support multiple dispatch; see `vignette("dispatch")` for
-details.
-
 Once you have a generic, you can define a method for a specific class
 with `method<-`:
 
@@ -132,8 +135,16 @@ inside(x, c(0, 5, 10, 15))
 #> [1] FALSE  TRUE  TRUE  TRUE
 ```
 
-You can also use `method<-` to register methods for R7 objects on S3 or
-S4 generics:
+You can use `method<-` to register methods for base types on R7
+generics:
+
+``` r
+method(inside, class_numeric) <- function(x, y) {
+  y >= min(x) & y <= max(x)
+}
+```
+
+And register methods for R7 classes on S3 or S4 generics:
 
 ``` r
 method(format, range) <- function(x, ...) {
