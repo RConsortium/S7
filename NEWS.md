@@ -13,7 +13,7 @@
 
 ## Feb 2022
 
-* `class_any` and `missing_any` make it possible to dispatch on absent
+* `class_any` and `class_missing` make it possible to dispatch on absent
   arguments and arguments of any class (#67).
 
 * New `method_explain()` to explain dispatch (#194).

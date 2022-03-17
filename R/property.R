@@ -9,7 +9,7 @@
 #' "dynamic" so that it's computed when accessed or has some non-standard
 #' behaviour when modified.
 #'
-#' @param class Class that property must be an instance of.
+#' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
 #' @param getter An optional function used to get the value. The function
 #'   should take `self`  as its sole argument and return the value. If the
