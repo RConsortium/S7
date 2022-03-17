@@ -96,15 +96,15 @@ to avoid ambiguity.</p><ul><li><p>R7: <code>pkg::class</code> or <code>class</co
 <dd><p>A generic function, either created by <code><a href="new_generic.html">new_generic()</a></code>,
 <code><a href="new_external_generic.html">new_external_generic()</a></code>, or an existing S3 generic.</p></dd>
 <dt>class</dt>
-<dd><p>Perform introspection either with <code>classes</code>
-(processed with <code><a href="as_class.html">as_class()</a></code>) or a concrete objects.</p>
-<p>If <code>generic</code> does multiple dispatch both <code>object</code> and <code>class</code> need
-to be wrapped in a list.</p></dd>
+<dd><p>Perform introspection either with a <code>class</code>
+(processed with <code><a href="as_class.html">as_class()</a></code>) or a concrete <code>object</code>. If <code>generic</code> uses
+multiple dispatch then both <code>object</code> and <code>class</code> must be a list of
+classes/objects.</p></dd>
 <dt>object</dt>
-<dd><p>Perform introspection either with <code>classes</code>
-(processed with <code><a href="as_class.html">as_class()</a></code>) or a concrete objects.</p>
-<p>If <code>generic</code> does multiple dispatch both <code>object</code> and <code>class</code> need
-to be wrapped in a list.</p></dd>
+<dd><p>Perform introspection either with a <code>class</code>
+(processed with <code><a href="as_class.html">as_class()</a></code>) or a concrete <code>object</code>. If <code>generic</code> uses
+multiple dispatch then both <code>object</code> and <code>class</code> must be a list of
+classes/objects.</p></dd>
 </dl></div>
 
     <div class="section level2">

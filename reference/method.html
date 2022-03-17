@@ -84,10 +84,10 @@ of a specific method.</p>
 <dd><p>A generic function, either created by <code><a href="new_generic.html">new_generic()</a></code>,
 <code><a href="new_external_generic.html">new_external_generic()</a></code>, or an existing S3 generic.</p></dd>
 <dt>class, object</dt>
-<dd><p>Perform introspection either with <code>classes</code>
-(processed with <code><a href="as_class.html">as_class()</a></code>) or a concrete objects.</p>
-<p>If <code>generic</code> does multiple dispatch both <code>object</code> and <code>class</code> need
-to be wrapped in a list.</p></dd>
+<dd><p>Perform introspection either with a <code>class</code>
+(processed with <code><a href="as_class.html">as_class()</a></code>) or a concrete <code>object</code>. If <code>generic</code> uses
+multiple dispatch then both <code>object</code> and <code>class</code> must be a list of
+classes/objects.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -102,7 +102,7 @@ to be wrapped in a list.</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># Create a generic and register some methods</span></span>
 <span class="r-in"><span class="va">bizarro</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bizarro"</span>, <span class="st">"x"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="st">"numeric"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="va">class_numeric</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="fu"><a href="new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span class="r-in">  <span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/levels.html" class="external-link">levels</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-in">  <span class="va">x</span></span>
@@ -116,16 +116,16 @@ to be wrapped in a list.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3: method(bizarro, new_S3_class("factor"))</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># And you can use method() to inspect specific implementations</span></span>
-<span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, class <span class="op">=</span> <span class="st">"integer"</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, class <span class="op">=</span> <span class="va">class_integer</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;R7_method&gt; method(bizarro, "integer")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rev(x)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55dfbe07e170&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x560a420d2c78&gt;</span>
 <span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, object <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;R7_method&gt; method(bizarro, "double")</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rev(x)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55dfbe07e170&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x560a420d2c78&gt;</span>
 <span class="r-in"><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, <span class="fu"><a href="new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;R7_method&gt; method(bizarro, new_S3_class("factor"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x) </span>
@@ -133,7 +133,7 @@ to be wrapped in a list.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     levels(x) &lt;- rev(levels(x))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     x</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55dfbe07e170&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x560a420d2c78&gt;</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>

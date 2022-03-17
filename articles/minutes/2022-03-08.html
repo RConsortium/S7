@@ -98,9 +98,9 @@
 <li><p><code>new_generic("foo", "x", function(x, y) call_method())</code></p></li>
 </ul>
 </li>
-<li><p>New <code>any_class</code> (could already define methods for <code>R7_object</code>) and <code>missing_class</code> sentinels.</p></li>
+<li><p>New <code>class_any</code> (could already define methods for <code>R7_object</code>) and <code>class_missing</code> sentinels.</p></li>
 <li>
-<p>When creating an object, unspecified properties are initialized with their default value (#67). To achieve this, the constructor arguments default to <code>missing_class</code>, since <code>NULL</code> would prevent a default value of <code>NULL</code>, and <code><a href="https://rdrr.io/r/base/missing.html" class="external-link">missing()</a></code> requires too many gymnastics.</p>
+<p>When creating an object, unspecified properties are initialized with their default value (#67). To achieve this, the constructor arguments default to <code>class_missing</code>, since <code>NULL</code> would prevent a default value of <code>NULL</code>, and <code><a href="https://rdrr.io/r/base/missing.html" class="external-link">missing()</a></code> requires too many gymnastics.</p>
 <ul>
 <li><p><code>new_class("foo", properties = list(x = integer, y = double))@constructor</code></p></li>
 <li><p><a href="https://github.com/RConsortium/OOP-WG/blob/main/R/class.R#L209-L212" class="external-link uri">https://github.com/RConsortium/OOP-WG/blob/main/R/class.R#L209-L212</a></p></li>

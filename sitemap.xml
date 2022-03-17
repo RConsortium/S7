@@ -61,6 +61,12 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/as_class.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/base_classes.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/class_missing.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/convert.html</loc>
   </url>
   <url>
@@ -74,9 +80,6 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/method_explain.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/missing_class.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/new_S3_class.html</loc>
