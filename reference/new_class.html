@@ -74,6 +74,7 @@ when an object is passed to a generic.</p>
   parent <span class="op">=</span> <span class="va">R7_object</span>,
   package <span class="op">=</span> <span class="cn">NULL</span>,
   properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,
+  abstract <span class="op">=</span> <span class="cn">FALSE</span>,
   constructor <span class="op">=</span> <span class="cn">NULL</span>,
   validator <span class="op">=</span> <span class="cn">NULL</span>
 <span class="op">)</span>
@@ -102,6 +103,9 @@ classes. If you see <code>package</code>, you <em>must</em> export the construct
 belong to each instance of the class. Each element of the list can
 either be a type specification (processed by <code><a href="as_class.html">as_class()</a></code>) or a
 full property specification created <code><a href="new_property.html">new_property()</a></code>.</p></dd>
+<dt>abstract</dt>
+<dd><p>Is this an abstract class? An abstract class can not be
+instantiated.</p></dd>
 <dt>constructor</dt>
 <dd><p>The constructor function. Advanced use only.</p>
 <p>A custom constructor should call <code>new_object()</code> to create the R7 object.
