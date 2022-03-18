@@ -3,7 +3,8 @@ pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
   R7: R7.html
-  case_studies: case_studies.html
+  compatibility: compatibility.html
+  dispatch: dispatch.html
   '2021-05-18': minutes/2021-05-18.html
   '2022-02-12': minutes/2022-02-12.html
   '2022-03-08': minutes/2022-03-08.html
@@ -12,7 +13,7 @@ articles:
   dispatch: spec/dispatch.html
   proposal: spec/proposal.html
   requirements: spec/requirements.html
-last_built: 2022-03-17T16:36Z
+last_built: 2022-03-18T18:52Z
 urls:
   reference: https://RConsortium.github.io/OOP-WG/reference
   article: https://RConsortium.github.io/OOP-WG/articles
