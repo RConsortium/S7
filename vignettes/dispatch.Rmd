@@ -1,8 +1,8 @@
 ---
-title: "R7 method dispatch"
+title: "R7 generics and method dispatch"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{R7 method dispatch}
+  %\VignetteIndexEntry{R7 generics and method dispatch}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,19 +14,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette gives more details about method dispatch.
-It assumes you're already familiar with the process of how to create a generic and define a method.
-
-Like S3 and S4, R7 uses generic function style OO.
-Like S4 and unlike S4, R7 supports multiple dispatch where the type of more than one argument can be used to select a method.
-
-This vignette first discusses some of the details of creating a generic, and how generic-method agreement works.
+This vignette dives into the details of R7 generics and method dispatch, building on the basics discussed in `vignette("R7")`.
+We'll first introduce the concept of generic-method compatibility, then discuss some of the finer details of creating a generic with `new_generic()`.
+This vignette first discusses generic-method compatibility, and you might want to customize the body of the generic, and generics that live in suggested pacages.
+We'll then pivot to talk more details of method dispatch including `super()` and multiple dispatch.
 
 ```{r setup}
 library(R7)
 ```
 
 ## Generic-method compatibility
+
+When you register a method, R7 checks that your method is compatible with the generic.
 
 The formal arguments of the generic and methods must agree.
 This means that:
@@ -120,7 +119,7 @@ This function has one key property: it must call `call_method()` to actually per
 In general, this property is only needed for very low-level functions with precisely defined semantics.
 A good example of such a function is `length()`:
 
-```{r}
+```{r, eval = FALSE}
 length <- new_generic("length", "x", function(x) {
   R7_dispatch()
 })
@@ -212,18 +211,78 @@ mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
 
 The only downside to performing error checking is that you constraint the interface for all methods; if for some reason a method found it useful to allow `na.rm` to be a number or a string, it would have to provide an alternative argument.
 
+## External generics
+
+If you're defining methods for an R7 generic in another package there are a couple of extra steps you need to take:
+
+-   You need to use `new_external_generic()` to provide a definition of the interface of the generic that lives purely in your package. This definition gives the package name, generic name, and the arguments it uses for dispatch:
+
+    ```{r}
+    foo <- new_external_generic("pkg1", "foo", "x")
+    ```
+
+-   You need call `R7::external_methods_register()` your package is loaded:
+
+    ```{r}
+    .onLoad <- function(libname, pkgname) {
+      R7::external_methods_register()
+    }
+    ```
+
+    This ensures that the methods are registered when your package is used, not when it is built.
+
+In the future, we hope to relax these requirements to make use of external generics easier.
+
+## `super()`
+
+Sometimes it's useful to define a method for in terms of its superclass.
+A good example of this is computing the mean of a date --- since dates represent the number of days since 1970-01-01, computing the mean is just a matter of computing the mean of the underlying numeric vector and converting it back to a date.
+
+To demonstrate this idea, I'll first define a mean generic with a method for numbers:
+
+```{r}
+mean <- new_generic("mean", "x")
+method(mean, class_numeric) <- function(x) {
+  sum(x) / length(x)
+}
+mean(1:10)
+```
+
+And a Date class:
+
+```{r}
+date <- new_class("date", parent = class_double)
+# Cheat by using the existing base .Date class
+method(print, date) <- function(x) print(.Date(x))
+date(c(1, 10, 100))
+```
+
+Now to compute a mean we write:
+
+```{r}
+method(mean, date) <- function(x) {
+  date(mean(super(x, to = class_double)))
+}
+mean(date(c(1, 10, 100)))
+```
+
+Let's unpack this method from the inside out:
+
+1.  First we call `super(x, to = class_double)` --- this will make the call to next generic treat `x` like it's a double, rather than a date.
+2.  Then we call `mean()` which because of `super()` will call the `mean()` method we defined above.
+3.  Finally, we take the number returned by mean and convert it back to a date.
+
+If you're very familiar with S3 or S4 you might recognize that `super()` fills a similar role to `NextMethod()` or `callNextMethod()`.
+However, it's much more explicit: you need to supply the name of the parent class, the generic to use, and all the arguments to the generic.
+This explicitness makes the code easier to understand and will eventually enable certain performance optimizations that would otherwise be very difficult.
+
 ## Multiple dispatch
 
-So far we have focused primarily on single dispatch, that is generics where `dispatch_on` is a single string.
+So far we have focused primarily on single dispatch, i.e. generics where `dispatch_on` is a single string.
 It is also possible to supply a length 2 (or more!) vector `dispatch_on` to create a generic that performs multiple dispatch, i.e. it uses the classes of more than one object to find the appropriate method.
 
 Multiple dispatch is a feature primarily of S4, although S3 includes some limited special cases for arithmetic operators.
 Multiple dispatch is heavily used in S4; we don't expect it to be heavily used in R7, but it is occasionally useful.
-
-```{r}
-add <- new_generic("add", c("x", "y"))
-method(add, list(class_integer, class_integer)) <- function(x, y) x + y
-```
 
 ### A simple example
 
@@ -250,60 +309,9 @@ speak(cat(), english())
 speak(dog(), french())
 ```
 
-### Matching any class
+### Special "classes"
 
-`class_any()`
+There are two special classes that become particularly useful with multiple dispatch:
 
-### Matching a missing argument
-
-(Not `NA`, but the absence of an argument)
-
-`class_missing()`
-
-## `super()`
-
-`next_method()` is used to call the next method for the arguments.
-This works by looking up the call stack and retrieving R7 methods which have already been called, then doing a method search with those methods excluded.
-This ensures you cannot call the same method twice.
-
-```{r, eval = FALSE}
-method(bar, list(text, "double")) <- function(x, y, ...) {
-  res <- next_method()(x, y)
-  paste0("2 ", res)
-}
-
-bar(text("hi"), 42)
-```
-
-## External generics
-
-If you want to define methods for R7 generics defined in another package you can use `new_extrenal_generic` to declare the external generic, then add `R7::external_methods_register()` to the `.onLoad` function in your package.
-`external_methods_register()` will automatically setup on-load hooks for 'soft' dependencies in `Suggests` so the method will be added when the dependency is eventually loaded.
-
-```{r eval = FALSE}
-.onLoad <- function(libname, pkgname) {
-  R7::external_methods_register()
-}
-
-foo <- new_external_generic("pkg1", "foo")
-method(foo, "integer") <- function(x) paste0("foo-", x)
-```
-
-## Implementation details
-
-Multiple dispatch uses a table stored in the `methods` property of the generic.
-This table is a nested set of hashed environments based on the classes of the methods.
-e.g.
-
-For `method(foo, c("character", "numeric"))` the method would be stored at `foo@methods[["character"]][["numeric"]]`.
-
-At each level the search iteratively searches along objects class vector.
-
-```{r, eval = FALSE}
-bar <- new_generic("bar", c("x", "y"))
-method(bar, list("character", "double")) <- function(x, y) paste0("foo-", x, ":", y)
-
-bar("hi", 42)
-```
-
-## 
+-   `class_any()` will match any class
+-   `class_missing()` will match a missing argument (i.e. not `NA`, but an argument that was not supplied)
