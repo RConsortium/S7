@@ -1,19 +1,12 @@
-#' Generics in suggested packages
+#' Generics in other packages
 #'
 #' @description
-#' The easiest way to define a method for a generic in another package is to
-#' add the package to `Imports` and import the generic into the `NAMESPACE`.
-#' This, however, creates a strong dependency on the other package, which is
-#' not always desired. For example, you might want to register a
-#' `knitr::knitr_print` method to customise how your object is printed in Rmd,
-#' but your package doesn't use anything else from knitr.
-#'
-#' Instead, you can add the package to `Suggests` and use
-#' `new_external_generic()` along with `external_methods_register()` to declare
-#' an "external" generic. `new_external_generic()` defines the "shape" of the
-#' generic without requiring the other package be available. You then call
-#' `external_methods_register()` in `.onLoad()` to dynamically register the
-#' methods when the other package is loaded.
+#' To register a method for a generic in another packages you need to
+#' `new_external_generic()` and `external_methods_register()` together.
+#' `new_external_generic()` defines the "shape" of the generic without
+#' requiring the other package be available. You then call
+#' `external_methods_register()` in `.onLoad()` to dynamically register
+#' the methods when the other package is loaded.
 #'
 #' @param package Package the generic is defined in.
 #' @param name Name of generic, as a string.
