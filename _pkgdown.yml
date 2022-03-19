@@ -10,6 +10,7 @@ reference:
   - new_generic
   - new_union
   - method<-
+  - R7_inherits
   - validate
 
 - title: Properties
