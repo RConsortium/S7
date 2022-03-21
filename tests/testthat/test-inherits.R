@@ -1,0 +1,20 @@
+test_that("it works", {
+  foo1 <- new_class("foo1")
+  foo2 <- new_class("foo2", parent = foo1)
+
+  expect_true(R7_inherits(foo1(), foo1))
+  expect_true(R7_inherits(foo2(), foo1))
+  expect_false(R7_inherits(foo1(), foo2))
+})
+
+test_that("checks that input is a class", {
+  expect_snapshot(R7_inherits(1:10, "x"), error = TRUE)
+})
+
+test_that("throws informative error", {
+  expect_snapshot(error = TRUE, {
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2")
+    check_R7_inherits(foo1(), foo2)
+  })
+})
