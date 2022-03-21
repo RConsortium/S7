@@ -18,7 +18,7 @@ check_R7_inherits(x, class, arg = deparse(substitute(x)))
 }
 \description{
 \itemize{
-\item \code{R7_inherits()} returns \code{TRUE} or \code{FALSE}
+\item \code{R7_inherits()} returns \code{TRUE} or \code{FALSE}.
 \item \code{check_R7_inherits()} throws an error.
 }
 }

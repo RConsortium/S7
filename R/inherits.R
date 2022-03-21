@@ -1,6 +1,6 @@
 #' Does this object inherit from an R7 class?
 #'
-#' * `R7_inherits()` returns `TRUE` or `FALSE`
+#' * `R7_inherits()` returns `TRUE` or `FALSE`.
 #' * `check_R7_inherits()` throws an error.
 #'
 #' @param x An object
