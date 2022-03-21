@@ -28,7 +28,7 @@ R7_inherits <- function(x, class) {
 #' @rdname R7_inherits
 check_R7_inherits <- function(x, class, arg = deparse(substitute(x))) {
   if (!R7_inherits(x, class)) {
-    stop(sprintf("`%s` is not an %s", arg, class_desc(class)), call. = FALSE)
+    stop(sprintf("`%s` is not a %s", arg, class_desc(class)), call. = FALSE)
   }
   invisible()
 }

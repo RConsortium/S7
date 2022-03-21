@@ -12,5 +12,5 @@
       foo2 <- new_class("foo2")
       check_R7_inherits(foo1(), foo2)
     Error <simpleError>
-      `foo1()` is not an <foo2>
+      `foo1()` is not a <foo2>
 
