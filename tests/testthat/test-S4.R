@@ -164,5 +164,7 @@ describe("S4 registration", {
     expect_type(slot(obj, "x"), "double")
   })
 
-
+  it("checks it's inputs", {
+    expect_snapshot(S4_register("x"), error = TRUE)
+  })
 })
