@@ -1,3 +1,11 @@
+# method registration: adds messages when overwriting
+
+    Code
+      method(foo, class_character) <- (function(x) "c")
+      method(foo, class_character) <- (function(x) "c")
+    Message <simpleMessage>
+      Overwriting method foo(<character>)
+
 # method registration: S3 registration requires a R7 class
 
     Code
@@ -13,33 +21,33 @@
 
     Code
       x <- 10
-      method(x, "character") <- (function(x) ...)
+      method(x, class_character) <- (function(x) ...)
     Error <simpleError>
       `generic` must be a function, not a <double>
     Code
       method(foo, 1) <- (function(x) ...)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <double>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
 
 # as_signature(): forbids list for single dispatch
 
     Code
       as_signature(list(1), foo)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base constructor function, not a <list>.
+      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
 
 # as_signature(): requires a list of the correct length for multiple dispatch
 
     Code
-      as_signature("character", foo)
+      as_signature(class_character, foo)
     Error <simpleError>
       `signature` must be a list for multidispatch generics
     Code
-      as_signature(list("character"), foo)
+      as_signature(list(class_character), foo)
     Error <simpleError>
       `signature` must be length 2
 
-# check_method errors if the functions are not compatible
+# check_method complains if the functions are not compatible
 
     Code
       foo <- new_generic("foo", "x")
@@ -56,13 +64,19 @@
       In foo(???), dispatch arguments (`x`) must not have default values
     Code
       check_method(function(x, y, ...) { }, foo)
+
+---
+
+    Code
+      foo <- new_generic("foo", "x", function(x) R7_dispatch())
+      check_method(function(x, y) { }, foo)
     Error <simpleError>
-      In foo(???), `...` must come immediately after dispatch args (`x`)
+      foo() lacks `...` so method formals must match generic formals exactly
 
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", fun = function(x, ..., z = 2, y = 1) method_call())
+      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) R7_dispatch())
       check_method(function(x, ..., y = 1) { }, foo)
     Warning <simpleWarning>
       foo(???) doesn't have argument `z`
@@ -76,7 +90,7 @@
 # R7_method printing
 
     Code
-      method(foo, list(integer, integer))
+      method(foo, list(class_integer, class_integer))
     Output
       <R7_method> method(foo, list("integer", "integer"))
       function (x, y, ...) 

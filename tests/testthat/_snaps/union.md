@@ -10,22 +10,11 @@
 # base unions display as expected
 
     Code
-      base_unions
+      class_vector
     Output
-      $numeric
-      <R7_union>: <integer> or <double>
-      
-      $atomic
-      <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, or <raw>
-      
-      $vector
       <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
-      
     Code
-      str(base_unions)
+      str(class_vector)
     Output
-      List of 3
-       $ numeric: <R7_union>: <integer> or <double>
-       $ atomic : <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, or <raw>
-       $ vector : <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
+      <R7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
 

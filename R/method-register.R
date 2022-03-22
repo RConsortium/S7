@@ -15,17 +15,15 @@
 #' @param generic A generic function, either created by [new_generic()],
 #'   [new_external_generic()], or an existing S3 generic.
 #' @param signature A method signature. For R7 generics that use single
-#'   dispatch, this should be one of the following:
+#'   dispatch, this must be one of the following:
 #'   * An R7 class (created by [new_class()]).
 #'   * An R7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
-#'   * A base type specified either with its constructor (`logical`, `integer`,
-#'     `double` etc) or its name (`"logical"`, `"integer"`, "`double`" etc).
-#'   * A base union type specified by its name: `"numeric"`, `"atomic"`, or
-#'     `"vector"`.
+#'   * A base type like [class_logical], [class_integer], or [class_numeric].
+#'   * A special type like [class_missing] or [class_any].
 #'
-#'   For R7 generics that use multiple dispatch, this can be a list of any of
+#'   For R7 generics that use multiple dispatch, this must be a list of any of
 #'   the above types.
 #'
 #'   For S3 generics, this must be an R7 class.
@@ -36,7 +34,7 @@
 #' # Create a generic
 #' bizarro <- new_generic("bizarro", "x")
 #' # Register some methods
-#' method(bizarro, "numeric") <- function(x) rev(x)
+#' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, new_S3_class("data.frame")) <- function(x) {
 #'   x[] <- lapply(x, bizarro)
 #'   rev(x)
@@ -161,6 +159,14 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
 
+  if (!"..." %in% generic_args && !identical(generic_formals, method_formals)) {
+    msg <- sprintf(
+      "%s() lacks `...` so method formals must match generic formals exactly",
+      generic@name
+    )
+    stop(msg, call. = FALSE)
+  }
+
   n_dispatch <- length(generic@dispatch_args)
   has_dispatch <- length(method_formals) >= n_dispatch &&
     identical(method_args[1:n_dispatch], generic@dispatch_args)
@@ -174,14 +180,7 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
     )
     stop(msg, call. = FALSE)
   }
-  if ("..." %in% method_args && method_args[[n_dispatch + 1]] != "...") {
-    msg <- sprintf(
-      "In %s, `...` must come immediately after dispatch args (%s)",
-      name,
-      arg_names(generic@dispatch_args)
-    )
-    stop(msg, call. = FALSE)
-  }
+
   empty_dispatch <- vlapply(method_formals[generic@dispatch_args], identical, quote(expr = ))
   if (any(!empty_dispatch)) {
     msg <- sprintf(

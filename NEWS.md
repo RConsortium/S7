@@ -1,13 +1,46 @@
 # R7 0.0.0.9000
 
+* New `R7_inherits()` and `check_R7_inherits()` (#193)
+
+* `new_class()` can create abstract classes (#199).
+
+* `method_call()` is now `R7_dispatch()` (#200).
+
+## Mar 2022
+
+* All built-in wrappers around base types use `class_`. You can no longer
+  refer to a base type with a string or a constructor function (#170).
+
+* `convert()` allows you to convert an object into another class (#136).
+
+* `super()` replaces `next_method()` (#110).
+
 ## Feb 2022
 
-* When creating a class, unspecified properties are initialized with their 
-  default value (#67). DISCUSS: to achieve this, the constructor arguments
-  default to `missing_class`.
-  
-* `any_class` and `missing_any` make it possible to dispatch on absent
+* `class_any` and `class_missing` make it possible to dispatch on absent
   arguments and arguments of any class (#67).
+
+* New `method_explain()` to explain dispatch (#194).
+
+* Minor property improvements: use same syntax for naming short-hand and
+  full property specifications; input type automatically validated for 
+  custom setters. A property with a getter but no setter is read-only (#168).
+
+* When creating an object, unspecified properties are initialized with their 
+  default value (#67). DISCUSS: to achieve this, the constructor arguments
+  default to `class_missing`.
+
+* Add `$.R7_object` and `$<-.R7_object` methods to avoid "object of type 'S4'
+  is not subsettable" error (#204).
+  
+* Dispatch now disambiguates between S4 and S3/R7, and, optionally, between
+  R7 classes in different packages (#48, #163).
+
+* `new_generic()` now requires `dispatch_args` (#180). This means that 
+  `new_generic()` will typically be called without names. Either 
+  `new_generic("foo", "x")` for a "standard" generic, or 
+  `new_generic("foo", "x", function(x, y) call_method())` for 
+  a non-standard method.
 
 * `new_external_generic()` now requires `dispatch_args` so we can eagerly 
   check the signature.

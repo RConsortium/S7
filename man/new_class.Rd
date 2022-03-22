@@ -8,7 +8,9 @@
 new_class(
   name,
   parent = R7_object,
+  package = NULL,
   properties = list(),
+  abstract = FALSE,
   constructor = NULL,
   validator = NULL
 )
@@ -16,20 +18,31 @@ new_class(
 new_object(.parent, ...)
 }
 \arguments{
-\item{name}{The name of the class, as a string.}
+\item{name}{The name of the class, as a string. The result of calling
+\code{new_class()} should always be assigned to a variable with this name,
+i.e. \code{foo <- new_class("foo")}.}
 
 \item{parent}{The parent class to inherit behavior from.
-There are four options:
+There are three options:
 \itemize{
-\item The R7 class, like \link{R7_object}.
+\item An R7 class, like \link{R7_object}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
-\item A base type, like \code{logical}, \code{double}, or \code{character}.
+\item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
 
-\item{properties}{A list specifying the properties (data) that
-every object of the class will possess. Each property can either be
-a named string (specifying the class), or a call to \code{\link[=new_property]{new_property()}},
-allowing greater flexibility.}
+\item{package}{Package name. It is good practice to set the package
+name when exporting an R7 class from a package because it includes
+the package name in the class name when it's used for dispatch. This
+allows different packages to use the same name to refer to different
+classes. If you see \code{package}, you \emph{must} export the constructor.}
+
+\item{properties}{A named list specifying the properties (data) that
+belong to each instance of the class. Each element of the list can
+either be a type specification (processed by \code{\link[=as_class]{as_class()}}) or a
+full property specification created \code{\link[=new_property]{new_property()}}.}
+
+\item{abstract}{Is this an abstract class? An abstract class can not be
+instantiated.}
 
 \item{constructor}{The constructor function. Advanced use only.
 
@@ -43,17 +56,17 @@ to validate.
 The job of a validator is to determine whether the object is valid,
 i.e. if the current property values form an allowed combination. The
 types of the properties are always automatically validated so the job of
-the validator is to verify that the value of individual properties is
+the validator is to verify that the \emph{values} of individual properties are
 ok (i.e. maybe a property should have length 1, or should always be
-positive), or that the combination of values of multiple properties is ok.
+positive), or that the \emph{combination} of values of multiple properties is ok.
 It is called after construction and whenever any property is set.
 
 The validator should return \code{NULL} if the object is valid. If not, it
 should return a character vector where each element describes a single
-problem. It's generally helpful to report as many problems at once
-as possible.
+problem, using \verb{@prop_name} to describe where the problem lies.
 
-See \code{validate()} for more details and examples.}
+See \code{validate()} for more details, examples, and how to temporarily
+suppress validation when needed.}
 
 \item{.parent, ...}{Parent object and named properties used to construct the
 object.}
@@ -71,8 +84,8 @@ when an object is passed to a generic.
 # Create an class that represents a range using a numeric start and end
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_numeric,
+    end = class_numeric
   )
 )
 r <- range(start = 10, end = 20)
@@ -89,8 +102,8 @@ try(range(start = "hello", end = 20))
 # are length 1, and that start is < end
 range <- new_class("range",
   properties = list(
-    start = "numeric",
-    end = "numeric"
+    start = class_numeric,
+    end = class_numeric
   ),
   validator = function(self) {
     if (length(self@start) != 1) {

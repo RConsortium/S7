@@ -34,9 +34,9 @@ a property.
 }
 \examples{
 horse <- new_class("horse", properties = list(
-  name = "character",
-  colour = "character",
-  height = "numeric"
+  name = class_character,
+  colour = class_character,
+  height = class_numeric
 ))
 lexington <- horse(colour = "bay", height = 15, name = "Lex")
 lexington@colour

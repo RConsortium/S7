@@ -2,37 +2,37 @@
 % Please edit documentation in R/generic.R, R/method-dispatch.R
 \name{new_generic}
 \alias{new_generic}
-\alias{method_call}
+\alias{R7_dispatch}
 \title{Define a new generic}
 \usage{
-new_generic(name, dispatch_args = NULL, fun = NULL)
+new_generic(name, dispatch_args, fun = NULL)
 
-method_call()
+R7_dispatch()
 }
 \arguments{
 \item{name}{The name of the generic. This should be the same as the object
 that you assign it to.}
 
-\item{dispatch_args}{A character vector giving the names of the arguments
-that form the signature, i.e. the arguments used for method dispatch.
-
-If \code{dispatch_args} are omitted, but \code{fun} is supplied, will default to the
-arguments that appear before \code{...} in \code{fun}. If there are no dots, it will
-default to the first argument. If both \code{fun} and \code{dispatch_args} are
-supplied, the \code{dispatch_args} must appear at the start of \code{fun}'s formals.}
+\item{dispatch_args}{A character vector giving the names of one or more
+arguments used to find the method.}
 
 \item{fun}{An optional specification of the generic, which must call
-\code{method_call()} to dispatch to methods. This is usually generated
+\code{R7_dispatch()} to dispatch to methods. This is usually generated
 automatically from the \code{dispatch_args}, but you may want to supply it if
-you want to add additional required arguments, or perform some standardised
-computation in the generic.}
+you want to add additional required arguments, omit \code{...}, or perform
+some standardised computation in the generic.
+
+The \code{dispatch_args} must be the first arguments to \code{fun}, and, if present,
+\code{...} must immediately follow them.}
 }
 \description{
 A generic function uses different implementations (\emph{methods}) depending on
 the class of one or more arguments (the \emph{signature}). Create a new generic
-with \code{new_generic()} then use \link{method<-} to add methods to it. The body of
-the generic always contains \code{method_call()}, which takes care of finding and
-calling the appropriate method.
+with \code{new_generic()} then use \link{method<-} to add methods to it.
+
+Method dispatch is performed by \code{R7_dispatch()}, which must always be
+included in the body of the generic, but in most cases \code{new_generic()} will
+generate this for you.
 }
 \section{Dispatch arguments}{
 
@@ -49,29 +49,31 @@ immediately after the dispatch arguments.
 \examples{
 # A simple generic with methods for some base types and S3 classes
 type_of <- new_generic("type_of", dispatch_args = "x")
-method(type_of, "character") <- function(x, ...) "A character vector"
+method(type_of, class_character) <- function(x, ...) "A character vector"
 method(type_of, new_S3_class("data.frame")) <- function(x, ...) "A data frame"
-method(type_of, "function") <- function(x, ...) "A function"
+method(type_of, class_function) <- function(x, ...) "A function"
 
 type_of(mtcars)
 type_of(letters)
 type_of(mean)
 
-# If you want to require methods implement additional arguments, supply
-# them after ... in the call
-mean2 <- new_generic("mean2", fun = function(x, ..., na.rm = TRUE) {
-   method_call()
+# If you want to require that methods implement additional arguments,
+# you can use a custom function:
+mean2 <- new_generic("mean2", "x", function(x, ..., na.rm = FALSE) {
+   R7_dispatch()
 })
-method(mean2, "numeric") <- function(x, ..., na.rm = TRUE) {
+
+method(mean2, class_numeric) <- function(x, ..., na.rm = FALSE) {
   if (na.rm) {
     x <- x[!is.na(x)]
   }
   sum(x) / length(x)
 }
-method(mean2, "character") <- function(x, ..., na.rm = TRUE) {
+
+# You'll be warned if you forget the argument:
+method(mean2, class_character) <- function(x, ...) {
   stop("Not supported")
 }
-
 }
 \seealso{
 \code{\link[=new_external_generic]{new_external_generic()}} to define a method for a generic

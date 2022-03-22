@@ -3,7 +3,7 @@
 \name{new_external_generic}
 \alias{new_external_generic}
 \alias{external_methods_register}
-\title{Generics in suggested packages}
+\title{Generics in other packages}
 \usage{
 new_external_generic(package, name, dispatch_args, version = NULL)
 
@@ -20,17 +20,10 @@ external_methods_register()
 be registered.}
 }
 \description{
-The easiest way to define a method for a generic in another package is to
-add the package to \code{Imports} and import the generic into the \code{NAMESPACE}.
-This, however, creates a strong dependency on the other package, which is
-not always desired. For example, you might want to register a
-\code{knitr::knitr_print} method to customise how your object is printed in Rmd,
-but your package doesn't use anything else from knitr.
-
-Instead, you can add the package to \code{Suggests} and use
-\code{new_external_generic()} along with \code{external_methods_register()} to declare
-an "external" generic. \code{new_external_generic()} defines the "shape" of the
-generic without requiring the other package be available. You then call
-\code{external_methods_register()} in \code{.onLoad()} to dynamically register the
-methods when the other package is loaded.
+To register a method for a generic in another packages you need to
+\code{new_external_generic()} and \code{external_methods_register()} together.
+\code{new_external_generic()} defines the "shape" of the generic without
+requiring the other package be available. You then call
+\code{external_methods_register()} in \code{.onLoad()} to dynamically register
+the methods when the other package is loaded.
 }

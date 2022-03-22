@@ -5,7 +5,7 @@
 #' places:
 #'
 #' * To allow a property to be one of a set of classes,
-#'   `new_property("x", new_union("integer", Range))`.
+#'   `new_property(new_union("integer", Range))`.
 #'
 #' * As a convenient short-hand to define methods for multiple classes.
 #'   `method(foo, new_union(X, Y)) <- f` is short-hand for
@@ -16,10 +16,10 @@
 #' "vector" (atomic vectors, lists, and expressions).
 #'
 #' @param ... The classes to include in the union. See [as_class()] for
-#'   permitted definitions
+#'   details.
 #' @export
 #' @examples
-#' logical_or_character <- new_union("logical", "character")
+#' logical_or_character <- new_union(class_logical, class_character)
 #' logical_or_character
 #'
 #' Foo <- new_class("Foo", properties = list(x = logical_or_character))
@@ -29,7 +29,7 @@
 #'
 #' bar <- new_generic("bar", "x")
 #' # Use built-in union
-#' method(bar, "atomic") <- function(x) "Hi!"
+#' method(bar, class_atomic) <- function(x) "Hi!"
 #' bar
 #' bar(TRUE)
 #' bar(letters)

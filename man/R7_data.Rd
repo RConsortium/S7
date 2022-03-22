@@ -23,8 +23,11 @@ to work with the underlying object, i.e. the R7 object stripped of class
 and all properties.
 }
 \examples{
-text <- new_class("text", parent = "character")
+text <- new_class("text", parent = class_character)
 y <- text(c(foo = "bar"))
-str(R7_data(y))
+y
+R7_data(y)
+
+R7_data(y) <- c("a", "b")
+y
 }
-\keyword{internal}

@@ -22,7 +22,7 @@
 #' @examples
 #' # A range class might validate that the start is less than the end
 #' Range <- new_class("Range",
-#'   properties = list(start = "double", end = "double"),
+#'   properties = list(start = class_double, end = class_double),
 #'   validator = function(self) {
 #'     if (self@start >= self@end) "start must be smaller than end"
 #'   }
@@ -67,7 +67,7 @@ validate <- function(object, properties = TRUE) {
     return(invisible(object))
   }
 
-  class <- object_class(object)
+  class <- R7_class(object)
 
   # First, check property types - if these are incorrect, the validator
   # is likely to return spurious errors

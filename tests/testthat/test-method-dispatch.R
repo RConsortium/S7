@@ -2,21 +2,21 @@ describe("single dispatch", {
   foo <- new_generic("foo", "x")
 
   it("works for specials", {
-    method(foo, missing_class) <- function(x) "missing"
-    method(foo, any_class) <- function(x) "fallback"
+    method(foo, class_missing) <- function(x) "missing"
+    method(foo, class_any) <- function(x) "fallback"
 
     expect_equal(foo(), "missing")
     expect_equal(foo(1), "fallback")
   })
 
   it("works for base types", {
-    method(foo, "character") <- function(x) "base"
+    method(foo, class_character) <- function(x) "base"
 
     expect_equal(foo("bar"), "base")
   })
 
   it("works for R7 objects", {
-    text <- new_class("text", character)
+    text <- new_class("text", class_character)
     method(foo, text) <- function(x) "R7"
 
     expect_equal(foo(text("bar")), "R7")
@@ -37,7 +37,7 @@ describe("single dispatch", {
   })
 
   it("works for unions", {
-    method(foo, new_union("integer", "logical")) <- function(x) "union"
+    method(foo, new_union(class_integer, class_logical)) <- function(x) "union"
 
     expect_equal(foo(TRUE), "union")
     expect_equal(foo(1L), "union")
@@ -62,24 +62,26 @@ describe("multiple dispatch", {
 
 
 test_that("can substitute() args", {
-  foo <- new_generic("foo", fun = function(x, ..., z = 1) method_call())
-  method(foo, "character") <- function(x, ..., z = 1) substitute(x)
+  foo <- new_generic("foo", "x", function(x, ..., z = 1) R7_dispatch())
+  method(foo, class_character) <- function(x, ..., z = 1) substitute(x)
   expect_equal(foo(letters), quote(letters))
 
-  method(foo, "character") <- function(x, ..., z = 1, y) substitute(y)
+  suppressMessages(
+    method(foo, class_character) <- function(x, ..., z = 1, y) substitute(y)
+  )
   expect_equal(foo("x", y = letters), quote(letters))
 
   # Doesn't work currently
-  # method(foo, "character") <- function(x, ..., z = 1) substitute(z)
+  # method(foo, class_character) <- function(x, ..., z = 1) substitute(z)
   # expect_equal(foo("x", z = letters), quote(letters))
 })
 
 test_that("methods get values modified in the generic", {
-  foo <- new_generic("foo", fun = function(x, y = 1) {
+  foo <- new_generic("foo", "x", function(x, y = 1) {
     y <- 10
-    method_call()
+    R7_dispatch()
   })
-  method(foo, "character") <- function(x, y = 1) y
+  method(foo, class_character) <- function(x, y = 1) y
   expect_equal(foo("x", 1), 10)
 })
 
@@ -93,31 +95,33 @@ test_that("dispatched arguments are evaluated once", {
   })
 
   f <- new_generic("f", "x")
-  method(f, "numeric") <- function(x) x
+  method(f, class_double) <- function(x) x
   expect_equal(f(counter()), 1)
 })
 
 test_that("generics pass ... to methods", {
   foo <- new_generic("foo", "x")
 
-  method(foo, "character") <- function(x, y = 1) y
+  method(foo, class_character) <- function(x, y = 1) y
   expect_equal(foo("x"), 1)
   expect_equal(foo("x", y = 2), 2)
   expect_snapshot_error(foo("x", z = 2))
 })
 
 test_that("generics pass extra args to methods", {
-  foo <- new_generic("foo", fun = function(x, ..., z = 1) method_call())
-  method(foo, "character") <- function(x, ..., z = 1) z
+  foo <- new_generic("foo", "x", function(x, ..., z = 1) R7_dispatch())
+  method(foo, class_character) <- function(x, ..., z = 1) z
   expect_equal(foo("x", z = 3), 3)
 })
 
 test_that("can dispatch on base 'union' types", {
   foo <- new_generic("foo", "x")
-  method(foo, "vector") <- function(x) "v"
-  method(foo, "atomic") <- function(x) "a"
-  method(foo, "numeric") <- function(x) "n"
-  method(foo, "integer") <- function(x) "i"
+  suppressMessages({
+    method(foo, class_vector) <- function(x) "v"
+    method(foo, class_atomic) <- function(x) "a"
+    method(foo, class_numeric) <- function(x) "n"
+    method(foo, class_integer) <- function(x) "i"
+  })
 
   expect_equal(foo(list()), "v")
   expect_equal(foo(character()), "a")
@@ -127,42 +131,8 @@ test_that("can dispatch on base 'union' types", {
 
 test_that("method lookup fails with informative messages", {
   foo <- new_generic("foo", c("x", "y"))
-  method(foo, list("character", "integer")) <- function(x, y) paste0("bar:", x, y)
+  method(foo, list(class_character, class_integer)) <- function(x, y) paste0("bar:", x, y)
   expect_snapshot_error(foo(TRUE))
   expect_snapshot_error(foo(TRUE, list()))
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
-})
-
-test_that("next_method works for single dispatch", {
-  foo1 <- new_class("foo1")
-  foo2 <- new_class("foo2", foo1)
-
-  bar <- new_generic("bar", "x")
-  method(bar, foo1) <- function(x) 1
-  method(bar, foo2) <- function(x) next_method()(x)
-
-  expect_equal(bar(foo2()), 1)
-})
-
-test_that("next_method works for double dispatch", {
-  foo <- new_generic("foo", c("x", "y"))
-  text <- new_class("text", character)
-  number <- new_class("number", double)
-
-  method(foo, list(text, number)) <- function(x, y, ...) {
-    R7_data(x) <- paste0("foo-", R7_data(x), "-", R7_data(y))
-    next_method()(x, y)
-  }
-
-  method(foo, list(character, number)) <- function(x, y, ...) {
-    R7_data(y) <- y + 1
-    R7_data(x) <- paste0(R7_data(x), "-", R7_data(y))
-    next_method()(x, y)
-  }
-
-  method(foo, list(character, double)) <- function(x, y, ...) {
-    as.character(R7_data(x))
-  }
-
-  expect_equal(foo(text("hi"), number(1)), "foo-hi-1-2")
 })

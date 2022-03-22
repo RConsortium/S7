@@ -1,5 +1,3 @@
-global_variables(c("name", "parent", "properties", "constructor", "validator"))
-
 #' Base R7 class
 #'
 #' @keywords internal
@@ -18,6 +16,35 @@ R7_object <- new_class(
 )
 methods::setOldClass("R7_object")
 
+#' @export
+`$.R7_object` <- function(x, name) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- sprintf(
+      "Can't get R7 properties with `$`. Did you mean `%s@%s`?",
+      deparse1(substitute(x)),
+      name
+    )
+    stop(msg, call. = FALSE)
+  }
+}
+#' @export
+`$<-.R7_object` <- function(x, name, value) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- sprintf(
+      "Can't set R7 properties with `$`. Did you mean `...@%s <- %s`?",
+      name,
+      deparse1(substitute(value))
+    )
+    stop(msg, call. = FALSE)
+  }
+}
+
+
+
 check_R7 <- function(x, arg = deparse(substitute(x))) {
   if (!inherits(x, "R7_object")) {
     stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
@@ -27,20 +54,20 @@ check_R7 <- function(x, arg = deparse(substitute(x))) {
 R7_generic <- new_class(
   name = "R7_generic",
   properties = list(
-    name = "character",
-    methods = "environment",
-    dispatch_args = "character"
+    name = class_character,
+    methods = class_environment,
+    dispatch_args = class_character
   ),
-  parent = "function"
+  parent = class_function
 )
 methods::setOldClass(c("R7_generic", "function", "R7_object"))
 is_generic <- function(x) inherits(x, "R7_generic")
 
 R7_method <- new_class("R7_method",
-  parent = "function",
+  parent = class_function,
   properties = list(
     generic = R7_generic,
-    signature = "list"
+    signature = class_list
   )
 )
 methods::setOldClass(c("R7_method", "function", "R7_object"))
@@ -51,7 +78,9 @@ methods::setOldClass(c("R7_method", "function", "R7_object"))
 }
 
 .onLoad <- function(...) {
-  base_unions$numeric <<- new_union("integer", "double")
-  base_unions$atomic <<- new_union("logical", "integer", "double", "complex", "character", "raw")
-  base_unions$vector <<- new_union("logical", "integer", "double", "complex", "character", "raw", "expression", "list")
+  convert <<- R7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
+
+  class_numeric <<- new_union(class_integer, class_double)
+  class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
+  class_vector <<- new_union(class_atomic, class_expression, class_list)
 }

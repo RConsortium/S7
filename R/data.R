@@ -7,22 +7,18 @@
 #' @inheritParams prop
 #' @param value Object used to replace the underlying data.
 #' @export
-#' @keywords internal
 #' @examples
-#' text <- new_class("text", parent = "character")
+#' text <- new_class("text", parent = class_character)
 #' y <- text(c(foo = "bar"))
-#' str(R7_data(y))
+#' y
+#' R7_data(y)
+#'
+#' R7_data(y) <- c("a", "b")
+#' y
 R7_data <- function(object) {
   check_R7(object)
 
-  # Remove properties, return the rest
-  for (name in prop_names(object)) {
-    attr(object, name) <- NULL
-  }
-  attr(object, "object_class") <- NULL
-  class(object) <- NULL
-
-  object
+  zap_attr(object, c(prop_names(object), "class", "R7_class"))
 }
 
 #' @export
@@ -35,4 +31,12 @@ R7_data <- function(object) {
     validate(object)
   }
   return(invisible(object))
+}
+
+
+zap_attr <- function(x, names) {
+  for (name in names) {
+    attr(x, name) <- NULL
+  }
+  x
 }

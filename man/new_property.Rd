@@ -5,30 +5,33 @@
 \title{Define a new property}
 \usage{
 new_property(
-  name,
-  class = any_class,
+  class = class_any,
   getter = NULL,
   setter = NULL,
-  default = NULL
+  default = NULL,
+  name = NULL
 )
 }
 \arguments{
-\item{name}{Property name, primarily used for error messages.}
-
-\item{class}{If specified, any values must be one of these classes
-(or \link[=new_union]{class union}).}
+\item{class}{Class that the property must be an instance of.
+See \code{\link[=as_class]{as_class()}} for details.}
 
 \item{getter}{An optional function used to get the value. The function
 should take \code{self}  as its sole argument and return the value. If the
-property has a \code{class} the class of the value is validated.}
+property has a \code{class} the class of the value is validated.
+
+If a property has a getter but doesn't have a setter, it is read only.}
 
 \item{setter}{An optional function used to set the value. The function
-should take \code{self} and \code{value} and return a modified object. The value is
-\emph{not} automatically checked.}
+should take \code{self} and \code{value} and return a modified object.}
 
 \item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, defaults to the "empty" instance
 of \code{class}.}
+
+\item{name}{Property name, primarily used for error messages. Used
+primrarily for testing as it is set automatically when using a list of
+properties.}
 }
 \description{
 A property defines a named component of an object. Properties are
@@ -42,7 +45,7 @@ behaviour when modified.
 \examples{
 # Simple properties store data inside an object
 pizza <- new_class("pizza", properties = list(
-  new_property("slices", "numeric", default = 10)
+  slices = new_property(class_numeric, default = 10)
 ))
 my_pizza <- pizza(slices = 6)
 my_pizza@slices
@@ -54,23 +57,24 @@ your_pizza@slices
 
 # Dynamic properties can compute on demand
 clock <- new_class("clock", properties = list(
-  new_property("now", getter = function(self) Sys.time())
+  now = new_property(getter = function(self) Sys.time())
 ))
 my_clock <- clock()
 my_clock@now; Sys.sleep(1)
 my_clock@now
+# This property is read only
+try(my_clock@now <- 10)
 
 # These can be useful if you want to deprecate a property
 person <- new_class("person", properties = list(
-  first_name = "character",
-  new_property(
-     "firstName",
+  first_name = class_character,
+  firstName = new_property(
      getter = function(self) {
-       warning("@firstName is deprecated; please use @first_name instead")
+       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name
      },
      setter = function(self, value) {
-       warning("@firstName is deprecated; please use @first_name instead")
+       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name <- value
        self
      }
@@ -78,5 +82,6 @@ person <- new_class("person", properties = list(
 ))
 hadley <- person(first_name = "Hadley")
 hadley@firstName
+hadley@firstName <- "John"
 hadley@first_name
 }

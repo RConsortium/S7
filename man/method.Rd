@@ -10,11 +10,10 @@ method(generic, class = NULL, object = NULL)
 \item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{class, object}{Perform introspection either with \code{classes}
-(processed with \code{\link[=as_class]{as_class()}}) or a concrete objects.
-
-If \code{generic} does multiple dispatch both \code{object} and \code{class} need
-to be wrapped in a list.}
+\item{class, object}{Perform introspection either with a \code{class}
+(processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses
+multiple dispatch then both \code{object} and \code{class} must be a list of
+classes/objects.}
 }
 \value{
 A function with class <R7_method>.
@@ -22,14 +21,14 @@ A function with class <R7_method>.
 \description{
 \code{method()} takes a generic and signature and retrieves the corresponding
 method. This is rarely needed because most of the time you'll rely on the
-the generic, via \code{\link[=method_call]{method_call()}}, to find and call the method for you.
+the generic, via \code{\link[=R7_dispatch]{R7_dispatch()}}, to find and call the method for you.
 However, this introspection is useful if you want to see the implementation
 of a specific method.
 }
 \examples{
 # Create a generic and register some methods
 bizarro <- new_generic("bizarro", "x")
-method(bizarro, "numeric") <- function(x) rev(x)
+method(bizarro, class_numeric) <- function(x) rev(x)
 method(bizarro, new_S3_class("factor")) <- function(x) {
   levels(x) <- rev(levels(x))
   x
@@ -39,7 +38,10 @@ method(bizarro, new_S3_class("factor")) <- function(x) {
 bizarro
 
 # And you can use method() to inspect specific implementations
-method(bizarro, class = "integer")
+method(bizarro, class = class_integer)
 method(bizarro, object = 1)
 method(bizarro, new_S3_class("factor"))
+}
+\seealso{
+\code{\link[=method_explain]{method_explain()}} to explain why a specific method was picked.
 }
