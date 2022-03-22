@@ -146,4 +146,14 @@ describe("S4 registration", {
     expect_error(validObject(S4_obj, complete = TRUE), "Must be positive")
   })
 
+  test_that("can register slots", {
+    foo <- new_class("foo", properties = list(x = class_integer))
+    foo2 <- new_class("foo2", foo, properties = list(y = class_character))
+
+    S4_register(foo)
+    S4_register(foo2)
+    expect_equal(getClass("foo")@slots$x, structure("integer", package = "methods"))
+    expect_equal(getClass("foo2")@slots$x, structure("integer", package = "methods"))
+    expect_equal(getClass("foo2")@slots$y, structure("character", package = "methods"))
+  })
 })

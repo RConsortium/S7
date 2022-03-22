@@ -16,7 +16,14 @@ S4_register <- function(class, env = parent.frame()) {
   contains <- setdiff(class_dispatch(class), "ANY")[-1]
   contains[contains == "double"] <- "numeric"
 
-  methods::setClass(name, contains = contains, where = topenv(env))
+  props <- class@properties
+  if (is_class(class@parent) && class@parent@name != "R7_object") {
+    parent_props <- class@parent@properties
+    props <- props[setdiff(names(props), names(parent_props))]
+  }
+  slots <- lapply(props, function(x) class_register(x$class))
+
+  methods::setClass(name, contains = contains, slots = slots, where = topenv(env))
   methods::setValidity(name, function(object) validate(object), where = topenv(env))
   methods::setOldClass(c(name, contains), S4Class = name, where = topenv(env))
 }
