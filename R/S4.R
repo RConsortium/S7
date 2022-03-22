@@ -13,15 +13,14 @@ S4_register <- function(class, env = parent.frame()) {
   }
 
   name <- class@name
-  contains <- setdiff(class_dispatch(class), "ANY")[-1]
-  contains[contains == "double"] <- "numeric"
+  contains <- double_to_numeric(setdiff(class_dispatch(class), "ANY")[-1])
 
   props <- class@properties
   if (is_class(class@parent) && class@parent@name != "R7_object") {
     parent_props <- class@parent@properties
     props <- props[setdiff(names(props), names(parent_props))]
   }
-  slots <- lapply(props, function(x) class_register(x$class))
+  slots <- lapply(props, function(x) R7_to_S4_class(x$class))
 
   methods::setClass(name, contains = contains, slots = slots, where = topenv(env))
   methods::setValidity(name, function(object) validate(object), where = topenv(env))
@@ -63,6 +62,24 @@ S4_to_R7_class <- function(x, error_base = "") {
     )
     stop(paste0(error_base, msg), call. = FALSE)
   }
+}
+
+R7_to_S4_class <- function(x) {
+  switch(class_type(x),
+    NULL = "NULL",
+    S4 = S4_class_name(x),
+    R7 = R7_class_name(x),
+    R7_base = double_to_numeric(x$class),
+    R7_S3 = x$class[[1]],
+    R7_union = "ANY",
+    stop("Unsupported")
+  )
+}
+
+# S4 uniformly uses numeric to mean double
+double_to_numeric <- function(x) {
+  x[x == "double"] <- "numeric"
+  x
 }
 
 S4_base_classes <- function() {

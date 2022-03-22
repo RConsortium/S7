@@ -121,13 +121,6 @@ describe("S4 registration", {
     expect_s4_class(getClass("foo2"), "classRepresentation")
   })
 
-  test_that("can register class that inherits from double", {
-    foo <- new_class("foo", parent = class_double)
-    S4_register(foo)
-
-    expect_type(new("foo"), "double")
-  })
-
   test_that("S4 validation triggers R7 validation", {
     foo3 <- new_class("foo3",
       parent = class_integer,
@@ -155,5 +148,17 @@ describe("S4 registration", {
     expect_equal(getClass("foo")@slots$x, structure("integer", package = "methods"))
     expect_equal(getClass("foo2")@slots$x, structure("integer", package = "methods"))
     expect_equal(getClass("foo2")@slots$y, structure("character", package = "methods"))
+  })
+
+  test_that("can handle doubles correct", {
+    foo <- new_class("foo",
+      parent = class_double,
+      properties = list(x = class_double)
+    )
+    S4_register(foo)
+
+    obj <- new("foo")
+    expect_type(obj, "double")
+    expect_type(slot(obj, "x"), "double")
   })
 })
