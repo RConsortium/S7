@@ -121,7 +121,7 @@ describe("S4 registration", {
     expect_s4_class(getClass("foo2"), "classRepresentation")
   })
 
-  test_that("S4 validation triggers R7 validation", {
+  it("ties S4 validation to R7 validation", {
     on.exit(S4_remove_classes("Foo"))
 
     foo3 <- new_class("foo3",
@@ -141,7 +141,7 @@ describe("S4 registration", {
     expect_error(validObject(S4_obj, complete = TRUE), "Must be positive")
   })
 
-  test_that("can register slots", {
+  it("can register slots", {
     foo4 <- new_class("foo4", properties = list(x = class_integer))
     foo5 <- new_class("foo5", foo4, properties = list(y = class_character))
 
@@ -152,7 +152,7 @@ describe("S4 registration", {
     expect_equal(getClass("foo5")@slots$y, structure("character", package = "methods"))
   })
 
-  test_that("can handle doubles correct", {
+  it("translates double to numeric", {
     foo6 <- new_class("foo6",
       parent = class_double,
       properties = list(x = class_double)
@@ -163,4 +163,6 @@ describe("S4 registration", {
     expect_type(obj, "double")
     expect_type(slot(obj, "x"), "double")
   })
+
+
 })
