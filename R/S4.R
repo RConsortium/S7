@@ -9,12 +9,14 @@
 S4_register <- function(class, env = parent.frame()) {
   if (!is_class(class)) {
     msg <- sprintf("`class` must be an R7 class, not a %s", obj_desc(class))
+    stop(msg)
   }
 
   name <- class@name
   contains <- setdiff(class_dispatch(class), "ANY")[-1]
 
   methods::setClass(name, contains = contains, where = topenv(env))
+  methods::setValidity(name, function(object) validate(object), where = topenv(env))
   methods::setOldClass(name, S4Class = name, where = topenv(env))
 }
 

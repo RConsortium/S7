@@ -112,14 +112,24 @@ describe("S4_class_dispatch", {
 describe("S4 registration", {
 
   it("can register simple class hierarchy", {
-    foo <- new_class("foo")
-    foo2 <- new_class("foo2", foo)
+    sfoo <- new_class("sfoo")
+    sfoo2 <- new_class("sfoo2", sfoo)
 
-    S4_register(foo)
-    S4_register(foo2)
+    S4_register(sfoo)
+    S4_register(sfoo2)
 
-    expect_s4_class(getClass("foo"), "classRepresentation")
-    expect_s4_class(getClass("foo2"), "classRepresentation")
+    expect_s4_class(getClass("sfoo"), "classRepresentation")
+    expect_s4_class(getClass("sfoo2"), "classRepresentation")
+  })
+
+  test_that("S4 validation triggers R7 validation", {
+    sfoo3 <- new_class("sfoo3", parent = class_character)
+    S4_register(sfoo3)
+
+    # # Create invalid object
+    # obj <- foo3()
+    # mode(obj) <- "integer"
+
   })
 
 })
