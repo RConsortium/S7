@@ -11,7 +11,11 @@ S4_register <- function(class, env = parent.frame()) {
     msg <- sprintf("`class` must be an R7 class, not a %s", obj_desc(class))
   }
 
-  methods::setOldClass(class_dispatch(class), where = topenv(env))
+  name <- class@name
+  contains <- setdiff(class_dispatch(class), "ANY")[-1]
+
+  methods::setClass(name, contains = contains, where = topenv(env))
+  methods::setOldClass(name, S4Class = name, where = topenv(env))
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")

@@ -108,3 +108,18 @@ describe("S4_class_dispatch", {
     expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
   })
 })
+
+describe("S4 registration", {
+
+  it("can register simple class hierarchy", {
+    foo <- new_class("foo")
+    foo2 <- new_class("foo2", foo)
+
+    S4_register(foo)
+    S4_register(foo2)
+
+    expect_s4_class(getClass("foo"), "classRepresentation")
+    expect_s4_class(getClass("foo2"), "classRepresentation")
+  })
+
+})
