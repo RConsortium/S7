@@ -14,6 +14,7 @@ S4_register <- function(class, env = parent.frame()) {
 
   name <- class@name
   contains <- setdiff(class_dispatch(class), "ANY")[-1]
+  contains[contains == "double"] <- "numeric"
 
   methods::setClass(name, contains = contains, where = topenv(env))
   methods::setValidity(name, function(object) validate(object), where = topenv(env))

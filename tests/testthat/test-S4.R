@@ -110,7 +110,6 @@ describe("S4_class_dispatch", {
 })
 
 describe("S4 registration", {
-
   it("can register simple class hierarchy", {
     foo <- new_class("foo")
     foo2 <- new_class("foo2", foo)
@@ -120,6 +119,13 @@ describe("S4 registration", {
 
     expect_s4_class(getClass("foo"), "classRepresentation")
     expect_s4_class(getClass("foo2"), "classRepresentation")
+  })
+
+  test_that("can register class that inherits from double", {
+    foo <- new_class("foo", parent = class_double)
+    S4_register(foo)
+
+    expect_type(new("foo"), "double")
   })
 
   test_that("S4 validation triggers R7 validation", {
