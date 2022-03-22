@@ -63,10 +63,13 @@ describe("method registration", {
 
   it("can register R7 method for S4 generic", {
     methods::setGeneric("bar", function(x) standardGeneric("bar"))
-    foo <- new_class("foo")
-    method(bar, foo) <- function(x) "foo"
+    S4foo <- new_class("S4foo")
 
-    expect_equal(bar(foo()), "foo")
+    expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
+
+    S4_register(S4foo)
+    method(bar, S4foo) <- function(x) "foo"
+    expect_equal(bar(S4foo()), "foo")
   })
 
   it("checks argument types", {

@@ -13,6 +13,10 @@
     Error <simpleError>
       When registering methods for S3 generic sum(), signature must be an R7 class, not an S3 class.
 
+# method registration: can register R7 method for S4 generic
+
+    Class has not been registered with S4; please call S4_register(S4foo)
+
 # method registration: checks argument types
 
     Code

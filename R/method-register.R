@@ -216,10 +216,8 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
 
 register_S4_method <- function(generic, signature, method, env = parent.frame()) {
   S4_env <- topenv(env)
-
   S4_signature <- lapply(signature, S4_class, S4_env = S4_env)
   methods::setMethod(generic, S4_signature, method, where = S4_env)
-
 }
 S4_class <- function(x, S4_env) {
   if (is_base_class(x)) {
@@ -227,9 +225,17 @@ S4_class <- function(x, S4_env) {
   } else if (is_S4_class(x)) {
     x
   } else if (is_class(x) || is_S3_class(x)) {
-    class <- class_dispatch(x)
-    methods::setOldClass(class, where = S4_env)
-    methods::getClass(class)
+    class <- tryCatch(methods::getClass(class_register(x)), error = function(err) NULL)
+    if (is.null(class)) {
+      msg <- sprintf(
+        "Class has not been registered with S4; please call S4_register(%s)",
+        class_deparse(x)
+      )
+      stop(msg, call. = FALSE)
+    }
+    class
+  } else {
+    stop("Unsupported")
   }
 }
 
