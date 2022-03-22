@@ -112,24 +112,32 @@ describe("S4_class_dispatch", {
 describe("S4 registration", {
 
   it("can register simple class hierarchy", {
-    sfoo <- new_class("sfoo")
-    sfoo2 <- new_class("sfoo2", sfoo)
+    foo <- new_class("foo")
+    foo2 <- new_class("foo2", foo)
 
-    S4_register(sfoo)
-    S4_register(sfoo2)
+    S4_register(foo)
+    S4_register(foo2)
 
-    expect_s4_class(getClass("sfoo"), "classRepresentation")
-    expect_s4_class(getClass("sfoo2"), "classRepresentation")
+    expect_s4_class(getClass("foo"), "classRepresentation")
+    expect_s4_class(getClass("foo2"), "classRepresentation")
   })
 
   test_that("S4 validation triggers R7 validation", {
-    sfoo3 <- new_class("sfoo3", parent = class_character)
-    S4_register(sfoo3)
+    foo3 <- new_class("foo3",
+      parent = class_integer,
+      validator = function(self) {
+        if (R7_data(self) < 0) "Must be positive"
+      }
+    )
+    # Create invalid object
+    R7_obj <- foo3(1L)
+    R7_obj[[1]] <- -1L
 
-    # # Create invalid object
-    # obj <- foo3()
-    # mode(obj) <- "integer"
+    S4_register(foo3)
+    Foo <- setClass("Foo", slots = list(x = "foo3"))
+    S4_obj <- Foo(x = R7_obj)
 
+    expect_error(validObject(S4_obj, complete = TRUE), "Must be positive")
   })
 
 })

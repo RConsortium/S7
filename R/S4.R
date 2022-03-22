@@ -17,7 +17,7 @@ S4_register <- function(class, env = parent.frame()) {
 
   methods::setClass(name, contains = contains, where = topenv(env))
   methods::setValidity(name, function(object) validate(object), where = topenv(env))
-  methods::setOldClass(name, S4Class = name, where = topenv(env))
+  methods::setOldClass(c(name, contains), S4Class = name, where = topenv(env))
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
