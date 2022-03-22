@@ -122,6 +122,8 @@ describe("S4 registration", {
   })
 
   test_that("S4 validation triggers R7 validation", {
+    on.exit(S4_remove_classes("Foo"))
+
     foo3 <- new_class("foo3",
       parent = class_integer,
       validator = function(self) {
@@ -140,24 +142,24 @@ describe("S4 registration", {
   })
 
   test_that("can register slots", {
-    foo <- new_class("foo", properties = list(x = class_integer))
-    foo2 <- new_class("foo2", foo, properties = list(y = class_character))
+    foo4 <- new_class("foo4", properties = list(x = class_integer))
+    foo5 <- new_class("foo5", foo4, properties = list(y = class_character))
 
-    S4_register(foo)
-    S4_register(foo2)
-    expect_equal(getClass("foo")@slots$x, structure("integer", package = "methods"))
-    expect_equal(getClass("foo2")@slots$x, structure("integer", package = "methods"))
-    expect_equal(getClass("foo2")@slots$y, structure("character", package = "methods"))
+    S4_register(foo4)
+    S4_register(foo5)
+    expect_equal(getClass("foo4")@slots$x, structure("integer", package = "methods"))
+    expect_equal(getClass("foo5")@slots$x, structure("integer", package = "methods"))
+    expect_equal(getClass("foo5")@slots$y, structure("character", package = "methods"))
   })
 
   test_that("can handle doubles correct", {
-    foo <- new_class("foo",
+    foo6 <- new_class("foo6",
       parent = class_double,
       properties = list(x = class_double)
     )
-    S4_register(foo)
+    S4_register(foo6)
 
-    obj <- new("foo")
+    obj <- new("foo6")
     expect_type(obj, "double")
     expect_type(slot(obj, "x"), "double")
   })
