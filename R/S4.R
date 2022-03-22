@@ -1,7 +1,19 @@
 #' Register an R7 class with S4
 #'
+#' @description
 #' If you want to use [method<-] to register an method for an S4 generic with
-#' an R7 class, you need to call `S4_register()` once.
+#' an R7 class, you need to call `S4_register()` once. This generates a full
+#' S4 class specification that:
+#'
+#' * Matches
+#' * Uses [validate()] as the validity method.
+#' * Defines formal S4 slots to match R7 properties. The slot types are
+#'   matched to the R7 property types, with the exception of R7 unions,
+#'   which are unchecked (due to the challenges of converting R7 unions to
+#'   S4 unions).
+#'
+#' When registering a class that extends R7 class or specifies an R7 class for
+#' a property, you must register those classes first.
 #'
 #' @param class An R7 class created with [new_class()].
 #' @param env Expert use only. Environment where S4 class will be registered.
@@ -15,6 +27,7 @@ S4_register <- function(class, env = parent.frame()) {
   name <- class@name
   contains <- double_to_numeric(setdiff(class_dispatch(class), "ANY")[-1])
 
+  # S4 inherits slots from parent class, so
   props <- class@properties
   if (is_class(class@parent) && class@parent@name != "R7_object") {
     parent_props <- class@parent@properties
@@ -67,6 +80,7 @@ S4_to_R7_class <- function(x, error_base = "") {
 R7_to_S4_class <- function(x) {
   switch(class_type(x),
     NULL = "NULL",
+    any = "ANY",
     S4 = S4_class_name(x),
     R7 = R7_class_name(x),
     R7_base = double_to_numeric(x$class),
