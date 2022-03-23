@@ -110,7 +110,7 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
 #' @export
 print.R7_generic <- function(x, ...) {
   methods <- methods(x)
-  formals <- paste0(head(format(args(x)), n = -1), collapse = "\n")
+  formals <- show_args(formals(x), x@name)
   cat(sprintf("<R7_generic> %s with %i methods:\n", formals, length(methods)), sep = "")
 
   if (length(methods) > 0) {

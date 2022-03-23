@@ -53,13 +53,13 @@
     Code
       foo1
     Output
-      <R7_generic> function (x, ...)  with 2 methods:
+      <R7_generic> foo1(x, ...) with 2 methods:
       1: method(foo1, "character")
       2: method(foo1, text)
     Code
       foo3
     Output
-      <R7_generic> function (x, y, z, ...)  with 3 methods:
+      <R7_generic> foo3(x, y, z, ...) with 3 methods:
       1: method(foo3, list("character", "integer", "character"))
       2: method(foo3, list("character", "integer", "logical"))
       3: method(foo3, list("character", text, "character"))
@@ -69,8 +69,7 @@
     Code
       foo
     Output
-      <R7_generic> function (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, 
-          r, s, t, u, v, w, x, y, z, ...)  with 0 methods:
+      <R7_generic> foo(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, ...) with 0 methods:
 
 # check_generic produces informative errors
 

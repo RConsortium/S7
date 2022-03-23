@@ -108,7 +108,7 @@ check_function <- function(f, args, arg = deparse(substitute(f))) {
     stop(msg, call. = FALSE)
   }
 }
-show_args <- function(x) {
+show_args <- function(x, name = "function") {
   if (length(x) == 0) {
     args <- ""
   } else {
@@ -116,5 +116,5 @@ show_args <- function(x) {
     args <- paste0(names(x), ifelse(val == "", "", " = "), val, collapse = ", ")
   }
 
-  paste0("function(", args, ")")
+  paste0(name, "(", args, ")")
 }
