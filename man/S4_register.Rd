@@ -12,11 +12,11 @@ S4_register(class, env = parent.frame())
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
 \description{
-If you want to use \link{method<-} to register an method for an S4 generic with
-an R7 class, you need to call \code{S4_register()} once. This generates a full
-S4 class specification that:
+If you want to use and R7 class with S4 (e.g. to use \link{method<-} to register an
+method for an S4 generic with an R7 class) you need to call \code{S4_register()}
+once. This generates a full S4 class specification that:
 \itemize{
-\item Matches
+\item Matches class name and inheritance hierarchy.
 \item Uses \code{\link[=validate]{validate()}} as the validity method.
 \item Defines formal S4 slots to match R7 properties. The slot types are
 matched to the R7 property types, with the exception of R7 unions,
@@ -24,6 +24,6 @@ which are unchecked (due to the challenges of converting R7 unions to
 S4 unions).
 }
 
-When registering a class that extends R7 class or specifies an R7 class for
-a property, you must register those classes first.
+If \code{class} extends another R7 class or has a property restricted to an
+R7 class, you you must register those classes first.
 }

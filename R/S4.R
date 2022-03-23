@@ -1,19 +1,19 @@
 #' Register an R7 class with S4
 #'
 #' @description
-#' If you want to use [method<-] to register an method for an S4 generic with
-#' an R7 class, you need to call `S4_register()` once. This generates a full
-#' S4 class specification that:
+#' If you want to use and R7 class with S4 (e.g. to use [method<-] to register an
+#' method for an S4 generic with an R7 class) you need to call `S4_register()`
+#' once. This generates a full S4 class specification that:
 #'
-#' * Matches
+#' * Matches class name and inheritance hierarchy.
 #' * Uses [validate()] as the validity method.
 #' * Defines formal S4 slots to match R7 properties. The slot types are
 #'   matched to the R7 property types, with the exception of R7 unions,
 #'   which are unchecked (due to the challenges of converting R7 unions to
 #'   S4 unions).
 #'
-#' When registering a class that extends R7 class or specifies an R7 class for
-#' a property, you must register those classes first.
+#' If `class` extends another R7 class or has a property restricted to an
+#' R7 class, you you must register those classes first.
 #'
 #' @param class An R7 class created with [new_class()].
 #' @param env Expert use only. Environment where S4 class will be registered.
@@ -27,7 +27,7 @@ S4_register <- function(class, env = parent.frame()) {
   name <- class@name
   contains <- double_to_numeric(setdiff(class_dispatch(class), "ANY")[-1])
 
-  # S4 inherits slots from parent class, so
+  # S4 classes inherits slots from parent but R7 classes flatten
   props <- class@properties
   if (is_class(class@parent) && class@parent@name != "R7_object") {
     parent_props <- class@parent@properties
@@ -38,6 +38,7 @@ S4_register <- function(class, env = parent.frame()) {
   methods::setClass(name, contains = contains, slots = slots, where = topenv(env))
   methods::setValidity(name, function(object) validate(object), where = topenv(env))
   methods::setOldClass(c(name, contains), S4Class = name, where = topenv(env))
+  invisible()
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
