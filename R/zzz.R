@@ -45,12 +45,6 @@ methods::setOldClass("R7_object")
 
 
 
-check_R7 <- function(x, arg = deparse(substitute(x))) {
-  if (!inherits(x, "R7_object")) {
-    stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
-  }
-}
-
 R7_generic <- new_class(
   name = "R7_generic",
   properties = list(

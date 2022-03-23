@@ -26,9 +26,18 @@ R7_inherits <- function(x, class) {
 
 #' @export
 #' @rdname R7_inherits
-check_R7_inherits <- function(x, class, arg = deparse(substitute(x))) {
-  if (!R7_inherits(x, class)) {
-    stop(sprintf("`%s` is not a %s", arg, class_desc(class)), call. = FALSE)
+check_R7_inherits <- function(x, class = NULL, arg = deparse(substitute(x))) {
+  if (is.null(class)) {
+    if (!inherits(x, "R7_object")) {
+      msg <- sprintf("`%s` must be an <R7_object>, not a %s", arg, class_desc(class), obj_desc(x))
+      stop(msg, call. = FALSE)
+    }
+  } else {
+    if (!R7_inherits(x, class)) {
+      msg <- sprintf("`%s` must be a %s, not a %s", arg, class_desc(class), obj_desc(x))
+      stop(msg, call. = FALSE)
+    }
   }
+
   invisible()
 }

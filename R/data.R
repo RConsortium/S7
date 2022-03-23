@@ -16,7 +16,7 @@
 #' R7_data(y) <- c("a", "b")
 #' y
 R7_data <- function(object) {
-  check_R7(object)
+  check_R7_inherits(object)
 
   zap_attr(object, c(prop_names(object), "class", "R7_class"))
 }

@@ -55,7 +55,7 @@
 #' # super() only affects the _next_ generic:
 #' bar2(super(obj, to = foo1))
 super <- function(from, to) {
-  check_R7(from)
+  check_R7_inherits(from)
 
   to <- as_class(to)
   check_can_inherit(to)
