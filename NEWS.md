@@ -1,6 +1,6 @@
 # R7 0.0.0.9000
 
-* New `R7_inherits()` and `check_R7_inherits()` (#193)
+* New `R7_inherits()` and `check_is_R7()` (#193)
 
 * `new_class()` can create abstract classes (#199).
 

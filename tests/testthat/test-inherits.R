@@ -15,6 +15,6 @@ test_that("throws informative error", {
   expect_snapshot(error = TRUE, {
     foo1 <- new_class("foo1")
     foo2 <- new_class("foo2")
-    check_R7_inherits(foo1(), foo2)
+    check_is_R7(foo1(), foo2)
   })
 })

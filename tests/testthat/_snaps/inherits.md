@@ -10,7 +10,7 @@
     Code
       foo1 <- new_class("foo1")
       foo2 <- new_class("foo2")
-      check_R7_inherits(foo1(), foo2)
+      check_is_R7(foo1(), foo2)
     Error <simpleError>
       `foo1()` must be a <foo2>, not a <foo1>
 
