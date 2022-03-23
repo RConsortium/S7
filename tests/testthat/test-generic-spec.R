@@ -11,3 +11,7 @@ test_that("can standardise generics", {
   expect_snapshot(as_generic(function() {}), error = TRUE)
   expect_snapshot(as_generic(1), error = TRUE)
 })
+
+test_that("base ops use R7 shim", {
+  expect_equal(as_generic(`+`), base_ops[["+"]])
+})

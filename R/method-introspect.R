@@ -31,6 +31,7 @@
 #' method(bizarro, object = 1)
 #' method(bizarro, new_S3_class("factor"))
 method <- function(generic, class = NULL, object = NULL) {
+  generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
   .Call(method_, generic, dispatch, TRUE)
 }
@@ -61,6 +62,7 @@ method <- function(generic, class = NULL, object = NULL) {
 #'
 #' method_explain(add, list(foo2, foo2))
 method_explain <- function(generic, class = NULL, object = NULL) {
+  generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
 
   grid <- as.matrix(rev(do.call("expand.grid", rev(dispatch))))

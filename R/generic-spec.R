@@ -17,7 +17,9 @@ as_S3_generic <- function(x) {
     return(S3_generic(x, as.character(use_method[[2]])))
   } else {
     name <- find_base_name(x)
-    if (!is.na(name) && is_internal_generic(name)) {
+    if (name %in% group_generics()$Ops) {
+      return(base_ops[[name]])
+    } else if (!is.na(name) && is_internal_generic(name)) {
       return(S3_generic(x, name))
     }
   }
