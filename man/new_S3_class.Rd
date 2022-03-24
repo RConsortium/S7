@@ -73,8 +73,8 @@ A Date is a numeric vector with class \code{Date} that can be constructed with
   function(.data = integer()) \{
     .Date(.data)
   \},
-  function(object) \{
-    if (!is.numeric(object)) \{
+  function(self) \{
+    if (!is.numeric(self)) \{
       "Underlying data must be numeric"
     \}
   \}

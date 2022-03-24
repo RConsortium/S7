@@ -1,5 +1,8 @@
 # R7 0.0.0.9000
 
+* Exported `class_factor`, `class_Date`, `class_POSIXct`, and 
+  `class_data.frame`.
+
 * New `R7_inherits()` and `check_R7_inherits()` (#193)
 
 * `new_class()` can create abstract classes (#199).

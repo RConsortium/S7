@@ -49,8 +49,8 @@
 #'   function(.data = integer()) {
 #'     .Date(.data)
 #'   },
-#'   function(object) {
-#'     if (!is.numeric(object)) {
+#'   function(self) {
+#'     if (!is.numeric(self)) {
 #'       "Underlying data must be numeric"
 #'     }
 #'   }
@@ -124,38 +124,94 @@ is_S3_class <- function(x) {
 }
 
 # -------------------------------------------------------------------------
-# Define a few base examples
+# Pull out validation functions so hit by code coverage
 
-S3_factor <- new_S3_class("factor",
-  function(.data = integer(), levels = character()) {
+validate_factor <- function(self) {
+  c(
+    if (typeof(self) != "integer")
+      "Underlying data must be an <integer>",
+    if (!is.character(attr(self, "levels")))
+      "attr(, 'levels') must be a <character>"
+  )
+}
+
+validate_date <- function(self) {
+  if (!is.numeric(self)) {
+    "Underlying data must be numeric"
+  }
+}
+
+validate_POSIXct <- function(self) {
+  if (!is.numeric(self)) {
+    return("Underlying data must be numeric")
+  }
+
+  tz <- attr(self, "tz")
+  if (!is.character(tz) || length(tz) != 1) {
+    return("attr(, 'tz') must be a single string")
+  }
+}
+
+validate_data.frame <- function(self) {
+  if (!is.list(self)) {
+    return("Underlying data must be a <list>")
+  }
+
+  rn <- attr(self, "row.names")
+  if (!is.character(rn) && !is.integer(rn)) {
+    return("attr(, 'row.names') must be a <character> or <integer>")
+  }
+
+  if (length(self) >= 1) {
+    ns <- unique(c(lengths(self), length(rn)))
+    if (length(ns) > 1) {
+      return("All columns and row names must have the same length")
+    }
+
+    if (is.null(names(self))) {
+      return("Underlying data must be named")
+    }
+  }
+}
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+class_factor <- new_S3_class("factor",
+  constructor = function(.data = integer(), levels = character()) {
     structure(.data, levels = levels, class = "factor")
   },
-  function(object) {
-    c(
-      if (typeof(object) != "integer")
-        "Underlying data must be an <integer>",
-      if (!is.character(attr(object, "levels")))
-        "attr(, 'levels') must be a character vector"
-    )
-  }
+  validator = validate_factor
 )
 
-S3_POSIXct <- new_S3_class("POSIXct",
-  function(.data = double(), tz = "") {
+#' @export
+#' @rdname base_classes
+#' @format NULL
+#' @order 3
+class_Date <- new_S3_class("Date",
+  constructor = function(.data = double()) {
+    .Date(.data)
+  },
+  validator = validate_date
+)
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+#' @order 3
+class_POSIXct <- new_S3_class("POSIXct",
+  constructor = function(.data = double(), tz = "") {
     .POSIXct(.data, tz = tz)
   },
-  function(object) {
-    c(
-      if (!is.numeric(object))
-        "Underlying data must be numeric",
-      if (!is.character(tz) || length(tz) != 1)
-        "attr(, 'tz') must be a single string"
-    )
-  }
+  validator = validate_POSIXct
 )
 
-S3_data.frame <- new_S3_class("data.frame",
-  function(.data = list(), row.names = NULL) {
+#' @export
+#' @rdname base_classes
+#' @format NULL
+#' @order 3
+class_data.frame <- new_S3_class("data.frame",
+  constructor = function(.data = list(), row.names = NULL) {
     if (is.null(row.names)) {
       list2DF(.data)
     } else {
@@ -164,13 +220,5 @@ S3_data.frame <- new_S3_class("data.frame",
       out
     }
   },
-  function(self) {
-    rn <- attr(self, "row.names")
-    c(
-      if (!is.list(self))
-        "Underlying data must be a <list>",
-      if (!is.character(rn) && !is.integer(rn))
-        "attr(, 'rownames') must be a character or integer vector"
-    )
-  }
+  validator = validate_data.frame
 )
