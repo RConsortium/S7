@@ -5,18 +5,18 @@
 # method lookup fails with informative messages
 
     Can't find method for generic `foo()` with dispatch classes:
-    - x: logical, ANY
+    - x: logical
     - y: MISSING
 
 ---
 
     Can't find method for generic `foo()` with dispatch classes:
-    - x: logical, ANY
-    - y: list, ANY
+    - x: logical
+    - y: list
 
 ---
 
     Can't find method for generic `foo()` with dispatch classes:
-    - x: tbl_df, tbl, data.frame, ANY
-    - y: POSIXct, POSIXt, ANY
+    - x: tbl_df, tbl, data.frame
+    - y: POSIXct, POSIXt
 

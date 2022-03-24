@@ -62,6 +62,7 @@ method <- function(generic, class = NULL, object = NULL) {
 #' method_explain(add, list(foo2, foo2))
 method_explain <- function(generic, class = NULL, object = NULL) {
   dispatch <- as_dispatch(generic, class = class, object = object)
+  dispatch <- lapply(dispatch, c, "ANY")
 
   grid <- as.matrix(rev(do.call("expand.grid", rev(dispatch))))
   colnames(grid) <- generic@dispatch_args
