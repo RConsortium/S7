@@ -124,17 +124,17 @@ class_desc <- function(x) {
 # Vector of class names; used in method introspection
 class_dispatch <- function(x) {
   if (is_class(x) && x@name == "R7_object") {
-    return(c("R7_object", "ANY"))
+    return("R7_object")
   }
 
   switch(class_type(x),
-    NULL = c("NULL", "ANY"),
+    NULL = "NULL",
     missing = "MISSING",
-    any = "ANY",
-    S4 = c(S4_class_dispatch(methods::extends(x)), "ANY"),
+    any = character(),
+    S4 = S4_class_dispatch(methods::extends(x)),
     R7 = c(R7_class_name(x), class_dispatch(x@parent)),
-    R7_base = c(x$class, "R7_object", "ANY"),
-    R7_S3 = c(x$class, "R7_object", "ANY"),
+    R7_base = c(x$class, "R7_object"),
+    R7_S3 = c(x$class, "R7_object"),
     stop("Unsupported")
   )
 }
@@ -207,10 +207,10 @@ obj_desc <- function(x) {
 }
 obj_dispatch <- function(x) {
   switch(obj_type(x),
-    base = c(base_class(x), "ANY"),
-    S3 = c(class(x), "ANY"),
-    S4 = c(S4_class_dispatch(methods::getClass(class(x))), "ANY"),
-    R7 = c(class(x), "ANY") # = class_dispatch(R7_class(x))
+    base = base_class(x),
+    S3 = class(x),
+    S4 = S4_class_dispatch(methods::getClass(class(x))),
+    R7 = class(x) # = class_dispatch(R7_class(x))
   )
 }
 

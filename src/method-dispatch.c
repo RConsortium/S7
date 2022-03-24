@@ -4,6 +4,7 @@
 
 extern SEXP parent_sym;
 extern SEXP name_sym;
+extern SEXP ANY_sym;
 
 // Recursively walk through method table to perform iterated dispatch
 SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
@@ -23,6 +24,16 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
       return val;
     }
   }
+
+  // ANY fallback
+  SEXP val = Rf_findVarInFrame(table, ANY_sym);
+  if (TYPEOF(val) == ENVSXP) {
+    val = method_rec(val, signature, signature_itr + 1);
+  }
+  if (TYPEOF(val) == CLOSXP) {
+    return val;
+  }
+
   return R_NilValue;
 }
 
