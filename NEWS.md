@@ -1,5 +1,7 @@
 # R7 0.0.0.9000
 
+## Mar 2022
+
 * Exported `class_factor`, `class_Date`, `class_POSIXct`, and 
   `class_data.frame`.
 
@@ -8,8 +10,6 @@
 * `new_class()` can create abstract classes (#199).
 
 * `method_call()` is now `R7_dispatch()` (#200).
-
-## Mar 2022
 
 * Can now register methods for double-dispatch base Ops (currently only
   works if both classes are R7, or the first argument is R7 and the second
