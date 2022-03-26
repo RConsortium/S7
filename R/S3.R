@@ -157,13 +157,9 @@ validate_data.frame <- function(self) {
     return("Underlying data must be a <list>")
   }
 
-  rn <- attr(self, "row.names")
-  if (!is.character(rn) && !is.integer(rn)) {
-    return("attr(, 'row.names') must be a <character> or <integer>")
-  }
-
   if (length(self) >= 1) {
-    ns <- unique(c(lengths(self), length(rn)))
+    # Avoid materialising compact row names
+    ns <- unique(c(lengths(self), .row_names_info(self, 2L)))
     if (length(ns) > 1) {
       return("All columns and row names must have the same length")
     }
