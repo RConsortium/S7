@@ -72,6 +72,16 @@ R7_method <- new_class("R7_method",
 )
 methods::setOldClass(c("R7_method", "function", "R7_object"))
 
+
+# Create generics for double dispatch base Ops
+base_ops <- lapply(setNames(, group_generics()$Ops), new_generic, dispatch_args = c("x", "y"))
+
+#' @export
+Ops.R7_object <- function(e1, e2) {
+  base_ops[[.Generic]](e1, e2)
+}
+
+
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
   env[[".conflicts.OK"]] <- TRUE

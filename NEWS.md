@@ -8,6 +8,10 @@
 
 ## Mar 2022
 
+* Can now register methods for double-dispatch base Ops (currently only
+  works if both classes are R7, or the first argument is R7 and the second
+  doesn't have a method for the Ops generic) (#128).
+
 * All built-in wrappers around base types use `class_`. You can no longer
   refer to a base type with a string or a constructor function (#170).
 
