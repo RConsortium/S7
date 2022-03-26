@@ -92,9 +92,7 @@ method_explain <- function(generic, class = NULL, object = NULL) {
 
 
 as_dispatch <- function(generic, class = NULL, object = NULL) {
-  if (!inherits(generic, "R7_generic")) {
-    stop("`generic` must be an <R7_generic>")
-  }
+  check_is_R7(generic, R7_generic)
 
   if (!is.null(class) && is.null(object)) {
     signature <- as_signature(class, generic)
