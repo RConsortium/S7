@@ -16,10 +16,10 @@
 \alias{class_numeric}
 \alias{class_atomic}
 \alias{class_vector}
+\alias{class_factor}
 \alias{class_Date}
 \alias{class_POSIXct}
 \alias{class_data.frame}
-\alias{class_factor}
 \title{Base classes}
 \usage{
 class_logical
@@ -48,13 +48,13 @@ class_atomic
 
 class_vector
 
+class_factor
+
 class_Date
 
 class_POSIXct
 
 class_data.frame
-
-class_factor
 }
 \description{
 These classes represent base types allowing them to be used within R7.

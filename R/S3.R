@@ -177,6 +177,7 @@ validate_data.frame <- function(self) {
 #' @export
 #' @rdname base_classes
 #' @format NULL
+#' @order 3
 class_factor <- new_S3_class("factor",
   constructor = function(.data = integer(), levels = character()) {
     structure(.data, levels = levels, class = "factor")
