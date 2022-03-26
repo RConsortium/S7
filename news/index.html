@@ -59,13 +59,13 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="r7-0009000">R7 0.0.0.9000<a class="anchor" aria-label="anchor" href="#r7-0009000"></a></h2>
+<div class="section level3">
+<h3 id="mar-0-0-0-9000">Mar 2022<a class="anchor" aria-label="anchor" href="#mar-0-0-0-9000"></a></h3>
 <ul><li><p>Exported <code>class_factor</code>, <code>class_Date</code>, <code>class_POSIXct</code>, and <code>class_data.frame</code>.</p></li>
 <li><p>New <code><a href="../reference/R7_inherits.html">R7_inherits()</a></code> and <code><a href="../reference/R7_inherits.html">check_is_R7()</a></code> (<a href="https://github.com/RConsortium/OOP-WG/issues/193" class="external-link">#193</a>)</p></li>
 <li><p><code><a href="../reference/new_class.html">new_class()</a></code> can create abstract classes (<a href="https://github.com/RConsortium/OOP-WG/issues/199" class="external-link">#199</a>).</p></li>
 <li><p><code>method_call()</code> is now <code><a href="../reference/new_generic.html">R7_dispatch()</a></code> (<a href="https://github.com/RConsortium/OOP-WG/issues/200" class="external-link">#200</a>).</p></li>
-</ul><div class="section level3">
-<h3 id="mar-0-0-0-9000">Mar 2022<a class="anchor" aria-label="anchor" href="#mar-0-0-0-9000"></a></h3>
-<ul><li><p>Can now register methods for double-dispatch base Ops (currently only works if both classes are R7, or the first argument is R7 and the second doesn’t have a method for the Ops generic) (<a href="https://github.com/RConsortium/OOP-WG/issues/128" class="external-link">#128</a>).</p></li>
+<li><p>Can now register methods for double-dispatch base Ops (currently only works if both classes are R7, or the first argument is R7 and the second doesn’t have a method for the Ops generic) (<a href="https://github.com/RConsortium/OOP-WG/issues/128" class="external-link">#128</a>).</p></li>
 <li><p>All built-in wrappers around base types use <code>class_</code>. You can no longer refer to a base type with a string or a constructor function (<a href="https://github.com/RConsortium/OOP-WG/issues/170" class="external-link">#170</a>).</p></li>
 <li><p><code><a href="../reference/convert.html">convert()</a></code> allows you to convert an object into another class (<a href="https://github.com/RConsortium/OOP-WG/issues/136" class="external-link">#136</a>).</p></li>
 <li><p><code><a href="../reference/super.html">super()</a></code> replaces <code>next_method()</code> (<a href="https://github.com/RConsortium/OOP-WG/issues/110" class="external-link">#110</a>).</p></li>
