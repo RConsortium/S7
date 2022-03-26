@@ -3,7 +3,7 @@
     Code
       method(print, 1)
     Error <simpleError>
-      `generic` must be a <R7_generic>, not a <closure>
+      `generic` must be a <R7_generic>, not a S3<R7_S3_generic>
     Code
       foo <- new_generic("foo", "x")
       method(foo)
