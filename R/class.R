@@ -184,7 +184,7 @@ print.R7_class <- function(x, ...) {
 #' @export
 str.R7_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<", paste0(setdiff(class_dispatch(object), "ANY"), collapse = "/"), "> constructor", sep = "")
+  cat("<", paste0(class_dispatch(object), collapse = "/"), "> constructor", sep = "")
   cat("\n")
 
   if (nest.lev == 0) {
@@ -233,7 +233,7 @@ new_object <- function(.parent, ...) {
 
   object <- .parent %||% class_construct(class@parent)
   attr(object, "R7_class") <- class
-  class(object) <- setdiff(class_dispatch(class), "ANY")
+  class(object) <- class_dispatch(class)
 
   for (nme in nms) {
     prop(object, nme, check = FALSE) <- args[[nme]]

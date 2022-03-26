@@ -45,12 +45,6 @@ methods::setOldClass("R7_object")
 
 
 
-check_R7 <- function(x, arg = deparse(substitute(x))) {
-  if (!inherits(x, "R7_object")) {
-    stop(sprintf("`%s` is not an <R7_object>", arg), call. = FALSE)
-  }
-}
-
 R7_generic <- new_class(
   name = "R7_generic",
   properties = list(
@@ -71,6 +65,16 @@ R7_method <- new_class("R7_method",
   )
 )
 methods::setOldClass(c("R7_method", "function", "R7_object"))
+
+
+# Create generics for double dispatch base Ops
+base_ops <- lapply(setNames(, group_generics()$Ops), new_generic, dispatch_args = c("x", "y"))
+
+#' @export
+Ops.R7_object <- function(e1, e2) {
+  base_ops[[.Generic]](e1, e2)
+}
+
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))

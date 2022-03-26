@@ -18,6 +18,7 @@ static const R_CallMethodDef CallEntries[] = {
 
 SEXP parent_sym;
 SEXP name_sym;
+SEXP ANY_sym;
 
 void R_init_R7(DllInfo *dll)
 {
@@ -25,4 +26,5 @@ void R_init_R7(DllInfo *dll)
     R_useDynamicSymbols(dll, FALSE);
     parent_sym = Rf_install("parent");
     name_sym = Rf_install("name");
+    ANY_sym = Rf_install("ANY");
 }
