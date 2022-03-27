@@ -162,7 +162,7 @@ test_that("can work with R7 classes that extend S3 classes", {
 # S4 ----------------------------------------------------------------------
 
 test_that("can work with S4 classes", {
-  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Foo4")))
+  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Foo4"), where = globalenv()))
 
   methods::setClass("Foo1", contains = "character", where = globalenv())
   methods::setClass("Foo2", contains = "Foo1", where = globalenv())
