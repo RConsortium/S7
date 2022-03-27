@@ -58,7 +58,7 @@ convert <- function(from, to, ...) {
     } else if (is_class(to)) {
       from <- zap_attr(from, setdiff(from_props, names(to@properties)))
       attr(from, "R7_class") <- to
-      class(from) <- setdiff(class_dispatch(to), "ANY")
+      class(from) <- class_dispatch(to)
     } else {
       stop("Unreachable")
     }

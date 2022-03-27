@@ -31,6 +31,7 @@
 #' method(bizarro, object = 1)
 #' method(bizarro, new_S3_class("factor"))
 method <- function(generic, class = NULL, object = NULL) {
+  generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
   .Call(method_, generic, dispatch, TRUE)
 }
@@ -61,7 +62,9 @@ method <- function(generic, class = NULL, object = NULL) {
 #'
 #' method_explain(add, list(foo2, foo2))
 method_explain <- function(generic, class = NULL, object = NULL) {
+  generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
+  dispatch <- lapply(dispatch, c, "ANY")
 
   grid <- as.matrix(rev(do.call("expand.grid", rev(dispatch))))
   colnames(grid) <- generic@dispatch_args
@@ -89,9 +92,7 @@ method_explain <- function(generic, class = NULL, object = NULL) {
 
 
 as_dispatch <- function(generic, class = NULL, object = NULL) {
-  if (!inherits(generic, "R7_generic")) {
-    stop("`generic` must be an <R7_generic>")
-  }
+  check_is_R7(generic, R7_generic)
 
   if (!is.null(class) && is.null(object)) {
     signature <- as_signature(class, generic)

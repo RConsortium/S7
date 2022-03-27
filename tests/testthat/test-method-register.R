@@ -54,6 +54,14 @@ describe("method registration", {
     expect_equal(sum, base::sum)
   })
 
+  it("can register R7 method for S3 Ops generic", {
+    foo <- new_class("foo")
+    bar <- new_class("bar")
+
+    method(`+`, list(foo, bar)) <- function(x, y) "foobar"
+    expect_equal(foo() + bar(), "foobar")
+  })
+
   it("S3 registration requires a R7 class", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {

@@ -30,13 +30,13 @@
 # can generate constructors for S3 classes
 
     Code
-      new_constructor(S3_factor, list())
+      new_constructor(class_factor, list())
     Output
       function (.data = integer(), levels = character()) 
       new_object(new_factor(.data = .data, levels = levels))
       <environment: 0x0>
     Code
-      new_constructor(S3_factor, as_properties(list(x = class_numeric, y = class_numeric)))
+      new_constructor(class_factor, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
       function (.data = integer(), levels = character(), x = class_missing, 
           y = class_missing) 

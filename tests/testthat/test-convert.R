@@ -41,8 +41,8 @@ describe("fallback convert", {
   })
 
   it("can convert to S3 class", {
-    factor2 <- new_class("factor2", S3_factor, properties = list(x = class_double))
-    obj <- convert(factor2(1, "x", x = 1), to = S3_factor)
+    factor2 <- new_class("factor2", class_factor, properties = list(x = class_double))
+    obj <- convert(factor2(1, "x", x = 1), to = class_factor)
     expect_equal(class(obj), "factor")
     expect_equal(R7_class(obj), NULL)
     expect_equal(attr(obj, "x"), NULL)
