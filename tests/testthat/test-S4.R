@@ -111,55 +111,60 @@ describe("S4_class_dispatch", {
 
 describe("S4 registration", {
   it("can register simple class hierarchy", {
-    foo <- new_class("foo")
-    foo2 <- new_class("foo2", foo)
+    on.exit(S4_remove_classes(c("foo1", "foo2"), where = environment()))
 
-    S4_register(foo)
+    foo1 <- new_class("foo1")
+    foo2 <- new_class("foo2", foo1)
+
+    S4_register(foo1)
     S4_register(foo2)
 
-    expect_s4_class(getClass("foo"), "classRepresentation")
+    expect_s4_class(getClass("foo1"), "classRepresentation")
     expect_s4_class(getClass("foo2"), "classRepresentation")
   })
 
   it("ties S4 validation to R7 validation", {
-    on.exit(S4_remove_classes("Foo"))
+    on.exit(S4_remove_classes(c("foo1", "Foo2"), where = environment()))
 
-    foo3 <- new_class("foo3",
+    foo1 <- new_class("foo1",
       parent = class_integer,
       validator = function(self) {
         if (R7_data(self) < 0) "Must be positive"
       }
     )
     # Create invalid object
-    R7_obj <- foo3(1L)
+    R7_obj <- foo1(1L)
     R7_obj[[1]] <- -1L
 
-    S4_register(foo3)
-    Foo <- setClass("Foo", slots = list(x = "foo3"))
-    S4_obj <- Foo(x = R7_obj)
+    S4_register(foo1)
+    Foo2 <- setClass("Foo2", slots = list(x = "foo1"))
+    S4_obj <- Foo2(x = R7_obj)
 
     expect_error(validObject(S4_obj, complete = TRUE), "Must be positive")
   })
 
   it("can register slots", {
-    foo4 <- new_class("foo4", properties = list(x = class_integer))
-    foo5 <- new_class("foo5", foo4, properties = list(y = class_character))
+    on.exit(S4_remove_classes(c("foo1", "foo2"), where = environment()))
 
-    S4_register(foo4)
-    S4_register(foo5)
-    expect_equal(getClass("foo4")@slots$x, structure("integer", package = "methods"))
-    expect_equal(getClass("foo5")@slots$x, structure("integer", package = "methods"))
-    expect_equal(getClass("foo5")@slots$y, structure("character", package = "methods"))
+    foo1 <- new_class("foo1", properties = list(x = class_integer))
+    foo2 <- new_class("foo2", foo1, properties = list(y = class_character))
+
+    S4_register(foo1)
+    S4_register(foo2)
+    expect_equal(getClass("foo1")@slots$x, structure("integer", package = "methods"))
+    expect_equal(getClass("foo2")@slots$x, structure("integer", package = "methods"))
+    expect_equal(getClass("foo2")@slots$y, structure("character", package = "methods"))
   })
 
   it("translates double to numeric", {
-    foo6 <- new_class("foo6",
+    on.exit(S4_remove_classes("foo1", where = environment()))
+    foo1 <- new_class("foo1",
       parent = class_double,
       properties = list(x = class_double)
     )
-    S4_register(foo6)
+    S4_register(foo1)
 
-    obj <- new("foo6")
+    obj <- new("foo1")
     expect_type(obj, "double")
     expect_type(slot(obj, "x"), "double")
   })
