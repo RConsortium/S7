@@ -1,7 +1,7 @@
 #' Register an R7 class with S4
 #'
 #' @description
-#' If you want to use and R7 class with S4 (e.g. to use [method<-] to register an
+#' If you want to use an R7 class with S4 (e.g. to use [method<-] to register an
 #' method for an S4 generic with an R7 class) you need to call `S4_register()`
 #' once. This generates a full S4 class specification that:
 #'
@@ -27,7 +27,7 @@ S4_register <- function(class, env = parent.frame()) {
   name <- class@name
   contains <- double_to_numeric(setdiff(class_dispatch(class), "ANY")[-1])
 
-  # S4 classes inherits slots from parent but R7 classes flatten
+  # S4 classes inherit slots from parent but R7 classes flatten
   props <- class@properties
   if (is_class(class@parent) && class@parent@name != "R7_object") {
     parent_props <- class@parent@properties
