@@ -12,7 +12,7 @@ S4_register(class, env = parent.frame())
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
 \description{
-If you want to use and R7 class with S4 (e.g. to use \link{method<-} to register an
+If you want to use an R7 class with S4 (e.g. to use \link{method<-} to register an
 method for an S4 generic with an R7 class) you need to call \code{S4_register()}
 once. This generates a full S4 class specification that:
 \itemize{
