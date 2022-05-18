@@ -17,4 +17,5 @@ test_that("throws informative error", {
     foo2 <- new_class("foo2")
     check_is_R7(foo1(), foo2)
   })
+  expect_snapshot(error = TRUE, check_is_R7("a"))
 })
