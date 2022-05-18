@@ -30,7 +30,7 @@ R7_inherits <- function(x, class) {
 check_is_R7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
   if (is.null(class)) {
     if (!inherits(x, "R7_object")) {
-      msg <- sprintf("`%s` must be an <R7_object>, not a %s", arg, class_desc(class), obj_desc(x))
+      msg <- sprintf("`%s` must be an <R7_object>, not a %s", arg, obj_desc(x))
       stop(msg, call. = FALSE)
     }
   } else {
