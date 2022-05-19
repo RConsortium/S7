@@ -14,3 +14,10 @@
     Error <simpleError>
       `foo1()` must be a <foo2>, not a <foo1>
 
+---
+
+    Code
+      check_is_R7("a")
+    Error <simpleError>
+      `"a"` must be an <R7_object>, not a <character>
+
