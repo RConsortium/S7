@@ -24,7 +24,7 @@ you can experiment by installing the in-development version from GitHub:
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("r-consortium/OOP-WG")
+remotes::install_github("rconsortium/OOP-WG")
 ```
 
 ## Usage
