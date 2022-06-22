@@ -76,6 +76,8 @@ new_S3_class() because S3 lacks a formal class definition."><!-- mathjax --><scr
 <dd><p>S3 class vector (i.e. what <code><a href="https://rdrr.io/r/base/class.html" class="external-link">class()</a></code> returns). For method
 registration, you can abbreviate this to a single string, the S3 class
 name.</p></dd>
+
+
 <dt>constructor</dt>
 <dd><p>An optional constructor that can be used to create
 objects of the specified class. This is only needed if you wish to
@@ -85,12 +87,15 @@ same way as a R7 constructor: the first argument should be <code>.data</code>
 <p>All arguments to the constructor should have default values so that
 when the constructor is called with no arguments, it returns returns
 an "empty", but valid, object.</p></dd>
+
+
 <dt>validator</dt>
 <dd><p>An optional validator used by <code><a href="validate.html">validate()</a></code> to check that
 the R7 object adheres to the constraints of the S3 class.</p>
 <p>A validator is a single argument function that takes the object to
 validate and returns <code>NULL</code> if the object is valid. If the object is
 invalid, it returns a character vector of problems.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="method-dispatch-properties-and-unions">Method dispatch, properties, and unions<a class="anchor" aria-label="anchor" href="#method-dispatch-properties-and-unions"></a></h2>
@@ -143,7 +148,7 @@ A Date is a numeric vector with class <code>Date</code> that can be constructed 
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
 </div>
 
     </footer></div>
