@@ -1,5 +1,8 @@
 # R7 0.0.0.9000
 
+* Add `[.R7_object`, `[<-.R7_object`, `[[.R7_object` and `[[<-.R7_object` methods to avoid "object of type 'S4'
+  is not subsettable" error (#236).
+
 ## Mar 2022
 
 * Exported `class_factor`, `class_Date`, `class_POSIXct`, and 

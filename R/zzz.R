@@ -42,8 +42,52 @@ methods::setOldClass("R7_object")
     stop(msg, call. = FALSE)
   }
 }
+#' @export
+`[.R7_object` <- function(x, ..., drop = TRUE) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- "R7 object not subsettable."
+    stop(msg, call. = FALSE)
+  }
+}
 
-
+#' @export
+`[.R7_object` <- function(x, ..., drop = TRUE) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- "R7 object not subsettable."
+    stop(msg, call. = FALSE)
+  }
+}
+#' @export
+`[<-.R7_object` <- function(x, ..., value) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- "R7 object not subsettable."
+    stop(msg, call. = FALSE)
+  }
+}
+#' @export
+`[[.R7_object` <- function(x, ...) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- "R7 object not subsettable."
+    stop(msg, call. = FALSE)
+  }
+}
+#' @export
+`[[<-.R7_object` <- function(x, ..., value) {
+  if (typeof(x) %in% c("list", "environment")) {
+    NextMethod()
+  } else {
+    msg <- "R7 object not subsettable."
+    stop(msg, call. = FALSE)
+  }
+}
 
 R7_generic <- new_class(
   name = "R7_generic",

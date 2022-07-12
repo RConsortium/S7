@@ -14,3 +14,25 @@
     Error <simpleError>
       Can't set R7 properties with `$`. Did you mean `...@y <- 1`?
 
+# [ gives more accurate error
+
+    Code
+      x[1]
+    Error <simpleError>
+      R7 object not subsettable.
+    Code
+      x[1] <- 1
+    Error <simpleError>
+      R7 object not subsettable.
+
+# [[ gives more accurate error
+
+    Code
+      x[[1]]
+    Error <simpleError>
+      R7 object not subsettable.
+    Code
+      x[[1]] <- 1
+    Error <simpleError>
+      R7 object not subsettable.
+
