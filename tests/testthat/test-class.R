@@ -183,3 +183,8 @@ describe("default constructor", {
     expect_s3_class(x@x, "foo1")
   })
 })
+
+test_that("c(<R7_class>, ...) gives error", {
+  foo1 <- new_class("foo1")
+  expect_error(c(foo1, foo1))
+})
