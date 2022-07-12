@@ -161,7 +161,7 @@ class_deparse <- function(x) {
     any = "class_any",
     S4 = as.character(x@className),
     R7 = R7_class_name(x),
-    R7_base = encodeString(x$class, quote = '"'),
+    R7_base = paste0("class_", x$class), #encodeString(x$class, quote = '"'),
     R7_union = {
       classes <- vcapply(x$classes, class_deparse)
       paste0("new_union(", paste(classes, collapse = ", "), ")")

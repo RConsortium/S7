@@ -79,7 +79,7 @@ test_that("can work with base types", {
   expect_equal(class_register(klass), "character")
   expect_equal(class_desc(klass), "<character>")
   expect_equal(class_construct(klass, "x"), "x")
-  expect_equal(class_deparse(klass), '"character"')
+  expect_equal(class_deparse(klass), 'class_character')
 
   obj <- "x"
   expect_equal(obj_type(obj), "base")
