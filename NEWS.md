@@ -1,5 +1,7 @@
 # R7 0.0.0.9000
 
+* Combining R7 classes with `c()` now gives an error (#230)
+
 ## Mar 2022
 
 * Exported `class_factor`, `class_Date`, `class_POSIXct`, and 
