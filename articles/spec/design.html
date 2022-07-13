@@ -111,30 +111,30 @@
 </ul>
 <p>Classes are constructed by supplying these components to a call to <code>newClass()</code>. <code>newClass()</code> returns a class object that can be called to construct an object of that class.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">newClass</span><span class="op">(</span>
-  <span class="va">name</span>, 
-  parent <span class="op">=</span> <span class="va">Object</span>, 
-  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu">newObject</span><span class="op">(</span><span class="va">...</span><span class="op">)</span>, 
-  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="cn">NULL</span>,
-  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">newClass</span><span class="op">(</span></span>
+<span>  <span class="va">name</span>, </span>
+<span>  parent <span class="op">=</span> <span class="va">Object</span>, </span>
+<span>  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu">newObject</span><span class="op">(</span><span class="va">...</span><span class="op">)</span>, </span>
+<span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="cn">NULL</span>,</span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>For example:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">Range</span> <span class="op">&lt;-</span> <span class="fu">newClass</span><span class="op">(</span><span class="st">"Range"</span>, 
-  <span class="va">Vector</span>, 
-  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">start</span>, <span class="va">end</span><span class="op">)</span> <span class="op">{</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">start</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">end</span><span class="op">)</span>, <span class="va">end</span> <span class="op">&gt;=</span> <span class="va">start</span><span class="op">)</span>
-    <span class="fu">newObject</span><span class="op">(</span>start <span class="op">=</span> <span class="va">start</span>, end <span class="op">=</span> <span class="va">end</span><span class="op">)</span>
-  <span class="op">}</span>,
-  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="kw">if</span> <span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span>
-      <span class="st">"end must be greater than or equal to start"</span>
-    <span class="op">}</span>
-  <span class="op">}</span>, 
-  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"numeric"</span>, end <span class="op">=</span> <span class="st">"numeric"</span><span class="op">)</span>
-<span class="op">)</span>
-
-<span class="fu">Range</span><span class="op">(</span>start <span class="op">=</span> <span class="fl">1</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">Range</span> <span class="op">&lt;-</span> <span class="fu">newClass</span><span class="op">(</span><span class="st">"Range"</span>, </span>
+<span>  <span class="va">Vector</span>, </span>
+<span>  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">start</span>, <span class="va">end</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">start</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">end</span><span class="op">)</span>, <span class="va">end</span> <span class="op">&gt;=</span> <span class="va">start</span><span class="op">)</span></span>
+<span>    <span class="fu">newObject</span><span class="op">(</span>start <span class="op">=</span> <span class="va">start</span>, end <span class="op">=</span> <span class="va">end</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="st">"end must be greater than or equal to start"</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span>, </span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"numeric"</span>, end <span class="op">=</span> <span class="st">"numeric"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">Range</span><span class="op">(</span>start <span class="op">=</span> <span class="fl">1</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="initialization">Initialization<a class="anchor" aria-label="anchor" href="#initialization"></a>
 </h3>
@@ -158,21 +158,21 @@
 </h3>
 <p>Objects will be validated on initialization and every time a property is modified. To temporarily opt-out of validation (e.g. in order to transition through a temporarily invalid state), R7 provides <code>eventuallyValid()</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">eventuallyValid</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">fun</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">object</span><span class="op">$</span><span class="va">internal_validation_flag</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span>
-  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">fun</span><span class="op">(</span><span class="va">object</span><span class="op">)</span>
-  <span class="va">out</span><span class="op">$</span><span class="va">internal_validation_flag</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span>
-  <span class="fu"><a href="../../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">eventuallyValid</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">fun</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">object</span><span class="op">$</span><span class="va">internal_validation_flag</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
+<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">fun</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span>  <span class="va">out</span><span class="op">$</span><span class="va">internal_validation_flag</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span>  <span class="fu"><a href="../../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>For example, if you wanted to move a Range object to the right, you could write:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">move_right</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span>
-  <span class="fu">eventuallyValid</span><span class="op">(</span><span class="va">x</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">+</span> <span class="va">y</span>
-    <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">+</span> <span class="va">y</span>
-    <span class="va">x</span>
-  <span class="op">}</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">move_right</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">eventuallyValid</span><span class="op">(</span><span class="va">x</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">+</span> <span class="va">y</span></span>
+<span>    <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">+</span> <span class="va">y</span></span>
+<span>    <span class="va">x</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>This ensures that the validation will not trigger if <code>x@start + y</code> is greater than <code>x@end</code>.</p>
 <p>R7 also provides <code>implicitlyValid()</code> for expert use. This is similar to <code>eventuallyValid()</code> but does not check for validity at the end. This can be used in performance critical code where you can ascertain that a sequence of operations can never make an valid object invalid.</p>
 <p>(This can be quite hard: for example, in the <code>move_right()</code> example above, you might think that that if <code>x@start &lt; x@end</code> is true at the beginning, then <code>x@start + y &lt; x@end + y</code> will still be true at the end, and you don’t need to re-validate the object. But that’s not necessarily true: if <code>x@start == 1</code>, <code>x@end == 2</code>, and <code>abs(y) &gt; 2e16</code> then <code>x@start + y == x@end + y</code>!)</p>
@@ -182,20 +182,20 @@
 </h3>
 <p>A class union represents a list of possible classes. It is used in properties to allow a property to be one of a set of classes, and in method dispatch as a convenience for defining a method for multiple classes.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">ClassUnion</span> <span class="op">&lt;-</span> <span class="fu">defineClass</span><span class="op">(</span><span class="st">"ClassUnion"</span>, 
-  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>classes <span class="op">=</span> <span class="st">"list"</span><span class="op">)</span>,
-  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-    <span class="co"># Checks that all elements of classes are Class object</span>
-  <span class="op">}</span>,
-  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span>
-    <span class="co"># look up Class object from any class vectors</span>
-    <span class="fu">newObject</span><span class="op">(</span>classes <span class="op">=</span> <span class="va">classes</span><span class="op">)</span>
-  <span class="op">}</span>
-<span class="op">)</span>
-
-<span class="fu">ClassUnion</span><span class="op">(</span><span class="st">"character"</span>, <span class="st">"NULL"</span><span class="op">)</span>
-<span class="fu">ClassUnion</span><span class="op">(</span><span class="va">Range</span>, <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ClassUnion</span> <span class="op">&lt;-</span> <span class="fu">defineClass</span><span class="op">(</span><span class="st">"ClassUnion"</span>, </span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>classes <span class="op">=</span> <span class="st">"list"</span><span class="op">)</span>,</span>
+<span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="co"># Checks that all elements of classes are Class object</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<span>    <span class="co"># look up Class object from any class vectors</span></span>
+<span>    <span class="fu">newObject</span><span class="op">(</span>classes <span class="op">=</span> <span class="va">classes</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">ClassUnion</span><span class="op">(</span><span class="st">"character"</span>, <span class="st">"NULL"</span><span class="op">)</span></span>
+<span><span class="fu">ClassUnion</span><span class="op">(</span><span class="va">Range</span>, <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -211,11 +211,11 @@
 </ul>
 <p>Property objects are created by <code>newProperty()</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">newProperty</span><span class="op">(</span>
-  <span class="va">name</span>, 
-  class <span class="op">=</span> <span class="cn">NULL</span>, 
-  accessor <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">newProperty</span><span class="op">(</span></span>
+<span>  <span class="va">name</span>, </span>
+<span>  class <span class="op">=</span> <span class="cn">NULL</span>, </span>
+<span>  accessor <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>Compared to S3 attributes, properties are considerably stricter: a class defines the names and types of its properties. Compared to S4 slots, properties enable an object to change its internals without breaking existing usage because it can provides a custom accessor that redirects to the new representation. There will be built-in support for emitting deprecation messages.</p>
 <p>While it would be tempting to support public vs. private scoping on properties, it is not obvious how to do so, because no code is more privileged than any another. Nor is it clear whether the package should define the boundary, when packages sometimes define methods on classes defined in other packages and want to take advantage of their internal representations. We believe that the encapsulation afforded by properties is a good compromise.</p>
 </div>
@@ -225,7 +225,7 @@
 <p>A generic separates function interface from implementation: the generic defines the interface, and methods provide the implementation. For introspection purposes, it knows its name and the names of the arguments in its signature (the arguments considered during dispatch).</p>
 <p>Calling <code>newGeneric()</code> defines a new generic. It has the signature:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">newGeneric</span><span class="op">(</span><span class="va">name</span>, <span class="va">FUN</span>, <span class="va">signature</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">newGeneric</span><span class="op">(</span><span class="va">name</span>, <span class="va">FUN</span>, <span class="va">signature</span><span class="op">)</span></span></code></pre></div>
 <p>The <code>signature</code> would default to the first argument, i.e. <code>formals(FUN)[1]</code>. The body of <code>FUN</code> would resemble S3 and S4 generics. It might just call <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>.</p>
 <p>By convention, any argument that takes a generic function, can instead take the name of a generic function supplied as a string. The name will be used to find the class object in the calling frame.</p>
 </div>
@@ -237,7 +237,7 @@
 </h3>
 <p>Methods are defined by calling <code>method&lt;-(generic, signature, method)</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">generic</span>, <span class="va">signature</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span><span class="op">}</span> </code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">generic</span>, <span class="va">signature</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span><span class="op">}</span> </span></code></pre></div>
 <ul>
 <li><p><code>generic</code> is a generic function.</p></li>
 <li><p><code>signature</code> is a single class object, a class union, list of class objects/unions, or a character vector.</p></li>
@@ -246,10 +246,10 @@
 <p>Documentation will discuss the risks of defining a method when you don’t own either the generic or the class.</p>
 <p><code>method&lt;-</code> is designed to work at run-time (not just package build-time) so that methods can be defined when packages that define classes or generics are loaded after the package that defines the methods. This typically occurs when providing methods for generics or classes in suggested packages.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">whenLoaded</span><span class="op">(</span><span class="st">"pkg"</span>, <span class="op">{</span>
-  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">mean</span>, <span class="fu">pkg</span><span class="fu">::</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fl">10</span>
-  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">sum</span>, <span class="fu">pkg</span><span class="fu">::</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fl">5</span>
-<span class="op">}</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">whenLoaded</span><span class="op">(</span><span class="st">"pkg"</span>, <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">mean</span>, <span class="fu">pkg</span><span class="fu">::</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fl">10</span></span>
+<span>  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">sum</span>, <span class="fu">pkg</span><span class="fu">::</span><span class="va">A</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="fl">5</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dispatch">Dispatch<a class="anchor" aria-label="anchor" href="#dispatch"></a>
@@ -257,23 +257,23 @@
 <p>Dispatch is nested, meaning that if there are multiple arguments in the generic signature, it will dispatch on the first argument, then the second. Nested dispatch is likely easier to predict and understand compared to treating all arguments with equal precedence. Nested dispatch is also easier to implement efficiently, because classes would effectively inherit methods, and we could implement that inheritance using environments.</p>
 <p>For example, a <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> generic dispatching on <code>x</code> could be implemented like this:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">plot</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span>
-  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">plot</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">plot</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>While a <code>publish()</code> that publishes an object <code>x</code> to a destination <code>y</code>, dispatching on both arguments, could be implemented as:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">publish</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">classObject</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span>
-  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">publish</span>, <span class="va">sig</span><span class="op">)</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">publish</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">classObject</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">publish</span>, <span class="va">sig</span><span class="op">)</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>Because method dispatch is nested, this is presumably equivalent to something like:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">publish</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">publish_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">publish</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span>
-  <span class="va">publish_xy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">publish_x</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span>
-
-  <span class="fu">publish_xy</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span>
-<span class="op">}</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">publish</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">publish_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">publish</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">publish_xy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="va">publish_x</span>, <span class="fu">classObject</span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu">publish_xy</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <p>Alternatively, the generics could just call <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>, which would gain support for nested dispatch.</p>
 </div>
 </div>
@@ -310,7 +310,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer>

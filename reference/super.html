@@ -70,7 +70,7 @@ in terms of the implementation of its superclass.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">super</span><span class="op">(</span><span class="va">from</span>, <span class="va">to</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">super</span><span class="op">(</span><span class="va">from</span>, <span class="va">to</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -104,40 +104,40 @@ understand and reason about.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo1"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">class_numeric</span>, y <span class="op">=</span> <span class="va">class_numeric</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">foo2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo2"</span>, <span class="va">foo1</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>z <span class="op">=</span> <span class="va">class_numeric</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"total"</span>, <span class="st">"x"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">foo1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">@</span><span class="va">x</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">y</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># This doesn't work because it'll be stuck in an infinite loop:</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">total</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">z</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># So instead we use `super()` to call the method for the parent class:</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">total</span><span class="op">(</span><span class="fu">super</span><span class="op">(</span><span class="va">x</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">z</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo1"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">class_numeric</span>, y <span class="op">=</span> <span class="va">class_numeric</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">foo2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo2"</span>, <span class="va">foo1</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>z <span class="op">=</span> <span class="va">class_numeric</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">total</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"total"</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">foo1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">@</span><span class="va">x</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">y</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># This doesn't work because it'll be stuck in an infinite loop:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">total</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">z</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># So instead we use `super()` to call the method for the parent class:</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">total</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">total</span><span class="op">(</span><span class="fu">super</span><span class="op">(</span><span class="va">x</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">z</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Overwriting method total(&lt;foo2&gt;)</span>
-<span class="r-in"><span class="fu">total</span><span class="op">(</span><span class="fu">foo2</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="fu">total</span><span class="op">(</span><span class="fu">foo2</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 6</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># To see the difference between convert() and super() we need a</span></span>
-<span class="r-in"><span class="co"># method that calls another generic</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">bar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar1"</span>, <span class="st">"x"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar1</span>, <span class="va">foo1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">1</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar1</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">2</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">bar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar2"</span>, <span class="st">"x"</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar2</span>, <span class="va">foo1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">bar1</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar2</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fu">bar1</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu">foo2</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu">bar2</span><span class="op">(</span><span class="va">obj</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># To see the difference between convert() and super() we need a</span></span></span>
+<span class="r-in"><span><span class="co"># method that calls another generic</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">bar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar1"</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar1</span>, <span class="va">foo1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">1</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar1</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">2</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">bar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar2"</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar2</span>, <span class="va">foo1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu">bar1</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bar2</span>, <span class="va">foo2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fu">bar1</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu">foo2</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">bar2</span><span class="op">(</span><span class="va">obj</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2 2</span>
-<span class="r-in"><span class="co"># convert() affects every generic:</span></span>
-<span class="r-in"><span class="fu">bar2</span><span class="op">(</span><span class="fu"><a href="convert.html">convert</a></span><span class="op">(</span><span class="va">obj</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="co"># convert() affects every generic:</span></span></span>
+<span class="r-in"><span><span class="fu">bar2</span><span class="op">(</span><span class="fu"><a href="convert.html">convert</a></span><span class="op">(</span><span class="va">obj</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1</span>
-<span class="r-in"><span class="co"># super() only affects the _next_ generic:</span></span>
-<span class="r-in"><span class="fu">bar2</span><span class="op">(</span><span class="fu">super</span><span class="op">(</span><span class="va">obj</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="co"># super() only affects the _next_ generic:</span></span></span>
+<span class="r-in"><span><span class="fu">bar2</span><span class="op">(</span><span class="fu">super</span><span class="op">(</span><span class="va">obj</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 2</span>
 </code></pre></div>
     </div>
@@ -150,7 +150,7 @@ understand and reason about.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer></div>

@@ -79,13 +79,13 @@ behaviour when modified.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_property</span><span class="op">(</span>
-  class <span class="op">=</span> <span class="va">class_any</span>,
-  getter <span class="op">=</span> <span class="cn">NULL</span>,
-  setter <span class="op">=</span> <span class="cn">NULL</span>,
-  default <span class="op">=</span> <span class="cn">NULL</span>,
-  name <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">new_property</span><span class="op">(</span></span>
+<span>  class <span class="op">=</span> <span class="va">class_any</span>,</span>
+<span>  getter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  setter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  default <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  name <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -122,56 +122,56 @@ properties.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># Simple properties store data inside an object</span></span>
-<span class="r-in"><span class="va">pizza</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"pizza"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span class="r-in">  slices <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span><span class="va">class_numeric</span>, default <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">my_pizza</span> <span class="op">&lt;-</span> <span class="fu">pizza</span><span class="op">(</span>slices <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Simple properties store data inside an object</span></span></span>
+<span class="r-in"><span><span class="va">pizza</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"pizza"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  slices <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span><span class="va">class_numeric</span>, default <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">my_pizza</span> <span class="op">&lt;-</span> <span class="fu">pizza</span><span class="op">(</span>slices <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 6</span>
-<span class="r-in"><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
-<span class="r-in"><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span>
+<span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span> <span class="op">&lt;-</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">your_pizza</span> <span class="op">&lt;-</span> <span class="fu">pizza</span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">your_pizza</span><span class="op">@</span><span class="va">slices</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">your_pizza</span> <span class="op">&lt;-</span> <span class="fu">pizza</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">your_pizza</span><span class="op">@</span><span class="va">slices</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 10</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># Dynamic properties can compute on demand</span></span>
-<span class="r-in"><span class="va">clock</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"clock"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span class="r-in">  now <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span>getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">my_clock</span> <span class="op">&lt;-</span> <span class="fu">clock</span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span>; <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-06-22 19:55:43 UTC"</span>
-<span class="r-in"><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-06-22 19:55:44 UTC"</span>
-<span class="r-in"><span class="co"># This property is read only</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Dynamic properties can compute on demand</span></span></span>
+<span class="r-in"><span><span class="va">clock</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"clock"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  now <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span>getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">my_clock</span> <span class="op">&lt;-</span> <span class="fu">clock</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span>; <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-07-13 20:58:34 UTC"</span>
+<span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2022-07-13 20:58:35 UTC"</span>
+<span class="r-in"><span><span class="co"># This property is read only</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : Can't set read-only property &lt;clock&gt;@now</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># These can be useful if you want to deprecate a property</span></span>
-<span class="r-in"><span class="va">person</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"person"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span class="r-in">  first_name <span class="op">=</span> <span class="va">class_character</span>,</span>
-<span class="r-in">  firstName <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span></span>
-<span class="r-in">     getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">       <span class="kw"><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning</a></span><span class="op">(</span><span class="st">"@firstName is deprecated; please use @first_name instead"</span>, call. <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in">       <span class="va">self</span><span class="op">@</span><span class="va">first_name</span></span>
-<span class="r-in">     <span class="op">}</span>,</span>
-<span class="r-in">     setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">       <span class="kw"><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning</a></span><span class="op">(</span><span class="st">"@firstName is deprecated; please use @first_name instead"</span>, call. <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span class="r-in">       <span class="va">self</span><span class="op">@</span><span class="va">first_name</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span class="r-in">       <span class="va">self</span></span>
-<span class="r-in">     <span class="op">}</span></span>
-<span class="r-in">   <span class="op">)</span></span>
-<span class="r-in"><span class="op">)</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">hadley</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/person.html" class="external-link">person</a></span><span class="op">(</span>first_name <span class="op">=</span> <span class="st">"Hadley"</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">hadley</span><span class="op">@</span><span class="va">firstName</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># These can be useful if you want to deprecate a property</span></span></span>
+<span class="r-in"><span><span class="va">person</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"person"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  first_name <span class="op">=</span> <span class="va">class_character</span>,</span></span>
+<span class="r-in"><span>  firstName <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span></span></span>
+<span class="r-in"><span>     getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>       <span class="kw"><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning</a></span><span class="op">(</span><span class="st">"@firstName is deprecated; please use @first_name instead"</span>, call. <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>       <span class="va">self</span><span class="op">@</span><span class="va">first_name</span></span></span>
+<span class="r-in"><span>     <span class="op">}</span>,</span></span>
+<span class="r-in"><span>     setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>       <span class="kw"><a href="https://rdrr.io/r/base/warning.html" class="external-link">warning</a></span><span class="op">(</span><span class="st">"@firstName is deprecated; please use @first_name instead"</span>, call. <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>       <span class="va">self</span><span class="op">@</span><span class="va">first_name</span> <span class="op">&lt;-</span> <span class="va">value</span></span></span>
+<span class="r-in"><span>       <span class="va">self</span></span></span>
+<span class="r-in"><span>     <span class="op">}</span></span></span>
+<span class="r-in"><span>   <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">hadley</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/person.html" class="external-link">person</a></span><span class="op">(</span>first_name <span class="op">=</span> <span class="st">"Hadley"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">hadley</span><span class="op">@</span><span class="va">firstName</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>@firstName is deprecated; please use @first_name instead</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Hadley"</span>
-<span class="r-in"><span class="va">hadley</span><span class="op">@</span><span class="va">firstName</span> <span class="op">&lt;-</span> <span class="st">"John"</span></span>
+<span class="r-in"><span><span class="va">hadley</span><span class="op">@</span><span class="va">firstName</span> <span class="op">&lt;-</span> <span class="st">"John"</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>@firstName is deprecated; please use @first_name instead</span>
-<span class="r-in"><span class="va">hadley</span><span class="op">@</span><span class="va">first_name</span></span>
+<span class="r-in"><span><span class="va">hadley</span><span class="op">@</span><span class="va">first_name</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "John"</span>
 </code></pre></div>
     </div>
@@ -184,7 +184,7 @@ properties.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer></div>

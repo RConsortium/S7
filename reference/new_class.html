@@ -70,17 +70,17 @@ when an object is passed to a generic.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_class</span><span class="op">(</span>
-  <span class="va">name</span>,
-  parent <span class="op">=</span> <span class="va">R7_object</span>,
-  package <span class="op">=</span> <span class="cn">NULL</span>,
-  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,
-  abstract <span class="op">=</span> <span class="cn">FALSE</span>,
-  constructor <span class="op">=</span> <span class="cn">NULL</span>,
-  validator <span class="op">=</span> <span class="cn">NULL</span>
-<span class="op">)</span>
-
-<span class="fu">new_object</span><span class="op">(</span><span class="va">.parent</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">new_class</span><span class="op">(</span></span>
+<span>  <span class="va">name</span>,</span>
+<span>  parent <span class="op">=</span> <span class="va">R7_object</span>,</span>
+<span>  package <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  abstract <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  constructor <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  validator <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">new_object</span><span class="op">(</span><span class="va">.parent</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -93,7 +93,7 @@ i.e. <code>foo &lt;- new_class("foo")</code>.</p></dd>
 
 <dt>parent</dt>
 <dd><p>The parent class to inherit behavior from.
-There are three options:</p><ul><li><p>An R7 class, like <a href="r7_object.html">R7_object</a>.</p></li>
+There are three options:</p><ul><li><p>An R7 class, like <a href="R7_object.html">R7_object</a>.</p></li>
 <li><p>An S3 class wrapped by <code><a href="new_S3_class.html">new_S3_class()</a></code>.</p></li>
 <li><p>A base type, like <a href="base_classes.html">class_logical</a>, <a href="base_classes.html">class_integer</a>, etc.</p></li>
 </ul></dd>
@@ -158,56 +158,56 @@ of the given class.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># Create an class that represents a range using a numeric start and end</span></span>
-<span class="r-in"><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu">new_class</span><span class="op">(</span><span class="st">"range"</span>,</span>
-<span class="r-in">  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span class="r-in">    start <span class="op">=</span> <span class="va">class_numeric</span>,</span>
-<span class="r-in">    end <span class="op">=</span> <span class="va">class_numeric</span></span>
-<span class="r-in">  <span class="op">)</span></span>
-<span class="r-in"><span class="op">)</span></span>
-<span class="r-in"><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">10</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">r</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Create an class that represents a range using a numeric start and end</span></span></span>
+<span class="r-in"><span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu">new_class</span><span class="op">(</span><span class="st">"range"</span>,</span></span>
+<span class="r-in"><span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    start <span class="op">=</span> <span class="va">class_numeric</span>,</span></span>
+<span class="r-in"><span>    end <span class="op">=</span> <span class="va">class_numeric</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">10</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">r</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;range&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  @ start: num 10</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  @ end  : num 20</span>
-<span class="r-in"><span class="co"># get and set properties with @</span></span>
-<span class="r-in"><span class="va">r</span><span class="op">@</span><span class="va">start</span></span>
+<span class="r-in"><span><span class="co"># get and set properties with @</span></span></span>
+<span class="r-in"><span><span class="va">r</span><span class="op">@</span><span class="va">start</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 10</span>
-<span class="r-in"><span class="va">r</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">40</span></span>
-<span class="r-in"><span class="va">r</span><span class="op">@</span><span class="va">end</span></span>
+<span class="r-in"><span><span class="va">r</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">40</span></span></span>
+<span class="r-in"><span><span class="va">r</span><span class="op">@</span><span class="va">end</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 40</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># R7 automatically ensures that properties are of the declared types:</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"hello"</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># R7 automatically ensures that properties are of the declared types:</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="st">"hello"</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object properties are invalid:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - @start must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># But we might also want to use a validator to ensure that start and end</span></span>
-<span class="r-in"><span class="co"># are length 1, and that start is &lt; end</span></span>
-<span class="r-in"><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu">new_class</span><span class="op">(</span><span class="st">"range"</span>,</span>
-<span class="r-in">  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span class="r-in">    start <span class="op">=</span> <span class="va">class_numeric</span>,</span>
-<span class="r-in">    end <span class="op">=</span> <span class="va">class_numeric</span></span>
-<span class="r-in">  <span class="op">)</span>,</span>
-<span class="r-in">  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">      <span class="st">"@start must be a single number"</span></span>
-<span class="r-in">    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">      <span class="st">"@end must be a single number"</span></span>
-<span class="r-in">    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in">      <span class="st">"@end must be great than or equal to @start"</span></span>
-<span class="r-in">    <span class="op">}</span></span>
-<span class="r-in">  <span class="op">}</span></span>
-<span class="r-in"><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">15</span><span class="op">)</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># But we might also want to use a validator to ensure that start and end</span></span></span>
+<span class="r-in"><span><span class="co"># are length 1, and that start is &lt; end</span></span></span>
+<span class="r-in"><span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu">new_class</span><span class="op">(</span><span class="st">"range"</span>,</span></span>
+<span class="r-in"><span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    start <span class="op">=</span> <span class="va">class_numeric</span>,</span></span>
+<span class="r-in"><span>    end <span class="op">=</span> <span class="va">class_numeric</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>      <span class="st">"@start must be a single number"</span></span></span>
+<span class="r-in"><span>    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>      <span class="st">"@end must be a single number"</span></span></span>
+<span class="r-in"><span>    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>      <span class="st">"@end must be great than or equal to @start"</span></span></span>
+<span class="r-in"><span>    <span class="op">}</span></span></span>
+<span class="r-in"><span>  <span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">15</span><span class="op">)</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object is invalid:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - @start must be a single number</span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">20</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">20</span>, end <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object is invalid:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - @end must be great than or equal to @start</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">10</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">r</span><span class="op">@</span><span class="va">start</span> <span class="op">&lt;-</span> <span class="fl">25</span><span class="op">)</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fl">10</span>, end <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">r</span><span class="op">@</span><span class="va">start</span> <span class="op">&lt;-</span> <span class="fl">25</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : &lt;range&gt; object is invalid:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - @end must be great than or equal to @start</span>
 </code></pre></div>
@@ -221,7 +221,7 @@ of the given class.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer></div>

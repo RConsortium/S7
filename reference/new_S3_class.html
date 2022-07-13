@@ -67,7 +67,7 @@ new_S3_class() because S3 lacks a formal class definition."><!-- mathjax --><scr
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">new_S3_class</span><span class="op">(</span><span class="va">class</span>, constructor <span class="op">=</span> <span class="cn">NULL</span>, validator <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">new_S3_class</span><span class="op">(</span><span class="va">class</span>, constructor <span class="op">=</span> <span class="cn">NULL</span>, validator <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -104,9 +104,9 @@ vector:</p><ul><li><p>Registering a S3 method for an R7 generic.</p></li>
 <li><p>Restricting an R7 property to an S3 class.</p></li>
 <li><p>Using an S3 class in an R7 union.</p></li>
 </ul><p>This is easy, and you can usually include the <code>new_S3_class()</code>
-call inline:</p><div class="sourceCode R"><pre><code><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">my_generic</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"A factor"</span>
-<span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"my_class"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>types <span class="op">=</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-<span class="fu"><a href="../reference/new_union.html">new_union</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span></code></pre><p></p></div>
+call inline:</p><div class="sourceCode R"><pre><code><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">my_generic</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"A factor"</span></span>
+<span><span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"my_class"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>types <span class="op">=</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/new_union.html">new_union</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div>
     </div>
     <div class="section level2">
     <h2 id="extending-an-s-class">Extending an S3 class<a class="anchor" aria-label="anchor" href="#extending-an-s-class"></a></h2>
@@ -127,16 +127,16 @@ on this class. Unlike an R7 validator, you are responsible for validating
 the types of the attributes.</p>
 <p>The following code shows how you might wrap the base Date class.
 A Date is a numeric vector with class <code>Date</code> that can be constructed with
-<code><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date()</a></code>.</p><div class="sourceCode R"><pre><code><span class="va">S3_Date</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"Date"</span>,
-  <span class="kw">function</span><span class="op">(</span><span class="va">.data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date</a></span><span class="op">(</span><span class="va">.data</span><span class="op">)</span>
-  <span class="op">}</span>,
-  <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span>
-    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">self</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span>
-      <span class="st">"Underlying data must be numeric"</span>
-    <span class="op">}</span>
-  <span class="op">}</span>
-<span class="op">)</span></code></pre><p></p></div>
+<code><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date()</a></code>.</p><div class="sourceCode R"><pre><code><span><span class="va">S3_Date</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"Date"</span>,</span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">.data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date</a></span><span class="op">(</span><span class="va">.data</span><span class="op">)</span></span>
+<span>  <span class="op">}</span>,</span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">self</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="st">"Underlying data must be numeric"</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre><p></p></div>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -148,7 +148,7 @@ A Date is a numeric vector with class <code>Date</code> that can be constructed 
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.4.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.5.</p>
 </div>
 
     </footer></div>

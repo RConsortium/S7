@@ -64,6 +64,9 @@
     <loc>https://RConsortium.github.io/OOP-WG/reference/R7_inherits.html</loc>
   </url>
   <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_object.html</loc>
+  </url>
+  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/S4_register.html</loc>
   </url>
   <url>
@@ -116,9 +119,6 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/props.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/r7_object.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/super.html</loc>
