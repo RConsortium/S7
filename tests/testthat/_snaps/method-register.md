@@ -92,7 +92,7 @@
     Code
       method(foo, list(class_integer, class_integer))
     Output
-      <R7_method> method(foo, list("integer", "integer"))
+      <R7_method> method(foo, list(class_integer, class_integer))
       function (x, y, ...) 
       paste0("bar:", x, y)
       <environment: 0x0>
