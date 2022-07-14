@@ -1,5 +1,7 @@
 # R7 0.0.0.9000
 
+* Base classes now show as `class_x` instead of `"x"` in method print (#232)
+
 ## Mar 2022
 
 * Exported `class_factor`, `class_Date`, `class_POSIXct`, and 
