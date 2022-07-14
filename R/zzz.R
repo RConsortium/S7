@@ -57,7 +57,7 @@ methods::setOldClass("R7_object")
   if (typeof(x) %in% c("list", "environment")) {
     NextMethod()
   } else {
-    msg <- "R7 object not subsettable."
+    msg <- "R7 objects are not subsettable."
     stop(msg, call. = FALSE)
   }
 }
