@@ -162,5 +162,5 @@
     Code
       c(foo1, foo1)
     Error <simpleError>
-      Can not combine objects of class "R7_class"
+      Can not combine R7 class objects
 
