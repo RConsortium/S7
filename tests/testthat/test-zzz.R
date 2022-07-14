@@ -19,33 +19,34 @@ test_that("$ gives useful error", {
 })
 
 test_that("[ gives more accurate error", {
-  foo <- new_class("foo")
-  x <- foo()
   expect_snapshot(error = TRUE, {
+    x <- new_class("foo")()
     x[1]
     x[1] <- 1
   })
 
   # but ok if inheriting from list
-  foo <- new_class("foo", class_list)
-  x <- foo()
+  x <- new_class("foo", class_list)()
   x[1] <- 1
   expect_equal(x[1], list(1))
 })
 
 test_that("[[ gives more accurate error", {
-  foo <- new_class("foo")
-  x <- foo()
   expect_snapshot(error = TRUE, {
+    x <- new_class("foo")()
     x[[1]]
     x[[1]] <- 1
   })
 
   # but ok if inheriting from list
-  foo <- new_class("foo", class_list)
-  x <- foo()
+  x <- new_class("foo", class_list)()
   x[[1]] <- 1
   expect_equal(x[[1]], 1)
+
+  # and ok if inheriting from environment
+  x <- new_class("foo", class_environment)()
+  x[["a"]] <- 1
+  expect_equal(x[["a"]], 1)
 })
 
 test_that("register S4 classes for key components", {

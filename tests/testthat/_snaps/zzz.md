@@ -17,22 +17,24 @@
 # [ gives more accurate error
 
     Code
+      x <- new_class("foo")()
       x[1]
     Error <simpleError>
-      R7 object not subsettable.
+      R7 objects are not subsettable.
     Code
       x[1] <- 1
     Error <simpleError>
-      R7 object not subsettable.
+      R7 objects are not subsettable.
 
 # [[ gives more accurate error
 
     Code
+      x <- new_class("foo")()
       x[[1]]
     Error <simpleError>
-      R7 object not subsettable.
+      R7 objects are not subsettable.
     Code
       x[[1]] <- 1
     Error <simpleError>
-      R7 object not subsettable.
+      R7 objects are not subsettable.
 
