@@ -43,43 +43,36 @@ methods::setOldClass("R7_object")
   }
 }
 
+check_subsettable <- function(x, allow_env = FALSE) {
+  # if not in the allowed types, throw the error
+  allowed_types = c("list", "environment"[allow_env])
+  if (! typeof(x) %in% allowed_types) {
+    msg <- "R7 objects are not subsettable."
+    stop(msg, call. = FALSE)
+  }
+  invisible(TRUE)
+}
 
 #' @export
 `[.R7_object` <- function(x, ..., drop = TRUE) {
-  if (typeof(x) == "list") {
-    NextMethod()
-  } else {
-    msg <- "R7 objects are not subsettable."
-    stop(msg, call. = FALSE)
-  }
+  check_subsettable(x)
+  NextMethod()
 }
 #' @export
 `[<-.R7_object` <- function(x, ..., value) {
-  if (typeof(x) == "list") {
-    NextMethod()
-  } else {
-    msg <- "R7 objects are not subsettable."
-    stop(msg, call. = FALSE)
-  }
+  check_subsettable(x)
+  NextMethod()
 }
 
 #' @export
 `[[.R7_object` <- function(x, ...) {
-  if (typeof(x) %in% c("list", "environment")) {
-    NextMethod()
-  } else {
-    msg <- "R7 objects are not subsettable."
-    stop(msg, call. = FALSE)
-  }
+  check_subsettable(x, allow_env = TRUE)
+  NextMethod()
 }
 #' @export
 `[[<-.R7_object` <- function(x, ..., value) {
-  if (typeof(x) %in% c("list", "environment")) {
-    NextMethod()
-  } else {
-    msg <- "R7 objects are not subsettable."
-    stop(msg, call. = FALSE)
-  }
+  check_subsettable(x, allow_env = TRUE)
+  NextMethod()
 }
 
 R7_generic <- new_class(
