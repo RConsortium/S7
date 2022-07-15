@@ -49,6 +49,24 @@ test_that("[[ gives more accurate error", {
   expect_equal(x[["a"]], 1)
 })
 
+test_that("check_subsettable", {
+  expect_snapshot(error = TRUE, {
+    x = new_class("foo")()
+    check_subsettable(x)
+    check_subsettable(x, allow_env = TRUE)
+  })
+
+  x = new_class("foo", class_list)()
+  expect_true(check_subsettable(x))
+  expect_true(check_subsettable(x, allow_env = TRUE))
+
+  x = new_class("foo", class_environment)()
+  expect_true(check_subsettable(x, allow_env = TRUE))
+  expect_snapshot(error = TRUE, {
+    check_subsettable(x)
+  })
+})
+
 test_that("register S4 classes for key components", {
   expect_s4_class(getClass("R7_object"), "classRepresentation")
   expect_s4_class(getClass("R7_method"), "classRepresentation")

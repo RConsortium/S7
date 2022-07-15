@@ -38,3 +38,22 @@
     Error <simpleError>
       R7 objects are not subsettable.
 
+# check_subsettable
+
+    Code
+      x = new_class("foo")()
+      check_subsettable(x)
+    Error <simpleError>
+      R7 objects are not subsettable.
+    Code
+      check_subsettable(x, allow_env = TRUE)
+    Error <simpleError>
+      R7 objects are not subsettable.
+
+---
+
+    Code
+      check_subsettable(x)
+    Error <simpleError>
+      R7 objects are not subsettable.
+
