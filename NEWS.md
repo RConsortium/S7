@@ -1,5 +1,7 @@
 # R7 0.0.0.9000
 
+* Combining R7 classes with `c()` now gives an error (#230)
+
 * Base classes now show as `class_x` instead of `"x"` in method print (#232)
 
 ## Mar 2022

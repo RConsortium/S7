@@ -192,6 +192,12 @@ str.R7_class <- function(object, ..., nest.lev = 0) {
   }
 }
 
+#' @export
+c.R7_class <- function(...) {
+  msg <- "Can not combine R7 class objects"
+  stop(msg, call. = FALSE)
+}
+
 can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
 
 check_can_inherit <- function(x, arg = deparse(substitute(x))) {

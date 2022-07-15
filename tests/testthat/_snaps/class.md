@@ -157,3 +157,10 @@
        .. $ a: num 41
        .. $ b: num 42
 
+# c(<R7_class>, ...) gives error
+
+    Code
+      c(foo1, foo1)
+    Error <simpleError>
+      Can not combine R7 class objects
+
