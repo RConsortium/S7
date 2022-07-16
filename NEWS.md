@@ -3,6 +3,8 @@
 * Add `[.R7_object`, `[<-.R7_object`, `[[.R7_object` and `[[<-.R7_object` methods to avoid "object of type 'S4'
   is not subsettable" error (#236).
   
+* Combining R7 classes with `c()` now gives an error (#230)
+
 * Base classes now show as `class_x` instead of `"x"` in method print (#232)
 
 ## Mar 2022

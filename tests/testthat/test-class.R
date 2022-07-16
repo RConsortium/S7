@@ -186,5 +186,7 @@ describe("default constructor", {
 
 test_that("c(<R7_class>, ...) gives error", {
   foo1 <- new_class("foo1")
-  expect_error(c(foo1, foo1))
+  expect_snapshot(error = TRUE, {
+    c(foo1, foo1)
+  })
 })
