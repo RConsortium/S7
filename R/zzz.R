@@ -44,11 +44,9 @@ methods::setOldClass("R7_object")
 }
 
 check_subsettable <- function(x, allow_env = FALSE) {
-  # if not in the allowed types, throw the error
-  allowed_types = c("list", "environment"[allow_env])
-  if (! typeof(x) %in% allowed_types) {
-    msg <- "R7 objects are not subsettable."
-    stop(msg, call. = FALSE)
+  allowed_types <- c("list", if (allow_env) "environment")
+  if (!typeof(x) %in% allowed_types) {
+    stop("R7 objects are not subsettable.", call. = FALSE)
   }
   invisible(TRUE)
 }
