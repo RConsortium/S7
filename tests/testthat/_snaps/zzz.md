@@ -14,3 +14,27 @@
     Error <simpleError>
       Can't set R7 properties with `$`. Did you mean `...@y <- 1`?
 
+# [ gives more accurate error
+
+    Code
+      x <- new_class("foo")()
+      x[1]
+    Error <simpleError>
+      R7 objects are not subsettable.
+    Code
+      x[1] <- 1
+    Error <simpleError>
+      R7 objects are not subsettable.
+
+# [[ gives more accurate error
+
+    Code
+      x <- new_class("foo")()
+      x[[1]]
+    Error <simpleError>
+      R7 objects are not subsettable.
+    Code
+      x[[1]] <- 1
+    Error <simpleError>
+      R7 objects are not subsettable.
+

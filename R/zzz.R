@@ -43,7 +43,35 @@ methods::setOldClass("R7_object")
   }
 }
 
+#' @export
+`[.R7_object` <- function(x, ..., drop = TRUE) {
+  check_subsettable(x)
+  NextMethod()
+}
+#' @export
+`[<-.R7_object` <- function(x, ..., value) {
+  check_subsettable(x)
+  NextMethod()
+}
 
+#' @export
+`[[.R7_object` <- function(x, ...) {
+  check_subsettable(x, allow_env = TRUE)
+  NextMethod()
+}
+#' @export
+`[[<-.R7_object` <- function(x, ..., value) {
+  check_subsettable(x, allow_env = TRUE)
+  NextMethod()
+}
+
+check_subsettable <- function(x, allow_env = FALSE) {
+  allowed_types <- c("list", if (allow_env) "environment")
+  if (!typeof(x) %in% allowed_types) {
+    stop("R7 objects are not subsettable.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
 
 R7_generic <- new_class(
   name = "R7_generic",
