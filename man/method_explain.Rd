@@ -10,12 +10,7 @@ method_explain(generic, class = NULL, object = NULL)
 \item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{class}{Perform introspection either with a \code{class}
-(processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses
-multiple dispatch then both \code{object} and \code{class} must be a list of
-classes/objects.}
-
-\item{object}{Perform introspection either with a \code{class}
+\item{class, object}{Perform introspection either with a \code{class}
 (processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses
 multiple dispatch then both \code{object} and \code{class} must be a list of
 classes/objects.}

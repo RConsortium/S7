@@ -42,7 +42,9 @@ vector:
 }
 
 This is easy, and you can usually include the \code{new_S3_class()}
-call inline:\if{html}{\out{<div class="sourceCode R">}}\preformatted{method(my_generic, new_S3_class("factor")) <- function(x) "A factor"
+call inline:
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{method(my_generic, new_S3_class("factor")) <- function(x) "A factor"
 new_class("my_class", properties = list(types = new_S3_class("factor")))
 new_union("character", new_S3_class("factor"))
 }\if{html}{\out{</div>}}
@@ -69,7 +71,9 @@ the types of the attributes.
 
 The following code shows how you might wrap the base Date class.
 A Date is a numeric vector with class \code{Date} that can be constructed with
-\code{.Date()}.\if{html}{\out{<div class="sourceCode R">}}\preformatted{S3_Date <- new_S3_class("Date",
+\code{.Date()}.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{S3_Date <- new_S3_class("Date",
   function(.data = integer()) \{
     .Date(.data)
   \},
