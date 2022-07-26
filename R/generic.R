@@ -154,17 +154,17 @@ ns_call <- function(call) {
   call("::", as.symbol(packageName()), call)
 }
 
-find_one_of_calls <- function(x, calls) {
+find_one_of_calls <- function(x, call_names) {
   if (is.call(x)) {
-    for (call in calls) {
-      if (identical(x[[1]], call)) {
+    for (call_name in call_names) {
+      if (identical(x[[1]], call_name)) {
         return(x)
       }
     }
 
     if (length(x) > 1) {
       for (i in seq(2, length(x))) {
-        call <- find_one_of_calls(x[[i]], calls)
+        call <- find_one_of_calls(x[[i]], call_names)
         if (!is.null(call)) {
           return(call)
         }
