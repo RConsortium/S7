@@ -8,7 +8,6 @@ test_that("new_generic checks its inputs", {
 })
 
 test_that("new_generic finds R7_dispatch calls", {
-  expect_error(new_generic("foo", "x", function(x) { }))
   expect_s3_class(new_generic("foo", "x", function(x) { R7_dispatch() }), "R7_generic")
   expect_s3_class(new_generic("foo", "x", function(x) { R7::R7_dispatch() }), "R7_generic")
 })
@@ -65,11 +64,17 @@ test_that("check_generic produces informative errors", {
   })
 })
 
-test_that("has_fun handles expected cases", {
+test_that("find_call handles expected cases", {
   expect_equal(find_call(1, quote(x)), NULL)
   expect_equal(find_call(quote(f()), quote(x)), NULL)
   expect_equal(find_call(quote(f(a, b, c)), quote(x)), NULL)
 
+  expect_equal(find_call(quote(f()), quote(x), "ns.name"), NULL)
+  expect_equal(find_call(quote(f(a, b, c)), quote(x), "ns.name"), NULL)
+
   expect_equal(find_call(quote(x(1)), quote(x)), quote(x(1)))
   expect_equal(find_call(quote(y(x(1))), quote(x)), quote(x(1)))
+
+  expect_equal(find_call(quote(ns.name::x(1)), quote(x), "ns.name"), quote(ns.name::x(1)))
+  expect_equal(find_call(quote(y(ns.name::x(1))), quote(x), "ns.name"), quote(ns.name::x(1)))
 })
