@@ -138,20 +138,19 @@ check_generic <- function(fun) {
 #'
 #' Find a call (namespaced or plain) in an language object.
 #'
-#' @param x An language object in which to search for a particular function
-#'   call.
-#' @param call A quoted function name to search for. Both the plain function
+#' @param x An language object in which to search for a particular function.
+#' @param name A quoted function name to search for. Both the plain function
 #'   name and qualified function name from the package namespace are considered.
 #' @return The `call` object if found, or `NULL` otherwise.
 #' @keywords internal
 #'
-find_call <- function(x, call) {
-  calls <- list(ns_call(call), call)
-  find_one_of_calls(x, calls)
+find_call <- function(x, name) {
+  call_names <- list(ns_call(name), name)
+  find_one_of_calls(x, call_names)
 }
 
-ns_call <- function(call) {
-  call("::", as.symbol(packageName()), call)
+ns_call <- function(name) {
+  call("::", as.symbol(packageName()), name)
 }
 
 find_one_of_calls <- function(x, call_names) {
