@@ -7,6 +7,12 @@ test_that("new_generic checks its inputs", {
   })
 })
 
+test_that("new_generic finds R7_dispatch calls", {
+  expect_error(new_generic("foo", "x", function(x) { }))
+  expect_s3_class(new_generic("foo", "x", function(x) { R7_dispatch() }), "R7_generic")
+  expect_s3_class(new_generic("foo", "x", function(x) { R7::R7_dispatch() }), "R7_generic")
+})
+
 test_that("derived fun always includes ...", {
   g <- new_generic("g", "x")
   expect_equal(names(formals(g)), c("x", "..."))

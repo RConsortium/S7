@@ -133,13 +133,38 @@ check_generic <- function(fun) {
     stop("`fun` must contain a call to `R7_dispatch()`", call. = FALSE)
   }
 }
-find_call <- function(x, name) {
+
+#' Find a call in expression
+#'
+#' Find a call (namespaced or plain) in an language object.
+#'
+#' @param x An language object in which to search for a particular function
+#'   call.
+#' @param call A quoted function name to search for. Both the plain function
+#'   name and qualified function name from the package namespace are considered.
+#' @return The `call` object if found, or `NULL` otherwise.
+#' @keywords internal
+#'
+find_call <- function(x, call) {
+  calls <- list(ns_call(call), call)
+  find_one_of_calls(x, calls)
+}
+
+ns_call <- function(call) {
+  call("::", as.symbol(packageName()), call)
+}
+
+find_one_of_calls <- function(x, calls) {
   if (is.call(x)) {
-    if (identical(x[[1]], name)) {
-      return(x)
-    } else if (length(x) > 1) {
+    for (call in calls) {
+      if (identical(x[[1]], call)) {
+        return(x)
+      }
+    }
+
+    if (length(x) > 1) {
       for (i in seq(2, length(x))) {
-        call <- find_call(x[[i]], name)
+        call <- find_one_of_calls(x[[i]], calls)
         if (!is.null(call)) {
           return(call)
         }
