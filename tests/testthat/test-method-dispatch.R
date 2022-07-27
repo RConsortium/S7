@@ -137,3 +137,18 @@ test_that("method lookup fails with informative messages", {
   expect_snapshot_error(foo(TRUE, list()))
   expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
 })
+
+
+test_that("method dispatch preserves method return visibility", {
+  foo <- new_generic("foo", "x")
+  method(foo, class_integer) <- function(x) invisible("bar")
+  expect_invisible(foo(1L))
+
+  method(foo, class_character) <- function(x) {
+    if (x == "nope") return(invisible("bar"))
+    "bar"
+  }
+
+  expect_visible(foo("yep"))
+  expect_invisible(foo("nope"))
+})
