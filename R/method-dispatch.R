@@ -14,5 +14,6 @@ method_lookup_error <- function(name, args, signatures) {
 #' @order 2
 #' @export
 R7_dispatch <- function() {
-  .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
+  R7_dispatched_call <- .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
+  eval(R7_dispatched_call, envir = sys.frame(-1))
 }
