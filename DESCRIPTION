@@ -1,6 +1,6 @@
 Package: R7
 Title: A New OO System for R
-Version: 0.0.0.9001
+Version: 0.0.0.9000
 Authors@R: 
     c(person(given = "Henrik",
              family = "Bengtsson",

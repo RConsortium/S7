@@ -107,7 +107,7 @@ In this case we really do want to silently ignore unknown arguments because they
 There's unfortunately no easy way to avoid this problem without relying on fairly esoteric technology (as done by `rlang::check_dots_used()`).
 
 ```{r}
-simple_print(list(1, 2, "x"), digits = 3)
+simple_print(list(1, 2, "x"), diggits = 3)
 ```
 
 ### Generic and method without dots
@@ -215,7 +215,8 @@ The only downside to performing error checking is that you constraint the interf
 
 If you're defining methods for an R7 generic in another package there are a couple of extra steps you need to take:
 
--   You need to use `new_external_generic()` to provide a definition of the interface of the generic that lives purely in your package. This definition gives the package name, generic name, and the arguments it uses for dispatch:
+-   You need to use `new_external_generic()` to provide a definition of the interface of the generic that lives purely in your package.
+    This definition gives the package name, generic name, and the arguments it uses for dispatch:
 
     ```{r}
     foo <- new_external_generic("pkg1", "foo", "x")
