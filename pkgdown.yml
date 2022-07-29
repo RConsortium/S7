@@ -1,5 +1,5 @@
 pandoc: 2.14.2
-pkgdown: 2.0.5
+pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
   R7: R7.html
@@ -13,7 +13,7 @@ articles:
   dispatch: spec/dispatch.html
   proposal: spec/proposal.html
   requirements: spec/requirements.html
-last_built: 2022-07-17T14:45Z
+last_built: 2022-07-29T12:55Z
 urls:
   reference: https://RConsortium.github.io/OOP-WG/reference
   article: https://RConsortium.github.io/OOP-WG/articles
