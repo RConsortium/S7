@@ -13,7 +13,7 @@ articles:
   dispatch: spec/dispatch.html
   proposal: spec/proposal.html
   requirements: spec/requirements.html
-last_built: 2022-07-29T13:22Z
+last_built: 2022-07-29T13:26Z
 urls:
   reference: https://RConsortium.github.io/OOP-WG/reference
   article: https://RConsortium.github.io/OOP-WG/articles

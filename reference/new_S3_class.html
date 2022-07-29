@@ -104,7 +104,8 @@ vector:</p><ul><li><p>Registering a S3 method for an R7 generic.</p></li>
 <li><p>Restricting an R7 property to an S3 class.</p></li>
 <li><p>Using an S3 class in an R7 union.</p></li>
 </ul><p>This is easy, and you can usually include the <code>new_S3_class()</code>
-call inline:</p><div class="sourceCode R"><pre><code><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">my_generic</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"A factor"</span></span>
+call inline:</p>
+<p></p><div class="sourceCode R"><pre><code><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">my_generic</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"A factor"</span></span>
 <span><span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"my_class"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>types <span class="op">=</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/new_union.html">new_union</a></span><span class="op">(</span><span class="st">"character"</span>, <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"factor"</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div>
     </div>
@@ -127,7 +128,8 @@ on this class. Unlike an R7 validator, you are responsible for validating
 the types of the attributes.</p>
 <p>The following code shows how you might wrap the base Date class.
 A Date is a numeric vector with class <code>Date</code> that can be constructed with
-<code><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date()</a></code>.</p><div class="sourceCode R"><pre><code><span><span class="va">S3_Date</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"Date"</span>,</span>
+<code><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date()</a></code>.</p>
+<p></p><div class="sourceCode R"><pre><code><span><span class="va">S3_Date</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"Date"</span>,</span>
 <span>  <span class="kw">function</span><span class="op">(</span><span class="va">.data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date</a></span><span class="op">(</span><span class="va">.data</span><span class="op">)</span></span>
 <span>  <span class="op">}</span>,</span>
