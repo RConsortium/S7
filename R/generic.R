@@ -152,7 +152,7 @@ check_generic <- function(fun) {
 find_call <- function(x, name, ns = NULL) {
   if (is.call(x)) {
     # is namespaced `ns::name(...)` or plain `name(...)` call
-    if (is_ns_call(x, name, ns) || identical(x[[1]], name)) {
+    if (is_ns_call(x[[1]], name, ns) || identical(x[[1]], name)) {
       return(x)
     }
 
@@ -179,11 +179,10 @@ find_call <- function(x, name, ns = NULL) {
 is_ns_call <- function(x, name, ns = NULL) {
   if (is.null(ns)) return(FALSE)
 
-  call_to <- x[[1]]
-  length(call_to) == 3 &&
-    identical(call_to[[2]], as.symbol(ns)) &&
-    identical(call_to[[1]], quote(`::`)) &&
-    identical(call_to[[3]], name)
+  length(x) == 3 &&
+    identical(x[[2]], as.symbol(ns)) &&
+    identical(x[[1]], quote(`::`)) &&
+    identical(x[[3]], name)
 }
 
 methods <- function(generic) {
