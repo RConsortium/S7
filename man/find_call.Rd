@@ -4,14 +4,18 @@
 \alias{find_call}
 \title{Find a call in expression}
 \usage{
-find_call(x, call)
+find_call(x, name, ns = NULL)
 }
 \arguments{
-\item{x}{An language object in which to search for a particular function
-call.}
+\item{x}{An language object in which to search for a particular function.}
 
-\item{call}{A quoted function name to search for. Both the plain function
-name and qualified function name from the package namespace are considered.}
+\item{name}{A quoted function name to search for. If \code{ns} is provided, calls
+to either the plain function name and namespace-qualified function name are
+considered.}
+
+\item{ns}{A namespace for the call. If \code{NULL} (the default), the namespace is
+unused when matching the call. If a string, the call may also match a
+namespace-qualified call.}
 }
 \value{
 The \code{call} object if found, or \code{NULL} otherwise.

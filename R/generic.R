@@ -128,7 +128,7 @@ check_generic <- function(fun) {
     stop("`fun` must be a function", call. = FALSE)
   }
 
-  dispatch_call <- find_call(body(fun), quote(R7_dispatch))
+  dispatch_call <- find_call(body(fun), quote(R7_dispatch), packageName())
   if (is.null(dispatch_call)) {
     stop("`fun` must contain a call to `R7_dispatch()`", call. = FALSE)
   }
@@ -139,31 +139,32 @@ check_generic <- function(fun) {
 #' Find a call (namespaced or plain) in an language object.
 #'
 #' @param x An language object in which to search for a particular function.
-#' @param name A quoted function name to search for. Both the plain function
-#'   name and qualified function name from the package namespace are considered.
+#' @param name A quoted function name to search for. If `ns` is provided, calls
+#'   to either the plain function name and namespace-qualified function name are
+#'   considered.
+#' @param ns A namespace for the call. If `NULL` (the default), the namespace is
+#'   unused when matching the call. If a string, the call may also match a
+#'   namespace-qualified call.
 #' @return The `call` object if found, or `NULL` otherwise.
 #' @keywords internal
 #'
-find_call <- function(x, name) {
-  call_names <- list(ns_call(name), name)
-  find_one_of_calls(x, call_names)
-}
-
-ns_call <- function(name) {
-  call("::", as.symbol(packageName()), name)
-}
-
-find_one_of_calls <- function(x, call_names) {
+find_call <- function(x, name, ns = NULL) {
   if (is.call(x)) {
-    for (call_name in call_names) {
-      if (identical(x[[1]], call_name)) {
+    # handle namespaced calls, ns::name(...)
+    if (!is.null(ns) && length(x[[1]]) == 3 && identical(x[[1]][[1]], quote(`::`))) {
+      if (identical(x[[1]][[2]], as.symbol(ns)) && identical(x[[1]][[3]], name)) {
         return(x)
       }
     }
 
+    # handle unqualified calls, name(...)
+    if (identical(x[[1]], name)) {
+      return(x)
+    }
+
     if (length(x) > 1) {
       for (i in seq(2, length(x))) {
-        call <- find_one_of_calls(x[[i]], call_names)
+        call <- find_call(x[[i]], name = name, ns = ns)
         if (!is.null(call)) {
           return(call)
         }

@@ -153,7 +153,7 @@ check_R7_constructor <- function(constructor) {
     stop("`constructor` must be a function", call. = FALSE)
   }
 
-  method_call <- find_call(body(constructor), quote(new_object))
+  method_call <- find_call(body(constructor), quote(new_object), packageName())
   if (is.null(method_call)) {
     stop("`constructor` must contain a call to `new_object()`", call. = FALSE)
   }
