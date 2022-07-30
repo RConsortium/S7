@@ -128,27 +128,50 @@ check_generic <- function(fun) {
     stop("`fun` must be a function", call. = FALSE)
   }
 
-  dispatch_call <- find_call(body(fun), quote(R7_dispatch))
+  dispatch_call <- find_call(body(fun), quote(R7_dispatch), packageName())
   if (is.null(dispatch_call)) {
     stop("`fun` must contain a call to `R7_dispatch()`", call. = FALSE)
   }
 }
-find_call <- function(x, name) {
-  if (is.call(x)) {
-    if (identical(x[[1]], name)) {
-      return(x)
-    } else if (length(x) > 1) {
-      for (i in seq(2, length(x))) {
-        call <- find_call(x[[i]], name)
-        if (!is.null(call)) {
-          return(call)
-        }
+
+#' Recursively find a call (namespaced or plain)
+#'
+#' @param x An language object
+#' @param name A name/symbol
+#' @param ns A string. If `NULL` (the default), only unnamespaced calls are
+#'   matched.  If a string, the call may also match a `ns`-qualified call.
+#' @return `call` object if found; `NULL` otherwise.
+#' @noRd
+find_call <- function(x, name, ns = NULL) {
+  if (!is.call(x)) {
+    return(NULL)
+  }
+
+  # is namespaced `ns::name(...)` or plain `name(...)` call
+  if (is_ns_call(x[[1]], name, ns) || identical(x[[1]], name)) {
+    return(x)
+  }
+
+  # otherwise, recurse through arguments
+  if (length(x) > 1) {
+    for (i in seq(2, length(x))) {
+      call <- find_call(x[[i]], name = name, ns = ns)
+      if (!is.null(call)) {
+        return(call)
       }
     }
   }
   NULL
 }
 
+is_ns_call <- function(x, name, ns = NULL) {
+  if (is.null(ns)) return(FALSE)
+
+  length(x) == 3 &&
+    identical(x[[2]], as.symbol(ns)) &&
+    identical(x[[1]], quote(`::`)) &&
+    identical(x[[3]], name)
+}
 
 methods <- function(generic) {
   methods_rec(generic@methods, character())
