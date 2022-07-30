@@ -143,18 +143,21 @@ check_generic <- function(fun) {
 #' @return `call` object if found; `NULL` otherwise.
 #' @noRd
 find_call <- function(x, name, ns = NULL) {
-  if (is.call(x)) {
-    # is namespaced `ns::name(...)` or plain `name(...)` call
-    if (is_ns_call(x[[1]], name, ns) || identical(x[[1]], name)) {
-      return(x)
-    }
+  if (!is.call(x)) {
+    return(NULL)
+  }
 
-    if (length(x) > 1) {
-      for (i in seq(2, length(x))) {
-        call <- find_call(x[[i]], name = name, ns = ns)
-        if (!is.null(call)) {
-          return(call)
-        }
+  # is namespaced `ns::name(...)` or plain `name(...)` call
+  if (is_ns_call(x[[1]], name, ns) || identical(x[[1]], name)) {
+    return(x)
+  }
+
+  # otherwise, recurse through arguments
+  if (length(x) > 1) {
+    for (i in seq(2, length(x))) {
+      call <- find_call(x[[i]], name = name, ns = ns)
+      if (!is.null(call)) {
+        return(call)
       }
     }
   }
