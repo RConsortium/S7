@@ -145,20 +145,14 @@ check_generic <- function(fun) {
 #' @param ns A namespace for the call. If `NULL` (the default), the namespace is
 #'   unused when matching the call. If a string, the call may also match a
 #'   namespace-qualified call.
-#' @return The `call` object if found, or `NULL` otherwise.
+#' @return `call` object if found, or `NULL` otherwise.
+#'
 #' @keywords internal
 #'
 find_call <- function(x, name, ns = NULL) {
   if (is.call(x)) {
-    # handle namespaced calls, ns::name(...)
-    if (!is.null(ns) && length(x[[1]]) == 3 && identical(x[[1]][[1]], quote(`::`))) {
-      if (identical(x[[1]][[2]], as.symbol(ns)) && identical(x[[1]][[3]], name)) {
-        return(x)
-      }
-    }
-
-    # handle unqualified calls, name(...)
-    if (identical(x[[1]], name)) {
+    # is namespaced `ns::name(...)` or plain `name(...)` call
+    if (is_ns_call(x, name, ns) || identical(x[[1]], name)) {
       return(x)
     }
 
@@ -174,6 +168,23 @@ find_call <- function(x, name, ns = NULL) {
   NULL
 }
 
+#' Test whether `x` is a call to `ns::name`
+#'
+#' @inheritParams find_call
+#' @return a `logical` value indicating whether `x` is a call to `ns::name`
+#'
+#' @rdname find_call
+#' @keywords internal
+#'
+is_ns_call <- function(x, name, ns = NULL) {
+  if (is.null(ns)) return(FALSE)
+
+  call_to <- x[[1]]
+  length(call_to) == 3 &&
+    identical(call_to[[2]], as.symbol(ns)) &&
+    identical(call_to[[1]], quote(`::`)) &&
+    identical(call_to[[3]], name)
+}
 
 methods <- function(generic) {
   methods_rec(generic@methods, character())

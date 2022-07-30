@@ -2,9 +2,12 @@
 % Please edit documentation in R/generic.R
 \name{find_call}
 \alias{find_call}
+\alias{is_ns_call}
 \title{Find a call in expression}
 \usage{
 find_call(x, name, ns = NULL)
+
+is_ns_call(x, name, ns = NULL)
 }
 \arguments{
 \item{x}{An language object in which to search for a particular function.}
@@ -18,7 +21,9 @@ unused when matching the call. If a string, the call may also match a
 namespace-qualified call.}
 }
 \value{
-The \code{call} object if found, or \code{NULL} otherwise.
+\code{call} object if found, or \code{NULL} otherwise.
+
+a \code{logical} value indicating whether \code{x} is a call to \code{ns::name}
 }
 \description{
 Find a call (namespaced or plain) in an language object.
