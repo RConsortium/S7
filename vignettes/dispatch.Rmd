@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 This vignette dives into the details of R7 generics and method dispatch, building on the basics discussed in `vignette("R7")`.
 We'll first introduce the concept of generic-method compatibility, then discuss some of the finer details of creating a generic with `new_generic()`.
-This vignette first discusses generic-method compatibility, and you might want to customize the body of the generic, and generics that live in suggested pacages.
+This vignette first discusses generic-method compatibility, and you might want to customize the body of the generic, and generics that live in suggested packages.
 We'll then pivot to talk more details of method dispatch including `super()` and multiple dispatch.
 
 ```{r setup}
@@ -30,7 +30,7 @@ When you register a method, R7 checks that your method is compatible with the ge
 The formal arguments of the generic and methods must agree.
 This means that:
 
--   Any arguments that the generic has, the method must have to. In particular, the arguments of the method start with the arguments that the generic dispatches on, and those arguments must not have default arguments.
+-   Any arguments that the generic has, the method must have too. In particular, the arguments of the method start with the arguments that the generic dispatches on, and those arguments must not have default arguments.
 -   The method can contain arguments that the generic does not, as long as the generic includes `…` in the argument list.
 
 ### Generic with dots; method without dots
@@ -68,7 +68,7 @@ mean(c(100, NA), na.rm = TRUE)
 
 ### Generic and method with dots
 
-There are cases where you do need to take `…` in a method, which is particularly problematic is you need to re-call the generic recursively.
+There are cases where you do need to take `…` in a method, which is particularly problematic if you need to re-call the generic recursively.
 For example, imagine a simple print method like this:
 
 ```{r}
@@ -112,7 +112,7 @@ simple_print(list(1, 2, "x"), diggits = 3)
 
 ### Generic and method without dots
 
-Occasional it's useful to generic a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
+Occasional it's useful to create a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
 To create such a generic, you'll need to use the third argument to `new_generic()`: an optional function that powers the generic.
 This function has one key property: it must call `call_method()` to actually perform dispatch.
 
@@ -137,7 +137,7 @@ display <- new_generic("display", "x")
 R7_data(display)
 ```
 
-The most important part of the body is `R7_dispatchl()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
+The most important part of the body is `R7_dispatch()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
 
 It can be useful to customize this body.
 The previous section showed one case when you might want to supply the body yourself: dropping `…` from the formals of the generic.
@@ -197,7 +197,7 @@ method(mean, class_logical) <- function(x) {}
 
 ### Do some work
 
-If you're generic has additional arguments, you might want to do some additional work to verify that they're of the expected type.
+If your generic has additional arguments, you might want to do some additional work to verify that they're of the expected type.
 For example, our `mean()` function could verify that `na.rm` was correctly specified:
 
 ```{r}
@@ -215,13 +215,14 @@ The only downside to performing error checking is that you constraint the interf
 
 If you're defining methods for an R7 generic in another package there are a couple of extra steps you need to take:
 
--   You need to use `new_external_generic()` to provide a definition of the interface of the generic that lives purely in your package. This definition gives the package name, generic name, and the arguments it uses for dispatch:
+-   You need to use `new_external_generic()` to provide a definition of the interface of the generic that lives purely in your package.
+    This definition gives the package name, generic name, and the arguments it uses for dispatch:
 
     ```{r}
     foo <- new_external_generic("pkg1", "foo", "x")
     ```
 
--   You need call `R7::external_methods_register()` your package is loaded:
+-   You need to call `R7::external_methods_register()` when your package is loaded:
 
     ```{r}
     .onLoad <- function(libname, pkgname) {

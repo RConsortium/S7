@@ -164,9 +164,6 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   SEXP m = method_(generic, dispatch_classes, Rf_ScalarLogical(1));
   SETCAR(mcall, m);
 
-  // And then call it
-  SEXP res = Rf_eval(mcall, envir);
-
   UNPROTECT(n_protect);
-  return res;
+  return mcall;
 }
