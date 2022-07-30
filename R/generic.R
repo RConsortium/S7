@@ -134,21 +134,14 @@ check_generic <- function(fun) {
   }
 }
 
-#' Find a call in expression
+#' Recursively find a call (namespaced or plain)
 #'
-#' Find a call (namespaced or plain) in an language object.
-#'
-#' @param x An language object in which to search for a particular function.
-#' @param name A quoted function name to search for. If `ns` is provided, calls
-#'   to either the plain function name and namespace-qualified function name are
-#'   considered.
-#' @param ns A namespace for the call. If `NULL` (the default), the namespace is
-#'   unused when matching the call. If a string, the call may also match a
-#'   namespace-qualified call.
-#' @return `call` object if found, or `NULL` otherwise.
-#'
-#' @keywords internal
-#'
+#' @param x An language object
+#' @param name A name/symbol
+#' @param ns A string. If `NULL` (the default), only unnamespaced calls are
+#'   matched.  If a string, the call may also match a `ns`-qualified call.
+#' @return `call` object if found; `NULL` otherwise.
+#' @noRd
 find_call <- function(x, name, ns = NULL) {
   if (is.call(x)) {
     # is namespaced `ns::name(...)` or plain `name(...)` call
@@ -168,14 +161,6 @@ find_call <- function(x, name, ns = NULL) {
   NULL
 }
 
-#' Test whether `x` is a call to `ns::name`
-#'
-#' @inheritParams find_call
-#' @return a `logical` value indicating whether `x` is a call to `ns::name`
-#'
-#' @rdname find_call
-#' @keywords internal
-#'
 is_ns_call <- function(x, name, ns = NULL) {
   if (is.null(ns)) return(FALSE)
 
