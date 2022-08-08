@@ -1,0 +1,21 @@
+---
+title: "Minutes 2022-08-08"
+---
+
+## Updates from Hadley
+
+* Talks at useR and rstudio::conf() appeared to go well
+* Has resulted in some useful issues and PRs (esp. https://github.com/jamieRowen and https://github.com/dgkf).
+* Interest from Merck via email
+
+## Next steps
+
+* HW will continue to work on smaller issues.
+
+* R-core meeting in Vienna (Sept). ML to present R7 work and hopefully get some buy-in.
+
+* Base patches? (https://github.com/RConsortium/OOP-WG/issues/222)
+
+* Get to CRAN to get more exposure and figure out how to get into base R itself.
+
+
