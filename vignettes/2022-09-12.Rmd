@@ -1,0 +1,7 @@
+---
+title: "Minutes 2022-09-12"
+---
+
+* ML to present at R-core Vienna meeting next week.
+
+* Not much activity on GitHub lately.
