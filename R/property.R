@@ -220,7 +220,10 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 
 #' @rdname prop
 #' @usage object@name
-#' @export
+#' @rawNamespace
+#' if (getRversion() >= "4.3.0") S3method("@", R7_object) else export("@")
+`@.R7_object` <- prop
+
 `@` <- function(object, name) {
   if (inherits(object, "R7_object")) {
     name <- as.character(substitute(name))

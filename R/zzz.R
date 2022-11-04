@@ -115,4 +115,6 @@ Ops.R7_object <- function(e1, e2) {
   class_numeric <<- new_union(class_integer, class_double)
   class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
   class_vector <<- new_union(class_atomic, class_expression, class_list)
+  if(getRversion() >= "4.3.0")
+    rm(list = "@", envir = environment(sys.function()))
 }
