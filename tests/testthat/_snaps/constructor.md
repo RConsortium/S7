@@ -60,3 +60,36 @@
       new_object(R7_object(), list(y = y))
       <environment: namespace:R7>
 
+# can use `...` in parent constructor
+
+    Code
+      foo <- new_class("foo", properties = list(x = class_list), constructor = function(
+        ...) new_object(NULL, x = list(...)))
+      bar <- new_class("bar", foo, properties = list(y = class_double))
+      bar@constructor
+    Output
+      function (..., y = class_missing) 
+      new_object(foo(... = ...), y = y)
+      <environment: 0x0>
+    Code
+      bar()
+    Output
+      <bar>
+       @ x: list()
+       @ y: num(0) 
+    Code
+      bar("obj1", 2)
+    Output
+      <bar>
+       @ x:List of 2
+       .. $ : chr "obj1"
+       .. $ : num 2
+       @ y: num(0) 
+    Code
+      bar("obj1", y = 2)
+    Output
+      <bar>
+       @ x:List of 1
+       .. $ : chr "obj1"
+       @ y: num 2
+

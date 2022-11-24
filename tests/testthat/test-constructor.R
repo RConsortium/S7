@@ -59,3 +59,14 @@ test_that("can generate constructor for inherited abstract classes", {
     new_constructor(foo1, as_properties(list(y = class_double)))
   }, transform = scrub_environment)
 })
+
+test_that("can use `...` in parent constructor", {
+  expect_snapshot({
+    foo <- new_class("foo", properties = list(x = class_list), constructor = function(...) new_object(NULL, x = list(...)))
+    bar <- new_class("bar", foo, properties = list(y = class_double))
+    bar@constructor
+    bar()
+    bar("obj1", 2)
+    bar("obj1", y = 2)
+  }, transform = scrub_environment)
+})
