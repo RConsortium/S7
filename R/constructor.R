@@ -12,7 +12,7 @@ new_constructor <- function(parent, properties) {
   if (is_class(parent) && parent@abstract) {
     return(new_function(
       args = missing_args(arg_info$self),
-      body = new_call("new_object", c(list(quote(R7_object()), self_args))),
+      body = new_call("new_object", c(list(quote(R7_object())), self_args)),
       env = asNamespace("R7")
     ))
   }
