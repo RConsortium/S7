@@ -57,5 +57,7 @@ test_that("can generate constructor for inherited abstract classes", {
     foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = class_double))
     new_constructor(foo1, list())
     new_constructor(foo1, as_properties(list(y = class_double)))
+    child <- new_class("child", foo1, properties = list(y = class_double))
+    child(y = 0.5)
   }, transform = scrub_environment)
 })
