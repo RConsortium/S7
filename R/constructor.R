@@ -34,6 +34,8 @@ new_constructor <- function(parent, properties) {
     # user facing error in R7_class()
     stop("Unsupported `parent` type", call. = FALSE)
   }
+  #insure formals for the `...` argument is unnamed
+  args[names(args)=="..."] <- alist(... = )
 
   parent_args <- as_names(arg_info$parent, named = TRUE)
   parent_call <- new_call(parent_name, parent_args)
