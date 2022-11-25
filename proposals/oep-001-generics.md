@@ -135,29 +135,29 @@ whitelisting interactions.
 graph LR
 
 A["
-<strong>pkgA</strong>
+<strong>pkgA</strong><br>
 <code>
-export(fn)
-export(fn.character)
-S3method(pkgB::fn,character)
+export(fn)<br>
+export(fn.character)<br>
+S3method(pkgB::fn,character)<br>
 S3method(pkgC::fn,character) </code>
 "]
 
 B["
-<strong>pkgB</strong>
+<strong>pkgB</strong><br>
 <code>
-export(fn)
-export(fn.numeric)
-S3method(pkgA::fn,numeric)
+export(fn)<br>
+export(fn.numeric)<br>
+S3method(pkgA::fn,numeric)<br>
 S3method(pkgC::fn,numeric) </code>
 "]
 
 C["
-<strong>pkgC</strong>
+<strong>pkgC</strong><br>
 <code>
-export(fn)
-export(fn.list)
-S3method(pkgA::fn,list)
+export(fn)<br>
+export(fn.list)<br>
+S3method(pkgA::fn,list)<br>
 S3method(pkgB::fn,list) </code>
 "]
 
