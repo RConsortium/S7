@@ -51,12 +51,12 @@
       new_constructor(foo1, list())
     Output
       function () 
-      new_object(R7_object(), list())
+      new_object(R7_object())
       <environment: namespace:R7>
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
       function (y = class_missing) 
-      new_object(R7_object(), list(y = y))
+      new_object(R7_object(), y = y)
       <environment: namespace:R7>
 
