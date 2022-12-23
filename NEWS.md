@@ -10,6 +10,9 @@
 
 ## Mar 2022
 
+* Now require explicit `S4_register()` in order to use register R7 method
+  for S4 method. `S4_register()` creates full S4 class spec (#182, #214).
+
 * Exported `class_factor`, `class_Date`, `class_POSIXct`, and 
   `class_data.frame`.
 

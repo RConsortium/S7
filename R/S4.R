@@ -1,7 +1,19 @@
 #' Register an R7 class with S4
 #'
-#' If you want to use [method<-] to register an method for an S4 generic with
-#' an R7 class, you need to call `S4_register()` once.
+#' @description
+#' If you want to use an R7 class with S4 (e.g. to use [method<-] to register an
+#' method for an S4 generic with an R7 class) you need to call `S4_register()`
+#' once. This generates a full S4 class specification that:
+#'
+#' * Matches class name and inheritance hierarchy.
+#' * Uses [validate()] as the validity method.
+#' * Defines formal S4 slots to match R7 properties. The slot types are
+#'   matched to the R7 property types, with the exception of R7 unions,
+#'   which are unchecked (due to the challenges of converting R7 unions to
+#'   S4 unions).
+#'
+#' If `class` extends another R7 class or has a property restricted to an
+#' R7 class, you you must register those classes first.
 #'
 #' @param class An R7 class created with [new_class()].
 #' @param env Expert use only. Environment where S4 class will be registered.
@@ -9,9 +21,24 @@
 S4_register <- function(class, env = parent.frame()) {
   if (!is_class(class)) {
     msg <- sprintf("`class` must be an R7 class, not a %s", obj_desc(class))
+    stop(msg)
   }
 
-  methods::setOldClass(class_dispatch(class), where = topenv(env))
+  name <- class@name
+  contains <- double_to_numeric(setdiff(class_dispatch(class), "ANY")[-1])
+
+  # S4 classes inherit slots from parent but R7 classes flatten
+  props <- class@properties
+  if (is_class(class@parent) && class@parent@name != "R7_object") {
+    parent_props <- class@parent@properties
+    props <- props[setdiff(names(props), names(parent_props))]
+  }
+  slots <- lapply(props, function(x) R7_to_S4_class(x$class))
+
+  methods::setClass(name, contains = contains, slots = slots, where = topenv(env))
+  methods::setValidity(name, function(object) validate(object), where = topenv(env))
+  methods::setOldClass(c(name, contains), S4Class = name, where = topenv(env))
+  invisible()
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
@@ -49,6 +76,25 @@ S4_to_R7_class <- function(x, error_base = "") {
     )
     stop(paste0(error_base, msg), call. = FALSE)
   }
+}
+
+R7_to_S4_class <- function(x) {
+  switch(class_type(x),
+    NULL = "NULL",
+    any = "ANY",
+    S4 = S4_class_name(x),
+    R7 = R7_class_name(x),
+    R7_base = double_to_numeric(x$class),
+    R7_S3 = x$class[[1]],
+    R7_union = "ANY",
+    stop("Unsupported")
+  )
+}
+
+# S4 uniformly uses numeric to mean double
+double_to_numeric <- function(x) {
+  x[x == "double"] <- "numeric"
+  x
 }
 
 S4_base_classes <- function() {
@@ -106,7 +152,7 @@ S4_class_name <- function(x) {
   }
 }
 
-S4_remove_classes <- function(classes, where = globalenv()) {
+S4_remove_classes <- function(classes, where = parent.frame()) {
   for (class in classes) {
     methods::removeClass(class, topenv(where))
   }

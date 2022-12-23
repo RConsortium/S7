@@ -1,0 +1,33 @@
+---
+title: "Minutes 2022-04-18"
+---
+
+## Changes
+
+-   All base wrappers use common naming scheme, e.g. `class_integer`, `class_numeric`, `class_missing`.
+    Exported wrappers for key S3 classes: `class_factor`, `class_Date`, `class_POSIXct`, and `class_data.frame`.
+
+-   `convert()` allows you to convert an object into another class.
+    \
+    `super()` replaces `next_method()`.
+
+-   Require explicit `S4_register()` in order to use register a method for R7 class on a S4 generic.
+
+-   Can now register methods for double-dispatch base Ops (currently only works if both classes are R7, or the first argument is R7 and the second doesn't have a method for the Ops generic).
+
+## Discussion
+
+-   Lightweight syntax for unions: <https://github.com/RConsortium/OOP-WG/issues/224> --- no strong feelings against.
+
+-   Next steps
+
+    -   Should we aim for a CRAN release of R7?
+        Allow us to get more feedback before it moves into base R and if tidyverse is to use R7, will also need some way to access in older versions of R.
+
+    -   Serialization: <https://github.com/RConsortium/OOP-WG/issues/225>
+
+    -   Base R extension points: <https://github.com/RConsortium/OOP-WG/issues/222>
+
+        -   Will look into creating a patch to implement minimal set of changes.
+
+        -   Will need to tweak package to use if in R devel, otherwise register some shims to make it work in current R.
