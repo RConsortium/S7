@@ -221,8 +221,15 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' @rdname prop
 #' @usage object@name
 #' @rawNamespace
-#' if (getRversion() >= "4.3.0") S3method("@", R7_object) else export("@")
+#' if (getRversion() >= "4.3.0") S3method(base::`@`, R7_object) else export("@")
 `@.R7_object` <- prop
+
+# Note: we need to explicitly refer to base with "base::`@`" in the
+# namespace directive to ensure the method is registered in the correct place.
+# Otherwise, loadNamespace()/registerS3method() gets confused by the
+# presence of a closure w/ the name of the generic (`@`) in the R7 namespace,
+# and incorrectly assumes that R7::`@` is the generic and registers the
+# method in the package namespace instead of base::.__S3MethodsTable__.
 
 `@` <- function(object, name) {
   if (inherits(object, "R7_object")) {

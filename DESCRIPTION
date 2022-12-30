@@ -48,7 +48,7 @@ Config/testthat/edition: 3
 Config/Needs/website: sloop
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 URL: https://RConsortium.github.io/OOP-WG, https://rconsortium.github.io/OOP-WG
 BugReports: https://github.com/RConsortium/OOP-WG/issues
