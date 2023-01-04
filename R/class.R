@@ -144,6 +144,7 @@ new_class <- function(
 }
 globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
 
+# base::inherits() calls R7_class_name()
 R7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
 }
