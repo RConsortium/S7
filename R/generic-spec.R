@@ -82,7 +82,8 @@ internal_generics <- function() {
 group_generics <- function() {
   # S3 group generics can be defined by combining S4 group generics
   groups <- list(
-    Ops = c("Arith", "Compare", "Logic"),
+    Ops = c("Arith", "Compare", "Logic",
+            if(getRversion() >= "4.3") "Matrix"),
     Math = c("Math", "Math2"),
     Summary = "Summary",
     Complex = "Complex"
