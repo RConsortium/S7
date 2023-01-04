@@ -153,3 +153,36 @@ foo
 ```
 
 R7 unions allow you to restrict the type of a property in the same way that S4 unions allow you to restrict the type of a slot.
+
+
+## Using R7 in a package
+
+If you are using R7 in a package _and_ you want your package to maintain
+compatibility with R versions prior to 4.3.0, there are a few things to be aware of. 
+
+#### `@`
+
+`` base::`@` `` in R version prior R 4.3 does not resolve R7 properties.
+
+Workarounds:
+
+-  use `R7::prop()` instead of `@`.
+-  Alternatively, make an R7-aware `@` available to your package 
+   in `.onLoad()` and `.onAttach()` like this: 
+``` r
+# enable usage of <R7_object>@name in package code
+`@` <- NULL
+.onLoad <- function(libname, pkgname) {
+  `@` <<- get("@", asNamespace("R7"))
+}
+
+# enable usage of <R7_object>@name in user code
+# e.g. if you also want users to be able to access properties
+# of objects your package
+.onAttach <- function(libname, pkgname) {
+  if(getRversion() < "4.3.0")
+    require(R7)
+}
+```
+
+
