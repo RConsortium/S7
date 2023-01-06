@@ -2,7 +2,7 @@ on:
   push:
     branches: [main, master, base-R-support]
   pull_request:
-    branches: [main, master, base-R-support]
+    branches: [main, master]
 
 name: r-svn-check
 
@@ -16,14 +16,16 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
-        repository: t-kalinowski/r-svn
-        ref: S5
-        path: r-svn
+        with:
+          repository: t-kalinowski/r-svn
+          ref: S5
+          path: r-svn
 
       - uses: actions/checkout@v3
-        repository: t-kalinowski/S5 # R7
-        ref: base-R-support
-        path: S5
+        with:
+          repository: t-kalinowski/S5 # R7
+          ref: base-R-support
+          path: S5
 
       - name: Build docker image (includes all tests)
-        run: docker build --tag r-svn-s5 --file S5/.github/r-svn.Dockerfile
+        run: docker build --tag r-svn:s5 --file S5/.github/r-svn-s5.Dockerfile .
