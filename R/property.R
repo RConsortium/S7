@@ -220,6 +220,7 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 
 #' @rdname prop
 #' @usage object@name
+#' @aliases @
 #' @rawNamespace
 #' if (getRversion() >= "4.3.0") S3method(base::`@`, R7_object) else export("@")
 `@.R7_object` <- prop

@@ -4,6 +4,7 @@
 \alias{prop}
 \alias{prop<-}
 \alias{@.R7_object}
+\alias{@}
 \title{Get/set a property}
 \usage{
 prop(object, name)

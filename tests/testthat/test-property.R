@@ -17,6 +17,7 @@ describe("property retrieval", {
     expect_equal(obj@x, 1)
   })
 
+  if(getRversion() < "4.3.0")
   it("falls back to `base::@` for non-R7 objects", {
     expect_snapshot(error = TRUE, {
       "foo"@blah
@@ -86,7 +87,12 @@ describe("prop setting", {
 
   it("falls back to `base::@` for non-R7 objects", {
     x <- "foo"
-    expect_error(x@blah <- "bar", "is not a slot in class")
+    if(getRversion() < "4.3.0")
+      expect_error(x@blah <- "bar", "is not a slot in class")
+    else {
+      expect_no_error(x@blah <- "bar")
+      expect_identical(x@blah, "bar")
+    }
   })
 })
 
