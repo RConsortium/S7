@@ -54,26 +54,39 @@ test_that("base R is R7 aware", {
 
   ## Test Ops
   ClassX <- new_class("ClassX")
-  method(`+`, list(ClassX, class_any)) <-
-    function(x, y) "method: ClassX + class_any"
+  method(`+`, list(class_any, ClassX))   <- function(x, y) "class_any + ClassX"
+  method(`+`, list(ClassX, class_any))   <- function(x, y) "ClassX + class_any"
+  method(`%*%`, list(ClassX, class_any)) <- function(x, y) "ClassX %*% class_any"
+  method(`%*%`, list(class_any, ClassX)) <- function(x, y) "class_any %*% ClassX"
+
+  test_vals <- list(1, NULL, new_class("ClassA")(),
+                    Sys.time(), structure("", class = "foo"))
+
+  for (val in test_vals)
+    expect_no_error(stopifnot(exprs = {
+      identical(ClassX() + val,   "ClassX + class_any")
+      identical(val + ClassX(),   "class_any + ClassX")
+      identical(ClassX() %*% val, "ClassX %*% class_any")
+      identical(val %*% ClassX(), "class_any %*% ClassX")
+    }))
 
   expect_no_error(stopifnot(exprs = {
-    identical(ClassX() + 1,        "method: ClassX + class_any")
-    identical(ClassX() + NULL,     "method: ClassX + class_any")
-    identical(ClassX() + ClassX(), "method: ClassX + class_any")
-    identical(ClassX() + ClassA(), "method: ClassX + class_any")
+    identical(ClassX()  +  ClassX(), "ClassX + class_any")
+    identical(ClassX() %*% ClassX(), "ClassX %*% class_any")
   }))
 
-  method(`%*%`, list(ClassX, class_any)) <-
-    function(x, y) "method: ClassX %*% class_any"
+  # S3 dispatch still works
+  `%*%.foo` <- function(x, y) paste(class(x), "%*%", class(y))
+  Ops.bar   <- function(x, y) paste(class(x), .Generic, class(y))
 
+  foo <- structure("", class = "foo")
+  bar <- structure("", class = "bar")
   expect_no_error(stopifnot(exprs = {
-    identical(ClassX() %*% 1,        "method: ClassX %*% class_any")
-    identical(ClassX() %*% NULL,     "method: ClassX %*% class_any")
-    identical(ClassX() %*% ClassX(), "method: ClassX %*% class_any")
-    identical(ClassX() %*% ClassA(), "method: ClassX %*% class_any")
+    identical(foo %*% 1, "foo %*% numeric")
+    identical(1 %*% foo, "numeric %*% foo")
+
+    identical(bar %*% 1, "bar %*% numeric")
+    identical(1 %*% bar, "numeric %*% bar")
   }))
 
 })
-
-
