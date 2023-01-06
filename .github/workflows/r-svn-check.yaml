@@ -1,0 +1,29 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: r-svn-check
+
+jobs:
+  r-svn-check:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+
+      - uses: actions/checkout@v3
+        repository: t-kalinowski/r-svn
+        ref: S5
+        path: r-svn
+
+      - uses: actions/checkout@v3
+        repository: t-kalinowski/S5 # R7
+        ref: base-R-support
+        path: S5
+
+      - name: Build docker image (includes all tests)
+        run: docker build --tag r-svn-s5 --file S5/.github/r-svn.Dockerfile
