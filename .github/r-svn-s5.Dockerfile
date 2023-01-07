@@ -1,5 +1,8 @@
 FROM debian:stable
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV R_CRAN_WEB: "https://cran.rstudio.com"
+
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install -y \
@@ -8,29 +11,24 @@ RUN apt-get install -y \
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 ENV LANG=en_US.UTF-8
 
-RUN apt-get install -y pandoc libssl-dev libcairo2-dev texlive-fonts-extra qpdf
+RUN apt-get install -y pandoc libssl-dev libcairo2-dev texlive-fonts-extra qpdf file
 
 
 ADD r-svn /r-svn
 ADD S5 /S5
 
-
 WORKDIR /r-svn
-
 RUN git config --global --add safe.directory $PWD || true
 RUN sed -i.bak 's|$(GIT) svn info|./.github/workflows/svn-info.sh|' Makefile.in
 RUN ./.github/workflows/wget-recommended.sh
 RUN ./.github/workflows/svn-info.sh
 
 RUN CC=gcc ./configure --enable-R-shlib --with-blas --with-lapack --disable-java
-
 RUN make -j2
-
 RUN xvfb-run make check-all
 RUN tail -n100 tests/*.fail || true
 
 RUN make install
-
 RUN Rscript -e 'install.packages(                        \
     c("remotes", "rcmdcheck"),                           \
     repos = "https://cran.rstudio.com/", Ncpus = 2L)'
@@ -38,22 +36,20 @@ RUN Rscript -e 'install.packages(                        \
 
 
 WORKDIR /S5
-
 RUN Rscript -e 'remotes::install_local(dependencies = TRUE, Ncpus = 2L)'
-
 RUN Rscript -e 'rcmdcheck::rcmdcheck(      \
     args = c("--no-manual", "--as-cran"),  \
     error_on = "warning")'
 
-## to run locally:
-# expected directory
+## to run locally, start in an empty directory and call `git clone`
+## to produce this directory structure
 # .
-# ├── Dockerfile
 # ├── r-svn/
 # └── S5/
 
-# git clone --depth 1 https://github.com/t-kalinowski/r-svn --branch S5
-# git clone --depth 1 https://github.com/t-kalinowski/S5    --branch base-R-support
+# git clone --depth 100 https://github.com/t-kalinowski/r-svn --branch S5  # fetch depth must be > 1
+# git clone --depth 1   https://github.com/t-kalinowski/S5    --branch base-R-support
 
-# docker build -t r-svn-s5 .
-# docker run -it r-svn bash
+## Then build the docker image.
+# docker build -t r-svn-s5 -f S5/.github/r-svn-s5.Dockerfile .
+# docker run -it r-svn-s5 bash
