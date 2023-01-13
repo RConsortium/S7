@@ -107,7 +107,7 @@ In this case we really do want to silently ignore unknown arguments because they
 There's unfortunately no easy way to avoid this problem without relying on fairly esoteric technology (as done by `rlang::check_dots_used()`).
 
 ```{r}
-simple_print(list(1, 2, "x"), diggits = 3)
+simple_print(list(1, 2, "x"), digits = 3)
 ```
 
 ### Generic and method without dots
