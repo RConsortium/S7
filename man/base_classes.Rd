@@ -57,7 +57,7 @@ class_POSIXct
 class_data.frame
 }
 \description{
-These classes represent base types allowing them to be used within R7.
+These classes represent base types allowing them to be used within S7.
 There are three categories: base types, unions types, and key S3 classes.
 
 Base types:

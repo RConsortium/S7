@@ -14,39 +14,39 @@ knitr::opts_chunk$set(
 )
 ```
 
-R7 is designed to be compatible with S3 and S4.
+S7 is designed to be compatible with S3 and S4.
 This vignette discusses the details.
 
 ```{r setup}
-library(R7)
+library(S7)
 ```
 
 ## S3
 
-R7 objects *are* S3 objects, because R7 is implemented on top of S3.
-There are two main differences between an R7 object and an S3 object:
+S7 objects *are* S3 objects, because S7 is implemented on top of S3.
+There are two main differences between an S7 object and an S3 object:
 
--   As well as the `class` attribute possessed by S3 objects, R7 objects have an additional `R7_class` attribute that contains the object that defines the class.
+-   As well as the `class` attribute possessed by S3 objects, S7 objects have an additional `S7_class` attribute that contains the object that defines the class.
 
--   R7 objects have properties; S3 objects have attributes.
+-   S7 objects have properties; S3 objects have attributes.
     Properties are implemented on top of attributes, so you can access them directly with `attr` and friends.
-    When working inside of R7, you should never use attributes directly, but it does mean that existing code will continue to work.
+    When working inside of S7, you should never use attributes directly, but it does mean that existing code will continue to work.
 
-All up, this means most usage of R7 with S3 will just work.
+All up, this means most usage of S7 with S3 will just work.
 
--   R7 can register methods for:
+-   S7 can register methods for:
 
-    -   R7 class and S3 generic
-    -   S3 class and R7 generic
+    -   S7 class and S3 generic
+    -   S3 class and S7 generic
 
--   R7 classes can extend S3 classes
+-   S7 classes can extend S3 classes
 
--   S3 classes can extend R7 classes
+-   S3 classes can extend S7 classes
 
 ### Methods
 
-`method()` is designed to be the single tool for method registration that you need when working with R7 classes.
-You can also register a method for an R7 class and S3 generic without using R7, because all R7 objects have S3 classes, and S3 dispatch will operate on them normally.
+`method()` is designed to be the single tool for method registration that you need when working with S7 classes.
+You can also register a method for an S7 class and S3 generic without using S7, because all S7 objects have S3 classes, and S3 dispatch will operate on them normally.
 
 ```{r}
 foo <- new_class("foo")
@@ -61,8 +61,8 @@ mean(foo())
 
 ### Classes
 
-It's possible to extend an R7 class with S3.
-This is primarily useful because it many cases it allows you to change a class hierarchy from the inside out: you can provide a formal definition of an S3 class using R7, and its subclasses don't need to change.
+It's possible to extend an S7 class with S3.
+This is primarily useful because it many cases it allows you to change a class hierarchy from the inside out: you can provide a formal definition of an S3 class using S7, and its subclasses don't need to change.
 
 ### List classes
 
@@ -85,7 +85,7 @@ rle <- function(x) {
 new_rle <- function(lengths, values) {
   structure(
     list(
-      lengths = lengths, 
+      lengths = lengths,
       values = values
     ),
     class = "rle"
@@ -93,12 +93,12 @@ new_rle <- function(lengths, values) {
 }
 ```
 
-There are two ways to convert this to R7.
+There are two ways to convert this to S7.
 You could keep the structure exactly the same, using a `list` as the underlying data structure and using a constructor to enforce the structure:
 
 ```{r}
-new_rle <- new_class("rle", 
-  parent = class_list, 
+new_rle <- new_class("rle",
+  parent = class_list,
   constructor = function(lengths, values) {
     new_object(list(lengths = lengths, values = values))
   }
@@ -106,7 +106,7 @@ new_rle <- new_class("rle",
 rle(1:10)
 ```
 
-Alternatively you could convert it to the most natural representation using R7:
+Alternatively you could convert it to the most natural representation using S7:
 
 ```{r}
 new_rle <- new_class("rle", properties = list(
@@ -122,25 +122,25 @@ method(`$`, new_rle) <- prop
 rle(1:10)
 ```
 
-The chief disadvantage of this approach is any subclasses will need to be converted to R7 as well.
+The chief disadvantage of this approach is any subclasses will need to be converted to S7 as well.
 
 ## S4
 
-R7 properties are equivalent to S4 slots.
+S7 properties are equivalent to S4 slots.
 The chief difference is that they can be dynamic.
 
--   R7 classes can not extend S4 classes
+-   S7 classes can not extend S4 classes
 -   S4 classes can extend S3 classes
--   R7 can register methods for:
-    -   R7 class and S4 generic
-    -   S4 class and R7 generic
+-   S7 can register methods for:
+    -   S7 class and S4 generic
+    -   S4 class and S7 generic
 
 ### Unions
 
-S4 unions are automatically converted to R7 unions.
-There's an important difference in the way that class unions are handled in S4 and R7.
+S4 unions are automatically converted to S7 unions.
+There's an important difference in the way that class unions are handled in S4 and S7.
 In S4, they're handled at method dispatch time, so when you create `setUnion("u1", c("class1", "class2"))`, `class1` and `class2` now extend `u1`.
-In R7, unions are handled at method registration time so that registering a method for a union is just short-hand for registering a method for each of the classes.
+In S7, unions are handled at method registration time so that registering a method for a union is just short-hand for registering a method for each of the classes.
 
 ```{r}
 class1 <- new_class("class1")
@@ -152,4 +152,4 @@ method(foo, union1) <- function(x) ""
 foo
 ```
 
-R7 unions allow you to restrict the type of a property in the same way that S4 unions allow you to restrict the type of a slot.
+S7 unions allow you to restrict the type of a property in the same way that S4 unions allow you to restrict the type of a slot.

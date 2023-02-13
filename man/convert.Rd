@@ -7,9 +7,9 @@
 convert(from, to, ...)
 }
 \arguments{
-\item{from}{An R7 object to convert.}
+\item{from}{An S7 object to convert.}
 
-\item{to}{An R7 class specification, passed to \code{\link[=as_class]{as_class()}}.}
+\item{to}{An S7 class specification, passed to \code{\link[=as_class]{as_class()}}.}
 
 \item{...}{Other arguments passed to custom \code{convert()} methods.}
 }

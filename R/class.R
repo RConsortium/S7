@@ -1,4 +1,4 @@
-#' Define a new R7 class
+#' Define a new S7 class
 #'
 #' A class specifies the properties (data) that each of its objects will
 #' possess. The class, and its parent, determines which method will be used
@@ -10,11 +10,11 @@
 #' @param parent The parent class to inherit behavior from.
 #'   There are three options:
 #'
-#'   * An R7 class, like [R7_object].
+#'   * An S7 class, like [S7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
 #' @param package Package name. It is good practice to set the package
-#'   name when exporting an R7 class from a package because it includes
+#'   name when exporting an S7 class from a package because it includes
 #'   the package name in the class name when it's used for dispatch. This
 #'   allows different packages to use the same name to refer to different
 #'   classes. If you see `package`, you _must_ export the constructor.
@@ -22,7 +22,7 @@
 #'   instantiated.
 #' @param constructor The constructor function. Advanced use only.
 #'
-#'   A custom constructor should call `new_object()` to create the R7 object.
+#'   A custom constructor should call `new_object()` to create the S7 object.
 #'   The first argument, `.data`, should an instance of the parent class. The
 #'   subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
@@ -64,7 +64,7 @@
 #' r@end <- 40
 #' r@end
 #'
-#' # R7 automatically ensures that properties are of the declared types:
+#' # S7 automatically ensures that properties are of the declared types:
 #' try(range(start = "hello", end = 20))
 #'
 #' # But we might also want to use a validator to ensure that start and end
@@ -91,7 +91,7 @@
 #' try(r@start <- 25)
 new_class <- function(
     name,
-    parent = R7_object,
+    parent = S7_object,
     package = NULL,
     properties = list(),
     abstract = FALSE,
@@ -102,19 +102,19 @@ new_class <- function(
 
   parent <- as_class(parent)
 
-  # Don't check arguments for R7_object
+  # Don't check arguments for S7_object
   if (!is.null(parent)) {
     check_can_inherit(parent)
     if (!is.null(package)) {
       check_name(package)
     }
     if (!is.null(constructor)) {
-      check_R7_constructor(constructor)
+      check_S7_constructor(constructor)
     }
     if (!is.null(validator)) {
       check_function(validator, alist(self = ))
     }
-    if (abstract && !(parent@abstract || parent@name == "R7_object")) {
+    if (abstract && !(parent@abstract || parent@name == "S7_object")) {
       stop("Abstract classes must have abstract parents")
     }
   }
@@ -137,18 +137,18 @@ new_class <- function(
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
-  class(object) <- c("R7_class", "R7_object")
+  class(object) <- c("S7_class", "S7_object")
 
   global_variables(names(all_props))
   object
 }
 globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
 
-R7_class_name <- function(x) {
+S7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
 }
 
-check_R7_constructor <- function(constructor) {
+check_S7_constructor <- function(constructor) {
   if (!is.function(constructor)) {
     stop("`constructor` must be a function", call. = FALSE)
   }
@@ -160,7 +160,7 @@ check_R7_constructor <- function(constructor) {
 }
 
 #' @export
-print.R7_class <- function(x, ...) {
+print.S7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
     prop_names <- format(names(props))
@@ -171,7 +171,7 @@ print.R7_class <- function(x, ...) {
   }
 
   cat(
-    sprintf("<R7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s",
+    sprintf("<S7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s",
       x@name,
       class_desc(x@parent),
       prop_fmt
@@ -182,7 +182,7 @@ print.R7_class <- function(x, ...) {
 }
 
 #' @export
-str.R7_class <- function(object, ..., nest.lev = 0) {
+str.S7_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat("<", paste0(class_dispatch(object), collapse = "/"), "> constructor", sep = "")
   cat("\n")
@@ -193,8 +193,8 @@ str.R7_class <- function(object, ..., nest.lev = 0) {
 }
 
 #' @export
-c.R7_class <- function(...) {
-  msg <- "Can not combine R7 class objects"
+c.S7_class <- function(...) {
+  msg <- "Can not combine S7 class objects"
   stop(msg, call. = FALSE)
 }
 
@@ -203,7 +203,7 @@ can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
 check_can_inherit <- function(x, arg = deparse(substitute(x))) {
   if (!can_inherit(x)) {
     msg <- sprintf(
-      "`%s` must be an R7 class, S3 class, or base type, not %s.",
+      "`%s` must be an S7 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
@@ -211,7 +211,7 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
   }
 }
 
-is_class <- function(x) inherits(x, "R7_class")
+is_class <- function(x) inherits(x, "S7_class")
 
 # Object ------------------------------------------------------------------
 
@@ -221,7 +221,7 @@ is_class <- function(x) inherits(x, "R7_class")
 #' @export
 new_object <- function(.parent, ...) {
   class <- sys.function(-1)
-  if (!inherits(class, "R7_class")) {
+  if (!inherits(class, "S7_class")) {
     stop("`new_object()` must be called from within a constructor")
   }
   if (class@abstract) {
@@ -238,7 +238,7 @@ new_object <- function(.parent, ...) {
   }
 
   object <- .parent %||% class_construct(class@parent)
-  attr(object, "R7_class") <- class
+  attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
   for (nme in nms) {
@@ -250,12 +250,12 @@ new_object <- function(.parent, ...) {
 }
 
 #' @export
-print.R7_object <- function(x, ...) {
+print.S7_object <- function(x, ...) {
   str(x, ...)
   invisible(x)
 }
 #' @export
-str.R7_object <- function(object, ..., nest.lev = 0) {
+str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
@@ -279,9 +279,9 @@ str.R7_object <- function(object, ..., nest.lev = 0) {
   str_nest(props(object), "@", ..., nest.lev = nest.lev)
 }
 
-#' Retrieve the R7 class of an object
-#' @param object The R7 object
+#' Retrieve the S7 class of an object
+#' @param object The S7 object
 #' @export
-R7_class <- function(object) {
-  attr(object, "R7_class", exact = TRUE)
+S7_class <- function(object) {
+  attr(object, "S7_class", exact = TRUE)
 }

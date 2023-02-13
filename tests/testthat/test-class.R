@@ -1,10 +1,10 @@
-describe("R7 classes", {
+describe("S7 classes", {
   it("possess expected properties", {
-    foo <- new_class("foo", package = "R7", validator = function(self) NULL)
+    foo <- new_class("foo", package = "S7", validator = function(self) NULL)
 
     expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
     expect_type(foo@name, "character")
-    expect_equal(foo@parent, R7_object)
+    expect_equal(foo@parent, S7_object)
     expect_type(foo@constructor, "closure")
     expect_type(foo@validator, "closure")
     expect_type(foo@properties, "list")
@@ -98,12 +98,12 @@ describe("new_object()", {
   })
 })
 
-describe("R7 object", {
-  it("has an R7 and S3 class", {
+describe("S7 object", {
+  it("has an S7 and S3 class", {
     foo <- new_class("foo")
     x <- foo()
-    expect_equal(R7_class(x), foo)
-    expect_equal(class(x), c("foo", "R7_object"))
+    expect_equal(S7_class(x), foo)
+    expect_equal(class(x), c("foo", "S7_object"))
   })
 
   it("displays nicely", {
@@ -168,15 +168,15 @@ describe("default constructor", {
   it("initializes data with defaults", {
     text1 <- new_class("text1", parent = class_character)
     obj <- text1()
-    expect_equal(R7_data(obj), character())
+    expect_equal(S7_data(obj), character())
   })
 
   it("overrides data with defaults", {
     text1 <- new_class("text1", parent = class_character)
-    expect_equal(R7_data(text1("x")), "x")
+    expect_equal(S7_data(text1("x")), "x")
   })
 
-  it("initializes property with R7 object", {
+  it("initializes property with S7 object", {
     foo1 <- new_class("foo1")
     foo2 <- new_class("foo2", properties = list(x = foo1))
     x <- foo2()
@@ -184,7 +184,7 @@ describe("default constructor", {
   })
 })
 
-test_that("c(<R7_class>, ...) gives error", {
+test_that("c(<S7_class>, ...) gives error", {
   foo1 <- new_class("foo1")
   expect_snapshot(error = TRUE, {
     c(foo1, foo1)

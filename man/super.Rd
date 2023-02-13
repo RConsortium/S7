@@ -7,13 +7,13 @@
 super(from, to)
 }
 \arguments{
-\item{from}{An R7 object to cast.}
+\item{from}{An S7 object to cast.}
 
-\item{to}{An R7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
+\item{to}{An S7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
 superclass of \code{object}.}
 }
 \value{
-An \code{R7_super} object which should always be passed
+An \code{S7_super} object which should always be passed
 immediately to a generic. It has no other special behavior.
 }
 \description{

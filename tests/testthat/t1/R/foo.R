@@ -1,2 +1,2 @@
 #' @export
-foo <- R7::new_generic("foo", "x")
+foo <- S7::new_generic("foo", "x")

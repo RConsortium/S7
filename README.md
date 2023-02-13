@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R7
+# S7
 
 <!-- badges: start -->
 
@@ -11,7 +11,7 @@ coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg
 
 <!-- badges: end -->
 
-The R7 package is a new OOP system designed to be a successor to S3 and
+The S7 package is a new OOP system designed to be a successor to S3 and
 S4. It has been designed and implemented collaboratively by the
 RConsortium Object-Oriented Programming Working Group, which includes
 representatives from R-Core, BioConductor, RStudio/tidyverse, and the
@@ -19,7 +19,7 @@ wider R community.
 
 ## Installation
 
-The long-term goal of this project is to merge R7 in to base R. For now,
+The long-term goal of this project is to merge S7 in to base R. For now,
 you can experiment by installing the in-development version from GitHub:
 
 ``` r
@@ -29,24 +29,24 @@ remotes::install_github("rconsortium/OOP-WG")
 
 ## Usage
 
-This section gives a very brief overview of the entirety of R7. Learn
-more of the basics in `vignettte("R7")`, the details of method dispatch
+This section gives a very brief overview of the entirety of S7. Learn
+more of the basics in `vignettte("S7")`, the details of method dispatch
 in `vignette("dispatch")`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
 ``` r
-library(R7)
+library(S7)
 ```
 
 ### Classes and objects
 
-R7 classes have a formal definition, which includes a list of properties
+S7 classes have a formal definition, which includes a list of properties
 and an optional validator. Use `new_class()` to define a class:
 
 ``` r
 range <- new_class("range",
   properties = list(
-    start = class_double, 
+    start = class_double,
     end = class_double
   ),
   validator = function(self) {
@@ -100,7 +100,7 @@ x@end <- -1
 
 ### Generics and methods
 
-Like S3 and S4, R7 uses **functional OOP** where methods belong to
+Like S3 and S4, S7 uses **functional OOP** where methods belong to
 **generic** functions, and method calls look like all other function
 calls: `generic(object, arg2, arg3)`. This style is called functional
 because from the outside it looks like a regular function call, and
@@ -115,7 +115,7 @@ arguments that aren’t used for method dispatch.
 ``` r
 inside <- new_generic("inside", "x", function(x, y) {
   # Actually finds and calls the appropriate method
-  R7_dispatch()
+  S7_dispatch()
 })
 ```
 
@@ -128,14 +128,14 @@ method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
 inside
-#> <R7_generic> function (x, y)  with 1 methods:
+#> <S7_generic> function (x, y)  with 1 methods:
 #> 1: method(inside, range)
 
 inside(x, c(0, 5, 10, 15))
 #> [1] FALSE  TRUE  TRUE  TRUE
 ```
 
-You can use `method<-` to register methods for base types on R7
+You can use `method<-` to register methods for base types on S7
 generics:
 
 ``` r
@@ -144,7 +144,7 @@ method(inside, class_numeric) <- function(x, y) {
 }
 ```
 
-And register methods for R7 classes on S3 or S4 generics:
+And register methods for S7 classes on S3 or S4 generics:
 
 ``` r
 method(format, range) <- function(x, ...) {

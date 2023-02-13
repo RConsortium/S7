@@ -6,7 +6,7 @@
 
     Can't find property <foo>@x
 
-# property retrieval: falls back to `base::@` for non-R7 objects
+# property retrieval: falls back to `base::@` for non-S7 objects
 
     Code
       "foo"@blah
@@ -67,9 +67,9 @@
     Code
       print(x)
     Output
-      <R7_property> 
+      <S7_property>
        $ name   : chr "foo"
-       $ class  : <R7_base_class>: <integer>
+       $ class  : <S7_base_class>: <integer>
        $ getter : NULL
        $ setter : NULL
        $ default: NULL
@@ -77,29 +77,29 @@
       str(list(x))
     Output
       List of 1
-       $ : <R7_property> 
+       $ : <S7_property>
         ..$ name   : chr "foo"
-        ..$ class  : <R7_base_class>: <integer>
+        ..$ class  : <S7_base_class>: <integer>
         ..$ getter : NULL
         ..$ setter : NULL
         ..$ default: NULL
 
-# properties can be base, S3, S4, R7, or R7 union
+# properties can be base, S3, S4, S7, or S7 union
 
     Code
       my_class
     Output
-      <R7_class>
+      <S7_class>
       @ name  :  my_class
-      @ parent: <R7_object>
+      @ parent: <S7_object>
       @ properties:
-       $ anything: <ANY>                 
-       $ null    : <NULL>                
-       $ base    : <integer>             
-       $ S3      : S3<factor>            
-       $ S4      : S4<class_S4>          
-       $ R7      : <class_R7>            
-       $ R7_union: <integer> or <logical>
+       $ anything: <ANY>
+       $ null    : <NULL>
+       $ base    : <integer>
+       $ S3      : S3<factor>
+       $ S4      : S4<class_S4>
+       $ S7      : <class_S7>
+       $ S7_union: <integer> or <logical>
 
 ---
 
@@ -120,13 +120,13 @@
     Error <simpleError>
       <my_class>@S4 must be S4<class_S4>, not <character>
     Code
-      my_obj@R7 <- "x"
+      my_obj@S7 <- "x"
     Error <simpleError>
-      <my_class>@R7 must be <class_R7>, not <character>
+      <my_class>@S7 must be <class_S7>, not <character>
     Code
-      my_obj@R7_union <- "x"
+      my_obj@S7_union <- "x"
     Error <simpleError>
-      <my_class>@R7_union must be <integer> or <logical>, not <character>
+      <my_class>@S7_union must be <integer> or <logical>, not <character>
 
 # as_properties() gives useful error messages
 
@@ -145,9 +145,8 @@
     Code
       as_properties(list(x = 1))
     Error <simpleError>
-      Can't convert `property$x` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Can't convert `property$x` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
       as_properties(list(x = class_character, x = class_character))
     Error <simpleError>
       `properties` names must be unique
-

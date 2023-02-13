@@ -1,14 +1,14 @@
-#' Register an R7 class with S4
+#' Register an S7 class with S4
 #'
 #' If you want to use [method<-] to register an method for an S4 generic with
-#' an R7 class, you need to call `S4_register()` once.
+#' an S7 class, you need to call `S4_register()` once.
 #'
-#' @param class An R7 class created with [new_class()].
+#' @param class An S7 class created with [new_class()].
 #' @param env Expert use only. Environment where S4 class will be registered.
 #' @export
 S4_register <- function(class, env = parent.frame()) {
   if (!is_class(class)) {
-    msg <- sprintf("`class` must be an R7 class, not a %s", obj_desc(class))
+    msg <- sprintf("`class` must be an S7 class, not a %s", obj_desc(class))
   }
 
   methods::setOldClass(class_dispatch(class), where = topenv(env))
@@ -16,13 +16,13 @@ S4_register <- function(class, env = parent.frame()) {
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
 
-S4_to_R7_class <- function(x, error_base = "") {
+S4_to_S7_class <- function(x, error_base = "") {
   # Silence R CMD check false postives
   distance <- subClass <- className <- package <- NULL
 
   # Convert generator function to class
   if (methods::is(x, "classGeneratorFunction")) {
-    return(S4_to_R7_class(methods::getClass(as.character(x@className)), error_base))
+    return(S4_to_S7_class(methods::getClass(as.character(x@className)), error_base))
   }
 
   if (methods::is(x, "ClassUnionRepresentation")) {
@@ -78,7 +78,7 @@ S4_class_dispatch <- function(x) {
   extends <- Filter(function(x) methods::is(x, "SClassExtension"), extends)
   classes <- lapply(extends, function(x) methods::getClass(x@superClass))
 
-  # Remove virtual classes that aren't S3. This removes unions because R7
+  # Remove virtual classes that aren't S3. This removes unions because S7
   # handles them in method registration, not dispatch.
   classes <- Filter(function(x) !x@virtual || is_oldClass(x), classes)
 

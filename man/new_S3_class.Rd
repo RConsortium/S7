@@ -13,8 +13,8 @@ name.}
 
 \item{constructor}{An optional constructor that can be used to create
 objects of the specified class. This is only needed if you wish to
-have an R7 class inherit from an S3 class. It must be specified in the
-same way as a R7 constructor: the first argument should be \code{.data}
+have an S7 class inherit from an S3 class. It must be specified in the
+same way as a S7 constructor: the first argument should be \code{.data}
 (the base type whose attributes will be modified).
 
 All arguments to the constructor should have default values so that
@@ -22,23 +22,23 @@ when the constructor is called with no arguments, it returns returns
 an "empty", but valid, object.}
 
 \item{validator}{An optional validator used by \code{\link[=validate]{validate()}} to check that
-the R7 object adheres to the constraints of the S3 class.
+the S7 object adheres to the constraints of the S3 class.
 
 A validator is a single argument function that takes the object to
 validate and returns \code{NULL} if the object is valid. If the object is
 invalid, it returns a character vector of problems.}
 }
 \description{
-To use an S3 class with R7, you must explicitly declare it using
+To use an S3 class with S7, you must explicitly declare it using
 \code{new_S3_class()} because S3 lacks a formal class definition.
 }
 \section{Method dispatch, properties, and unions}{
-There are three ways of using S3 with R7 that only require the S3 class
+There are three ways of using S3 with S7 that only require the S3 class
 vector:
 \itemize{
-\item Registering a S3 method for an R7 generic.
-\item Restricting an R7 property to an S3 class.
-\item Using an S3 class in an R7 union.
+\item Registering a S3 method for an S7 generic.
+\item Restricting an S7 property to an S3 class.
+\item Using an S3 class in an S7 union.
 }
 
 This is easy, and you can usually include the \code{new_S3_class()}
@@ -51,8 +51,8 @@ new_union("character", new_S3_class("factor"))
 }
 
 \section{Extending an S3 class}{
-Creating an R7 class that extends an S3 class requires more work. You'll
-also need to provide a constructor for the S3 class that follows R7
+Creating an S7 class that extends an S3 class requires more work. You'll
+also need to provide a constructor for the S3 class that follows S7
 conventions. This means the first argument to the constructor should be
 \code{.data}, and it should be followed by one argument for each attribute used
 by the class.
@@ -65,8 +65,8 @@ character vector of levels, verifies that they are consistent, then
 creates a factor object.
 
 You may optionally want to also provide a \code{validator} function which will
-ensure that \code{\link[=validate]{validate()}} confirms the validity of any R7 classes that build
-on this class. Unlike an R7 validator, you are responsible for validating
+ensure that \code{\link[=validate]{validate()}} confirms the validity of any S7 classes that build
+on this class. Unlike an S7 validator, you are responsible for validating
 the types of the attributes.
 
 The following code shows how you might wrap the base Date class.
@@ -85,4 +85,3 @@ A Date is a numeric vector with class \code{Date} that can be constructed with
 )
 }\if{html}{\out{</div>}}
 }
-

@@ -1,6 +1,6 @@
-test_that("R7_class validates its underlying data", {
+test_that("S7_class validates its underlying data", {
   x <- new_class("X")()
-  expect_snapshot_error(R7_data(x) <- 1)
+  expect_snapshot_error(S7_data(x) <- 1)
 })
 
 test_that("$ gives useful error", {
@@ -50,7 +50,7 @@ test_that("[[ gives more accurate error", {
 })
 
 test_that("register S4 classes for key components", {
-  expect_s4_class(getClass("R7_object"), "classRepresentation")
-  expect_s4_class(getClass("R7_method"), "classRepresentation")
-  expect_s4_class(getClass("R7_generic"), "classRepresentation")
+  expect_s4_class(getClass("S7_object"), "classRepresentation")
+  expect_s4_class(getClass("S7_method"), "classRepresentation")
+  expect_s4_class(getClass("S7_generic"), "classRepresentation")
 })

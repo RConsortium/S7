@@ -5,7 +5,7 @@ test_that("new_S3_class has a print method", {
 test_that("can construct objects that extend S3 classes", {
   ordered2 <- new_class("ordered2", parent = class_factor)
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
-  expect_equal(class(x), c("ordered2", "factor", "R7_object"))
+  expect_equal(class(x), c("ordered2", "factor", "S7_object"))
   expect_equal(prop_names(x), character())
   expect_error(x@levels, "Can't find property")
 })
