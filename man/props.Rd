@@ -10,7 +10,7 @@ props(object)
 props(object) <- value
 }
 \arguments{
-\item{object}{An object from a R7 class}
+\item{object}{An object from a S7 class}
 
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}

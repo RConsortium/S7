@@ -4,7 +4,7 @@
 \alias{validate}
 \alias{valid_eventually}
 \alias{valid_implicitly}
-\title{Validate an R7 object}
+\title{Validate an S7 object}
 \usage{
 validate(object, properties = TRUE)
 
@@ -13,7 +13,7 @@ valid_eventually(object, fun)
 valid_implicitly(object, fun)
 }
 \arguments{
-\item{object}{An R7 object}
+\item{object}{An S7 object}
 
 \item{properties}{If \code{TRUE}, the default, checks property types before
 executing the validator.}
@@ -21,7 +21,7 @@ executing the validator.}
 \item{fun}{A function to call on the object before validation.}
 }
 \description{
-\code{validate()} ensures that an R7 object is valid by calling the \code{validator}
+\code{validate()} ensures that an S7 object is valid by calling the \code{validator}
 provided in \code{\link[=new_class]{new_class()}}. This is done automatically when constructing new
 objects and when modifying properties.
 

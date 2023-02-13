@@ -13,7 +13,7 @@ method_lookup_error <- function(name, args, signatures) {
 #' @rdname new_generic
 #' @order 2
 #' @export
-R7_dispatch <- function() {
-  R7_dispatched_call <- .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
-  eval(R7_dispatched_call, envir = sys.frame(-1))
+S7_dispatch <- function() {
+  S7_dispatched_call <- .Call(method_call_, sys.call(-1), sys.function(-1), sys.frame(-1))
+  eval(S7_dispatched_call, envir = sys.frame(-1))
 }

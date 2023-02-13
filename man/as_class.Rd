@@ -9,8 +9,8 @@ as_class(x, arg = deparse(substitute(x)))
 \arguments{
 \item{x}{A class specification. One of the following:
 \itemize{
-\item An R7 class (created by \code{\link[=new_class]{new_class()}}).
-\item An R7 union (created by \code{\link[=new_union]{new_union()}}).
+\item An S7 class (created by \code{\link[=new_class]{new_class()}}).
+\item An S7 union (created by \code{\link[=new_union]{new_union()}}).
 \item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base class, like \link{class_logical}, \link{class_integer}, or \link{class_double}.
@@ -20,11 +20,11 @@ as_class(x, arg = deparse(substitute(x)))
 \item{arg}{Argument name used when generating errors.}
 }
 \value{
-A standardised class: either \code{NULL}, an R7 class, an R7 union,
+A standardised class: either \code{NULL}, an S7 class, an S7 union,
 as \link{new_S3_class}, or a S4 class.
 }
 \description{
-This is used as the interface between R7 and R's other OO systems, allowing
-you to use R7 classes and methods with base types, informal S3 classes, and
+This is used as the interface between S7 and R's other OO systems, allowing
+you to use S7 classes and methods with base types, informal S3 classes, and
 formal S4 classes.
 }

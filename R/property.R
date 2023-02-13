@@ -88,21 +88,21 @@ new_property <- function(class = class_any, getter = NULL, setter = NULL, defaul
     setter = setter,
     default = default
   )
-  class(out) <- "R7_property"
+  class(out) <- "S7_property"
 
   out
 }
 
-is_property <- function(x) inherits(x, "R7_property")
+is_property <- function(x) inherits(x, "S7_property")
 
 #' @export
-print.R7_property <- function(x, ...) {
-  cat("<R7_property> \n")
+print.S7_property <- function(x, ...) {
+  cat("<S7_property> \n")
   str_nest(x, "$", ...)
 }
 
 #' @export
-str.R7_property <- function(object, ..., nest.lev = 0) {
+str.S7_property <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object, ..., nest.lev = nest.lev)
 }
@@ -118,7 +118,7 @@ prop_default <- function(prop) {
 #' - `prop(x, "name") <- value` / `prop@name <- value` set the value of
 #'   a property.
 #'
-#' @param object An object from a R7 class
+#' @param object An object from a S7 class
 #' @param name The name of the parameter as a character. Partial matching
 #'   is not performed.
 #' @param value A new value for the property. The object is automatically
@@ -137,7 +137,7 @@ prop_default <- function(prop) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
-  check_is_R7(object)
+  check_is_S7(object)
 
   if (!prop_exists(object, name)) {
     stop(prop_error_unknown(object, name), call. = FALSE)
@@ -160,7 +160,7 @@ prop_val <- function(object, name) {
 
 # Get underlying property object from class
 prop_obj <- function(object, name) {
-  class <- R7_class(object)
+  class <- S7_class(object)
   attr(class, "properties")[[name]]
 }
 
@@ -173,7 +173,7 @@ prop_obj <- function(object, name) {
   setter_property <- NULL
 
   function(object, name, check = TRUE, value) {
-    check_is_R7(object)
+    check_is_S7(object)
 
     prop <- prop_obj(object, name)
     if (is.null(prop)) {
@@ -233,7 +233,7 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 # method in the package namespace instead of base::.__S3MethodsTable__.
 
 `@` <- function(object, name) {
-  if (inherits(object, "R7_object")) {
+  if (inherits(object, "S7_object")) {
     name <- as.character(substitute(name))
     prop(object, name)
   } else {
@@ -242,8 +242,8 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
   }
 }
 
-#' @rawNamespace S3method("@<-",R7_object)
-`@<-.R7_object` <- function(object, name, value) {
+#' @rawNamespace S3method("@<-",S7_object)
+`@<-.S7_object` <- function(object, name, value) {
   nme <- as.character(substitute(name))
   prop(object, nme) <- value
 
@@ -259,13 +259,13 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' @inheritParams prop
 #' @export
 prop_names <- function(object) {
-  check_is_R7(object)
+  check_is_S7(object)
 
-  if (inherits(object, "R7_class")) {
-    # R7_class isn't a R7_class (somewhat obviously) so we fake the property names
+  if (inherits(object, "S7_class")) {
+    # S7_class isn't a S7_class (somewhat obviously) so we fake the property names
     c("name", "parent", "package", "properties", "abstract", "constructor", "validator")
   } else {
-    class <- R7_class(object)
+    class <- S7_class(object)
     props <- attr(class, "properties", exact = TRUE)
     if (length(props) == 0) {
       character()
@@ -278,7 +278,7 @@ prop_names <- function(object) {
 #' @rdname prop_names
 #' @export
 prop_exists <- function(object, name) {
-  check_is_R7(object)
+  check_is_S7(object)
   name %in% prop_names(object)
 }
 
@@ -302,7 +302,7 @@ prop_exists <- function(object, name) {
 #' props(lexington) <- list(height = 14, name = "Lexigonton")
 #' lexington
 props <- function(object) {
-  check_is_R7(object)
+  check_is_S7(object)
   prop_names <- prop_names(object)
   if (length(prop_names) == 0) {
     list()
@@ -315,7 +315,7 @@ props <- function(object) {
 #' @param value A named list of values. The object is checked for validity
 #'   only after all replacements are performed.
 `props<-` <- function(object, value) {
-  check_is_R7(object)
+  check_is_S7(object)
   stopifnot(is.list(value))
 
   for (name in names(value)) {

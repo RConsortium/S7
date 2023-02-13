@@ -23,7 +23,7 @@ Note that method dispatch uses a string representation of each class in
 the class hierarchy. Each class system uses a slightly different convention
 to avoid ambiguity.
 \itemize{
-\item R7: \code{pkg::class} or \code{class}
+\item S7: \code{pkg::class} or \code{class}
 \item S4: \code{S4/pkg::class} or \code{S4/class}
 \item S3: \code{class}
 }

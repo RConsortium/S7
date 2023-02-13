@@ -1,12 +1,12 @@
-#' Base R7 class
+#' Base S7 class
 #'
 #' @keywords internal
 #' @export
-R7_object <- new_class(
-  name = "R7_object",
+S7_object <- new_class(
+  name = "S7_object",
   parent = NULL,
   constructor = function() {
-    .Call(R7_object_)
+    .Call(S7_object_)
   },
   validator = function(self) {
     if (typeof(self) != "S4") {
@@ -14,15 +14,15 @@ R7_object <- new_class(
     }
   }
 )
-methods::setOldClass("R7_object")
+methods::setOldClass("S7_object")
 
 #' @export
-`$.R7_object` <- function(x, name) {
+`$.S7_object` <- function(x, name) {
   if (typeof(x) %in% c("list", "environment")) {
     NextMethod()
   } else {
     msg <- sprintf(
-      "Can't get R7 properties with `$`. Did you mean `%s@%s`?",
+      "Can't get S7 properties with `$`. Did you mean `%s@%s`?",
       deparse1(substitute(x)),
       name
     )
@@ -30,12 +30,12 @@ methods::setOldClass("R7_object")
   }
 }
 #' @export
-`$<-.R7_object` <- function(x, name, value) {
+`$<-.S7_object` <- function(x, name, value) {
   if (typeof(x) %in% c("list", "environment")) {
     NextMethod()
   } else {
     msg <- sprintf(
-      "Can't set R7 properties with `$`. Did you mean `...@%s <- %s`?",
+      "Can't set S7 properties with `$`. Did you mean `...@%s <- %s`?",
       name,
       deparse1(substitute(value))
     )
@@ -44,23 +44,23 @@ methods::setOldClass("R7_object")
 }
 
 #' @export
-`[.R7_object` <- function(x, ..., drop = TRUE) {
+`[.S7_object` <- function(x, ..., drop = TRUE) {
   check_subsettable(x)
   NextMethod()
 }
 #' @export
-`[<-.R7_object` <- function(x, ..., value) {
+`[<-.S7_object` <- function(x, ..., value) {
   check_subsettable(x)
   NextMethod()
 }
 
 #' @export
-`[[.R7_object` <- function(x, ...) {
+`[[.S7_object` <- function(x, ...) {
   check_subsettable(x, allow_env = TRUE)
   NextMethod()
 }
 #' @export
-`[[<-.R7_object` <- function(x, ..., value) {
+`[[<-.S7_object` <- function(x, ..., value) {
   check_subsettable(x, allow_env = TRUE)
   NextMethod()
 }
@@ -68,13 +68,13 @@ methods::setOldClass("R7_object")
 check_subsettable <- function(x, allow_env = FALSE) {
   allowed_types <- c("list", if (allow_env) "environment")
   if (!typeof(x) %in% allowed_types) {
-    stop("R7 objects are not subsettable.", call. = FALSE)
+    stop("S7 objects are not subsettable.", call. = FALSE)
   }
   invisible(TRUE)
 }
 
-R7_generic <- new_class(
-  name = "R7_generic",
+S7_generic <- new_class(
+  name = "S7_generic",
   properties = list(
     name = class_character,
     methods = class_environment,
@@ -82,24 +82,24 @@ R7_generic <- new_class(
   ),
   parent = class_function
 )
-methods::setOldClass(c("R7_generic", "function", "R7_object"))
-is_generic <- function(x) inherits(x, "R7_generic")
+methods::setOldClass(c("S7_generic", "function", "S7_object"))
+is_generic <- function(x) inherits(x, "S7_generic")
 
-R7_method <- new_class("R7_method",
+S7_method <- new_class("S7_method",
   parent = class_function,
   properties = list(
-    generic = R7_generic,
+    generic = S7_generic,
     signature = class_list
   )
 )
-methods::setOldClass(c("R7_method", "function", "R7_object"))
+methods::setOldClass(c("S7_method", "function", "S7_object"))
 
 
 # Create generics for double dispatch base Ops
 base_ops <- lapply(setNames(, group_generics()$Ops), new_generic, dispatch_args = c("x", "y"))
 
 #' @export
-Ops.R7_object <- function(e1, e2) {
+Ops.S7_object <- function(e1, e2) {
   base_ops[[.Generic]](e1, e2)
 }
 
@@ -111,7 +111,7 @@ Ops.R7_object <- function(e1, e2) {
 }
 
 .onLoad <- function(...) {
-  convert <<- R7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
+  convert <<- S7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
 
   class_numeric <<- new_union(class_integer, class_double)
   class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)

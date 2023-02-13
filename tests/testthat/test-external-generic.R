@@ -1,12 +1,12 @@
 test_that("can get and append methods", {
-  on.exit(external_methods_reset("R7"), add = TRUE)
+  on.exit(external_methods_reset("S7"), add = TRUE)
 
-  expect_equal(external_methods_get("R7"), list())
+  expect_equal(external_methods_get("S7"), list())
 
   bar <- new_external_generic("foo", "bar", "x")
-  external_methods_add("R7", bar, list(), function() {})
+  external_methods_add("S7", bar, list(), function() {})
   expect_equal(
-    external_methods_get("R7"),
+    external_methods_get("S7"),
     list(
       list(
         generic = bar,

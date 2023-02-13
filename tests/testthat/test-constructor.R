@@ -1,16 +1,16 @@
 test_that("generates correct arguments from parent + properties",  {
   # No arguments
-  args <- constructor_args(R7_object)
+  args <- constructor_args(S7_object)
   expect_equal(args$self, character())
   expect_equal(args$parent, character())
 
   # Includes properties
-  args <- constructor_args(R7_object, as_properties(list(x = class_numeric)))
+  args <- constructor_args(S7_object, as_properties(list(x = class_numeric)))
   expect_equal(args$self, "x")
   expect_equal(args$parent, character())
 
   # unless they're dynamic
-  args <- constructor_args(R7_object,
+  args <- constructor_args(S7_object,
     as_properties(list(x = new_property(getter = function(self) 10)))
   )
   expect_equal(args$self, character())
@@ -34,8 +34,8 @@ test_that("generates correct arguments from parent + properties",  {
 
 test_that("generates meaningful constructors", {
   expect_snapshot({
-    new_constructor(R7_object, list())
-    new_constructor(R7_object, as_properties(list(x = class_numeric, y = class_numeric)))
+    new_constructor(S7_object, list())
+    new_constructor(S7_object, as_properties(list(x = class_numeric, y = class_numeric)))
 
     foo <- new_class("foo", parent = class_character)
     new_constructor(foo, list())
@@ -58,4 +58,6 @@ test_that("can generate constructor for inherited abstract classes", {
     new_constructor(foo1, list())
     new_constructor(foo1, as_properties(list(y = class_double)))
   }, transform = scrub_environment)
+  child <- new_class("child", foo1, properties = list(y = class_double))
+  expect_error(child(y = 0.5), regexp = NA)
 })

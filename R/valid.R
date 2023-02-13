@@ -1,7 +1,7 @@
-#' Validate an R7 object
+#' Validate an S7 object
 #'
 #' @description
-#' `validate()` ensures that an R7 object is valid by calling the `validator`
+#' `validate()` ensures that an S7 object is valid by calling the `validator`
 #' provided in [new_class()]. This is done automatically when constructing new
 #' objects and when modifying properties.
 #'
@@ -14,7 +14,7 @@
 #' `valid_implicitly()` does the same but does not validate the object at the
 #' end. It should only be used rarely, and in performance critical code where
 #' you are certain a sequence of operations cannot produce an invalid object.
-#' @param object An R7 object
+#' @param object An S7 object
 #' @param fun A function to call on the object before validation.
 #' @param properties If `TRUE`, the default, checks property types before
 #'   executing the validator.
@@ -61,13 +61,13 @@
 #' }
 #' rightwards(r, 20)
 validate <- function(object, properties = TRUE) {
-  check_is_R7(object)
+  check_is_S7(object)
 
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))
   }
 
-  class <- R7_class(object)
+  class <- S7_class(object)
 
   # First, check property types - if these are incorrect, the validator
   # is likely to return spurious errors

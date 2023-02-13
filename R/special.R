@@ -14,34 +14,34 @@
 #' foo(1)
 #' foo()
 #' foo("x")
-class_missing <- structure(list(), class = "R7_missing")
+class_missing <- structure(list(), class = "S7_missing")
 
-is_class_missing <- function(x) inherits(x, "R7_missing")
+is_class_missing <- function(x) inherits(x, "S7_missing")
 
 #' @export
-print.R7_missing <- function(x, ...) {
-  cat("<R7_missing>\n")
+print.S7_missing <- function(x, ...) {
+  cat("<S7_missing>\n")
   invisible(x)
 }
 #' @export
-str.R7_missing <- function(object, ..., nest.lev = 0) {
+str.S7_missing <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object)
 }
 
 #' @export
 #' @rdname class_missing
-class_any <- structure(list(), class = "R7_any")
+class_any <- structure(list(), class = "S7_any")
 
-is_class_any <- function(x) inherits(x, "R7_any")
+is_class_any <- function(x) inherits(x, "S7_any")
 
 #' @export
-print.R7_any <- function(x, ...) {
-  cat("<R7_any>\n")
+print.S7_any <- function(x, ...) {
+  cat("<S7_any>\n")
   invisible(x)
 }
 #' @export
-str.R7_any <- function(object, ..., nest.lev = 0) {
+str.S7_any <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object)
 }

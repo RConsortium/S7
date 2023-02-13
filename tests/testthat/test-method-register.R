@@ -28,14 +28,14 @@ describe("method registration", {
   })
 
   it("can register method for external generic from within package", {
-    on.exit(external_methods_reset("R7"), add = TRUE)
+    on.exit(external_methods_reset("S7"), add = TRUE)
 
     foo <- new_external_generic("foo", "bar" ,"x")
-    register_external_method(foo, class_character, function(x) "bar", package = "R7")
-    expect_length(external_methods_get("R7"), 1)
+    register_external_method(foo, class_character, function(x) "bar", package = "S7")
+    expect_length(external_methods_get("S7"), 1)
 
     # and doesn't modify generic
-    expect_s3_class(foo, "R7_external_generic")
+    expect_s3_class(foo, "S7_external_generic")
   })
 
   it("can register method for external generic during development", {
@@ -45,7 +45,7 @@ describe("method registration", {
     expect_equal(sum(bar()), "bar")
   })
 
-  it("can register R7 method for S3 generic", {
+  it("can register S7 method for S3 generic", {
     foo <- new_class("foo")
     method(sum, foo) <- function(x, ...) "foo"
     expect_equal(sum(foo()), "foo")
@@ -54,7 +54,7 @@ describe("method registration", {
     expect_equal(sum, base::sum)
   })
 
-  it("can register R7 method for S3 Ops generic", {
+  it("can register S7 method for S3 Ops generic", {
     foo <- new_class("foo")
     bar <- new_class("bar")
 
@@ -62,14 +62,14 @@ describe("method registration", {
     expect_equal(foo() + bar(), "foobar")
   })
 
-  it("S3 registration requires a R7 class", {
+  it("S3 registration requires a S7 class", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {
       method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
     })
   })
 
-  it("can register R7 method for S4 generic", {
+  it("can register S7 method for S4 generic", {
     methods::setGeneric("bar", function(x) standardGeneric("bar"))
     S4foo <- new_class("S4foo")
 
@@ -94,12 +94,12 @@ describe("as_signature()", {
   it("returns a list that matches length of dispatch args", {
     foo1 <- new_generic("foo1", "x")
     sig1 <- as_signature(class_numeric, foo1)
-    expect_s3_class(sig1, "R7_signature")
+    expect_s3_class(sig1, "S7_signature")
     expect_length(sig1, 1)
 
     foo2 <- new_generic("foo2", c("x", "y"))
     sig2 <- as_signature(list(class_numeric, class_character), foo2)
-    expect_s3_class(sig1, "R7_signature")
+    expect_s3_class(sig1, "S7_signature")
     expect_length(sig2, 2)
   })
 
@@ -122,12 +122,12 @@ describe("as_signature()", {
 })
 
 test_that("check_method returns TRUE if the functions are compatible", {
-  foo <- new_generic("foo", "x", function(x, ...) R7_dispatch())
+  foo <- new_generic("foo", "x", function(x, ...) S7_dispatch())
   expect_true(check_method(function(x, ...) x, foo))
   # extra arguments are ignored
   expect_true(check_method(function(x, ..., y) x, foo))
 
-  foo <- new_generic("foo", "x", function(x) R7_dispatch())
+  foo <- new_generic("foo", "x", function(x) S7_dispatch())
   expect_true(check_method(function(x) x, foo))
 })
 
@@ -141,20 +141,20 @@ test_that("check_method complains if the functions are not compatible", {
   })
 
   expect_snapshot(error = TRUE, {
-    foo <- new_generic("foo", "x", function(x) R7_dispatch())
+    foo <- new_generic("foo", "x", function(x) S7_dispatch())
     check_method(function(x, y) {}, foo)
   })
 })
 
 test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
-    foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) R7_dispatch())
+    foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())
     check_method(function(x, ..., y = 1) {}, foo)
     check_method(function(x, ..., y = 1, z = 1) {}, foo)
   })
 })
 
-test_that("R7_method printing", {
+test_that("S7_method printing", {
   foo <- new_generic("foo", c("x", "y"))
   method(foo, list(class_integer, class_integer)) <- function(x, y, ...) paste0("bar:", x, y)
   expect_snapshot(

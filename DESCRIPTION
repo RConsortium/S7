@@ -1,7 +1,7 @@
-Package: R7
+Package: S7
 Title: A New OO System for R
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     c(person(given = "Henrik",
              family = "Bengtsson",
              role = "aut"),
@@ -36,7 +36,7 @@ Description: Prototype implementation of an extension to S3 that
 License: MIT + file LICENSE
 Imports:
     utils
-Suggests: 
+Suggests:
     methods,
     covr,
     bench,

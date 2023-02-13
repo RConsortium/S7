@@ -22,14 +22,14 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
     version = version
   )
 
-  class(out) <- "R7_external_generic"
+  class(out) <- "S7_external_generic"
   out
 }
 
 #' @export
-print.R7_external_generic <- function(x, ...) {
+print.S7_external_generic <- function(x, ...) {
   cat(
-    "<R7_external_generic> ",
+    "<S7_external_generic> ",
     x$package, "::", x$name, "(", paste(x$dispatch_args, collapse = ", "), ")",
     if (!is.null(x$version)) paste0(" (>= ", x$version, ")"),
     "\n",
@@ -39,7 +39,7 @@ print.R7_external_generic <- function(x, ...) {
 }
 
 is_external_generic <- function(x) {
-  inherits(x, "R7_external_generic")
+  inherits(x, "S7_external_generic")
 }
 
 #' @importFrom utils getFromNamespace packageName
@@ -74,12 +74,12 @@ registrar <- function(generic, signature, method) {
 }
 
 external_methods_get <- function(package) {
-  S3_methods_table(package)[[".R7_methods"]] %||% list()
+  S3_methods_table(package)[[".S7_methods"]] %||% list()
 }
 
 external_methods_reset <- function(package) {
   tbl <- S3_methods_table(package)
-  tbl[[".R7_methods"]] <- list()
+  tbl[[".S7_methods"]] <- list()
   invisible()
 }
 
@@ -87,11 +87,11 @@ external_methods_add <- function(package, generic, signature, method) {
   tbl <- S3_methods_table(package)
 
   methods <- append(
-    tbl[[".R7_methods"]] %||% list(),
+    tbl[[".S7_methods"]] %||% list(),
     list(list(generic = generic, signature = signature, method = method))
   )
 
-  tbl[[".R7_methods"]] <- methods
+  tbl[[".S7_methods"]] <- methods
   invisible()
 }
 

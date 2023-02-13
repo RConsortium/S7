@@ -1,7 +1,7 @@
 Package: t0
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     c(person(given = "Jim",
              family = "Hester",
              role = c("aut", "cre"),
@@ -10,7 +10,7 @@ Authors@R:
       person(given = "RStudio",
              role = c("cph", "fnd")))
 Description: What the package does (one paragraph).
-Imports: R7
+Imports: S7
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

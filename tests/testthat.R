@@ -1,4 +1,4 @@
 library(testthat)
-library(R7)
+library(S7)
 
-test_check("R7")
+test_check("S7")

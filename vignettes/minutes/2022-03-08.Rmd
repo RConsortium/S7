@@ -14,7 +14,7 @@ title: "Minutes 2022-03-08"
 
     -   `new_generic("foo", "x", function(x, y) call_method())`
 
--   New `class_any` (could already define methods for `R7_object`) and `class_missing` sentinels.
+-   New `class_any` (could already define methods for `S7_object`) and `class_missing` sentinels.
 
 -   When creating an object, unspecified properties are initialized with their default value (#67).
     To achieve this, the constructor arguments default to `class_missing`, since `NULL` would prevent a default value of `NULL`, and `missing()` requires too many gymnastics.
@@ -28,9 +28,9 @@ title: "Minutes 2022-03-08"
 
 ## Discussion
 
--   Rename `method_call()`? <https://github.com/RConsortium/OOP-WG/issues/200> --- `R7_dispatch()` sounds good.
+-   Rename `method_call()`? <https://github.com/RConsortium/OOP-WG/issues/200> --- `S7_dispatch()` sounds good.
 -   Abstract classes? <https://github.com/RConsortium/OOP-WG/issues/199>. Easy to implement but is it worth it?
--   What should we call the R7 equivalent of inherits? <https://github.com/RConsortium/OOP-WG/issues/193> --- call it `R7_inherits()` for now; will eventually just be part of inherits. Propose generic extension mechanism for inherits.
+-   What should we call the S7 equivalent of inherits? <https://github.com/RConsortium/OOP-WG/issues/193> --- call it `S7_inherits()` for now; will eventually just be part of inherits. Propose generic extension mechanism for inherits.
 -   Explicit S4 registration: <https://github.com/RConsortium/OOP-WG/pull/182>
 -   New names for base types? <https://github.com/RConsortium/OOP-WG/issues/170> --- `class_` sounds good.
 -   Convert and super: <https://github.com/RConsortium/OOP-WG/pull/181>
