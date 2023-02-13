@@ -162,25 +162,26 @@ compatibility with R versions prior to 4.3.0, there are a few things to be aware
 
 #### `@`
 
-`` base::`@` `` in R version prior R 4.3 does not resolve S7 properties.
+`` base::`@` `` in R versions prior to R 4.3.0 does not resolve R7 properties.
 
 Workarounds:
 
--  use `S7::prop()` instead of `@`.
+-  Use `S7::prop()` instead of `@`.
 -  Alternatively, make an S7-aware `@` available to your package
    in `.onLoad()` and `.onAttach()` like this:
-``` r
-# enable usage of <S7_object>@name in package code
-`@` <- NULL
-.onLoad <- function(libname, pkgname) {
-  `@` <<- get("@", asNamespace("S7"))
-}
 
-# enable usage of <S7_object>@name in user code
-# e.g. if you also want users to be able to access properties
-# of objects your package
-.onAttach <- function(libname, pkgname) {
-  if (getRversion() < "4.3.0")
-    require(S7)
-}
-```
+   ``` r
+   # enable usage of <S7_object>@name in package code
+   `@` <- NULL
+   .onLoad <- function(libname, pkgname) {
+     `@` <<- get("@", asNamespace("S7"))
+   }
+
+   # enable usage of <S7_object>@name in user code
+   # e.g. if you also want users to be able to access properties
+   # of objects your package
+   .onAttach <- function(libname, pkgname) {
+     if (getRversion() < "4.3.0")
+       require(S7)
+   }
+   ```
