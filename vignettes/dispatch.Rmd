@@ -1,8 +1,8 @@
 ---
-title: "R7 generics and method dispatch"
+title: "S7 generics and method dispatch"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{R7 generics and method dispatch}
+  %\VignetteIndexEntry{S7 generics and method dispatch}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,18 +14,18 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette dives into the details of R7 generics and method dispatch, building on the basics discussed in `vignette("R7")`.
+This vignette dives into the details of S7 generics and method dispatch, building on the basics discussed in `vignette("S7")`.
 We'll first introduce the concept of generic-method compatibility, then discuss some of the finer details of creating a generic with `new_generic()`.
 This vignette first discusses generic-method compatibility, and you might want to customize the body of the generic, and generics that live in suggested packages.
 We'll then pivot to talk more details of method dispatch including `super()` and multiple dispatch.
 
 ```{r setup}
-library(R7)
+library(S7)
 ```
 
 ## Generic-method compatibility
 
-When you register a method, R7 checks that your method is compatible with the generic.
+When you register a method, S7 checks that your method is compatible with the generic.
 
 The formal arguments of the generic and methods must agree.
 This means that:
@@ -121,7 +121,7 @@ A good example of such a function is `length()`:
 
 ```{r, eval = FALSE}
 length <- new_generic("length", "x", function(x) {
-  R7_dispatch()
+  S7_dispatch()
 })
 ```
 
@@ -134,10 +134,10 @@ In most cases, you'll supply the first two arguments to `new_generic()` and allo
 
 ```{r}
 display <- new_generic("display", "x")
-R7_data(display)
+S7_data(display)
 ```
 
-The most important part of the body is `R7_dispatch()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
+The most important part of the body is `S7_dispatch()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
 
 It can be useful to customize this body.
 The previous section showed one case when you might want to supply the body yourself: dropping `…` from the formals of the generic.
@@ -155,7 +155,7 @@ To add required arguments that aren't dispatched upon, you just need to add addi
 
 ```{r}
 foo <- new_generic("foo", "x", function(x, y, ...) {
-  R7_dispatch()
+  S7_dispatch()
 })
 ```
 
@@ -178,7 +178,7 @@ This ensures that the user must supply the full name of the argument when callin
 
 ```{r}
 mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
-  R7_dispatch()
+  S7_dispatch()
 })
 method(mean, class_integer) <- function(x, na.rm = TRUE) {
   if (na.rm) {
@@ -205,7 +205,7 @@ mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
   if (!identical(na.rm, TRUE) && !identical(na.rm = FALSE)) {
     stop("`na.rm` must be either TRUE or FALSE")
   }
-  R7_dispatch()
+  S7_dispatch()
 })
 ```
 
@@ -213,7 +213,7 @@ The only downside to performing error checking is that you constraint the interf
 
 ## External generics
 
-If you're defining methods for an R7 generic in another package there are a couple of extra steps you need to take:
+If you're defining methods for an S7 generic in another package there are a couple of extra steps you need to take:
 
 -   You need to use `new_external_generic()` to provide a definition of the interface of the generic that lives purely in your package.
     This definition gives the package name, generic name, and the arguments it uses for dispatch:
@@ -222,11 +222,11 @@ If you're defining methods for an R7 generic in another package there are a coup
     foo <- new_external_generic("pkg1", "foo", "x")
     ```
 
--   You need to call `R7::external_methods_register()` when your package is loaded:
+-   You need to call `S7::external_methods_register()` when your package is loaded:
 
     ```{r}
     .onLoad <- function(libname, pkgname) {
-      R7::external_methods_register()
+      S7::external_methods_register()
     }
     ```
 
@@ -283,13 +283,13 @@ So far we have focused primarily on single dispatch, i.e. generics where `dispat
 It is also possible to supply a length 2 (or more!) vector `dispatch_on` to create a generic that performs multiple dispatch, i.e. it uses the classes of more than one object to find the appropriate method.
 
 Multiple dispatch is a feature primarily of S4, although S3 includes some limited special cases for arithmetic operators.
-Multiple dispatch is heavily used in S4; we don't expect it to be heavily used in R7, but it is occasionally useful.
+Multiple dispatch is heavily used in S4; we don't expect it to be heavily used in S7, but it is occasionally useful.
 
 ### A simple example
 
 Inspired by <https://blog.klipse.tech/javascript/2021/10/03/multimethod.html>
 
-Let's take our speak example from `vignette("R7")` and extend it to teach our pets how to speak multiple languages:
+Let's take our speak example from `vignette("S7")` and extend it to teach our pets how to speak multiple languages:
 
 ```{r}
 pet <- new_class("pet")

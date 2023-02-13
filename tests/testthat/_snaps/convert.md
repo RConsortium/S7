@@ -4,6 +4,5 @@
       convert(obj, to = class_double)
     Error <simpleError>
       Can't find method for generic `convert()` with dispatch classes:
-      - from: converttest, R7_object
+      - from: converttest, S7_object
       - to  : double
-

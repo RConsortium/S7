@@ -25,8 +25,8 @@ describe("fallback convert", {
     foo2 <- new_class("foo2", foo1)
 
     obj <- convert(foo2(), to = foo2)
-    expect_equal(class(obj), c("foo2", "foo1", "R7_object"))
-    expect_equal(R7_class(obj), foo2)
+    expect_equal(class(obj), c("foo2", "foo1", "S7_object"))
+    expect_equal(S7_class(obj), foo2)
   })
 
   it("can convert to super class", {
@@ -34,8 +34,8 @@ describe("fallback convert", {
     foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
 
     obj <- convert(foo2(1, 2), to = foo1)
-    expect_equal(class(obj), c("foo1", "R7_object"))
-    expect_equal(R7_class(obj), foo1)
+    expect_equal(class(obj), c("foo1", "S7_object"))
+    expect_equal(S7_class(obj), foo1)
     expect_equal(props(obj), list(x = 1))
     expect_equal(attr(obj, "y"), NULL)
   })
@@ -44,7 +44,7 @@ describe("fallback convert", {
     factor2 <- new_class("factor2", class_factor, properties = list(x = class_double))
     obj <- convert(factor2(1, "x", x = 1), to = class_factor)
     expect_equal(class(obj), "factor")
-    expect_equal(R7_class(obj), NULL)
+    expect_equal(S7_class(obj), NULL)
     expect_equal(attr(obj, "x"), NULL)
   })
 
@@ -55,7 +55,7 @@ describe("fallback convert", {
     )
     obj <- convert(character2("x", x = 1), to = class_character)
     expect_equal(attr(obj, "class"), NULL)
-    expect_equal(R7_class(obj), NULL)
+    expect_equal(S7_class(obj), NULL)
     expect_equal(attr(obj, "x"), NULL)
   })
 })

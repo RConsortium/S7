@@ -10,19 +10,19 @@ No semantic changes without discussion in issues
 
 ## Changes
 
--   Non R7 classes
-    -   `as_class()` centralises all handling of classes (base types, S3, S4, and R7)
-    -   Strings now only refer to base types (previously used for S3 + R7 class in parent frame) `new_class( parent = "function")`
-    -   Numeric, atomic, and vector "types" as R7 unions.
+-   Non S7 classes
+    -   `as_class()` centralises all handling of classes (base types, S3, S4, and S7)
+    -   Strings now only refer to base types (previously used for S3 + S7 class in parent frame) `new_class( parent = "function")`
+    -   Numeric, atomic, and vector "types" as S7 unions.
         -   Should we provide some wrappers to base unions and consider if we could get rid of string representation altogether? (e.g. `base_atomic`)
     -   New `s3_class()` to define S3 classes.
-        -   <https://github.com/RConsortium/OOP-WG/pull/148> makes it possible for R7 class to extend an S3 class
+        -   <https://github.com/RConsortium/OOP-WG/pull/148> makes it possible for S7 class to extend an S3 class
         -   Should we export the S3 class definitions for common base S3 classes? And then provide with `base_factor` etc.
-    -   S4 unions converted to R7 unions
+    -   S4 unions converted to S7 unions
 -   Method registration
     -   Clarify difference between registration and dispatch. Will flow into refactoring of C code in near future.
-    -   Dispatch is base/S3/S4/R7 class with R7 generic.
-    -   Registration is base/S3/S4/R7 class with R7 generic AND R7 class with S3/S4 generic.
+    -   Dispatch is base/S3/S4/S7 class with S7 generic.
+    -   Registration is base/S3/S4/S7 class with S7 generic AND S7 class with S3/S4 generic.
     -   All combinations now tested.
     -   Thorough refactoring of method registration
 -   Method dispatch

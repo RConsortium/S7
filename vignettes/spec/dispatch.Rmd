@@ -21,9 +21,9 @@ If object has class attribute `c("a", "b", "c")` then generic `f()` looks for me
 
 If no method is found, it errors.
 
-### R7
+### S7
 
-R7 will behave the same as S3.
+S7 will behave the same as S3.
 
 ## Method lookup
 
@@ -38,19 +38,19 @@ As of R 4.0.0, it looks in the following three places:
 
 -   The base environment (i..e. skips the search).
 
-### R7
+### S7
 
-R7 methods are defined using assignment:
+S7 methods are defined using assignment:
 
 ```{r, eval = FALSE}
 method("mean", "numeric") <- function(x) sum(x) / length(x)
 ```
 
-Behind the scenes, this acts directly upon the method table, so method lookup for R7 generics never needs to look in the parent frame.
+Behind the scenes, this acts directly upon the method table, so method lookup for S7 generics never needs to look in the parent frame.
 
-`method<-` is likely to start as a shim around `.S3method()` but we may want to consider a separate `.__R7MethodsTable__.`.
+`method<-` is likely to start as a shim around `.S3method()` but we may want to consider a separate `.__S7MethodsTable__.`.
 This could use a new data structure that resolves generic/class ambiguity (e.g. `all.equal.data.frame()`).
-Methods for R7 classes defined on an S3 generics would still use the S3 method table.
+Methods for S7 classes defined on an S3 generics would still use the S3 method table.
 Could consider attaching the method table to the generic, instead of its containing environment.
 
 Method lookup would be cached for performance, so that it is only performed once per class.
@@ -84,7 +84,7 @@ foo.numeric <- function(x, y) {
 foo(1, 1)
 ```
 
-### R7
+### S7
 
 -   Can we eliminate the special behaviour and make it just like a regular function call?
     Presumably easier than changing dispatch rules because we'll call a function other than `UseMethod()`.
@@ -140,7 +140,7 @@ method("mean", "foofy") <- function(x, ..., na.rm = TRUE) {
 }
 ```
 
-### R7
+### S7
 
 Can we require `generic` and `object` arguments to make code easier to reason about?
 
@@ -169,7 +169,7 @@ Looked for before final fallback.
 sloop::s3_dispatch(sum(Sys.time()))
 ```
 
-### R7
+### S7
 
 Keep as is.
 
@@ -185,7 +185,7 @@ Then:
 -   If one internal, use other
 -   Otherwise, warn and use internal
 
-### R7
+### S7
 
 Goal is to use iterated dispatch which implies asymmetry in dispatch order.
 User responsible for ensuring that `x + y` equivalent to `y + x` (types should almost always be the same, but values are likely to be different).
@@ -235,7 +235,7 @@ This is made up of four rough categories: dimension, type, language, numeric.
 
 Note that internal generics behave differently, instead immediately falling back to the default default case.
 
-### R7
+### S7
 
 Suggest defining a new `r7class()` function that returns a simplified implicit class, dropping the language classes.
 
@@ -248,13 +248,13 @@ Dispatch should use the same rules in R and in C.
 
 Special dispatch?
 `c()`, `cbind()`, `rbind()` (+ `cbind2()` and `rbind2()`) --- iterated double dispatch.
-Need to describe in more detail so we have a more solid assessment of what R7 might need.ez
+Need to describe in more detail so we have a more solid assessment of what S7 might need.ez
 
 -   gitDot-dot-dot dispatch, assumes all have same class
 
 -   vctrs used two pass approach (find type then coerce)
 
-### R7
+### S7
 
 Initially, don't provide support for user generics that dispatch on `…`?
 Instead suggest people use `Reduce` plus double-dispatch.

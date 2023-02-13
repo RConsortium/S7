@@ -2,18 +2,18 @@ new_constructor <- function(parent, properties) {
   arg_info <- constructor_args(parent, properties)
   self_args <- as_names(arg_info$self, named = TRUE)
 
-  if (identical(parent, R7_object)) {
+  if (identical(parent, S7_object)) {
     return(new_function(
       args = missing_args(arg_info$self),
       body = new_call("new_object", c(list(NULL), self_args)),
-      env = asNamespace("R7")
+      env = asNamespace("S7")
     ))
   }
   if (is_class(parent) && parent@abstract) {
     return(new_function(
       args = missing_args(arg_info$self),
-      body = new_call("new_object", c(list(quote(R7_object())), self_args)),
-      env = asNamespace("R7")
+      body = new_call("new_object", c(list(quote(S7_object())), self_args)),
+      env = asNamespace("S7")
     ))
   }
 
@@ -31,7 +31,7 @@ new_constructor <- function(parent, properties) {
     args <- formals(parent$constructor)
     args[arg_info$self] <- missing_args(arg_info$self)
   } else {
-    # user facing error in R7_class()
+    # user facing error in S7_class()
     stop("Unsupported `parent` type", call. = FALSE)
   }
 
@@ -39,7 +39,7 @@ new_constructor <- function(parent, properties) {
   parent_call <- new_call(parent_name, parent_args)
   body <- new_call("new_object", c(parent_call, self_args))
 
-  env <- new.env(parent = asNamespace("R7"))
+  env <- new.env(parent = asNamespace("S7"))
   env[[parent_name]] <- parent_fun
 
   new_function(args, body, env)

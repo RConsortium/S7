@@ -1,8 +1,8 @@
 ---
-title: "R7 basics"
+title: "S7 basics"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{R7 basics}
+  %\VignetteIndexEntry{S7 basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,22 +14,22 @@ knitr::opts_chunk$set(
 )
 ```
 
-The R7 package provides a new OOP system designed to be a successor to S3 and S4.
+The S7 package provides a new OOP system designed to be a successor to S3 and S4.
 It has been designed and implemented collaboratively by the RConsortium Object-Oriented Programming Working Group, which includes representatives from R-Core, BioConductor, RStudio/tidyverse, and the wider R community.
 
-This vignette describes how R7 works, starting with an overview of classes, objects, generics, and methods, then going into the details of validation and properties.
+This vignette describes how S7 works, starting with an overview of classes, objects, generics, and methods, then going into the details of validation and properties.
 
 ```{r setup}
-library(R7)
+library(S7)
 ```
 
 ## Basics
 
-We'll start with an quick overview of the most important parts of R7: classes and objects, generics and methods, and the basics of method dispatch and inheritance.
+We'll start with an quick overview of the most important parts of S7: classes and objects, generics and methods, and the basics of method dispatch and inheritance.
 
 ### Classes and objects
 
-R7 classes have a formal definition that you create with `new_class()`.
+S7 classes have a formal definition that you create with `new_class()`.
 There are two arguments that you'll use with almost every class:
 
 -   The `name` of the class, supplied in the first argument.
@@ -45,7 +45,7 @@ dog <- new_class("dog", properties = list(
 dog
 ```
 
-R7 provides a number of built-in definitions that allow you to refer to existing base types that are not R7 classes.
+S7 provides a number of built-in definitions that allow you to refer to existing base types that are not S7 classes.
 You can recognize these definitions because they all start with `class_`.
 
 Note that I've assigned the return value of `new_class()` to an object with the same name as the class.
@@ -57,26 +57,26 @@ lola <- dog(name = "Lola", age = 11)
 lola
 ```
 
-Once you have an R7 object, you can get and set properties using `@`:
+Once you have an S7 object, you can get and set properties using `@`:
 
 ```{r}
 lola@age <- 11
 lola@age
 ```
 
-R7 automatically validates the type of the property using the type supplied in `new_class()`:
+S7 automatically validates the type of the property using the type supplied in `new_class()`:
 
 ```{r, error = TRUE}
 lola@age <- "twelve"
 ```
 
-Given an object, you can retrieves its class `R7_class()`:
+Given an object, you can retrieves its class `S7_class()`:
 
 ```{r}
-R7_class(lola)
+S7_class(lola)
 ```
 
-R7 objects also have an S3 `class()`.
+S7 objects also have an S3 `class()`.
 This is used for compatibility with existing S3 generics and you can learn more about it in `vignette("compatibility")`.
 
 ```{r}
@@ -85,11 +85,11 @@ class(lola)
 
 ### Generics and methods
 
-R7, like S3 and S4, is built around the idea of **generic functions,** or **generics** for short.
+S7, like S3 and S4, is built around the idea of **generic functions,** or **generics** for short.
 A generic defines an interface, which uses a different implementation depending on the class of one or more arguments.
 The implementation for a specific class is called a **method**, and the generic finds that appropriate method by performing **method dispatch**.
 
-Use `new_generic()` to create a R7 generic.
+Use `new_generic()` to create a S7 generic.
 In its simplest form, it only needs two arguments: the name of the generic (used in error messages) and the name of the argument used for method dispatch:
 
 ```{r}
@@ -139,12 +139,12 @@ The `cat` and `dog` classes share the same properties, so we could use a common 
 We first define the parent class:
 
 ```{r}
-pet <- new_class("pet", 
+pet <- new_class("pet",
   properties = list(
     name = class_character,
     age = class_numeric
   )
-) 
+)
 ```
 
 Then use the `parent` argument to `new_class:`
@@ -182,14 +182,14 @@ describe(lola)
 describe(fluffy)
 ```
 
-You can define a fallback method for any R7 object by registering a method for `R7_object`:
+You can define a fallback method for any S7 object by registering a method for `S7_object`:
 
 ```{r}
-method(describe, R7_object) <- function(x) {
-  "An R7 object"
+method(describe, S7_object) <- function(x) {
+  "An S7 object"
 }
 
-cocktail <- new_class("cocktail", 
+cocktail <- new_class("cocktail",
   properties = list(
     ingredients = class_character
   )
@@ -214,7 +214,7 @@ Learn more about method dispatch in `vignette("dispatch")`.
 
 ## Validation
 
-R7 classes can have an optional **validator** that checks that the values of the properties are OK.
+S7 classes can have an optional **validator** that checks that the values of the properties are OK.
 A validator is a function that takes the object (called `self`) and returns `NULL` if its valid or returns a character vector listing the problems.
 
 ### Basics
@@ -324,7 +324,7 @@ The following sections show you how to provide a default value, compute the prop
 The defaults of `new_class()` create an class that can be constructed with no arguments:
 
 ```{r}
-empty <- new_class("empty", 
+empty <- new_class("empty",
   properties = list(
     x = class_double,
     y = class_character,
@@ -337,7 +337,7 @@ The default values of the properties will be filled in with "empty" instances.
 You can instead provide your own defaults by using the `default` argument:
 
 ```{r}
-empty <- new_class("empty", 
+empty <- new_class("empty",
   properties = list(
     x = new_property(class_numeric, default = 0),
     y = new_property(class_character, default = ""),

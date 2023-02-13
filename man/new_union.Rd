@@ -21,7 +21,7 @@ places:
 \verb{method(foo, X) <- f; method(foo, Y) <- foo}
 }
 
-R7 includes built-in unions for "numeric" (integer and double vectors),
+S7 includes built-in unions for "numeric" (integer and double vectors),
 "atomic" (logical, numeric, character, and raw vectors) and
 "vector" (atomic vectors, lists, and expressions).
 }

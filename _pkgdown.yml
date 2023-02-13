@@ -10,7 +10,7 @@ reference:
   - new_generic
   - new_union
   - method<-
-  - R7_inherits
+  - S7_inherits
   - validate
 
 - title: Properties
@@ -19,7 +19,7 @@ reference:
   - prop
   - prop_names
   - props
-  - R7_data
+  - S7_data
 
 - title: Method dispatch
   contents:
@@ -31,15 +31,15 @@ reference:
   - new_external_generic
   - new_S3_class
   - S4_register
-  - R7_class
+  - S7_class
   - base_classes
   - class_missing
 
 articles:
-- title: Learn R7
+- title: Learn S7
   navbar: ~
   contents:
-  - R7
+  - S7
   - dispatch
   - compatibility
   - performance

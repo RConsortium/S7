@@ -17,10 +17,10 @@
 #' This makes `super()` more verbose, but substantially easier to
 #' understand and reason about.
 #'
-#' @param from An R7 object to cast.
-#' @param to An R7 class specification, passed to [as_class()]. Must be a
+#' @param from An S7 object to cast.
+#' @param to An S7 class specification, passed to [as_class()]. Must be a
 #'   superclass of `object`.
-#' @returns An `R7_super` object which should always be passed
+#' @returns An `S7_super` object which should always be passed
 #'   immediately to a generic. It has no other special behavior.
 #' @export
 #' @examples
@@ -55,7 +55,7 @@
 #' # super() only affects the _next_ generic:
 #' bar2(super(obj, to = foo1))
 super <- function(from, to) {
-  check_is_R7(from)
+  check_is_S7(from)
 
   to <- as_class(to)
   check_can_inherit(to)
@@ -74,17 +74,17 @@ super <- function(from, to) {
       object = from,
       dispatch = class_dispatch(to)
     ),
-    class = "R7_super"
+    class = "S7_super"
   )
 }
 
 #' @export
-print.R7_super <- function(x, ...) {
+print.S7_super <- function(x, ...) {
   str(x, ...)
   invisible(x)
 }
 #' @export
-str.R7_super <- function(object, ..., nest.lev = 0) {
+str.S7_super <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat("super(", obj_desc(object$object), ", <", object$dispatch[[1]], ">)", sep = "")
 }
