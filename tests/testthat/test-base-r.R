@@ -1,8 +1,9 @@
-test_that("base R is R7 aware", {
+
+
+test_that("base::inherits() accepts S7 objects", {
 
   skip_if(getRversion() < "4.3")
 
-  ## Test inherits()
   ClassA <- new_class("ClassA")
   ClassBA <- new_class("ClassBA", parent = ClassA)
   ClassX <- new_class("ClassX")
@@ -16,8 +17,11 @@ test_that("base R is R7 aware", {
     isFALSE(inherits(ClassX(), ClassBA))
   }))
 
+})
 
-  ## Test @
+
+test_that("base::`@` accesses S7 properties", {
+
   range <- new_class(
     "range",
     properties = list(start = class_double,
@@ -41,9 +45,7 @@ test_that("base R is R7 aware", {
   }))
 
   local({
-    detach("package:R7", character.only = TRUE) # belt
-    on.exit(library(R7))
-    `@` <- base::`@` # suspenders
+    `@` <- base::`@`
     expect_no_error(stopifnot(exprs = {
       identical(obj@start, 3)
       identical(obj@end, 4)
@@ -51,6 +53,10 @@ test_that("base R is R7 aware", {
 
   })
 
+})
+
+
+test_that("Ops generics dispatch to S7 methods", {
 
   ## Test Ops
   ClassX <- new_class("ClassX")
