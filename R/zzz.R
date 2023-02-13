@@ -106,8 +106,9 @@ Ops.S7_object <- function(e1, e2) {
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
-  if(getRversion() < "4.3.0")
+  if (getRversion() < "4.3.0") {
     env[[".conflicts.OK"]] <- TRUE
+  }
 }
 
 .onLoad <- function(...) {

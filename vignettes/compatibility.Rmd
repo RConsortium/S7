@@ -180,7 +180,7 @@ Workarounds:
 # e.g. if you also want users to be able to access properties
 # of objects your package
 .onAttach <- function(libname, pkgname) {
-  if(getRversion() < "4.3.0")
+  if (getRversion() < "4.3.0")
     require(S7)
 }
 ```
