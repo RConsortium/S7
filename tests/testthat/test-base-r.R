@@ -65,7 +65,7 @@ test_that("Ops generics dispatch to S7 methods", {
   method(`%*%`, list(ClassX, class_any)) <- function(x, y) "ClassX %*% class_any"
   method(`%*%`, list(class_any, ClassX)) <- function(x, y) "class_any %*% ClassX"
 
-  on.exit(S4_remove_classes(c("an_s4")))
+  on.exit(S4_remove_classes(c("an_s4_class")))
   methods::setClass("an_s4_class", contains = "character", where = globalenv())
   an_s4_obj <- methods::new(methods::getClass("an_s4_class"))
 
