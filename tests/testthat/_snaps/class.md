@@ -17,20 +17,20 @@
        @ parent     : <foo1/S7_object> constructor
        @ package    : NULL
        @ properties :List of 2
-       .. $ x: <S7_property>
+       .. $ x: <S7_property> 
        ..  ..$ name   : chr "x"
        ..  ..$ class  : <S7_base_class>: <integer>
        ..  ..$ getter : NULL
        ..  ..$ setter : NULL
        ..  ..$ default: NULL
-       .. $ y: <S7_property>
+       .. $ y: <S7_property> 
        ..  ..$ name   : chr "y"
        ..  ..$ class  : <S7_base_class>: <integer>
        ..  ..$ getter : NULL
        ..  ..$ setter : NULL
        ..  ..$ default: NULL
        @ abstract   : logi FALSE
-       @ constructor: function (x = class_missing, y = class_missing)
+       @ constructor: function (x = class_missing, y = class_missing)  
        @ validator  : NULL
     Code
       str(list(foo2))
@@ -119,15 +119,15 @@
       foo()
     Output
       <foo>
-       @ x: num(0)
-       @ y: num(0)
+       @ x: num(0) 
+       @ y: num(0) 
     Code
       str(list(foo()))
     Output
       List of 1
        $ : <foo>
-        ..@ x: num(0)
-        ..@ y: num(0)
+        ..@ x: num(0) 
+        ..@ y: num(0) 
 
 # S7 object: displays objects with data nicely
 
@@ -163,3 +163,4 @@
       c(foo1, foo1)
     Error <simpleError>
       Can not combine S7 class objects
+

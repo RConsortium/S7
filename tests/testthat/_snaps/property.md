@@ -67,7 +67,7 @@
     Code
       print(x)
     Output
-      <S7_property>
+      <S7_property> 
        $ name   : chr "foo"
        $ class  : <S7_base_class>: <integer>
        $ getter : NULL
@@ -77,7 +77,7 @@
       str(list(x))
     Output
       List of 1
-       $ : <S7_property>
+       $ : <S7_property> 
         ..$ name   : chr "foo"
         ..$ class  : <S7_base_class>: <integer>
         ..$ getter : NULL
@@ -93,12 +93,12 @@
       @ name  :  my_class
       @ parent: <S7_object>
       @ properties:
-       $ anything: <ANY>
-       $ null    : <NULL>
-       $ base    : <integer>
-       $ S3      : S3<factor>
-       $ S4      : S4<class_S4>
-       $ S7      : <class_S7>
+       $ anything: <ANY>                 
+       $ null    : <NULL>                
+       $ base    : <integer>             
+       $ S3      : S3<factor>            
+       $ S4      : S4<class_S4>          
+       $ S7      : <class_S7>            
        $ S7_union: <integer> or <logical>
 
 ---
@@ -150,3 +150,4 @@
       as_properties(list(x = class_character, x = class_character))
     Error <simpleError>
       `properties` names must be unique
+

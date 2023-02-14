@@ -17,3 +17,4 @@
       str(class_vector)
     Output
       <S7_union>: <logical>, <integer>, <double>, <complex>, <character>, <raw>, <expression>, or <list>
+

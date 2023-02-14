@@ -81,3 +81,4 @@
       check_generic(function() { })
     Error <simpleError>
       `fun` must contain a call to `S7_dispatch()`
+
