@@ -24,9 +24,9 @@ jobs:
 
       - uses: actions/checkout@v3
         with:
-          repository: t-kalinowski/S5 # R7
+          repository: t-kalinowski/S7
           ref: base-R-support
-          path: S5
+          path: S7
 
       - name: Build docker image (includes all tests)
-        run: docker build --tag r-svn:s5 --file S5/.github/r-svn-s5.Dockerfile .
+        run: docker build --tag r-svn:s5 --file S7/.github/r-svn-s7.Dockerfile .
