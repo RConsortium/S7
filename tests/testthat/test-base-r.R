@@ -1,7 +1,6 @@
 
 
 test_that("base::inherits() accepts S7 objects", {
-
   skip_if(getRversion() < "4.3")
 
   ClassA <- new_class("ClassA")
@@ -21,6 +20,7 @@ test_that("base::inherits() accepts S7 objects", {
 
 
 test_that("base::`@` accesses S7 properties", {
+  skip_if(getRversion() < "4.3")
 
   range <- new_class(
     "range",
@@ -57,6 +57,7 @@ test_that("base::`@` accesses S7 properties", {
 
 
 test_that("Ops generics dispatch to S7 methods", {
+  skip_if(getRversion() < "4.3")
 
   ## Test Ops
   ClassX <- new_class("ClassX")
