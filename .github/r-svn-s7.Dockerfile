@@ -20,7 +20,6 @@ RUN apt-get install -y \
 
 
 ADD r-svn /r-svn
-ADD S7 /S7
 
 WORKDIR /r-svn
 RUN git config --global --add safe.directory $PWD || true
@@ -40,7 +39,8 @@ RUN Rscript -e 'install.packages(                        \
 
 
 
-WORKDIR /S5
+ADD S7 /S7
+WORKDIR /S7
 RUN Rscript -e 'remotes::install_local(dependencies = TRUE, Ncpus = 2L)'
 RUN Rscript -e 'rcmdcheck::rcmdcheck(      \
     args = c("--no-manual", "--as-cran"),  \
