@@ -29,8 +29,8 @@ RUN ./.github/scripts/svn-info.sh
 
 RUN CC=gcc ./configure --enable-R-shlib --with-blas --with-lapack --disable-java
 RUN make -j2
-RUN xvfb-run make check-all
-RUN tail -n100 tests/*.fail || true
+RUN xvfb-run make check-all || true
+RUN if tail -n100 tests/*.fail ; then false; else true ; fi
 
 RUN make install
 RUN Rscript -e 'install.packages(                        \
