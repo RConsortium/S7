@@ -167,15 +167,13 @@ compatibility with R versions prior to 4.3.0, there are a few things to be aware
 Workarounds:
 
 -  Use `S7::prop()` instead of `@`.
--  Alternatively, make an S7-aware `@` available to your package
-   in `.onLoad()` and `.onAttach()` like this:
+-  Alternatively, make an S7-aware `@` available to your package with 
+   a custom `NAMESPACE` directive and `.onAttach()` like this:
 
    ``` r
    # enable usage of <S7_object>@name in package code
-   `@` <- NULL
-   .onLoad <- function(libname, pkgname) {
-     `@` <<- get("@", asNamespace("S7"))
-   }
+   #' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
+   NULL
 
    # enable usage of <S7_object>@name in user code
    # e.g. if you also want users to be able to access properties
