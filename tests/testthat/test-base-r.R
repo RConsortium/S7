@@ -87,8 +87,9 @@ test_that("Ops generics dispatch to S7 methods", {
   }))
 
   # S3 dispatch still works
-  `%*%.foo` <- function(x, y) paste(class(x), "%*%", class(y))
-  Ops.bar   <- function(x, y) paste(class(x), .Generic, class(y))
+  `%*%.foo` <- function(x, y)   paste(class(x) , "%*%"   , class(y))
+  `+.foo`   <- function(e1, e2) paste(class(e1), "+"     , class(e2))
+  Ops.bar   <- function(e1, e2) paste(class(e1), .Generic, class(e2))
 
   foo <- structure("", class = "foo")
   bar <- structure("", class = "bar")
@@ -98,6 +99,12 @@ test_that("Ops generics dispatch to S7 methods", {
 
     identical(bar %*% 1, "bar %*% numeric")
     identical(1 %*% bar, "numeric %*% bar")
+
+    identical(foo + 1, "foo + numeric")
+    identical(1 + foo, "numeric + foo")
+
+    identical(bar + 1, "bar + numeric")
+    identical(1 + bar, "numeric + bar")
   }))
 
 })
