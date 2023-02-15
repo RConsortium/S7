@@ -222,8 +222,8 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' @usage object@name
 #' @aliases @
 #' @rawNamespace
-#' if (getRversion() >= "4.3.0") S3method(base::`@`, R7_object) else export("@")
-`@.R7_object` <- prop
+#' if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object) else export("@")
+`@.S7_object` <- prop
 
 # Note: we need to explicitly refer to base with "base::`@`" in the
 # namespace directive to ensure the method is registered in the correct place.
