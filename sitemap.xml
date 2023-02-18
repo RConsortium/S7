@@ -10,7 +10,7 @@
     <loc>https://RConsortium.github.io/OOP-WG/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/articles/R7.html</loc>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/S7.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/articles/compatibility.html</loc>
@@ -32,6 +32,9 @@
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/articles/minutes/2022-08-01.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/articles/minutes/2022-09-12.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/articles/performance.html</loc>
@@ -58,19 +61,19 @@
     <loc>https://RConsortium.github.io/OOP-WG/news/index.html</loc>
   </url>
   <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_class.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_data.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_inherits.html</loc>
-  </url>
-  <url>
-    <loc>https://RConsortium.github.io/OOP-WG/reference/R7_object.html</loc>
-  </url>
-  <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/S4_register.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/S7_class.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/S7_data.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/S7_inherits.html</loc>
+  </url>
+  <url>
+    <loc>https://RConsortium.github.io/OOP-WG/reference/S7_object.html</loc>
   </url>
   <url>
     <loc>https://RConsortium.github.io/OOP-WG/reference/as_class.html</loc>

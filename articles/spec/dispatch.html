@@ -6,12 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="Initial notes on dispatch design">
-<title>Dispatch • R7</title>
+<title>Dispatch • S7</title>
 <script src="../../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
-<script src="../../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="../../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
+<script src="../../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../../pkgdown.js"></script><meta property="og:title" content="Dispatch">
+<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../../pkgdown.js"></script><meta property="og:title" content="Dispatch">
 <meta property="og:description" content="Initial notes on dispatch design">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -24,7 +24,7 @@
 
     <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
     
-    <a class="navbar-brand me-2" href="../../index.html">R7</a>
+    <a class="navbar-brand me-2" href="../../index.html">S7</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
@@ -36,7 +36,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
-  <a class="nav-link" href="../../articles/R7.html">Get started</a>
+  <a class="nav-link" href="../../articles/S7.html">Get started</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../../reference/index.html">Reference</a>
@@ -44,7 +44,7 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../../articles/dispatch.html">R7 generics and method dispatch</a>
+    <a class="dropdown-item" href="../../articles/dispatch.html">S7 generics and method dispatch</a>
     <a class="dropdown-item" href="../../articles/compatibility.html">Compatibility</a>
     <a class="dropdown-item" href="../../articles/performance.html">Performance</a>
     <div class="dropdown-divider"></div>
@@ -93,7 +93,9 @@
 <div class="section level3">
 <h3 id="s3">S3<a class="anchor" aria-label="anchor" href="#s3"></a>
 </h3>
-<p>The basic rules of S3 dispatch are simple. If object has class attribute <code>c("a", "b", "c")</code> then generic <code>f()</code> looks for methods in the following order:</p>
+<p>The basic rules of S3 dispatch are simple. If object has class
+attribute <code>c("a", "b", "c")</code> then generic <code>f()</code>
+looks for methods in the following order:</p>
 <ul>
 <li><code>f.a()</code></li>
 <li><code>f.b()</code></li>
@@ -103,9 +105,9 @@
 <p>If no method is found, it errors.</p>
 </div>
 <div class="section level3">
-<h3 id="r7">R7<a class="anchor" aria-label="anchor" href="#r7"></a>
+<h3 id="s7">S7<a class="anchor" aria-label="anchor" href="#s7"></a>
 </h3>
-<p>R7 will behave the same as S3.</p>
+<p>S7 will behave the same as S3.</p>
 </div>
 </div>
 <div class="section level2">
@@ -114,22 +116,39 @@
 <div class="section level3">
 <h3 id="s3-1">S3<a class="anchor" aria-label="anchor" href="#s3-1"></a>
 </h3>
-<p>Where precisely does <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code> look for the methods? As of R 4.0.0, it looks in the following three places:</p>
+<p>Where precisely does <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code> look for the methods?
+As of R 4.0.0, it looks in the following three places:</p>
 <ul>
-<li><p>The method table is a special environment <code>.__S3MethodsTable__.</code> found in the environment where the generic is defined.</p></li>
-<li><p>The chain of environments starting at the <code><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame()</a></code> of the call to generic, ending at the global environment.</p></li>
+<li><p>The method table is a special environment
+<code>.__S3MethodsTable__.</code> found in the environment where the
+generic is defined.</p></li>
+<li><p>The chain of environments starting at the
+<code><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame()</a></code> of the call to generic, ending at the global
+environment.</p></li>
 <li><p>The base environment (i..e. skips the search).</p></li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="r7-1">R7<a class="anchor" aria-label="anchor" href="#r7-1"></a>
+<h3 id="s7-1">S7<a class="anchor" aria-label="anchor" href="#s7-1"></a>
 </h3>
-<p>R7 methods are defined using assignment:</p>
+<p>S7 methods are defined using assignment:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"numeric"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
-<p>Behind the scenes, this acts directly upon the method table, so method lookup for R7 generics never needs to look in the parent frame.</p>
-<p><code>method&lt;-</code> is likely to start as a shim around <code><a href="https://rdrr.io/r/base/S3method.html" class="external-link">.S3method()</a></code> but we may want to consider a separate <code>.__R7MethodsTable__.</code>. This could use a new data structure that resolves generic/class ambiguity (e.g. <code>all.equal.data.frame()</code>). Methods for R7 classes defined on an S3 generics would still use the S3 method table. Could consider attaching the method table to the generic, instead of its containing environment.</p>
-<p>Method lookup would be cached for performance, so that it is only performed once per class. Cached methods would be marked with a special attribute so that they could be flushed whenever a new method for the generic is added.</p>
+<p>Behind the scenes, this acts directly upon the method table, so
+method lookup for S7 generics never needs to look in the parent
+frame.</p>
+<p><code>method&lt;-</code> is likely to start as a shim around
+<code><a href="https://rdrr.io/r/base/S3method.html" class="external-link">.S3method()</a></code> but we may want to consider a separate
+<code>.__S7MethodsTable__.</code>. This could use a new data structure
+that resolves generic/class ambiguity
+(e.g. <code>all.equal.data.frame()</code>). Methods for S7 classes
+defined on an S3 generics would still use the S3 method table. Could
+consider attaching the method table to the generic, instead of its
+containing environment.</p>
+<p>Method lookup would be cached for performance, so that it is only
+performed once per class. Cached methods would be marked with a special
+attribute so that they could be flushed whenever a new method for the
+generic is added.</p>
 </div>
 </div>
 <div class="section level2">
@@ -138,11 +157,14 @@
 <div class="section level3">
 <h3 id="s3-2">S3<a class="anchor" aria-label="anchor" href="#s3-2"></a>
 </h3>
-<p>Once the method has been found, it must be called. <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code> does not work like a regular function call but instead:</p>
+<p>Once the method has been found, it must be called.
+<code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code> does not work like a regular function call but
+instead:</p>
 <ul>
 <li><p>Changes to arguments are ignored.</p></li>
 <li><p>Method can access objects created in generic.</p></li>
-<li><p>The parent frame of the method call is the parent frame of the generic.</p></li>
+<li><p>The parent frame of the method call is the parent frame of the
+generic.</p></li>
 </ul>
 <p>These properties are summarised in the following example:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -161,12 +183,16 @@
 <span><span class="co">#&gt; 1 1 2</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="r7-2">R7<a class="anchor" aria-label="anchor" href="#r7-2"></a>
+<h3 id="s7-2">S7<a class="anchor" aria-label="anchor" href="#s7-2"></a>
 </h3>
 <ul>
-<li><p>Can we eliminate the special behaviour and make it just like a regular function call? Presumably easier than changing dispatch rules because we’ll call a function other than <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>.</p></li>
+<li><p>Can we eliminate the special behaviour and make it just like a
+regular function call? Presumably easier than changing dispatch rules
+because we’ll call a function other than
+<code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code>.</p></li>
 <li>
-<p>Need to make precise how arguments are passed to the method. <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> at least assumes that this works:</p>
+<p>Need to make precise how arguments are passed to the method.
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> at least assumes that this works:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span>  <span class="op">{</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod</a></span><span class="op">(</span><span class="st">"foo"</span><span class="op">)</span></span>
@@ -188,7 +214,8 @@
 <div class="section level3">
 <h3 id="s3-3">S3<a class="anchor" aria-label="anchor" href="#s3-3"></a>
 </h3>
-<p>i.e. how does <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">NextMethod()</a></code> work: currently most state recorded in special variables like <code>.Generic</code>, etc.</p>
+<p>i.e. how does <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">NextMethod()</a></code> work: currently most state
+recorded in special variables like <code>.Generic</code>, etc.</p>
 <p>Can we avoid this confusion:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>  <span class="op">{</span></span>
@@ -210,7 +237,8 @@
 <div class="section level3">
 <h3 id="s4">S4<a class="anchor" aria-label="anchor" href="#s4"></a>
 </h3>
-<p>Want to avoid this sort of code, where we rely on magic from <code><a href="https://rdrr.io/r/methods/callGeneric.html" class="external-link">callGeneric()</a></code> to pass on values from current call.</p>
+<p>Want to avoid this sort of code, where we rely on magic from
+<code><a href="https://rdrr.io/r/methods/callGeneric.html" class="external-link">callGeneric()</a></code> to pass on values from current call.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"foofy"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span>, <span class="va">na.rm</span> <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">values</span></span>
@@ -218,9 +246,10 @@
 <span><span class="op">}</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="r7-3">R7<a class="anchor" aria-label="anchor" href="#r7-3"></a>
+<h3 id="s7-3">S7<a class="anchor" aria-label="anchor" href="#s7-3"></a>
 </h3>
-<p>Can we require <code>generic</code> and <code>object</code> arguments to make code easier to reason about?</p>
+<p>Can we require <code>generic</code> and <code>object</code> arguments
+to make code easier to reason about?</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../../reference/method.html">method</a></span><span class="op">(</span><span class="st">"mean"</span>, <span class="st">"POSIXct"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">POSIXct</span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">NextMethod</a></span><span class="op">(</span><span class="op">)</span>, tz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"tz"</span><span class="op">)</span><span class="op">)</span></span>
@@ -241,7 +270,9 @@
 <div class="section level3">
 <h3 id="s3-4">S3<a class="anchor" aria-label="anchor" href="#s3-4"></a>
 </h3>
-<p>Group generics (<code>Math</code>, <code>Ops</code>, <code>Summary</code>, <code>Complex</code>): exist for some internal generics. Looked for before final fallback.</p>
+<p>Group generics (<code>Math</code>, <code>Ops</code>,
+<code>Summary</code>, <code>Complex</code>): exist for some internal
+generics. Looked for before final fallback.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sloop</span><span class="fu">::</span><span class="fu"><a href="https://sloop.r-lib.org/reference/s3_dispatch.html" class="external-link">s3_dispatch</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.time</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    <span style="color: #555555;">sum.POSIXct</span></span></span>
@@ -253,7 +284,7 @@
 <span><span class="co">#&gt; -&gt; sum (internal)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="r7-4">R7<a class="anchor" aria-label="anchor" href="#r7-4"></a>
+<h3 id="s7-4">S7<a class="anchor" aria-label="anchor" href="#s7-4"></a>
 </h3>
 <p>Keep as is.</p>
 </div>
@@ -264,7 +295,8 @@
 <div class="section level3">
 <h3 id="s3-5">S3<a class="anchor" aria-label="anchor" href="#s3-5"></a>
 </h3>
-<p>Used by Ops group generic. Basic process is find method for first and second arguments. Then:</p>
+<p>Used by Ops group generic. Basic process is find method for first and
+second arguments. Then:</p>
 <ul>
 <li>If same, ok</li>
 <li>If one internal, use other</li>
@@ -272,9 +304,12 @@
 </ul>
 </div>
 <div class="section level3">
-<h3 id="r7-5">R7<a class="anchor" aria-label="anchor" href="#r7-5"></a>
+<h3 id="s7-5">S7<a class="anchor" aria-label="anchor" href="#s7-5"></a>
 </h3>
-<p>Goal is to use iterated dispatch which implies asymmetry in dispatch order. User responsible for ensuring that <code>x + y</code> equivalent to <code>y + x</code> (types should almost always be the same, but values are likely to be different).</p>
+<p>Goal is to use iterated dispatch which implies asymmetry in dispatch
+order. User responsible for ensuring that <code>x + y</code> equivalent
+to <code>y + x</code> (types should almost always be the same, but
+values are likely to be different).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">double_dispatch</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, <span class="va">generic</span> <span class="op">=</span> <span class="st">"+"</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span><span class="fu">sloop</span><span class="fu">::</span><span class="fu"><a href="https://sloop.r-lib.org/reference/s3_class.html" class="external-link">s3_class</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span>, <span class="fu">sloop</span><span class="fu">::</span><span class="fu"><a href="https://sloop.r-lib.org/reference/s3_class.html" class="external-link">s3_class</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -300,7 +335,10 @@
 <span><span class="co">#&gt; * +.double.numeric</span></span>
 <span><span class="co">#&gt; * +.numeric.integer</span></span>
 <span><span class="co">#&gt; * +.numeric.numeric</span></span></code></pre></div>
-<p>In vctrs, some question if we will remove inheritance from all double dispatch. We have already done so for <code>vec_ptype2()</code> and <code>vec_cast()</code> because the coercion hierarchy often does not match the class hierarchy. May also do for <code>vec_arith()</code>.</p>
+<p>In vctrs, some question if we will remove inheritance from all double
+dispatch. We have already done so for <code>vec_ptype2()</code> and
+<code>vec_cast()</code> because the coercion hierarchy often does not
+match the class hierarchy. May also do for <code>vec_arith()</code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -309,7 +347,10 @@
 <div class="section level3">
 <h3 id="s3-6">S3<a class="anchor" aria-label="anchor" href="#s3-6"></a>
 </h3>
-<p>When <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code> recieves an object without a <code>class</code> attribute, it uses the <strong>implicit</strong> class, as provided by <code><a href="https://rdrr.io/r/base/class.html" class="external-link">.class2()</a></code>. This is made up of four rough categories: dimension, type, language, numeric.</p>
+<p>When <code><a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">UseMethod()</a></code> recieves an object without a
+<code>class</code> attribute, it uses the <strong>implicit</strong>
+class, as provided by <code><a href="https://rdrr.io/r/base/class.html" class="external-link">.class2()</a></code>. This is made up of four
+rough categories: dimension, type, language, numeric.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># dimension class</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">.class2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="st">"a"</span><span class="op">)</span><span class="op">)</span></span>
@@ -331,13 +372,16 @@
 <span><span class="co"># numeric</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">.class2</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "double"  "numeric"</span></span></code></pre></div>
-<p>Note that internal generics behave differently, instead immediately falling back to the default default case.</p>
+<p>Note that internal generics behave differently, instead immediately
+falling back to the default default case.</p>
 </div>
 <div class="section level3">
-<h3 id="r7-6">R7<a class="anchor" aria-label="anchor" href="#r7-6"></a>
+<h3 id="s7-6">S7<a class="anchor" aria-label="anchor" href="#s7-6"></a>
 </h3>
-<p>Suggest defining a new <code>r7class()</code> function that returns a simplified implicit class, dropping the language classes.</p>
-<p>Dispatch should use the same rules in R and in C. (But are there performance implications?)</p>
+<p>Suggest defining a new <code>r7class()</code> function that returns a
+simplified implicit class, dropping the language classes.</p>
+<p>Dispatch should use the same rules in R and in C. (But are there
+performance implications?)</p>
 </div>
 </div>
 <div class="section level2">
@@ -346,16 +390,21 @@
 <div class="section level3">
 <h3 id="s3-7">S3<a class="anchor" aria-label="anchor" href="#s3-7"></a>
 </h3>
-<p>Special dispatch? <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>, <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code>, <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code> (+ <code><a href="https://rdrr.io/r/methods/cbind2.html" class="external-link">cbind2()</a></code> and <code><a href="https://rdrr.io/r/methods/cbind2.html" class="external-link">rbind2()</a></code>) — iterated double dispatch. Need to describe in more detail so we have a more solid assessment of what R7 might need.ez</p>
+<p>Special dispatch? <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code>, <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind()</a></code>,
+<code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code> (+ <code><a href="https://rdrr.io/r/methods/cbind2.html" class="external-link">cbind2()</a></code> and <code><a href="https://rdrr.io/r/methods/cbind2.html" class="external-link">rbind2()</a></code>)
+— iterated double dispatch. Need to describe in more detail so we have a
+more solid assessment of what S7 might need.ez</p>
 <ul>
 <li><p>gitDot-dot-dot dispatch, assumes all have same class</p></li>
 <li><p>vctrs used two pass approach (find type then coerce)</p></li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="r7-7">R7<a class="anchor" aria-label="anchor" href="#r7-7"></a>
+<h3 id="s7-7">S7<a class="anchor" aria-label="anchor" href="#s7-7"></a>
 </h3>
-<p>Initially, don’t provide support for user generics that dispatch on <code>…</code>? Instead suggest people use <code>Reduce</code> plus double-dispatch.</p>
+<p>Initially, don’t provide support for user generics that dispatch on
+<code>…</code>? Instead suggest people use <code>Reduce</code> plus
+double-dispatch.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -371,7 +420,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
     </footer>
