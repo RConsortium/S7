@@ -20,3 +20,4 @@
       check_is_S7("a")
     Error <simpleError>
       `"a"` must be an <S7_object>, not a <character>
+
