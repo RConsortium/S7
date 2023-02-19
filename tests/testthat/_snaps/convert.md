@@ -6,3 +6,4 @@
       Can't find method for generic `convert()` with dispatch classes:
       - from: converttest, S7_object
       - to  : double
+

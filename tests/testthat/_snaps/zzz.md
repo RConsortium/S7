@@ -37,3 +37,4 @@
       x[[1]] <- 1
     Error <simpleError>
       S7 objects are not subsettable.
+
