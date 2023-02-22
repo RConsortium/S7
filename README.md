@@ -30,7 +30,7 @@ remotes::install_github("rconsortium/OOP-WG")
 ## Usage
 
 This section gives a very brief overview of the entirety of S7. Learn
-more of the basics in `vignettte("S7")`, the details of method dispatch
+more of the basics in `vignette("S7")`, the details of method dispatch
 in `vignette("dispatch")`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
@@ -140,7 +140,7 @@ generics:
 
 ``` r
 method(inside, class_numeric) <- function(x, y) {
-  y >= min(x) & y <= max(x)
+  min(x) <= y & y <= max(x)
 }
 ```
 
