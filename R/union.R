@@ -12,7 +12,7 @@
 #'   `method(foo, X) <- f; method(foo, Y) <- foo`
 #'
 #' S7 includes built-in unions for "numeric" (integer and double vectors),
-#' "atomic" (logical, numeric, character, and raw vectors) and
+#' "atomic" (logical, numeric, complex, character, and raw vectors) and
 #' "vector" (atomic vectors, lists, and expressions).
 #'
 #' @param ... The classes to include in the union. See [as_class()] for

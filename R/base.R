@@ -77,7 +77,7 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #'
 #' * `class_numeric` is a union of `class_integer` and `class_double`.
 #' * `class_atomic` is a union of `class_logical`, `class_numeric`,
-#'   `class_complex`, and `class_raw`.
+#'   `class_complex`, `class_character`, and `class_raw`.
 #' * `class_vector` is a union of `class_atomic`, `class_list`, and
 #'   `class_expression`.
 #'
