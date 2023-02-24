@@ -108,3 +108,11 @@ test_that("Ops generics dispatch to S7 methods", {
   }))
 
 })
+
+
+test_that("dput(<S7_object>) works", {
+  skip_if(getRversion() < "4.3")
+
+  expect_no_error(dput(new_class("Foo")()))
+  expect_no_error(dput(new_class("Foo")))
+})
