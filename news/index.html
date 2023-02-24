@@ -41,7 +41,7 @@
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
       <ul class="navbar-nav"><li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/RConsortium/OOP-WG/" aria-label="github">
+  <a class="external-link nav-link" href="https://github.com/rconsortium/OOP-WG/" aria-label="github">
     <span class="fab fa fab fa-github fa-lg"></span>
      
   </a>
@@ -54,44 +54,44 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/RConsortium/OOP-WG/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/rconsortium/OOP-WG/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="s7-0009000">S7 0.0.0.9000<a class="anchor" aria-label="anchor" href="#s7-0009000"></a></h2>
-<ul><li><p>Add <code>[.S7_object</code>, <code>[&lt;-.S7_object</code>, <code>[[.S7_object</code>, and <code>[[&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/jamieRowen" class="external-link">@jamieRowen</a>, <a href="https://github.com/RConsortium/OOP-WG/issues/236" class="external-link">#236</a>).</p></li>
-<li><p>Combining S7 classes with <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now gives an error (<a href="https://github.com/RConsortium/OOP-WG/issues/230" class="external-link">#230</a>)</p></li>
-<li><p>Base classes now show as <code>class_x</code> instead of <code>"x"</code> in method print (<a href="https://github.com/RConsortium/OOP-WG/issues/232" class="external-link">#232</a>)</p></li>
+<ul><li><p>Add <code>[.S7_object</code>, <code>[&lt;-.S7_object</code>, <code>[[.S7_object</code>, and <code>[[&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/jamieRowen" class="external-link">@jamieRowen</a>, <a href="https://github.com/rconsortium/OOP-WG/issues/236" class="external-link">#236</a>).</p></li>
+<li><p>Combining S7 classes with <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now gives an error (<a href="https://github.com/rconsortium/OOP-WG/issues/230" class="external-link">#230</a>)</p></li>
+<li><p>Base classes now show as <code>class_x</code> instead of <code>"x"</code> in method print (<a href="https://github.com/rconsortium/OOP-WG/issues/232" class="external-link">#232</a>)</p></li>
 </ul><div class="section level3">
 <h3 id="mar-0-0-0-9000">Mar 2022<a class="anchor" aria-label="anchor" href="#mar-0-0-0-9000"></a></h3>
 <ul><li><p>Exported <code>class_factor</code>, <code>class_Date</code>, <code>class_POSIXct</code>, and <code>class_data.frame</code>.</p></li>
-<li><p>New <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> (<a href="https://github.com/RConsortium/OOP-WG/issues/193" class="external-link">#193</a>)</p></li>
-<li><p><code><a href="../reference/new_class.html">new_class()</a></code> can create abstract classes (<a href="https://github.com/RConsortium/OOP-WG/issues/199" class="external-link">#199</a>).</p></li>
-<li><p><code>method_call()</code> is now <code><a href="../reference/new_generic.html">S7_dispatch()</a></code> (<a href="https://github.com/RConsortium/OOP-WG/issues/200" class="external-link">#200</a>).</p></li>
-<li><p>Can now register methods for double-dispatch base Ops (currently only works if both classes are S7, or the first argument is S7 and the second doesn’t have a method for the Ops generic) (<a href="https://github.com/RConsortium/OOP-WG/issues/128" class="external-link">#128</a>).</p></li>
-<li><p>All built-in wrappers around base types use <code>class_</code>. You can no longer refer to a base type with a string or a constructor function (<a href="https://github.com/RConsortium/OOP-WG/issues/170" class="external-link">#170</a>).</p></li>
-<li><p><code><a href="../reference/convert.html">convert()</a></code> allows you to convert an object into another class (<a href="https://github.com/RConsortium/OOP-WG/issues/136" class="external-link">#136</a>).</p></li>
-<li><p><code><a href="../reference/super.html">super()</a></code> replaces <code>next_method()</code> (<a href="https://github.com/RConsortium/OOP-WG/issues/110" class="external-link">#110</a>).</p></li>
+<li><p>New <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> (<a href="https://github.com/rconsortium/OOP-WG/issues/193" class="external-link">#193</a>)</p></li>
+<li><p><code><a href="../reference/new_class.html">new_class()</a></code> can create abstract classes (<a href="https://github.com/rconsortium/OOP-WG/issues/199" class="external-link">#199</a>).</p></li>
+<li><p><code>method_call()</code> is now <code><a href="../reference/new_generic.html">S7_dispatch()</a></code> (<a href="https://github.com/rconsortium/OOP-WG/issues/200" class="external-link">#200</a>).</p></li>
+<li><p>Can now register methods for double-dispatch base Ops (currently only works if both classes are S7, or the first argument is S7 and the second doesn’t have a method for the Ops generic) (<a href="https://github.com/rconsortium/OOP-WG/issues/128" class="external-link">#128</a>).</p></li>
+<li><p>All built-in wrappers around base types use <code>class_</code>. You can no longer refer to a base type with a string or a constructor function (<a href="https://github.com/rconsortium/OOP-WG/issues/170" class="external-link">#170</a>).</p></li>
+<li><p><code><a href="../reference/convert.html">convert()</a></code> allows you to convert an object into another class (<a href="https://github.com/rconsortium/OOP-WG/issues/136" class="external-link">#136</a>).</p></li>
+<li><p><code><a href="../reference/super.html">super()</a></code> replaces <code>next_method()</code> (<a href="https://github.com/rconsortium/OOP-WG/issues/110" class="external-link">#110</a>).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="feb-0-0-0-9000">Feb 2022<a class="anchor" aria-label="anchor" href="#feb-0-0-0-9000"></a></h3>
-<ul><li><p><code>class_any</code> and <code>class_missing</code> make it possible to dispatch on absent arguments and arguments of any class (<a href="https://github.com/RConsortium/OOP-WG/issues/67" class="external-link">#67</a>).</p></li>
-<li><p>New <code><a href="../reference/method_explain.html">method_explain()</a></code> to explain dispatch (<a href="https://github.com/RConsortium/OOP-WG/issues/194" class="external-link">#194</a>).</p></li>
-<li><p>Minor property improvements: use same syntax for naming short-hand and full property specifications; input type automatically validated for custom setters. A property with a getter but no setter is read-only (<a href="https://github.com/RConsortium/OOP-WG/issues/168" class="external-link">#168</a>).</p></li>
-<li><p>When creating an object, unspecified properties are initialized with their default value (<a href="https://github.com/RConsortium/OOP-WG/issues/67" class="external-link">#67</a>). DISCUSS: to achieve this, the constructor arguments default to <code>class_missing</code>.</p></li>
-<li><p>Add <code>$.S7_object</code> and <code>$&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/RConsortium/OOP-WG/issues/204" class="external-link">#204</a>).</p></li>
-<li><p>Dispatch now disambiguates between S4 and S3/S7, and, optionally, between S7 classes in different packages (<a href="https://github.com/RConsortium/OOP-WG/issues/48" class="external-link">#48</a>, <a href="https://github.com/RConsortium/OOP-WG/issues/163" class="external-link">#163</a>).</p></li>
-<li><p><code><a href="../reference/new_generic.html">new_generic()</a></code> now requires <code>dispatch_args</code> (<a href="https://github.com/RConsortium/OOP-WG/issues/180" class="external-link">#180</a>). This means that <code><a href="../reference/new_generic.html">new_generic()</a></code> will typically be called without names. Either <code>new_generic("foo", "x")</code> for a “standard” generic, or <code>new_generic("foo", "x", function(x, y) call_method())</code> for a non-standard method.</p></li>
+<ul><li><p><code>class_any</code> and <code>class_missing</code> make it possible to dispatch on absent arguments and arguments of any class (<a href="https://github.com/rconsortium/OOP-WG/issues/67" class="external-link">#67</a>).</p></li>
+<li><p>New <code><a href="../reference/method_explain.html">method_explain()</a></code> to explain dispatch (<a href="https://github.com/rconsortium/OOP-WG/issues/194" class="external-link">#194</a>).</p></li>
+<li><p>Minor property improvements: use same syntax for naming short-hand and full property specifications; input type automatically validated for custom setters. A property with a getter but no setter is read-only (<a href="https://github.com/rconsortium/OOP-WG/issues/168" class="external-link">#168</a>).</p></li>
+<li><p>When creating an object, unspecified properties are initialized with their default value (<a href="https://github.com/rconsortium/OOP-WG/issues/67" class="external-link">#67</a>). DISCUSS: to achieve this, the constructor arguments default to <code>class_missing</code>.</p></li>
+<li><p>Add <code>$.S7_object</code> and <code>$&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/rconsortium/OOP-WG/issues/204" class="external-link">#204</a>).</p></li>
+<li><p>Dispatch now disambiguates between S4 and S3/S7, and, optionally, between S7 classes in different packages (<a href="https://github.com/rconsortium/OOP-WG/issues/48" class="external-link">#48</a>, <a href="https://github.com/rconsortium/OOP-WG/issues/163" class="external-link">#163</a>).</p></li>
+<li><p><code><a href="../reference/new_generic.html">new_generic()</a></code> now requires <code>dispatch_args</code> (<a href="https://github.com/rconsortium/OOP-WG/issues/180" class="external-link">#180</a>). This means that <code><a href="../reference/new_generic.html">new_generic()</a></code> will typically be called without names. Either <code>new_generic("foo", "x")</code> for a “standard” generic, or <code>new_generic("foo", "x", function(x, y) call_method())</code> for a non-standard method.</p></li>
 <li><p><code><a href="../reference/new_external_generic.html">new_external_generic()</a></code> now requires <code>dispatch_args</code> so we can eagerly check the signature.</p></li>
 <li><p>Revamp website. README now shows brief example and more info in <code><a href="../articles/S7.html">vignette("S7")</a></code>. Initial design docs and minutes are now articles so they appear on the website.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="jan-0-0-0-9000">Jan 2022<a class="anchor" aria-label="anchor" href="#jan-0-0-0-9000"></a></h3>
-<ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/RConsortium/OOP-WG/issues/149" class="external-link">#149</a>).</li>
-<li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/RConsortium/OOP-WG/issues/149" class="external-link">#149</a>)</li>
-<li>Classes (base types, S3, S4, and S7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> for referring to S3 classes (<a href="https://github.com/RConsortium/OOP-WG/issues/134" class="external-link">#134</a>). S4 unions are converted to S7 unions (<a href="https://github.com/RConsortium/OOP-WG/issues/150" class="external-link">#150</a>).</li>
-<li>Base numeric, atomic, and vector “types” are now represented as class unions (<a href="https://github.com/RConsortium/OOP-WG/issues/147" class="external-link">#147</a>).</li>
-<li>Different evaluation mechanism for method dispatch, and greater restrictions on dispatch args (<a href="https://github.com/RConsortium/OOP-WG/issues/141" class="external-link">#141</a>)</li>
+<ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/rconsortium/OOP-WG/issues/149" class="external-link">#149</a>).</li>
+<li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/rconsortium/OOP-WG/issues/149" class="external-link">#149</a>)</li>
+<li>Classes (base types, S3, S4, and S7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> for referring to S3 classes (<a href="https://github.com/rconsortium/OOP-WG/issues/134" class="external-link">#134</a>). S4 unions are converted to S7 unions (<a href="https://github.com/rconsortium/OOP-WG/issues/150" class="external-link">#150</a>).</li>
+<li>Base numeric, atomic, and vector “types” are now represented as class unions (<a href="https://github.com/rconsortium/OOP-WG/issues/147" class="external-link">#147</a>).</li>
+<li>Different evaluation mechanism for method dispatch, and greater restrictions on dispatch args (<a href="https://github.com/rconsortium/OOP-WG/issues/141" class="external-link">#141</a>)</li>
 <li>
 <code>x@.data</code> -&gt; <code><a href="../reference/S7_data.html">S7_data()</a></code>; probably to be replaced by casting.</li>
 <li>In generic, <code>signature</code> -&gt; <code>dispatch_args</code>.</li>
