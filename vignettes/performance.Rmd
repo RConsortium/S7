@@ -60,9 +60,9 @@ bench::mark(bar_S7(x, y), bar_S4(x, y))
 
 A potential optimization is caching based on the class names, but lookup should be fast without this.
 
-The following benchmark generates a class hierarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hiearchy vs the time to dispatch on the last class.
+The following benchmark generates a class hierarchy of different levels and lengths of class names and compares the time to dispatch on the first class in the hierarchy vs the time to dispatch on the last class.
 
-We find that even in very extreme cases (e.g. 100 deep heirachy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hiearchy of 15 character class names) the overhead is basically negligible.
+We find that even in very extreme cases (e.g. 100 deep hierarchy 100 of character class names) the overhead is reasonable, and for more reasonable cases (e.g. 10 deep hierarchy of 15 character class names) the overhead is basically negligible.
 
 ```{r performance-2, message = FALSE, R.options = list(width = 120), cache = TRUE}
 library(S7)

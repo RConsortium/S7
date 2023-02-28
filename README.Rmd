@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml) [![Codecov test coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=master)
 
 <!-- badges: end -->
 
@@ -37,7 +37,7 @@ remotes::install_github("rconsortium/OOP-WG")
 ## Usage
 
 This section gives a very brief overview of the entirety of S7.
-Learn more of the basics in `vignettte("S7")`, the details of method dispatch in `vignette("dispatch")`, and compatibility with S3 and S4 in `vignette("compatibility")`.
+Learn more of the basics in `vignette("S7")`, the details of method dispatch in `vignette("dispatch")`, and compatibility with S3 and S4 in `vignette("compatibility")`.
 
 ```{r}
 library(S7)

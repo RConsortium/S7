@@ -1,4 +1,4 @@
-new_base_class <- function(name) {
+new_base_class <- function(name, constructor_name = name) {
   force(name)
 
   constructor <- function(.data = class_missing) {
@@ -16,6 +16,7 @@ new_base_class <- function(name) {
 
   out <- list(
     class = name,
+    constructor_name = constructor_name,
     constructor = constructor,
     validator = validator
   )
@@ -76,7 +77,7 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #'
 #' * `class_numeric` is a union of `class_integer` and `class_double`.
 #' * `class_atomic` is a union of `class_logical`, `class_numeric`,
-#'   `class_complex`, and `class_raw`.
+#'   `class_complex`, `class_character`, and `class_raw`.
 #' * `class_vector` is a union of `class_atomic`, `class_list`, and
 #'   `class_expression`.
 #'
@@ -143,7 +144,7 @@ class_expression <- new_base_class("expression")
 #' @rdname base_classes
 #' @format NULL
 #' @order 1
-class_function <- new_base_class("function")
+class_function <- new_base_class("function", "fun")
 
 #' @export
 #' @rdname base_classes

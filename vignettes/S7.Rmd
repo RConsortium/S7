@@ -35,7 +35,7 @@ There are two arguments that you'll use with almost every class:
 -   The `name` of the class, supplied in the first argument.
 -   The class `properties`, the data associated with each instance of the class. The easiest way to define properties is to supply a named list where the values define the valid types of the property.
 
-The following code defines a simple `pet` class with two properties: a character `name` and a numeric `age`.
+The following code defines a simple `dog` class with two properties: a character `name` and a numeric `age`.
 
 ```{r}
 dog <- new_class("dog", properties = list(
@@ -60,7 +60,7 @@ lola
 Once you have an S7 object, you can get and set properties using `@`:
 
 ```{r}
-lola@age <- 11
+lola@age <- 12
 lola@age
 ```
 
