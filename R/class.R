@@ -23,7 +23,7 @@
 #' @param constructor The constructor function. Advanced use only.
 #'
 #'   A custom constructor should call `new_object()` to create the S7 object.
-#'   The first argument, `.data`, should an instance of the parent class. The
+#'   The first argument, `.data`, should be an instance of the parent class. The
 #'   subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.

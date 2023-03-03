@@ -47,7 +47,7 @@ instantiated.}
 \item{constructor}{The constructor function. Advanced use only.
 
 A custom constructor should call \code{new_object()} to create the S7 object.
-The first argument, \code{.data}, should an instance of the parent class. The
+The first argument, \code{.data}, should be an instance of the parent class. The
 subsequent arguments are used to set the properties.}
 
 \item{validator}{A function taking a single argument, \code{self}, the object
