@@ -96,7 +96,7 @@ In its simplest form, it only needs two arguments: the name of the generic (used
 speak <- new_generic("speak", "x")
 ```
 
-Like with `new_class()`, you should always assign the result of `new_generic()` to an variable with the same name as the first argument.
+Like with `new_class()`, you should always assign the result of `new_generic()` to a variable with the same name as the first argument.
 
 Once you have a generic, you can register methods for specific classes with `method(generic, class) <- implementation`.
 
