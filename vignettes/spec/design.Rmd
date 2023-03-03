@@ -116,7 +116,7 @@ This ensures that the validation will not trigger if `x@start + y` is greater th
 
 S7 also provides `implicitlyValid()` for expert use.
 This is similar to `eventuallyValid()` but does not check for validity at the end.
-This can be used in performance critical code where you can ascertain that a sequence of operations can never make an valid object invalid.
+This can be used in performance critical code where you can ascertain that a sequence of operations can never make a valid object invalid.
 
 (This can be quite hard: for example, in the `move_right()` example above, you might think that that if `x@start < x@end` is true at the beginning, then `x@start + y < x@end + y` will still be true at the end, and you don't need to re-validate the object.
 But that's not necessarily true: if `x@start == 1`, `x@end == 2`, and `abs(y) > 2e16` then `x@start + y == x@end + y`!)
