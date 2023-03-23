@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           repository: t-kalinowski/r-svn
-          ref: S5
+          ref: S7-support-via-new-generics
           fetch-depth: 100 # must be > 1 for '.github/workflows/svn-info.sh' to work
           path: r-svn
 

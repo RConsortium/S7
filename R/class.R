@@ -144,7 +144,7 @@ new_class <- function(
 }
 globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
 
-# base::inherits() calls S7_class_name()
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
 S7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
 }

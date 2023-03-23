@@ -103,6 +103,8 @@ Ops.S7_object <- function(e1, e2) {
   base_ops[[.Generic]](e1, e2)
 }
 
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(pickOpsMethod, S7_object)
+pickOpsMethod.S7_object <- function(x, y, mx, my, reverse) TRUE
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
