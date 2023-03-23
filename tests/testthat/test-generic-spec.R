@@ -14,4 +14,5 @@ test_that("can standardise generics", {
 
 test_that("base ops use S7 shim", {
   expect_equal(as_generic(`+`), base_ops[["+"]])
+  expect_equal(as_generic(`%*%`), base_ops[["%*%"]])
 })

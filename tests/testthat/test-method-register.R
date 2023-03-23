@@ -60,6 +60,9 @@ describe("method registration", {
 
     method(`+`, list(foo, bar)) <- function(x, y) "foobar"
     expect_equal(foo() + bar(), "foobar")
+
+    method(`%*%`, list(foo, bar)) <- function(x, y) "foo.bar"
+    expect_equal(foo() %*% bar(), "foo.bar")
   })
 
   it("S3 registration requires a S7 class", {
