@@ -107,8 +107,8 @@ Ops.S7_object <- function(e1, e2) {
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
 matrixOps.S7_object <- Ops.S7_object
 
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(pickOpsMethod, S7_object)
-pickOpsMethod.S7_object <- function(x, y, mx, my, reverse) TRUE
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
+chooseOpsMethod.S7_object <- function(x, y, mx, my, reverse) TRUE
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
