@@ -89,8 +89,8 @@ group_generics <- function() {
   )
 
   out <- lapply(groups, function(x) unlist(lapply(x, methods::getGroupMembers)))
-  if (getRversion() >= "4.3") {
-    out$matrixOps <- c("%*%")
-  }
+  # if (getRversion() >= "4.3") {
+  #   out$matrixOps <- c("%*%")
+  # }
   out
 }
