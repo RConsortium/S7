@@ -221,8 +221,7 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' @rdname prop
 #' @usage object@name
 #' @aliases @
-#' @rawNamespace
-#' if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object) else export("@")
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object) else export("@")
 `@.S7_object` <- prop
 
 # Note: we need to explicitly refer to base with "base::`@`" in the
@@ -273,6 +272,11 @@ prop_names <- function(object) {
       names(props)
     }
   }
+}
+
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(.AtNames,S7_object)
+.AtNames.S7_object <- function(x, pattern = "") {
+  utils::findMatches(pattern, prop_names(x))
 }
 
 #' @rdname prop_names
