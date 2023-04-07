@@ -96,8 +96,7 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 
 
 # Create generics for double dispatch base Ops
-base_ops <- lapply(setNames(,group_generics()$Ops),
-                            #unlist(group_generics()[c("Ops", "matrixOps")])),
+base_ops <- lapply(setNames(, unlist(group_generics()[c("Ops", "matrixOps")])),
                    new_generic, dispatch_args = c("x", "y"))
 
 #' @export
@@ -105,8 +104,8 @@ Ops.S7_object <- function(e1, e2) {
   base_ops[[.Generic]](e1, e2)
 }
 
-# ' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
-# matrixOps.S7_object <- Ops.S7_object
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
+matrixOps.S7_object <- Ops.S7_object
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
