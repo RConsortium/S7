@@ -275,7 +275,7 @@ prop_names <- function(object) {
 }
 
 # .AtNames not exported on r-devel yet, causes installation failure
-#' @rawNamespace if (getRversion() >= "4.3.0" && !is.null(asNamespace("utils")$.AtNames)) S3method(.AtNames,S7_object)
+#' @rawNamespace if (getRversion() >= "4.3.0" && !is.null(asNamespace("utils")$.AtNames)) S3method(utils::.AtNames,S7_object)
 .AtNames.S7_object <- function(x, pattern = "") {
   # utils::findMatches gives `R CMD check` warning on current r-devel
   asNamespace("utils")$findMatches(pattern, prop_names(x))
