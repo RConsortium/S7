@@ -10,7 +10,7 @@ prop_names(object)
 prop_exists(object, name)
 }
 \arguments{
-\item{object}{An object from a R7 class}
+\item{object}{An object from a S7 class}
 
 \item{name}{The name of the parameter as a character. Partial matching
 is not performed.}

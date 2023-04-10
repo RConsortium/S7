@@ -7,9 +7,9 @@ test_that("new_generic checks its inputs", {
   })
 })
 
-test_that("new_generic finds R7_dispatch calls", {
-  expect_s3_class(new_generic("foo", "x", function(x) { R7_dispatch() }), "R7_generic")
-  expect_s3_class(new_generic("foo", "x", function(x) { R7::R7_dispatch() }), "R7_generic")
+test_that("new_generic finds S7_dispatch calls", {
+  expect_s3_class(new_generic("foo", "x", function(x) { S7_dispatch() }), "S7_generic")
+  expect_s3_class(new_generic("foo", "x", function(x) { S7::S7_dispatch() }), "S7_generic")
 })
 
 test_that("derived fun always includes ...", {
@@ -29,7 +29,7 @@ test_that("check_dispatch_args() produces informative errors", {
   })
 })
 
-test_that("R7_generic printing", {
+test_that("S7_generic printing", {
   foo1 <- new_generic("foo1", "x")
   text <- new_class("text")
 
@@ -47,7 +47,7 @@ test_that("R7_generic printing", {
   })
 })
 
-test_that("R7_generic printing with long / many arguments", {
+test_that("S7_generic printing with long / many arguments", {
   foo <- new_generic("foo", letters)
   expect_snapshot(
     foo

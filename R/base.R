@@ -1,4 +1,4 @@
-new_base_class <- function(name) {
+new_base_class <- function(name, constructor_name = name) {
   force(name)
 
   constructor <- function(.data = class_missing) {
@@ -16,10 +16,11 @@ new_base_class <- function(name) {
 
   out <- list(
     class = name,
+    constructor_name = constructor_name,
     constructor = constructor,
     validator = validator
   )
-  class(out) <- "R7_base_class"
+  class(out) <- "S7_base_class"
   out
 }
 
@@ -39,16 +40,16 @@ base_default <- function(type) {
 )}
 
 
-is_base_class <- function(x) inherits(x, "R7_base_class")
+is_base_class <- function(x) inherits(x, "S7_base_class")
 
 #' @export
-print.R7_base_class <- function(x, ...) {
-  cat("<R7_base_class>: ", class_desc(x), "\n", sep = "")
+print.S7_base_class <- function(x, ...) {
+  cat("<S7_base_class>: ", class_desc(x), "\n", sep = "")
   invisible(x)
 }
 
 #' @export
-str.R7_base_class <- function(object, ..., nest.lev = 0) {
+str.S7_base_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object, ..., nest.lev = nest.lev)
 }
@@ -56,7 +57,7 @@ str.R7_base_class <- function(object, ..., nest.lev = 0) {
 #' Base classes
 #'
 #' @description
-#' These classes represent base types allowing them to be used within R7.
+#' These classes represent base types allowing them to be used within S7.
 #' There are three categories: base types, unions types, and key S3 classes.
 #'
 #' Base types:
@@ -76,7 +77,7 @@ str.R7_base_class <- function(object, ..., nest.lev = 0) {
 #'
 #' * `class_numeric` is a union of `class_integer` and `class_double`.
 #' * `class_atomic` is a union of `class_logical`, `class_numeric`,
-#'   `class_complex`, and `class_raw`.
+#'   `class_complex`, `class_character`, and `class_raw`.
 #' * `class_vector` is a union of `class_atomic`, `class_list`, and
 #'   `class_expression`.
 #'
@@ -143,7 +144,7 @@ class_expression <- new_base_class("expression")
 #' @rdname base_classes
 #' @format NULL
 #' @order 1
-class_function <- new_base_class("function")
+class_function <- new_base_class("function", "fun")
 
 #' @export
 #' @rdname base_classes

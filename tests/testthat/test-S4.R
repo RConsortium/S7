@@ -1,15 +1,15 @@
 test_that("can work with classGenerators", {
   on.exit(S4_remove_classes("Foo"))
   Foo <- setClass("Foo", where = globalenv())
-  expect_equal(S4_to_R7_class(Foo), getClass("Foo"))
+  expect_equal(S4_to_S7_class(Foo), getClass("Foo"))
 })
 
-test_that("converts S4 base classes to R7 base classes", {
-  expect_equal(S4_to_R7_class(getClass("NULL")), NULL)
-  expect_equal(S4_to_R7_class(getClass("character")), class_character)
+test_that("converts S4 base classes to S7 base classes", {
+  expect_equal(S4_to_S7_class(getClass("NULL")), NULL)
+  expect_equal(S4_to_S7_class(getClass("character")), class_character)
 })
 
-test_that("converts S4 unions to R7 unions", {
+test_that("converts S4 unions to S7 unions", {
   on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Union1", "Union2")))
 
   setClass("Foo1", slots = "x", where = globalenv())
@@ -17,24 +17,24 @@ test_that("converts S4 unions to R7 unions", {
 
   setClassUnion("Union1", c("Foo1", "Foo2"), where = globalenv())
   expect_equal(
-    S4_to_R7_class(getClass("Union1")),
+    S4_to_S7_class(getClass("Union1")),
     new_union(getClass("Foo1"), getClass("Foo2"))
   )
 
   setClass("Foo3", slots = "x", where = globalenv())
   setClassUnion("Union2", c("Union1", "Foo3"), where = globalenv())
   expect_equal(
-    S4_to_R7_class(getClass("Union2")),
+    S4_to_S7_class(getClass("Union2")),
     new_union(getClass("Foo1"), getClass("Foo2"), getClass("Foo3"))
   )
 })
 
-test_that("converts S4 representation of S3 classes to R7 representation", {
-  expect_equal(S4_to_R7_class(getClass("Date")), new_S3_class("Date"), ignore_function_env = TRUE)
+test_that("converts S4 representation of S3 classes to S7 representation", {
+  expect_equal(S4_to_S7_class(getClass("Date")), new_S3_class("Date"), ignore_function_env = TRUE)
 })
 
 test_that("errors on non-S4 classes", {
-  expect_snapshot(S4_to_R7_class(1), error = TRUE)
+  expect_snapshot(S4_to_S7_class(1), error = TRUE)
 })
 
 

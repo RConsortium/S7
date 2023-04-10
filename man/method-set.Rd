@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-register.R
 \name{method<-}
 \alias{method<-}
-\title{Register a R7 method for a generic}
+\title{Register a S7 method for a generic}
 \usage{
 method(generic, signature) <- value
 }
@@ -10,21 +10,21 @@ method(generic, signature) <- value
 \item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
 \code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
 
-\item{signature}{A method signature. For R7 generics that use single
+\item{signature}{A method signature. For S7 generics that use single
 dispatch, this must be one of the following:
 \itemize{
-\item An R7 class (created by \code{\link[=new_class]{new_class()}}).
-\item An R7 union (created by \code{\link[=new_union]{new_union()}}).
+\item An S7 class (created by \code{\link[=new_class]{new_class()}}).
+\item An S7 union (created by \code{\link[=new_union]{new_union()}}).
 \item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base type like \link{class_logical}, \link{class_integer}, or \link{class_numeric}.
 \item A special type like \link{class_missing} or \link{class_any}.
 }
 
-For R7 generics that use multiple dispatch, this must be a list of any of
+For S7 generics that use multiple dispatch, this must be a list of any of
 the above types.
 
-For S3 generics, this must be an R7 class.}
+For S3 generics, this must be an S7 class.}
 
 \item{value}{A function that implements the generic specification for the
 given \code{signature}.}
@@ -35,11 +35,11 @@ generic with \code{\link[=new_generic]{new_generic()}}, you provide implementati
 signatures by registering methods with \verb{method<-}
 
 The goal is for \verb{method<-} to be the single function you need when working
-with R7 generics or R7 classes. This means that as well as registering
-methods for R7 classes on R7 generics, you can also register methods for
-R7 classes on S3 or S4 generics, and S3 or S4 classes on R7 generics.
+with S7 generics or S7 classes. This means that as well as registering
+methods for S7 classes on S7 generics, you can also register methods for
+S7 classes on S3 or S4 generics, and S3 or S4 classes on S7 generics.
 But this is not a general method registration function: at least one of
-\code{generic} and \code{signature} needs to be from R7.
+\code{generic} and \code{signature} needs to be from S7.
 }
 \examples{
 # Create a generic

@@ -6,9 +6,9 @@
 \alias{class_any}
 \title{Special dispatch types}
 \format{
-An object of class \code{R7_missing} of length 0.
+An object of class \code{S7_missing} of length 0.
 
-An object of class \code{R7_any} of length 0.
+An object of class \code{S7_any} of length 0.
 }
 \usage{
 class_missing

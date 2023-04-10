@@ -1,14 +1,14 @@
-#' Retrieve a method for an R7 generic
+#' Retrieve a method for an S7 generic
 #'
 #' `method()` takes a generic and signature and retrieves the corresponding
 #' method. This is rarely needed because most of the time you'll rely on the
-#' the generic, via [R7_dispatch()], to find and call the method for you.
+#' the generic, via [S7_dispatch()], to find and call the method for you.
 #' However, this introspection is useful if you want to see the implementation
 #' of a specific method.
 #'
 #' @seealso [method_explain()] to explain why a specific method was picked.
 #' @inheritParams method<-
-#' @returns A function with class <R7_method>.
+#' @returns A function with class <S7_method>.
 #' @param class,object Perform introspection either with a `class`
 #'   (processed with [as_class()]) or a concrete `object`. If `generic` uses
 #'   multiple dispatch then both `object` and `class` must be a list of
@@ -46,7 +46,7 @@ method <- function(generic, class = NULL, object = NULL) {
 #' the class hierarchy. Each class system uses a slightly different convention
 #' to avoid ambiguity.
 #'
-#' * R7: `pkg::class` or `class`
+#' * S7: `pkg::class` or `class`
 #' * S4: `S4/pkg::class` or `S4/class`
 #' * S3: `class`
 #'
@@ -92,7 +92,7 @@ method_explain <- function(generic, class = NULL, object = NULL) {
 
 
 as_dispatch <- function(generic, class = NULL, object = NULL) {
-  check_is_R7(generic, R7_generic)
+  check_is_S7(generic, S7_generic)
 
   if (!is.null(class) && is.null(object)) {
     signature <- as_signature(class, generic)
@@ -114,4 +114,3 @@ as_dispatch <- function(generic, class = NULL, object = NULL) {
     stop("Must supply exactly one of `class` and `object`", call. = FALSE)
   }
 }
-

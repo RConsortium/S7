@@ -1,7 +1,7 @@
-Package: R7
+Package: S7
 Title: A New OO System for R
 Version: 0.0.0.9000
-Authors@R: 
+Authors@R:
     c(person(given = "Henrik",
              family = "Bengtsson",
              role = "aut"),
@@ -13,7 +13,8 @@ Authors@R:
              role = "aut"),
       person(given = "Martin",
              family = "Maechler",
-             role = "aut"),
+             role = "aut",
+	     comment = c(ORCID = "0000-0002-8685-9910")),
       person(given = "Luke",
              family = "Tierney",
              role = "aut"),
@@ -36,7 +37,7 @@ Description: Prototype implementation of an extension to S3 that
 License: MIT + file LICENSE
 Imports:
     utils
-Suggests: 
+Suggests:
     methods,
     covr,
     bench,
@@ -50,5 +51,5 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
-URL: https://RConsortium.github.io/OOP-WG, https://rconsortium.github.io/OOP-WG
-BugReports: https://github.com/RConsortium/OOP-WG/issues
+URL: https://github.com/rconsortium/OOP-WG/, https://rconsortium.github.io/OOP-WG/
+BugReports: https://github.com/rconsortium/OOP-WG/issues

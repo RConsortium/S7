@@ -2,16 +2,16 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
-\title{Register an R7 class with S4}
+\title{Register an S7 class with S4}
 \usage{
 S4_register(class, env = parent.frame())
 }
 \arguments{
-\item{class}{An R7 class created with \code{\link[=new_class]{new_class()}}.}
+\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
 \description{
 If you want to use \link{method<-} to register an method for an S4 generic with
-an R7 class, you need to call \code{S4_register()} once.
+an S7 class, you need to call \code{S4_register()} once.
 }

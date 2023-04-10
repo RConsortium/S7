@@ -10,8 +10,8 @@
 #' This default strips any properties that `from` possesses that `to` does not,
 #' and resets the class.
 #'
-#' @param from An R7 object to convert.
-#' @param to An R7 class specification, passed to [as_class()].
+#' @param from An S7 object to convert.
+#' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods.
 #' @export
 #' @examples
@@ -43,7 +43,7 @@ convert <- function(from, to, ...) {
   if (!is.null(convert)) {
     convert(from, to, ...)
   } else if (class_inherits(from, to)) {
-    from_class <- R7_class(from)
+    from_class <- S7_class(from)
     if (is.null(from_class)) {
       from_props <- character()
     } else {
@@ -51,13 +51,13 @@ convert <- function(from, to, ...) {
     }
 
     if (is_base_class(to)) {
-      from <- zap_attr(from, c(from_props, "R7_class", "class"))
+      from <- zap_attr(from, c(from_props, "S7_class", "class"))
     } else if (is_S3_class(to)) {
-      from <- zap_attr(from, c(from_props, "R7_class"))
+      from <- zap_attr(from, c(from_props, "S7_class"))
       class(from) <- to$class
     } else if (is_class(to)) {
       from <- zap_attr(from, setdiff(from_props, names(to@properties)))
-      attr(from, "R7_class") <- to
+      attr(from, "S7_class") <- to
       class(from) <- class_dispatch(to)
     } else {
       stop("Unreachable")
@@ -67,4 +67,4 @@ convert <- function(from, to, ...) {
     method_lookup_error("convert", c("from", "to"), dispatch)
   }
 }
-# Converted to R7_generic on .onLoad
+# Converted to S7_generic on .onLoad

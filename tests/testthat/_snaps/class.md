@@ -1,9 +1,9 @@
-# R7 classes: print nicely
+# S7 classes: print nicely
 
     Code
       foo2
     Output
-      <R7_class>
+      <S7_class>
       @ name  :  foo2
       @ parent: <foo1>
       @ properties:
@@ -12,20 +12,20 @@
     Code
       str(foo2)
     Output
-      <foo2/foo1/R7_object> constructor
+      <foo2/foo1/S7_object> constructor
        @ name       : chr "foo2"
-       @ parent     : <foo1/R7_object> constructor
+       @ parent     : <foo1/S7_object> constructor
        @ package    : NULL
        @ properties :List of 2
-       .. $ x: <R7_property> 
+       .. $ x: <S7_property> 
        ..  ..$ name   : chr "x"
-       ..  ..$ class  : <R7_base_class>: <integer>
+       ..  ..$ class  : <S7_base_class>: <integer>
        ..  ..$ getter : NULL
        ..  ..$ setter : NULL
        ..  ..$ default: NULL
-       .. $ y: <R7_property> 
+       .. $ y: <S7_property> 
        ..  ..$ name   : chr "y"
-       ..  ..$ class  : <R7_base_class>: <integer>
+       ..  ..$ class  : <S7_base_class>: <integer>
        ..  ..$ getter : NULL
        ..  ..$ setter : NULL
        ..  ..$ default: NULL
@@ -36,9 +36,9 @@
       str(list(foo2))
     Output
       List of 1
-       $ : <foo2/foo1/R7_object> constructor
+       $ : <foo2/foo1/S7_object> constructor
 
-# R7 classes: checks inputs
+# S7 classes: checks inputs
 
     Code
       new_class(1)
@@ -47,7 +47,7 @@
     Code
       new_class("foo", 1)
     Error <simpleError>
-      Can't convert `parent` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Can't convert `parent` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
       new_class("foo", package = 1)
     Error <simpleError>
@@ -65,16 +65,16 @@
     Error <simpleError>
       `validator` must be function(self), not function()
 
-# R7 classes: can't inherit from S4 or class unions
+# S7 classes: can't inherit from S4 or class unions
 
     Code
       new_class("test", parent = parentS4)
     Error <simpleError>
-      `parent` must be an R7 class, S3 class, or base type, not an S4 class.
+      `parent` must be an S7 class, S3 class, or base type, not an S4 class.
     Code
       new_class("test", parent = new_union("character"))
     Error <simpleError>
-      Can't convert `X[[i]]` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
+      Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
 # abstract classes: can't be instantiated
 
@@ -112,7 +112,7 @@
       <foo> object is invalid:
       - x must be positive
 
-# R7 object: displays nicely
+# S7 object: displays nicely
 
     Code
       foo <- new_class("foo", properties = list(x = class_double, y = class_double))
@@ -129,7 +129,7 @@
         ..@ x: num(0) 
         ..@ y: num(0) 
 
-# R7 object: displays objects with data nicely
+# S7 object: displays objects with data nicely
 
     Code
       text <- new_class("text", class_character)
@@ -142,7 +142,7 @@
       List of 1
        $ : <text> chr "x"
 
-# R7 object: displays list objects nicely
+# S7 object: displays list objects nicely
 
     Code
       foo1(list(x = 1, y = list(a = 21, b = 22)), x = 3, y = list(a = 41, b = 42))
@@ -157,10 +157,10 @@
        .. $ a: num 41
        .. $ b: num 42
 
-# c(<R7_class>, ...) gives error
+# c(<S7_class>, ...) gives error
 
     Code
       c(foo1, foo1)
     Error <simpleError>
-      Can not combine R7 class objects
+      Can not combine S7 class objects
 

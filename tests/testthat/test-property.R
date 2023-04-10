@@ -17,7 +17,7 @@ describe("property retrieval", {
     expect_equal(obj@x, 1)
   })
 
-  it("falls back to `base::@` for non-R7 objects", {
+  it("falls back to `base::@` for non-S7 objects", {
     expect_snapshot(error = TRUE, {
       "foo"@blah
       NULL@blah
@@ -84,7 +84,7 @@ describe("prop setting", {
     expect_equal(obj@x, "foo")
   })
 
-  it("falls back to `base::@` for non-R7 objects", {
+  it("falls back to `base::@` for non-S7 objects", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
   })
@@ -177,8 +177,8 @@ describe("new_property()", {
   })
 })
 
-test_that("properties can be base, S3, S4, R7, or R7 union", {
-  class_R7 <- new_class("class_R7")
+test_that("properties can be base, S3, S4, S7, or S7 union", {
+  class_S7 <- new_class("class_S7")
   class_S4 <- methods::setClass("class_S4", slots = c(x = "numeric"))
 
   my_class <- new_class("my_class",
@@ -188,8 +188,8 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
       base = class_integer,
       S3 = new_S3_class("factor"),
       S4 = class_S4,
-      R7 = class_R7,
-      R7_union = new_union(class_integer, class_logical)
+      S7 = class_S7,
+      S7_union = new_union(class_integer, class_logical)
     )
   )
   expect_snapshot(my_class)
@@ -199,17 +199,17 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
     base = 1L,
     S3 = factor(),
     S4 = class_S4(x = 1),
-    R7 = class_R7(),
-    R7_union = 1L
+    S7 = class_S7(),
+    S7_union = 1L
   )
 
   # First check that we can set with out error
   expect_error(my_obj@base <- 2L, NA)
   expect_error(my_obj@S3 <- factor("x"), NA)
   expect_error(my_obj@S4 <- class_S4(x = 2), NA)
-  expect_error(my_obj@R7 <- class_R7(), NA)
-  expect_error(my_obj@R7_union <- 2L, NA)
-  expect_error(my_obj@R7_union <- TRUE, NA)
+  expect_error(my_obj@S7 <- class_S7(), NA)
+  expect_error(my_obj@S7_union <- 2L, NA)
+  expect_error(my_obj@S7_union <- TRUE, NA)
 
   # Then capture the error messages for human inspection
   expect_snapshot(error = TRUE, {
@@ -217,8 +217,8 @@ test_that("properties can be base, S3, S4, R7, or R7 union", {
     my_obj@base <- "x"
     my_obj@S3 <- "x"
     my_obj@S4 <- "x"
-    my_obj@R7 <- "x"
-    my_obj@R7_union <- "x"
+    my_obj@S7 <- "x"
+    my_obj@S7_union <- "x"
   })
 })
 

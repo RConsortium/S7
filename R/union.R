@@ -11,8 +11,8 @@
 #'   `method(foo, new_union(X, Y)) <- f` is short-hand for
 #'   `method(foo, X) <- f; method(foo, Y) <- foo`
 #'
-#' R7 includes built-in unions for "numeric" (integer and double vectors),
-#' "atomic" (logical, numeric, character, and raw vectors) and
+#' S7 includes built-in unions for "numeric" (integer and double vectors),
+#' "atomic" (logical, numeric, complex, character, and raw vectors) and
 #' "vector" (atomic vectors, lists, and expressions).
 #'
 #' @param ... The classes to include in the union. See [as_class()] for
@@ -37,20 +37,20 @@
 new_union <- function(...) {
   classes <- class_flatten(list(...))
   out <- list(classes = classes)
-  class(out) <- "R7_union"
+  class(out) <- "S7_union"
   out
 }
 
-is_union <- function(x) inherits(x, "R7_union")
+is_union <- function(x) inherits(x, "S7_union")
 
 #' @export
-print.R7_union <- function(x, ...) {
-  cat("<R7_union>: ", class_desc(x), "\n", sep = "")
+print.S7_union <- function(x, ...) {
+  cat("<S7_union>: ", class_desc(x), "\n", sep = "")
   invisible(x)
 }
 
 #' @export
-str.R7_union <- function(object, ..., nest.lev = 0) {
+str.S7_union <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object)
 }
@@ -68,4 +68,3 @@ class_flatten <- function(x) {
 
 # See .onLoad() for definition
 base_unions <- list()
-

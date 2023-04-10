@@ -38,43 +38,43 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
 }
 
 __attribute__ ((noreturn))
-void R7_method_lookup_error(SEXP generic, SEXP signature) {
-  static SEXP R7_method_lookup_error_fun = NULL;
-  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
+void S7_method_lookup_error(SEXP generic, SEXP signature) {
+  static SEXP S7_method_lookup_error_fun = NULL;
+  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 
-  if (R7_method_lookup_error_fun == NULL) {
-    R7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
+  if (S7_method_lookup_error_fun == NULL) {
+    S7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
   }
   SEXP name = Rf_getAttrib(generic, Rf_install("name"));
   SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
-  SEXP R7_method_lookup_error_call = PROTECT(Rf_lang4(R7_method_lookup_error_fun, name, args, signature));
-  Rf_eval(R7_method_lookup_error_call, ns);
+  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang4(S7_method_lookup_error_fun, name, args, signature));
+  Rf_eval(S7_method_lookup_error_call, ns);
 
   while(1);
 }
 
 SEXP method_(SEXP generic, SEXP signature, SEXP error_) {
-  if (!Rf_inherits(generic, "R7_generic")) {
+  if (!Rf_inherits(generic, "S7_generic")) {
     return R_NilValue;
   }
 
   SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
   if (TYPEOF(table) != ENVSXP) {
-    Rf_error("Corrupt R7_generic: @methods isn't an environment");
+    Rf_error("Corrupt S7_generic: @methods isn't an environment");
   }
 
   SEXP m = method_rec(table, signature, 0);
 
   int error = Rf_asInteger(error_);
   if (error && m == R_NilValue) {
-    R7_method_lookup_error(generic, signature);
+    S7_method_lookup_error(generic, signature);
   }
 
   return m;
 }
 
-SEXP R7_obj_dispatch(SEXP object) {
-  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("R7"));
+SEXP S7_obj_dispatch(SEXP object) {
+  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 
   static SEXP obj_dispatch_fun = NULL;
   if (obj_dispatch_fun == NULL) {
@@ -88,9 +88,9 @@ SEXP R7_obj_dispatch(SEXP object) {
   return res;
 }
 
-SEXP R7_object_() {
+SEXP S7_object_() {
   SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
-  Rf_classgets(obj, Rf_mkString("R7_object"));
+  Rf_classgets(obj, Rf_mkString("S7_object"));
   UNPROTECT(1);
 
   return obj;
@@ -127,7 +127,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         // Evaluate the original promise so we can look up its class
         SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
-        if (!Rf_inherits(val, "R7_super")) {
+        if (!Rf_inherits(val, "S7_super")) {
           // Update the value of the promise to avoid evaluating it
           // again in the method body
           SET_PRVALUE(arg, val);
@@ -136,7 +136,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
           SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
 
           // Determine class string to use for method look up
-          SET_VECTOR_ELT(dispatch_classes, i, R7_obj_dispatch(val));
+          SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
         } else {
           // If it's a superclass, we get the stored value and dispatch class
           SEXP true_val = VECTOR_ELT(val, 0);

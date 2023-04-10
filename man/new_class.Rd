@@ -3,11 +3,11 @@
 \name{new_class}
 \alias{new_class}
 \alias{new_object}
-\title{Define a new R7 class}
+\title{Define a new S7 class}
 \usage{
 new_class(
   name,
-  parent = R7_object,
+  parent = S7_object,
   package = NULL,
   properties = list(),
   abstract = FALSE,
@@ -25,13 +25,13 @@ i.e. \code{foo <- new_class("foo")}.}
 \item{parent}{The parent class to inherit behavior from.
 There are three options:
 \itemize{
-\item An R7 class, like \link{R7_object}.
+\item An S7 class, like \link{S7_object}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
 
 \item{package}{Package name. It is good practice to set the package
-name when exporting an R7 class from a package because it includes
+name when exporting an S7 class from a package because it includes
 the package name in the class name when it's used for dispatch. This
 allows different packages to use the same name to refer to different
 classes. If you see \code{package}, you \emph{must} export the constructor.}
@@ -46,8 +46,8 @@ instantiated.}
 
 \item{constructor}{The constructor function. Advanced use only.
 
-A custom constructor should call \code{new_object()} to create the R7 object.
-The first argument, \code{.data}, should an instance of the parent class. The
+A custom constructor should call \code{new_object()} to create the S7 object.
+The first argument, \code{.data}, should be an instance of the parent class. The
 subsequent arguments are used to set the properties.}
 
 \item{validator}{A function taking a single argument, \code{self}, the object
@@ -95,7 +95,7 @@ r@start
 r@end <- 40
 r@end
 
-# R7 automatically ensures that properties are of the declared types:
+# S7 automatically ensures that properties are of the declared types:
 try(range(start = "hello", end = 20))
 
 # But we might also want to use a validator to ensure that start and end

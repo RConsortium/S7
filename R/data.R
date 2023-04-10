@@ -1,7 +1,7 @@
 #' Get/set underlying "base" data
 #'
-#' When an R7 class inherits from an existing base type, it can be useful
-#' to work with the underlying object, i.e. the R7 object stripped of class
+#' When an S7 class inherits from an existing base type, it can be useful
+#' to work with the underlying object, i.e. the S7 object stripped of class
 #' and all properties.
 #'
 #' @inheritParams prop
@@ -11,19 +11,19 @@
 #' text <- new_class("text", parent = class_character)
 #' y <- text(c(foo = "bar"))
 #' y
-#' R7_data(y)
+#' S7_data(y)
 #'
-#' R7_data(y) <- c("a", "b")
+#' S7_data(y) <- c("a", "b")
 #' y
-R7_data <- function(object) {
-  check_is_R7(object)
+S7_data <- function(object) {
+  check_is_S7(object)
 
-  zap_attr(object, c(prop_names(object), "class", "R7_class"))
+  zap_attr(object, c(prop_names(object), "class", "S7_class"))
 }
 
 #' @export
-#' @rdname R7_data
-`R7_data<-` <- function(object, check = TRUE, value) {
+#' @rdname S7_data
+`S7_data<-` <- function(object, check = TRUE, value) {
   attrs <- attributes(object)
   object <- value
   attributes(object) <- attrs

@@ -15,7 +15,7 @@
     Code
       new_generic("foo", "x", function(x) { })
     Error <simpleError>
-      `fun` must contain a call to `R7_dispatch()`
+      `fun` must contain a call to `S7_dispatch()`
 
 # check_dispatch_args() produces informative errors
 
@@ -48,28 +48,28 @@
     Error <simpleError>
       `dispatch_args` must be a prefix of the generic arguments
 
-# R7_generic printing
+# S7_generic printing
 
     Code
       foo1
     Output
-      <R7_generic> foo1(x, ...) with 2 methods:
+      <S7_generic> foo1(x, ...) with 2 methods:
       1: method(foo1, class_character)
       2: method(foo1, text)
     Code
       foo3
     Output
-      <R7_generic> foo3(x, y, z, ...) with 3 methods:
+      <S7_generic> foo3(x, y, z, ...) with 3 methods:
       1: method(foo3, list(class_character, class_integer, class_character))
       2: method(foo3, list(class_character, class_integer, class_logical))
       3: method(foo3, list(class_character, text, class_character))
 
-# R7_generic printing with long / many arguments
+# S7_generic printing with long / many arguments
 
     Code
       foo
     Output
-      <R7_generic> foo(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, ...) with 0 methods:
+      <S7_generic> foo(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, ...) with 0 methods:
 
 # check_generic produces informative errors
 
@@ -80,5 +80,5 @@
     Code
       check_generic(function() { })
     Error <simpleError>
-      `fun` must contain a call to `R7_dispatch()`
+      `fun` must contain a call to `S7_dispatch()`
 

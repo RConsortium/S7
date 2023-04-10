@@ -1,17 +1,17 @@
 # generates meaningful constructors
 
     Code
-      new_constructor(R7_object, list())
+      new_constructor(S7_object, list())
     Output
       function () 
       new_object(NULL)
-      <environment: namespace:R7>
+      <environment: namespace:S7>
     Code
-      new_constructor(R7_object, as_properties(list(x = class_numeric, y = class_numeric)))
+      new_constructor(S7_object, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
       function (x = class_missing, y = class_missing) 
       new_object(NULL, x = x, y = y)
-      <environment: namespace:R7>
+      <environment: namespace:S7>
     Code
       foo <- new_class("foo", parent = class_character)
       new_constructor(foo, list())
@@ -51,14 +51,14 @@
       new_constructor(foo1, list())
     Output
       function () 
-      new_object(R7_object(), list())
-      <environment: namespace:R7>
+      new_object(S7_object())
+      <environment: namespace:S7>
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
       function (y = class_missing) 
-      new_object(R7_object(), list(y = y))
-      <environment: namespace:R7>
+      new_object(S7_object(), y = y)
+      <environment: namespace:S7>
 
 # can use `...` in parent constructor
 

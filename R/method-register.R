@@ -1,4 +1,4 @@
-#' Register a R7 method for a generic
+#' Register a S7 method for a generic
 #'
 #' @description
 #' A generic defines the interface of a function. Once you have created a
@@ -6,27 +6,27 @@
 #' signatures by registering methods with `method<-`
 #'
 #' The goal is for `method<-` to be the single function you need when working
-#' with R7 generics or R7 classes. This means that as well as registering
-#' methods for R7 classes on R7 generics, you can also register methods for
-#' R7 classes on S3 or S4 generics, and S3 or S4 classes on R7 generics.
+#' with S7 generics or S7 classes. This means that as well as registering
+#' methods for S7 classes on S7 generics, you can also register methods for
+#' S7 classes on S3 or S4 generics, and S3 or S4 classes on S7 generics.
 #' But this is not a general method registration function: at least one of
-#' `generic` and `signature` needs to be from R7.
+#' `generic` and `signature` needs to be from S7.
 #'
 #' @param generic A generic function, either created by [new_generic()],
 #'   [new_external_generic()], or an existing S3 generic.
-#' @param signature A method signature. For R7 generics that use single
+#' @param signature A method signature. For S7 generics that use single
 #'   dispatch, this must be one of the following:
-#'   * An R7 class (created by [new_class()]).
-#'   * An R7 union (created by [new_union()]).
+#'   * An S7 class (created by [new_class()]).
+#'   * An S7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type like [class_logical], [class_integer], or [class_numeric].
 #'   * A special type like [class_missing] or [class_any].
 #'
-#'   For R7 generics that use multiple dispatch, this must be a list of any of
+#'   For S7 generics that use multiple dispatch, this must be a list of any of
 #'   the above types.
 #'
-#'   For S3 generics, this must be an R7 class.
+#'   For S3 generics, this must be an S7 class.
 #' @param value A function that implements the generic specification for the
 #'   given `signature`.
 #' @export
@@ -60,7 +60,7 @@ register_method <- function(generic, signature, method, env = parent.frame()) {
     register_S4_method(generic, signature, method, env)
   } else {
     check_method(method, generic, name = method_name(generic, signature))
-    register_R7_method(generic, signature, method)
+    register_S7_method(generic, signature, method)
   }
 
   invisible()
@@ -78,9 +78,9 @@ register_external_method <- function(generic, signature, method, package = NULL)
 }
 
 register_S3_method <- function(generic, signature, method) {
-  if (class_type(signature[[1]]) != "R7") {
+  if (class_type(signature[[1]]) != "S7") {
     msg <- sprintf(
-      "When registering methods for S3 generic %s(), signature must be an R7 class, not %s.",
+      "When registering methods for S3 generic %s(), signature must be an S7 class, not %s.",
       generic$name,
       class_friendly(signature[[1]])
     )
@@ -90,13 +90,13 @@ register_S3_method <- function(generic, signature, method) {
   registerS3method(generic$name, class, method, envir = parent.frame())
 }
 
-register_R7_method <- function(generic, signature, method) {
+register_S7_method <- function(generic, signature, method) {
   # Flatten out unions to individual signatures
   signatures <- flatten_signature(signature)
 
   # Register each method
   for (signature in signatures) {
-    method <- R7_method(method, generic = generic, signature = signature)
+    method <- S7_method(method, generic = generic, signature = signature)
     generic_add_method(generic, signature, method)
   }
 
@@ -119,7 +119,7 @@ flatten_signature <- function(signature) {
 }
 
 as_signature <- function(signature, generic) {
-  if (inherits(signature, "R7_signature")) {
+  if (inherits(signature, "S7_signature")) {
     return(signature)
   }
 
@@ -145,7 +145,7 @@ check_signature_list <- function(x, n, arg = "signature") {
 }
 
 new_signature <- function(x) {
-  class(x) <- "R7_signature"
+  class(x) <- "S7_signature"
   x
 }
 
@@ -240,9 +240,9 @@ S4_class <- function(x, S4_env) {
 }
 
 #' @export
-print.R7_method <- function(x, ...) {
+print.S7_method <- function(x, ...) {
   signature <- method_signature(x@generic, x@signature)
-  cat("<R7_method> ", signature, "\n", sep = "")
+  cat("<S7_method> ", signature, "\n", sep = "")
 
   attributes(x) <- NULL
   print(x)

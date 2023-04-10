@@ -29,11 +29,11 @@ as_S3_generic <- function(x) {
 
 S3_generic <- function(generic, name) {
   out <- list(generic = generic, name = name)
-  class(out) <- "R7_S3_generic"
+  class(out) <- "S7_S3_generic"
   out
 }
 
-is_S3_generic <- function(x) inherits(x, "R7_S3_generic")
+is_S3_generic <- function(x) inherits(x, "S7_S3_generic")
 
 
 generic_n_dispatch <- function(x) {

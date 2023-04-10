@@ -6,14 +6,14 @@
     Message <simpleMessage>
       Overwriting method foo(<character>)
 
-# method registration: S3 registration requires a R7 class
+# method registration: S3 registration requires a S7 class
 
     Code
       method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
     Error <simpleError>
-      When registering methods for S3 generic sum(), signature must be an R7 class, not an S3 class.
+      When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
 
-# method registration: can register R7 method for S4 generic
+# method registration: can register S7 method for S4 generic
 
     Class has not been registered with S4; please call S4_register(S4foo)
 
@@ -27,14 +27,14 @@
     Code
       method(foo, 1) <- (function(x) ...)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
 
 # as_signature(): forbids list for single dispatch
 
     Code
       as_signature(list(1), foo)
     Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an R7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
+      Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
 
 # as_signature(): requires a list of the correct length for multiple dispatch
 
@@ -68,7 +68,7 @@
 ---
 
     Code
-      foo <- new_generic("foo", "x", function(x) R7_dispatch())
+      foo <- new_generic("foo", "x", function(x) S7_dispatch())
       check_method(function(x, y) { }, foo)
     Error <simpleError>
       foo() lacks `...` so method formals must match generic formals exactly
@@ -76,7 +76,7 @@
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) R7_dispatch())
+      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())
       check_method(function(x, ..., y = 1) { }, foo)
     Warning <simpleWarning>
       foo(???) doesn't have argument `z`
@@ -87,12 +87,12 @@
       - Generic: 2
       - Method:  1
 
-# R7_method printing
+# S7_method printing
 
     Code
       method(foo, list(class_integer, class_integer))
     Output
-      <R7_method> method(foo, list(class_integer, class_integer))
+      <S7_method> method(foo, list(class_integer, class_integer))
       function (x, y, ...) 
       paste0("bar:", x, y)
       <environment: 0x0>

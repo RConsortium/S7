@@ -2,12 +2,12 @@
 % Please edit documentation in R/generic.R, R/method-dispatch.R
 \name{new_generic}
 \alias{new_generic}
-\alias{R7_dispatch}
+\alias{S7_dispatch}
 \title{Define a new generic}
 \usage{
 new_generic(name, dispatch_args, fun = NULL)
 
-R7_dispatch()
+S7_dispatch()
 }
 \arguments{
 \item{name}{The name of the generic. This should be the same as the object
@@ -17,7 +17,7 @@ that you assign it to.}
 arguments used to find the method.}
 
 \item{fun}{An optional specification of the generic, which must call
-\code{R7_dispatch()} to dispatch to methods. This is usually generated
+\code{S7_dispatch()} to dispatch to methods. This is usually generated
 automatically from the \code{dispatch_args}, but you may want to supply it if
 you want to add additional required arguments, omit \code{...}, or perform
 some standardised computation in the generic.
@@ -30,7 +30,7 @@ A generic function uses different implementations (\emph{methods}) depending on
 the class of one or more arguments (the \emph{signature}). Create a new generic
 with \code{new_generic()} then use \link{method<-} to add methods to it.
 
-Method dispatch is performed by \code{R7_dispatch()}, which must always be
+Method dispatch is performed by \code{S7_dispatch()}, which must always be
 included in the body of the generic, but in most cases \code{new_generic()} will
 generate this for you.
 }
@@ -60,7 +60,7 @@ type_of(mean)
 # If you want to require that methods implement additional arguments,
 # you can use a custom function:
 mean2 <- new_generic("mean2", "x", function(x, ..., na.rm = FALSE) {
-   R7_dispatch()
+   S7_dispatch()
 })
 
 method(mean2, class_numeric) <- function(x, ..., na.rm = FALSE) {

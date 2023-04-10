@@ -1,15 +1,15 @@
 #' Declare an S3 class
 #'
-#' To use an S3 class with R7, you must explicitly declare it using
+#' To use an S3 class with S7, you must explicitly declare it using
 #' `new_S3_class()` because S3 lacks a formal class definition.
 #'
 #' # Method dispatch, properties, and unions
-#' There are three ways of using S3 with R7 that only require the S3 class
+#' There are three ways of using S3 with S7 that only require the S3 class
 #' vector:
 #'
-#' * Registering a S3 method for an R7 generic.
-#' * Restricting an R7 property to an S3 class.
-#' * Using an S3 class in an R7 union.
+#' * Registering a S3 method for an S7 generic.
+#' * Restricting an S7 property to an S3 class.
+#' * Using an S3 class in an S7 union.
 #'
 #' This is easy, and you can usually include the `new_S3_class()`
 #' call inline:
@@ -22,8 +22,8 @@
 #'
 #' # Extending an S3 class
 #'
-#' Creating an R7 class that extends an S3 class requires more work. You'll
-#' also need to provide a constructor for the S3 class that follows R7
+#' Creating an S7 class that extends an S3 class requires more work. You'll
+#' also need to provide a constructor for the S3 class that follows S7
 #' conventions. This means the first argument to the constructor should be
 #' `.data`, and it should be followed by one argument for each attribute used
 #' by the class.
@@ -36,8 +36,8 @@
 #' creates a factor object.
 #'
 #' You may optionally want to also provide a `validator` function which will
-#' ensure that [validate()] confirms the validity of any R7 classes that build
-#' on this class. Unlike an R7 validator, you are responsible for validating
+#' ensure that [validate()] confirms the validity of any S7 classes that build
+#' on this class. Unlike an S7 validator, you are responsible for validating
 #' the types of the attributes.
 #'
 #' The following code shows how you might wrap the base Date class.
@@ -63,15 +63,15 @@
 #'   name.
 #' @param constructor An optional constructor that can be used to create
 #'   objects of the specified class. This is only needed if you wish to
-#'   have an R7 class inherit from an S3 class. It must be specified in the
-#'   same way as a R7 constructor: the first argument should be `.data`
+#'   have an S7 class inherit from an S3 class. It must be specified in the
+#'   same way as a S7 constructor: the first argument should be `.data`
 #'   (the base type whose attributes will be modified).
 #'
 #'   All arguments to the constructor should have default values so that
 #'   when the constructor is called with no arguments, it returns returns
 #'   an "empty", but valid, object.
 #' @param validator An optional validator used by [validate()] to check that
-#'   the R7 object adheres to the constraints of the S3 class.
+#'   the S7 object adheres to the constraints of the S3 class.
 #'
 #'   A validator is a single argument function that takes the object to
 #'   validate and returns `NULL` if the object is valid. If the object is
@@ -93,18 +93,18 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     constructor = constructor,
     validator = validator
   )
-  class(out) <- "R7_S3_class"
+  class(out) <- "S7_S3_class"
   out
 }
 
 #' @export
-print.R7_S3_class <- function(x, ...) {
-  cat("<R7_S3_class>: ", class_desc(x), "\n", sep = "")
+print.S7_S3_class <- function(x, ...) {
+  cat("<S7_S3_class>: ", class_desc(x), "\n", sep = "")
   invisible(x)
 }
 
 #' @export
-str.R7_S3_class <- function(object, ..., nest.lev = 0) {
+str.S7_S3_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object, ..., nest.lev = nest.lev)
 }
@@ -120,7 +120,7 @@ check_S3_constructor <- function(constructor) {
 }
 
 is_S3_class <- function(x) {
-  inherits(x, "R7_S3_class")
+  inherits(x, "S7_S3_class")
 }
 
 # -------------------------------------------------------------------------

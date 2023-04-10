@@ -10,11 +10,11 @@
     Code
       class_integer
     Output
-      <R7_base_class>: <integer>
+      <S7_base_class>: <integer>
     Code
       str(class_integer)
     Output
-      <R7_base_class>: <integer>
+      <S7_base_class>: <integer>
 
 # environments: can be printed
 
