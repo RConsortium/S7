@@ -60,3 +60,12 @@
       new_object(S7_object(), y = y)
       <environment: namespace:S7>
 
+# can use `...` in parent constructor
+
+    Code
+      new_constructor(foo, list(y = class_double))
+    Output
+      function (..., y = class_missing) 
+      new_object(foo(... = ...), y = y)
+      <environment: 0x0>
+

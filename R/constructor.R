@@ -35,6 +35,11 @@ new_constructor <- function(parent, properties) {
     stop("Unsupported `parent` type", call. = FALSE)
   }
 
+  # ensure default value for `...` is empty
+  if ("..." %in% names(args)) {
+    args[names(args) == "..."] <- list(quote(expr = ))
+  }
+
   parent_args <- as_names(arg_info$parent, named = TRUE)
   parent_call <- new_call(parent_name, parent_args)
   body <- new_call("new_object", c(parent_call, self_args))
