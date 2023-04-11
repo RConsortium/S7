@@ -9,7 +9,7 @@ S7_object <- new_class(
     .Call(S7_object_)
   },
   validator = function(self) {
-    if (typeof(self) != "S4") {
+    if (typeof(self) != "pairlist") {
       "Underlying data is corrupt"
     }
   }
