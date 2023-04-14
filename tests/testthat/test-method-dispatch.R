@@ -152,3 +152,12 @@ test_that("method dispatch preserves method return visibility", {
   expect_visible(foo("yep"))
   expect_invisible(foo("nope"))
 })
+
+test_that("can dispatch on evaluated arguments", {
+  my_generic <- new_generic("my_generic", "x", function(x) {
+    x <- 10
+    S7_dispatch()
+  })
+  method(my_generic, class_numeric) <- function(x) 100
+  expect_equal(my_generic("x"), 100)
+})
