@@ -85,3 +85,4 @@ A Date is a numeric vector with class \code{Date} that can be constructed with
 )
 }\if{html}{\out{</div>}}
 }
+
