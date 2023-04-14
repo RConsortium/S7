@@ -59,7 +59,12 @@ test_that("can generate constructor for inherited abstract classes", {
     new_constructor(foo1, as_properties(list(y = class_double)))
   }, transform = scrub_environment)
   child <- new_class("child", foo1, properties = list(y = class_double))
-  expect_error(child(y = 0.5), regexp = NA)
+  expect_no_error(child(y = 0.5))
+
+  # even if it has a read-only property
+  prop_readonly <- new_property(getter = function(self) "test")
+  child <- new_class("child", foo1, properties = list(x = prop_readonly))
+  expect_no_error(child())
 })
 
 test_that("can use `...` in parent constructor", {
