@@ -76,6 +76,13 @@
     Error <simpleError>
       Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
+# S7 classes: can't inherit from an environment
+
+    Code
+      new_class("test", parent = class_environment)
+    Error <simpleError>
+      Can't inherit from an environment
+
 # abstract classes: can't be instantiated
 
     Code

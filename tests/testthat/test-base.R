@@ -16,24 +16,10 @@ test_that("base class display as expected", {
 })
 
 test_that("classes can inherit from base types", {
-  base_classes <- c(class_vector$classes, list(class_function, class_environment))
+  base_classes <- c(class_vector$classes, list(class_function))
 
   for (class in base_classes) {
     foo <- new_class("foo", parent = class)
     expect_error(foo(), NA)
   }
-})
-
-describe("environments", {
-  it("has reference semantics", {
-    env <- new_class("env", class_environment, properties = list(x = class_double))
-    x1 <- x2 <- env(x = 1)
-    x1@x <- 2
-    expect_equal(x2@x, 2)
-  })
-
-  it("can be printed", {
-    env <- new_class("env", class_environment, properties = list(x = class_double))
-    expect_snapshot(env(x = 1), transform = scrub_environment)
-  })
 })
