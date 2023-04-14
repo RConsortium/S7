@@ -71,14 +71,14 @@ Base types:
 \item \code{class_list}
 \item \code{class_expression}
 \item \code{class_function}
-\item \code{class_environment}
+\item \code{class_environment} (can only be used for properties)
 }
 
 Union types:
 \itemize{
 \item \code{class_numeric} is a union of \code{class_integer} and \code{class_double}.
 \item \code{class_atomic} is a union of \code{class_logical}, \code{class_numeric},
-\code{class_complex}, and \code{class_raw}.
+\code{class_complex}, \code{class_character}, and \code{class_raw}.
 \item \code{class_vector} is a union of \code{class_atomic}, \code{class_list}, and
 \code{class_expression}.
 }
