@@ -6,7 +6,7 @@
 \alias{valid_implicitly}
 \title{Validate an S7 object}
 \usage{
-validate(object, properties = TRUE)
+validate(object, recursive = TRUE, properties = TRUE)
 
 valid_eventually(object, fun)
 
@@ -14,6 +14,8 @@ valid_implicitly(object, fun)
 }
 \arguments{
 \item{object}{An S7 object}
+
+\item{recursive}{If \code{TRUE}, calls validator of parent classes recursively.}
 
 \item{properties}{If \code{TRUE}, the default, checks property types before
 executing the validator.}

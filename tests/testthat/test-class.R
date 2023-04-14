@@ -96,6 +96,18 @@ describe("new_object()", {
       foo(-1)
     })
   })
+
+  it("runs each parent validator exactly once", {
+    A <- new_class("A", validator = function(self) cat("A "))
+    B <- new_class("B", parent = A, validator = function(self) cat("B "))
+    C <- new_class("C", parent = B, validator = function(self) cat("C "))
+
+    expect_snapshot({
+      . <- A()
+      . <- B()
+      . <- C()
+    })
+  })
 })
 
 describe("S7 object", {

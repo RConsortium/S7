@@ -112,6 +112,21 @@
       <foo> object is invalid:
       - x must be positive
 
+# new_object(): runs each parent validator exactly once
+
+    Code
+      . <- A()
+    Output
+      A 
+    Code
+      . <- B()
+    Output
+      A B 
+    Code
+      . <- C()
+    Output
+      A B C 
+
 # S7 object: displays nicely
 
     Code
