@@ -3,6 +3,7 @@
 \name{prop}
 \alias{prop}
 \alias{prop<-}
+\alias{@.S7_object}
 \alias{@}
 \title{Get/set a property}
 \usage{
