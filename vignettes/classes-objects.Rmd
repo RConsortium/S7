@@ -211,3 +211,31 @@ x
 ```
 
 A `setter` is a function with arguments `self` and `value` that returns a modified object.
+
+## Constructors
+
+You can see the source code for a class's constructor by accessing the `constructor` property:
+
+```{r}
+range@constructor
+```
+
+In most cases, S7's default constructor will all you need. However, in some cases you might want something custom. For example, for our range class, maybe we'd like to construct it from a vector of numeric values, automatically computing the min and the max. To implement this we could do:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_numeric,
+    end = class_numeric
+  ),
+  constructor = function(x) {
+    new_object(NULL, start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
+  }
+)
+
+range(c(10, 5, 0, 2, 5, 7))
+```
+
+A constructor must always end with a call to `new_object()`. The first argument to `new_object()` should be an object of the `parent` class, or `NULL`, if there's no parent (as here). That argument should be followed by one named argument for each property.
+
+There's one drawback of custom constructors that you should be aware: any subclass will also require a custom constructor.

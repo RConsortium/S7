@@ -44,11 +44,13 @@ full property specification created \code{\link[=new_property]{new_property()}}.
 \item{abstract}{Is this an abstract class? An abstract class can not be
 instantiated.}
 
-\item{constructor}{The constructor function. Advanced use only.
+\item{constructor}{The constructor function. In most cases, you can rely
+on the default constructor, which will generate a function with one
+argument for each property.
 
 A custom constructor should call \code{new_object()} to create the S7 object.
-The first argument, \code{.data}, should be an instance of the parent class. The
-subsequent arguments are used to set the properties.}
+The first argument, \code{.data}, should be an instance of the parent class
+(if used). The subsequent arguments are used to set the properties.}
 
 \item{validator}{A function taking a single argument, \code{self}, the object
 to validate.
