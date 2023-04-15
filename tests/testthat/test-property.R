@@ -18,10 +18,8 @@ describe("property retrieval", {
   })
 
   it("falls back to `base::@` for non-S7 objects", {
-    expect_snapshot(error = TRUE, {
-      "foo"@blah
-      NULL@blah
-    })
+    expect_error("foo"@blah, 'object of.+class.+"character"')
+    expect_error(NULL@blah, 'object of.+class.+"NULL"')
   })
 })
 
