@@ -248,6 +248,41 @@ classes.</p>
 way that S4 unions allow you to restrict the type of a slot.</p>
 </div>
 </div>
+<div class="section level2">
+<h2 id="using-s7-in-a-package">Using S7 in a package<a class="anchor" aria-label="anchor" href="#using-s7-in-a-package"></a>
+</h2>
+<p>If you are using S7 in a package <em>and</em> you want your package
+to maintain compatibility with R versions prior to 4.3.0, there are a
+few things to be aware of.</p>
+<div class="section level4">
+<h4 id="section">
+<code>@</code><a class="anchor" aria-label="anchor" href="#section"></a>
+</h4>
+<p><code><a href="https://rdrr.io/r/base/slotOp.html" class="external-link">base::`@`</a></code> in R versions prior to R 4.3.0 does not
+resolve R7 properties.</p>
+<p>Workarounds:</p>
+<ul>
+<li><p>Use <code><a href="../reference/prop.html">S7::prop()</a></code> instead of <code>@</code>.</p></li>
+<li>
+<p>Alternatively, make an S7-aware <code>@</code> available to your
+package with a custom <code>NAMESPACE</code> directive and
+<code>.onAttach()</code> like this:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># enable usage of &lt;S7_object&gt;@name in package code</span></span>
+<span><span class="co">#' @rawNamespace if (getRversion() &lt; "4.3.0") importFrom("S7", "@")</span></span>
+<span><span class="cn">NULL</span></span>
+<span></span>
+<span><span class="co"># enable usage of &lt;S7_object&gt;@name in user code</span></span>
+<span><span class="co"># e.g. if you also want users to be able to access properties</span></span>
+<span><span class="co"># of objects your package</span></span>
+<span><span class="va">.onAttach</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">libname</span>, <span class="va">pkgname</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">getRversion</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&lt;</span> <span class="st">"4.3.0"</span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/OOP-WG/" class="external-link">S7</a></span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+</li>
+</ul>
+</div>
+</div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
 </div>
