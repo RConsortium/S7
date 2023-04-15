@@ -220,7 +220,17 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 
 #' @rdname prop
 #' @usage object@name
-#' @export
+#' @aliases @
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object) else export("@")
+`@.S7_object` <- prop
+
+# Note: we need to explicitly refer to base with "base::`@`" in the
+# namespace directive to ensure the method is registered in the correct place.
+# Otherwise, loadNamespace()/registerS3method() gets confused by the
+# presence of a closure w/ the name of the generic (`@`) in the R7 namespace,
+# and incorrectly assumes that R7::`@` is the generic and registers the
+# method in the package namespace instead of base::.__S3MethodsTable__.
+
 `@` <- function(object, name) {
   if (inherits(object, "S7_object")) {
     name <- as.character(substitute(name))
@@ -262,6 +272,13 @@ prop_names <- function(object) {
       names(props)
     }
   }
+}
+
+# .AtNames not exported on r-devel yet, causes installation failure
+#' @rawNamespace if (getRversion() >= "4.3.0" && !is.null(asNamespace("utils")$.AtNames)) S3method(utils::.AtNames,S7_object)
+.AtNames.S7_object <- function(x, pattern = "") {
+  # utils::findMatches gives `R CMD check` warning on current r-devel
+  asNamespace("utils")$findMatches(pattern, prop_names(x))
 }
 
 #' @rdname prop_names
