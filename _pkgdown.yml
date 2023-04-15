@@ -40,7 +40,8 @@ articles:
   navbar: ~
   contents:
   - S7
-  - dispatch
+  - generics-methods
+  - classes-objects
   - compatibility
   - performance
 

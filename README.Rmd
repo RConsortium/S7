@@ -37,7 +37,7 @@ remotes::install_github("rconsortium/OOP-WG")
 ## Usage
 
 This section gives a very brief overview of the entirety of S7.
-Learn more of the basics in `vignette("S7")`, the details of method dispatch in `vignette("dispatch")`, and compatibility with S3 and S4 in `vignette("compatibility")`.
+Learn more of the basics in `vignette("S7")`, generics and methods in `vignette("generics-methods")`, classes and objects in` vigentte("classes-objects')`, and compatibility with S3 and S4 in `vignette("compatibility")`.
 
 ```{r}
 library(S7)
@@ -101,10 +101,7 @@ The third, and optional argument, supplies the body of the generic.
 This is only needed if your generic has additional arguments that aren't used for method dispatch.
 
 ```{r}
-inside <- new_generic("inside", "x", function(x, y) {
-  # Actually finds and calls the appropriate method
-  S7_dispatch()
-})
+inside <- new_generic("inside", "x")
 ```
 
 Once you have a generic, you can define a method for a specific class with `method<-`:
@@ -114,29 +111,8 @@ Once you have a generic, you can define a method for a specific class with `meth
 method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
-inside
 
 inside(x, c(0, 5, 10, 15))
 ```
 
-You can use `method<-` to register methods for base types on S7 generics:
-
-```{r}
-method(inside, class_numeric) <- function(x, y) {
-  y >= min(x) & y <= max(x)
-}
-```
-
-And register methods for S7 classes on S3 or S4 generics:
-
-```{r}
-method(format, range) <- function(x, ...) {
-  paste0("[", x@start, ", ", x@end, "]")
-}
-format(x)
-
-method(mean, range) <- function(x, ...) {
-  (x@start + x@end) / 2
-}
-mean(x)
-```
+You can use `method<-` to register methods for base types on S7 generics, and S7 classes on S3 or S4 generics. See `vignette("compatibility")` for more details.
