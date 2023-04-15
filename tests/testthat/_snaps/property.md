@@ -6,17 +6,6 @@
 
     Can't find property <foo>@x
 
-# property retrieval: falls back to `base::@` for non-S7 objects
-
-    Code
-      "foo"@blah
-    Error <simpleError>
-      trying to get slot "blah" from an object of a basic class ("character") with no slots
-    Code
-      NULL@blah
-    Error <simpleError>
-      trying to get slot "blah" from an object of a basic class ("NULL") with no slots
-
 # prop setting: can't set read-only properties
 
     Code
