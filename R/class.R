@@ -1,8 +1,11 @@
 #' Define a new S7 class
 #'
+#' @description
 #' A class specifies the properties (data) that each of its objects will
 #' possess. The class, and its parent, determines which method will be used
 #' when an object is passed to a generic.
+#'
+#' Learn more in `vignette("classes-objects")`
 #'
 #' @param name The name of the class, as a string. The result of calling
 #'   `new_class()` should always be assigned to a variable with this name,
