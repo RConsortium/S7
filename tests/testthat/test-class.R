@@ -44,6 +44,12 @@ describe("S7 classes", {
       new_class("test", parent = new_union("character"))
     })
   })
+
+  it("can't inherit from an environment", {
+    expect_snapshot(error = TRUE, {
+      new_class("test", parent = class_environment)
+    })
+  })
 })
 
 describe("inheritance", {
