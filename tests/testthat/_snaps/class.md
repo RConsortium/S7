@@ -81,7 +81,7 @@
     Code
       new_class("test", parent = class_environment)
     Error <simpleError>
-      Can't inherit from an environment
+      Can't inherit from an environment.
 
 # abstract classes: can't be instantiated
 
