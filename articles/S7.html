@@ -221,8 +221,7 @@ method for <code>speak()</code>:</p>
 have a method:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">speak</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: Can't find method for generic `speak()` with dispatch classes:</span></span>
-<span><span class="co">#&gt; - x: double</span></span></code></pre></div>
+<span><span class="co">#&gt; Error: Can't find method for `speak(&lt;double&gt;)`.</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="method-dispatch-and-inheritance">Method dispatch and inheritance<a class="anchor" aria-label="anchor" href="#method-dispatch-and-inheritance"></a>
@@ -316,7 +315,7 @@ of one of those methods:</p>
 <span><span class="co">#&gt; {</span></span>
 <span><span class="co">#&gt;     paste0(x@name, " is ", x@age, " years old")</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x561211321aa8&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;bytecode: 0x55ea0d869d00&gt;</span></span></code></pre></div>
 <p>Learn more about method dispatch in
 <code><a href="../articles/dispatch.html">vignette("dispatch")</a></code>.</p>
 </div>
