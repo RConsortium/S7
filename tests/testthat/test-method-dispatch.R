@@ -130,12 +130,33 @@ test_that("can dispatch on base 'union' types", {
   expect_equal(foo(integer()), "i")
 })
 
-test_that("method lookup fails with informative messages", {
-  foo <- new_generic("foo", c("x", "y"))
-  method(foo, list(class_character, class_integer)) <- function(x, y) paste0("bar:", x, y)
-  expect_snapshot_error(foo(TRUE))
-  expect_snapshot_error(foo(TRUE, list()))
-  expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
+test_that("single dispatch fails with informative messages", {
+  fail <- new_generic("fail", "x")
+
+  foo <- new_class("foo")
+  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  on.exit(S4_remove_classes("Foo"))
+
+  expect_snapshot(error = TRUE, {
+    fail(TRUE)
+    fail(tibble::tibble())
+    fail(foo())
+    fail(Foo(x = 1))
+  })
+})
+
+test_that("multiple dispatch fails with informative messages", {
+  fail <- new_generic("fail", c("x", "y"))
+
+  foo <- new_class("foo")
+  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  on.exit(S4_remove_classes("Foo"))
+
+  expect_snapshot(error = TRUE, {
+    fail(TRUE)
+    fail(, TRUE)
+    fail(TRUE, TRUE)
+  })
 })
 
 

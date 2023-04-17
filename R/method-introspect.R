@@ -33,7 +33,7 @@
 method <- function(generic, class = NULL, object = NULL) {
   generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
-  .Call(method_, generic, dispatch, TRUE)
+  .Call(method_, generic, dispatch, environment(), TRUE)
 }
 
 #' Explain method dispatch
