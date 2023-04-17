@@ -100,6 +100,17 @@ describe("props<-", {
     expect_equal(obj@x, 5)
     expect_equal(obj@y, 10)
   })
+
+  it("has ordinary syntax in set_props()", {
+    foo <- new_class("foo", properties = list(x = class_double))
+    obj1 <- foo(1)
+    obj2 <- set_props(obj1, x = 2)
+    obj3 <- set_props(obj1, .list = list(x = 3))
+
+    expect_equal(obj1@x, 1)
+    expect_equal(obj2@x, 2)
+    expect_equal(obj3@x, 3)
+  })
 })
 
 describe("property access", {

@@ -3,22 +3,31 @@
 \name{props}
 \alias{props}
 \alias{props<-}
+\alias{set_props}
 \title{Get/set multiple properties}
 \usage{
 props(object)
 
 props(object) <- value
+
+set_props(object, ..., .list = list())
 }
 \arguments{
 \item{object}{An object from a S7 class}
 
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
+
+\item{..., .list}{Name-value pairs, or a named list of additional properties
+to set.}
 }
 \description{
 \itemize{
 \item \code{props(x)} returns all properties.
-\item \code{props(x) <- list(name1 = val1, name2 = val2)} sets multiple properties.
+\item \code{props(x) <- list(name1 = val1, name2 = val2)} modifies an existing object
+by setting multiple properties simultaneously.
+\item \code{set_props(x, list(name1 = val1, name2 = val2))} creates a new object
+with specified properties.
 }
 }
 \examples{
