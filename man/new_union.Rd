@@ -16,7 +16,11 @@ with \code{new_union(a, b, c)} or \code{a | b | c}. Unions can be used in two
 places:
 \itemize{
 \item To allow a property to be one of a set of classes,
-\code{new_property(class_integer | Range)}.
+\code{new_property(class_integer | Range)}. The default \code{default} value for the
+property will be the constructor of the first object in the union.
+This means if you want to create an "optional" property (i.e. one that
+can be \code{NULL} or of a specified type), you'll need to write (e.g.)
+\code{NULL | class_integer}.
 \item As a convenient short-hand to define methods for multiple classes.
 \code{method(foo, X | Y) <- f} is short-hand for
 \verb{method(foo, X) <- f; method(foo, Y) <- foo}

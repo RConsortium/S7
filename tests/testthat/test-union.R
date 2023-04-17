@@ -58,3 +58,8 @@ test_that("can construct with |", {
   expect_equal(class_integer | Foo3, new_union(class_integer, Foo3))
   expect_equal(class_integer | getClass("Foo3"), new_union(class_integer, Foo3))
 })
+
+test_that("can construct optional union with syntactic sugar", {
+  expect_equal(class_integer | NULL, new_union(class_integer, NULL))
+  expect_equal(NULL | class_integer, new_union(NULL, class_integer))
+})

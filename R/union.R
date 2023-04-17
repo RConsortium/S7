@@ -6,7 +6,11 @@
 #' places:
 #'
 #' * To allow a property to be one of a set of classes,
-#'   `new_property(class_integer | Range)`.
+#'   `new_property(class_integer | Range)`. The default `default` value for the
+#'   property will be the constructor of the first object in the union.
+#'   This means if you want to create an "optional" property (i.e. one that
+#'   can be `NULL` or of a specified type), you'll need to write (e.g.)
+#'   `NULL | class_integer`.
 #'
 #' * As a convenient short-hand to define methods for multiple classes.
 #'   `method(foo, X | Y) <- f` is short-hand for
