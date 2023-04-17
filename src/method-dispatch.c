@@ -4,6 +4,7 @@
 
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
+extern SEXP sym_S7object;
 
 // Recursively walk through method table to perform iterated dispatch
 SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
@@ -88,7 +89,7 @@ SEXP S7_obj_dispatch(SEXP object) {
 }
 
 SEXP S7_object_() {
-  SEXP obj = PROTECT(Rf_allocSExp(LISTSXP));
+  SEXP obj = PROTECT(Rf_list1(sym_S7object));
   Rf_classgets(obj, Rf_mkString("S7_object"));
   UNPROTECT(1);
 

@@ -17,10 +17,12 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 SEXP sym_ANY;
+SEXP sym_S7object;
 
 void R_init_S7(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
     sym_ANY = Rf_install("ANY");
+    sym_S7object = Rf_install("S7object");
 }

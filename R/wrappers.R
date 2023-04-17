@@ -36,8 +36,8 @@ to_wrap <- function() {
   all <- setdiff(all, c(
     # Already implemented
     "[", "[[", "$", "[<-", "[[<-", "$<-", "print",
-    # Can't error or RStudio environment pane doesn't
-    "length"
+    # Can't error because it breaks RStudio environment/rlang
+    "length", "dim"
   ))
 
   sort(all)
@@ -78,14 +78,53 @@ method_not_implemented <- function(generic, x) {
 # Hand-written wrappers ---------------------------------------------------
 
 #' @export
+dim.S7_object <- function(x, ...) {
+  if (is.pairlist(x)) {
+    NULL
+  } else {
+    NextMethod()
+  }
+}
+#' @export
+length.S7_object <- function(x, ...) {
+  if (is.pairlist(x)) {
+    0
+  } else {
+    NextMethod()
+  }
+}
+
+#' @export
 Math.S7_object <- function(x, ...) {
-  method_not_implemented(.Generic, x)
+  if (is.pairlist(x)) {
+    method_not_implemented(.Generic, x)
+  } else {
+    NextMethod()
+  }
 }
 #' @export
 Summary.S7_object <- function(..., na.rm = FALSE) {
-  method_not_implemented(.Generic, ..1)
+  if (is.pairlist(..1)) {
+    method_not_implemented(.Generic, ..1)
+  } else {
+    NextMethod()
+  }
 }
 #' @export
 Complex.S7_object <- function(z) {
-  method_not_implemented(.Generic, z)
+  if (is.pairlist(z)) {
+    method_not_implemented(.Generic, z)
+  } else {
+    NextMethod()
+  }
+}
+
+#' @method unlist S7_object
+#' @export
+unlist.S7_object <- function(x, recursive = TRUE, use.names = TRUE) {
+  if (is.pairlist(x)) {
+    method_not_implemented("unlist", x)
+  } else {
+    NextMethod()
+  }
 }
