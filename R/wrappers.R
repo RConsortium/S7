@@ -19,7 +19,7 @@ to_wrap <- function() {
   is_s3_generic <- function(f)  {
     if (!is.function(f)) return(FALSE)
 
-    uses <- codetools::findGlobals(f, merge = FALSE)$functions
+    uses <- getExportedValue("codetools", "findGlobals")(f, merge = FALSE)$functions
     any(uses == "UseMethod")
   }
 
