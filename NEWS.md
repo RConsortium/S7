@@ -2,6 +2,8 @@
 
 ## March 2023
 
+* New `set_props()` to make a modified copy of an object (#229).
+
 * Can use `|` to create unions from S7 classes (#224).
 
 * Can no longer subclass an environment via `class_environment` because we
