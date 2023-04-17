@@ -46,7 +46,7 @@ describe("method registration", {
   })
 
   it("can register S7 method for S3 generic", {
-    foo <- new_class("foo")
+    foo <- new_class("foo_unique_suffix")
     method(sum, foo) <- function(x, ...) "foo"
     expect_equal(sum(foo()), "foo")
 
