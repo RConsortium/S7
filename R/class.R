@@ -212,7 +212,7 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
   }
 
   if (is_base_class(x) && x$class == "environment") {
-    stop("Can't inherit from an environment", call. = FALSE)
+    stop("Can't inherit from an environment.", call. = FALSE)
   }
 }
 
