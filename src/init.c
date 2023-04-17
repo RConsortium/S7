@@ -16,15 +16,11 @@ static const R_CallMethodDef CallEntries[] = {
     {NULL, NULL, 0}
 };
 
-SEXP parent_sym;
-SEXP name_sym;
-SEXP ANY_sym;
+SEXP sym_ANY;
 
 void R_init_S7(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
-    parent_sym = Rf_install("parent");
-    name_sym = Rf_install("name");
-    ANY_sym = Rf_install("ANY");
+    sym_ANY = Rf_install("ANY");
 }

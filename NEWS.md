@@ -4,6 +4,8 @@
 
 * Improve method dispatch failure message (#231).
 
+* Can use `|` to create unions from S7 classes (#224).
+
 * Can no longer subclass an environment via `class_environment` because we
   need to think the consequences of this behaviour through more fully (#253).
 

@@ -3,8 +3,7 @@
 #include <Rinternals.h>
 
 extern SEXP parent_sym;
-extern SEXP name_sym;
-extern SEXP ANY_sym;
+extern SEXP sym_ANY;
 
 // Recursively walk through method table to perform iterated dispatch
 SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
@@ -26,7 +25,7 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   }
 
   // ANY fallback
-  SEXP val = Rf_findVarInFrame(table, ANY_sym);
+  SEXP val = Rf_findVarInFrame(table, sym_ANY);
   if (TYPEOF(val) == ENVSXP) {
     val = method_rec(val, signature, signature_itr + 1);
   }
@@ -75,7 +74,7 @@ void S7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
     S7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
   }
 
-  SEXP name = Rf_getAttrib(generic, name_sym);
+  SEXP name = Rf_getAttrib(generic, R_NameSymbol);
   SEXP args = generic_args(generic, envir);
 
   SEXP S7_method_lookup_error_call = PROTECT(Rf_lang4(S7_method_lookup_error_fun, name, args, signature));
