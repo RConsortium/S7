@@ -20,10 +20,28 @@ external_methods_register()
 be registered.}
 }
 \description{
-To register a method for a generic in another packages you need to
-\code{new_external_generic()} and \code{external_methods_register()} together.
-\code{new_external_generic()} defines the "shape" of the generic without
-requiring the other package be available. You then call
-\code{external_methods_register()} in \code{.onLoad()} to dynamically register
-the methods when the other package is loaded.
+An external generic is a generic defined in another package that you want to
+register methods for. To create an external generic, first use
+\code{new_external_generic()} to define the name and the dispatch arguments
+of the generic:
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{generic <- new_external_generic("package", "generic", "x")
+}\if{html}{\out{</div>}}
+
+This allows you to define methods for the generic, even if the other
+package is not installed:
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{methods(generic, my_class) <- function(...) \{\}
+}\if{html}{\out{</div>}}
+
+Then call \code{external_methods_register()} in \code{.onLoad()}. This ensures that
+your methods are added to the generic when the other package is loaded.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{.onLoad <- function(...) \{
+  S7::external_methods_register()
+\}
+}\if{html}{\out{</div>}}
+
+In tests, you'll need to explicitly call the generic from the external
+package with \code{pkg::generic()}.
 }
