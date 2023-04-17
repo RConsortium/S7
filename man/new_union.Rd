@@ -11,13 +11,14 @@ new_union(...)
 details.}
 }
 \description{
-A class union represents a list of possible classes. It can be used in two
+A class union represents a list of possible classes. You can create it
+with \code{new_union(a, b, c)} or \code{a | b | c}. Unions can be used in two
 places:
 \itemize{
 \item To allow a property to be one of a set of classes,
-\code{new_property(new_union("integer", Range))}.
+\code{new_property(class_integer | Range)}.
 \item As a convenient short-hand to define methods for multiple classes.
-\code{method(foo, new_union(X, Y)) <- f} is short-hand for
+\code{method(foo, X | Y) <- f} is short-hand for
 \verb{method(foo, X) <- f; method(foo, Y) <- foo}
 }
 
@@ -28,6 +29,8 @@ S7 includes built-in unions for "numeric" (integer and double vectors),
 \examples{
 logical_or_character <- new_union(class_logical, class_character)
 logical_or_character
+# or with shortcut syntax
+logical_or_character <- class_logical | class_character
 
 Foo <- new_class("Foo", properties = list(x = logical_or_character))
 Foo(x = TRUE)
