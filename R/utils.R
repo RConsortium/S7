@@ -118,3 +118,8 @@ show_args <- function(x, name = "function") {
 
   paste0(name, "(", args, ")")
 }
+
+# For older versions of R
+deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {
+  paste(deparse(expr, width.cutoff, ...), collapse = collapse)
+}
