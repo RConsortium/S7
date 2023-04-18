@@ -158,9 +158,12 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
         if (!Rf_inherits(val, "S7_super")) {
-          // Update the value of the promise to avoid evaluating it
-          // again in the method body
-          SET_PRVALUE(arg, val);
+
+          // If it's a promise, update the value of the promise to avoid
+          // evaluating it again in the method body
+          if (TYPEOF(val) == PROMSXP) {
+            SET_PRVALUE(arg, val);
+          }
 
           // Then add to arguments of method call
           SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
