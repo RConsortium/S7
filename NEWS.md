@@ -1,5 +1,16 @@
 # S7 0.0.0.9000
 
+## March 2023
+
+* Improve method dispatch failure message (#231).
+
+* Can use `|` to create unions from S7 classes (#224).
+
+* Can no longer subclass an environment via `class_environment` because we
+  need to think the consequences of this behaviour through more fully (#253).
+
+## Rest of 2022
+
 * Add `[.S7_object`, `[<-.S7_object`, `[[.S7_object`, and `[[<-.S7_object`
   methods to avoid "object of type 'S4' is not subsettable" error
   (@jamieRowen, #236).

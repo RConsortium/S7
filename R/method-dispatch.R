@@ -1,12 +1,16 @@
 # Called from C
 method_lookup_error <- function(name, args, signatures) {
   sigs <- vcapply(signatures, paste, collapse = ", ")
-  types <- paste0("- ", format(args), ": ", sigs, collapse = "\n")
-  msg <- sprintf(
-    "Can't find method for generic `%s()` with dispatch classes:\n%s",
-    name,
-    types
-  )
+  types <- vcapply(args, obj_desc)
+
+  if (length(args) == 1) {
+    msg <- sprintf("Can't find method for `%s(%s)`.", name, types)
+  } else {
+    arg_names <- paste0(names(args), collapse = ", ")
+    types <- paste0("- ", format(names(args)), ": ", types, collapse = "\n")
+    msg <- sprintf("Can't find method for generic `%s(%s)`:\n%s", name, arg_names, types)
+  }
+
   stop(msg, call. = FALSE)
 }
 

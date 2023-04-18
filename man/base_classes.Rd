@@ -71,7 +71,7 @@ Base types:
 \item \code{class_list}
 \item \code{class_expression}
 \item \code{class_function}
-\item \code{class_environment}
+\item \code{class_environment} (can only be used for properties)
 }
 
 Union types:
