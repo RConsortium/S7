@@ -2,6 +2,8 @@
 
 ## March 2023
 
+* Dispatching on an evaluated argument no longer causes a crash (#254).
+
 * Improve method dispatch failure message (#231).
 
 * Can use `|` to create unions from S7 classes (#224).
