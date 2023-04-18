@@ -2,7 +2,7 @@
 # Do not edit by hand
 
 #' @export
-`all.equal.S7_object` <- function (target, current, ...)
+`all.equal.S7_object` <- function (target, current, ...) 
 {
     if (is.pairlist(target)) {
         method_not_implemented("all.equal", target)
@@ -13,7 +13,7 @@
 }
 
 #' @export
-`anyDuplicated.S7_object` <- function (x, incomparables = FALSE, ...)
+`anyDuplicated.S7_object` <- function (x, incomparables = FALSE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("anyDuplicated", x)
@@ -24,7 +24,7 @@
 }
 
 #' @export
-`anyNA.S7_object` <- function (x, recursive = FALSE)
+`anyNA.S7_object` <- function (x, recursive = FALSE) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("anyNA", x)
@@ -35,7 +35,7 @@
 }
 
 #' @export
-`aperm.S7_object` <- function (a, perm, ...)
+`aperm.S7_object` <- function (a, perm, ...) 
 {
     if (is.pairlist(a)) {
         method_not_implemented("aperm", a)
@@ -46,7 +46,7 @@
 }
 
 #' @export
-`as.array.S7_object` <- function (x, ...)
+`as.array.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.array", x)
@@ -57,7 +57,7 @@
 }
 
 #' @export
-`as.call.S7_object` <- function (x)
+`as.call.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.call", x)
@@ -68,7 +68,7 @@
 }
 
 #' @export
-`as.character.S7_object` <- function (x, ...)
+`as.character.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.character", x)
@@ -79,7 +79,7 @@
 }
 
 #' @export
-`as.complex.S7_object` <- function (x, ...)
+`as.complex.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.complex", x)
@@ -90,7 +90,7 @@
 }
 
 #' @export
-`as.data.frame.S7_object` <- function (x, row.names = NULL, optional = FALSE, ...)
+`as.data.frame.S7_object` <- function (x, row.names = NULL, optional = FALSE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.data.frame", x)
@@ -101,7 +101,7 @@
 }
 
 #' @export
-`as.Date.S7_object` <- function (x, ...)
+`as.Date.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.Date", x)
@@ -112,7 +112,7 @@
 }
 
 #' @export
-`as.double.S7_object` <- function (x, ...)
+`as.double.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.double", x)
@@ -123,7 +123,7 @@
 }
 
 #' @export
-`as.environment.S7_object` <- function (x)
+`as.environment.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.environment", x)
@@ -134,7 +134,7 @@
 }
 
 #' @export
-`as.expression.S7_object` <- function (x, ...)
+`as.expression.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.expression", x)
@@ -145,7 +145,7 @@
 }
 
 #' @export
-`as.function.S7_object` <- function (x, ...)
+`as.function.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.function", x)
@@ -156,7 +156,7 @@
 }
 
 #' @export
-`as.integer.S7_object` <- function (x, ...)
+`as.integer.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.integer", x)
@@ -167,7 +167,7 @@
 }
 
 #' @export
-`as.list.S7_object` <- function (x, ...)
+`as.list.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.list", x)
@@ -178,7 +178,7 @@
 }
 
 #' @export
-`as.logical.S7_object` <- function (x, ...)
+`as.logical.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.logical", x)
@@ -189,7 +189,7 @@
 }
 
 #' @export
-`as.matrix.S7_object` <- function (x, ...)
+`as.matrix.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.matrix", x)
@@ -200,7 +200,7 @@
 }
 
 #' @export
-`as.null.S7_object` <- function (x, ...)
+`as.null.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.null", x)
@@ -211,7 +211,7 @@
 }
 
 #' @export
-`as.numeric.S7_object` <- function (x, ...)
+`as.numeric.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.numeric", x)
@@ -222,7 +222,7 @@
 }
 
 #' @export
-`as.POSIXct.S7_object` <- function (x, tz = "", ...)
+`as.POSIXct.S7_object` <- function (x, tz = "", ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.POSIXct", x)
@@ -233,7 +233,7 @@
 }
 
 #' @export
-`as.POSIXlt.S7_object` <- function (x, tz = "", ...)
+`as.POSIXlt.S7_object` <- function (x, tz = "", ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.POSIXlt", x)
@@ -244,7 +244,7 @@
 }
 
 #' @export
-`as.raw.S7_object` <- function (x)
+`as.raw.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.raw", x)
@@ -255,7 +255,7 @@
 }
 
 #' @export
-`as.single.S7_object` <- function (x, ...)
+`as.single.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.single", x)
@@ -266,7 +266,7 @@
 }
 
 #' @export
-`as.table.S7_object` <- function (x, ...)
+`as.table.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.table", x)
@@ -277,7 +277,7 @@
 }
 
 #' @export
-`as.vector.S7_object` <- function (x, mode = "any")
+`as.vector.S7_object` <- function (x, mode = "any") 
 {
     if (is.pairlist(x)) {
         method_not_implemented("as.vector", x)
@@ -288,7 +288,7 @@
 }
 
 #' @export
-`by.S7_object` <- function (data, INDICES, FUN, ..., simplify = TRUE)
+`by.S7_object` <- function (data, INDICES, FUN, ..., simplify = TRUE) 
 {
     if (is.pairlist(data)) {
         method_not_implemented("by", data)
@@ -299,7 +299,7 @@
 }
 
 #' @export
-`c.S7_object` <- function (...)
+`c.S7_object` <- function (...) 
 {
     if (is.pairlist(...)) {
         method_not_implemented("c", ...)
@@ -310,7 +310,7 @@
 }
 
 #' @export
-`cbind.S7_object` <- function (..., deparse.level = 1)
+`cbind.S7_object` <- function (..., deparse.level = 1) 
 {
     if (is.pairlist(...)) {
         method_not_implemented("cbind", ...)
@@ -321,7 +321,7 @@
 }
 
 #' @export
-`chol.S7_object` <- function (x, ...)
+`chol.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("chol", x)
@@ -332,7 +332,7 @@
 }
 
 #' @export
-`close.S7_object` <- function (con, ...)
+`close.S7_object` <- function (con, ...) 
 {
     if (is.pairlist(con)) {
         method_not_implemented("close", con)
@@ -343,7 +343,7 @@
 }
 
 #' @export
-`conditionCall.S7_object` <- function (c)
+`conditionCall.S7_object` <- function (c) 
 {
     if (is.pairlist(c)) {
         method_not_implemented("conditionCall", c)
@@ -354,7 +354,7 @@
 }
 
 #' @export
-`conditionMessage.S7_object` <- function (c)
+`conditionMessage.S7_object` <- function (c) 
 {
     if (is.pairlist(c)) {
         method_not_implemented("conditionMessage", c)
@@ -365,7 +365,7 @@
 }
 
 #' @export
-`cut.S7_object` <- function (x, ...)
+`cut.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("cut", x)
@@ -376,7 +376,7 @@
 }
 
 #' @export
-`determinant.S7_object` <- function (x, logarithm = TRUE, ...)
+`determinant.S7_object` <- function (x, logarithm = TRUE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("determinant", x)
@@ -387,7 +387,7 @@
 }
 
 #' @export
-`diff.S7_object` <- function (x, ...)
+`diff.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("diff", x)
@@ -398,18 +398,7 @@
 }
 
 #' @export
-`dim.S7_object` <- function (x)
-{
-    if (is.pairlist(x)) {
-        method_not_implemented("dim", x)
-    }
-    else {
-        NextMethod()
-    }
-}
-
-#' @export
-`dim<-.S7_object` <- function (x, value)
+`dim<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("dim<-", x)
@@ -420,7 +409,7 @@
 }
 
 #' @export
-`dimnames.S7_object` <- function (x)
+`dimnames.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("dimnames", x)
@@ -431,7 +420,7 @@
 }
 
 #' @export
-`dimnames<-.S7_object` <- function (x, value)
+`dimnames<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("dimnames<-", x)
@@ -442,7 +431,7 @@
 }
 
 #' @export
-`droplevels.S7_object` <- function (x, ...)
+`droplevels.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("droplevels", x)
@@ -453,7 +442,7 @@
 }
 
 #' @export
-`duplicated.S7_object` <- function (x, incomparables = FALSE, ...)
+`duplicated.S7_object` <- function (x, incomparables = FALSE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("duplicated", x)
@@ -464,7 +453,7 @@
 }
 
 #' @export
-`flush.S7_object` <- function (con)
+`flush.S7_object` <- function (con) 
 {
     if (is.pairlist(con)) {
         method_not_implemented("flush", con)
@@ -475,7 +464,7 @@
 }
 
 #' @export
-`format.S7_object` <- function (x, ...)
+`format.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("format", x)
@@ -486,7 +475,7 @@
 }
 
 #' @export
-`getDLLRegisteredRoutines.S7_object` <- function (dll, addNames = TRUE)
+`getDLLRegisteredRoutines.S7_object` <- function (dll, addNames = TRUE) 
 {
     if (is.pairlist(dll)) {
         method_not_implemented("getDLLRegisteredRoutines", dll)
@@ -497,7 +486,7 @@
 }
 
 #' @export
-`is.array.S7_object` <- function (x)
+`is.array.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.array", x)
@@ -508,7 +497,7 @@
 }
 
 #' @export
-`is.finite.S7_object` <- function (x)
+`is.finite.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.finite", x)
@@ -519,7 +508,7 @@
 }
 
 #' @export
-`is.infinite.S7_object` <- function (x)
+`is.infinite.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.infinite", x)
@@ -530,7 +519,7 @@
 }
 
 #' @export
-`is.matrix.S7_object` <- function (x)
+`is.matrix.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.matrix", x)
@@ -541,7 +530,7 @@
 }
 
 #' @export
-`is.na.S7_object` <- function (x)
+`is.na.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.na", x)
@@ -552,7 +541,7 @@
 }
 
 #' @export
-`is.na<-.S7_object` <- function (x, value)
+`is.na<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.na<-", x)
@@ -563,7 +552,7 @@
 }
 
 #' @export
-`is.nan.S7_object` <- function (x)
+`is.nan.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.nan", x)
@@ -574,7 +563,7 @@
 }
 
 #' @export
-`is.numeric.S7_object` <- function (x)
+`is.numeric.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("is.numeric", x)
@@ -585,7 +574,7 @@
 }
 
 #' @export
-`isSymmetric.S7_object` <- function (object, ...)
+`isSymmetric.S7_object` <- function (object, ...) 
 {
     if (is.pairlist(object)) {
         method_not_implemented("isSymmetric", object)
@@ -596,7 +585,7 @@
 }
 
 #' @export
-`julian.S7_object` <- function (x, ...)
+`julian.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("julian", x)
@@ -607,7 +596,7 @@
 }
 
 #' @export
-`kappa.S7_object` <- function (z, ...)
+`kappa.S7_object` <- function (z, ...) 
 {
     if (is.pairlist(z)) {
         method_not_implemented("kappa", z)
@@ -618,7 +607,7 @@
 }
 
 #' @export
-`labels.S7_object` <- function (object, ...)
+`labels.S7_object` <- function (object, ...) 
 {
     if (is.pairlist(object)) {
         method_not_implemented("labels", object)
@@ -629,7 +618,7 @@
 }
 
 #' @export
-`length<-.S7_object` <- function (x, value)
+`length<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("length<-", x)
@@ -640,7 +629,7 @@
 }
 
 #' @export
-`levels.S7_object` <- function (x)
+`levels.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("levels", x)
@@ -651,7 +640,7 @@
 }
 
 #' @export
-`levels<-.S7_object` <- function (x, value)
+`levels<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("levels<-", x)
@@ -662,7 +651,7 @@
 }
 
 #' @export
-`mean.S7_object` <- function (x, ...)
+`mean.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("mean", x)
@@ -673,7 +662,7 @@
 }
 
 #' @export
-`merge.S7_object` <- function (x, y, ...)
+`merge.S7_object` <- function (x, y, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("merge", x)
@@ -684,7 +673,7 @@
 }
 
 #' @export
-`months.S7_object` <- function (x, abbreviate)
+`months.S7_object` <- function (x, abbreviate) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("months", x)
@@ -695,18 +684,7 @@
 }
 
 #' @export
-`mtfrm.S7_object` <- function (x)
-{
-    if (is.pairlist(x)) {
-        method_not_implemented("mtfrm", x)
-    }
-    else {
-        NextMethod()
-    }
-}
-
-#' @export
-`names.S7_object` <- function (x)
+`names.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("names", x)
@@ -717,7 +695,7 @@
 }
 
 #' @export
-`names<-.S7_object` <- function (x, value)
+`names<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("names<-", x)
@@ -728,7 +706,7 @@
 }
 
 #' @export
-`open.S7_object` <- function (con, ...)
+`open.S7_object` <- function (con, ...) 
 {
     if (is.pairlist(con)) {
         method_not_implemented("open", con)
@@ -739,7 +717,7 @@
 }
 
 #' @export
-`plot.S7_object` <- function (x, y, ...)
+`plot.S7_object` <- function (x, y, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("plot", x)
@@ -750,7 +728,7 @@
 }
 
 #' @export
-`pretty.S7_object` <- function (x, ...)
+`pretty.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("pretty", x)
@@ -761,7 +739,7 @@
 }
 
 #' @export
-`qr.S7_object` <- function (x, ...)
+`qr.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("qr", x)
@@ -772,7 +750,7 @@
 }
 
 #' @export
-`quarters.S7_object` <- function (x, abbreviate)
+`quarters.S7_object` <- function (x, abbreviate) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("quarters", x)
@@ -783,7 +761,7 @@
 }
 
 #' @export
-`rbind.S7_object` <- function (..., deparse.level = 1)
+`rbind.S7_object` <- function (..., deparse.level = 1) 
 {
     if (is.pairlist(...)) {
         method_not_implemented("rbind", ...)
@@ -794,7 +772,7 @@
 }
 
 #' @export
-`rep.S7_object` <- function (x, ...)
+`rep.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("rep", x)
@@ -805,7 +783,7 @@
 }
 
 #' @export
-`rev.S7_object` <- function (x)
+`rev.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("rev", x)
@@ -816,7 +794,7 @@
 }
 
 #' @export
-`row.names.S7_object` <- function (x)
+`row.names.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("row.names", x)
@@ -827,7 +805,7 @@
 }
 
 #' @export
-`row.names<-.S7_object` <- function (x, value)
+`row.names<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("row.names<-", x)
@@ -838,7 +816,7 @@
 }
 
 #' @export
-`rowsum.S7_object` <- function (x, group, reorder = TRUE, ...)
+`rowsum.S7_object` <- function (x, group, reorder = TRUE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("rowsum", x)
@@ -849,7 +827,7 @@
 }
 
 #' @export
-`scale.S7_object` <- function (x, center = TRUE, scale = TRUE)
+`scale.S7_object` <- function (x, center = TRUE, scale = TRUE) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("scale", x)
@@ -860,7 +838,7 @@
 }
 
 #' @export
-`seek.S7_object` <- function (con, ...)
+`seek.S7_object` <- function (con, ...) 
 {
     if (is.pairlist(con)) {
         method_not_implemented("seek", con)
@@ -871,7 +849,7 @@
 }
 
 #' @export
-`seq.S7_object` <- function (...)
+`seq.S7_object` <- function (...) 
 {
     if (is.pairlist(...)) {
         method_not_implemented("seq", ...)
@@ -882,7 +860,7 @@
 }
 
 #' @export
-`seq.int.S7_object` <- function (from, to, by, length.out, along.with, ...)
+`seq.int.S7_object` <- function (from, to, by, length.out, along.with, ...) 
 {
     if (is.pairlist(from)) {
         method_not_implemented("seq.int", from)
@@ -893,7 +871,7 @@
 }
 
 #' @export
-`sequence.S7_object` <- function (nvec, ...)
+`sequence.S7_object` <- function (nvec, ...) 
 {
     if (is.pairlist(nvec)) {
         method_not_implemented("sequence", nvec)
@@ -904,7 +882,7 @@
 }
 
 #' @export
-`solve.S7_object` <- function (a, b, ...)
+`solve.S7_object` <- function (a, b, ...) 
 {
     if (is.pairlist(a)) {
         method_not_implemented("solve", a)
@@ -915,7 +893,7 @@
 }
 
 #' @export
-`sort.S7_object` <- function (x, decreasing = FALSE, ...)
+`sort.S7_object` <- function (x, decreasing = FALSE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("sort", x)
@@ -926,7 +904,7 @@
 }
 
 #' @export
-`split.S7_object` <- function (x, f, drop = FALSE, ...)
+`split.S7_object` <- function (x, f, drop = FALSE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("split", x)
@@ -937,7 +915,7 @@
 }
 
 #' @export
-`split<-.S7_object` <- function (x, f, drop = FALSE, ..., value)
+`split<-.S7_object` <- function (x, f, drop = FALSE, ..., value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("split<-", x)
@@ -948,7 +926,7 @@
 }
 
 #' @export
-`subset.S7_object` <- function (x, ...)
+`subset.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("subset", x)
@@ -959,7 +937,7 @@
 }
 
 #' @export
-`summary.S7_object` <- function (object, ...)
+`summary.S7_object` <- function (object, ...) 
 {
     if (is.pairlist(object)) {
         method_not_implemented("summary", object)
@@ -970,7 +948,7 @@
 }
 
 #' @export
-`t.S7_object` <- function (x)
+`t.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("t", x)
@@ -981,7 +959,7 @@
 }
 
 #' @export
-`toString.S7_object` <- function (x, ...)
+`toString.S7_object` <- function (x, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("toString", x)
@@ -992,7 +970,7 @@
 }
 
 #' @export
-`transform.S7_object` <- function (`_data`, ...)
+`transform.S7_object` <- function (`_data`, ...) 
 {
     if (is.pairlist(`_data`)) {
         method_not_implemented("transform", `_data`)
@@ -1003,7 +981,7 @@
 }
 
 #' @export
-`truncate.S7_object` <- function (con, ...)
+`truncate.S7_object` <- function (con, ...) 
 {
     if (is.pairlist(con)) {
         method_not_implemented("truncate", con)
@@ -1014,7 +992,7 @@
 }
 
 #' @export
-`unique.S7_object` <- function (x, incomparables = FALSE, ...)
+`unique.S7_object` <- function (x, incomparables = FALSE, ...) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("unique", x)
@@ -1025,7 +1003,7 @@
 }
 
 #' @export
-`units.S7_object` <- function (x)
+`units.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("units", x)
@@ -1036,7 +1014,7 @@
 }
 
 #' @export
-`units<-.S7_object` <- function (x, value)
+`units<-.S7_object` <- function (x, value) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("units<-", x)
@@ -1047,7 +1025,7 @@
 }
 
 #' @export
-`weekdays.S7_object` <- function (x, abbreviate)
+`weekdays.S7_object` <- function (x, abbreviate) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("weekdays", x)
@@ -1058,7 +1036,7 @@
 }
 
 #' @export
-`with.S7_object` <- function (data, expr, ...)
+`with.S7_object` <- function (data, expr, ...) 
 {
     if (is.pairlist(data)) {
         method_not_implemented("with", data)
@@ -1069,7 +1047,7 @@
 }
 
 #' @export
-`within.S7_object` <- function (data, expr, ...)
+`within.S7_object` <- function (data, expr, ...) 
 {
     if (is.pairlist(data)) {
         method_not_implemented("within", data)
@@ -1080,7 +1058,7 @@
 }
 
 #' @export
-`xtfrm.S7_object` <- function (x)
+`xtfrm.S7_object` <- function (x) 
 {
     if (is.pairlist(x)) {
         method_not_implemented("xtfrm", x)

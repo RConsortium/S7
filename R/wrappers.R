@@ -37,7 +37,11 @@ to_wrap <- function() {
     # Already implemented
     "[", "[[", "$", "[<-", "[[<-", "$<-", "print",
     # Can't error because it breaks RStudio environment/rlang
-    "length", "dim"
+    "length", "dim",
+    # only in 4.2.1
+    "mtfrm",
+    # roxygen2 method auto-registration fails
+    "unlist"
   ))
 
   sort(all)
