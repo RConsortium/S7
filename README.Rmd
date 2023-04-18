@@ -140,3 +140,10 @@ method(mean, range) <- function(x, ...) {
 }
 mean(x)
 ```
+
+## Current limitations
+
+-   We have not fully thought through serialization via `save()`/`load()` and friends.
+
+-   The base object type is a pairlist containing a symbol.
+    This is likely to change in the future once better tools become available in base R.

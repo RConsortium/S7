@@ -7,7 +7,7 @@
 
 [![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=master)
 
 <!-- badges: end -->
 
@@ -128,7 +128,7 @@ method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
 inside
-#> <S7_generic> function (x, y)  with 1 methods:
+#> <S7_generic> inside(x, y) with 1 methods:
 #> 1: method(inside, range)
 
 inside(x, c(0, 5, 10, 15))
@@ -140,7 +140,7 @@ generics:
 
 ``` r
 method(inside, class_numeric) <- function(x, y) {
-  min(x) <= y & y <= max(x)
+  y >= min(x) & y <= max(x)
 }
 ```
 
@@ -159,3 +159,11 @@ method(mean, range) <- function(x, ...) {
 mean(x)
 #> [1] 10.5
 ```
+
+## Current limitations
+
+- We have not fully thought through serialization via `save()`/`load()`
+  and friends.
+
+- The base object type is a pairlist containing a symbol. This is likely
+  to change in the future once better tools become available in base R.
