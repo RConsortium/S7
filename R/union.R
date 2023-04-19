@@ -54,7 +54,7 @@ new_union <- function(...) {
 }
 
 # Method registration for the remaining classes happens onLoad so that
-# their pointers are identically, working around a bug that was fixed in
+# their pointers are identical, working around a bug that was fixed in
 # R 4.1: https://github.com/wch/r-source/commit/b41344e3d0da7d78fd
 
 is_union <- function(x) inherits(x, "S7_union")

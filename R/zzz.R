@@ -125,7 +125,7 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
   class_vector <<- new_union(class_atomic, class_expression, class_list)
 
   # Dynamic register so that function pointers are the same, avoiding R 4.0
-  # and earlier bug
+  # and earlier bug related to incompatible S3 methods during Ops dispatch
   registerS3method("|", "S7_union", `|.S7_class`)
   registerS3method("|", "S7_base_class", `|.S7_class`)
   registerS3method("|", "S7_S3_class", `|.S7_class`)
