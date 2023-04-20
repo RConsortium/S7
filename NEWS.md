@@ -2,6 +2,9 @@
 
 ## March 2023
 
+* `R CMD check` now passes on R 3.5 and greater (for tidyverse 
+  compatibility).
+
 * Dispatching on an evaluated argument no longer causes a crash (#254).
 
 * Improve method dispatch failure message (#231).
