@@ -2,6 +2,8 @@
 
 ## Jan-May 2023
 
+* Subclasses of abstract class can have readonly properties (#269).
+
 * During construction, validation is now only performed once for each 
   element of the class hierarchy (#248).
 
