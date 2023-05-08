@@ -79,7 +79,7 @@ S4_class_dispatch <- function(x) {
   classes <- lapply(extends, function(x) methods::getClass(x@superClass))
 
   # Remove unions: S7 handles them in method registration, not dispatch.
-  classes <- Filter(function(x) !is(x, "ClassUnionRepresentation"), classes)
+  classes <- Filter(function(x) !methods::is(x, "ClassUnionRepresentation"), classes)
   # Remove specially named union base classes
   classes <- Filter(function(x) !x@className %in% c("oldClass", "vector"), classes)
 
