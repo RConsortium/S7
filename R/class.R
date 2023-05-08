@@ -1,8 +1,11 @@
 #' Define a new S7 class
 #'
+#' @description
 #' A class specifies the properties (data) that each of its objects will
 #' possess. The class, and its parent, determines which method will be used
 #' when an object is passed to a generic.
+#'
+#' Learn more in `vignette("classes-objects")`
 #'
 #' @param name The name of the class, as a string. The result of calling
 #'   `new_class()` should always be assigned to a variable with this name,
@@ -20,11 +23,13 @@
 #'   classes. If you see `package`, you _must_ export the constructor.
 #' @param abstract Is this an abstract class? An abstract class can not be
 #'   instantiated.
-#' @param constructor The constructor function. Advanced use only.
+#' @param constructor The constructor function. In most cases, you can rely
+#'   on the default constructor, which will generate a function with one
+#'   argument for each property.
 #'
 #'   A custom constructor should call `new_object()` to create the S7 object.
-#'   The first argument, `.data`, should be an instance of the parent class. The
-#'   subsequent arguments are used to set the properties.
+#'   The first argument, `.data`, should be an instance of the parent class
+#'   (if used). The subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.
 #'
@@ -209,6 +214,10 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
       class_friendly(x)
     )
     stop(msg, call. = FALSE)
+  }
+
+  if (is_base_class(x) && x$class == "environment") {
+    stop("Can't inherit from an environment.", call. = FALSE)
   }
 }
 

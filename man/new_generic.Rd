@@ -33,6 +33,8 @@ with \code{new_generic()} then use \link{method<-} to add methods to it.
 Method dispatch is performed by \code{S7_dispatch()}, which must always be
 included in the body of the generic, but in most cases \code{new_generic()} will
 generate this for you.
+
+Learn more in \code{vignette("generics-methods")}
 }
 \section{Dispatch arguments}{
 

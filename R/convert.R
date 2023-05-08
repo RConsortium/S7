@@ -38,7 +38,7 @@ convert <- function(from, to, ...) {
   check_can_inherit(to)
 
   dispatch <- list(obj_dispatch(from), class_register(to))
-  convert <- .Call(method_, convert, dispatch, FALSE)
+  convert <- .Call(method_, convert, dispatch, environment(), FALSE)
 
   if (!is.null(convert)) {
     convert(from, to, ...)
@@ -64,7 +64,12 @@ convert <- function(from, to, ...) {
     }
     from
   } else {
-    method_lookup_error("convert", c("from", "to"), dispatch)
+    msg <- paste0(
+      "Can't find method for generic `convert()` with dispatch classes:\n",
+      "- from: ", obj_desc(from), "\n",
+      "- to  : ", class_desc(to), "\n"
+    )
+    stop(msg, call. = FALSE)
   }
 }
 # Converted to S7_generic on .onLoad
