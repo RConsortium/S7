@@ -10,7 +10,7 @@ props(object)
 
 props(object) <- value
 
-set_props(object, ..., .list = list())
+set_props(object, ...)
 }
 \arguments{
 \item{object}{An object from a S7 class}
@@ -18,8 +18,7 @@ set_props(object, ..., .list = list())
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
 
-\item{..., .list}{Name-value pairs, or a named list of additional properties
-to set.}
+\item{...}{Name-value pairs given property to modify and new value.}
 }
 \description{
 \itemize{

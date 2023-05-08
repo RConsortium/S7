@@ -336,11 +336,10 @@ props <- function(object) {
 }
 
 #' @export
-#' @param ...,.list Name-value pairs, or a named list of additional properties
-#'   to set.
+#' @param ... Name-value pairs given property to modify and new value.
 #' @rdname props
-set_props <- function(object, ..., .list = list()) {
-  props(object) <- c(list(...), .list)
+set_props <- function(object, ...) {
+  props(object) <- list(...)
   object
 }
 
