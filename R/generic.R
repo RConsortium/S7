@@ -9,6 +9,8 @@
 #' included in the body of the generic, but in most cases `new_generic()` will
 #' generate this for you.
 #'
+#' Learn more in `vignette("generics-methods")`
+#'
 #' @section Dispatch arguments:
 #' The arguments that are used to pick the method are called the **dispatch
 #' arguments**. In most cases, this will be one argument, in which case the

@@ -16,11 +16,3 @@
     Output
       <S7_base_class>: <integer>
 
-# environments: can be printed
-
-    Code
-      env(x = 1)
-    Output
-      <env> <environment: 0x0> 
-       @ x: num 1
-

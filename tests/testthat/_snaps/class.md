@@ -76,6 +76,13 @@
     Error <simpleError>
       Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
+# S7 classes: can't inherit from an environment
+
+    Code
+      new_class("test", parent = class_environment)
+    Error <simpleError>
+      Can't inherit from an environment.
+
 # abstract classes: can't be instantiated
 
     Code
@@ -111,6 +118,21 @@
     Error <simpleError>
       <foo> object is invalid:
       - x must be positive
+
+# new_object(): runs each parent validator exactly once
+
+    Code
+      . <- A()
+    Output
+      A 
+    Code
+      . <- B()
+    Output
+      A B 
+    Code
+      . <- C()
+    Output
+      A B C 
 
 # S7 object: displays nicely
 

@@ -16,6 +16,7 @@
 #' you are certain a sequence of operations cannot produce an invalid object.
 #' @param object An S7 object
 #' @param fun A function to call on the object before validation.
+#' @param recursive If `TRUE`, calls validator of parent classes recursively.
 #' @param properties If `TRUE`, the default, checks property types before
 #'   executing the validator.
 #' @export
@@ -60,7 +61,7 @@
 #'   r
 #' }
 #' rightwards(r, 20)
-validate <- function(object, properties = TRUE) {
+validate <- function(object, recursive = TRUE, properties = TRUE) {
   check_is_S7(object)
 
   if (!is.null(attr(object, ".should_validate"))) {
@@ -84,7 +85,7 @@ validate <- function(object, properties = TRUE) {
   errors <- character()
   repeat({
     errors <- c(errors, class_validate(class, object))
-    if (!is_class(class)) break
+    if (!is_class(class) || !recursive) break
     class <- class@parent
   })
 

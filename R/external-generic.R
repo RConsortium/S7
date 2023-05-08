@@ -1,12 +1,33 @@
 #' Generics in other packages
 #'
 #' @description
-#' To register a method for a generic in another packages you need to
-#' `new_external_generic()` and `external_methods_register()` together.
-#' `new_external_generic()` defines the "shape" of the generic without
-#' requiring the other package be available. You then call
-#' `external_methods_register()` in `.onLoad()` to dynamically register
-#' the methods when the other package is loaded.
+#' An external generic is a generic defined in another package that you want to
+#' register methods for. To create an external generic, first use
+#' `new_external_generic()` to define the name and the dispatch arguments
+#' of the generic:
+#'
+#' ```R
+#' generic <- new_external_generic("package", "generic", "x")
+#' ```
+#'
+#' This allows you to define methods for the generic, even if the other
+#' package is not installed:
+#'
+#' ```R
+#' methods(generic, my_class) <- function(...) {}
+#' ```
+#'
+#' Then call `external_methods_register()` in `.onLoad()`. This ensures that
+#' your methods are added to the generic when the other package is loaded.
+#'
+#' ```R
+#' .onLoad <- function(...) {
+#'   S7::external_methods_register()
+#' }
+#' ```
+#'
+#' In tests, you'll need to explicitly call the generic from the external
+#' package with `pkg::generic()`.
 #'
 #' @param package Package the generic is defined in.
 #' @param name Name of generic, as a string.

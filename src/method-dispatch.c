@@ -3,8 +3,7 @@
 #include <Rinternals.h>
 
 extern SEXP parent_sym;
-extern SEXP name_sym;
-extern SEXP ANY_sym;
+extern SEXP sym_ANY;
 
 // Recursively walk through method table to perform iterated dispatch
 SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
@@ -26,7 +25,7 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   }
 
   // ANY fallback
-  SEXP val = Rf_findVarInFrame(table, ANY_sym);
+  SEXP val = Rf_findVarInFrame(table, sym_ANY);
   if (TYPEOF(val) == ENVSXP) {
     val = method_rec(val, signature, signature_itr + 1);
   }
@@ -37,23 +36,54 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   return R_NilValue;
 }
 
-__attribute__ ((noreturn))
-void S7_method_lookup_error(SEXP generic, SEXP signature) {
-  static SEXP S7_method_lookup_error_fun = NULL;
-  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
+SEXP generic_args(SEXP generic, SEXP envir) {
+  // How many arguments are used for dispatch?
+  SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+  R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
+  // Allocate a list to store the arguments
+  SEXP args = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
+
+  // Find the value of each argument.
+  SEXP formals = FORMALS(generic);
+  for (R_xlen_t i = 0; i < n_dispatch; ++i) {
+    SEXP name = TAG(formals);
+    SEXP arg = Rf_findVar(name, envir);
+
+    if (PRCODE(arg) == R_MissingArg) {
+      SET_VECTOR_ELT(args, i, R_MissingArg);
+    } else {
+      // method_call_() has already done the necessary computation
+      SET_VECTOR_ELT(args, i, Rf_eval(arg, R_EmptyEnv));
+    }
+
+    formals = CDR(formals);
+  }
+  Rf_setAttrib(args, R_NamesSymbol, dispatch_args);
+
+  UNPROTECT(1);
+
+  return args;
+}
+
+__attribute__ ((noreturn))
+void S7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
+  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
+  static SEXP S7_method_lookup_error_fun = NULL;
   if (S7_method_lookup_error_fun == NULL) {
     S7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
   }
-  SEXP name = Rf_getAttrib(generic, Rf_install("name"));
-  SEXP args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+
+  SEXP name = Rf_getAttrib(generic, R_NameSymbol);
+  SEXP args = generic_args(generic, envir);
+
   SEXP S7_method_lookup_error_call = PROTECT(Rf_lang4(S7_method_lookup_error_fun, name, args, signature));
   Rf_eval(S7_method_lookup_error_call, ns);
 
   while(1);
 }
 
-SEXP method_(SEXP generic, SEXP signature, SEXP error_) {
+SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
   if (!Rf_inherits(generic, "S7_generic")) {
     return R_NilValue;
   }
@@ -67,7 +97,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP error_) {
 
   int error = Rf_asInteger(error_);
   if (error && m == R_NilValue) {
-    S7_method_lookup_error(generic, signature);
+    S7_method_lookup_error(generic, signature, envir);
   }
 
   return m;
@@ -88,7 +118,7 @@ SEXP S7_obj_dispatch(SEXP object) {
   return res;
 }
 
-SEXP S7_object_() {
+SEXP S7_object_(void) {
   SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
   Rf_classgets(obj, Rf_mkString("S7_object"));
   UNPROTECT(1);
@@ -128,9 +158,12 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
         SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
 
         if (!Rf_inherits(val, "S7_super")) {
-          // Update the value of the promise to avoid evaluating it
-          // again in the method body
-          SET_PRVALUE(arg, val);
+
+          // If it's a promise, update the value of the promise to avoid
+          // evaluating it again in the method body
+          if (TYPEOF(val) == PROMSXP) {
+            SET_PRVALUE(arg, val);
+          }
 
           // Then add to arguments of method call
           SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
@@ -161,7 +194,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes, Rf_ScalarLogical(1));
+  SEXP m = method_(generic, dispatch_classes, envir, Rf_ScalarLogical(1));
   SETCAR(mcall, m);
 
   UNPROTECT(n_protect);

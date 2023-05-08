@@ -187,7 +187,9 @@ class_inherits <- function(x, what) {
 }
 
 obj_type <- function(x) {
-  if (inherits(x, "S7_object")) {
+  if (identical(x, quote(expr = ))) {
+    "missing"
+  } else if (inherits(x, "S7_object")) {
     "S7"
   } else if (isS4(x)) {
     "S4"
@@ -199,14 +201,16 @@ obj_type <- function(x) {
 }
 obj_desc <- function(x) {
   switch(obj_type(x),
-   base = paste0("<", typeof(x), ">"),
-   S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
-   S4 = paste0("S4<", class(x), ">"),
-   S7 = paste0("<", class(x)[[1]], ">")
+    missing = "MISSING",
+    base = paste0("<", typeof(x), ">"),
+    S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
+    S4 = paste0("S4<", class(x), ">"),
+    S7 = paste0("<", class(x)[[1]], ">")
   )
 }
 obj_dispatch <- function(x) {
   switch(obj_type(x),
+    missing = "MISSING",
     base = base_class(x),
     S3 = class(x),
     S4 = S4_class_dispatch(methods::getClass(class(x))),

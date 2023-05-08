@@ -44,6 +44,12 @@ describe("S7 classes", {
       new_class("test", parent = new_union("character"))
     })
   })
+
+  it("can't inherit from an environment", {
+    expect_snapshot(error = TRUE, {
+      new_class("test", parent = class_environment)
+    })
+  })
 })
 
 describe("inheritance", {
@@ -94,6 +100,18 @@ describe("new_object()", {
     expect_snapshot(error = TRUE, {
       foo("x")
       foo(-1)
+    })
+  })
+
+  it("runs each parent validator exactly once", {
+    A <- new_class("A", validator = function(self) cat("A "))
+    B <- new_class("B", parent = A, validator = function(self) cat("B "))
+    C <- new_class("C", parent = B, validator = function(self) cat("C "))
+
+    expect_snapshot({
+      . <- A()
+      . <- B()
+      . <- C()
     })
   })
 })
