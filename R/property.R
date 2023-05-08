@@ -291,7 +291,10 @@ prop_exists <- function(object, name) {
 #' Get/set multiple properties
 #'
 #' - `props(x)` returns all properties.
-#' - `props(x) <- list(name1 = val1, name2 = val2)` sets multiple properties.
+#' - `props(x) <- list(name1 = val1, name2 = val2)` modifies an existing object
+#'   by setting multiple properties simultaneously.
+#' - `set_props(x, name1 = val1, name2 = val2)` creates a copy of an existing
+#'   object with new values for the specified properties.
 #'
 #' @importFrom stats setNames
 #' @inheritParams prop
@@ -329,6 +332,14 @@ props <- function(object) {
   }
   validate(object)
 
+  object
+}
+
+#' @export
+#' @param ... Name-value pairs given property to modify and new value.
+#' @rdname props
+set_props <- function(object, ...) {
+  props(object) <- list(...)
   object
 }
 

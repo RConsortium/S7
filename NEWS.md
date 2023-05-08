@@ -1,6 +1,8 @@
 # S7 0.0.0.9000
 
-## March 2023
+## Jan-May 2023
+
+* New `set_props()` to make a modified copy of an object (#229).
 
 * `R CMD check` now passes on R 3.5 and greater (for tidyverse 
   compatibility).
