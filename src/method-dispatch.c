@@ -118,7 +118,7 @@ SEXP S7_obj_dispatch(SEXP object) {
   return res;
 }
 
-SEXP S7_object_() {
+SEXP S7_object_(void) {
   SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
   Rf_classgets(obj, Rf_mkString("S7_object"));
   UNPROTECT(1);
