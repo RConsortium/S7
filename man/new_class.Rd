@@ -44,11 +44,13 @@ full property specification created \code{\link[=new_property]{new_property()}}.
 \item{abstract}{Is this an abstract class? An abstract class can not be
 instantiated.}
 
-\item{constructor}{The constructor function. Advanced use only.
+\item{constructor}{The constructor function. In most cases, you can rely
+on the default constructor, which will generate a function with one
+argument for each property.
 
 A custom constructor should call \code{new_object()} to create the S7 object.
-The first argument, \code{.data}, should be an instance of the parent class. The
-subsequent arguments are used to set the properties.}
+The first argument, \code{.data}, should be an instance of the parent class
+(if used). The subsequent arguments are used to set the properties.}
 
 \item{validator}{A function taking a single argument, \code{self}, the object
 to validate.
@@ -79,6 +81,8 @@ of the given class.
 A class specifies the properties (data) that each of its objects will
 possess. The class, and its parent, determines which method will be used
 when an object is passed to a generic.
+
+Learn more in \code{vignette("classes-objects")}
 }
 \examples{
 # Create an class that represents a range using a numeric start and end

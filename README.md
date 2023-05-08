@@ -7,7 +7,7 @@
 
 [![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://codecov.io/gh/RConsortium/OOP-WG?branch=master)
+coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=master)
 
 <!-- badges: end -->
 
@@ -30,8 +30,9 @@ remotes::install_github("rconsortium/OOP-WG")
 ## Usage
 
 This section gives a very brief overview of the entirety of S7. Learn
-more of the basics in `vignette("S7")`, the details of method dispatch
-in `vignette("dispatch")`, and compatibility with S3 and S4 in
+more of the basics in `vignette("S7")`, generics and methods in
+`vignette("generics-methods")`, classes and objects
+in`vigentte("classes-objects')`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
 ``` r
@@ -113,10 +114,7 @@ of the generic. This is only needed if your generic has additional
 arguments that aren’t used for method dispatch.
 
 ``` r
-inside <- new_generic("inside", "x", function(x, y) {
-  # Actually finds and calls the appropriate method
-  S7_dispatch()
-})
+inside <- new_generic("inside", "x")
 ```
 
 Once you have a generic, you can define a method for a specific class
@@ -127,35 +125,11 @@ with `method<-`:
 method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
-inside
-#> <S7_generic> function (x, y)  with 1 methods:
-#> 1: method(inside, range)
 
 inside(x, c(0, 5, 10, 15))
 #> [1] FALSE  TRUE  TRUE  TRUE
 ```
 
 You can use `method<-` to register methods for base types on S7
-generics:
-
-``` r
-method(inside, class_numeric) <- function(x, y) {
-  min(x) <= y & y <= max(x)
-}
-```
-
-And register methods for S7 classes on S3 or S4 generics:
-
-``` r
-method(format, range) <- function(x, ...) {
-  paste0("[", x@start, ", ", x@end, "]")
-}
-format(x)
-#> [1] "[1, 20]"
-
-method(mean, range) <- function(x, ...) {
-  (x@start + x@end) / 2
-}
-mean(x)
-#> [1] 10.5
-```
+generics, and S7 classes on S3 or S4 generics. See
+`vignette("compatibility")` for more details.
