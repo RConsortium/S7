@@ -254,7 +254,8 @@ new_object <- function(.parent, ...) {
   for (nme in nms) {
     prop(object, nme, check = FALSE) <- args[[nme]]
   }
-  validate(object)
+  # Only needs to validate this object if parent was already an S7 object
+  validate(object, recursive = !inherits(.parent, "S7_object"))
 
   object
 }

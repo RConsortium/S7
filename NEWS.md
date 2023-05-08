@@ -2,6 +2,9 @@
 
 ## Jan-May 2023
 
+* During construction, validation is now only performed once for each 
+  element of the class hierarchy (#248).
+
 * Implemented a better filtering strategy for the S4 class hierarchy so
   you can now correctly dispatch on virtual classes (#252).
 
