@@ -54,9 +54,9 @@ constructor_args <- function(parent, properties = list()) {
   parent_args <- names2(formals(class_constructor(parent)))
 
   self_args <- names2(properties)
+  # Remove dynamic arguments
+  self_args <- self_args[vlapply(properties, function(x) is.null(x$getter))]
   if (is_class(parent) && !parent@abstract) {
-    # Remove dynamic arguments
-    self_args <- self_args[vlapply(properties, function(x) is.null(x$getter))]
     # Remove any parent properties; can't use parent_args() since the constructor
     # might automatically set some properties.
     self_args <- setdiff(self_args, names2(parent@properties))
