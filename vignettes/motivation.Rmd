@@ -40,6 +40,10 @@ library(S7)
     This complexity affects relatively little code, but when you attempt to dive into the details it makes `UseMethod()` hard to understand.
     As much as possible, S7 avoids any "funny" business with environments or promises, so that there is no distinction between argument values and local values.
 
+-   S3 is primarily designed for single dispatch and double dispatch is only provided for a handful of base generics.
+    It's not possible to reuse the implementation for user generics.
+    S7 provides a standard way of doing multiple dispatch (including double dispatch) that can be used for any generic.
+
 -   `NextMethod()` is unpredictable since you can't tell exactly which method will be called by only reading the code; you instead need to know both the complete class hierarchy and what other methods are currently registered (and loading a package might change those methods).
     S7 takes a difference approach with `super()`, requiring explicit specification of the superclass to be used.
 
