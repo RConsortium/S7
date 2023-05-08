@@ -1,5 +1,5 @@
 ---
-title: "S7 generics and method dispatch"
+title: "Generics and methods"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{S7 generics and method dispatch}

@@ -154,11 +154,9 @@ foo
 
 S7 unions allow you to restrict the type of a property in the same way that S4 unions allow you to restrict the type of a slot.
 
-
 ## Using S7 in a package
 
-If you are using S7 in a package _and_ you want your package to maintain
-compatibility with R versions prior to 4.3.0, there are a few things to be aware of.
+If you are using S7 in a package *and* you want your package to maintain compatibility with R versions prior to 4.3.0, there are a few things to be aware of.
 
 #### `@`
 
@@ -166,20 +164,20 @@ compatibility with R versions prior to 4.3.0, there are a few things to be aware
 
 Workarounds:
 
--  Use `S7::prop()` instead of `@`.
--  Alternatively, make an S7-aware `@` available to your package with 
-   a custom `NAMESPACE` directive and `.onAttach()` like this:
+-   Use `S7::prop()` instead of `@`.
 
-   ``` r
-   # enable usage of <S7_object>@name in package code
-   #' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
-   NULL
+-   Alternatively, make an S7-aware `@` available to your package with a custom `NAMESPACE` directive and `.onAttach()` like this:
 
-   # enable usage of <S7_object>@name in user code
-   # e.g. if you also want users to be able to access properties
-   # of objects your package
-   .onAttach <- function(libname, pkgname) {
-     if (getRversion() < "4.3.0")
-       require(S7)
-   }
-   ```
+    ``` r
+    # enable usage of <S7_object>@name in package code
+    #' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
+    NULL
+
+    # enable usage of <S7_object>@name in user code
+    # e.g. if you also want users to be able to access properties
+    # of objects your package
+    .onAttach <- function(libname, pkgname) {
+      if (getRversion() < "4.3.0")
+        require(S7)
+    }
+    ```

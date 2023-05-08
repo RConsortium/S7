@@ -52,18 +52,10 @@ new_union <- function(...) {
 `|.S7_class` <- function(e1, e2) {
   new_union(e1, e2)
 }
-#' @export
-`|.S7_union` <- `|.S7_class`
-#' @export
-`|.S7_base_class` <- `|.S7_class`
-#' @export
-`|.S7_S3_class` <- `|.S7_class`
-#' @export
-`|.classGeneratorFunction` <- `|.S7_class`
-#' @export
-`|.ClassUnionRepresentation` <- `|.S7_class`
-#' @export
-`|.classRepresentation` <- `|.S7_class`
+
+# Method registration for the remaining classes happens onLoad so that
+# their pointers are identical, working around a bug that was fixed in
+# R 4.1: https://github.com/wch/r-source/commit/b41344e3d0da7d78fd
 
 is_union <- function(x) inherits(x, "S7_union")
 

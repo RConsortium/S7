@@ -1,0 +1,241 @@
+---
+title: "Classes and objects"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Classes and objects}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette dives into the details of S7 classes and objects, building on the basics discussed in `vignette("S7")`. It will cover validators, the finer details of properties, and finally how to write your own constructors.
+
+```{r setup}
+library(S7)
+```
+
+## Validation
+
+S7 classes can have an optional **validator** that checks that the values of the properties are OK.
+A validator is a function that takes the object (called `self`) and returns `NULL` if its valid or returns a character vector listing the problems.
+
+### Basics
+
+In the following example we create a range class that enforces that `@start` and `@end` are single numbers, and that `@start` is less than `@end`:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_double,
+    end = class_double
+  ),
+  validator = function(self) {
+    if (length(self@start) != 1) {
+      "@start must be length 1"
+    } else if (length(self@end) != 1) {
+      "@end must be length 1"
+    } else if (self@end < self@start) {
+      sprintf(
+        "@end (%i) must be greater than or equal to @start (%i)",
+        self@end,
+        self@start
+      )
+    }
+  }
+)
+```
+
+You can typically write a validator as a series of `if`-`else` statements, but note that the order of the statements is important.
+For example, in the code above, we can't check that `self@end < self@start` before we've checked that `@start` and `@end` are length 1.
+
+### When is validation performed?
+
+Objects are validated automatically when constructed and when any property is modified:
+
+```{r, error = TRUE}
+x <- range(1, 2:3)
+x <- range(10, 1)
+
+x <- range(1, 10)
+x@start <- 20
+```
+
+You can also manually `validate()` an object if you use a low-level R function to bypass the usual checks and balances of `@`:
+
+```{r, error = TRUE}
+x <- range(1, 2)
+attr(x, "start") <- 3
+validate(x)
+```
+
+### Avoiding validation
+
+Imagine you wanted to write a function that would shift a property to the left or the right:
+
+```{r}
+shift <- function(x, shift) {
+  x@start <- x@start + shift
+  x@end <- x@end + shift
+  x
+}
+shift(range(1, 10), 1)
+```
+
+There's a problem if `shift` is larger than `@end` - `@start`:
+
+```{r, error = TRUE}
+shift(range(1, 10), 10)
+```
+
+While the end result of `shift()` will be valid, an intermediate state is not.
+The easiest way to resolve this problem is to set the properties all at once:
+
+```{r}
+shift <- function(x, shift) {
+  props(x) <- list(
+    start = x@start + shift,
+    end = x@end + shift
+  )
+  x
+}
+shift(range(1, 10), 10)
+```
+
+The object is still validated, but it's only validated once, after all the properties have been modified.
+
+## Properties
+
+So far we've focused on the simplest form of property specification where you use a named list to supply the desired type for each property.
+This is a convenient shorthand for a call to `new_property()`.
+For example, the property definition of range above is shorthand for:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = new_property(class_double),
+    end = new_property(class_double)
+  )
+)
+```
+
+Calling `new_property()` explicitly allows you to control aspects of the property other than its type.
+The following sections show you how to provide a default value, compute the property value on demand, or provide a fully dynamic property.
+
+### Default value
+
+The defaults of `new_class()` create an class that can be constructed with no arguments:
+
+```{r}
+empty <- new_class("empty",
+  properties = list(
+    x = class_double,
+    y = class_character,
+    z = class_logical
+  ))
+empty()
+```
+
+The default values of the properties will be filled in with "empty" instances.
+You can instead provide your own defaults by using the `default` argument:
+
+```{r}
+empty <- new_class("empty",
+  properties = list(
+    x = new_property(class_numeric, default = 0),
+    y = new_property(class_character, default = ""),
+    z = new_property(class_logical, default = NA)
+  )
+)
+empty()
+```
+
+### Computed properties
+
+It's sometimes useful to have a property that is computed on demand.
+For example, it'd be convenient to pretend that our range has a length, which is just the distance between `@start` and `@end`.
+You can dynamically compute the value of a property by defining a `getter`:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_double,
+    end = class_double,
+    length = new_property(
+      getter = function(self) self@end - self@start,
+    )
+  )
+)
+
+x <- range(start = 1, end = 10)
+x
+```
+
+Computed properties are read-only:
+
+```{r, error = TRUE}
+x@length <- 20
+```
+
+### Dynamic properties
+
+You can make a computed property fully dynamic so that it can be read and written by also supplying a `setter`.
+For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_double,
+    end = class_double,
+    length = new_property(
+      class = class_double,
+      getter = function(self) self@end - self@start,
+      setter = function(self, value) {
+        self@end <- self@start + value
+        self
+      }
+    )
+  )
+)
+
+x <- range(start = 1, end = 10)
+x
+
+x@length <- 5
+x
+```
+
+A `setter` is a function with arguments `self` and `value` that returns a modified object.
+
+## Constructors
+
+You can see the source code for a class's constructor by accessing the `constructor` property:
+
+```{r}
+range@constructor
+```
+
+In most cases, S7's default constructor will all you need. However, in some cases you might want something custom. For example, for our range class, maybe we'd like to construct it from a vector of numeric values, automatically computing the min and the max. To implement this we could do:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_numeric,
+    end = class_numeric
+  ),
+  constructor = function(x) {
+    new_object(NULL, start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
+  }
+)
+
+range(c(10, 5, 0, 2, 5, 7))
+```
+
+A constructor must always end with a call to `new_object()`. The first argument to `new_object()` should be an object of the `parent` class, or `NULL`, if there's no parent (as here). That argument should be followed by one named argument for each property.
+
+There's one drawback of custom constructors that you should be aware: any subclass will also require a custom constructor.
