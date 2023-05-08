@@ -93,6 +93,16 @@ describe("S4_class_dispatch", {
     expect_equal(S4_class_dispatch("Foo2"), "S4/Foo2")
   })
 
+  it("includes virtual classes", {
+    on.exit(S4_remove_classes(c("Foo1", "Foo2")))
+
+    setClass("Foo1", where = globalenv())
+    setClass("Foo2", contains = "Foo1", where = globalenv())
+
+    expect_equal(S4_class_dispatch("Foo1"), "S4/Foo1")
+    expect_equal(S4_class_dispatch("Foo2"), c("S4/Foo2", "S4/Foo1"))
+  })
+
   it("captures explicit package name", {
     on.exit(S4_remove_classes("Foo1"))
     setClass("Foo1", package = "pkg", where = globalenv())

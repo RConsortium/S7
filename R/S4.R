@@ -78,9 +78,10 @@ S4_class_dispatch <- function(x) {
   extends <- Filter(function(x) methods::is(x, "SClassExtension"), extends)
   classes <- lapply(extends, function(x) methods::getClass(x@superClass))
 
-  # Remove virtual classes that aren't S3. This removes unions because S7
-  # handles them in method registration, not dispatch.
-  classes <- Filter(function(x) !x@virtual || is_oldClass(x), classes)
+  # Remove unions: S7 handles them in method registration, not dispatch.
+  classes <- Filter(function(x) !methods::is(x, "ClassUnionRepresentation"), classes)
+  # Remove specially named union base classes
+  classes <- Filter(function(x) !x@className %in% c("oldClass", "vector"), classes)
 
   c(self, vcapply(classes, S4_class_name))
 }

@@ -2,6 +2,9 @@
 
 ## Jan-May 2023
 
+* Implemented a better filtering strategy for the S4 class hierarchy so
+  you can now correctly dispatch on virtual classes (#252).
+
 * New `set_props()` to make a modified copy of an object (#229).
 
 * `R CMD check` now passes on R 3.5 and greater (for tidyverse 
