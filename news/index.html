@@ -62,7 +62,9 @@
 <h2 class="pkg-version" data-toc-text="0.0.0.9000" id="s7-0009000">S7 0.0.0.9000<a class="anchor" aria-label="anchor" href="#s7-0009000"></a></h2>
 <div class="section level3">
 <h3 id="jan-may-0-0-0-9000">Jan-May 2023<a class="anchor" aria-label="anchor" href="#jan-may-0-0-0-9000"></a></h3>
-<ul><li><p>Implemented a better filtering strategy for the S4 class hierarchy so you can now correctly dispatch on virtual classes (<a href="https://github.com/rconsortium/OOP-WG/issues/252" class="external-link">#252</a>).</p></li>
+<ul><li><p>Subclasses of abstract class can have readonly properties (<a href="https://github.com/rconsortium/OOP-WG/issues/269" class="external-link">#269</a>).</p></li>
+<li><p>During construction, validation is now only performed once for each element of the class hierarchy (<a href="https://github.com/rconsortium/OOP-WG/issues/248" class="external-link">#248</a>).</p></li>
+<li><p>Implemented a better filtering strategy for the S4 class hierarchy so you can now correctly dispatch on virtual classes (<a href="https://github.com/rconsortium/OOP-WG/issues/252" class="external-link">#252</a>).</p></li>
 <li><p>New <code><a href="../reference/props.html">set_props()</a></code> to make a modified copy of an object (<a href="https://github.com/rconsortium/OOP-WG/issues/229" class="external-link">#229</a>).</p></li>
 <li><p><code>R CMD check</code> now passes on R 3.5 and greater (for tidyverse compatibility).</p></li>
 <li><p>Dispatching on an evaluated argument no longer causes a crash (<a href="https://github.com/rconsortium/OOP-WG/issues/254" class="external-link">#254</a>).</p></li>
