@@ -25,7 +25,7 @@ library(S7)
 ## Challenges with S3
 
 -   S3 is very informal, meaning that there's no formal definition of a class.
-    This makes it impossible to know exactly which properties an object should or could possess, or even what it's parent class should be.
+    This makes it impossible to know exactly which properties an object should or could possess, or even what its parent class should be.
     S7 resolves this problem with a formal definition encoded in a class object produced by `new_class()`.
     This includes support for validation (and avoiding validation where needed) as inspired by S4.
 
@@ -33,14 +33,14 @@ library(S7)
     S7 has a thoughtfully designed print method that makes it clear what methods are available and how to find their source code.
 
 -   Properties of an S3 class are usually stored in attributes, but, by default, `attr()` does partial matching, which can lead to bugs that are hard to diagnose.
-    Additionally, `attr()` returns `NULL` if an attribute exists, so misspelling an attribute can lead to subtle bugs.
+    Additionally, `attr()` returns `NULL` if an attribute doesn't exist, so misspelling an attribute can lead to subtle bugs.
     `@` fixes both of these problems.
 
 -   S3 method dispatch is complicated for compatibility with S.
     This complexity affects relatively little code, but when you attempt to dive into the details it makes `UseMethod()` hard to understand.
     As much as possible, S7 avoids any "funny" business with environments or promises, so that there is no distinction between argument values and local values.
 
--   `NextMethod()` is unpredictable you can't tell exactly what method will be called by only reading the code; you instead need to know both the complete class hierarchy and what other methods are currently registered (and loading a package might change those methods).
+-   `NextMethod()` is unpredictable since you can't tell exactly which method will be called by only reading the code; you instead need to know both the complete class hierarchy and what other methods are currently registered (and loading a package might change those methods).
     S7 takes a difference approach with `super()`, requiring explicit specification of the superclass to be used.
 
 -   Conversion between S3 classes is only implemented via loose convention: if you implement a class `foo`, then you should also provide generic `as.foo()` to convert other objects to that type.
