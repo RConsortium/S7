@@ -1,5 +1,26 @@
 # S7 0.0.0.9000
 
+## Jan-May 2023
+
+* Implemented a better filtering strategy for the S4 class hierarchy so
+  you can now correctly dispatch on virtual classes (#252).
+
+* New `set_props()` to make a modified copy of an object (#229).
+
+* `R CMD check` now passes on R 3.5 and greater (for tidyverse 
+  compatibility).
+
+* Dispatching on an evaluated argument no longer causes a crash (#254).
+
+* Improve method dispatch failure message (#231).
+
+* Can use `|` to create unions from S7 classes (#224).
+
+* Can no longer subclass an environment via `class_environment` because we
+  need to think the consequences of this behaviour through more fully (#253).
+
+## Rest of 2022
+
 * Add `[.S7_object`, `[<-.S7_object`, `[[.S7_object`, and `[[<-.S7_object`
   methods to avoid "object of type 'S4' is not subsettable" error
   (@jamieRowen, #236).

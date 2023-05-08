@@ -1,14 +1,19 @@
 #' Define a class union
 #'
 #' @description
-#' A class union represents a list of possible classes. It can be used in two
+#' A class union represents a list of possible classes. You can create it
+#' with `new_union(a, b, c)` or `a | b | c`. Unions can be used in two
 #' places:
 #'
 #' * To allow a property to be one of a set of classes,
-#'   `new_property(new_union("integer", Range))`.
+#'   `new_property(class_integer | Range)`. The default `default` value for the
+#'   property will be the constructor of the first object in the union.
+#'   This means if you want to create an "optional" property (i.e. one that
+#'   can be `NULL` or of a specified type), you'll need to write (e.g.)
+#'   `NULL | class_integer`.
 #'
 #' * As a convenient short-hand to define methods for multiple classes.
-#'   `method(foo, new_union(X, Y)) <- f` is short-hand for
+#'   `method(foo, X | Y) <- f` is short-hand for
 #'   `method(foo, X) <- f; method(foo, Y) <- foo`
 #'
 #' S7 includes built-in unions for "numeric" (integer and double vectors),
@@ -21,6 +26,8 @@
 #' @examples
 #' logical_or_character <- new_union(class_logical, class_character)
 #' logical_or_character
+#' # or with shortcut syntax
+#' logical_or_character <- class_logical | class_character
 #'
 #' Foo <- new_class("Foo", properties = list(x = logical_or_character))
 #' Foo(x = TRUE)
@@ -40,6 +47,15 @@ new_union <- function(...) {
   class(out) <- "S7_union"
   out
 }
+
+#' @export
+`|.S7_class` <- function(e1, e2) {
+  new_union(e1, e2)
+}
+
+# Method registration for the remaining classes happens onLoad so that
+# their pointers are identical, working around a bug that was fixed in
+# R 4.1: https://github.com/wch/r-source/commit/b41344e3d0da7d78fd
 
 is_union <- function(x) inherits(x, "S7_union")
 

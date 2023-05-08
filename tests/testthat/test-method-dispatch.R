@@ -130,12 +130,33 @@ test_that("can dispatch on base 'union' types", {
   expect_equal(foo(integer()), "i")
 })
 
-test_that("method lookup fails with informative messages", {
-  foo <- new_generic("foo", c("x", "y"))
-  method(foo, list(class_character, class_integer)) <- function(x, y) paste0("bar:", x, y)
-  expect_snapshot_error(foo(TRUE))
-  expect_snapshot_error(foo(TRUE, list()))
-  expect_snapshot_error(foo(tibble::tibble(), .POSIXct(double())))
+test_that("single dispatch fails with informative messages", {
+  fail <- new_generic("fail", "x")
+
+  foo <- new_class("foo")
+  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  on.exit(S4_remove_classes("Foo"))
+
+  expect_snapshot(error = TRUE, {
+    fail(TRUE)
+    fail(tibble::tibble())
+    fail(foo())
+    fail(Foo(x = 1))
+  })
+})
+
+test_that("multiple dispatch fails with informative messages", {
+  fail <- new_generic("fail", c("x", "y"))
+
+  foo <- new_class("foo")
+  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  on.exit(S4_remove_classes("Foo"))
+
+  expect_snapshot(error = TRUE, {
+    fail(TRUE)
+    fail(, TRUE)
+    fail(TRUE, TRUE)
+  })
 })
 
 
@@ -151,4 +172,13 @@ test_that("method dispatch preserves method return visibility", {
 
   expect_visible(foo("yep"))
   expect_invisible(foo("nope"))
+})
+
+test_that("can dispatch on evaluated arguments", {
+  my_generic <- new_generic("my_generic", "x", function(x) {
+    x <- 10
+    S7_dispatch()
+  })
+  method(my_generic, class_numeric) <- function(x) 100
+  expect_equal(my_generic("x"), 100)
 })
