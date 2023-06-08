@@ -15,8 +15,8 @@ knitr::opts_chunk$set(
 ```
 
 R already has two OO systems built-in (S3 and S4) and many additional OO systems are available in CRAN packages.
-Why did we decide another system (S7) was necessary?
-This vignette will discuss some of the motivations, focussing on the aspects of S3 and S4 that have been found to be particularly challenging in practice.
+Why did we decide more work was needed?
+This vignette will discuss some of the motivations behind S7, focussing on the aspects of S3 and S4 that have been found to be particularly challenging in practice.
 
 ```{r setup}
 library(S7)
@@ -62,7 +62,7 @@ library(S7)
 -   Multiple inheritance seemed like a powerful idea at the time, but in practice it appears to generate more problems than it solves.
     S7 does not support multiple inheritance.
 
--   S4's method dispatch uses a thoughtful system of weights to pick the best method when there is ambiguity.
+-   S4's method dispatch uses a principled by complex distance metric to pick the best method in the presence of ambiguity.
     Time has shown that this approach is hard for people to understand and makes it hard to predict what will happen when new methods are registered.
     S7 implements a much simpler, greedy, approach that trades some additional work on behalf of the class author for a system that is simpler and easier to understand.
 
