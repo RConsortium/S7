@@ -62,7 +62,7 @@ library(S7)
 -   Multiple inheritance seemed like a powerful idea at the time, but in practice it appears to generate more problems than it solves.
     S7 does not support multiple inheritance.
 
--   S4's method dispatch uses a principled by complex distance metric to pick the best method in the presence of ambiguity.
+-   S4's method dispatch uses a principled but complex distance metric to pick the best method in the presence of ambiguity.
     Time has shown that this approach is hard for people to understand and makes it hard to predict what will happen when new methods are registered.
     S7 implements a much simpler, greedy, approach that trades some additional work on behalf of the class author for a system that is simpler and easier to understand.
 
