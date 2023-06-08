@@ -9,7 +9,7 @@ S7_object <- new_class(
     .Call(S7_object_)
   },
   validator = function(self) {
-    if (typeof(self) != "S4") {
+    if (!is_S7_base_object(self)) {
       "Underlying data is corrupt"
     }
   }

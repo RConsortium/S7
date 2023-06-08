@@ -270,7 +270,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
-  if (typeof(object) != "S4") {
+  if (!is_S7_base_object(object)) {
     if (!typeof(object) %in% c("numeric", "integer", "character", "double"))
       cat(" ")
 
@@ -295,4 +295,9 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 #' @export
 S7_class <- function(object) {
   attr(object, "S7_class", exact = TRUE)
+}
+
+is_S7_base_object <- function(x) {
+  (typeof(x) == "S4" && !isS4(x)) ||
+    typeof(x) == "object"
 }
