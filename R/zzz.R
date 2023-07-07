@@ -1,3 +1,5 @@
+.S7_type <- typeof(.Call(S7_object_)) # "S4"  or in R-devel 2023-07-x  "object"
+
 #' Base S7 class
 #'
 #' @keywords internal
@@ -9,7 +11,7 @@ S7_object <- new_class(
     .Call(S7_object_)
   },
   validator = function(self) {
-    if (typeof(self) != "S4") {
+    if (typeof(self) != .S7_type) {
       "Underlying data is corrupt"
     }
   }

@@ -1,6 +1,6 @@
 Package: S7
 Title: A New OO System for R
-Version: 0.0.0.9000
+Version: 0.0.0.9047
 Authors@R:
     c(person(given = "Henrik",
              family = "Bengtsson",
@@ -35,7 +35,7 @@ Description: Prototype implementation of an extension to S3 that
     Represents the output of the Object-oriented Programming Working
     Group, sponsored by the R Consortium.
 License: MIT + file LICENSE
-Depends: 
+Depends:
     R (>= 3.5.0)
 Imports:
     utils

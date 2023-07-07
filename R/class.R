@@ -270,7 +270,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
-  if (typeof(object) != "S4") {
+  if (typeof(object) != .S7_type) {
     if (!typeof(object) %in% c("numeric", "integer", "character", "double"))
       cat(" ")
 
