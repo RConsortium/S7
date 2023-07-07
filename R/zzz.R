@@ -1,4 +1,4 @@
-]#' Base S7 class
+#' Base S7 class
 #'
 #' @keywords internal
 #' @export
