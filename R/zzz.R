@@ -118,7 +118,8 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 }
 
 .onLoad <- function(...) {
-  .S7_type <<- typeof(.Call(S7_object_)) # "S4"  or in R-devel 2023-07-x  "object"
+  ## "S4"   or [in R-devel 2023-07-x]   "object"
+  assign(".S7_type", typeof(.Call(S7_object_)), topenv()) 
 
   convert <<- S7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
 
