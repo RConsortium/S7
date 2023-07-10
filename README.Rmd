@@ -27,17 +27,16 @@ It has been designed and implemented collaboratively by the RConsortium Object-O
 ## Installation
 
 The long-term goal of this project is to merge S7 in to base R.
-For now, you can experiment by installing the in-development version from GitHub:
+For now, you can experiment by installing it from CRAN:
 
 ```{r, eval = FALSE}
-# install.packages("remotes")
-remotes::install_github("rconsortium/OOP-WG")
+install.packages("S7")
 ```
 
 ## Usage
 
 This section gives a very brief overview of the entirety of S7.
-Learn more of the basics in `vignette("S7")`, generics and methods in `vignette("generics-methods")`, classes and objects in` vigentte("classes-objects')`, and compatibility with S3 and S4 in `vignette("compatibility")`.
+Learn more of the basics in `vignette("S7")`, generics and methods in `vignette("generics-methods")`, classes and objects in`vigentte("classes-objects')`, and compatibility with S3 and S4 in `vignette("compatibility")`.
 
 ```{r}
 library(S7)
@@ -115,4 +114,5 @@ method(inside, range) <- function(x, y) {
 inside(x, c(0, 5, 10, 15))
 ```
 
-You can use `method<-` to register methods for base types on S7 generics, and S7 classes on S3 or S4 generics. See `vignette("compatibility")` for more details.
+You can use `method<-` to register methods for base types on S7 generics, and S7 classes on S3 or S4 generics.
+See `vignette("compatibility")` for more details.

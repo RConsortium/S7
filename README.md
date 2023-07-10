@@ -20,11 +20,10 @@ wider R community.
 ## Installation
 
 The long-term goal of this project is to merge S7 in to base R. For now,
-you can experiment by installing the in-development version from GitHub:
+you can experiment by installing it from CRAN:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("rconsortium/OOP-WG")
+install.packages("S7")
 ```
 
 ## Usage
