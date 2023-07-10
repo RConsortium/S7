@@ -44,7 +44,7 @@ package with pkg::generic()."><!-- mathjax --><script src="https://cdnjs.cloudfl
     
     <a class="navbar-brand me-2" href="../index.html">S7</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9047</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -138,13 +138,30 @@ package with <code>pkg::generic()</code>.</p>
 be registered.</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    
 
+<p>An S7 external generic, i.e. a list with class
+<code>S7_external_generic</code>.</p>
+    </div>
+
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">my_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"my_class"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">your_generic</span> <span class="op">&lt;-</span> <span class="fu">new_external_generic</span><span class="op">(</span><span class="st">"stats"</span>, <span class="st">"median"</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">your_generic</span>, <span class="va">my_class</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"Hi!"</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Henrik Bengtsson, Will Landau, Michael Lawrence, Martin Maechler, Luke Tierney, Gabriela De Queiroz, Hadley Wickham, Jim Hester.</p>
+  <p></p><p>Developed by Davis Vaughan, Jim Hester, Tomasz Kalinowski, Will Landau, Michael Lawrence, Martin Maechler, Luke Tierney, Hadley Wickham.</p>
 </div>
 
 <div class="pkgdown-footer-right">

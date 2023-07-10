@@ -12,7 +12,7 @@ new_S3_class() because S3 lacks a formal class definition."><!-- mathjax --><scr
     
     <a class="navbar-brand me-2" href="../index.html">S7</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9047</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -100,6 +100,13 @@ invalid, it returns a character vector of problems.</p></dd>
 
 </dl></div>
     <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    
+
+<p>An S7 definition of an S3 class, i.e. a list with class
+<code>S7_S3_class</code>.</p>
+    </div>
+    <div class="section level2">
     <h2 id="method-dispatch-properties-and-unions">Method dispatch, properties, and unions<a class="anchor" aria-label="anchor" href="#method-dispatch-properties-and-unions"></a></h2>
     <p>There are three ways of using S3 with S7 that only require the S3 class
 vector:</p><ul><li><p>Registering a S3 method for an S7 generic.</p></li>
@@ -143,12 +150,24 @@ A Date is a numeric vector with class <code>Date</code> that can be constructed 
 <span><span class="op">)</span></span></code></pre><p></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># No checking, just used for dispatch</span></span></span>
+<span class="r-in"><span><span class="va">Date</span> <span class="op">&lt;-</span> <span class="fu">new_S3_class</span><span class="op">(</span><span class="st">"Date"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">my_generic</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"my_generic"</span>, <span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">my_generic</span>, <span class="va">Date</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"This is a date"</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">my_generic</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.time.html" class="external-link">Sys.Date</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "This is a date"</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Henrik Bengtsson, Will Landau, Michael Lawrence, Martin Maechler, Luke Tierney, Gabriela De Queiroz, Hadley Wickham, Jim Hester.</p>
+  <p></p><p>Developed by Davis Vaughan, Jim Hester, Tomasz Kalinowski, Will Landau, Michael Lawrence, Martin Maechler, Luke Tierney, Hadley Wickham.</p>
 </div>
 
 <div class="pkgdown-footer-right">
