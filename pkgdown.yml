@@ -11,12 +11,13 @@ articles:
   '2022-03-08': minutes/2022-03-08.html
   '2022-08-01': minutes/2022-08-01.html
   '2022-09-12': minutes/2022-09-12.html
+  motivation: motivation.html
   performance: performance.html
   design: spec/design.html
   dispatch: spec/dispatch.html
   proposal: spec/proposal.html
   requirements: spec/requirements.html
-last_built: 2023-07-07T21:16Z
+last_built: 2023-07-10T14:43Z
 urls:
   reference: https://RConsortium.github.io/OOP-WG/reference
   article: https://RConsortium.github.io/OOP-WG/articles

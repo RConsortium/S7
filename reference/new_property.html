@@ -40,6 +40,7 @@ behaviour when modified."><!-- mathjax --><script src="https://cdnjs.cloudflare.
     <a class="dropdown-item" href="../articles/generics-methods.html">Generics and methods</a>
     <a class="dropdown-item" href="../articles/classes-objects.html">Classes and objects</a>
     <a class="dropdown-item" href="../articles/compatibility.html">Compatibility</a>
+    <a class="dropdown-item" href="../articles/motivation.html">Motivation for S7</a>
     <a class="dropdown-item" href="../articles/performance.html">Performance</a>
     <div class="dropdown-divider"></div>
     <a class="dropdown-item" href="../articles/index.html">More articles...</a>
@@ -144,9 +145,9 @@ properties.</p></dd>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_clock</span> <span class="op">&lt;-</span> <span class="fu">clock</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span>; <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-07-07 21:16:59 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-07-10 14:43:41 UTC"</span>
 <span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-07-07 21:17:00 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-07-10 14:43:42 UTC"</span>
 <span class="r-in"><span><span class="co"># This property is read only</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : Can't set read-only property &lt;clock&gt;@now</span>
