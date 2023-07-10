@@ -16,8 +16,9 @@ Authors@R: c(
     person("Hadley", "Wickham", , "hadley@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4757-117X"))
   )
-Description: The S7 package is a new object oriented programming system 
-  designed to be a successor to S3 and S4. It has been designed and implemented 
+Description: A new object oriented programming system designed to be a successor 
+  to S3 and S4. It includes formal class, generic, and method specification, 
+  and a limited form of multiple dispatch. It has been designed and implemented 
   collaboratively by the R Consortium Object-Oriented Programming Working Group, 
   which includes representatives from R-Core, BioConductor, RStudio/tidyverse, 
   and the wider R community.
