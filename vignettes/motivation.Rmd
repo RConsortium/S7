@@ -1,0 +1,74 @@
+---
+title: "Motivation for S7"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Motivation for S7}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+R already has two OO systems built-in (S3 and S4) and many additional OO systems are available in CRAN packages.
+Why did we decide more work was needed?
+This vignette will discuss some of the motivations behind S7, focussing on the aspects of S3 and S4 that have been found to be particularly challenging in practice.
+
+```{r setup}
+library(S7)
+```
+
+## Challenges with S3
+
+-   S3 is very informal, meaning that there's no formal definition of a class.
+    This makes it impossible to know exactly which properties an object should or could possess, or even what its parent class should be.
+    S7 resolves this problem with a formal definition encoded in a class object produced by `new_class()`.
+    This includes support for validation (and avoiding validation where needed) as inspired by S4.
+
+-   When a new user encounter an S3 generic, they are often confused because the implementation of the function appears to be missing.
+    S7 has a thoughtfully designed print method that makes it clear what methods are available and how to find their source code.
+
+-   Properties of an S3 class are usually stored in attributes, but, by default, `attr()` does partial matching, which can lead to bugs that are hard to diagnose.
+    Additionally, `attr()` returns `NULL` if an attribute doesn't exist, so misspelling an attribute can lead to subtle bugs.
+    `@` fixes both of these problems.
+
+-   S3 method dispatch is complicated for compatibility with S.
+    This complexity affects relatively little code, but when you attempt to dive into the details it makes `UseMethod()` hard to understand.
+    As much as possible, S7 avoids any "funny" business with environments or promises, so that there is no distinction between argument values and local values.
+
+-   S3 is primarily designed for single dispatch and double dispatch is only provided for a handful of base generics.
+    It's not possible to reuse the implementation for user generics.
+    S7 provides a standard way of doing multiple dispatch (including double dispatch) that can be used for any generic.
+
+-   `NextMethod()` is unpredictable since you can't tell exactly which method will be called by only reading the code; you instead need to know both the complete class hierarchy and what other methods are currently registered (and loading a package might change those methods).
+    S7 takes a difference approach with `super()`, requiring explicit specification of the superclass to be used.
+
+-   Conversion between S3 classes is only implemented via loose convention: if you implement a class `foo`, then you should also provide generic `as.foo()` to convert other objects to that type.
+    S7 avoids this problem by providing the double-dispatch `convert()` generic so that you only need to provide the appropriate methods.
+
+## Challenges with S4
+
+-   Multiple inheritance seemed like a powerful idea at the time, but in practice it appears to generate more problems than it solves.
+    S7 does not support multiple inheritance.
+
+-   S4's method dispatch uses a principled but complex distance metric to pick the best method in the presence of ambiguity.
+    Time has shown that this approach is hard for people to understand and makes it hard to predict what will happen when new methods are registered.
+    S7 implements a much simpler, greedy, approach that trades some additional work on behalf of the class author for a system that is simpler and easier to understand.
+
+-   S4 is a clean break from S3.
+    This made it possible to make radical changes but it made it harder to switch from S3 to S4, leading to a general lack of adoption in the R community.
+    S7 is designed to be drop-in compatible with S3, making it possible to convert existing packages to use S7 instead of S3 with only an hour or two of work.
+
+```{=html}
+<!-- -->
+```
+-   At least within Bioconductor, slots are generally thought of as implementation detail that should not be directly accessed by the end-user.
+    This leads to two problems.
+    Firstly, implementing an S4 Bioconductor class often also requires a plethora of accessor functions that are a thin wrapper around `@` or `@<-`.
+    Secondly, users know about `@` and use it to access object internals even though they're not supposed to.
+    S7 supports avoids these problems by accepting the fact that R is a data language, and that there's no way to stop users from pulling the data they need out of an object.
+    To make it possible to change the internal implementation details of an object while preserving existing `@` usage, S7 provides dynamic properties.
