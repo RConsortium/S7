@@ -279,4 +279,4 @@ We would then generate help pages from the index.
 
 The index of installed methods could provide additional benefits, including introspection.
 A generic could prompt the user to load a package if it fails to find an applicable method, while there is an installed, unloaded method available.
-This casd would arise when a method is defined outside of the packages that define the class and generic.
+This case would arise when a method is defined outside of the packages that define the class and generic.

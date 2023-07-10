@@ -181,7 +181,7 @@ class_inherits <- function(x, what) {
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     # This is slightly too crude as we really want them to be in the same
     # order and contiguous, but it's probably close enough for practical
-    # purposees
+    # purposes
     S7_S3 = !isS4(x) && all(what$class %in% class(x)),
   )
 }

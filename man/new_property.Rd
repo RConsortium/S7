@@ -30,7 +30,7 @@ what should it default to? If \code{NULL}, defaults to the "empty" instance
 of \code{class}.}
 
 \item{name}{Property name, primarily used for error messages. Used
-primrarily for testing as it is set automatically when using a list of
+primarily for testing as it is set automatically when using a list of
 properties.}
 }
 \description{

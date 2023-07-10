@@ -22,7 +22,7 @@
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
 #' @param name Property name, primarily used for error messages. Used
-#'   primrarily for testing as it is set automatically when using a list of
+#'   primarily for testing as it is set automatically when using a list of
 #'   properties.
 #' @export
 #' @examples
@@ -169,7 +169,7 @@ prop_obj <- function(object, name) {
 #'   [validate()] on the object before returning.
 #' @export
 `prop<-` <- local({
-  # This flag is used to avoid infinate loops if you are assigning a property from a setter function
+  # This flag is used to avoid infinite loops if you are assigning a property from a setter function
   setter_property <- NULL
 
   function(object, name, check = TRUE, value) {
@@ -308,7 +308,7 @@ prop_exists <- function(object, name) {
 #' lexington <- horse(colour = "bay", height = 15, name = "Lex")
 #'
 #' props(lexington)
-#' props(lexington) <- list(height = 14, name = "Lexigonton")
+#' props(lexington) <- list(height = 14, name = "Lexington")
 #' lexington
 props <- function(object) {
   check_is_S7(object)

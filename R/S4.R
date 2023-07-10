@@ -17,7 +17,7 @@ S4_register <- function(class, env = parent.frame()) {
 is_S4_class <- function(x) inherits(x, "classRepresentation")
 
 S4_to_S7_class <- function(x, error_base = "") {
-  # Silence R CMD check false postives
+  # Silence R CMD check false positives
   distance <- subClass <- className <- package <- NULL
 
   # Convert generator function to class

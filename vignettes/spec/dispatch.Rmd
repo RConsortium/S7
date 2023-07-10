@@ -213,7 +213,7 @@ May also do for `vec_arith()`.
 
 ### S3
 
-When `UseMethod()` recieves an object without a `class` attribute, it uses the **implicit** class, as provided by `.class2()`.
+When `UseMethod()` receives an object without a `class` attribute, it uses the **implicit** class, as provided by `.class2()`.
 This is made up of four rough categories: dimension, type, language, numeric.
 
 ```{r}

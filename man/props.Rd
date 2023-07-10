@@ -38,6 +38,6 @@ horse <- new_class("horse", properties = list(
 lexington <- horse(colour = "bay", height = 15, name = "Lex")
 
 props(lexington)
-props(lexington) <- list(height = 14, name = "Lexigonton")
+props(lexington) <- list(height = 14, name = "Lexington")
 lexington
 }

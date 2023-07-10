@@ -36,7 +36,7 @@ title: "Minutes 2021-05-18"
 ### Generic "interfaces" (LT)
 
 -   **LT**: need to consider not just generics by themselves, but how they are related.
--   Related to contracts in eiffel, concepts in C++20, \...
+-   Related to contracts in Eiffel, concepts in C++20, \...
 
 ### Message passing OOP (HO)
 

@@ -28,7 +28,7 @@
 #' convert(foo2(x = 1L, y = 2), to = class_double)
 #' convert(foo2(x = 1L, y = 2), to = foo1)
 #'
-#' # If we define a convert method for interger + foo1:
+#' # If we define a convert method for integer + foo1:
 #' method(convert, list(class_integer, foo1)) <- function(from, to) foo1(x = from)
 #' convert(1L, to = foo1)
 #' # Converting too foo2 still errors

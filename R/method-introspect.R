@@ -73,8 +73,8 @@ method_explain <- function(generic, class = NULL, object = NULL) {
   dim(names) <- dim(grid)
   methods <- apply(names, 1, paste, collapse = ", ")
 
-  has_method <- function(dispatchs, env) {
-    for (x in dispatchs) {
+  has_method <- function(dispatches, env) {
+    for (x in dispatches) {
       env <- env[[x]]
     }
     is.function(env)
