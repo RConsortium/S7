@@ -12,8 +12,8 @@ coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge
 <!-- badges: end -->
 
 The S7 package is a new OOP system designed to be a successor to S3 and
-S4. It has been designed and implemented collaboratively by the
-RConsortium Object-Oriented Programming Working Group, which includes
+S4. It has been designed and implemented collaboratively by the R
+Consortium Object-Oriented Programming Working Group, which includes
 representatives from R-Core, BioConductor, RStudio/tidyverse, and the
 wider R community.
 

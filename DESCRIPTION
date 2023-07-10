@@ -1,22 +1,26 @@
 Package: S7
-Title: A New OO System for R
+Title: 
+    An Object Oriented System Designed to be a Successor to S3 and S4
 Version: 0.0.0.9000
-Authors@R:c(
-    person("Henrik", "Bengtsson", role = "aut"),
+Authors@R: c(
+    person("Object-Oriented Programming Working Group", role = "cph"),
+    person("Davis", "Vaughan", role = "aut"),
+    person("Jim", "Hester", role = "aut",
+           comment = c(ORCID = "0000-0002-2739-7082")),
+    person("Tomasz", "Kalinowski", role = "aut"),
     person("Will", "Landau", role = "aut"),
     person("Michael", "Lawrence", role = "aut"),
     person("Martin", "Maechler", role = "aut",
            comment = c(ORCID = "0000-0002-8685-9910")),
     person("Luke", "Tierney", role = "aut"),
-    person("Gabriela", "De Queiroz", role = "aut"),
-    person("Hadley", "Wickham", , "hadley@rstudio.com", role = c("aut", "cre")),
-    person("Jim", "Hester", role = "aut",
-           comment = c(ORCID = "0000-0002-2739-7082"))
+    person("Hadley", "Wickham", , "hadley@posit.co", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-4757-117X"))
   )
-Description: Prototype implementation of an extension to S3 that provides
-    explicit class definitions and a form of multiple dispatch.
-    Represents the output of the Object-oriented Programming Working
-    Group, sponsored by the R Consortium.
+Description: The S7 package is a new object oriented programming system 
+  designed to be a successor to S3 and S4. It has been designed and implemented 
+  collaboratively by the R Consortium Object-Oriented Programming Working Group, 
+  which includes representatives from R-Core, BioConductor, RStudio/tidyverse, 
+  and the wider R community.
 License: MIT + file LICENSE
 URL: https://github.com/rconsortium/OOP-WG/,
     https://rconsortium.github.io/OOP-WG/
