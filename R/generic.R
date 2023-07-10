@@ -36,6 +36,7 @@
 #' @seealso [new_external_generic()] to define a method for a generic
 #'  in another package without taking a strong dependency on it.
 #' @export
+#' @returns An S7 generic, i.e. a function with class `S7_generic`.
 #' @order 1
 #' @examples
 #' # A simple generic with methods for some base types and S3 classes

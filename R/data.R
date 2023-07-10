@@ -2,10 +2,13 @@
 #'
 #' When an S7 class inherits from an existing base type, it can be useful
 #' to work with the underlying object, i.e. the S7 object stripped of class
-#' and all properties.
+#' and properties.
 #'
 #' @inheritParams prop
 #' @param value Object used to replace the underlying data.
+#' @return `S7_data()` returns the data stored in the base object;
+#'   `S7_data<-()` is called for its side-effects and returns `object`
+#'   invisibly.
 #' @export
 #' @examples
 #' text <- new_class("text", parent = class_character)

@@ -5,6 +5,7 @@
 #'   methods are matched
 #'
 #' @export
+#' @return Sentinel objects used for special types of dispatch.
 #' @examples
 #' foo <- new_generic("foo", "x")
 #' method(foo, class_integer) <- function(x) "integer"

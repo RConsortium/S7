@@ -22,8 +22,9 @@
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
 #' @param name Property name, primarily used for error messages. Used
-#'   primarily for testing as it is set automatically when using a list of
+#'   primrarily for testing as it is set automatically when using a list of
 #'   properties.
+#' @returns An S7 property, i.e. a list with class `S7_property`.
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
@@ -123,6 +124,9 @@ prop_default <- function(prop) {
 #'   is not performed.
 #' @param value A new value for the property. The object is automatically
 #'   checked for validity after the replacement is done.
+#' @return `prop()` and `@` return the value of the property.
+#'   `prop<-()` and `@<-` are called for their side-effects and return
+#'    the modified object, invisibly.
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(
@@ -256,7 +260,16 @@ prop_error_type <- function(object, prop_name, expected, actual, show_type = TRU
 #' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
 #'
 #' @inheritParams prop
+#' @returns `prop_names()` returns a character vector; `prop_exists()` returns
+#'   a single `TRUE` or `FALSE`.
 #' @export
+#' @examples
+#' foo <- new_class("foo", properties = list(a = class_character, b = class_integer))
+#' f <- foo()
+#'
+#' prop_names(f)
+#' prop_exists(f, "a")
+#' prop_exists(f, "c")
 prop_names <- function(object) {
   check_is_S7(object)
 
@@ -298,6 +311,7 @@ prop_exists <- function(object, name) {
 #'
 #' @importFrom stats setNames
 #' @inheritParams prop
+#' @returns A named list of property values.
 #' @export
 #' @examples
 #' horse <- new_class("horse", properties = list(

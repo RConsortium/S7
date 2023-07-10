@@ -34,7 +34,16 @@
 #' @param dispatch_args Character vector giving arguments used for dispatch.
 #' @param version An optional version the package must meet for the method to
 #'   be registered.
+#' @returns An S7 external generic, i.e. a list with class
+#'   `S7_external_generic`.
 #' @export
+#' @examples
+#'
+#' my_class <- new_class("my_class")
+#'
+#' your_generic <- new_external_generic("stats", "median", "x")
+#' method(your_generic, my_class) <- function(x) "Hi!"
+#'
 new_external_generic <- function(package, name, dispatch_args, version = NULL) {
   out <- list(
     package = package,

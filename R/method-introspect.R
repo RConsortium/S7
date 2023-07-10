@@ -51,6 +51,7 @@ method <- function(generic, class = NULL, object = NULL) {
 #' * S3: `class`
 #'
 #' @inheritParams method
+#' @return Nothing; this function is called for it's side effects.
 #' @export
 #' @examples
 #' foo1 <- new_class("foo1")

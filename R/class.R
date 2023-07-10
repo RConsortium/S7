@@ -291,8 +291,15 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 }
 
 #' Retrieve the S7 class of an object
+#'
+#' Given an S7 object, find it's class.
+#'
 #' @param object The S7 object
+#' @returns An [S7 class][new_class].
 #' @export
+#' @examples
+#' foo <- new_class("foo")
+#' S7_class(foo())
 S7_class <- function(object) {
   attr(object, "S7_class", exact = TRUE)
 }

@@ -6,7 +6,14 @@
 \usage{
 S7_object()
 }
+\value{
+The base S7 object.
+}
 \description{
-Base S7 class
+The base class from which all S7 classes eventually inherit from.
+}
+\examples{
+
+S7_object
 }
 \keyword{internal}

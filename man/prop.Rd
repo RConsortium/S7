@@ -25,6 +25,11 @@ is not performed.}
 \item{value}{A new value for the property. The object is automatically
 checked for validity after the replacement is done.}
 }
+\value{
+\code{prop()} and \code{@} return the value of the property.
+\verb{prop<-()} and \verb{@<-} are called for their side-effects and return
+the modified object, invisibly.
+}
 \description{
 \itemize{
 \item \code{prop(x, "name")} / \code{prop@name} get the value of the a property,

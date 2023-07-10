@@ -6,6 +6,8 @@
 #' @param x An object
 #' @param class An S7 class. Can be omitted in `check_is_S7()`.
 #' @param arg Argument name used in error message.
+#' @returns `S7_inherits()` returns a single `TRUE` or `FALSE`;
+#'   `check_is_S7()` returns nothing; it's called for its side-effects.
 #' @export
 #' @examples
 #' foo1 <- new_class("foo1")

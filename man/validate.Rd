@@ -22,6 +22,9 @@ executing the validator.}
 
 \item{fun}{A function to call on the object before validation.}
 }
+\value{
+Either \code{object} invisibly if valid, otherwise an error.
+}
 \description{
 \code{validate()} ensures that an S7 object is valid by calling the \code{validator}
 provided in \code{\link[=new_class]{new_class()}}. This is done automatically when constructing new

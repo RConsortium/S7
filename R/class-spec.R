@@ -15,6 +15,9 @@
 #' @export
 #' @return A standardised class: either `NULL`, an S7 class, an S7 union,
 #'   as [new_S3_class], or a S4 class.
+#' @examples
+#' as_class(class_logical)
+#' as_class(new_S3_class("factor"))
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
 

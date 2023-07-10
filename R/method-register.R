@@ -29,6 +29,7 @@
 #'   For S3 generics, this must be an S7 class.
 #' @param value A function that implements the generic specification for the
 #'   given `signature`.
+#' @returns The `generic`, invisibly.
 #' @export
 #' @examples
 #' # Create a generic

@@ -19,6 +19,7 @@
 #' @param recursive If `TRUE`, calls validator of parent classes recursively.
 #' @param properties If `TRUE`, the default, checks property types before
 #'   executing the validator.
+#' @returns Either `object` invisibly if valid, otherwise an error.
 #' @export
 #' @examples
 #' # A range class might validate that the start is less than the end

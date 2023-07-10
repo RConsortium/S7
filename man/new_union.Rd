@@ -10,6 +10,9 @@ new_union(...)
 \item{...}{The classes to include in the union. See \code{\link[=as_class]{as_class()}} for
 details.}
 }
+\value{
+An S7 union, i.e. a list with class \code{S7_union}.
+}
 \description{
 A class union represents a list of possible classes. You can create it
 with \code{new_union(a, b, c)} or \code{a | b | c}. Unions can be used in two

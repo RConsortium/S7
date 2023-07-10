@@ -1,7 +1,13 @@
 #' Base S7 class
 #'
+#' The base class from which all S7 classes eventually inherit from.
+#'
 #' @keywords internal
 #' @export
+#' @return The base S7 object.
+#' @examples
+#'
+#' S7_object
 S7_object <- new_class(
   name = "S7_object",
   parent = NULL,
@@ -119,7 +125,7 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 
 .onLoad <- function(...) {
   ## "S4"   or [in R-devel 2023-07-x]   "object"
-  assign(".S7_type", typeof(.Call(S7_object_)), topenv()) 
+  assign(".S7_type", typeof(.Call(S7_object_)), topenv())
 
   convert <<- S7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
 

@@ -25,6 +25,9 @@ some standardised computation in the generic.
 The \code{dispatch_args} must be the first arguments to \code{fun}, and, if present,
 \code{...} must immediately follow them.}
 }
+\value{
+An S7 generic, i.e. a function with class \code{S7_generic}.
+}
 \description{
 A generic function uses different implementations (\emph{methods}) depending on
 the class of one or more arguments (the \emph{signature}). Create a new generic

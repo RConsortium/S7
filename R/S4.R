@@ -5,13 +5,25 @@
 #'
 #' @param class An S7 class created with [new_class()].
 #' @param env Expert use only. Environment where S4 class will be registered.
+#' @returns Nothing; the function is called for its side-effect.
 #' @export
+#' @examples
+#' methods::setGeneric("S4_generic", function(x) {
+#'   standardGeneric("S4_generic")
+#' })
+#'
+#' foo <- new_class("foo")
+#' S4_register(foo)
+#' method(S4_generic, foo) <- function(x) "Hello"
+#'
+#' S4_generic(foo())
 S4_register <- function(class, env = parent.frame()) {
   if (!is_class(class)) {
     msg <- sprintf("`class` must be an S7 class, not a %s", obj_desc(class))
   }
 
   methods::setOldClass(class_dispatch(class), where = topenv(env))
+  invisible()
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")

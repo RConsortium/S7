@@ -17,10 +17,15 @@ S7_data(object, check = TRUE) <- value
 
 \item{value}{Object used to replace the underlying data.}
 }
+\value{
+\code{S7_data()} returns the data stored in the base object;
+\verb{S7_data<-()} is called for its side-effects and returns \code{object}
+invisibly.
+}
 \description{
 When an S7 class inherits from an existing base type, it can be useful
 to work with the underlying object, i.e. the S7 object stripped of class
-and all properties.
+and properties.
 }
 \examples{
 text <- new_class("text", parent = class_character)

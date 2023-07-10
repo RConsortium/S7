@@ -13,6 +13,8 @@
 #' @param from An S7 object to convert.
 #' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods.
+#' @return Either `from` coerced to class `to`, or an error if the coercion
+#'   is not possible.
 #' @export
 #' @examples
 #' foo1 <- new_class("foo1", properties = list(x = class_integer))

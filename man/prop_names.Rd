@@ -15,9 +15,21 @@ prop_exists(object, name)
 \item{name}{The name of the parameter as a character. Partial matching
 is not performed.}
 }
+\value{
+\code{prop_names()} returns a character vector; \code{prop_exists()} returns
+a single \code{TRUE} or \code{FALSE}.
+}
 \description{
 \itemize{
 \item \code{prop_names(x)} returns the names of the properties
 \item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
 }
+}
+\examples{
+foo <- new_class("foo", properties = list(a = class_character, b = class_integer))
+f <- foo()
+
+prop_names(f)
+prop_exists(f, "a")
+prop_exists(f, "c")
 }

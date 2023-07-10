@@ -22,6 +22,7 @@
 #'
 #' @param ... The classes to include in the union. See [as_class()] for
 #'   details.
+#' @return An S7 union, i.e. a list with class `S7_union`.
 #' @export
 #' @examples
 #' logical_or_character <- new_union(class_logical, class_character)

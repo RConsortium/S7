@@ -16,6 +16,10 @@ check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
 
 \item{arg}{Argument name used in error message.}
 }
+\value{
+\code{S7_inherits()} returns a single \code{TRUE} or \code{FALSE};
+\code{check_is_S7()} returns nothing; it's called for its side-effects.
+}
 \description{
 \itemize{
 \item \code{S7_inherits()} returns \code{TRUE} or \code{FALSE}.

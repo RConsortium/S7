@@ -15,6 +15,9 @@ method_explain(generic, class = NULL, object = NULL)
 multiple dispatch then both \code{object} and \code{class} must be a list of
 classes/objects.}
 }
+\value{
+Nothing; this function is called for it's side effects.
+}
 \description{
 \code{method_explain()} shows all possible methods that a call to a generic
 might use, which ones exist, and which one will actually be called.

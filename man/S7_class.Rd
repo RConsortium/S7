@@ -9,6 +9,13 @@ S7_class(object)
 \arguments{
 \item{object}{The S7 object}
 }
+\value{
+An \link[=new_class]{S7 class}.
+}
 \description{
-Retrieve the S7 class of an object
+Given an S7 object, find it's class.
+}
+\examples{
+foo <- new_class("foo")
+S7_class(foo())
 }

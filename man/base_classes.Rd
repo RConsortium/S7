@@ -56,6 +56,9 @@ class_POSIXct
 
 class_data.frame
 }
+\value{
+S7 classes wrapping around common base types and S3 classes.
+}
 \description{
 These classes represent base types allowing them to be used within S7.
 There are three categories: base types, unions types, and key S3 classes.
@@ -90,5 +93,11 @@ Key S3 classes:
 \item \code{class_factor}
 \item \code{class_POSIXct}
 }
+}
+\examples{
+
+class_integer
+class_numeric
+class_factor
 }
 \keyword{datasets}

@@ -90,6 +90,12 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #'
 #' @order 0
 #' @name base_classes
+#' @return S7 classes wrapping around common base types and S3 classes.
+#' @examples
+#'
+#' class_integer
+#' class_numeric
+#' class_factor
 NULL
 
 #' @export

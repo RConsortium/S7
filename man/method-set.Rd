@@ -29,6 +29,9 @@ For S3 generics, this must be an S7 class.}
 \item{value}{A function that implements the generic specification for the
 given \code{signature}.}
 }
+\value{
+The \code{generic}, invisibly.
+}
 \description{
 A generic defines the interface of a function. Once you have created a
 generic with \code{\link[=new_generic]{new_generic()}}, you provide implementations for specific

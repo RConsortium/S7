@@ -20,6 +20,9 @@ only after all replacements are performed.}
 
 \item{...}{Name-value pairs given property to modify and new value.}
 }
+\value{
+A named list of property values.
+}
 \description{
 \itemize{
 \item \code{props(x)} returns all properties.

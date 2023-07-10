@@ -28,6 +28,10 @@ A validator is a single argument function that takes the object to
 validate and returns \code{NULL} if the object is valid. If the object is
 invalid, it returns a character vector of problems.}
 }
+\value{
+An S7 definition of an S3 class, i.e. a list with class
+\code{S7_S3_class}.
+}
 \description{
 To use an S3 class with S7, you must explicitly declare it using
 \code{new_S3_class()} because S3 lacks a formal class definition.
@@ -86,3 +90,12 @@ A Date is a numeric vector with class \code{Date} that can be constructed with
 }\if{html}{\out{</div>}}
 }
 
+\examples{
+# No checking, just used for dispatch
+Date <- new_S3_class("Date")
+
+my_generic <- new_generic("my_generic", "x")
+method(my_generic, Date) <- function(x) "This is a date"
+
+my_generic(Sys.Date())
+}

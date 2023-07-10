@@ -13,6 +13,10 @@ convert(from, to, ...)
 
 \item{...}{Other arguments passed to custom \code{convert()} methods.}
 }
+\value{
+Either \code{from} coerced to class \code{to}, or an error if the coercion
+is not possible.
+}
 \description{
 \code{convert()} uses double-dispatch, because conversion depends on both \code{from}
 and \code{to}. The dispatch is non-standard, because \code{to} is a class (not an

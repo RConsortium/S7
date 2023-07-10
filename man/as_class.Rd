@@ -28,3 +28,7 @@ This is used as the interface between S7 and R's other OO systems, allowing
 you to use S7 classes and methods with base types, informal S3 classes, and
 formal S4 classes.
 }
+\examples{
+as_class(class_logical)
+as_class(new_S3_class("factor"))
+}

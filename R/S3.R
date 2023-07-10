@@ -76,6 +76,16 @@
 #'   A validator is a single argument function that takes the object to
 #'   validate and returns `NULL` if the object is valid. If the object is
 #'   invalid, it returns a character vector of problems.
+#' @returns An S7 definition of an S3 class, i.e. a list with class
+#'   `S7_S3_class`.
+#' @examples
+#' # No checking, just used for dispatch
+#' Date <- new_S3_class("Date")
+#'
+#' my_generic <- new_generic("my_generic", "x")
+#' method(my_generic, Date) <- function(x) "This is a date"
+#'
+#' my_generic(Sys.Date())
 new_S3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.character(class)) {
     stop("`class` must be a character vector", call. = FALSE)

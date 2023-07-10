@@ -15,6 +15,9 @@ class_missing
 
 class_any
 }
+\value{
+Sentinel objects used for special types of dispatch.
+}
 \description{
 \itemize{
 \item Use \code{class_missing} when the user has not supplied an argument

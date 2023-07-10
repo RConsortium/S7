@@ -30,8 +30,11 @@ what should it default to? If \code{NULL}, defaults to the "empty" instance
 of \code{class}.}
 
 \item{name}{Property name, primarily used for error messages. Used
-primarily for testing as it is set automatically when using a list of
+primrarily for testing as it is set automatically when using a list of
 properties.}
+}
+\value{
+An S7 property, i.e. a list with class \code{S7_property}.
 }
 \description{
 A property defines a named component of an object. Properties are

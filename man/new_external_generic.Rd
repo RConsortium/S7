@@ -19,6 +19,10 @@ external_methods_register()
 \item{version}{An optional version the package must meet for the method to
 be registered.}
 }
+\value{
+An S7 external generic, i.e. a list with class
+\code{S7_external_generic}.
+}
 \description{
 An external generic is a generic defined in another package that you want to
 register methods for. To create an external generic, first use
@@ -44,4 +48,12 @@ your methods are added to the generic when the other package is loaded.
 
 In tests, you'll need to explicitly call the generic from the external
 package with \code{pkg::generic()}.
+}
+\examples{
+
+my_class <- new_class("my_class")
+
+your_generic <- new_external_generic("stats", "median", "x")
+method(your_generic, my_class) <- function(x) "Hi!"
+
 }

@@ -11,7 +11,21 @@ S4_register(class, env = parent.frame())
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
+\value{
+Nothing; the function is called for its side-effect.
+}
 \description{
 If you want to use \link{method<-} to register an method for an S4 generic with
 an S7 class, you need to call \code{S4_register()} once.
+}
+\examples{
+methods::setGeneric("S4_generic", function(x) {
+  standardGeneric("S4_generic")
+})
+
+foo <- new_class("foo")
+S4_register(foo)
+method(S4_generic, foo) <- function(x) "Hello"
+
+S4_generic(foo())
 }
