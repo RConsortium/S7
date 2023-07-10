@@ -13,3 +13,4 @@
 ^vignettes/[^/]+_cache$
 ^docs$
 ^pkgdown$
+^cran-comments\.md$
