@@ -287,8 +287,6 @@ Multiple dispatch is heavily used in S4; we don't expect it to be heavily used i
 
 ### A simple example
 
-Inspired by <https://blog.klipse.tech/javascript/2021/10/03/multimethod.html>
-
 Let's take our speak example from `vignette("S7")` and extend it to teach our pets how to speak multiple languages:
 
 ```{r}
@@ -308,6 +306,9 @@ method(speak, list(cat, french)) <- function(x, y) "Miaou"
 
 speak(cat(), english())
 speak(dog(), french())
+
+# This example was originally inspired by blog.klipse.tech/javascript/2021/10/03/multimethod.html
+# which has unfortunately since disappeaed.
 ```
 
 ### Special "classes"
