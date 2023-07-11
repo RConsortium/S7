@@ -48,34 +48,46 @@
   invisible(generic)
 }
 
-register_method <- function(generic, signature, method, env = parent.frame()) {
-  package <- packageName(env)
-  generic <- as_generic(generic)
+register_method <- function(generic,
+                            signature,
+                            method,
+                            env = parent.frame(),
+                            package = packageName(env)) {
+  generic <- as_generic(generic, env)
   signature <- as_signature(signature, generic)
 
+  # S7 methods are registered the same way regardless
+  if (is_generic(generic)) {
+    check_method(method, generic, name = method_name(generic, signature))
+    register_S7_method(generic, signature, method)
+    return(invisible())
+  }
+
+  # Register in current session
   if (is_external_generic(generic)) {
-    register_external_method(generic, signature, method, package)
+    # otherwise find the generic and register
+    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
+    register_method(generic, signature, method, package = package)
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method)
   } else if (inherits(generic, "genericFunction")) {
     register_S4_method(generic, signature, method, env)
-  } else {
-    check_method(method, generic, name = method_name(generic, signature))
-    register_S7_method(generic, signature, method)
+  }
+
+  if (!is.null(package)) {
+    # if we're inside a package, we also need to register when the package
+    # is loaded in the users session.
+
+    if (is_S3_generic(generic)) {
+      generic <- new_external_generic(generic$package, generic$name, NULL)
+    } else if (is_S4_generic(generic)) {
+      generic <- new_external_generic(generic@package, generic@generic, NULL)
+    }
+
+    external_methods_add(package, generic, signature, method)
   }
 
   invisible()
-}
-
-register_external_method <- function(generic, signature, method, package = NULL) {
-  if (!is.null(package)) {
-    # method registration within package, so add to lazy registry
-    external_methods_add(package, generic, signature, method)
-  } else {
-    # otherwise find the generic and register
-    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
-    register_method(generic, signature, method)
-  }
 }
 
 register_S3_method <- function(generic, signature, method) {

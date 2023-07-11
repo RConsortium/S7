@@ -98,7 +98,7 @@ registrar <- function(generic, signature, method) {
     ns <- asNamespace(generic$package)
     if (is.null(generic$version) || getNamespaceVersion(ns) >= generic$version) {
       generic_fun <- getFromNamespace(generic$name, ns)
-      register_method(generic_fun, signature, method)
+      register_method(generic_fun, signature, method, package = NULL)
     }
   }
 }
