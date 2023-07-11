@@ -1,39 +1,69 @@
-as_generic <- function(x) {
-  if (is_generic(x) || is_external_generic(x)) {
-    x
-  } else if (inherits(x, "genericFunction")) {
+as_generic <- function(x, env = parent.frame()) {
+  if (is_generic(x) || is_external_generic(x) || is_S4_generic(x)) {
     x
   } else if (is.function(x)) {
-    as_S3_generic(x)
+    as_S3_generic(x, env)
   } else {
     msg <- sprintf("`generic` must be a function, not a %s", obj_desc(x))
     stop(msg, call. = FALSE)
   }
 }
 
-as_S3_generic <- function(x) {
+as_S3_generic <- function(x, env = parent.frame()) {
   use_method <- find_call(body(x), quote(UseMethod))
   if (!is.null(use_method)) {
-    return(S3_generic(x, as.character(use_method[[2]])))
+    name <- as.character(use_method[[2]])
+    pkg <- find_S3_package(x, name, env)
+    return(S3_generic(x, name, pkg))
   } else {
     name <- find_base_name(x)
     if (name %in% names(base_ops)) {
       return(base_ops[[name]])
     } else if (!is.na(name) && is_internal_generic(name)) {
-      return(S3_generic(x, name))
+      return(S3_generic(x, name, "base"))
     }
   }
 
   stop("`generic` is a function, but not an S3 generic function", call. = FALSE)
 }
 
-S3_generic <- function(generic, name) {
-  out <- list(generic = generic, name = name)
+S3_generic <- function(generic, name, package) {
+  out <- list(
+    generic = generic,
+    name = name,
+    package = package
+  )
   class(out) <- "S7_S3_generic"
   out
 }
 
+find_S3_package <- function(generic, name, env = parent.frame()) {
+  while (!identical(env, emptyenv())) {
+    candidate <- env[[name]]
+    if (identical(candidate, generic)) {
+      if (identical(env, baseenv())) {
+        return("base")
+      } else {
+        name <- attr(env, "name")
+        if (!is.null(name)) {
+          return(gsub("^package:", "", name))
+        } else {
+          return(packageName(env))
+        }
+      }
+    }
+
+    env <- parent.env(env)
+  }
+
+  msg <- sprintf("Can't find package that generic `%s` belongs to.\nDid you import the generic into the namespace?", name)
+  stop(msg, call. = FALSE)
+}
+
+
 is_S3_generic <- function(x) inherits(x, "S7_S3_generic")
+
+is_S4_generic <- function(x) inherits(x, "genericFunction")
 
 
 generic_n_dispatch <- function(x) {
