@@ -5,9 +5,11 @@
 
 <!-- badges: start -->
 
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=master)
+coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=main)
 
 <!-- badges: end -->
 
@@ -16,6 +18,11 @@ S4. It has been designed and implemented collaboratively by the R
 Consortium Object-Oriented Programming Working Group, which includes
 representatives from R-Core, BioConductor, RStudio/tidyverse, and the
 wider R community.
+
+S7 is somewhat experimental; we are confident in the design but it has
+relatively little usage in the wild currently. We hope to avoid any
+major breaking changes, but reserve the right if we discover major
+problems.
 
 ## Installation
 
