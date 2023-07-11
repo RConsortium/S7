@@ -41,9 +41,16 @@ find_S3_package <- function(generic, name, env = parent.frame()) {
   while (!identical(env, emptyenv())) {
     candidate <- env[[name]]
     if (identical(candidate, generic)) {
-      pkg <- getPackageName(env, create = FALSE)
-      if (pkg != "")
-        return(pkg)
+      if (identical(env, baseenv())) {
+        return("base")
+      } else {
+        name <- attr(env, "name")
+        if (!is.null(name)) {
+          return(gsub("^package:", "", name))
+        } else {
+          return(packageName(env))
+        }
+      }
     }
 
     env <- parent.env(env)
