@@ -37,20 +37,15 @@ S3_generic <- function(generic, name, package) {
   out
 }
 
+# For testing
+#' @importFrom stats median
+NULL
+
 find_S3_package <- function(generic, name, env = parent.frame()) {
   while (!identical(env, emptyenv())) {
     candidate <- env[[name]]
     if (identical(candidate, generic)) {
-      if (identical(env, baseenv())) {
-        return("base")
-      } else {
-        name <- attr(env, "name")
-        if (!is.null(name)) {
-          return(gsub("^package:", "", name))
-        } else {
-          return(packageName(env))
-        }
-      }
+      return(packageName(environment(candidate)))
     }
 
     env <- parent.env(env)
