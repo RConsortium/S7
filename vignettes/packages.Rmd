@@ -1,0 +1,46 @@
+---
+title: "Using S7 in a package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{packages}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(S7)
+```
+
+Recommending importing the complete S7 namespace `import(S7)` or `#' @import S7`.
+
+Export the class constructor if you want users to create instances of your class.
+
+## Older R versions
+
+If you are using S7 in a package *and* you want your package to maintain compatibility with R before 4.3.0, be aware that `` base::`@` `` not resolve S7 properties.
+There are two workarounds:
+
+-   Use `S7::prop()` instead of `@`.
+
+-   Alternatively, make an S7-aware `@` available to your package with a custom `NAMESPACE` directive and `.onAttach()` like this:
+
+    ``` r
+    # enable usage of <S7_object>@name in package code
+    #' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
+    NULL
+
+    # enable usage of <S7_object>@name in user code
+    # e.g. if you also want users to be able to access properties
+    # of objects your package
+    .onAttach <- function(libname, pkgname) {
+      if (getRversion() < "4.3.0")
+        require(S7)
+    }
+    ```
