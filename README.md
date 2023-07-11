@@ -37,8 +37,8 @@ install.packages("S7")
 
 This section gives a very brief overview of the entirety of S7. Learn
 more of the basics in `vignette("S7")`, generics and methods in
-`vignette("generics-methods")`, classes and objects
-in`vigentte("classes-objects')`, and compatibility with S3 and S4 in
+`vignette("generics-methods")`, classes and objects in
+`vignette("classes-objects')`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
 ``` r

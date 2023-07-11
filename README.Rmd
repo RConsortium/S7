@@ -39,7 +39,7 @@ install.packages("S7")
 ## Usage
 
 This section gives a very brief overview of the entirety of S7.
-Learn more of the basics in `vignette("S7")`, generics and methods in `vignette("generics-methods")`, classes and objects in`vigentte("classes-objects')`, and compatibility with S3 and S4 in `vignette("compatibility")`.
+Learn more of the basics in `vignette("S7")`, generics and methods in `vignette("generics-methods")`, classes and objects in `vignette("classes-objects')`, and compatibility with S3 and S4 in `vignette("compatibility")`.
 
 ```{r}
 library(S7)
@@ -119,4 +119,3 @@ inside(x, c(0, 5, 10, 15))
 
 You can use `method<-` to register methods for base types on S7 generics, and S7 classes on S3 or S4 generics.
 See `vignette("compatibility")` for more details.
-
