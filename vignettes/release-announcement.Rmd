@@ -1,0 +1,131 @@
+```{r}
+#| include: false
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+We're excited to announce that an initial version of the S7 package is now on CRAN.
+S7 is a new OOP system designed to be a successor to S3 and S4.
+The overarching goal of S7 is to combine the best parts of S3 and S4, so that the R community can eventually standardise on an single OOP system.
+For that, S7 is designed on top of S3, making it 100% backward compatible with existing code that uses S3.
+Additionally, it's been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7 we expect to add additional features to make that transition as simple as possible.
+You can learn more about our concerns with the existing OOP systems in <https://rconsortium.github.io/OOP-WG/articles/motivation.html>.
+
+To avoid the problem of designing "yet another OOP system" for R, the design and implementation of S7 has been a team effort.
+The has been working as working group of R Consortium and including representatives from R-Core, BioConductor, Posit, and the wider R community.
+
+The long-term goal of this project is to get S7 in to base R, but for now, you can install it from CRAN:
+
+```{r, eval = FALSE}
+install.packages("S7")
+```
+
+## Usage
+
+Lets dive into the basics of S7.
+To learn more, read the packages vignettes including a more in-depth coverage of the the basics in [`vignette("S7")`](https://rconsortium.github.io/OOP-WG/articles/S7.html), generics and methods in [`vignette("generics-methods")`](https://rconsortium.github.io/OOP-WG/articles/generics-methods.html), and classes and objects in [`vignette("classes-objects")`](https://rconsortium.github.io/OOP-WG/articles/classes-objects.html).
+
+```{r}
+library(S7)
+```
+
+### Classes and objects
+
+S7 classes have a formal definition, specified by `new_class()` which includes a list of properties and an optional validator.
+For example, the following code creates a `range` class that includes `start` and `end` properties, and a validator that ensures that `start` is always less that `end`.
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_double,
+    end = class_double
+  ),
+  validator = function(self) {
+    if (length(self@start) != 1) {
+      "@start must be length 1"
+    } else if (length(self@end) != 1) {
+      "@end must be length 1"
+    } else if (self@end < self@start) {
+      "@end must be greater than or equal to @start"
+    }
+  }
+)
+```
+
+`new_class()` returns the class object, which is also the function (aka constructor) you use to create instances of the class:
+
+```{r}
+x <- range(start = 1, end = 10)
+x
+```
+
+### Properties
+
+The data possessed by an object is called its **properties**.
+Use `@` to get and set properties:
+
+```{r}
+x@start
+
+x@end <- 20
+x
+```
+
+Properties are automatically validated against the type declared in `new_class()` (`double` in this case), and with the class **validator**:
+
+```{r, error = TRUE}
+x@end <- "x"
+
+x@end <- -1
+```
+
+### Generics and methods
+
+Like S3 and S4, S7 uses **functional OOP** where methods belong to **generic** functions, and method calls look like regular function calls: `generic(object, arg2, arg3)`.
+A generic uses the types of its arguments to automatically pick an appropriate implementation called a **method**.
+
+You can create a new generic with `new_generic()`: the first argument is the generic name (used in error messages) and the second gives the arguments used for dispatch.
+The third, and optional argument, supplies the body of the generic.
+This is only needed if your generic has additional arguments that aren't used for method dispatch.
+
+```{r}
+inside <- new_generic("inside", "x")
+```
+
+Once you have a generic, you can define a method for a specific class with `method<-`:
+
+```{r}
+# Add a method for our class
+method(inside, range) <- function(x, y) {
+  y >= x@start & y <= x@end
+}
+
+inside(x, c(0, 5, 10, 15))
+```
+
+You can use `method<-` to register methods for base types on S7 generics, and S7 classes on S3 or S4 generics.
+See [`vignette("compatibility")`](https://rconsortium.github.io/OOP-WG/articles/compatibility.html).
+for more details.
+
+Printing the generic will reveal its current methods:
+
+```{r}
+inside
+```
+
+And you can use that hint to get the method implementation:
+
+```{r}
+method(inside, range)
+```
+
+## Known limitations
+
+While we are very happy with the overall design of S7, we still haven't worked out all the details.
+Currently there are two limitations you should be aware of:
+
+-   Can't `dput()` an S7 object and you can't interactively debug methods (either with `browser()` or `debug()`). We hope to fix this in a future patch release of R.
+-   It's possible to serialize S7 object to disk (with `saveRDS()` and friends) but serialization is not yet fully thought out, and currently will currently save the entire class specification along with each object. This may change in the future.
+
+We also expect that as the community starts to use S7 more widely you all will discover more problems.
+If you do, please file an issue at <https://github.com/RConsortium/OOP-WG/issues>, so we can make S7 better for everyone 😃.
+
