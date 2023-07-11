@@ -1,5 +1,9 @@
 # S7 0.0.0.9000
 
+## May-July 2023
+
+* `external_methods_register()` now registers S3 and S4 methods too (#306).
+
 ## Jan-May 2023
 
 * Subclasses of abstract class can have readonly properties (#269).
