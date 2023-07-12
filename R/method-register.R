@@ -65,9 +65,8 @@ register_method <- function(generic,
 
   # Register in current session
   if (is_external_generic(generic)) {
-    # otherwise find the generic and register
-    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
-    register_method(generic, signature, method, package = package)
+    gen <- getFromNamespace(generic$name, asNamespace(generic$package))
+    register_method(gen, signature, method, package = package)
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method)
   } else if (inherits(generic, "genericFunction")) {
