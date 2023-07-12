@@ -5,7 +5,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 We're excited to announce that an initial version of the S7 package is now on CRAN.
 S7 is a new OOP system designed to be a successor to S3 and S4.
-The overarching goal of S7 is to combine the best parts of S3 and S4, so that the R community can eventually standardise on an single OOP system.
+The overarching goal of S7 is to combine the best parts of S3 and S4, so that the R community can eventually standardise on a single OOP system.
 For that, S7 is designed on top of S3, making it 100% backward compatible with existing code that uses S3.
 Additionally, it's been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7 we expect to add additional features to make that transition as simple as possible.
 You can learn more about our concerns with the existing OOP systems in <https://rconsortium.github.io/OOP-WG/articles/motivation.html>.
