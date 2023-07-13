@@ -14,9 +14,15 @@ knitr::opts_chunk$set(
 )
 ```
 
+This vignette outlines the most important things you need to know about using S7 in a package.
+S7 is new, so few people have used it in a package yet; this means that this vignette is incomplete, and we'd love your help to make it better.
+Please [let us know](https://github.com/RConsortium/OOP-WG/issues/new) if you have questions that this vignette doesn't answer.
+
 ```{r setup}
 library(S7)
 ```
+
+## Method registration
 
 We recommend that you run `external_methods_register()` in your `.onLoad()`:
 
@@ -30,35 +36,40 @@ This is S7's way of registering methods, rather than using export directives in 
 This is only strictly necessary if registering methods for external, S3, or S4 generics, but there's no harm in adding it and it ensures that you won't forget later.
 (And if you're not importing S7 into your namespace it will quiet an `R CMD check` `NOTE`.`)`
 
-## Documentation
+## Documentation and exports
 
 If you want users to create instances of your class, you will need to export the class constructor.
-The constructor is a function, so that means that you will also need to document the arguments, which (unless you have customised the constructor) will be the properties of the class.
+That means you will also need to document it, and since the constructor is a function, that means you have to document the arguments which will be the properties of the class (unless you have customised the constructor).
 
 You should document generics like regular functions (since they are!).
-We plan to provide a function dynaically that lists all methods available for the generic (track progress at <https://github.com/RConsortium/OOP-WG/issues/167>).
+If you expect others to create their own methods for your generic, you may want to include an section describing the the properties that you expect all methods to have.
+We plan to provide a an easy way to all methods for a generic, but have not yet implemented it.
+You can track progress at <https://github.com/RConsortium/OOP-WG/issues/167>.
 
 We don't currently have any recommendations on documenting methods.
+There's no need to document them in order to pass `R CMD check`, but obviously there are cases where it's nice to provide additional details for a method, particularly if it takes extra arguments compared to the generic.
+We're tracking that issue at <https://github.com/RConsortium/OOP-WG/issues/315>.
 
 ## Backward compatibility
 
-If you are using S7 in a package *and* you want your package to maintain compatibility with R before 4.3.0, be aware that `` base::`@` `` does not work with S7 properties.
-We provide two workarounds:
+If you are using S7 in a package *and* you want your package to work in versions of R older than 4.3.0, then you need to be aware that in these versions of R `@` only works with S4 objects.
+There are two workarounds.
+The easiest and least convenient workaround is to just `prop()` instead of `@`.
+Otherwise, you can make an S7-aware `@` available to your package with this custom `NAMESPACE` directive:
 
--   Use `S7::prop()` instead of `@`.
+``` r
+# enable usage of <S7_object>@name in package code
+#' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
+NULL
+```
 
--   Alternatively, make an S7-aware `@` available to your package with a custom `NAMESPACE` directive and `.onAttach()` like this:
+You can additionally make `@` work for users of your package by attaching the S7 package when your package is attached with this `.onAttach()` code:
 
-    ``` r
-    # enable usage of <S7_object>@name in package code
-    #' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
-    NULL
+```{r}
+.onAttach <- function(libname, pkgname) {
+  if (getRversion() < "4.3.0")
+    require(S7)
+}
+```
 
-    # enable usage of <S7_object>@name in user code
-    # e.g. if you also want users to be able to access properties
-    # of objects your package
-    .onAttach <- function(libname, pkgname) {
-      if (getRversion() < "4.3.0")
-        require(S7)
-    }
-    ```
+Use this technique with care.
