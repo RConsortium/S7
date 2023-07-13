@@ -10,9 +10,9 @@
 #' * It uses non-standard dispatch because `to` is a class, not an object.
 #'
 #' * It doesn't respect inheritance because if you convert `x` to `superFoo`
-#'   you shouldn't get an instance of `Foo` back).
+#'   you shouldn't get an instance of `Foo` back.
 #'
-#' `convert()` provides a default implementations when `from` inherits from
+#' `convert()` provides a default implementation when `from` inherits from
 #' `to`. This default strips any properties that `from` possesses that `to`
 #' does not.
 #'
@@ -22,7 +22,7 @@
 #'
 #' ## S3 & S4
 #'
-#' `convert()` plays a similar role to the convention of defining `as.foo`
+#' `convert()` plays a similar role to the convention of defining `as.foo()`
 #' functions/generics in S3, and to `as()`/`setAs()` in S4.
 #'
 #' @param from An S7 object to convert.
@@ -48,13 +48,13 @@
 #' convert(foo1(x = 1L), to = class_integer)
 #'
 #' # Note that conversion does not respect inheritance so if we define a
-#' # convert method for foo1 to integer:
+#' # convert method for integer to foo1:
 #' method(convert, list(class_integer, foo1)) <- function(from, to) {
 #'   foo1(x = from)
 #' }
 #' convert(1L, to = foo1)
 #'
-#' # Converting too foo2 will still error
+#' # Converting to foo2 will still error
 #' try(convert(1L, to = foo2))
 convert <- function(from, to, ...) {
   to <- as_class(to)
