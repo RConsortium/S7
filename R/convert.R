@@ -16,10 +16,14 @@
 #' `to`. This default strips any properties that `from` possesses that `to`
 #' does not.
 #'
+#' If you are converting an object solely for the purposes of accessing a method
+#' on a superclass, you probably want [super()] instead. See its docs for more
+#' details.
+#'
 #' ## S3 & S4
 #'
-#' `convert()` is an alternative to the convention of defining `as.foo`
-#' functions/generics in S3, and for `as()`/`setAs()` in S4.
+#' `convert()` plays a similar role to the convention of defining `as.foo`
+#' functions/generics in S3, and to `as()`/`setAs()` in S4.
 #'
 #' @param from An S7 object to convert.
 #' @param to An S7 class specification, passed to [as_class()].

@@ -17,11 +17,12 @@ An \code{S7_super} object which should always be passed
 immediately to a generic. It has no other special behavior.
 }
 \description{
-\code{super()} causes the dispatch for the next generic to use the method for
-the specified superclass. It is useful when you want to implement a method
-in terms of the implementation of its superclass.
-}
-\section{Compared to S3 and S4}{
+\code{super(from, to)} causes the dispatch for the next generic to use the method
+for the superclass \code{to} instead of the actual class of \code{from}. It's needed
+when you want to implement a method in terms of the implementation of its
+superclass.
+\subsection{S3 & S4}{
+
 \code{super()} performs a similar role to \code{\link[=NextMethod]{NextMethod()}} in S3 or
 \code{\link[methods:NextMethod]{methods::callNextMethod()}} in S4, but is much more explicit:
 \itemize{
@@ -34,7 +35,7 @@ passed along.
 This makes \code{super()} more verbose, but substantially easier to
 understand and reason about.
 }
-
+}
 \examples{
 foo1 <- new_class("foo1", properties = list(x = class_numeric, y = class_numeric))
 foo2 <- new_class("foo2", foo1, properties = list(z = class_numeric))
@@ -42,8 +43,13 @@ foo2 <- new_class("foo2", foo1, properties = list(z = class_numeric))
 total <- new_generic("total", "x")
 method(total, foo1) <- function(x) x@x + x@y
 
-# This doesn't work because it'll be stuck in an infinite loop:
+# This won't work because it'll be stuck in an infinite loop:
 method(total, foo2) <- function(x) total(x) + x@z
+
+# We could write
+method(total, foo2) <- function(x) x@x + x@y + x@z
+# but then we'd need to remember to update it if the implementation
+# for total(<foo1>) ever changed.
 
 # So instead we use `super()` to call the method for the parent class:
 method(total, foo2) <- function(x) total(super(x, to = foo1)) + x@z
@@ -64,6 +70,6 @@ obj <- foo2(1, 2, 3)
 bar2(obj)
 # convert() affects every generic:
 bar2(convert(obj, to = foo1))
-# super() only affects the _next_ generic:
+# super() only affects the _next_ call to a generic:
 bar2(super(obj, to = foo1))
 }
