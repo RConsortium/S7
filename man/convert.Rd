@@ -31,6 +31,11 @@ you shouldn't get an instance of \code{Foo} back).
 \code{convert()} provides a default implementations when \code{from} inherits from
 \code{to}. This default strips any properties that \code{from} possesses that \code{to}
 does not.
+\subsection{S3 & S4}{
+
+\code{convert()} is an alternative to the convention of defining \code{as.foo}
+functions/generics in S3, and for \code{as()}/\code{setAs()} in S4.
+}
 }
 \examples{
 foo1 <- new_class("foo1", properties = list(x = class_integer))

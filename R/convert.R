@@ -16,6 +16,11 @@
 #' `to`. This default strips any properties that `from` possesses that `to`
 #' does not.
 #'
+#' ## S3 & S4
+#'
+#' `convert()` is an alternative to the convention of defining `as.foo`
+#' functions/generics in S3, and for `as()`/`setAs()` in S4.
+#'
 #' @param from An S7 object to convert.
 #' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods.
