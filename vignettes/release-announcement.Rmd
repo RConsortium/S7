@@ -10,8 +10,7 @@ For that, S7 is designed on top of S3, making it 100% backward compatible with e
 Additionally, it's been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7 we expect to add additional features to make that transition as simple as possible.
 You can learn more about our concerns with the existing OOP systems in <https://rconsortium.github.io/OOP-WG/articles/motivation.html>.
 
-To avoid the problem of designing "yet another OOP system" for R, the design and implementation of S7 has been a team effort.
-The has been working as working group of R Consortium and including representatives from R-Core, BioConductor, Posit, and the wider R community.
+To avoid the problem of designing "yet another OOP system" for R, the design and implementation of S7 has been a team effort by a working group of the [R Consortium](https://www.r-consortium.org) The team includes representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community.
 
 The long-term goal of this project is to get S7 in to base R, but for now, you can install it from CRAN:
 
@@ -84,17 +83,16 @@ Like S3 and S4, S7 uses **functional OOP** where methods belong to **generic** f
 A generic uses the types of its arguments to automatically pick an appropriate implementation called a **method**.
 
 You can create a new generic with `new_generic()`: the first argument is the generic name (used in error messages) and the second gives the arguments used for dispatch.
-The third, and optional argument, supplies the body of the generic.
+The optional third argument supplies the body of the generic.
 This is only needed if your generic has additional arguments that aren't used for method dispatch.
 
 ```{r}
 inside <- new_generic("inside", "x")
 ```
 
-Once you have a generic, you can define a method for a specific class with `method<-`:
+Once you have a generic, you can define a method for a specific class with `method(generic, class) <- implementation`:
 
 ```{r}
-# Add a method for our class
 method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
@@ -102,7 +100,7 @@ method(inside, range) <- function(x, y) {
 inside(x, c(0, 5, 10, 15))
 ```
 
-You can use `method<-` to register methods for base types on S7 generics, and S7 classes on S3 or S4 generics.
+You can use `method()` to register methods for base types on S7 generics, and for S7 classes on S3 or S4 generics.
 See [`vignette("compatibility")`](https://rconsortium.github.io/OOP-WG/articles/compatibility.html).
 for more details.
 
@@ -123,9 +121,8 @@ method(inside, range)
 While we are very happy with the overall design of S7, we still haven't worked out all the details.
 Currently there are two limitations you should be aware of:
 
--   Can't `dput()` an S7 object and you can't interactively debug methods (either with `browser()` or `debug()`). We hope to fix this in a future patch release of R.
--   It's possible to serialize S7 object to disk (with `saveRDS()` and friends) but serialization is not yet fully thought out, and currently will currently save the entire class specification along with each object. This may change in the future.
+-   You can't `dput()` an S7 object and you can't interactively debug methods (either with `browser()` or `debug()`). We hope to fix this in a future patch release of R.
+-   It's possible to serialize S7 objects to disk (with `saveRDS()` and friends) but serialization is not yet fully thought out, and currently will save the entire class specification along with each object. This may change in the future.
 
 We also expect that as the community starts to use S7 more widely you all will discover more problems.
 If you do, please file an issue at <https://github.com/RConsortium/OOP-WG/issues>, so we can make S7 better for everyone 😃.
-
