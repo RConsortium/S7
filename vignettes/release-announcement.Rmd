@@ -5,12 +5,14 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 We're excited to announce that an initial version of the S7 package is now on CRAN.
 S7 is a new OOP system designed to be a successor to S3 and S4.
-The overarching goal of S7 is to combine the best parts of S3 and S4, so that the R community can eventually standardise on a single OOP system.
-For that, S7 is designed on top of S3, making it 100% backward compatible with existing code that uses S3.
-Additionally, it's been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7 we expect to add additional features to make that transition as simple as possible.
-You can learn more about our concerns with the existing OOP systems in <https://rconsortium.github.io/OOP-WG/articles/motivation.html>.
+You might wonder why R needs a new OOP system, given that we already have two.
+R started its OOP journey with S3 an extremely simple system that has proven to be a very useful system for single dispatch.
+S4 extended S3 by adding formal class definitions and multiple dispatch, but this led to fragmentation where developers were forced to choose between the simpler and more popular S3 or the more sophisticated and complicated S4.
+The goal of S7 is to unify the OOP landscape by building on top of the existing S3 dispatch machinery to implement the most useful S4 features (plus some new ones!) with a simpler syntax.
 
 To avoid the problem of designing "yet another OOP system" for R, the design and implementation of S7 has been a team effort by a working group of the [R Consortium](https://www.r-consortium.org) The team includes representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community.
+Additionally, because S7 is built on top of S3, it's 100% compatible with existing code that uses S3.
+It's also been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7 we'll add features to make the transition as smooth as possible.
 
 The long-term goal of this project is to get S7 in to base R, but for now, you can install it from CRAN:
 
