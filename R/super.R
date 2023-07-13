@@ -10,8 +10,10 @@
 #' `super()` performs a similar role to [NextMethod()] in S3 or
 #' [methods::callNextMethod()] in S4, but is much more explicit:
 #'
-#' * The class that `super()` will dispatch to is known at the time you
-#'   write `super()`, not only when it's called.
+#' * The super class that `super()` will use is known when write `super()`
+#'   (i.e. statically) as opposed to when the generic is called
+#'   (i.e. dynamically).
+#'
 #' * All arguments to the generic are explicit; they are not automatically
 #'   passed along.
 #'
