@@ -60,7 +60,7 @@ x
 
 ### Properties
 
-The data possessed by an object is called its **properties**.
+The data possessed by an object are called its **properties**.
 Use `@` to get and set properties:
 
 ```{r}
