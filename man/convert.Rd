@@ -25,10 +25,10 @@ one type to another. It is special in three ways:
 \code{to}.
 \item It uses non-standard dispatch because \code{to} is a class, not an object.
 \item It doesn't respect inheritance because if you convert \code{x} to \code{superFoo}
-you shouldn't get an instance of \code{Foo} back).
+you shouldn't get an instance of \code{Foo} back.
 }
 
-\code{convert()} provides a default implementations when \code{from} inherits from
+\code{convert()} provides a default implementation when \code{from} inherits from
 \code{to}. This default strips any properties that \code{from} possesses that \code{to}
 does not.
 
@@ -37,7 +37,7 @@ on a superclass, you probably want \code{\link[=super]{super()}} instead. See it
 details.
 \subsection{S3 & S4}{
 
-\code{convert()} plays a similar role to the convention of defining \code{as.foo}
+\code{convert()} plays a similar role to the convention of defining \code{as.foo()}
 functions/generics in S3, and to \code{as()}/\code{setAs()} in S4.
 }
 }
@@ -58,12 +58,12 @@ method(convert, list(foo1, class_integer)) <- function(from, to) {
 convert(foo1(x = 1L), to = class_integer)
 
 # Note that conversion does not respect inheritance so if we define a
-# convert method for foo1 to integer:
+# convert method for integer to foo1:
 method(convert, list(class_integer, foo1)) <- function(from, to) {
   foo1(x = from)
 }
 convert(1L, to = foo1)
 
-# Converting too foo2 will still error
+# Converting to foo2 will still error
 try(convert(1L, to = foo2))
 }
