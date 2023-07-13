@@ -18,32 +18,43 @@ Either \code{from} coerced to class \code{to}, or an error if the coercion
 is not possible.
 }
 \description{
-\code{convert()} uses double-dispatch, because conversion depends on both \code{from}
-and \code{to}. The dispatch is non-standard, because \code{to} is a class (not an
-object), and it does not take advantage of inheritance (because if you
-convert \code{x} to \code{superFoo} you shouldn't get an instance of \code{Foo} back).
+\code{convert(from, to)} is a built-in generic for converting an object from
+one type to another. It is special in three ways:
+\itemize{
+\item It uses double-dispatch, because conversion depends on both \code{from} and
+\code{to}.
+\item It uses non-standard dispatch because \code{to} is a class, not an object.
+\item It doesn't respect inheritance because if you convert \code{x} to \code{superFoo}
+you shouldn't get an instance of \code{Foo} back).
+}
 
-\code{convert()} provides built-in implementations if \code{from} inherits from \code{to}.
-This default strips any properties that \code{from} possesses that \code{to} does not,
-and resets the class.
+\code{convert()} provides a default implementations when \code{from} inherits from
+\code{to}. This default strips any properties that \code{from} possesses that \code{to}
+does not.
 }
 \examples{
 foo1 <- new_class("foo1", properties = list(x = class_integer))
 foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
 
-method(convert, list(foo1, class_integer)) <- function(from, to) from@x
-method(convert, list(foo2, class_double)) <- function(from, to) from@y
-
-convert(foo1(x = 1L), to = class_integer)
-try(convert(foo1(x = 1L), to = class_double))
-
-convert(foo2(x = 1L, y = 2), to = class_integer)
-convert(foo2(x = 1L, y = 2), to = class_double)
+# S7 provides a default implementation for coercing an object to one of
+# its parent classes:
 convert(foo2(x = 1L, y = 2), to = foo1)
 
-# If we define a convert method for integer + foo1:
-method(convert, list(class_integer, foo1)) <- function(from, to) foo1(x = from)
+# For all other cases, you'll need to provide your own.
+try(convert(foo1(x = 1L), to = class_integer))
+
+method(convert, list(foo1, class_integer)) <- function(from, to) {
+  from@x
+}
+convert(foo1(x = 1L), to = class_integer)
+
+# Note that conversion does not respect inheritance so if we define a
+# convert method for foo1 to integer:
+method(convert, list(class_integer, foo1)) <- function(from, to) {
+  foo1(x = from)
+}
 convert(1L, to = foo1)
-# Converting too foo2 still errors
+
+# Converting too foo2 will still error
 try(convert(1L, to = foo2))
 }
