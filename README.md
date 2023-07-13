@@ -16,7 +16,7 @@ coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/main/graph/badge.s
 The S7 package is a new OOP system designed to be a successor to S3 and
 S4. It has been designed and implemented collaboratively by the R
 Consortium Object-Oriented Programming Working Group, which includes
-representatives from R-Core, BioConductor, RStudio/tidyverse, and the
+representatives from R-Core, Bioconductor, the tidyverse/Posit, and the
 wider R community.
 
 S7 is somewhat experimental; we are confident in the design but it has
@@ -38,7 +38,7 @@ install.packages("S7")
 This section gives a very brief overview of the entirety of S7. Learn
 more of the basics in `vignette("S7")`, generics and methods in
 `vignette("generics-methods")`, classes and objects in
-`vignette("classes-objects')`, and compatibility with S3 and S4 in
+`vignette("classes-objects")`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
 ``` r
