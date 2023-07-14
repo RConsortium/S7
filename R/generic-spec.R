@@ -43,6 +43,16 @@ is_S3_generic <- function(x) inherits(x, "S7_S3_generic")
 
 is_S4_generic <- function(x) inherits(x, "genericFunction")
 
+# Is the generic defined in the "current" package
+is_local_generic <- function(generic, package) {
+  if (is_external_generic(generic)) {
+    return(FALSE)
+  }
+
+  generic_pkg <- package_name(generic)
+  is.null(generic_pkg) || generic_pkg == package
+}
+
 package_name <- function(f) {
   env <- environment(f)
   if (is.null(env)) {

@@ -82,20 +82,12 @@ register_method <- function(generic,
 
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
-  if (!is.null(package)) {
+  if (!is.null(package) && !is_local_generic(generic, package)) {
     if (is_generic(generic)) {
       pkg <- package_name(generic)
-      if (is.null(pkg) || pkg == package) {
-        # local generic
-        return(invisible())
-      }
       generic <- new_external_generic(pkg, generic@name, generic@dispatch_args)
     } else if (is_S3_generic(generic)) {
       pkg <- package_name(generic)
-      if (is.null(pkg) || pkg == package) {
-        # local generic
-        return(invisible())
-      }
       generic <- new_external_generic(pkg, generic$name, NULL)
     } else if (is_S4_generic(generic)) {
       generic <- new_external_generic(generic@package, generic@generic, NULL)
