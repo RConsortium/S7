@@ -74,7 +74,7 @@ describe("method registration", {
     expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
 
     S4_register(S4foo)
-    on.exit(S4_remove_classes("S4foo"))
+    on.exit(S4_remove_classes("S4foo"), add = TRUE)
 
     method(bar, S4foo) <- function(x) "foo"
     expect_equal(bar(S4foo()), "foo")
