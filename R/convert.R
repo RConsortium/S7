@@ -9,8 +9,12 @@
 #'
 #' * It uses non-standard dispatch because `to` is a class, not an object.
 #'
-#' * It doesn't respect inheritance because if you convert `x` to `superFoo`
-#'   you shouldn't get an instance of `Foo` back.
+#' * It doesn't use inheritance for the `to` argument. To understand
+#'   why, imagine you have written methods to objects of various types to
+#'   `classParent`. If you then create a new `classChild` that inherits from
+#'   `classParent`, you can't expect the methods written for `classParent`
+#'   to work because those methods will return `classParent` objects, not
+#'   `classChild` objects.
 #'
 #' `convert()` provides a default implementation when `from` inherits from
 #' `to`. This default strips any properties that `from` possesses that `to`
@@ -48,7 +52,7 @@
 #' convert(foo1(x = 1L), to = class_integer)
 #'
 #' # Note that conversion does not respect inheritance so if we define a
-#' # convert method for integer to foo1:
+#' # convert method for integer to foo1
 #' method(convert, list(class_integer, foo1)) <- function(from, to) {
 #'   foo1(x = from)
 #' }
@@ -56,6 +60,8 @@
 #'
 #' # Converting to foo2 will still error
 #' try(convert(1L, to = foo2))
+#' # This is probably not surprising because foo2 also needs some value
+#' # for `@y`, but it's definitely makes dispatch for convert() special
 convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)

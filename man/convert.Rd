@@ -24,8 +24,12 @@ one type to another. It is special in three ways:
 \item It uses double-dispatch, because conversion depends on both \code{from} and
 \code{to}.
 \item It uses non-standard dispatch because \code{to} is a class, not an object.
-\item It doesn't respect inheritance because if you convert \code{x} to \code{superFoo}
-you shouldn't get an instance of \code{Foo} back.
+\item It doesn't use inheritance for the \code{to} argument. To understand
+why, imagine you have written methods to objects of various types to
+\code{classParent}. If you then create a new \code{classChild} that inherits from
+\code{classParent}, you can't expect the methods written for \code{classParent}
+to work because those methods will return \code{classParent} objects, not
+\code{classChild} objects.
 }
 
 \code{convert()} provides a default implementation when \code{from} inherits from
@@ -58,7 +62,7 @@ method(convert, list(foo1, class_integer)) <- function(from, to) {
 convert(foo1(x = 1L), to = class_integer)
 
 # Note that conversion does not respect inheritance so if we define a
-# convert method for integer to foo1:
+# convert method for integer to foo1
 method(convert, list(class_integer, foo1)) <- function(from, to) {
   foo1(x = from)
 }
@@ -66,4 +70,6 @@ convert(1L, to = foo1)
 
 # Converting to foo2 will still error
 try(convert(1L, to = foo2))
+# This is probably not surprising because foo2 also needs some value
+# for `@y`, but it's definitely makes dispatch for convert() special
 }
