@@ -12,8 +12,7 @@ as_generic <- function(x) {
 as_S3_generic <- function(x) {
   use_method <- find_call(body(x), quote(UseMethod))
   if (!is.null(use_method)) {
-    name <- as.character(use_method[[2]])
-    return(S3_generic(x, name))
+    return(S3_generic(x, as.character(use_method[[2]])))
   } else {
     name <- find_base_name(x)
     if (name %in% names(base_ops)) {
@@ -27,10 +26,7 @@ as_S3_generic <- function(x) {
 }
 
 S3_generic <- function(generic, name) {
-  out <- list(
-    generic = generic,
-    name = name
-  )
+  out <- list(generic = generic, name = name)
   class(out) <- "S7_S3_generic"
   out
 }
