@@ -7,8 +7,9 @@
 method_explain(generic, class = NULL, object = NULL)
 }
 \arguments{
-\item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
-\code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
+\item{generic}{A generic function, i.e. an \link[=new_generic]{S7 generic},
+an \link[=new_external_generic]{external generic}, an \link[=UseMethod]{S3 generic},
+or an \link[methods:setGeneric]{S4 generic}.}
 
 \item{class, object}{Perform introspection either with a \code{class}
 (processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses

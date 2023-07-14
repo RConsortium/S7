@@ -2,7 +2,10 @@
 
 ## May-July 2023
 
-* `external_methods_register()` now registers S3 and S4 methods too (#306).
+* `new_external_generic()` is only needed when you want a soft dependency
+  on another package.
+
+* `methods_register()` now also registers S3 and S4 methods (#306).
 
 ## Jan-May 2023
 

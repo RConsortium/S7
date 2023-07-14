@@ -13,7 +13,7 @@ as_S3_generic <- function(x, env = parent.frame()) {
   use_method <- find_call(body(x), quote(UseMethod))
   if (!is.null(use_method)) {
     name <- as.character(use_method[[2]])
-    pkg <- find_S3_package(x, name, env)
+    pkg <- find_package(x, name, env)
     return(S3_generic(x, name, pkg))
   } else {
     name <- find_base_name(x)
@@ -41,7 +41,7 @@ S3_generic <- function(generic, name, package) {
 #' @importFrom stats median
 NULL
 
-find_S3_package <- function(generic, name, env = parent.frame()) {
+find_package <- function(generic, name, env = parent.frame()) {
   while (!identical(env, emptyenv())) {
     candidate <- env[[name]]
     if (identical(candidate, generic)) {

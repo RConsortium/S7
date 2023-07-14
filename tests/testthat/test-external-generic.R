@@ -1,5 +1,5 @@
 test_that("can get and append methods", {
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  external_methods_reset("S7")
 
   expect_equal(external_methods_get("S7"), list())
 
