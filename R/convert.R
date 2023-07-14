@@ -61,7 +61,7 @@
 #' # Converting to foo2 will still error
 #' try(convert(1L, to = foo2))
 #' # This is probably not surprising because foo2 also needs some value
-#' # for `@y`, but it's definitely makes dispatch for convert() special
+#' # for `@y`, but it definitely makes dispatch for convert() special
 convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
