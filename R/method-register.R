@@ -64,7 +64,7 @@ register_method <- function(generic,
                             method,
                             env = parent.frame(),
                             package = packageName(env)) {
-  generic <- as_generic(generic, env)
+  generic <- as_generic(generic)
   signature <- as_signature(signature, generic)
 
   # Register in current session
@@ -84,14 +84,19 @@ register_method <- function(generic,
   # when the package is loaded
   if (!is.null(package)) {
     if (is_generic(generic)) {
-      pkg <- packageName(environment(generic))
-      if (is.null(pkg)) {
+      pkg <- package_name(generic)
+      if (is.null(pkg) || pkg == package) {
         # local generic
         return(invisible())
       }
       generic <- new_external_generic(pkg, generic@name, generic@dispatch_args)
     } else if (is_S3_generic(generic)) {
-      generic <- new_external_generic(generic$package, generic$name, NULL)
+      pkg <- package_name(generic)
+      if (is.null(pkg) || pkg == package) {
+        # local generic
+        return(invisible())
+      }
+      generic <- new_external_generic(pkg, generic$name, NULL)
     } else if (is_S4_generic(generic)) {
       generic <- new_external_generic(generic@package, generic@generic, NULL)
     }

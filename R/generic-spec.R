@@ -1,37 +1,35 @@
-as_generic <- function(x, env = parent.frame()) {
+as_generic <- function(x) {
   if (is_generic(x) || is_external_generic(x) || is_S4_generic(x)) {
     x
   } else if (is.function(x)) {
-    as_S3_generic(x, env)
+    as_S3_generic(x)
   } else {
     msg <- sprintf("`generic` must be a function, not a %s", obj_desc(x))
     stop(msg, call. = FALSE)
   }
 }
 
-as_S3_generic <- function(x, env = parent.frame()) {
+as_S3_generic <- function(x) {
   use_method <- find_call(body(x), quote(UseMethod))
   if (!is.null(use_method)) {
     name <- as.character(use_method[[2]])
-    pkg <- find_package(x, name, env)
-    return(S3_generic(x, name, pkg))
+    return(S3_generic(x, name))
   } else {
     name <- find_base_name(x)
     if (name %in% names(base_ops)) {
       return(base_ops[[name]])
     } else if (!is.na(name) && is_internal_generic(name)) {
-      return(S3_generic(x, name, "base"))
+      return(S3_generic(x, name))
     }
   }
 
   stop("`generic` is a function, but not an S3 generic function", call. = FALSE)
 }
 
-S3_generic <- function(generic, name, package) {
+S3_generic <- function(generic, name) {
   out <- list(
     generic = generic,
-    name = name,
-    package = package
+    name = name
   )
   class(out) <- "S7_S3_generic"
   out
@@ -41,25 +39,18 @@ S3_generic <- function(generic, name, package) {
 #' @importFrom stats median
 NULL
 
-find_package <- function(generic, name, env = parent.frame()) {
-  while (!identical(env, emptyenv())) {
-    candidate <- env[[name]]
-    if (identical(candidate, generic)) {
-      return(packageName(environment(candidate)))
-    }
-
-    env <- parent.env(env)
-  }
-
-  msg <- sprintf("Can't find package that generic `%s` belongs to.\nDid you import the generic into the namespace?", name)
-  stop(msg, call. = FALSE)
-}
-
-
 is_S3_generic <- function(x) inherits(x, "S7_S3_generic")
 
 is_S4_generic <- function(x) inherits(x, "genericFunction")
 
+package_name <- function(f) {
+  env <- environment(f)
+  if (is.null(env)) {
+    "base"
+  } else {
+    (packageName(env))
+  }
+}
 
 generic_n_dispatch <- function(x) {
   if (is_S3_generic(x)) {
