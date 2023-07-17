@@ -1,6 +1,6 @@
-quick_install <- function(package) {
+quick_install <- function(package, lib) {
   for (p in package) {
-    install.packages(p, repos = NULL, type = "source", quiet = FALSE,
+    install.packages(p, lib, repos = NULL, type = "source", quiet = FALSE,
       INSTALL_opts = paste(collapse = " ", c(
           "--data-compress=none",
           "--no-byte-compile",
