@@ -22,16 +22,15 @@ An S7 external generic, i.e. a list with class
 }
 \description{
 You need an explicit external generic when you want to provide methods
-for generic (S3, S4, or S7) that is defined in another package, but you
+for a generic (S3, S4, or S7) that is defined in another package, and you
 don't want to take a hard dependency on that package.
 
 The easiest way to provide methods for generics in other packages is
-import the generic into your \code{NAMESPACE}. However, that creates a hard
-dependency, and sometimes you only want to register a method if a package
-is installed without forcing your package to also install it.
-\code{new_external_generic()} allows you to provide the minimal needed information
-about a generic so that methods can be registered at run time, as needed,
-using \code{\link[=methods_register]{methods_register()}}.
+import the generic into your \code{NAMESPACE}. This, however, creates a hard
+dependency, and sometimes you want a soft dependency, only registering the
+method if the package is already installed. \code{new_external_generic()} allows
+you to provide the minimal needed information about a generic so that methods
+can be registered at run time, as needed, using \code{\link[=methods_register]{methods_register()}}.
 
 Note that in tests, you'll need to explicitly call the generic from the
 external package with \code{pkg::generic()}.

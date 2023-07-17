@@ -7,9 +7,12 @@
 methods_register()
 }
 \description{
-When using S7 in a package you must always call \code{methods_register()} when
+When using S7 in a package you should always call \code{methods_register()} when
 your package is loaded. This ensures that methods are registered as needed
-when packages that provide generics you provide methods for are loaded.
+when you implement methods for generics (S3, S4, and S7) in other packages.
+(This is not strictly necessary if you only register methods for generics
+in your package, but it's better to include it and not need it than forget
+to include it and hit weird errors.)
 }
 \examples{
 .onLoad <- function(...) {

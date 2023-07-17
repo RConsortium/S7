@@ -2,16 +2,15 @@
 #'
 #' @description
 #' You need an explicit external generic when you want to provide methods
-#' for generic (S3, S4, or S7) that is defined in another package, but you
+#' for a generic (S3, S4, or S7) that is defined in another package, and you
 #' don't want to take a hard dependency on that package.
 #'
 #' The easiest way to provide methods for generics in other packages is
-#' import the generic into your `NAMESPACE`. However, that creates a hard
-#' dependency, and sometimes you only want to register a method if a package
-#' is installed without forcing your package to also install it.
-#' `new_external_generic()` allows you to provide the minimal needed information
-#' about a generic so that methods can be registered at run time, as needed,
-#' using [methods_register()].
+#' import the generic into your `NAMESPACE`. This, however, creates a hard
+#' dependency, and sometimes you want a soft dependency, only registering the
+#' method if the package is already installed. `new_external_generic()` allows
+#' you to provide the minimal needed information about a generic so that methods
+#' can be registered at run time, as needed, using [methods_register()].
 #'
 #' Note that in tests, you'll need to explicitly call the generic from the
 #' external package with `pkg::generic()`.
@@ -59,9 +58,12 @@ is_external_generic <- function(x) {
 
 #' Register methods in a package
 #'
-#' When using S7 in a package you must always call `methods_register()` when
+#' When using S7 in a package you should always call `methods_register()` when
 #' your package is loaded. This ensures that methods are registered as needed
-#' when packages that provide generics you provide methods for are loaded.
+#' when you implement methods for generics (S3, S4, and S7) in other packages.
+#' (This is not strictly necessary if you only register methods for generics
+#' in your package, but it's better to include it and not need it than forget
+#' to include it and hit weird errors.)
 #'
 #' @importFrom utils getFromNamespace packageName
 #' @export
