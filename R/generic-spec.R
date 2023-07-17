@@ -31,10 +31,6 @@ S3_generic <- function(generic, name) {
   out
 }
 
-# For testing
-#' @importFrom stats median
-NULL
-
 is_S3_generic <- function(x) inherits(x, "S7_S3_generic")
 
 is_S4_generic <- function(x) inherits(x, "genericFunction")
