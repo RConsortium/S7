@@ -1,5 +1,12 @@
 # S7 0.0.0.9000
 
+## May-July 2023
+
+* `new_external_generic()` is only needed when you want a soft dependency
+  on another package.
+
+* `methods_register()` now also registers S3 and S4 methods (#306).
+
 ## Jan-May 2023
 
 * Subclasses of abstract class can have readonly properties (#269).

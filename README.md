@@ -5,17 +5,24 @@
 
 <!-- badges: start -->
 
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/master/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=master)
+coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=main)
 
 <!-- badges: end -->
 
 The S7 package is a new OOP system designed to be a successor to S3 and
 S4. It has been designed and implemented collaboratively by the R
 Consortium Object-Oriented Programming Working Group, which includes
-representatives from R-Core, BioConductor, RStudio/tidyverse, and the
+representatives from R-Core, Bioconductor, the tidyverse/Posit, and the
 wider R community.
+
+S7 is somewhat experimental; we are confident in the design but it has
+relatively little usage in the wild currently. We hope to avoid any
+major breaking changes, but reserve the right if we discover major
+problems.
 
 ## Installation
 
@@ -30,8 +37,8 @@ install.packages("S7")
 
 This section gives a very brief overview of the entirety of S7. Learn
 more of the basics in `vignette("S7")`, generics and methods in
-`vignette("generics-methods")`, classes and objects
-in`vigentte("classes-objects')`, and compatibility with S3 and S4 in
+`vignette("generics-methods")`, classes and objects in
+`vignette("classes-objects")`, and compatibility with S3 and S4 in
 `vignette("compatibility")`.
 
 ``` r

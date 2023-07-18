@@ -27,22 +27,15 @@ describe("method registration", {
     expect_equal(method(foo, class_double)@signature, list(class_double))
   })
 
-  it("can register method for external generic from within package", {
-    on.exit(external_methods_reset("S7"), add = TRUE)
-
-    foo <- new_external_generic("foo", "bar" ,"x")
-    register_external_method(foo, class_character, function(x) "bar", package = "S7")
-    expect_length(external_methods_get("S7"), 1)
-
-    # and doesn't modify generic
-    expect_s3_class(foo, "S7_external_generic")
-  })
-
-  it("can register method for external generic during development", {
+  it("can register method for external generic", {
     bar <- new_class("bar")
     base_sum <- new_external_generic("base", "sum", "x")
-    register_external_method(base_sum, bar, function(x, ...) "bar", package = NULL)
+
+    method(base_sum, bar) <- function(x, ...) "bar"
     expect_equal(sum(bar()), "bar")
+
+    # and doesn't modify generic
+    expect_equal(sum, base::sum)
   })
 
   it("can register S7 method for S3 generic", {
@@ -81,6 +74,8 @@ describe("method registration", {
     expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
 
     S4_register(S4foo)
+    on.exit(S4_remove_classes("S4foo"), add = TRUE)
+
     method(bar, S4foo) <- function(x) "foo"
     expect_equal(bar(S4foo()), "foo")
   })

@@ -1,16 +1,19 @@
 #' Force method dispatch to use a superclass
 #'
 #' @description
-#' `super()` causes the dispatch for the next generic to use the method for
-#' the specified superclass. It is useful when you want to implement a method
-#' in terms of the implementation of its superclass.
+#' `super(from, to)` causes the dispatch for the next generic to use the method
+#' for the superclass `to` instead of the actual class of `from`. It's needed
+#' when you want to implement a method in terms of the implementation of its
+#' superclass.
 #'
-#' # Compared to S3 and S4
+#' ## S3 & S4
 #' `super()` performs a similar role to [NextMethod()] in S3 or
 #' [methods::callNextMethod()] in S4, but is much more explicit:
 #'
-#' * The class that `super()` will dispatch to is known at the time you
-#'   write `super()`, not only when it's called.
+#' * The super class that `super()` will use is known when write `super()`
+#'   (i.e. statically) as opposed to when the generic is called
+#'   (i.e. dynamically).
+#'
 #' * All arguments to the generic are explicit; they are not automatically
 #'   passed along.
 #'
@@ -30,8 +33,13 @@
 #' total <- new_generic("total", "x")
 #' method(total, foo1) <- function(x) x@x + x@y
 #'
-#' # This doesn't work because it'll be stuck in an infinite loop:
+#' # This won't work because it'll be stuck in an infinite loop:
 #' method(total, foo2) <- function(x) total(x) + x@z
+#'
+#' # We could write
+#' method(total, foo2) <- function(x) x@x + x@y + x@z
+#' # but then we'd need to remember to update it if the implementation
+#' # for total(<foo1>) ever changed.
 #'
 #' # So instead we use `super()` to call the method for the parent class:
 #' method(total, foo2) <- function(x) total(super(x, to = foo1)) + x@z
@@ -52,7 +60,7 @@
 #' bar2(obj)
 #' # convert() affects every generic:
 #' bar2(convert(obj, to = foo1))
-#' # super() only affects the _next_ generic:
+#' # super() only affects the _next_ call to a generic:
 #' bar2(super(obj, to = foo1))
 super <- function(from, to) {
   check_is_S7(from)

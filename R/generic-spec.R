@@ -1,7 +1,5 @@
 as_generic <- function(x) {
-  if (is_generic(x) || is_external_generic(x)) {
-    x
-  } else if (inherits(x, "genericFunction")) {
+  if (is_generic(x) || is_external_generic(x) || is_S4_generic(x)) {
     x
   } else if (is.function(x)) {
     as_S3_generic(x)
@@ -35,6 +33,26 @@ S3_generic <- function(generic, name) {
 
 is_S3_generic <- function(x) inherits(x, "S7_S3_generic")
 
+is_S4_generic <- function(x) inherits(x, "genericFunction")
+
+# Is the generic defined in the "current" package
+is_local_generic <- function(generic, package) {
+  if (is_external_generic(generic)) {
+    return(FALSE)
+  }
+
+  generic_pkg <- package_name(generic)
+  is.null(generic_pkg) || generic_pkg == package
+}
+
+package_name <- function(f) {
+  env <- environment(f)
+  if (is.null(env)) {
+    "base"
+  } else {
+    (packageName(env))
+  }
+}
 
 generic_n_dispatch <- function(x) {
   if (is_S3_generic(x)) {
