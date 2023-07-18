@@ -28,6 +28,7 @@ reference:
   - as_class
   - method
   - method_explain
+  - methods_register
   - new_external_generic
   - new_S3_class
   - S4_register
@@ -43,6 +44,7 @@ articles:
   - generics-methods
   - classes-objects
   - compatibility
+  - packages
   - motivation
   - performance
 

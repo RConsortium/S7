@@ -18,32 +18,58 @@ Either \code{from} coerced to class \code{to}, or an error if the coercion
 is not possible.
 }
 \description{
-\code{convert()} uses double-dispatch, because conversion depends on both \code{from}
-and \code{to}. The dispatch is non-standard, because \code{to} is a class (not an
-object), and it does not take advantage of inheritance (because if you
-convert \code{x} to \code{superFoo} you shouldn't get an instance of \code{Foo} back).
+\code{convert(from, to)} is a built-in generic for converting an object from
+one type to another. It is special in three ways:
+\itemize{
+\item It uses double-dispatch, because conversion depends on both \code{from} and
+\code{to}.
+\item It uses non-standard dispatch because \code{to} is a class, not an object.
+\item It doesn't use inheritance for the \code{to} argument. To understand
+why, imagine you have written methods to objects of various types to
+\code{classParent}. If you then create a new \code{classChild} that inherits from
+\code{classParent}, you can't expect the methods written for \code{classParent}
+to work because those methods will return \code{classParent} objects, not
+\code{classChild} objects.
+}
 
-\code{convert()} provides built-in implementations if \code{from} inherits from \code{to}.
-This default strips any properties that \code{from} possesses that \code{to} does not,
-and resets the class.
+\code{convert()} provides a default implementation when \code{from} inherits from
+\code{to}. This default strips any properties that \code{from} possesses that \code{to}
+does not.
+
+If you are converting an object solely for the purposes of accessing a method
+on a superclass, you probably want \code{\link[=super]{super()}} instead. See its docs for more
+details.
+\subsection{S3 & S4}{
+
+\code{convert()} plays a similar role to the convention of defining \code{as.foo()}
+functions/generics in S3, and to \code{as()}/\code{setAs()} in S4.
+}
 }
 \examples{
 foo1 <- new_class("foo1", properties = list(x = class_integer))
 foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
 
-method(convert, list(foo1, class_integer)) <- function(from, to) from@x
-method(convert, list(foo2, class_double)) <- function(from, to) from@y
-
-convert(foo1(x = 1L), to = class_integer)
-try(convert(foo1(x = 1L), to = class_double))
-
-convert(foo2(x = 1L, y = 2), to = class_integer)
-convert(foo2(x = 1L, y = 2), to = class_double)
+# S7 provides a default implementation for coercing an object to one of
+# its parent classes:
 convert(foo2(x = 1L, y = 2), to = foo1)
 
-# If we define a convert method for integer + foo1:
-method(convert, list(class_integer, foo1)) <- function(from, to) foo1(x = from)
+# For all other cases, you'll need to provide your own.
+try(convert(foo1(x = 1L), to = class_integer))
+
+method(convert, list(foo1, class_integer)) <- function(from, to) {
+  from@x
+}
+convert(foo1(x = 1L), to = class_integer)
+
+# Note that conversion does not respect inheritance so if we define a
+# convert method for integer to foo1
+method(convert, list(class_integer, foo1)) <- function(from, to) {
+  foo1(x = from)
+}
 convert(1L, to = foo1)
-# Converting too foo2 still errors
+
+# Converting to foo2 will still error
 try(convert(1L, to = foo2))
+# This is probably not surprising because foo2 also needs some value
+# for `@y`, but it definitely makes dispatch for convert() special
 }
