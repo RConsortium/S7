@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 This vignette outlines the most important things you need to know about using S7 in a package.
-S7 is new, so few people have used it in a package yet; this means that this vignette is incomplete, and we'd love your help to make it better.
+S7 is new, so few people have used it in a package yet; this means that this vignette is likely incomplete, and we'd love your help to make it better.
 Please [let us know](https://github.com/RConsortium/OOP-WG/issues/new) if you have questions that this vignette doesn't answer.
 
 ```{r setup}
@@ -24,16 +24,16 @@ library(S7)
 
 ## Method registration
 
-We recommend that you run `external_methods_register()` in your `.onLoad()`:
+You should alwys call `methods_register()` in your `.onLoad()`:
 
 ```{r}
 .onLoad <- function(...) {
-  S7::external_methods_register()
+  S7::methods_register()
 }
 ```
 
 This is S7's way of registering methods, rather than using export directives in your `NAMESPACE` like S3 and S4 do.
-This is only strictly necessary if registering methods for external, S3, or S4 generics, but there's no harm in adding it and it ensures that you won't forget later.
+This is only strictly necessary if registering methods for generics in other packages, but there's no harm in adding it and it ensures that you won't forget later.
 (And if you're not importing S7 into your namespace it will quiet an `R CMD check` `NOTE`.`)`
 
 ## Documentation and exports
@@ -52,10 +52,10 @@ We're tracking that issue at <https://github.com/RConsortium/OOP-WG/issues/315>.
 
 ## Backward compatibility
 
-If you are using S7 in a package *and* you want your package to work in versions of R older than 4.3.0, then you need to be aware that in these versions of R `@` only works with S4 objects.
+If you are using S7 in a package *and* you want your package to work in versions of R before 4.3.0, you need to know that in these versions of R `@` only works with S4 objects.
 There are two workarounds.
 The easiest and least convenient workaround is to just `prop()` instead of `@`.
-Otherwise, you can make an S7-aware `@` available to your package with this custom `NAMESPACE` directive:
+Otherwise, you can conditionally make an S7-aware `@` available to your package with this custom `NAMESPACE` directive:
 
 ``` r
 # enable usage of <S7_object>@name in package code
@@ -72,4 +72,4 @@ You can additionally make `@` work for users of your package by attaching the S7
 }
 ```
 
-Use this technique with care.
+Use this technique with care as it will attach S7 to the user search path, possibly causing conflicts with other packages/functions.
