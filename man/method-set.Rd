@@ -7,11 +7,14 @@
 method(generic, signature) <- value
 }
 \arguments{
-\item{generic}{A generic function, either created by \code{\link[=new_generic]{new_generic()}},
-\code{\link[=new_external_generic]{new_external_generic()}}, or an existing S3 generic.}
+\item{generic}{A generic function, i.e. an \link[=new_generic]{S7 generic},
+an \link[=new_external_generic]{external generic}, an \link[=UseMethod]{S3 generic},
+or an \link[methods:setGeneric]{S4 generic}.}
 
-\item{signature}{A method signature. For S7 generics that use single
-dispatch, this must be one of the following:
+\item{signature}{A method signature.
+
+For S7 generics that use single dispatch, this must be one of the
+following:
 \itemize{
 \item An S7 class (created by \code{\link[=new_class]{new_class()}}).
 \item An S7 union (created by \code{\link[=new_union]{new_union()}}).
@@ -24,7 +27,10 @@ dispatch, this must be one of the following:
 For S7 generics that use multiple dispatch, this must be a list of any of
 the above types.
 
-For S3 generics, this must be an S7 class.}
+For S3 generics, this must be a single S7 class.
+
+For S4 generics, this must either be an S7 class, or a list that includes
+at least one S7 class.}
 
 \item{value}{A function that implements the generic specification for the
 given \code{signature}.}
@@ -35,7 +41,7 @@ The \code{generic}, invisibly.
 \description{
 A generic defines the interface of a function. Once you have created a
 generic with \code{\link[=new_generic]{new_generic()}}, you provide implementations for specific
-signatures by registering methods with \verb{method<-}
+signatures by registering methods with \verb{method<-}.
 
 The goal is for \verb{method<-} to be the single function you need when working
 with S7 generics or S7 classes. This means that as well as registering
@@ -43,6 +49,10 @@ methods for S7 classes on S7 generics, you can also register methods for
 S7 classes on S3 or S4 generics, and S3 or S4 classes on S7 generics.
 But this is not a general method registration function: at least one of
 \code{generic} and \code{signature} needs to be from S7.
+
+Note that if you are writing a package, you must call \code{\link[=methods_register]{methods_register()}}
+in your \code{.onLoad}. This ensures that all methods are dynamically registered
+when needed.
 }
 \examples{
 # Create a generic

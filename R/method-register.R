@@ -3,7 +3,7 @@
 #' @description
 #' A generic defines the interface of a function. Once you have created a
 #' generic with [new_generic()], you provide implementations for specific
-#' signatures by registering methods with `method<-`
+#' signatures by registering methods with `method<-`.
 #'
 #' The goal is for `method<-` to be the single function you need when working
 #' with S7 generics or S7 classes. This means that as well as registering
@@ -12,10 +12,18 @@
 #' But this is not a general method registration function: at least one of
 #' `generic` and `signature` needs to be from S7.
 #'
-#' @param generic A generic function, either created by [new_generic()],
-#'   [new_external_generic()], or an existing S3 generic.
-#' @param signature A method signature. For S7 generics that use single
-#'   dispatch, this must be one of the following:
+#' Note that if you are writing a package, you must call [methods_register()]
+#' in your `.onLoad`. This ensures that all methods are dynamically registered
+#' when needed.
+#'
+#' @param generic A generic function, i.e. an [S7 generic][new_generic],
+#'   an [external generic][new_external_generic], an [S3 generic][UseMethod],
+#'   or an [S4 generic][methods::setGeneric].
+#' @param signature A method signature.
+#'
+#'   For S7 generics that use single dispatch, this must be one of the
+#'   following:
+#'
 #'   * An S7 class (created by [new_class()]).
 #'   * An S7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
@@ -26,7 +34,10 @@
 #'   For S7 generics that use multiple dispatch, this must be a list of any of
 #'   the above types.
 #'
-#'   For S3 generics, this must be an S7 class.
+#'   For S3 generics, this must be a single S7 class.
+#'
+#'   For S4 generics, this must either be an S7 class, or a list that includes
+#'   at least one S7 class.
 #' @param value A function that implements the generic specification for the
 #'   given `signature`.
 #' @returns The `generic`, invisibly.
@@ -48,34 +59,49 @@
   invisible(generic)
 }
 
-register_method <- function(generic, signature, method, env = parent.frame()) {
-  package <- packageName(env)
+register_method <- function(generic,
+                            signature,
+                            method,
+                            env = parent.frame(),
+                            package = packageName(env)) {
   generic <- as_generic(generic)
   signature <- as_signature(signature, generic)
 
-  if (is_external_generic(generic)) {
-    register_external_method(generic, signature, method, package)
+  # Register in current session
+  if (is_generic(generic)) {
+    check_method(method, generic, name = method_name(generic, signature))
+    register_S7_method(generic, signature, method)
+  } else if (is_external_generic(generic)) {
+    # Only register immediately if soft dependency is available
+    if (requireNamespace(generic$package, quietly = TRUE)) {
+      gen <- getFromNamespace(generic$name, asNamespace(generic$package))
+      register_method(gen, signature, method, package = NULL)
+    }
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method)
   } else if (inherits(generic, "genericFunction")) {
     register_S4_method(generic, signature, method, env)
-  } else {
-    check_method(method, generic, name = method_name(generic, signature))
-    register_S7_method(generic, signature, method)
+  }
+
+  # if we're inside a package, we also need to be able register methods
+  # when the package is loaded
+  if (!is.null(package) && !is_local_generic(generic, package)) {
+    if (is_generic(generic)) {
+      pkg <- package_name(generic)
+      generic <- new_external_generic(pkg, generic@name, generic@dispatch_args)
+    } else if (is_external_generic(generic)) {
+      # already in correct form
+    } else if (is_S3_generic(generic)) {
+      pkg <- package_name(generic)
+      generic <- new_external_generic(pkg, generic$name, NULL)
+    } else if (is_S4_generic(generic)) {
+      generic <- new_external_generic(generic@package, generic@generic, NULL)
+    }
+
+    external_methods_add(package, generic, signature, method)
   }
 
   invisible()
-}
-
-register_external_method <- function(generic, signature, method, package = NULL) {
-  if (!is.null(package)) {
-    # method registration within package, so add to lazy registry
-    external_methods_add(package, generic, signature, method)
-  } else {
-    # otherwise find the generic and register
-    generic <- getFromNamespace(generic$name, asNamespace(generic$package))
-    register_method(generic, signature, method)
-  }
 }
 
 register_S3_method <- function(generic, signature, method) {

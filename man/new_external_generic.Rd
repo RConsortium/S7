@@ -2,12 +2,9 @@
 % Please edit documentation in R/external-generic.R
 \name{new_external_generic}
 \alias{new_external_generic}
-\alias{external_methods_register}
 \title{Generics in other packages}
 \usage{
 new_external_generic(package, name, dispatch_args, version = NULL)
-
-external_methods_register()
 }
 \arguments{
 \item{package}{Package the generic is defined in.}
@@ -24,36 +21,23 @@ An S7 external generic, i.e. a list with class
 \code{S7_external_generic}.
 }
 \description{
-An external generic is a generic defined in another package that you want to
-register methods for. To create an external generic, first use
-\code{new_external_generic()} to define the name and the dispatch arguments
-of the generic:
+You need an explicit external generic when you want to provide methods
+for a generic (S3, S4, or S7) that is defined in another package, and you
+don't want to take a hard dependency on that package.
 
-\if{html}{\out{<div class="sourceCode R">}}\preformatted{generic <- new_external_generic("package", "generic", "x")
-}\if{html}{\out{</div>}}
+The easiest way to provide methods for generics in other packages is
+import the generic into your \code{NAMESPACE}. This, however, creates a hard
+dependency, and sometimes you want a soft dependency, only registering the
+method if the package is already installed. \code{new_external_generic()} allows
+you to provide the minimal needed information about a generic so that methods
+can be registered at run time, as needed, using \code{\link[=methods_register]{methods_register()}}.
 
-This allows you to define methods for the generic, even if the other
-package is not installed:
-
-\if{html}{\out{<div class="sourceCode R">}}\preformatted{methods(generic, my_class) <- function(...) \{\}
-}\if{html}{\out{</div>}}
-
-Then call \code{external_methods_register()} in \code{.onLoad()}. This ensures that
-your methods are added to the generic when the other package is loaded.
-
-\if{html}{\out{<div class="sourceCode R">}}\preformatted{.onLoad <- function(...) \{
-  S7::external_methods_register()
-\}
-}\if{html}{\out{</div>}}
-
-In tests, you'll need to explicitly call the generic from the external
-package with \code{pkg::generic()}.
+Note that in tests, you'll need to explicitly call the generic from the
+external package with \code{pkg::generic()}.
 }
 \examples{
-
 my_class <- new_class("my_class")
 
 your_generic <- new_external_generic("stats", "median", "x")
 method(your_generic, my_class) <- function(x) "Hi!"
-
 }

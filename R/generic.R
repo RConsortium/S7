@@ -74,7 +74,7 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
   if (is.null(fun)) {
     args <- c(dispatch_args, "...")
     args <- setNames(lapply(args, function(i) quote(expr = )), args)
-    fun <- new_function(args, quote(S7_dispatch()), topenv(environment()))
+    fun <- new_function(args, quote(S7::S7_dispatch()), parent.frame())
   } else {
     check_generic(fun)
   }
