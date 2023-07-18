@@ -1,22 +1,25 @@
-quick_install <- function(package, lib) {
+quick_install <- function(package, lib, quiet = TRUE) {
+  opts <- c(
+    "--data-compress=none",
+    "--no-byte-compile",
+    "--no-data",
+    "--no-demo",
+    "--no-docs",
+    "--no-help",
+    "--no-html",
+    "--no-libs",
+    "--use-vanilla",
+    NULL
+  )
+
   for (p in package) {
-    install.packages(p, lib, repos = NULL, type = "source", quiet = FALSE,
-      INSTALL_opts = paste(collapse = " ", c(
-          "--data-compress=none",
-          "--no-byte-compile",
-          "--no-data",
-          "--no-demo",
-          "--no-docs",
-          "--no-help",
-          "--no-help",
-          "--no-html",
-          "--no-libs",
-          "--no-lock",
-          "--no-staged-install",
-          "--no-test-load",
-          "--use-vanilla",
-          NULL)
-      )
+    install.packages(
+      pkgs = p,
+      lib = lib,
+      repos = NULL,
+      type = "source",
+      quiet = quiet,
+      INSTALL_opts = paste(opts, collapse = " ")
     )
   }
 }
