@@ -72,8 +72,11 @@ register_method <- function(generic,
     check_method(method, generic, name = method_name(generic, signature))
     register_S7_method(generic, signature, method)
   } else if (is_external_generic(generic)) {
-    gen <- getFromNamespace(generic$name, asNamespace(generic$package))
-    register_method(gen, signature, method, package = NULL)
+    # Only register immediately if soft dependency is available
+    if (requireNamespace(generic$package, quietly = TRUE)) {
+      gen <- getFromNamespace(generic$name, asNamespace(generic$package))
+      register_method(gen, signature, method, package = NULL)
+    }
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method)
   } else if (inherits(generic, "genericFunction")) {

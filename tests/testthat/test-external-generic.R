@@ -46,8 +46,8 @@ test_that("new_method works with both hard and soft dependencies", {
     unlink(tmp_lib, recursive = TRUE)
   })
 
-  quick_install(c("t0", "t1"), tmp_lib, quiet = FALSE)
-  quick_install(test_path("t2"), tmp_lib, quiet = FALSE)
+  quick_install(test_path(c("t0", "t1")), tmp_lib)
+  quick_install(test_path("t2"), tmp_lib)
   library("t2")
 
   # t2 has a soft dependency on t1
