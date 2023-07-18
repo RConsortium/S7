@@ -30,6 +30,7 @@ test_that("displays nicely", {
 test_that("new_method works with both hard and soft dependencies", {
   # NB: Relies on installed S7
 
+  skip_if(getRversion() < 4.1 && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
   tmp_lib <- tempfile()
@@ -46,7 +47,7 @@ test_that("new_method works with both hard and soft dependencies", {
   })
 
   quick_install(test_path(c("t0", "t1")), tmp_lib)
-  quick_install(test_path("t2"), tmp_lib, quiet = FALSE)
+  quick_install(test_path("t2"), tmp_lib)
   library("t2")
 
   # t2 has a soft dependency on t1
