@@ -93,8 +93,13 @@ registrar <- function(generic, signature, method) {
   function(...) {
     ns <- asNamespace(generic$package)
     if (is.null(generic$version) || getNamespaceVersion(ns) >= generic$version) {
-      generic_fun <- getFromNamespace(generic$name, ns)
-      register_method(generic_fun, signature, method, package = NULL)
+      if (!exists(generic$name, envir = ns, inherits = FALSE)) {
+        msg <- sprintf("[S7] Failed to find generic %s() in package %s", generic$name, generic$package)
+        warning(msg, call. = FALSE)
+      } else {
+        generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
+        register_method(generic_fun, signature, method, package = NULL)
+      }
     }
   }
 }

@@ -73,7 +73,7 @@ register_method <- function(generic,
     register_S7_method(generic, signature, method)
   } else if (is_external_generic(generic)) {
     gen <- getFromNamespace(generic$name, asNamespace(generic$package))
-    register_method(gen, signature, method, package = package)
+    register_method(gen, signature, method, package = NULL)
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method)
   } else if (inherits(generic, "genericFunction")) {
@@ -86,6 +86,8 @@ register_method <- function(generic,
     if (is_generic(generic)) {
       pkg <- package_name(generic)
       generic <- new_external_generic(pkg, generic@name, generic@dispatch_args)
+    } else if (is_external_generic(generic)) {
+      # already in correct form
     } else if (is_S3_generic(generic)) {
       pkg <- package_name(generic)
       generic <- new_external_generic(pkg, generic$name, NULL)
