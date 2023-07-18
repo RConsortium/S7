@@ -14,3 +14,4 @@
 ^docs$
 ^pkgdown$
 ^cran-comments\.md$
+^vignettes/release-announcement\.Rmd$
