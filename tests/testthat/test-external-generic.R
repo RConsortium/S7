@@ -30,7 +30,6 @@ test_that("displays nicely", {
 test_that("new_method works with both hard and soft dependencies", {
   # NB: Relies on installed S7
 
-  # skip_on_os("windows")
   skip_if(quick_test())
 
   tmp_lib <- tempfile()
