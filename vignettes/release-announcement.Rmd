@@ -4,7 +4,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 We're excited to announce that an initial version of the S7 package is now on CRAN.
-S7 is a new OOP system designed to be a successor to S3 and S4.
+S7 is a new OOP system meant to become a successor to S3 and S4.
 You might wonder why R needs a new OOP system, given that we already have two.
 R started its OOP journey with S3 an extremely simple system that has proven to be a very useful system for single dispatch.
 S4 extended S3 by adding formal class definitions and multiple dispatch, but this led to fragmentation where developers were forced to choose between the simpler and more popular S3 or the more sophisticated and complicated S4.
