@@ -122,6 +122,9 @@ export the class constructor. That means you will also need to document
 it, and since the constructor is a function, that means you have to
 document the arguments which will be the properties of the class (unless
 you have customised the constructor).</p>
+<p>If you export a class, you must also set the <code>package</code>
+argument, ensuring that classes with the same name are disambiguated
+across packages.</p>
 <p>You should document generics like regular functions (since they
 are!). If you expect others to create their own methods for your
 generic, you may want to include an section describing the the
