@@ -41,6 +41,8 @@ This is only strictly necessary if registering methods for generics in other pac
 If you want users to create instances of your class, you will need to export the class constructor.
 That means you will also need to document it, and since the constructor is a function, that means you have to document the arguments which will be the properties of the class (unless you have customised the constructor).
 
+If you export a class, you must also set the `package` argument, ensuring that classes with the same name are disambiguated across packages.
+
 You should document generics like regular functions (since they are!).
 If you expect others to create their own methods for your generic, you may want to include an section describing the the properties that you expect all methods to have.
 We plan to provide a an easy way to all methods for a generic, but have not yet implemented it.

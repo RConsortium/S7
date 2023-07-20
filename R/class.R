@@ -17,10 +17,13 @@
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
 #' @param package Package name. It is good practice to set the package
-#'   name when exporting an S7 class from a package because it includes
-#'   the package name in the class name when it's used for dispatch. This
-#'   allows different packages to use the same name to refer to different
-#'   classes. If you see `package`, you _must_ export the constructor.
+#'   name when exporting an S7 class from a package because it prevents
+#'   clashes if two packages happen to export a class with the same
+#'   name.
+#'
+#'   Setting `package` implies that the class is available for external use,
+#'   so should be accompanied by exporting the constructor. Learn more
+#'   in `vignette("packages")`.
 #' @param abstract Is this an abstract class? An abstract class can not be
 #'   instantiated.
 #' @param constructor The constructor function. In most cases, you can rely
