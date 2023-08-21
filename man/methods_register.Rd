@@ -6,6 +6,9 @@
 \usage{
 methods_register()
 }
+\value{
+Nothing; called for its side-effects.
+}
 \description{
 When using S7 in a package you should always call \code{methods_register()} when
 your package is loaded. This ensures that methods are registered as needed
