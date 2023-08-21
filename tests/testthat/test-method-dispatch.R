@@ -134,7 +134,7 @@ test_that("single dispatch fails with informative messages", {
   fail <- new_generic("fail", "x")
 
   foo <- new_class("foo")
-  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
   expect_snapshot(error = TRUE, {
@@ -149,7 +149,7 @@ test_that("multiple dispatch fails with informative messages", {
   fail <- new_generic("fail", c("x", "y"))
 
   foo <- new_class("foo")
-  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
   expect_snapshot(error = TRUE, {
