@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">S7</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,14 +61,17 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.0.0.9000" id="s7-0009000">S7 0.0.0.9000<a class="anchor" aria-label="anchor" href="#s7-0009000"></a></h2>
+<h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="s7-010">S7 0.1.0<a class="anchor" aria-label="anchor" href="#s7-010"></a></h2><p class="text-muted">CRAN release: 2023-08-24</p>
 <div class="section level3">
-<h3 id="may-july-0-0-0-9000">May-July 2023<a class="anchor" aria-label="anchor" href="#may-july-0-0-0-9000"></a></h3>
+<h3 id="may-july-0-1-0">May-July 2023<a class="anchor" aria-label="anchor" href="#may-july-0-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/new_external_generic.html">new_external_generic()</a></code> is only needed when you want a soft dependency on another package.</p></li>
 <li><p><code><a href="../reference/methods_register.html">methods_register()</a></code> now also registers S3 and S4 methods (<a href="https://github.com/rconsortium/OOP-WG/issues/306" class="external-link">#306</a>).</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="jan-may-0-0-0-9000">Jan-May 2023<a class="anchor" aria-label="anchor" href="#jan-may-0-0-0-9000"></a></h3>
+<h3 id="jan-may-0-1-0">Jan-May 2023<a class="anchor" aria-label="anchor" href="#jan-may-0-1-0"></a></h3>
 <ul><li><p>Subclasses of abstract class can have readonly properties (<a href="https://github.com/rconsortium/OOP-WG/issues/269" class="external-link">#269</a>).</p></li>
 <li><p>During construction, validation is now only performed once for each element of the class hierarchy (<a href="https://github.com/rconsortium/OOP-WG/issues/248" class="external-link">#248</a>).</p></li>
 <li><p>Implemented a better filtering strategy for the S4 class hierarchy so you can now correctly dispatch on virtual classes (<a href="https://github.com/rconsortium/OOP-WG/issues/252" class="external-link">#252</a>).</p></li>
@@ -80,13 +83,13 @@
 <li><p>Can no longer subclass an environment via <code>class_environment</code> because we need to think the consequences of this behaviour through more fully (<a href="https://github.com/rconsortium/OOP-WG/issues/253" class="external-link">#253</a>).</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="rest-of-0-0-0-9000">Rest of 2022<a class="anchor" aria-label="anchor" href="#rest-of-0-0-0-9000"></a></h3>
+<h3 id="rest-of-0-1-0">Rest of 2022<a class="anchor" aria-label="anchor" href="#rest-of-0-1-0"></a></h3>
 <ul><li><p>Add <code>[.S7_object</code>, <code>[&lt;-.S7_object</code>, <code>[[.S7_object</code>, and <code>[[&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/jamieRowen" class="external-link">@jamieRowen</a>, <a href="https://github.com/rconsortium/OOP-WG/issues/236" class="external-link">#236</a>).</p></li>
 <li><p>Combining S7 classes with <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now gives an error (<a href="https://github.com/rconsortium/OOP-WG/issues/230" class="external-link">#230</a>)</p></li>
 <li><p>Base classes now show as <code>class_x</code> instead of <code>"x"</code> in method print (<a href="https://github.com/rconsortium/OOP-WG/issues/232" class="external-link">#232</a>)</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="mar-0-0-0-9000">Mar 2022<a class="anchor" aria-label="anchor" href="#mar-0-0-0-9000"></a></h3>
+<h3 id="mar-0-1-0">Mar 2022<a class="anchor" aria-label="anchor" href="#mar-0-1-0"></a></h3>
 <ul><li><p>Exported <code>class_factor</code>, <code>class_Date</code>, <code>class_POSIXct</code>, and <code>class_data.frame</code>.</p></li>
 <li><p>New <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> (<a href="https://github.com/rconsortium/OOP-WG/issues/193" class="external-link">#193</a>)</p></li>
 <li><p><code><a href="../reference/new_class.html">new_class()</a></code> can create abstract classes (<a href="https://github.com/rconsortium/OOP-WG/issues/199" class="external-link">#199</a>).</p></li>
@@ -97,7 +100,7 @@
 <li><p><code><a href="../reference/super.html">super()</a></code> replaces <code>next_method()</code> (<a href="https://github.com/rconsortium/OOP-WG/issues/110" class="external-link">#110</a>).</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="feb-0-0-0-9000">Feb 2022<a class="anchor" aria-label="anchor" href="#feb-0-0-0-9000"></a></h3>
+<h3 id="feb-0-1-0">Feb 2022<a class="anchor" aria-label="anchor" href="#feb-0-1-0"></a></h3>
 <ul><li><p><code>class_any</code> and <code>class_missing</code> make it possible to dispatch on absent arguments and arguments of any class (<a href="https://github.com/rconsortium/OOP-WG/issues/67" class="external-link">#67</a>).</p></li>
 <li><p>New <code><a href="../reference/method_explain.html">method_explain()</a></code> to explain dispatch (<a href="https://github.com/rconsortium/OOP-WG/issues/194" class="external-link">#194</a>).</p></li>
 <li><p>Minor property improvements: use same syntax for naming short-hand and full property specifications; input type automatically validated for custom setters. A property with a getter but no setter is read-only (<a href="https://github.com/rconsortium/OOP-WG/issues/168" class="external-link">#168</a>).</p></li>
@@ -109,7 +112,7 @@
 <li><p>Revamp website. README now shows brief example and more info in <code><a href="../articles/S7.html">vignette("S7")</a></code>. Initial design docs and minutes are now articles so they appear on the website.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="jan-0-0-0-9000">Jan 2022<a class="anchor" aria-label="anchor" href="#jan-0-0-0-9000"></a></h3>
+<h3 id="jan-0-1-0">Jan 2022<a class="anchor" aria-label="anchor" href="#jan-0-1-0"></a></h3>
 <ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/rconsortium/OOP-WG/issues/149" class="external-link">#149</a>).</li>
 <li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/rconsortium/OOP-WG/issues/149" class="external-link">#149</a>)</li>
 <li>Classes (base types, S3, S4, and S7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> for referring to S3 classes (<a href="https://github.com/rconsortium/OOP-WG/issues/134" class="external-link">#134</a>). S4 unions are converted to S7 unions (<a href="https://github.com/rconsortium/OOP-WG/issues/150" class="external-link">#150</a>).</li>
