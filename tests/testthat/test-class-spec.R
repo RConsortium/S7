@@ -164,16 +164,16 @@ test_that("can work with S7 classes that extend S3 classes", {
 test_that("can work with S4 classes", {
   on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Foo4")))
 
-  methods::setClass("Foo1", contains = "character", where = globalenv())
-  methods::setClass("Foo2", contains = "Foo1", where = globalenv())
-  methods::setClass("Foo3", slots = list(x = "numeric"), where = globalenv())
-  methods::setClass("Foo4", contains = c("Foo2", "Foo3"), where = globalenv())
+  methods::setClass("Foo1", contains = "character")
+  methods::setClass("Foo2", contains = "Foo1")
+  methods::setClass("Foo3", slots = list(x = "numeric"))
+  methods::setClass("Foo4", contains = c("Foo2", "Foo3"))
 
   klass <- methods::getClass("Foo4")
 
   expect_equal(class_type(klass), "S4")
-  expect_equal(class_dispatch(klass), c("S4/Foo4", "S4/Foo2", "S4/Foo3", "S4/Foo1", "character"))
-  expect_equal(class_register(klass), "S4/Foo4")
+  expect_equal(class_dispatch(klass), c("S4/S7::Foo4", "S4/S7::Foo2", "S4/S7::Foo3", "S4/S7::Foo1", "character"))
+  expect_equal(class_register(klass), "S4/S7::Foo4")
   expect_s4_class(class_construct(klass, 1, x = 2), "Foo4")
   expect_equal(class_desc(klass), "S4<Foo4>")
   expect_equal(class_deparse(klass), "Foo4")

@@ -67,6 +67,7 @@ is_external_generic <- function(x) {
 #'
 #' @importFrom utils getFromNamespace packageName
 #' @export
+#' @returns Nothing; called for its side-effects.
 #' @examples
 #' .onLoad <- function(...) {
 #'   S7::methods_register()
@@ -84,6 +85,8 @@ methods_register <- function() {
       setHook(packageEvent(x$generic$package, "onLoad"), register)
     }
   }
+
+  invisible()
 }
 
 registrar <- function(generic, signature, method) {
