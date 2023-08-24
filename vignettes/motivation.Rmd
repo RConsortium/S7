@@ -70,5 +70,5 @@ library(S7)
     This leads to two problems.
     Firstly, implementing an S4 Bioconductor class often also requires a plethora of accessor functions that are a thin wrapper around `@` or `@<-`.
     Secondly, users know about `@` and use it to access object internals even though they're not supposed to.
-    S7 supports avoids these problems by accepting the fact that R is a data language, and that there's no way to stop users from pulling the data they need out of an object.
+    S7 avoids these problems by accepting the fact that R is a data language, and that there's no way to stop users from pulling the data they need out of an object.
     To make it possible to change the internal implementation details of an object while preserving existing `@` usage, S7 provides dynamic properties.
