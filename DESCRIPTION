@@ -1,7 +1,7 @@
 Package: S7
 Title: 
     An Object Oriented System Meant to Become a Successor to S3 and S4
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: c(
     person("Object-Oriented Programming Working Group", role = "cph"),
     person("Davis", "Vaughan", role = "aut"),
