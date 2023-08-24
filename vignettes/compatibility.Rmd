@@ -62,7 +62,7 @@ mean(foo())
 ### Classes
 
 It's possible to extend an S7 class with S3.
-This is primarily useful because it many cases it allows you to change a class hierarchy from the inside out: you can provide a formal definition of an S3 class using S7, and its subclasses don't need to change.
+This is primarily useful because in many cases it allows you to change a class hierarchy from the inside out: you can provide a formal definition of an S3 class using S7, and its subclasses don't need to change.
 
 ### List classes
 
