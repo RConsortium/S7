@@ -35,7 +35,7 @@ test_that("base unions display as expected", {
 })
 
 test_that("can construct from S3 and S4 classes", {
-  S4_union <- methods::setClass("S4_union", where = globalenv())
+  S4_union <- methods::setClass("S4_union")
   on.exit(S4_remove_classes("S4_union"))
 
   u <- new_union(class_factor, S4_union)
@@ -44,9 +44,9 @@ test_that("can construct from S3 and S4 classes", {
 
 test_that("can construct with |", {
   foo <- new_class("foo")
-  Foo1 <- setClass("Foo1", slots = list("x" = "numeric"), where = globalenv())
-  Foo2 <- setClass("Foo2", slots = list("x" = "numeric"), where = globalenv())
-  Foo3 <- setClassUnion("Foo3", c("Foo1", "Foo2"), where = globalenv())
+  Foo1 <- setClass("Foo1", slots = list("x" = "numeric"))
+  Foo2 <- setClass("Foo2", slots = list("x" = "numeric"))
+  Foo3 <- setClassUnion("Foo3", c("Foo1", "Foo2"))
   on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
 
   expect_equal(class_integer | class_double, class_numeric)

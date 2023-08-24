@@ -1,7 +1,5 @@
 # S7 0.1.0
 
-# S7 0.0.0.9000
-
 ## May-July 2023
 
 * `new_external_generic()` is only needed when you want a soft dependency
