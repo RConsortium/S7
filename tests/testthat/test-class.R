@@ -208,3 +208,16 @@ test_that("c(<S7_class>, ...) gives error", {
     c(foo1, foo1)
   })
 })
+
+test_that("can round trip to disk and back", {
+  foo1 <- new_class("foo1", properties = list(y = class_integer))
+  foo2 <- new_class("foo2", properties = list(x = foo1))
+
+  f <- foo2(x = foo1(y = 1L))
+
+  path <- tempfile()
+  saveRDS(f, path)
+  f2 <- readRDS(path)
+
+  expect_equal(f2, f)
+})
