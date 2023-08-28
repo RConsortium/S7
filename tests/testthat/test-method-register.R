@@ -51,7 +51,7 @@ describe("method registration", {
     foo <- new_class("foo")
     bar <- new_class("bar")
 
-    method(`+`, list(foo, bar)) <- function(x, y) "foobar"
+    method(`+`, list(foo, bar)) <- function(e1, e2) "foobar"
     expect_equal(foo() + bar(), "foobar")
 
     if(getRversion() >= "4.3.0") {

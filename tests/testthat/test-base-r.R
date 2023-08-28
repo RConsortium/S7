@@ -61,8 +61,8 @@ test_that("Ops generics dispatch to S7 methods", {
 
   ## Test Ops
   ClassX <- new_class("ClassX")
-  method(`+`, list(class_any, ClassX))   <- function(x, y) "class_any + ClassX"
-  method(`+`, list(ClassX, class_any))   <- function(x, y) "ClassX + class_any"
+  method(`+`, list(class_any, ClassX))   <- function(e1, e2) "class_any + ClassX"
+  method(`+`, list(ClassX, class_any))   <- function(e1, e2) "ClassX + class_any"
   method(`%*%`, list(ClassX, class_any)) <- function(x, y) "ClassX %*% class_any"
   method(`%*%`, list(class_any, ClassX)) <- function(x, y) "class_any %*% ClassX"
 
@@ -96,7 +96,7 @@ test_that("Ops generics dispatch to S7 methods", {
   `+.foo`   <- function(e1, e2) paste(class(e1), "+"     , class(e2))
   `%*%.foo` <- function(x, y)   paste(class(x) , "%*%"   , class(y))
   Ops.bar   <- function(e1, e2) paste(class(e1), .Generic, class(e2))
-  matrixOps.bar   <- function(e1, e2) paste(class(e1), .Generic, class(e2))
+  matrixOps.bar   <- function(x, y) paste(class(x), .Generic, class(y))
 
   foo <- structure("", class = "foo")
   bar <- structure("", class = "bar")
