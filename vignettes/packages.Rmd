@@ -24,7 +24,7 @@ library(S7)
 
 ## Method registration
 
-You should alwys call `methods_register()` in your `.onLoad()`:
+You should always call `methods_register()` in your `.onLoad()`:
 
 ```{r}
 .onLoad <- function(...) {
