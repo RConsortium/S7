@@ -23,8 +23,8 @@ Description: A new object oriented programming system designed to be a successor
   which includes representatives from R-Core, 'Bioconductor', 
   'Posit'/'tidyverse', and the wider R community.
 License: MIT + file LICENSE
-URL: https://github.com/rconsortium/OOP-WG/,
-    https://rconsortium.github.io/OOP-WG/
+URL: https://github.com/rconsortium/S7/,
+    https://rconsortium.github.io/S7/
 BugReports: https://github.com/rconsortium/OOP-WG/issues
 Depends: 
     R (>= 3.5.0)
