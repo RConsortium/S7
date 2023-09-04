@@ -96,7 +96,7 @@ package yet; this means that this vignette is likely incomplete, and
 we’d love your help to make it better. Please <a href="https://github.com/RConsortium/OOP-WG/issues/new" class="external-link">let us know</a>
 if you have questions that this vignette doesn’t answer.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/OOP-WG/" class="external-link">S7</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/S7/" class="external-link">S7</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="method-registration">Method registration<a class="anchor" aria-label="anchor" href="#method-registration"></a>
 </h2>
@@ -157,7 +157,7 @@ this <code>.onAttach()</code> code:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">.onAttach</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">libname</span>, <span class="va">pkgname</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">getRversion</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&lt;</span> <span class="st">"4.3.0"</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/OOP-WG/" class="external-link">S7</a></span><span class="op">)</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/S7/" class="external-link">S7</a></span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Use this technique with care as it will attach S7 to the user search
 path, possibly causing conflicts with other packages/functions.</p>
