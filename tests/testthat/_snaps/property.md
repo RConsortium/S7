@@ -31,9 +31,16 @@
       obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     Error <simpleError>
-      <foo> object properties are invalid:
-      - @x must be <double>, not <character>
-      - @y must be <double>, not <character>
+      <foo>@y must be <double>, not <character>
+
+# prop setting: validates once after custom setter
+
+    Code
+      obj <- foo2("123")
+    Output
+      [1] "validating"
+    Code
+      obj@x <- "456"
 
 # new_property(): validates getter and settor
 

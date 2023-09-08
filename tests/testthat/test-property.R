@@ -69,7 +69,8 @@ describe("prop setting", {
       x = new_property(
         class_double,
         setter = function(self, value) {
-          props(self) <- list(x = value, y = value)
+          self@x <- 123
+          self@y <- value
           self
         }
       ),
@@ -81,17 +82,20 @@ describe("prop setting", {
     })
   })
 
-  it("validates after custom setter", {
-    foo2 <- new_class("foo2", properties = list(x =
-      new_property(
-        class_double,
-        setter = function(self, value) {
-          self@x <- as.double(value)
-          self
-        }
-      )
-    ))
-    expect_no_error({
+  it("validates once after custom setter", {
+    custom_setter <- function(self, value) {
+      self@x <- as.double(value)
+      self
+    }
+    foo2 <- new_class(
+      "foo2",
+      properties = list(x = new_property(class_double, setter = custom_setter)),
+      validator = function(self) {
+        print("validating")
+        character()
+      }
+    )
+    expect_snapshot({
       obj <- foo2("123")
       obj@x <- "456"
     })
