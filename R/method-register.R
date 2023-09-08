@@ -113,7 +113,7 @@ register_S3_method <- function(generic, signature, method) {
     )
     stop(msg, call. = FALSE)
   }
-  class <- signature[[1]]@name
+  class <- S7_class_name(signature[[1]])
   registerS3method(generic$name, class, method, envir = parent.frame())
 }
 
