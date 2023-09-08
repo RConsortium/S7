@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* `new_object()` now correctly runs the validator from abstract parent classes 
+  (#329).
+
 * `new_object()` works better when custom property setters modify other 
   properties.
 

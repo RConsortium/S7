@@ -99,6 +99,14 @@
     Error <simpleError>
       Abstract classes must have abstract parents
 
+# abstract classes: can use inherited validator from abstract class
+
+    Code
+      foo2(x = 2)
+    Error <simpleError>
+      <foo2> object is invalid:
+      - @x has bad value
+
 # new_object(): gives useful error if called directly
 
     Code
