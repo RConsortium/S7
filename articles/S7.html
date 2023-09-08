@@ -152,7 +152,7 @@ of the class:</p>
 supplied in <code><a href="../reference/new_class.html">new_class()</a></code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lola</span><span class="op">@</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="st">"twelve"</span></span>
-<span><span class="co">#&gt; Error: &lt;dog&gt;@age must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; Error in `prop&lt;-`(`*tmp*`, nme, value = value): &lt;dog&gt;@age must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span></span></code></pre></div>
 <p>Given an object, you can retrieves its class
 <code><a href="../reference/S7_class.html">S7_class()</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -315,7 +315,7 @@ of one of those methods:</p>
 <span><span class="co">#&gt; {</span></span>
 <span><span class="co">#&gt;     paste0(x@name, " is ", x@age, " years old")</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x557567004170&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;bytecode: 0x56290c3d4ac0&gt;</span></span></code></pre></div>
 <p>Learn more about method dispatch in
 <code><a href="../articles/generics-methods.html">vignette("generics-methods")</a></code>.</p>
 </div>
