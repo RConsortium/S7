@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Correctly register S3 methods for S7 objects with a package (#333).
+
 # S7 0.1.0
 
 ## May-July 2023
