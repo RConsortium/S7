@@ -1,9 +1,11 @@
 # S7 (development version)
 
-* `new_object()` works better when custom setters modifier other attributes.
+* `new_object()` works better when custom property setters modify other 
+  properties.
 
 * Properties with a custom setter are now validated _after_ the setter has
-  been run.
+  run and are validated when the object is constructed or when you call 
+  `validate()`, not just when you modify them after construction.
 
 * In `new_property()` clarify that it's the users responsibility to return
   the correct class; it is _not_ automatically validated.
