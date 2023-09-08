@@ -118,6 +118,11 @@ matrixOps.S7_object <- function(x, y) {
   base_matrix_ops[[.Generic]](x, y)
 }
 
+if(getRversion() < "4.4.0")
+matrixOps.S7_object <- function(e1, e2) {
+  base_matrix_ops[[.Generic]](e1, e2)
+}
+
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 
