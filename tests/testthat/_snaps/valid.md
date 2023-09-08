@@ -40,3 +40,10 @@
       <Double> object is invalid:
       - Underlying data must be <double> not <character>
 
+# validate checks the type of setters
+
+    Code
+      foo(x = 123)
+    Error <simpleError>
+      <foo>@x must be <double>, not <character>
+

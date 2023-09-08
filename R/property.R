@@ -12,8 +12,9 @@
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
 #' @param getter An optional function used to get the value. The function
-#'   should take `self`  as its sole argument and return the value. If the
-#'   property has a `class` the class of the value is validated.
+#'   should take `self` as its sole argument and return the value. If you
+#'   supply a `getter`, you are responsible for ensuring that it returns
+#'   an object of the correct `class`; it will not be validated automatically.
 #'
 #'   If a property has a getter but doesn't have a setter, it is read only.
 #' @param setter An optional function used to set the value. The function
@@ -189,8 +190,11 @@ prop_obj <- function(object, name) {
       stop(msg, call. = FALSE)
     }
 
-    if (isTRUE(check) && !class_inherits(value, prop$class)) {
-      stop(prop_error_type(object, name, prop$class, value), call. = FALSE)
+    if (isTRUE(check)) {
+      error <- prop_validate(prop, value, object)
+      if (!is.null(error)) {
+        stop(error, call. = TRUE)
+      }
     }
 
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
@@ -213,12 +217,16 @@ prop_error_unknown <- function(object, prop_name) {
   sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
 }
 
-prop_error_type <- function(object, prop_name, expected, actual) {
+prop_validate <- function(prop, value, object = NULL) {
+  if (class_inherits(value, prop$class)) {
+    return()
+  }
+
   sprintf("%s@%s must be %s, not %s",
     if (!is.null(object)) obj_desc(object) else "",
-    prop_name,
-    class_desc(expected),
-    obj_desc(actual)
+    prop$name,
+    class_desc(prop$class),
+    obj_desc(value)
   )
 }
 

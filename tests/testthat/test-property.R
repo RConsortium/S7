@@ -66,7 +66,10 @@ describe("prop setting", {
     foo2 <- new_class("foo2", properties = list(x =
       new_property(
         class_double,
-        setter = function(self, value) self
+        setter = function(self, value) {
+          self@x <- value
+          self
+        }
       )
     ))
     expect_snapshot(error = TRUE, {
