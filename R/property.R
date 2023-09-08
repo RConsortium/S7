@@ -218,16 +218,16 @@ prop_error_unknown <- function(object, prop_name) {
 }
 
 prop_validate <- function(prop, value, object = NULL) {
-  if (class_inherits(value, prop$class)) {
-    return()
+  if (!class_inherits(value, prop$class)) {
+    return(sprintf("%s@%s must be %s, not %s",
+      if (!is.null(object)) obj_desc(object) else "",
+      prop$name,
+      class_desc(prop$class),
+      obj_desc(value)
+    ))
   }
 
-  sprintf("%s@%s must be %s, not %s",
-    if (!is.null(object)) obj_desc(object) else "",
-    prop$name,
-    class_desc(prop$class),
-    obj_desc(value)
-  )
+  NULL
 }
 
 #' @rdname prop

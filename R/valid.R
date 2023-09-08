@@ -109,7 +109,8 @@ validate_properties <- function(object, class) {
       next
     }
 
-    errors <- c(errors, prop_validate(prop, prop(object, prop$name)))
+    value <- prop(object, prop$name)
+    errors <- c(errors, prop_validate(prop, value))
   }
 
   errors
