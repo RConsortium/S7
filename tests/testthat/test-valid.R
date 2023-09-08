@@ -52,6 +52,9 @@ test_that("validate checks the type of setters", {
 })
 
 test_that("validate does not check type of getters", {
+  # because getters can be peform arbitrary computation and we want
+  # validation to always be cheap
+
   prop <- new_property(class_integer, getter = function(self) "x")
   foo <- new_class("foo", properties =  list(x = prop))
 
