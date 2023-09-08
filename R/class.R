@@ -245,18 +245,22 @@ new_object <- function(.parent, ...) {
   args <- list(...)
   nms <- names(args)
 
-  missing_props <- nms[vlapply(args, is_class_missing)]
-  for(prop in missing_props) {
-    args[[prop]] <- prop_default(class@properties[[prop]])
-  }
-
   object <- .parent %||% class_construct(class@parent)
   attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
-  for (nme in nms) {
-    prop(object, nme, check = FALSE) <- args[[nme]]
+  supplied_props <- nms[!vlapply(args, is_class_missing)]
+  for (prop in supplied_props) {
+    prop(object, prop, check = FALSE) <- args[[prop]]
   }
+
+  # We have to fill in missing values after setting the initial properties,
+  # because custom setters might set property values
+  missing_props <- setdiff(nms, union(supplied_props, names(attributes(object))))
+  for (prop in missing_props) {
+    prop(object, prop, check = FALSE) <- prop_default(class@properties[[prop]])
+  }
+
   # Only needs to validate this object if parent was already an S7 object
   validate(object, recursive = !inherits(.parent, "S7_object"))
 

@@ -101,6 +101,28 @@ describe("prop setting", {
     })
   })
 
+  it("validates once with recursive property setters", {
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(setter = function(self, value) {
+          self@x <- 1
+          self@y <- value + 1
+          self
+        }),
+        y = new_property(setter = function(self, value) {
+          self@y <- 2
+          self@z <- as.integer(value + 1)
+          self
+        }),
+        z = new_property(class_integer)
+      ),
+      validator = function(self) {print("validating"); NULL}
+    )
+    expect_snapshot(out <- foo(x = 1))
+    expect_identical(out@z, 3L)
+  })
+
   it("does not run the check or validation functions if check = FALSE", {
     foo <- new_class("foo", properties = list(x = class_double))
     obj <- foo(123)

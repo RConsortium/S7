@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `new_object()` works better when custom setters modifier other attributes.
+
 * Properties with a custom setter are now validated _after_ the setter has
   been run.
 
