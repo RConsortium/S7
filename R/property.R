@@ -190,18 +190,18 @@ prop_obj <- function(object, name) {
       stop(msg, call. = FALSE)
     }
 
-    if (isTRUE(check) && (is.null(prop$setter) || !is.null(setter_property))) {
-      error <- prop_validate(prop, value, object)
-      if (!is.null(error)) {
-        stop(error, call. = TRUE)
-      }
-    }
-
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
       on.exit(setter_property <<- NULL, add = TRUE)
       object <- prop$setter(object, value)
     } else {
+      if (isTRUE(check)) {
+        error <- prop_validate(prop, value, object)
+        if (!is.null(error)) {
+          stop(error, call. = TRUE)
+        }
+      }
+
       attr(object, name) <- value
     }
 
