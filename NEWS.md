@@ -1,8 +1,7 @@
 # S7 (development version)
 
 * Properties with a custom setter are now validated _after_ the setter has
-  been run, and because custom setters can modify any property, this will
-  perform a complete validation of the object.
+  been run.
 
 * In `new_property()` clarify that it's the users responsibility to return
   the correct class; it is _not_ automatically validated.
