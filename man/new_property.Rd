@@ -17,8 +17,9 @@ new_property(
 See \code{\link[=as_class]{as_class()}} for details.}
 
 \item{getter}{An optional function used to get the value. The function
-should take \code{self}  as its sole argument and return the value. If the
-property has a \code{class} the class of the value is validated.
+should take \code{self} as its sole argument and return the value. If you
+supply a \code{getter}, you are responsible for ensuring that it returns
+an object of the correct \code{class}; it will not be validated automatically.
 
 If a property has a getter but doesn't have a setter, it is read only.}
 

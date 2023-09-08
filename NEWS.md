@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* In `new_property()` clarify that it's the users responsibility to return
+  the correct class; it is _not_ automatically validated.
+
 * Correctly register S3 methods for S7 objects with a package (#333).
 
 # S7 0.1.0
