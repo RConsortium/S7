@@ -25,13 +25,29 @@
     Error <simpleError>
       <foo>@x must be <double>, not <character>
 
----
+# prop setting: validates all attributes if custom setter
 
     Code
-      obj <- foo2(123)
+      obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     Error <simpleError>
-      <foo2>@x must be <double>, not <character>
+      <foo>@y must be <double>, not <character>
+
+# prop setting: validates once after custom setter
+
+    Code
+      obj <- foo2("123")
+    Output
+      [1] "validating"
+    Code
+      obj@x <- "456"
+
+# prop setting: validates once with recursive property setters
+
+    Code
+      out <- foo(x = 1)
+    Output
+      [1] "validating"
 
 # new_property(): validates getter and settor
 

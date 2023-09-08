@@ -62,17 +62,65 @@ describe("prop setting", {
       obj@foo <- 10
       obj@x <- "x"
     })
+  })
 
-    foo2 <- new_class("foo2", properties = list(x =
-      new_property(
+  it("validates all attributes if custom setter", {
+    foo <- new_class("foo", properties = list(
+      x = new_property(
         class_double,
-        setter = function(self, value) self
-      )
+        setter = function(self, value) {
+          self@x <- 123
+          self@y <- value
+          self
+        }
+      ),
+      y = new_property(class_double)
     ))
     expect_snapshot(error = TRUE, {
-      obj <- foo2(123)
+      obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     })
+  })
+
+  it("validates once after custom setter", {
+    custom_setter <- function(self, value) {
+      self@x <- as.double(value)
+      self
+    }
+    foo2 <- new_class(
+      "foo2",
+      properties = list(x = new_property(class_double, setter = custom_setter)),
+      validator = function(self) {
+        print("validating")
+        character()
+      }
+    )
+    expect_snapshot({
+      obj <- foo2("123")
+      obj@x <- "456"
+    })
+  })
+
+  it("validates once with recursive property setters", {
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(setter = function(self, value) {
+          self@x <- 1
+          self@y <- value + 1
+          self
+        }),
+        y = new_property(setter = function(self, value) {
+          self@y <- 2
+          self@z <- as.integer(value + 1)
+          self
+        }),
+        z = new_property(class_integer)
+      ),
+      validator = function(self) {print("validating"); NULL}
+    )
+    expect_snapshot(out <- foo(x = 1))
+    expect_identical(out@z, 3L)
   })
 
   it("does not run the check or validation functions if check = FALSE", {

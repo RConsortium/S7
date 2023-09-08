@@ -1,5 +1,15 @@
 # S7 (development version)
 
+* `new_object()` works better when custom property setters modify other 
+  properties.
+
+* Properties with a custom setter are now validated _after_ the setter has
+  run and are validated when the object is constructed or when you call 
+  `validate()`, not just when you modify them after construction.
+
+* In `new_property()` clarify that it's the users responsibility to return
+  the correct class; it is _not_ automatically validated.
+
 * Correctly register S3 methods for S7 objects with a package (#333).
 
 # S7 0.1.0
