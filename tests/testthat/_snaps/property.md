@@ -25,13 +25,15 @@
     Error <simpleError>
       <foo>@x must be <double>, not <character>
 
----
+# prop setting: validates all attributes if custom setter
 
     Code
-      obj <- foo2(123)
+      obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     Error <simpleError>
-      <foo2>@x must be <double>, not <character>
+      <foo> object properties are invalid:
+      - @x must be <double>, not <character>
+      - @y must be <double>, not <character>
 
 # new_property(): validates getter and settor
 

@@ -45,5 +45,6 @@
     Code
       foo(x = 123)
     Error <simpleError>
-      <foo>@x must be <double>, not <character>
+      <foo> object properties are invalid:
+      - @x must be <double>, not <character>
 

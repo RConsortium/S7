@@ -190,7 +190,7 @@ prop_obj <- function(object, name) {
       stop(msg, call. = FALSE)
     }
 
-    if (isTRUE(check)) {
+    if (isTRUE(check) && is.null(prop$setter)) {
       error <- prop_validate(prop, value, object)
       if (!is.null(error)) {
         stop(error, call. = TRUE)
@@ -206,7 +206,7 @@ prop_obj <- function(object, name) {
     }
 
     if (isTRUE(check)) {
-      validate(object, properties = FALSE)
+      validate(object, properties = !is.null(prop$setter))
     }
 
     invisible(object)
