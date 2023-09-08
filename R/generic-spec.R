@@ -17,6 +17,8 @@ as_S3_generic <- function(x) {
     name <- find_base_name(x)
     if (name %in% names(base_ops)) {
       return(base_ops[[name]])
+    } else if (name %in% names(base_matrix_ops)) {
+      return(base_matrix_ops[[name]])
     } else if (!is.na(name) && is_internal_generic(name)) {
       return(S3_generic(x, name))
     }
