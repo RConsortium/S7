@@ -298,3 +298,19 @@ test_that("as_properties() gives useful error messages", {
     as_properties(list(x = class_character, x = class_character))
   })
 })
+
+test_that("can validate with custom validator", {
+  validate_scalar <- function(value) {
+    if (length(value) != 1) {
+      "must be length 1"
+    }
+  }
+  prop <- new_property(class_integer, validator = validate_scalar)
+  foo <- new_class("foo", properties = list(x = prop))
+  expect_snapshot(error = TRUE, {
+    f <- foo(x = 1L)
+    f@x <- 1:2
+
+    foo(x = 1:2)
+  })
+})
