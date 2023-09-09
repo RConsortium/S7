@@ -21,6 +21,10 @@ new_constructor <- function(parent, properties) {
     parent_name <- parent@name
     parent_fun <- parent
     args <- missing_args(union(arg_info$parent, arg_info$self))
+  } else if (is_dynamic_class(parent)) {
+    parent_name <- parent$name
+    parent_fun <- parent$constructor_fun
+    args <- missing_args(union(arg_info$parent, arg_info$self))
   } else if (is_base_class(parent)) {
     parent_name <- parent$constructor_name
     parent_fun <- parent$constructor
@@ -45,13 +49,17 @@ new_constructor <- function(parent, properties) {
   body <- new_call("new_object", c(parent_call, self_args))
 
   env <- new.env(parent = asNamespace("S7"))
-  env[[parent_name]] <- parent_fun
+  if (!is_dynamic_class(parent)) {
+    env[[parent_name]] <- parent_fun
+  } else {
+    makeActiveBinding(parent_name, parent_fun, env)
+  }
 
   new_function(args, body, env)
 }
 
 constructor_args <- function(parent, properties = list()) {
-  parent_args <- names2(formals(class_constructor(parent)))
+  parent_args <- class_constructor_args(parent)
 
   self_args <- names2(properties)
   # Remove dynamic arguments
@@ -59,7 +67,7 @@ constructor_args <- function(parent, properties = list()) {
   if (is_class(parent) && !parent@abstract) {
     # Remove any parent properties; can't use parent_args() since the constructor
     # might automatically set some properties.
-    self_args <- setdiff(self_args, names2(parent@properties))
+    self_args <- setdiff(self_args, names2(class_properties(parent)))
   }
 
   list(

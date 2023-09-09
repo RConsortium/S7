@@ -128,7 +128,7 @@ new_class <- function(
   }
 
   # Combine properties from parent, overriding as needed
-  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
+  all_props <- class_properties(parent)
   new_props <- as_properties(properties)
   all_props[names(new_props)] <- new_props
 
@@ -207,7 +207,9 @@ c.S7_class <- function(...) {
   stop(msg, call. = FALSE)
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_dynamic_class(x)
+}
 
 check_can_inherit <- function(x, arg = deparse(substitute(x))) {
   if (!can_inherit(x)) {
