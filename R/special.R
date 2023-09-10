@@ -29,10 +29,6 @@ str.S7_missing <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object)
 }
-#' @export
-`|.S7_missing` <- function(e1, e2) {
-  new_union(e1, e2)
-}
 
 #' @export
 #' @rdname class_missing
@@ -49,8 +45,4 @@ print.S7_any <- function(x, ...) {
 str.S7_any <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   print(object)
-}
-#' @export
-`|.S7_any` <- function(e1, e2) {
-  new_union(e1, e2)
 }
