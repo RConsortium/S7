@@ -42,7 +42,7 @@ describe("S7 classes", {
     foo_ex <- new_external_class("S7", "foo", function() foo)
 
     foo2 <- new_class("foo", parent = foo_ex)
-    expect_s3_class(foo2(), c("foo2", "pkg::foo"))
+    expect_s3_class(foo2(x = 1L), c("foo2", "pkg::foo"))
   })
 
   it("can't inherit from S4 or class unions", {
