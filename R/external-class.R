@@ -37,6 +37,11 @@ new_external_class <- function(package,
     check_function(constructor_fun, alist())
   }
 
+  constructor <- constructor_fun()
+  if (!is_class(constructor)) {
+    stop("`constructor_fun()` must yield an S7 class")
+  }
+
   out <- list(
     package = package,
     name = name,
