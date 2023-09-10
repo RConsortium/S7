@@ -16,7 +16,7 @@ new_constructor <- function(parent, properties) {
       env = asNamespace("S7")
     ))
   }
-  if (is_dynamic_class(parent)) {
+  if (is_external_class(parent)) {
     return(dynamic_constructor(parent$constructor_fun, properties))
   }
 
@@ -48,7 +48,7 @@ new_constructor <- function(parent, properties) {
   body <- new_call("new_object", c(parent_call, self_args))
 
   env <- new.env(parent = asNamespace("S7"))
-  if (!is_dynamic_class(parent)) {
+  if (!is_external_class(parent)) {
     env[[parent_name]] <- parent_fun
   } else {
     makeActiveBinding(parent_name, parent_fun, env)

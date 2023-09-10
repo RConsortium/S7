@@ -208,7 +208,7 @@ c.S7_class <- function(...) {
 }
 
 can_inherit <- function(x) {
-  is_base_class(x) || is_S3_class(x) || is_class(x) || is_dynamic_class(x)
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_external_class(x)
 }
 
 check_can_inherit <- function(x, arg = deparse(substitute(x))) {
