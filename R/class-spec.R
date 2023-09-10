@@ -127,7 +127,7 @@ class_desc <- function(x) {
     S7 = paste0("<", S7_class_name(x), ">"),
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
-    S7_external = paste0("<ext:", S7_class_name(x$constructor_fun()), ">"),
+    S7_external = paste0("<", x$package, "::", x$name, ">"),
     S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
   )
 }
@@ -191,6 +191,7 @@ class_inherits <- function(x, what) {
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
+    S7_external = class_inherits(x, what$constructor_fun()),
     # This is slightly too crude as we really want them to be in the same
     # order and contiguous, but it's probably close enough for practical
     # purposes
@@ -202,10 +203,10 @@ class_inherits <- function(x, what) {
 
 class_properties <- function(x) {
   if (is_external_class(x)) {
-    x$properties
-  } else {
-    attr(x, "properties", exact = TRUE) %||% list()
+    x <- x$constructor_fun()
   }
+
+  attr(x, "properties", exact = TRUE) %||% list()
 }
 
 # object ------------------------------------------------------------------

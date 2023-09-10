@@ -29,12 +29,16 @@ reference:
   - method
   - method_explain
   - methods_register
-  - new_external_generic
   - new_S3_class
   - S4_register
   - S7_class
   - base_classes
   - class_missing
+
+- title: Packages
+  contents:
+  - new_external_class
+  - new_external_generic
 
 articles:
 - title: Learn S7
