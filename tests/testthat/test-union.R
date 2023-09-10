@@ -44,6 +44,7 @@ test_that("can construct from S3 and S4 classes", {
 
 test_that("can construct with |", {
   foo <- new_class("foo")
+  foo_ex <- new_external_class("pkg", "foo", function() foo)
   Foo1 <- setClass("Foo1", slots = list("x" = "numeric"))
   Foo2 <- setClass("Foo2", slots = list("x" = "numeric"))
   Foo3 <- setClassUnion("Foo3", c("Foo1", "Foo2"))
@@ -53,6 +54,7 @@ test_that("can construct with |", {
   expect_equal(class_integer | class_numeric, class_numeric)
   expect_equal(class_integer | class_factor, new_union(class_integer, class_factor))
   expect_equal(class_integer | foo, new_union(class_integer, foo))
+  expect_equal(class_integer | foo_ex, new_union(class_integer, foo_ex))
   expect_equal(class_integer | Foo1, new_union(class_integer, Foo1))
   expect_equal(class_integer | getClass("Foo1"), new_union(class_integer, Foo1))
   expect_equal(class_integer | Foo3, new_union(class_integer, Foo3))

@@ -148,6 +148,7 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
   registerS3method("|", "S7_union", `|.S7_class`)
   registerS3method("|", "S7_base_class", `|.S7_class`)
   registerS3method("|", "S7_S3_class", `|.S7_class`)
+  registerS3method("|", "S7_external_class", `|.S7_class`)
   registerS3method("|", "classGeneratorFunction", `|.S7_class`)
   registerS3method("|", "ClassUnionRepresentation", `|.S7_class`)
   registerS3method("|", "classRepresentation", `|.S7_class`)
