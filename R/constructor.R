@@ -61,10 +61,9 @@ dynamic_constructor <- function(constructor_fun, properties) {
     parent_class <- constructor_fun()
     args_info <- constructor_args(parent_class, properties)
 
-    args <- as.list(substitute(...()))
-
-    parent_obj <- do.call("parent_class", args[args_info$parent_args])
-    do.call("new_object", c(list(parent_obj), args[args_info$self_args]))
+    args <- list(...)
+    parent_obj <- do.call("parent_class", args[args_info$parent])
+    do.call("new_object", c(list(parent_obj), args[args_info$self]))
   }
 }
 
