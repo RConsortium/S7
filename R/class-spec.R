@@ -200,14 +200,6 @@ class_inherits <- function(x, what) {
 
 # dynamic class -----------------------------------------------------------
 
-class_constructor_args <- function(x) {
-  if (is_dynamic_class(x)) {
-    x$constructor_args
-  } else {
-    names2(formals(class_constructor(x)))
-  }
-}
-
 class_properties <- function(x) {
   if (is_dynamic_class(x)) {
     x$properties

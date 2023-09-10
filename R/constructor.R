@@ -73,7 +73,7 @@ dynamic_constructor <- function(constructor_fun, properties) {
 }
 
 constructor_args <- function(parent, properties = list()) {
-  parent_args <- class_constructor_args(parent)
+  parent_args <- names2(formals(class_constructor(parent)))
 
   self_args <- names2(properties)
   # Remove dynamic arguments
