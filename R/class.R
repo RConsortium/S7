@@ -235,7 +235,8 @@ is_class <- function(x) inherits(x, "S7_class")
 #' @rdname new_class
 #' @export
 new_object <- function(.parent, ...) {
-  class <- sys.function(-1)
+  class <- sys.function(sys.parent())
+
   if (!inherits(class, "S7_class")) {
     stop("`new_object()` must be called from within a constructor")
   }

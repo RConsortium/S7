@@ -16,14 +16,13 @@ new_constructor <- function(parent, properties) {
       env = asNamespace("S7")
     ))
   }
+  if (is_dynamic_class(parent)) {
+    return(dynamic_constructor(parent$constructor_fun, properties))
+  }
 
   if (is_class(parent)) {
     parent_name <- parent@name
     parent_fun <- parent
-    args <- missing_args(union(arg_info$parent, arg_info$self))
-  } else if (is_dynamic_class(parent)) {
-    parent_name <- parent$name
-    parent_fun <- parent$constructor_fun
     args <- missing_args(union(arg_info$parent, arg_info$self))
   } else if (is_base_class(parent)) {
     parent_name <- parent$constructor_name
@@ -56,6 +55,21 @@ new_constructor <- function(parent, properties) {
   }
 
   new_function(args, body, env)
+}
+
+dynamic_constructor <- function(constructor_fun, properties) {
+  force(constructor_fun)
+  force(properties)
+
+  function(...) {
+    parent_class <- constructor_fun()
+    args_info <- constructor_args(parent_class, properties)
+
+    args <- as.list(substitute(...()))
+
+    parent_obj <- do.call("parent_class", args[args_info$parent_args])
+    do.call("new_object", c(list(parent_obj), args[args_info$self_args]))
+  }
 }
 
 constructor_args <- function(parent, properties = list()) {
