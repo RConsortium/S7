@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `class_missing` and `class_any` can now be unioned with `|` (#337).
+
 * `new_object()` works better when custom property setters modify other 
   properties.
 
