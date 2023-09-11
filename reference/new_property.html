@@ -86,6 +86,7 @@ behaviour when modified.</p>
 <span>  class <span class="op">=</span> <span class="va">class_any</span>,</span>
 <span>  getter <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  setter <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  validator <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  default <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  name <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -109,6 +110,18 @@ an object of the correct <code>class</code>; it will not be validated automatica
 <dt>setter</dt>
 <dd><p>An optional function used to set the value. The function
 should take <code>self</code> and <code>value</code> and return a modified object.</p></dd>
+
+
+<dt>validator</dt>
+<dd><p>A function taking a single argument, <code>value</code>, the value
+to validate.</p>
+<p>The job of a validator is to determine whether the property value is valid.
+It should return <code>NULL</code> if the object is valid, or if it's not valid,
+a single string describing the problem. The message should not include the
+name of the property as this will be automatically appended to the
+beginning of the message.</p>
+<p>The validator will be called after the <code>class</code> has been verified, so
+your code can assume that <code>self</code> has known type.</p></dd>
 
 
 <dt>default</dt>
@@ -153,9 +166,9 @@ properties.</p></dd>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_clock</span> <span class="op">&lt;-</span> <span class="fu">clock</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span>; <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-09-10 17:22:53 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-09-11 19:24:24 UTC"</span>
 <span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-09-10 17:22:54 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2023-09-11 19:24:25 UTC"</span>
 <span class="r-in"><span><span class="co"># This property is read only</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error : Can't set read-only property &lt;clock&gt;@now</span>
