@@ -73,21 +73,23 @@
       print(x)
     Output
       <S7_property> 
-       $ name   : chr "foo"
-       $ class  : <S7_base_class>: <integer>
-       $ getter : NULL
-       $ setter : NULL
-       $ default: NULL
+       $ name     : chr "foo"
+       $ class    : <S7_base_class>: <integer>
+       $ getter   : NULL
+       $ setter   : NULL
+       $ validator: NULL
+       $ default  : NULL
     Code
       str(list(x))
     Output
       List of 1
        $ : <S7_property> 
-        ..$ name   : chr "foo"
-        ..$ class  : <S7_base_class>: <integer>
-        ..$ getter : NULL
-        ..$ setter : NULL
-        ..$ default: NULL
+        ..$ name     : chr "foo"
+        ..$ class    : <S7_base_class>: <integer>
+        ..$ getter   : NULL
+        ..$ setter   : NULL
+        ..$ validator: NULL
+        ..$ default  : NULL
 
 # properties can be base, S3, S4, S7, or S7 union
 
@@ -155,4 +157,17 @@
       as_properties(list(x = class_character, x = class_character))
     Error <simpleError>
       `properties` names must be unique
+
+# can validate with custom validator
+
+    Code
+      f <- foo(x = 1L)
+      f@x <- 1:2
+    Error <simpleError>
+      <foo>@x must be length 1
+    Code
+      foo(x = 1:2)
+    Error <simpleError>
+      <foo> object properties are invalid:
+      - @x must be length 1
 

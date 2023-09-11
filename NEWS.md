@@ -3,6 +3,9 @@
 * `new_object()` now correctly runs the validator from abstract parent classes 
   (#329).
 
+* `new_property()` gains a `validator` argument that allows you to specify
+  a per-property validator (#275).
+
 * `class_missing` and `class_any` can now be unioned with `|` (#337).
 
 * `new_object()` works better when custom property setters modify other 
@@ -12,7 +15,7 @@
   run and are validated when the object is constructed or when you call 
   `validate()`, not just when you modify them after construction.
 
-* In `new_property()` clarify that it's the users responsibility to return
+* In `new_property()` clarify that it's the user's responsibility to return
   the correct class; it is _not_ automatically validated.
 
 * Correctly register S3 methods for S7 objects with a package (#333).
