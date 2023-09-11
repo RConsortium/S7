@@ -25,6 +25,11 @@ the other package is not literally inlined in your package, ensuring that
 when the other package changes your package doesn't need to be rebuilt to
 get those changes.
 
+\code{\link[=new_class]{new_class()}} will automatically convert an S7 class to an external class
+if its \code{package} property has been set, and it's different to the \code{package}
+of the subclass. This should ensure that extending a class in another package
+just works without you having to do anything extra.
+
 Extending a class creates a hard requirement on the package that defines it;
 i.e. you must list the package in the \code{Imports} field in your package's
 \code{DESCRIPTION}.

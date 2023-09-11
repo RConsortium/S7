@@ -113,6 +113,14 @@ new_class <- function(
   # Don't check arguments for S7_object
   if (!is.null(parent)) {
     check_can_inherit(parent)
+
+    # Automatically use an external class if appropriate
+    if (!is.null(package) && is_class(parent)) {
+      if (!is.null(parent@package) && !identical(parent@package, package)) {
+        parent <- new_external_class(parent@package, parent@name)
+      }
+    }
+
     if (!is.null(package)) {
       check_name(package)
     }
