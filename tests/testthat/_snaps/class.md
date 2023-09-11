@@ -18,17 +18,19 @@
        @ package    : NULL
        @ properties :List of 2
        .. $ x: <S7_property> 
-       ..  ..$ name   : chr "x"
-       ..  ..$ class  : <S7_base_class>: <integer>
-       ..  ..$ getter : NULL
-       ..  ..$ setter : NULL
-       ..  ..$ default: NULL
+       ..  ..$ name     : chr "x"
+       ..  ..$ class    : <S7_base_class>: <integer>
+       ..  ..$ getter   : NULL
+       ..  ..$ setter   : NULL
+       ..  ..$ validator: NULL
+       ..  ..$ default  : NULL
        .. $ y: <S7_property> 
-       ..  ..$ name   : chr "y"
-       ..  ..$ class  : <S7_base_class>: <integer>
-       ..  ..$ getter : NULL
-       ..  ..$ setter : NULL
-       ..  ..$ default: NULL
+       ..  ..$ name     : chr "y"
+       ..  ..$ class    : <S7_base_class>: <integer>
+       ..  ..$ getter   : NULL
+       ..  ..$ setter   : NULL
+       ..  ..$ validator: NULL
+       ..  ..$ default  : NULL
        @ abstract   : logi FALSE
        @ constructor: function (x = class_missing, y = class_missing)  
        @ validator  : NULL
@@ -98,6 +100,14 @@
       new_class("foo2", parent = foo1, abstract = TRUE)
     Error <simpleError>
       Abstract classes must have abstract parents
+
+# abstract classes: can use inherited validator from abstract class
+
+    Code
+      foo2(x = 2)
+    Error <simpleError>
+      <foo2> object is invalid:
+      - @x has bad value
 
 # new_object(): gives useful error if called directly
 

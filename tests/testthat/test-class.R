@@ -84,6 +84,19 @@ describe("abstract classes", {
     foo2 <- new_class("foo2", parent = foo1)
     expect_s3_class(foo2(), "foo2")
   })
+  it("can use inherited validator from abstract class", {
+    foo1 <- new_class(
+      "foo1",
+      properties = list(x = class_double),
+      abstract = TRUE,
+      validator = function(self) {
+        if (self@x == 2) "@x has bad value"
+      }
+    )
+    foo2 <- new_class("foo2", parent = foo1)
+    expect_no_error(foo2(x = 1))
+    expect_snapshot(foo2(x = 2), error = TRUE)
+  })
 })
 
 describe("new_object()", {
