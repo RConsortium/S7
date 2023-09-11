@@ -62,7 +62,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li><p><code><a href="../reference/new_property.html">new_property()</a></code> gains a <code>validator</code> argument that allows you to specify a per-property validator (<a href="https://github.com/rconsortium/OOP-WG/issues/275" class="external-link">#275</a>).</p></li>
+<ul><li><p><code><a href="../reference/new_class.html">new_object()</a></code> now correctly runs the validator from abstract parent classes (<a href="https://github.com/rconsortium/OOP-WG/issues/329" class="external-link">#329</a>).</p></li>
+<li><p><code><a href="../reference/new_property.html">new_property()</a></code> gains a <code>validator</code> argument that allows you to specify a per-property validator (<a href="https://github.com/rconsortium/OOP-WG/issues/275" class="external-link">#275</a>).</p></li>
 <li><p><code>class_missing</code> and <code>class_any</code> can now be unioned with <code>|</code> (<a href="https://github.com/rconsortium/OOP-WG/issues/337" class="external-link">#337</a>).</p></li>
 <li><p><code><a href="../reference/new_class.html">new_object()</a></code> works better when custom property setters modify other properties.</p></li>
 <li><p>Properties with a custom setter are now validated <em>after</em> the setter has run and are validated when the object is constructed or when you call <code><a href="../reference/validate.html">validate()</a></code>, not just when you modify them after construction.</p></li>
