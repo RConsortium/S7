@@ -229,13 +229,13 @@ range <- new_class("range",
     end = class_numeric
   ),
   constructor = function(x) {
-    new_object(NULL, start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
+    new_object(S7_object(), start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
   }
 )
 
 range(c(10, 5, 0, 2, 5, 7))
 ```
 
-A constructor must always end with a call to `new_object()`. The first argument to `new_object()` should be an object of the `parent` class, or `NULL`, if there's no parent (as here). That argument should be followed by one named argument for each property.
+A constructor must always end with a call to `new_object()`. The first argument to `new_object()` should be an object of the `parent` class (if you haven't specified a `parent` argument to `new_class()`, then you should use `S7_object()` as the parent here). That argument should be followed by one named argument for each property.
 
 There's one drawback of custom constructors that you should be aware: any subclass will also require a custom constructor.
