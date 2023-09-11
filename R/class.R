@@ -245,7 +245,8 @@ new_object <- function(.parent, ...) {
   args <- list(...)
   nms <- names(args)
 
-  object <- .parent %||% class_construct(class@parent)
+  # TODO: Some type checking on `.parent`?
+  object <- .parent
   attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
