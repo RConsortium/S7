@@ -3,6 +3,8 @@
 * `new_property()` gains a `validator` argument that allows you to specify
   a per-property validator (#275).
 
+* `class_missing` and `class_any` can now be unioned with `|` (#337).
+
 * `new_object()` works better when custom property setters modify other 
   properties.
 
