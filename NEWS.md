@@ -1,5 +1,10 @@
 # S7 (development version)
 
+* External methods are now registered using an attribute of the S3 methods 
+  table rather than an element of that environment. This prevents a warning
+  being generated during the "code/documentation mismatches" check in
+  `R CMD check` (#342).
+
 * `class_missing` and `class_any` can now be unioned with `|` (#337).
 
 * `new_object()` works better when custom property setters modify other 
