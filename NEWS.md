@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* `new_object()` now correctly runs the validator from abstract parent classes 
+  (#329).
+
 * `new_property()` gains a `validator` argument that allows you to specify
   a per-property validator (#275).
 
