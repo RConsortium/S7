@@ -45,7 +45,7 @@ If you export a class, you must also set the `package` argument, ensuring that c
 
 You should document generics like regular functions (since they are!).
 If you expect others to create their own methods for your generic, you may want to include an section describing the the properties that you expect all methods to have.
-We plan to provide an easy way to list all methods for a generic, but have not yet implemented it.
+We plan to provide a an easy way to all methods for a generic, but have not yet implemented it.
 You can track progress at <https://github.com/RConsortium/OOP-WG/issues/167>.
 
 We don't currently have any recommendations on documenting methods.
