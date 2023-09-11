@@ -3,6 +3,8 @@
 * `new_object()` now correctly runs the validator from abstract parent classes 
   (#329).
 
+* `class_missing` and `class_any` can now be unioned with `|` (#337).
+
 * `new_object()` works better when custom property setters modify other 
   properties.
 
