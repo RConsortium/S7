@@ -126,14 +126,13 @@ matrixOps.S7_object <- function(e1, e2) {
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 
-.onAttach <- function(libname, pkgname) {
-  env <- as.environment(paste0("package:", pkgname))
-  if (getRversion() < "4.3.0") {
-    env[[".conflicts.OK"]] <- TRUE
-  }
-}
-
 .onLoad <- function(...) {
+  # Where needed, attach an environment containing @ that works with S7
+  if (getRversion() < "4.3.0") {
+    args <- list(list("@" = `@`), name = "S7_at", warn.conflicts = FALSE)
+    do.call("attach", args)
+  }
+
   ## "S4"   or [in R-devel 2023-07-x]   "object"
   assign(".S7_type", typeof(.Call(S7_object_)), topenv())
 

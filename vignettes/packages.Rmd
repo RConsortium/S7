@@ -65,13 +65,4 @@ Otherwise, you can conditionally make an S7-aware `@` available to your package 
 NULL
 ```
 
-You can additionally make `@` work for users of your package by attaching the S7 package when your package is attached with this `.onAttach()` code:
-
-```{r}
-.onAttach <- function(libname, pkgname) {
-  if (getRversion() < "4.3.0")
-    require(S7)
-}
-```
-
-Use this technique with care as it will attach S7 to the user search path, possibly causing conflicts with other packages/functions.
+`@` will work for users of your package because S7 automatically attaches an environment containing the needed definition when it's loaded.

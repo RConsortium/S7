@@ -263,7 +263,7 @@ prop_label <- function(object, name) {
 #' @rdname prop
 #' @usage object@name
 #' @aliases @
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object) else export("@")
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object)
 `@.S7_object` <- prop
 
 # Note: we need to explicitly refer to base with "base::`@`" in the
