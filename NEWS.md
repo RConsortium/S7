@@ -5,8 +5,6 @@
   being generated during the "code/documentation mismatches" check in
   `R CMD check` (#342).
 
-* `new_object()` now correctly runs the validator from abstract parent classes 
-
 * `new_object()` no longer accepts `NULL` as `.parent`.
 
 * `new_object()` now correctly runs the validator from abstract parent classes
