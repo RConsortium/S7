@@ -29,7 +29,7 @@
 #'   beginning of the message.
 #'
 #'   The validator will be called after the `class` has been verified, so
-#'   your code can assume that `self` has known type.
+#'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
@@ -246,11 +246,11 @@ prop_validate <- function(prop, value, object = NULL) {
     )
   } else if (!is.null(prop$validator)) {
     val <- prop$validator(value)
-    if (is.null(val)) {
-      return(NULL)
+    if (!is.null(val)) {
+      paste0(prop_label(object, prop$name), " ", val)
+    } else {
+      NULL
     }
-
-    paste0(prop_label(object, prop$name), " ", val)
   } else {
     NULL
   }

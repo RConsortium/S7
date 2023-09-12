@@ -37,7 +37,7 @@ name of the property as this will be automatically appended to the
 beginning of the message.
 
 The validator will be called after the \code{class} has been verified, so
-your code can assume that \code{self} has known type.}
+your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, defaults to the "empty" instance
