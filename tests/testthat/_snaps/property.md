@@ -96,10 +96,11 @@
     Code
       my_class
     Output
-      <S7_class>
-      @ name  :  my_class
-      @ parent: <S7_object>
-      @ properties:
+      <my_class> class
+      @ parent     : <S7_object>
+      @ constructor: function(anything, null, base, S3, S4, S7, S7_union) {...}
+      @ validator  : <NULL>
+      @ properties :
        $ anything: <ANY>                 
        $ null    : <NULL>                
        $ base    : <integer>             
