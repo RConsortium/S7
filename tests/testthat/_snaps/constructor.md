@@ -4,13 +4,13 @@
       new_constructor(S7_object, list())
     Output
       function () 
-      new_object(NULL)
+      new_object(S7_object())
       <environment: namespace:S7>
     Code
       new_constructor(S7_object, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
       function (x = class_missing, y = class_missing) 
-      new_object(NULL, x = x, y = y)
+      new_object(S7_object(), x = x, y = y)
       <environment: namespace:S7>
     Code
       foo <- new_class("foo", parent = class_character)

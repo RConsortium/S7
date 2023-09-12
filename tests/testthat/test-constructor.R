@@ -71,7 +71,7 @@ test_that("can use `...` in parent constructor", {
   foo <- new_class(
     "foo",
     properties = list(x = class_list),
-    constructor = function(...) new_object(NULL, x = list(...))
+    constructor = function(...) new_object(S7_object(), x = list(...))
   )
 
   expect_snapshot(

@@ -1,6 +1,8 @@
 # S7 (development version)
 
-* `new_object()` now correctly runs the validator from abstract parent classes 
+* `new_object()` no longer accepts `NULL` as `.parent`.
+
+* `new_object()` now correctly runs the validator from abstract parent classes
   (#329).
 
 * `new_property()` gains a `validator` argument that allows you to specify
