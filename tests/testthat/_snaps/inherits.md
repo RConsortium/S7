@@ -3,7 +3,7 @@
     Code
       S7_inherits(1:10, "x")
     Error <simpleError>
-      `class` is not an <S7_class>
+      `class` must be an <S7_class> or NULL
 
 # throws informative error
 
