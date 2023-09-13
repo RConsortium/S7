@@ -256,7 +256,8 @@ new_object <- function(.parent, ...) {
   args <- list(...)
   nms <- names(args)
 
-  object <- .parent %||% class_construct(class@parent)
+  # TODO: Some type checking on `.parent`?
+  object <- .parent
   attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
@@ -272,8 +273,10 @@ new_object <- function(.parent, ...) {
     prop(object, prop, check = FALSE) <- prop_default(class@properties[[prop]])
   }
 
-  # Only needs to validate this object if parent was already an S7 object
-  validate(object, recursive = !inherits(.parent, "S7_object"))
+  # Don't need to validate if parent class already validated,
+  # i.e. it's a non-abstract S7 class
+  parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
+  validate(object, recursive = !parent_validated)
 
   object
 }

@@ -2,14 +2,7 @@ new_constructor <- function(parent, properties) {
   arg_info <- constructor_args(parent, properties)
   self_args <- as_names(arg_info$self, named = TRUE)
 
-  if (identical(parent, S7_object)) {
-    return(new_function(
-      args = missing_args(arg_info$self),
-      body = new_call("new_object", c(list(NULL), self_args)),
-      env = asNamespace("S7")
-    ))
-  }
-  if (is_class(parent) && parent@abstract) {
+  if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     return(new_function(
       args = missing_args(arg_info$self),
       body = new_call("new_object", c(list(quote(S7_object())), self_args)),
