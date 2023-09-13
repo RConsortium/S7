@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Classes get a more informative print method (#346).
+
 * `new_object()` no longer accepts `NULL` as `.parent`.
 
 * `new_object()` now correctly runs the validator from abstract parent classes
