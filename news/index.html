@@ -62,7 +62,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li><p>External methods are now registered using an attribute of the S3 methods table rather than an element of that environment. This prevents a warning being generated during the “code/documentation mismatches” check in <code>R CMD check</code> (<a href="https://github.com/rconsortium/OOP-WG/issues/342" class="external-link">#342</a>).</p></li>
+<ul><li><p>Classes get a more informative print method (<a href="https://github.com/rconsortium/OOP-WG/issues/346" class="external-link">#346</a>).</p></li>
+<li><p>External methods are now registered using an attribute of the S3 methods table rather than an element of that environment. This prevents a warning being generated during the “code/documentation mismatches” check in <code>R CMD check</code> (<a href="https://github.com/rconsortium/OOP-WG/issues/342" class="external-link">#342</a>).</p></li>
 <li><p><code><a href="../reference/new_class.html">new_object()</a></code> no longer accepts <code>NULL</code> as <code>.parent</code>.</p></li>
 <li><p><code><a href="../reference/new_class.html">new_object()</a></code> now correctly runs the validator from abstract parent classes (<a href="https://github.com/rconsortium/OOP-WG/issues/329" class="external-link">#329</a>).</p></li>
 <li><p><code><a href="../reference/new_property.html">new_property()</a></code> gains a <code>validator</code> argument that allows you to specify a per-property validator (<a href="https://github.com/rconsortium/OOP-WG/issues/275" class="external-link">#275</a>).</p></li>
