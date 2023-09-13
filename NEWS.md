@@ -2,6 +2,11 @@
 
 * Classes get a more informative print method (#346).
 
+* External methods are now registered using an attribute of the S3 methods 
+  table rather than an element of that environment. This prevents a warning
+  being generated during the "code/documentation mismatches" check in
+  `R CMD check` (#342).
+
 * `new_object()` no longer accepts `NULL` as `.parent`.
 
 * `new_object()` now correctly runs the validator from abstract parent classes
