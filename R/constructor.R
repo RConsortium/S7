@@ -55,10 +55,20 @@ dynamic_constructor <- function(constructor_fun, properties) {
     args_info <- constructor_args(parent_class, properties)
 
     args <- list(...)
-    parent_obj <- do.call("parent_class", args[args_info$parent])
-    do.call("new_object", c(list(parent_obj), args[args_info$self]))
+    parent_args <- dynamic_args(args, args_info$parent)
+    self_args <- dynamic_args(args, args_info$self)
+
+    parent_obj <- do.call("parent_class", parent_args)
+    do.call("new_object", c(list(parent_obj), self_args))
   }
 }
+dynamic_args <- function(args, selected) {
+  missing <- setdiff(selected, names(args))
+  args[missing] <- missing_args(missing)
+
+  args[selected]
+}
+
 
 constructor_args <- function(parent, properties = list()) {
   parent_args <- names2(formals(class_constructor(parent)))
