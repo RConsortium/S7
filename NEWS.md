@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Classes get a more informative print method (#346).
+
 * External methods are now registered using an attribute of the S3 methods 
   table rather than an element of that environment. This prevents a warning
   being generated during the "code/documentation mismatches" check in

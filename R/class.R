@@ -180,9 +180,19 @@ print.S7_class <- function(x, ...) {
   }
 
   cat(
-    sprintf("<S7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s",
-      x@name,
+    sprintf(
+      paste0(
+        "%s%s class\n",
+        "@ parent     : %s\n",
+        "@ constructor: %s\n",
+        "@ validator  : %s\n",
+        "@ properties :\n%s"
+      ),
+      class_desc(x),
+      if (x@abstract) " abstract" else "",
       class_desc(x@parent),
+      show_function(x@constructor, constructor = TRUE),
+      if (!is.null(x@validator)) show_function(x@validator) else "<NULL>",
       prop_fmt
     ),
     sep = ""
