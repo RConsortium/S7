@@ -9,9 +9,6 @@ new_constructor <- function(parent, properties) {
       env = asNamespace("S7")
     ))
   }
-  if (is_external_class(parent)) {
-    return(dynamic_constructor(parent$constructor_fun, properties))
-  }
 
   if (is_class(parent)) {
     parent_name <- parent@name
@@ -46,13 +43,13 @@ new_constructor <- function(parent, properties) {
   new_function(args, body, env)
 }
 
-dynamic_constructor <- function(constructor_fun, properties) {
-  force(constructor_fun)
-  force(properties)
+new_dynamic_constructor <- function(parent, properties_fun) {
+  constructor_fun <- parent$constructor_fun
+  force(properties_fun)
 
   function(...) {
     parent_class <- constructor_fun()
-    args_info <- constructor_args(parent_class, properties)
+    args_info <- constructor_args(parent_class, properties_fun())
 
     args <- list(...)
     parent_args <- dynamic_args(args, args_info$parent)
@@ -79,7 +76,7 @@ constructor_args <- function(parent, properties = list()) {
   if (is_class(parent) && !parent@abstract) {
     # Remove any parent properties; can't use parent_args() since the constructor
     # might automatically set some properties.
-    self_args <- setdiff(self_args, names2(class_properties(parent)))
+    self_args <- setdiff(self_args, names2(parent@properties()))
   }
 
   list(

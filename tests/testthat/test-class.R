@@ -7,7 +7,8 @@ describe("S7 classes", {
     expect_equal(foo@parent, S7_object)
     expect_type(foo@constructor, "closure")
     expect_type(foo@validator, "closure")
-    expect_type(foo@properties, "list")
+    expect_type(foo@properties, "closure")
+    expect_type(foo@properties(), "list")
   })
 
   it("print nicely", {
@@ -64,13 +65,13 @@ describe("inheritance", {
   it("combines properties for parent classes", {
     foo1 <- new_class("foo1", properties = list(x = class_double))
     foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
-    expect_equal(names(foo2@properties), c("x", "y"))
+    expect_equal(names(foo2@properties()), c("x", "y"))
   })
   it("child properties override parent", {
     foo1 <- new_class("foo1", properties = list(x = class_numeric))
     foo2 <- new_class("foo2", foo1, properties = list(x = class_double))
-    expect_equal(names(foo2@properties), "x")
-    expect_equal(foo2@properties$x$class, class_double)
+    expect_equal(names(foo2@properties()), "x")
+    expect_equal(foo2@properties()$x$class, class_double)
   })
 })
 

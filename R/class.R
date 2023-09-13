@@ -136,12 +136,19 @@ new_class <- function(
   }
 
   # Combine properties from parent, overriding as needed
-  all_props <- class_properties(parent)
   new_props <- as_properties(properties)
-  all_props[names(new_props)] <- new_props
-
-  if (is.null(constructor)) {
-    constructor <- new_constructor(parent, all_props)
+  if (is_external_class(parent)) {
+    # TODO: cache this so only computed once per session
+    properties <- function() {
+      inherit_properties(parent$constructor_fun(), new_props)
+    }
+    constructor <- constructor %||% new_dynamic_constructor(parent, properties)
+  } else {
+    my_props <- inherit_properties(parent, new_props)
+    properties <- function() {
+      my_props
+    }
+    constructor <- constructor %||% new_constructor(parent, my_props)
   }
 
   object <- constructor
@@ -149,16 +156,23 @@ new_class <- function(
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
-  attr(object, "properties") <- all_props
+  attr(object, "properties") <- properties
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
-  global_variables(names(all_props))
+  global_variables(names(properties()))
   object
 }
 globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
+
+inherit_properties <- function(parent, new) {
+  properties <- attr(parent, "properties", exact = TRUE) %||% function() list()
+  properties <- properties()
+  properties[names(new)] <- new
+  properties
+}
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
 S7_class_name <- function(x) {
@@ -178,7 +192,7 @@ check_S7_constructor <- function(constructor) {
 
 #' @export
 print.S7_class <- function(x, ...) {
-  props <- x@properties
+  props <- x@properties()
   if (length(props) > 0) {
     prop_names <- format(names(props))
     prop_types <- format(vcapply(props, function(x) class_desc(x$class)))
@@ -269,8 +283,9 @@ new_object <- function(.parent, ...) {
   # We have to fill in missing values after setting the initial properties,
   # because custom setters might set property values
   missing_props <- setdiff(nms, union(supplied_props, names(attributes(object))))
+  properties <- class@properties()
   for (prop in missing_props) {
-    prop(object, prop, check = FALSE) <- prop_default(class@properties[[prop]])
+    prop(object, prop, check = FALSE) <- prop_default(properties[[prop]])
   }
 
   # Don't need to validate if parent class already validated,

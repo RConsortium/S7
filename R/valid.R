@@ -103,7 +103,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
 validate_properties <- function(object, class) {
   errors <- character()
 
-  for (prop in class@properties) {
+  for (prop in class@properties()) {
     # Don't validate dynamic properties
     if (!is.null(prop$getter)) {
       next

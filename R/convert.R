@@ -76,7 +76,7 @@ convert <- function(from, to, ...) {
     if (is.null(from_class)) {
       from_props <- character()
     } else {
-      from_props <- names(from_class@properties)
+      from_props <- names(from_class@properties())
     }
 
     if (is_base_class(to)) {
@@ -85,7 +85,7 @@ convert <- function(from, to, ...) {
       from <- zap_attr(from, c(from_props, "S7_class"))
       class(from) <- to$class
     } else if (is_class(to)) {
-      from <- zap_attr(from, setdiff(from_props, names(to@properties)))
+      from <- zap_attr(from, setdiff(from_props, names(to@properties())))
       attr(from, "S7_class") <- to
       class(from) <- class_dispatch(to)
     } else {

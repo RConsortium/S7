@@ -199,16 +199,6 @@ class_inherits <- function(x, what) {
   )
 }
 
-# S7_external class -----------------------------------------------------------
-
-class_properties <- function(x) {
-  if (is_external_class(x)) {
-    x <- x$constructor_fun()
-  }
-
-  attr(x, "properties", exact = TRUE) %||% list()
-}
-
 # object ------------------------------------------------------------------
 
 obj_type <- function(x) {
