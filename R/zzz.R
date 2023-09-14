@@ -100,32 +100,6 @@ S7_method <- new_class("S7_method",
 )
 methods::setOldClass(c("S7_method", "function", "S7_object"))
 
-
-# Create generics for double dispatch base Ops
-base_ops <- lapply(setNames(, group_generics()$Ops),
-                   new_generic, dispatch_args = c("e1", "e2"))
-
-#' @export
-Ops.S7_object <- function(e1, e2) {
-  base_ops[[.Generic]](e1, e2)
-}
-
-base_matrix_ops <- lapply(setNames(, group_generics()$matrixOps),
-                          new_generic, dispatch_args = c("x", "y"))
-
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
-matrixOps.S7_object <- function(x, y) {
-  base_matrix_ops[[.Generic]](x, y)
-}
-
-if(getRversion() < "4.4.0")
-matrixOps.S7_object <- function(e1, e2) {
-  base_matrix_ops[[.Generic]](e1, e2)
-}
-
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
-chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
-
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
   if (getRversion() < "4.3.0") {
@@ -134,7 +108,10 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 }
 
 .onLoad <- function(...) {
-  ## "S4"   or [in R-devel 2023-07-x]   "object"
+  on_load_define_ops()
+  on_load_define_matrixOps()
+
+  ## "S4" or [in R-devel 2023-07-x]   "object"
   assign(".S7_type", typeof(.Call(S7_object_)), topenv())
 
   convert <<- S7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
