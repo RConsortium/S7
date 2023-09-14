@@ -53,10 +53,19 @@ new_union <- function(...) {
 `|.S7_class` <- function(e1, e2) {
   new_union(e1, e2)
 }
-
-# Method registration for the remaining classes happens onLoad so that
-# their pointers are identical, working around a bug that was fixed in
-# R 4.1: https://github.com/wch/r-source/commit/b41344e3d0da7d78fd
+# Register remaining methods onLoad so that their pointers are identical,
+# working around a bug that was fixed in R 4.1:
+# https://github.com/wch/r-source/commit/b41344e3d0da7d78fd
+on_load_define_or_methods <- function() {
+  registerS3method("|", "S7_union", `|.S7_class`)
+  registerS3method("|", "S7_base_class", `|.S7_class`)
+  registerS3method("|", "S7_S3_class", `|.S7_class`)
+  registerS3method("|", "S7_any", `|.S7_class`)
+  registerS3method("|", "S7_missing", `|.S7_class`)
+  registerS3method("|", "classGeneratorFunction", `|.S7_class`)
+  registerS3method("|", "ClassUnionRepresentation", `|.S7_class`)
+  registerS3method("|", "classRepresentation", `|.S7_class`)
+}
 
 is_union <- function(x) inherits(x, "S7_union")
 
