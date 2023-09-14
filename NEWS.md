@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* `S7_inherits()` now accepts `class = NULL` to test if an object is any
+  sort of S7 object (#347).
+
 * Classes get a more informative print method (#346).
 
 * External methods are now registered using an attribute of the S3 methods 
