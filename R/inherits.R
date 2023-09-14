@@ -22,7 +22,7 @@
 #' S7_inherits(foo1(), foo2)
 #' try(check_is_S7(foo1(), foo2))
 S7_inherits <- function(x, class = NULL) {
-  if (!inherits(class, "S7_class") && !is.null(class)) {
+  if (!(is.null(class) || inherits(class, "S7_class"))) {
     stop("`class` must be an <S7_class> or NULL")
   }
 
@@ -33,17 +33,15 @@ S7_inherits <- function(x, class = NULL) {
 #' @export
 #' @rdname S7_inherits
 check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
-  if (is.null(class)) {
-    if (!inherits(x, "S7_object")) {
-      msg <- sprintf("`%s` must be an <S7_object>, not a %s", arg, obj_desc(x))
-      stop(msg, call. = FALSE)
-    }
-  } else {
-    if (!S7_inherits(x, class)) {
-      msg <- sprintf("`%s` must be a %s, not a %s", arg, class_desc(class), obj_desc(x))
-      stop(msg, call. = FALSE)
-    }
+  if (S7_inherits(x, class)) {
+    return(invisible())
   }
 
-  invisible()
+  msg <- sprintf(
+    "`%s` must be %s, not a %s",
+    arg,
+    if (is.null(class)) "an <S7_object>" else paste0("a ", class_desc(class)),
+    obj_desc(x)
+  )
+  stop(msg, call. = FALSE)
 }
