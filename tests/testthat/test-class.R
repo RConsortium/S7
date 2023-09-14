@@ -23,6 +23,11 @@ describe("S7 classes", {
     })
   })
 
+  it("prints @package and @abstract details", {
+    foo <- new_class("foo", package = "S7", abstract = TRUE)
+    expect_snapshot(foo)
+  })
+
   it("checks inputs", {
     expect_snapshot(error = TRUE, {
       new_class(1)
