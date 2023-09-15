@@ -19,6 +19,9 @@ Ops.S7_object <- function(e1, e2) {
   base_ops[[.Generic]](e1, e2)
 }
 
+#' @export
+Ops.S7_super <- Ops.S7_object
+
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 

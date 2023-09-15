@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `super()` now works with Ops methods (#357).
+
 * `S7_inherits()` now accepts `class = NULL` to test if an object is any
   sort of S7 object (#347).
 
