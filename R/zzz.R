@@ -120,6 +120,7 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 
 .onLoad <- function(...) {
   on_load_make_convert_generic()
+  on_load_define_group_generics()
   on_load_define_matrixOps()
   on_load_define_ops()
   on_load_define_or_methods()
