@@ -31,8 +31,8 @@ test_that("`%*%` dispatches to S7 methods", {
   method(`%*%`, list(ClassX, class_any)) <- function(x, y) "ClassX %*% class_any"
   method(`%*%`, list(class_any, ClassX)) <- function(x, y) "class_any %*% ClassX"
 
-  expect_equal(ClassX() %*% ClassX(), "ClassX + class_any")
-  expect_equal(ClassX() %*% 1, "ClassX + class_any")
-  expect_equal(1 %*% ClassX(), "class_any + ClassX")
+  expect_equal(ClassX() %*% ClassX(), "ClassX %*% class_any")
+  expect_equal(ClassX() %*% 1, "ClassX %*% class_any")
+  expect_equal(1 %*% ClassX(), "class_any %*% ClassX")
 })
 
