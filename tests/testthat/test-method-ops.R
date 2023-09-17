@@ -50,6 +50,10 @@ test_that("Ops generics dispatch to S7 methods for S4 classes", {
 })
 
 test_that("Ops generics dispatch to S7 methods for POSIXct", {
+  # In R's C sources DispatchGroup() has special cases for POSIXt/Date/difftime
+  # so we need to double check that S7 methods still take precedence:
+  # https://github.com/wch/r-source/blob/5cc4e46fc/src/main/eval.c#L4242C1-L4247C64
+
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
   foo <- new_class("foo")
