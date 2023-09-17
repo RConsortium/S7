@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Can create multimethods that dispatch on `NULL`.
+
 # S7 0.1.1
 
 * Classes get a more informative print method (#346).
