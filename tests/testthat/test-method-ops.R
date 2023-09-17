@@ -18,12 +18,23 @@ test_that("Ops generics dispatch to S3 methods", {
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
 
-  ClassX <- new_class("ClassX")
-  method(`+`, list(class_any, ClassX)) <- function(e1, e2) "class_any + ClassX"
-  method(`+`, list(ClassX, class_any)) <- function(e1, e2) "ClassX + class_any"
+  foo <- new_class("foo")
+  method(`+`, list(class_factor, foo)) <- function(e1, e2) "factor-foo"
+  method(`+`, list(foo, class_factor)) <- function(e1, e2) "foo-factor"
 
-  expect_equal(ClassX() + factor(), "ClassX + class_any")
-  expect_equal(factor() + ClassX(), "class_any + ClassX")
+  expect_equal(foo + factor(), "factor-foo")
+  expect_equal(factor() + foo, "foo-factor")
+
+  # Even if custom method exists
+  foo_S3 <- structure(list(), class = "foo_S3")
+  assign("+.foo_S3", function(e1, e2) stop("Failure!"), envir = globalenv())
+  on.exit(rm("+.foo_S3", envir = globalenv()))
+
+  method(`+`, list(new_S3_class("foo_S3"), foo)) <- function(e1, e2) "S3-S7"
+  method(`+`, list(foo, new_S3_class("foo_S3"))) <- function(e1, e2) "S7-S3"
+
+  expect_equal(foo + foo_S3, "S7-S3")
+  expect_equal(foo_S3 + foo, "S3-S7")
 })
 
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
