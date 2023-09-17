@@ -14,6 +14,6 @@ title: "Minutes 2022-08-08"
 
 * R-core meeting in Vienna (Sept). ML to present S7 work and hopefully get some buy-in.
 
-* Base patches? (https://github.com/RConsortium/OOP-WG/issues/222)
+* Base patches? (https://github.com/RConsortium/S7/issues/222)
 
 * Get to CRAN to get more exposure and figure out how to get into base R itself.
