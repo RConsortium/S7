@@ -1,20 +1,22 @@
-test_that("Ops generics dispatch to S7 methods", {
-  on.exit(S4_remove_classes(c("Foo")))
-  FooS4 <- methods::setClass("Foo", contains = "character")
+test_that("Ops generics dispatch to S7 methods for S7 classes", {
+  local_methods(base_ops[["+"]])
+  foo1 <- new_class("foo1")
+  foo2 <- new_class("foo2")
 
-  ClassX <- new_class("ClassX")
-  method(`+`, list(class_any, ClassX)) <- function(e1, e2) "class_any + ClassX"
-  method(`+`, list(ClassX, class_any)) <- function(e1, e2) "ClassX + class_any"
+  method(`+`, list(foo1, foo1)) <- function(e1, e2) "foo1-foo1"
+  method(`+`, list(foo1, foo2)) <- function(e1, e2) "foo1-foo2"
+  method(`+`, list(foo2, foo1)) <- function(e1, e2) "foo2-foo1"
+  method(`+`, list(foo2, foo2)) <- function(e1, e2) "foo2-foo2"
 
-  expect_equal(ClassX() + ClassX(), "ClassX + class_any")
-  expect_equal(ClassX() + 1, "ClassX + class_any")
-  expect_equal(1 + ClassX(), "class_any + ClassX")
-  expect_equal(ClassX() + FooS4(), "ClassX + class_any")
-  expect_equal(FooS4() + ClassX(), "class_any + ClassX")
+  expect_equal(foo1() + foo1(), "foo1-foo1")
+  expect_equal(foo1() + foo2(), "foo1-foo2")
+  expect_equal(foo2() + foo1(), "foo2-foo1")
+  expect_equal(foo2() + foo2(), "foo2-foo2")
 })
 
-test_that("S7 dispatch beats S3 dispatch in modern R", {
+test_that("Ops generics dispatch to S3 methods", {
   skip_if(getRversion() < "4.3")
+  local_methods(base_ops[["+"]])
 
   ClassX <- new_class("ClassX")
   method(`+`, list(class_any, ClassX)) <- function(e1, e2) "class_any + ClassX"
@@ -24,8 +26,46 @@ test_that("S7 dispatch beats S3 dispatch in modern R", {
   expect_equal(factor() + ClassX(), "class_any + ClassX")
 })
 
+test_that("Ops generics dispatch to S7 methods for S4 classes", {
+  local_methods(base_ops[["+"]])
+  fooS4 <- local_S4_class("foo", contains = "character")
+  fooS7 <- new_class("foo")
+
+  method(`+`, list(fooS7, fooS4)) <- function(e1, e2) "S7-S4"
+  method(`+`, list(fooS4, fooS7)) <- function(e1, e2) "S4-S7"
+
+  expect_equal(fooS4() + fooS7(), "S4-S7")
+  expect_equal(fooS7() + fooS4(), "S7-S4")
+})
+
+test_that("Ops generics dispatch to S7 methods for POSIXct", {
+  skip_if(getRversion() < "4.3")
+  local_methods(base_ops[["+"]])
+  foo <- new_class("foo")
+
+  method(`+`, list(foo, class_POSIXct)) <- function(e1, e2) "foo-POSIXct"
+  expect_equal(foo() + Sys.time(), "foo-POSIXct")
+
+  method(`+`, list(class_POSIXct, foo)) <- function(e1, e2) "POSIXct-foo"
+  expect_equal(Sys.time() + foo(), "POSIXct-foo")
+})
+
+test_that("Ops generics dispatch to S7 methods for NULL", {
+  local_methods(base_ops[["+"]])
+  foo <- new_class("foo")
+
+  method(`+`, list(foo, NULL)) <- function(e1, e2) "foo-NULL"
+  expect_equal(foo() + NULL, "foo-NULL")
+
+  skip_if(getRversion() < "4.3")
+  method(`+`, list(NULL, foo)) <- function(e1, e2) "NULL-foo"
+  expect_equal(NULL + foo(), "NULL-foo")
+})
+
+
 test_that("`%*%` dispatches to S7 methods", {
   skip_if(getRversion() < "4.3")
+  local_methods(base_ops[["+"]])
 
   ClassX <- new_class("ClassX")
   method(`%*%`, list(ClassX, class_any)) <- function(x, y) "ClassX %*% class_any"
