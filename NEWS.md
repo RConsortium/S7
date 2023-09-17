@@ -1,3 +1,5 @@
+# S7 (development version)
+
 # S7 0.1.1
 
 * Classes get a more informative print method (#346).
