@@ -22,8 +22,8 @@ test_that("Ops generics dispatch to S3 methods", {
   method(`+`, list(class_factor, foo)) <- function(e1, e2) "factor-foo"
   method(`+`, list(foo, class_factor)) <- function(e1, e2) "foo-factor"
 
-  expect_equal(foo() + factor(), "factor-foo")
-  expect_equal(factor() + foo(), "foo-factor")
+  expect_equal(foo() + factor(), "foo-factor")
+  expect_equal(factor() + foo(), "factor-foo")
 
   # Even if custom method exists
   foo_S3 <- structure(list(), class = "foo_S3")
