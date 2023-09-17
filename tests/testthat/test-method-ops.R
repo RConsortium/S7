@@ -66,13 +66,11 @@ test_that("Ops generics dispatch to S7 methods for NULL", {
   foo <- new_class("foo")
 
   method(`+`, list(foo, NULL)) <- function(e1, e2) "foo-NULL"
-  expect_equal(foo() + NULL, "foo-NULL")
-
-  skip_if(getRversion() < "4.3")
   method(`+`, list(NULL, foo)) <- function(e1, e2) "NULL-foo"
+
+  expect_equal(foo() + NULL, "foo-NULL")
   expect_equal(NULL + foo(), "NULL-foo")
 })
-
 
 test_that("`%*%` dispatches to S7 methods", {
   skip_if(getRversion() < "4.3")
