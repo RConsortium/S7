@@ -28,7 +28,7 @@ test_that("Ops generics dispatch to S3 methods", {
   # Even if custom method exists
   foo_S3 <- structure(list(), class = "foo_S3")
   assign("+.foo_S3", function(e1, e2) stop("Failure!"), envir = globalenv())
-  on.exit(rm("+.foo_S3", envir = globalenv()))
+  defer(rm("+.foo_S3", envir = globalenv()))
 
   method(`+`, list(new_S3_class("foo_S3"), foo)) <- function(e1, e2) "S3-S7"
   method(`+`, list(foo, new_S3_class("foo_S3"))) <- function(e1, e2) "S7-S3"
