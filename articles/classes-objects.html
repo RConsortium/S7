@@ -135,6 +135,9 @@ problems.</p>
 the statements is important. For example, in the code above, we can’t
 check that <code>self@end &lt; self@start</code> before we’ve checked
 that <code>@start</code> and <code>@end</code> are length 1.</p>
+<p>As we’ll discuss shortly, you can also perform validation on a
+per-property basis, so generally class validators should be reserved for
+interactions between properties.</p>
 </div>
 <div class="section level3">
 <h3 id="when-is-validation-performed">When is validation performed?<a class="anchor" aria-label="anchor" href="#when-is-validation-performed"></a>
@@ -220,14 +223,58 @@ range above is shorthand for:</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Calling <code><a href="../reference/new_property.html">new_property()</a></code> explicitly allows you to control
 aspects of the property other than its type. The following sections show
-you how to provide a default value, compute the property value on
-demand, or provide a fully dynamic property.</p>
+you how to add a validator, provide a default value, compute the
+property value on demand, or provide a fully dynamic property.</p>
+<div class="section level3">
+<h3 id="validation-1">Validation<a class="anchor" aria-label="anchor" href="#validation-1"></a>
+</h3>
+<p>You can optionally provide a validator for each property. For
+example, instead of validating the length of <code>start</code> and
+<code>end</code> in the validator of our <code>Range</code> class, we
+could implement those at the property level:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">prop_number</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span></span>
+<span>  class <span class="op">=</span> <span class="va">class_double</span>, </span>
+<span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1L</span><span class="op">)</span> <span class="st">"must be length 1"</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"range"</span>,</span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    start <span class="op">=</span> <span class="va">prop_number</span>,</span>
+<span>    end <span class="op">=</span> <span class="va">prop_number</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span></span>
+<span>        <span class="st">"@end (%i) must be greater than or equal to @start (%i)"</span>,</span>
+<span>        <span class="va">self</span><span class="op">@</span><span class="va">end</span>,</span>
+<span>        <span class="va">self</span><span class="op">@</span><span class="va">start</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error: &lt;range&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; - @start must be length 1</span></span>
+<span><span class="co">#&gt; - @end must be length 1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span>end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error: &lt;range&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; - @start must be length 1</span></span>
+<span><span class="co">#&gt; - @end must be length 1</span></span></code></pre></div>
+<p>Note that property validators shouldn’t include the name of the
+property in validation messages as S7 will add it automatically. This
+makes it possible to use the same property definition for multiple
+properties of the same type, as above.</p>
+</div>
 <div class="section level3">
 <h3 id="default-value">Default value<a class="anchor" aria-label="anchor" href="#default-value"></a>
 </h3>
 <p>The defaults of <code><a href="../reference/new_class.html">new_class()</a></code> create an class that can be
 constructed with no arguments:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"empty"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    x <span class="op">=</span> <span class="va">class_double</span>,</span>
@@ -242,7 +289,7 @@ constructed with no arguments:</p>
 <p>The default values of the properties will be filled in with “empty”
 instances. You can instead provide your own defaults by using the
 <code>default</code> argument:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"empty"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    x <span class="op">=</span> <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span><span class="va">class_numeric</span>, default <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
@@ -264,7 +311,7 @@ For example, it’d be convenient to pretend that our range has a length,
 which is just the distance between <code>@start</code> and
 <code>@end</code>. You can dynamically compute the value of a property
 by defining a <code>getter</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"range"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    start <span class="op">=</span> <span class="va">class_double</span>,</span>
@@ -282,7 +329,7 @@ by defining a <code>getter</code>:</p>
 <span><span class="co">#&gt;  @ end   : num 10</span></span>
 <span><span class="co">#&gt;  @ length: num 9</span></span></code></pre></div>
 <p>Computed properties are read-only:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">@</span><span class="va">length</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
 <span><span class="co">#&gt; Error: Can't set read-only property &lt;range&gt;@length</span></span></code></pre></div>
 </div>
@@ -293,7 +340,7 @@ by defining a <code>getter</code>:</p>
 and written by also supplying a <code>setter</code>. For example, we
 could extend the previous example to allow the <code>@length</code> to
 be set, by modifying the <code>@end</code> of the vector:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"range"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    start <span class="op">=</span> <span class="va">class_double</span>,</span>
@@ -331,17 +378,17 @@ and <code>value</code> that returns a modified object.</p>
 </h2>
 <p>You can see the source code for a class’s constructor by accessing
 the <code>constructor</code> property:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">range</span><span class="op">@</span><span class="va">constructor</span></span>
 <span><span class="co">#&gt; function (start = class_missing, end = class_missing) </span></span>
 <span><span class="co">#&gt; new_object(S7_object(), start = start, end = end)</span></span>
 <span><span class="co">#&gt; &lt;environment: namespace:S7&gt;</span></span></code></pre></div>
-<p>In most cases, S7’s default constructor will all you need. However,
-in some cases you might want something custom. For example, for our
-range class, maybe we’d like to construct it from a vector of numeric
-values, automatically computing the min and the max. To implement this
-we could do:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p>In most cases, S7’s default constructor will be all you need.
+However, in some cases you might want something custom. For example, for
+our range class, maybe we’d like to construct it from a vector of
+numeric values, automatically computing the min and the max. To
+implement this we could do:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">range</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"range"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    start <span class="op">=</span> <span class="va">class_numeric</span>,</span>
@@ -363,8 +410,8 @@ class (if you haven’t specified a <code>parent</code> argument to
 <code><a href="../reference/new_class.html">new_class()</a></code>, then you should use <code><a href="../reference/S7_object.html">S7_object()</a></code>
 as the parent here). That argument should be followed by one named
 argument for each property.</p>
-<p>There’s one drawback of custom constructors that you should be aware:
-any subclass will also require a custom constructor.</p>
+<p>There’s one drawback of custom constructors that you should be aware
+of: any subclass will also require a custom constructor.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
