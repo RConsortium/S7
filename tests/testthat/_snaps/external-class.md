@@ -9,6 +9,7 @@
 
     Code
       new_external_class("S7", "foo", function() 1)
-    Error <simpleError>
-      `constructor_fun()` must yield an S7 class
+    Condition
+      Error in `new_external_class()`:
+      ! `constructor_fun()` must yield an S7 class
 

@@ -8,7 +8,7 @@ title: "Minutes 2021-05-18"
 
 ### Process (ML)
 
--   Active discussion in GitHub issues: <https://github.com/RConsortium/OOP-WG>
+-   Active discussion in GitHub issues: <https://github.com/RConsortium/S7>
 
 -   Need a little process to finalise discussion. Proposal: original author reads discussion, summarises, and creates a pull request that closes the issue. Any participants in the discussion should be added as reviewers.
 

@@ -202,9 +202,19 @@ print.S7_class <- function(x, ...) {
   }
 
   cat(
-    sprintf("<S7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s",
-      x@name,
+    sprintf(
+      paste0(
+        "%s%s class\n",
+        "@ parent     : %s\n",
+        "@ constructor: %s\n",
+        "@ validator  : %s\n",
+        "@ properties :\n%s"
+      ),
+      class_desc(x),
+      if (x@abstract) " abstract" else "",
       class_desc(x@parent),
+      show_function(x@constructor, constructor = TRUE),
+      if (!is.null(x@validator)) show_function(x@validator) else "<NULL>",
       prop_fmt
     ),
     sep = ""
@@ -306,7 +316,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
-  if (typeof(object) != .S7_type) {
+  if (!is_S7_type(object)) {
     if (!typeof(object) %in% c("numeric", "integer", "character", "double"))
       cat(" ")
 

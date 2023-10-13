@@ -108,7 +108,24 @@ check_function <- function(f, args, arg = deparse(substitute(f))) {
     stop(msg, call. = FALSE)
   }
 }
-show_args <- function(x, name = "function") {
+
+show_function <- function(x, constructor = FALSE) {
+  args <- formals(x)
+
+  if (constructor) {
+    args <- lapply(args, function(x) {
+      if (identical(x, quote(class_missing))) {
+        quote(expr = )
+      } else {
+        x
+      }
+    })
+  }
+
+  show_args(args, suffix = " {...}")
+}
+
+show_args <- function(x, name = "function", suffix = "") {
   if (length(x) == 0) {
     args <- ""
   } else {
@@ -116,7 +133,7 @@ show_args <- function(x, name = "function") {
     args <- paste0(names(x), ifelse(val == "", "", " = "), val, collapse = ", ")
   }
 
-  paste0(name, "(", args, ")")
+  paste0(name, "(", args, ")", suffix)
 }
 
 # For older versions of R ----------------------------------------------------

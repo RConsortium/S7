@@ -219,7 +219,7 @@ prop_obj <- function(object, name) {
       if (isTRUE(check)) {
         error <- prop_validate(prop, value, object)
         if (!is.null(error)) {
-          stop(error, call. = TRUE)
+          stop(error, call. = FALSE)
         }
       }
 

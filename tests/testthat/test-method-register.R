@@ -123,6 +123,16 @@ describe("as_signature()", {
       as_signature(list(class_character), foo)
     })
   })
+
+  it("works with NULL", {
+    foo <- new_generic("foo", c("x"))
+    sig <- as_signature(NULL, foo)
+    expect_length(sig, 1)
+
+    foo <- new_generic("foo", c("x", "y", "z"))
+    sig <- as_signature(list(NULL, NULL, class_integer), foo)
+    expect_length(sig, 3)
+  })
 })
 
 test_that("check_method returns TRUE if the functions are compatible", {

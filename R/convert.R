@@ -101,4 +101,12 @@ convert <- function(from, to, ...) {
     stop(msg, call. = FALSE)
   }
 }
-# Converted to S7_generic on .onLoad
+
+# Converted to S7_generic onLoad in order to avoid dependency between files
+on_load_make_convert_generic <- function() {
+  convert <<- S7_generic(
+    convert,
+    name = "convert",
+    dispatch_args = c("from", "to")
+  )
+}

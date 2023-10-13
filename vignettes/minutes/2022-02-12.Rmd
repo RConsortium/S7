@@ -16,7 +16,7 @@ No semantic changes without discussion in issues
     -   Numeric, atomic, and vector "types" as S7 unions.
         -   Should we provide some wrappers to base unions and consider if we could get rid of string representation altogether? (e.g. `base_atomic`)
     -   New `s3_class()` to define S3 classes.
-        -   <https://github.com/RConsortium/OOP-WG/pull/148> makes it possible for S7 class to extend an S3 class
+        -   <https://github.com/RConsortium/S7/pull/148> makes it possible for S7 class to extend an S3 class
         -   Should we export the S3 class definitions for common base S3 classes? And then provide with `base_factor` etc.
     -   S4 unions converted to S7 unions
 -   Method registration
@@ -53,9 +53,9 @@ No semantic changes without discussion in issues
 
     -   Next time we meet, we should discuss other ways to advertise
 -   Ok to rename default branch from master to main? \~5 minutes work and unlikely to cause any problems.
--   Ok to eliminate `prop_safely()`? <https://github.com/RConsortium/OOP-WG/issues/156>
--   Convention for displaying class names: <https://github.com/RConsortium/OOP-WG/issues/133> / <https://github.com/RConsortium/OOP-WG/pull/161>
+-   Ok to eliminate `prop_safely()`? <https://github.com/RConsortium/S7/issues/156>
+-   Convention for displaying class names: <https://github.com/RConsortium/S7/issues/133> / <https://github.com/RConsortium/S7/pull/161>
     -   Only show for S3/S4
--   Name of sentinel for missing/any dispatch: <https://github.com/RConsortium/OOP-WG/issues/67>
+-   Name of sentinel for missing/any dispatch: <https://github.com/RConsortium/S7/issues/67>
     -   `_arg` looks good
--   Coercion: <https://github.com/RConsortium/OOP-WG/issues/136>
+-   Coercion: <https://github.com/RConsortium/S7/issues/136>
