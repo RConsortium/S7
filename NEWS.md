@@ -1,4 +1,42 @@
-# S7 0.0.0.9000
+# S7 (development version)
+
+* Can create multimethods that dispatch on `NULL`.
+
+# S7 0.1.1
+
+* Classes get a more informative print method (#346).
+
+* Correctly register S3 methods for S7 objects with a package (#333).
+
+* External methods are now registered using an attribute of the S3 methods 
+  table rather than an element of that environment. This prevents a warning
+  being generated during the "code/documentation mismatches" check in
+  `R CMD check` (#342).
+
+* `class_missing` and `class_any` can now be unioned with `|` (#337).
+
+* `new_object()` no longer accepts `NULL` as `.parent`.
+
+* `new_object()` now correctly runs the validator from abstract parent classes
+  (#329).
+
+* `new_object()` works better when custom property setters modify other 
+  properties.
+
+* `new_property()` gains a `validator` argument that allows you to specify
+  a per-property validator (#275).
+
+* `new_property()` clarifies that it's the user's responsibility to return
+  the correct class; it is _not_ automatically validated.
+
+* Properties with a custom setter are now validated _after_ the setter has
+  run and are validated when the object is constructed or when you call 
+  `validate()`, not just when you modify them after construction.
+
+* `S7_inherits()` now accepts `class = NULL` to test if an object is any
+  sort of S7 object (#347).
+
+# S7 0.1.0
 
 ## May-July 2023
 

@@ -12,12 +12,24 @@
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
 #' @param getter An optional function used to get the value. The function
-#'   should take `self`  as its sole argument and return the value. If the
-#'   property has a `class` the class of the value is validated.
+#'   should take `self` as its sole argument and return the value. If you
+#'   supply a `getter`, you are responsible for ensuring that it returns
+#'   an object of the correct `class`; it will not be validated automatically.
 #'
 #'   If a property has a getter but doesn't have a setter, it is read only.
 #' @param setter An optional function used to set the value. The function
 #'   should take `self` and `value` and return a modified object.
+#' @param validator A function taking a single argument, `value`, the value
+#'   to validate.
+#'
+#'   The job of a validator is to determine whether the property value is valid.
+#'   It should return `NULL` if the object is valid, or if it's not valid,
+#'   a single string describing the problem. The message should not include the
+#'   name of the property as this will be automatically appended to the
+#'   beginning of the message.
+#'
+#'   The validator will be called after the `class` has been verified, so
+#'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
@@ -68,7 +80,12 @@
 #' hadley@firstName
 #' hadley@firstName <- "John"
 #' hadley@first_name
-new_property <- function(class = class_any, getter = NULL, setter = NULL, default = NULL, name = NULL) {
+new_property <- function(class = class_any,
+                         getter = NULL,
+                         setter = NULL,
+                         validator = NULL,
+                         default = NULL,
+                         name = NULL) {
   class <- as_class(class)
   if (!is.null(default) && !class_inherits(default, class)) {
     msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
@@ -81,12 +98,16 @@ new_property <- function(class = class_any, getter = NULL, setter = NULL, defaul
   if (!is.null(setter)) {
     check_function(setter, alist(self = , value = ))
   }
+  if (!is.null(validator)) {
+    check_function(validator, alist(value = ))
+  }
 
   out <- list(
     name = name,
     class = class,
     getter = getter,
     setter = setter,
+    validator = validator,
     default = default
   )
   class(out) <- "S7_property"
@@ -189,19 +210,22 @@ prop_obj <- function(object, name) {
       stop(msg, call. = FALSE)
     }
 
-    if (isTRUE(check) && !class_inherits(value, prop$class)) {
-      stop(prop_error_type(object, name, prop$class, value), call. = FALSE)
-    }
-
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
       on.exit(setter_property <<- NULL, add = TRUE)
       object <- prop$setter(object, value)
     } else {
+      if (isTRUE(check)) {
+        error <- prop_validate(prop, value, object)
+        if (!is.null(error)) {
+          stop(error, call. = FALSE)
+        }
+      }
+
       attr(object, name) <- value
     }
 
-    if (isTRUE(check)) {
+    if (isTRUE(check) && is.null(setter_property)) {
       validate(object, properties = FALSE)
     }
 
@@ -213,13 +237,27 @@ prop_error_unknown <- function(object, prop_name) {
   sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
 }
 
-prop_error_type <- function(object, prop_name, expected, actual, show_type = TRUE) {
-  sprintf("%s@%s must be %s, not %s",
-    if (show_type) obj_desc(object) else "",
-    prop_name,
-    class_desc(expected),
-    obj_desc(actual)
-  )
+prop_validate <- function(prop, value, object = NULL) {
+  if (!class_inherits(value, prop$class)) {
+    sprintf("%s must be %s, not %s",
+      prop_label(object, prop$name),
+      class_desc(prop$class),
+      obj_desc(value)
+    )
+  } else if (!is.null(prop$validator)) {
+    val <- prop$validator(value)
+    if (!is.null(val)) {
+      paste0(prop_label(object, prop$name), " ", val)
+    } else {
+      NULL
+    }
+  } else {
+    NULL
+  }
+}
+
+prop_label <- function(object, name) {
+  sprintf("%s@%s", if (!is.null(object)) obj_desc(object) else "", name)
 }
 
 #' @rdname prop

@@ -1,4 +1,5 @@
 test_that("can register convert methods", {
+  local_methods(convert)
   converttest <- new_class("converttest")
   method(convert, list(converttest, class_character)) <- function(from, to, ...) "c"
   method(convert, list(converttest, class_integer)) <- function(from, to, ...) "i"
@@ -12,6 +13,7 @@ test_that("can register convert methods", {
 })
 
 test_that("doesn't convert to subclass", {
+  local_methods(convert)
   converttest1 <- new_class("converttest1")
   converttest2 <- new_class("converttest2", converttest1)
 
@@ -20,6 +22,8 @@ test_that("doesn't convert to subclass", {
 })
 
 describe("fallback convert", {
+  local_methods(convert)
+
   it("can convert to own class", {
     foo1 <- new_class("foo1")
     foo2 <- new_class("foo2", foo1)

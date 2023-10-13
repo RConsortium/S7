@@ -119,7 +119,7 @@ S4_class_name <- function(x) {
   }
 }
 
-S4_remove_classes <- function(classes, where = globalenv()) {
+S4_remove_classes <- function(classes, where = parent.frame()) {
   for (class in classes) {
     suppressWarnings(methods::removeClass(class, topenv(where)))
   }

@@ -113,7 +113,7 @@ register_S3_method <- function(generic, signature, method) {
     )
     stop(msg, call. = FALSE)
   }
-  class <- signature[[1]]@name
+  class <- S7_class_name(signature[[1]])
   registerS3method(generic$name, class, method, envir = parent.frame())
 }
 
@@ -156,7 +156,7 @@ as_signature <- function(signature, generic) {
   } else {
     check_signature_list(signature, n)
     for (i in seq_along(signature)) {
-      signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
+      signature[i] <- list(as_class(signature[[i]], arg = sprintf("signature[[%i]]", i)))
     }
     new_signature(signature)
   }

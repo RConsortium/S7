@@ -14,7 +14,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette dives into the details of S7 classes and objects, building on the basics discussed in `vignette("S7")`. It will cover validators, the finer details of properties, and finally how to write your own constructors.
+This vignette dives into the details of S7 classes and objects, building on the basics discussed in `vignette("S7")`.
+It will cover validators, the finer details of properties, and finally how to write your own constructors.
 
 ```{r setup}
 library(S7)
@@ -53,6 +54,8 @@ range <- new_class("range",
 
 You can typically write a validator as a series of `if`-`else` statements, but note that the order of the statements is important.
 For example, in the code above, we can't check that `self@end < self@start` before we've checked that `@start` and `@end` are length 1.
+
+As we'll discuss shortly, you can also perform validation on a per-property basis, so generally class validators should be reserved for interactions between properties.
 
 ### When is validation performed?
 
@@ -125,7 +128,43 @@ range <- new_class("range",
 ```
 
 Calling `new_property()` explicitly allows you to control aspects of the property other than its type.
-The following sections show you how to provide a default value, compute the property value on demand, or provide a fully dynamic property.
+The following sections show you how to add a validator, provide a default value, compute the property value on demand, or provide a fully dynamic property.
+
+### Validation
+
+You can optionally provide a validator for each property.
+For example, instead of validating the length of `start` and `end` in the validator of our `Range` class, we could implement those at the property level:
+
+```{r, error = TRUE}
+prop_number <- new_property(
+  class = class_double, 
+  validator = function(value) {
+    if (length(value) != 1L) "must be length 1"
+  }
+)
+
+range <- new_class("range",
+  properties = list(
+    start = prop_number,
+    end = prop_number
+  ),
+  validator = function(self) {
+    if (self@end < self@start) {
+      sprintf(
+        "@end (%i) must be greater than or equal to @start (%i)",
+        self@end,
+        self@start
+      )
+    }
+  }
+)
+
+range(start = c(1.5, 3.5))
+range(end = c(1.5, 3.5))
+```
+
+Note that property validators shouldn't include the name of the property in validation messages as S7 will add it automatically.
+This makes it possible to use the same property definition for multiple properties of the same type, as above.
 
 ### Default value
 
@@ -220,7 +259,10 @@ You can see the source code for a class's constructor by accessing the `construc
 range@constructor
 ```
 
-In most cases, S7's default constructor will all you need. However, in some cases you might want something custom. For example, for our range class, maybe we'd like to construct it from a vector of numeric values, automatically computing the min and the max. To implement this we could do:
+In most cases, S7's default constructor will be all you need.
+However, in some cases you might want something custom.
+For example, for our range class, maybe we'd like to construct it from a vector of numeric values, automatically computing the min and the max.
+To implement this we could do:
 
 ```{r}
 range <- new_class("range",
@@ -229,13 +271,16 @@ range <- new_class("range",
     end = class_numeric
   ),
   constructor = function(x) {
-    new_object(NULL, start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
+    new_object(S7_object(), start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
   }
 )
 
 range(c(10, 5, 0, 2, 5, 7))
 ```
 
-A constructor must always end with a call to `new_object()`. The first argument to `new_object()` should be an object of the `parent` class, or `NULL`, if there's no parent (as here). That argument should be followed by one named argument for each property.
+A constructor must always end with a call to `new_object()`.
+The first argument to `new_object()` should be an object of the `parent` class (if you haven't specified a `parent` argument to `new_class()`, then you should use `S7_object()` as the parent here).
+That argument should be followed by one named argument for each property.
 
-There's one drawback of custom constructors that you should be aware: any subclass will also require a custom constructor.
+There's one drawback of custom constructors that you should be aware of: any subclass will also require a custom constructor.
+

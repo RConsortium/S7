@@ -67,13 +67,14 @@ is_external_generic <- function(x) {
 #'
 #' @importFrom utils getFromNamespace packageName
 #' @export
+#' @returns Nothing; called for its side-effects.
 #' @examples
 #' .onLoad <- function(...) {
 #'   S7::methods_register()
 #' }
 methods_register <- function() {
   package <- packageName(parent.frame())
-  tbl <- external_methods_get(package)
+  tbl <- S7_methods_table(package)
 
   for (x in tbl) {
     register <- registrar(x$generic, x$signature, x$method)
@@ -84,6 +85,8 @@ methods_register <- function() {
       setHook(packageEvent(x$generic$package, "onLoad"), register)
     }
   }
+
+  invisible()
 }
 
 registrar <- function(generic, signature, method) {
@@ -104,28 +107,34 @@ registrar <- function(generic, signature, method) {
   }
 }
 
-external_methods_get <- function(package) {
-  S3_methods_table(package)[[".S7_methods"]] %||% list()
-}
-
 external_methods_reset <- function(package) {
-  tbl <- S3_methods_table(package)
-  tbl[[".S7_methods"]] <- list()
+  S7_methods_table(package) <- list()
   invisible()
 }
 
 external_methods_add <- function(package, generic, signature, method) {
-  tbl <- S3_methods_table(package)
+  tbl <- S7_methods_table(package)
 
   methods <- append(
-    tbl[[".S7_methods"]] %||% list(),
+    tbl,
     list(list(generic = generic, signature = signature, method = method))
   )
 
-  tbl[[".S7_methods"]] <- methods
+  S7_methods_table(package) <- methods
   invisible()
 }
 
-S3_methods_table <- function(package) {
-  asNamespace(package)[[".__S3MethodsTable__."]]
+# Store external methods in an attribute of the S3 methods table since
+# this mutable object is present in all packages.
+
+S7_methods_table <- function(package) {
+  ns <- asNamespace(package)
+  tbl <- ns[[".__S3MethodsTable__."]]
+  attr(tbl, "S7methods")
+}
+`S7_methods_table<-` <- function(package, value) {
+  ns <- asNamespace(package)
+  tbl <- ns[[".__S3MethodsTable__."]]
+  attr(tbl, "S7methods") <- value
+  invisible()
 }

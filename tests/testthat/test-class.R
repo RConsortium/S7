@@ -23,6 +23,11 @@ describe("S7 classes", {
     })
   })
 
+  it("prints @package and @abstract details", {
+    foo <- new_class("foo", package = "S7", abstract = TRUE)
+    expect_snapshot(foo)
+  })
+
   it("checks inputs", {
     expect_snapshot(error = TRUE, {
       new_class(1)
@@ -83,6 +88,19 @@ describe("abstract classes", {
     foo1 <- new_class("foo1", abstract = TRUE)
     foo2 <- new_class("foo2", parent = foo1)
     expect_s3_class(foo2(), "foo2")
+  })
+  it("can use inherited validator from abstract class", {
+    foo1 <- new_class(
+      "foo1",
+      properties = list(x = class_double),
+      abstract = TRUE,
+      validator = function(self) {
+        if (self@x == 2) "@x has bad value"
+      }
+    )
+    foo2 <- new_class("foo2", parent = foo1)
+    expect_no_error(foo2(x = 1))
+    expect_snapshot(foo2(x = 2), error = TRUE)
   })
 })
 
@@ -207,4 +225,17 @@ test_that("c(<S7_class>, ...) gives error", {
   expect_snapshot(error = TRUE, {
     c(foo1, foo1)
   })
+})
+
+test_that("can round trip to disk and back", {
+  foo1 <- new_class("foo1", properties = list(y = class_integer))
+  foo2 <- new_class("foo2", properties = list(x = foo1))
+
+  f <- foo2(x = foo1(y = 1L))
+
+  path <- tempfile()
+  saveRDS(f, path)
+  f2 <- readRDS(path)
+
+  expect_equal(f2, f)
 })

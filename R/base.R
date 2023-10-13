@@ -158,8 +158,6 @@ class_function <- new_base_class("function", "fun")
 #' @order 1
 class_environment <- new_base_class("environment")
 
-# Base unions are created .onLoad
-
 #' @export
 #' @rdname base_classes
 #' @format NULL
@@ -177,3 +175,10 @@ class_atomic <- NULL
 #' @format NULL
 #' @order 2
 class_vector <- NULL
+
+# Define onload to avoid dependencies between files
+on_load_define_union_classes <- function() {
+  class_numeric <<- new_union(class_integer, class_double)
+  class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
+  class_vector <<- new_union(class_atomic, class_expression, class_list)
+}

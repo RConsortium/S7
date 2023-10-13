@@ -38,6 +38,29 @@ test_that("validate checks base type", {
   expect_snapshot(error = TRUE, validate(x))
 })
 
+test_that("validate checks the type of setters", {
+  foo <- new_class("foo", properties = list(x =
+    new_property(
+      class_double,
+      setter = function(self, value) {
+        self@x <- as.character(value)
+        self
+      }
+    )
+  ))
+  expect_snapshot(foo(x = 123), error = TRUE)
+})
+
+test_that("validate does not check type of getters", {
+  # because getters can be peform arbitrary computation and we want
+  # validation to always be cheap
+
+  prop <- new_property(class_integer, getter = function(self) "x")
+  foo <- new_class("foo", properties =  list(x = prop))
+
+  expect_no_error(foo())
+})
+
 test_that("valid eventually calls the validation function only at the end", {
   foo <- new_class("foo",
     properties = list(x = class_double),

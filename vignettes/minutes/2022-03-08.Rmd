@@ -5,7 +5,7 @@ title: "Minutes 2022-03-08"
 ## Changes
 
 -   Website updates (<https://rconsortium.github.io/OOP-WG/>): refreshed readme, minutes as articles.
-    Working on documentation overhaul in <https://github.com/RConsortium/OOP-WG/pull/187>.
+    Working on documentation overhaul in <https://github.com/RConsortium/S7/pull/187>.
 
 -   `new_generic()` now requires `dispatch_args`.
     This means that `new_generic()` will typically be called without names:
@@ -21,17 +21,17 @@ title: "Minutes 2022-03-08"
 
     -   `new_class("foo", properties = list(x = integer, y = double))@constructor`
 
-    -   <https://github.com/RConsortium/OOP-WG/blob/main/R/class.R#L209-L212>
+    -   <https://github.com/RConsortium/S7/blob/main/R/class.R#L209-L212>
 
 -   See other minor changes in\
-    <https://github.com/RConsortium/OOP-WG/blob/main/NEWS.md#feb-2022>
+    <https://github.com/RConsortium/S7/blob/main/NEWS.md#feb-2022>
 
 ## Discussion
 
--   Rename `method_call()`? <https://github.com/RConsortium/OOP-WG/issues/200> --- `S7_dispatch()` sounds good.
--   Abstract classes? <https://github.com/RConsortium/OOP-WG/issues/199>. Easy to implement but is it worth it?
--   What should we call the S7 equivalent of inherits? <https://github.com/RConsortium/OOP-WG/issues/193> --- call it `S7_inherits()` for now; will eventually just be part of inherits. Propose generic extension mechanism for inherits.
--   Explicit S4 registration: <https://github.com/RConsortium/OOP-WG/pull/182>
--   New names for base types? <https://github.com/RConsortium/OOP-WG/issues/170> --- `class_` sounds good.
--   Convert and super: <https://github.com/RConsortium/OOP-WG/pull/181>
--   Should we offer encapsulated OO? <https://github.com/RConsortium/OOP-WG/issues/202>
+-   Rename `method_call()`? <https://github.com/RConsortium/S7/issues/200> --- `S7_dispatch()` sounds good.
+-   Abstract classes? <https://github.com/RConsortium/S7/issues/199>. Easy to implement but is it worth it?
+-   What should we call the S7 equivalent of inherits? <https://github.com/RConsortium/S7/issues/193> --- call it `S7_inherits()` for now; will eventually just be part of inherits. Propose generic extension mechanism for inherits.
+-   Explicit S4 registration: <https://github.com/RConsortium/S7/pull/182>
+-   New names for base types? <https://github.com/RConsortium/S7/issues/170> --- `class_` sounds good.
+-   Convert and super: <https://github.com/RConsortium/S7/pull/181>
+-   Should we offer encapsulated OO? <https://github.com/RConsortium/S7/issues/202>

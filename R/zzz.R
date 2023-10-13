@@ -15,12 +15,21 @@ S7_object <- new_class(
     .Call(S7_object_)
   },
   validator = function(self) {
-    if (typeof(self) != .S7_type) {
+    if (!is_S7_type(self)) {
       "Underlying data is corrupt"
     }
   }
 )
 methods::setOldClass("S7_object")
+
+.S7_type <- NULL
+# Defined onLoad because it depends on R version
+on_load_define_S7_type <- function() {
+  .S7_type <<- typeof(.Call(S7_object_))
+}
+is_S7_type <- function(x) {
+  typeof(x) == .S7_type
+}
 
 #' @export
 `$.S7_object` <- function(x, name) {
@@ -100,21 +109,7 @@ S7_method <- new_class("S7_method",
 )
 methods::setOldClass(c("S7_method", "function", "S7_object"))
 
-
-# Create generics for double dispatch base Ops
-base_ops <- lapply(setNames(, unlist(group_generics()[c("Ops", "matrixOps")])),
-                   new_generic, dispatch_args = c("x", "y"))
-
-#' @export
-Ops.S7_object <- function(e1, e2) {
-  base_ops[[.Generic]](e1, e2)
-}
-
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
-matrixOps.S7_object <- Ops.S7_object
-
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
-chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
+# hooks -------------------------------------------------------------------
 
 .onAttach <- function(libname, pkgname) {
   env <- as.environment(paste0("package:", pkgname))
@@ -124,21 +119,10 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 }
 
 .onLoad <- function(...) {
-  ## "S4"   or [in R-devel 2023-07-x]   "object"
-  assign(".S7_type", typeof(.Call(S7_object_)), topenv())
-
-  convert <<- S7_generic(convert, name = "convert", dispatch_args = c("from", "to"))
-
-  class_numeric <<- new_union(class_integer, class_double)
-  class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
-  class_vector <<- new_union(class_atomic, class_expression, class_list)
-
-  # Dynamic register so that function pointers are the same, avoiding R 4.0
-  # and earlier bug related to incompatible S3 methods during Ops dispatch
-  registerS3method("|", "S7_union", `|.S7_class`)
-  registerS3method("|", "S7_base_class", `|.S7_class`)
-  registerS3method("|", "S7_S3_class", `|.S7_class`)
-  registerS3method("|", "classGeneratorFunction", `|.S7_class`)
-  registerS3method("|", "ClassUnionRepresentation", `|.S7_class`)
-  registerS3method("|", "classRepresentation", `|.S7_class`)
+  on_load_make_convert_generic()
+  on_load_define_matrixOps()
+  on_load_define_ops()
+  on_load_define_or_methods()
+  on_load_define_S7_type()
+  on_load_define_union_classes()
 }

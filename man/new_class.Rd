@@ -31,10 +31,13 @@ There are three options:
 }}
 
 \item{package}{Package name. It is good practice to set the package
-name when exporting an S7 class from a package because it includes
-the package name in the class name when it's used for dispatch. This
-allows different packages to use the same name to refer to different
-classes. If you see \code{package}, you \emph{must} export the constructor.}
+name when exporting an S7 class from a package because it prevents
+clashes if two packages happen to export a class with the same
+name.
+
+Setting \code{package} implies that the class is available for external use,
+so should be accompanied by exporting the constructor. Learn more
+in \code{vignette("packages")}.}
 
 \item{properties}{A named list specifying the properties (data) that
 belong to each instance of the class. Each element of the list can

@@ -2,12 +2,12 @@ test_that("can get and append methods", {
   external_methods_reset("S7")
   on.exit(external_methods_reset("S7"), add = TRUE)
 
-  expect_equal(external_methods_get("S7"), list())
+  expect_equal(S7_methods_table("S7"), list())
 
   bar <- new_external_generic("foo", "bar", "x")
   external_methods_add("S7", bar, list(), function() {})
   expect_equal(
-    external_methods_get("S7"),
+    S7_methods_table("S7"),
     list(
       list(
         generic = bar,
@@ -30,7 +30,7 @@ test_that("displays nicely", {
 test_that("new_method works with both hard and soft dependencies", {
   # NB: Relies on installed S7
 
-  skip_if(getRversion() < 4.1 && Sys.info()[["sysname"]] == "Windows")
+  skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
   tmp_lib <- tempfile()
