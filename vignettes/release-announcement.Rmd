@@ -123,7 +123,8 @@ method(inside, range)
 While we are very happy with the overall design of S7, we still haven't worked out all the details.
 Currently there are two limitations you should be aware of:
 
--   You can't `dput()` an S7 object and you can't interactively debug methods (either with `browser()` or `debug()`). We hope to fix this in a future patch release of R.
+-   You can't `dput()` an S7 object and you can't interactively debug methods (either with `browser()` or `debug()`). This is fixed in R-devel and will be included in a future release.
+-   We have not fully thought out how S7 classes work with group generics like `Math` and `Ops`. The current behaviour is inconsistent and needs to be fixed in a future release.
 -   It's possible to serialize S7 objects to disk (with `saveRDS()` and friends) but serialization is not yet fully thought out, and currently will save the entire class specification along with each object. This may change in the future.
 
 We also expect that as the community starts to use S7 more widely you all will discover more problems.
