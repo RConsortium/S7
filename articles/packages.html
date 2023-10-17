@@ -151,16 +151,9 @@ with this custom <code>NAMESPACE</code> directive:</p>
 <code class="sourceCode R"><span><span class="co"># enable usage of &lt;S7_object&gt;@name in package code</span></span>
 <span><span class="co">#' @rawNamespace if (getRversion() &lt; "4.3.0") importFrom("S7", "@")</span></span>
 <span><span class="cn">NULL</span></span></code></pre></div>
-<p>You can additionally make <code>@</code> work for users of your
-package by attaching the S7 package when your package is attached with
-this <code>.onAttach()</code> code:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">.onAttach</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">libname</span>, <span class="va">pkgname</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">getRversion</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&lt;</span> <span class="st">"4.3.0"</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/S7/" class="external-link">S7</a></span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p>Use this technique with care as it will attach S7 to the user search
-path, possibly causing conflicts with other packages/functions.</p>
+<p><code>@</code> will work for users of your package because S7
+automatically attaches an environment containing the needed definition
+when it’s loaded.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
