@@ -3,10 +3,11 @@
     Code
       foo2
     Output
-      <S7_class>
-      @ name  :  foo2
-      @ parent: <foo1>
-      @ properties:
+      <foo2> class
+      @ parent     : <foo1>
+      @ constructor: function(x, y) {...}
+      @ validator  : <NULL>
+      @ properties :
        $ x: <integer>
        $ y: <integer>
     Code
@@ -40,93 +41,119 @@
       List of 1
        $ : <foo2/foo1/S7_object> constructor
 
+# S7 classes: prints @package and @abstract details
+
+    Code
+      foo
+    Output
+      <S7::foo> abstract class
+      @ parent     : <S7_object>
+      @ constructor: function() {...}
+      @ validator  : <NULL>
+      @ properties :
+
 # S7 classes: checks inputs
 
     Code
       new_class(1)
-    Error <simpleError>
-      `name` must be a single string
+    Condition
+      Error:
+      ! `name` must be a single string
     Code
       new_class("foo", 1)
-    Error <simpleError>
-      Can't convert `parent` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+    Condition
+      Error:
+      ! Can't convert `parent` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
       new_class("foo", package = 1)
-    Error <simpleError>
-      `package` must be a single string
+    Condition
+      Error:
+      ! `package` must be a single string
     Code
       new_class("foo", constructor = 1)
-    Error <simpleError>
-      `constructor` must be a function
+    Condition
+      Error:
+      ! `constructor` must be a function
     Code
       new_class("foo", constructor = function() { })
-    Error <simpleError>
-      `constructor` must contain a call to `new_object()`
+    Condition
+      Error:
+      ! `constructor` must contain a call to `new_object()`
     Code
       new_class("foo", validator = function() { })
-    Error <simpleError>
-      `validator` must be function(self), not function()
+    Condition
+      Error:
+      ! `validator` must be function(self), not function()
 
 # S7 classes: can't inherit from S4 or class unions
 
     Code
       new_class("test", parent = parentS4)
-    Error <simpleError>
-      `parent` must be an S7 class, S3 class, or base type, not an S4 class.
+    Condition
+      Error:
+      ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
     Code
       new_class("test", parent = new_union("character"))
-    Error <simpleError>
-      Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
+    Condition
+      Error:
+      ! Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
 # S7 classes: can't inherit from an environment
 
     Code
       new_class("test", parent = class_environment)
-    Error <simpleError>
-      Can't inherit from an environment.
+    Condition
+      Error:
+      ! Can't inherit from an environment.
 
 # abstract classes: can't be instantiated
 
     Code
       foo <- new_class("foo", abstract = TRUE)
       foo()
-    Error <simpleError>
-      Can't construct an object from abstract class <foo>
+    Condition
+      Error in `new_object()`:
+      ! Can't construct an object from abstract class <foo>
 
 # abstract classes: can't inherit from concrete class
 
     Code
       foo1 <- new_class("foo1")
       new_class("foo2", parent = foo1, abstract = TRUE)
-    Error <simpleError>
-      Abstract classes must have abstract parents
+    Condition
+      Error in `new_class()`:
+      ! Abstract classes must have abstract parents
 
 # abstract classes: can use inherited validator from abstract class
 
     Code
       foo2(x = 2)
-    Error <simpleError>
-      <foo2> object is invalid:
+    Condition
+      Error:
+      ! <foo2> object is invalid:
       - @x has bad value
 
 # new_object(): gives useful error if called directly
 
     Code
       new_object()
-    Error <simpleError>
-      `new_object()` must be called from within a constructor
+    Condition
+      Error in `new_object()`:
+      ! `new_object()` must be called from within a constructor
 
 # new_object(): validates object
 
     Code
       foo("x")
-    Error <simpleError>
-      <foo> object properties are invalid:
+    Condition
+      Error:
+      ! <foo> object properties are invalid:
       - @x must be <double>, not <character>
     Code
       foo(-1)
-    Error <simpleError>
-      <foo> object is invalid:
+    Condition
+      Error:
+      ! <foo> object is invalid:
       - x must be positive
 
 # new_object(): runs each parent validator exactly once
@@ -193,6 +220,7 @@
 
     Code
       c(foo1, foo1)
-    Error <simpleError>
-      Can not combine S7 class objects
+    Condition
+      Error:
+      ! Can not combine S7 class objects
 
