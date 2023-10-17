@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* S7 provides a new automatic backward compatibility mechanism to provide
+  a version of `@` that works in R before version 4.3 (#326).
+
 * Can create multimethods that dispatch on `NULL`.
 
 # S7 0.1.1
