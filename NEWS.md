@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* In `new_class()`, properties can either be named by naming the element
+  of the list or by supplying the `name` argument to `new_property()` (#371).
+
 * S7 provides a new automatic backward compatibility mechanism to provide
   a version of `@` that works in R before version 4.3 (#326).
 

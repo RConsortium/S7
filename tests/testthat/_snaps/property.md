@@ -160,12 +160,12 @@
       as_properties(list(1))
     Condition
       Error:
-      ! `property[[1]]` is missing a name
+      ! `property[[1]]` must be named.
     Code
       as_properties(list(new_property(class_character)))
     Condition
       Error:
-      ! `property[[1]]` is missing a name
+      ! `property[[1]]` must have a name or be named.
     Code
       as_properties(list(x = 1))
     Condition

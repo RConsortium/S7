@@ -393,7 +393,7 @@ as_properties <- function(x) {
   }
 
   out <- Map(as_property, x, names2(x), seq_along(x))
-  names(out) <- names2(x)
+  names(out) <- vapply(out, function(x) x$name, FUN.VALUE = character(1))
 
   if (anyDuplicated(names(out))) {
     stop("`properties` names must be unique", call. = FALSE)
@@ -403,15 +403,22 @@ as_properties <- function(x) {
 }
 
 as_property <- function(x, name, i) {
-  if (name == "") {
-    msg <- sprintf("`property[[%i]]` is missing a name", i)
-    stop(msg, call. = FALSE)
-  }
 
   if (is_property(x)) {
-    x$name <- name
+    if (is.null(x$name)) {
+      if (name == "") {
+        msg <- sprintf("`property[[%i]]` must have a name or be named.", i)
+        stop(msg, call. = FALSE)
+      }
+      x$name <- name
+    }
     x
   } else {
+    if (name == "") {
+      msg <- sprintf("`property[[%i]]` must be named.", i)
+      stop(msg, call. = FALSE)
+    }
+
     class <- as_class(x, arg = paste0("property$", name))
     new_property(x, name = name)
   }
