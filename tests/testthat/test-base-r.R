@@ -56,8 +56,7 @@ test_that("base::`@` accesses S7 properties", {
 })
 
 test_that("dput(<S7_object>) works", {
-  skip_if(getRversion() < "4.3")
-  skip("dput() not fixed yet; https://github.com/RConsortium/S7/issues/272")
+  skip_if(getRversion() < "4.4")
 
   expect_no_error(dput(new_class("Foo")()))
   expect_no_error(dput(new_class("Foo")))
