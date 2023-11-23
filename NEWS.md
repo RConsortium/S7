@@ -1,5 +1,12 @@
 # S7 (development version)
 
+* When a method is not found, the error now has class `methodNotFound`.
+
+* The `Ops` generic now falls back to base Ops behaviour when one of the 
+  arguments is not an S7 object (#320). This means that you get the somewhat 
+  inconsistent base behaviour, but means that S7 doesn't introduce a new axis 
+  of inconsistency. 
+
 * S7 provides a new automatic backward compatibility mechanism to provide
   a version of `@` that works in R before version 4.3 (#326).
 

@@ -11,7 +11,8 @@ method_lookup_error <- function(name, args, signatures) {
     msg <- sprintf("Can't find method for generic `%s(%s)`:\n%s", name, arg_names, types)
   }
 
-  stop(msg, call. = FALSE)
+  cnd <- errorCondition(message = msg, class = c("methodNotFound", "error"))
+  stop(cnd)
 }
 
 #' @rdname new_generic

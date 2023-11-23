@@ -16,7 +16,18 @@ on_load_define_ops <- function() {
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
-  base_ops[[.Generic]](e1, e2)
+  cnd <- tryCatch(
+    return(base_ops[[.Generic]](e1, e2)),
+    methodNotFound = function(cnd) cnd
+  )
+
+  if (S7_inherits(e1) && S7_inherits(e2)) {
+    stop(cnd)
+  } else {
+    # Must call NextMethod() directly in the method, not wrapped in an
+    # anonymous function.
+    NextMethod()
+  }
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)

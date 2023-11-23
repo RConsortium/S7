@@ -12,6 +12,8 @@ test_that("Ops generics dispatch to S7 methods for S7 classes", {
   expect_equal(foo1() + foo2(), "foo1-foo2")
   expect_equal(foo2() + foo1(), "foo2-foo1")
   expect_equal(foo2() + foo2(), "foo2-foo2")
+
+  expect_error(foo1() + new_class("foo3")(), class = "methodNotFound")
 })
 
 test_that("Ops generics dispatch to S3 methods", {
@@ -74,6 +76,19 @@ test_that("Ops generics dispatch to S7 methods for NULL", {
 
   expect_equal(foo() + NULL, "foo-NULL")
   expect_equal(NULL + foo(), "NULL-foo")
+})
+
+test_that("Ops generics falls back to base behaviour", {
+  local_methods(base_ops[["+"]])
+
+  foo <- new_class("foo", parent = class_double)
+  expect_equal(foo(1) + 1, foo(2))
+  expect_equal(foo(1) + 1:2, 2:3)
+
+  # but can be overridden
+  method(`+`, list(foo, class_numeric)) <- function(e1, e2) "foo-numeric"
+  expect_equal(foo(1) + 1, "foo-numeric")
+  expect_equal(foo(1) + 1:2, "foo-numeric")
 })
 
 test_that("`%*%` dispatches to S7 methods", {
