@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 This vignette outlines the most important things you need to know about using S7 in a package.
 S7 is new, so few people have used it in a package yet; this means that this vignette is likely incomplete, and we'd love your help to make it better.
-Please [let us know](https://github.com/RConsortium/OOP-WG/issues/new) if you have questions that this vignette doesn't answer.
+Please [let us know](https://github.com/RConsortium/S7/issues/new) if you have questions that this vignette doesn't answer.
 
 ```{r setup}
 library(S7)
@@ -46,11 +46,11 @@ If you export a class, you must also set the `package` argument, ensuring that c
 You should document generics like regular functions (since they are!).
 If you expect others to create their own methods for your generic, you may want to include an section describing the the properties that you expect all methods to have.
 We plan to provide a an easy way to all methods for a generic, but have not yet implemented it.
-You can track progress at <https://github.com/RConsortium/OOP-WG/issues/167>.
+You can track progress at <https://github.com/RConsortium/S7/issues/167>.
 
 We don't currently have any recommendations on documenting methods.
 There's no need to document them in order to pass `R CMD check`, but obviously there are cases where it's nice to provide additional details for a method, particularly if it takes extra arguments compared to the generic.
-We're tracking that issue at <https://github.com/RConsortium/OOP-WG/issues/315>.
+We're tracking that issue at <https://github.com/RConsortium/S7/issues/315>.
 
 ## Backward compatibility
 
@@ -65,13 +65,4 @@ Otherwise, you can conditionally make an S7-aware `@` available to your package 
 NULL
 ```
 
-You can additionally make `@` work for users of your package by attaching the S7 package when your package is attached with this `.onAttach()` code:
-
-```{r}
-.onAttach <- function(libname, pkgname) {
-  if (getRversion() < "4.3.0")
-    require(S7)
-}
-```
-
-Use this technique with care as it will attach S7 to the user search path, possibly causing conflicts with other packages/functions.
+`@` will work for users of your package because S7 automatically attaches an environment containing the needed definition when it's loaded.

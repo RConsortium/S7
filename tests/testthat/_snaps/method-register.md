@@ -3,15 +3,16 @@
     Code
       method(foo, class_character) <- (function(x) "c")
       method(foo, class_character) <- (function(x) "c")
-    Message <simpleMessage>
+    Message
       Overwriting method foo(<character>)
 
 # method registration: S3 registration requires a S7 class
 
     Code
       method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
-    Error <simpleError>
-      When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
+    Condition
+      Error:
+      ! When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
 
 # method registration: can register S7 method for S4 generic
 
@@ -22,46 +23,54 @@
     Code
       x <- 10
       method(x, class_character) <- (function(x) ...)
-    Error <simpleError>
-      `generic` must be a function, not a <double>
+    Condition
+      Error:
+      ! `generic` must be a function, not a <double>
     Code
       method(foo, 1) <- (function(x) ...)
-    Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+    Condition
+      Error:
+      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
 
 # as_signature(): forbids list for single dispatch
 
     Code
       as_signature(list(1), foo)
-    Error <simpleError>
-      Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
+    Condition
+      Error:
+      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
 
 # as_signature(): requires a list of the correct length for multiple dispatch
 
     Code
       as_signature(class_character, foo)
-    Error <simpleError>
-      `signature` must be a list for multidispatch generics
+    Condition
+      Error:
+      ! `signature` must be a list for multidispatch generics
     Code
       as_signature(list(class_character), foo)
-    Error <simpleError>
-      `signature` must be length 2
+    Condition
+      Error:
+      ! `signature` must be length 2
 
 # check_method complains if the functions are not compatible
 
     Code
       foo <- new_generic("foo", "x")
       check_method(1, foo)
-    Error <simpleError>
-      foo(???) must be a function
+    Condition
+      Error:
+      ! foo(???) must be a function
     Code
       check_method(function(y) { }, foo)
-    Error <simpleError>
-      foo() dispatches on `x`, but foo(???) has arguments `y`
+    Condition
+      Error:
+      ! foo() dispatches on `x`, but foo(???) has arguments `y`
     Code
       check_method(function(x = "foo") { }, foo)
-    Error <simpleError>
-      In foo(???), dispatch arguments (`x`) must not have default values
+    Condition
+      Error:
+      ! In foo(???), dispatch arguments (`x`) must not have default values
     Code
       check_method(function(x, y, ...) { }, foo)
 
@@ -70,19 +79,22 @@
     Code
       foo <- new_generic("foo", "x", function(x) S7_dispatch())
       check_method(function(x, y) { }, foo)
-    Error <simpleError>
-      foo() lacks `...` so method formals must match generic formals exactly
+    Condition
+      Error:
+      ! foo() lacks `...` so method formals must match generic formals exactly
 
 # check_method warn if default arguments don't match
 
     Code
       foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())
       check_method(function(x, ..., y = 1) { }, foo)
-    Warning <simpleWarning>
+    Condition
+      Warning:
       foo(???) doesn't have argument `z`
     Code
       check_method(function(x, ..., y = 1, z = 1) { }, foo)
-    Warning <simpleWarning>
+    Condition
+      Warning:
       In foo(???), default value of `z` is not the same as the generic
       - Generic: 2
       - Method:  1

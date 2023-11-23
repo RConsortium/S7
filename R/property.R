@@ -218,7 +218,7 @@ prop_obj <- function(object, name) {
       if (isTRUE(check)) {
         error <- prop_validate(prop, value, object)
         if (!is.null(error)) {
-          stop(error, call. = TRUE)
+          stop(error, call. = FALSE)
         }
       }
 
@@ -260,28 +260,16 @@ prop_label <- function(object, name) {
   sprintf("%s@%s", if (!is.null(object)) obj_desc(object) else "", name)
 }
 
-#' @rdname prop
-#' @usage object@name
-#' @aliases @
-#' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object) else export("@")
-`@.S7_object` <- prop
-
 # Note: we need to explicitly refer to base with "base::`@`" in the
 # namespace directive to ensure the method is registered in the correct place.
 # Otherwise, loadNamespace()/registerS3method() gets confused by the
 # presence of a closure w/ the name of the generic (`@`) in the R7 namespace,
 # and incorrectly assumes that R7::`@` is the generic and registers the
 # method in the package namespace instead of base::.__S3MethodsTable__.
-
-`@` <- function(object, name) {
-  if (inherits(object, "S7_object")) {
-    name <- as.character(substitute(name))
-    prop(object, name)
-  } else {
-    name <- substitute(name)
-    do.call(base::`@`, list(object, name))
-  }
-}
+#' @usage object@name
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object)
+#' @name prop
+`@.S7_object` <- prop
 
 #' @rawNamespace S3method("@<-",S7_object)
 `@<-.S7_object` <- function(object, name, value) {
