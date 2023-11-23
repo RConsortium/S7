@@ -42,6 +42,8 @@ VignetteBuilder:
     knitr
 Config/Needs/website: sloop
 Config/testthat/edition: 3
+Config/testthat/parallel: TRUE
+Config/testthat/start-first: external-generic
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

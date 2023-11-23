@@ -283,4 +283,3 @@ The first argument to `new_object()` should be an object of the `parent` class (
 That argument should be followed by one named argument for each property.
 
 There's one drawback of custom constructors that you should be aware of: any subclass will also require a custom constructor.
-

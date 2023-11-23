@@ -2,7 +2,7 @@
 title: "Generics and methods"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{S7 generics and method dispatch}
+  %\VignetteIndexEntry{Generics and methods}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
