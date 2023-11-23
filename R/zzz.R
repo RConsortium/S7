@@ -119,8 +119,9 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 }
 
 .onLoad <- function(...) {
+  activate_backward_compatiblility()
+
   on_load_make_convert_generic()
-  on_load_define_matrixOps()
   on_load_define_ops()
   on_load_define_or_methods()
   on_load_define_S7_type()

@@ -156,7 +156,7 @@ as_signature <- function(signature, generic) {
   } else {
     check_signature_list(signature, n)
     for (i in seq_along(signature)) {
-      signature[[i]] <- as_class(signature[[i]], arg = sprintf("signature[[%i]]", i))
+      signature[i] <- list(as_class(signature[[i]], arg = sprintf("signature[[%i]]", i)))
     }
     new_signature(signature)
   }

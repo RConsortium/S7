@@ -2,51 +2,62 @@
 
     Code
       new_generic(1)
-    Error <simpleError>
-      `name` must be a single string
+    Condition
+      Error:
+      ! `name` must be a single string
     Code
       new_generic("")
-    Error <simpleError>
-      `name` must not be "" or NA
+    Condition
+      Error:
+      ! `name` must not be "" or NA
     Code
       new_generic("foo", 1)
-    Error <simpleError>
-      `dispatch_args` must be a character vector
+    Condition
+      Error:
+      ! `dispatch_args` must be a character vector
     Code
       new_generic("foo", "x", function(x) { })
-    Error <simpleError>
-      `fun` must contain a call to `S7_dispatch()`
+    Condition
+      Error:
+      ! `fun` must contain a call to `S7_dispatch()`
 
 # check_dispatch_args() produces informative errors
 
     Code
       check_dispatch_args(1)
-    Error <simpleError>
-      `dispatch_args` must be a character vector
+    Condition
+      Error:
+      ! `dispatch_args` must be a character vector
     Code
       check_dispatch_args(character())
-    Error <simpleError>
-      `dispatch_args` must have at least one component
+    Condition
+      Error:
+      ! `dispatch_args` must have at least one component
     Code
       check_dispatch_args("")
-    Error <simpleError>
-      `dispatch_args` must not be missing or the empty string
+    Condition
+      Error in `check_dispatch_args()`:
+      ! `dispatch_args` must not be missing or the empty string
     Code
       check_dispatch_args(NA_character_)
-    Error <simpleError>
-      `dispatch_args` must not be missing or the empty string
+    Condition
+      Error in `check_dispatch_args()`:
+      ! `dispatch_args` must not be missing or the empty string
     Code
       check_dispatch_args(c("x", "x"))
-    Error <simpleError>
-      `dispatch_args` must be unique
+    Condition
+      Error:
+      ! `dispatch_args` must be unique
     Code
       check_dispatch_args("...")
-    Error <simpleError>
-      Can't dispatch on `...`
+    Condition
+      Error:
+      ! Can't dispatch on `...`
     Code
       check_dispatch_args("y", function(x, ..., y) { })
-    Error <simpleError>
-      `dispatch_args` must be a prefix of the generic arguments
+    Condition
+      Error:
+      ! `dispatch_args` must be a prefix of the generic arguments
 
 # S7_generic printing
 
@@ -75,10 +86,12 @@
 
     Code
       check_generic("x")
-    Error <simpleError>
-      `fun` must be a function
+    Condition
+      Error:
+      ! `fun` must be a function
     Code
       check_generic(function() { })
-    Error <simpleError>
-      `fun` must contain a call to `S7_dispatch()`
+    Condition
+      Error:
+      ! `fun` must contain a call to `S7_dispatch()`
 

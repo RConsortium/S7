@@ -3,8 +3,9 @@
     Code
       foo <- new_class("foo")
       super(foo(), class_character)
-    Error <simpleError>
-      <foo> doesn't inherit from <character>
+    Condition
+      Error in `super()`:
+      ! <foo> doesn't inherit from <character>
 
 # super(): displays nicely
 
