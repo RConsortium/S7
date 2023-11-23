@@ -2,9 +2,6 @@
 
 * `super()` now works with Ops methods (#357).
 
-* `S7_inherits()` now accepts `class = NULL` to test if an object is any
-  sort of S7 object (#347).
-
 * S7 provides a new automatic backward compatibility mechanism to provide
   a version of `@` that works in R before version 4.3 (#326).
 
