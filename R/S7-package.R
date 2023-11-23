@@ -1,5 +1,6 @@
 ## usethis namespace: start
-#' @useDynLib S7, .registration = TRUE
+#' @importFrom utils globalVariables
 #' @importFrom utils head str hasName
+#' @useDynLib S7, .registration = TRUE
 ## usethis namespace: end
 NULL
