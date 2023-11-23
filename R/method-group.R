@@ -1,7 +1,7 @@
 group_generic_Math <- NULL
 group_generic_Ops <- NULL
 group_generic_Complex <- NULL
-group_generic_Sumary <- NULL
+group_generic_Summary <- NULL
 
 on_load_define_group_generics <- function() {
   group_generic_Math <<- new_generic("Math", "x")
