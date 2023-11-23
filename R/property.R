@@ -186,7 +186,8 @@ prop_val <- function(object, name) {
 # Get underlying property object from class
 prop_obj <- function(object, name) {
   class <- S7_class(object)
-  attr(class, "properties")[[name]]
+  if (is.null(class)) return()
+  attr(class, "properties")()[[name]]
 }
 
 #' @rdname prop
@@ -304,7 +305,7 @@ prop_names <- function(object) {
     c("name", "parent", "package", "properties", "abstract", "constructor", "validator")
   } else {
     class <- S7_class(object)
-    props <- attr(class, "properties", exact = TRUE)
+    props <- attr(class, "properties", exact = TRUE)()
     if (length(props) == 0) {
       character()
     } else {

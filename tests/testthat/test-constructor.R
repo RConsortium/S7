@@ -67,6 +67,21 @@ test_that("can generate constructor for inherited abstract classes", {
   expect_no_error(child())
 })
 
+test_that("dynamic constructor assigns args correctly", {
+  foo <- new_class("foo", properties = list(x = class_double))
+  foo1_ex <- new_external_class("pkg", "foo1", function() foo)
+  foo2 <- new_class("foo2", foo1_ex, properties = list(y = class_character))
+
+  out <- foo2(x = 1, y = "x")
+  expect_equal(out@x, 1)
+  expect_equal(out@y, "x")
+
+  # including initializing defaults
+  out <- foo2()
+  expect_equal(out@x, double())
+  expect_equal(out@y, character())
+})
+
 test_that("can use `...` in parent constructor", {
   foo <- new_class(
     "foo",

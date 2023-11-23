@@ -149,6 +149,15 @@
       Error:
       ! <my_class>@S7_union must be <integer> or <logical>, not <character>
 
+# a property can be an external class
+
+    Code
+      foo2(y = 1)
+    Condition
+      Error:
+      ! <foo2> object properties are invalid:
+      - @y must be <pkg::foo1>, not <double>
+
 # as_properties() gives useful error messages
 
     Code

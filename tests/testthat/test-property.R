@@ -277,6 +277,15 @@ test_that("properties can be base, S3, S4, S7, or S7 union", {
   })
 })
 
+test_that("a property can be an external class", {
+  foo1 <- new_class("foo1", properties = list(x = class_double))
+  foo1_ex <- new_external_class("pkg", "foo1", function() foo1)
+  foo2 <- new_class("foo2", properties = list(y = foo1_ex))
+
+  expect_no_error(foo2(y = foo1(x = 1)))
+  expect_snapshot(foo2(y = 1), error = TRUE)
+})
+
 test_that("as_properties normalises properties", {
   expect_equal(as_properties(NULL), list())
   expect_equal(

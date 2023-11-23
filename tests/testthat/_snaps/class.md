@@ -17,21 +17,7 @@
        @ name       : chr "foo2"
        @ parent     : <foo1/S7_object> constructor
        @ package    : NULL
-       @ properties :List of 2
-       .. $ x: <S7_property> 
-       ..  ..$ name     : chr "x"
-       ..  ..$ class    : <S7_base_class>: <integer>
-       ..  ..$ getter   : NULL
-       ..  ..$ setter   : NULL
-       ..  ..$ validator: NULL
-       ..  ..$ default  : NULL
-       .. $ y: <S7_property> 
-       ..  ..$ name     : chr "y"
-       ..  ..$ class    : <S7_base_class>: <integer>
-       ..  ..$ getter   : NULL
-       ..  ..$ setter   : NULL
-       ..  ..$ validator: NULL
-       ..  ..$ default  : NULL
+       @ properties : function ()  
        @ abstract   : logi FALSE
        @ constructor: function (x = class_missing, y = class_missing)  
        @ validator  : NULL

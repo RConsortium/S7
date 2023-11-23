@@ -10,6 +10,7 @@ as_class(x, arg = deparse(substitute(x)))
 \item{x}{A class specification. One of the following:
 \itemize{
 \item An S7 class (created by \code{\link[=new_class]{new_class()}}).
+\item An external S7 class (created by \code{\link[=new_external_class]{new_external_class()}}).
 \item An S7 union (created by \code{\link[=new_union]{new_union()}}).
 \item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).

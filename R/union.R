@@ -61,6 +61,7 @@ on_load_define_or_methods <- function() {
   registerS3method("|", "S7_base_class", `|.S7_class`)
   registerS3method("|", "S7_S3_class", `|.S7_class`)
   registerS3method("|", "S7_any", `|.S7_class`)
+  registerS3method("|", "S7_external_class", `|.S7_class`)
   registerS3method("|", "S7_missing", `|.S7_class`)
   registerS3method("|", "classGeneratorFunction", `|.S7_class`)
   registerS3method("|", "ClassUnionRepresentation", `|.S7_class`)

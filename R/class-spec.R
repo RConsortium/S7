@@ -6,6 +6,7 @@
 #'
 #' @param x A class specification. One of the following:
 #'   * An S7 class (created by [new_class()]).
+#'   * An external S7 class (created by [new_external_class()]).
 #'   * An S7 union (created by [new_union()]).
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
@@ -41,7 +42,8 @@ is_foundation_class <- function(x) {
     is_base_class(x) ||
     is_S3_class(x) ||
     is_class_missing(x) ||
-    is_class_any(x)
+    is_class_any(x) ||
+    is_external_class(x)
 }
 
 class_type <- function(x) {
@@ -57,6 +59,8 @@ class_type <- function(x) {
     "S7"
   } else if (is_union(x)) {
     "S7_union"
+  } else if (is_external_class(x)) {
+    "S7_external"
   } else if (is_S3_class(x)) {
     "S7_S3"
   } else if (is_S4_class(x)) {
@@ -75,6 +79,7 @@ class_friendly <- function(x) {
     S7 = "an S7 class",
     S7_base = "a base type",
     S7_union = "an S7 union",
+    S7_external = "an external S7 class",
     S7_S3 = "an S3 class",
   )
 }
@@ -88,6 +93,7 @@ class_constructor <- function(.x, ...) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
+    S7_external = .x$constructor_fun(),
     stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
   )
 }
@@ -100,6 +106,7 @@ class_validate <- function(class, object) {
     S4 = methods::validObject,
     S7 = class@validator,
     S7_base = class$validator,
+    S7_external = class$constructor_fun()@validator,
     S7_S3 = class$validator,
     NULL
   )
@@ -120,6 +127,7 @@ class_desc <- function(x) {
     S7 = paste0("<", S7_class_name(x), ">"),
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
+    S7_external = paste0("<", x$package, "::", x$name, ">"),
     S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
   )
 }
@@ -137,6 +145,7 @@ class_dispatch <- function(x) {
     S4 = S4_class_dispatch(methods::extends(x)),
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
+    S7_external = class_dispatch(x$constructor_fun()),
     S7_S3 = c(x$class, "S7_object"),
     stop("Unsupported")
   )
@@ -182,12 +191,15 @@ class_inherits <- function(x, what) {
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
+    S7_external = class_inherits(x, what$constructor_fun()),
     # This is slightly too crude as we really want them to be in the same
     # order and contiguous, but it's probably close enough for practical
     # purposes
     S7_S3 = !isS4(x) && all(what$class %in% class(x)),
   )
 }
+
+# object ------------------------------------------------------------------
 
 obj_type <- function(x) {
   if (identical(x, quote(expr = ))) {
