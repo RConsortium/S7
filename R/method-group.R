@@ -18,18 +18,6 @@ Math.S7_object <- function(x, ...) {
 }
 
 #' @export
-Ops.S7_object <- function(e1, e2) {
-  dispatch <- list(obj_dispatch(e1), obj_dispatch(e2))
-  specific <- .Call(method_, base_ops[[.Generic]], dispatch, environment(), FALSE)
-
-  if (!is.null(specific)) {
-    specific(e1, e2)
-  } else {
-    group_generic_Ops(e1, e2, .Generic = match.fun(.Generic))
-  }
-}
-
-#' @export
 Complex.S7_object <- function(z) {
   group_generic_Complex(z, .Generic = .Generic)
 }

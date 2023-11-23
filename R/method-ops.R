@@ -14,6 +14,18 @@ on_load_define_ops <- function() {
   )
 }
 
+#' @export
+Ops.S7_object <- function(e1, e2) {
+  dispatch <- list(obj_dispatch(e1), obj_dispatch(e2))
+  specific <- .Call(method_, base_ops[[.Generic]], dispatch, environment(), FALSE)
+
+  if (!is.null(specific)) {
+    specific(e1, e2)
+  } else {
+    group_generic_Ops(e1, e2, .Generic = match.fun(.Generic))
+  }
+}
+
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 
