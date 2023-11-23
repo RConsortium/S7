@@ -2,7 +2,7 @@
 title: "Using S7 in a package"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{packages}
+  %\VignetteIndexEntry{Using S7 in a package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
