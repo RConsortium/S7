@@ -12,6 +12,7 @@
 #'   * A base class, like [class_logical], [class_integer], or [class_double].
 #'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
+#' @keywords internal
 #' @export
 #' @return A standardised class: either `NULL`, an S7 class, an S7 union,
 #'   as [new_S3_class], or a S4 class.

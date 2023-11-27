@@ -54,13 +54,11 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
   print(object, ..., nest.lev = nest.lev)
 }
 
-#' Base classes
+#' S7 wrappers for base types
 #'
 #' @description
-#' These classes represent base types allowing them to be used within S7.
-#' There are three categories: base types, unions types, and key S3 classes.
-#'
-#' Base types:
+#' The following S7 classes represent base types allowing them to be used
+#' within S7:
 #'
 #' * `class_logical`
 #' * `class_integer`
@@ -73,20 +71,14 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_function`
 #' * `class_environment` (can only be used for properties)
 #'
-#' Union types:
+#' We also include three union types to model numerics, atomics, and vectors
+#' respectively:
 #'
 #' * `class_numeric` is a union of `class_integer` and `class_double`.
 #' * `class_atomic` is a union of `class_logical`, `class_numeric`,
 #'   `class_complex`, `class_character`, and `class_raw`.
 #' * `class_vector` is a union of `class_atomic`, `class_list`, and
 #'   `class_expression`.
-#'
-#' Key S3 classes:
-#'
-#' * `class_data.frame`
-#' * `class_Date`
-#' * `class_factor`
-#' * `class_POSIXct`
 #'
 #' @order 0
 #' @name base_classes
