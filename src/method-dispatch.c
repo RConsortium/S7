@@ -67,7 +67,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
 }
 
 __attribute__ ((noreturn))
-void S7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
+void S7_method_lookup_error(SEXP generic, SEXP envir) {
   SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
   static SEXP S7_method_lookup_error_fun = NULL;
   if (S7_method_lookup_error_fun == NULL) {
@@ -77,7 +77,7 @@ void S7_method_lookup_error(SEXP generic, SEXP signature, SEXP envir) {
   SEXP name = Rf_getAttrib(generic, R_NameSymbol);
   SEXP args = generic_args(generic, envir);
 
-  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang4(S7_method_lookup_error_fun, name, args, signature));
+  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang3(S7_method_lookup_error_fun, name, args));
   Rf_eval(S7_method_lookup_error_call, ns);
 
   while(1);
@@ -97,7 +97,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
 
   int error = Rf_asInteger(error_);
   if (error && m == R_NilValue) {
-    S7_method_lookup_error(generic, signature, envir);
+    S7_method_lookup_error(generic, envir);
   }
 
   return m;
