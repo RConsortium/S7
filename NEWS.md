@@ -1,5 +1,10 @@
 # S7 (development version)
 
+* `method<-` now returns an external generic when inside a package and defining
+  a method for a generic not found inside the package. This ensures that your
+  package end up with a copy of a generic from another package inside of it 
+  (#364).
+
 * S7 provides a new automatic backward compatibility mechanism to provide
   a version of `@` that works in R before version 4.3 (#326).
 

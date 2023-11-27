@@ -48,7 +48,7 @@ describe("method registration", {
     expect_equal(sum(foo2()), "foo")
 
     # and doesn't modify generic
-    expect_equal(sum, base::sum)
+    expect_equal(sum, new_external_generic("base", "sum", "__S3__"))
   })
 
   it("can register S7 method for S3 Ops generic", {

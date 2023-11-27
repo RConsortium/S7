@@ -56,7 +56,6 @@
 #' bizarro(head(mtcars))
 `method<-` <- function(generic, signature, value) {
   register_method(generic, signature, value, env = parent.frame())
-  invisible(generic)
 }
 
 register_method <- function(generic,
