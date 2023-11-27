@@ -68,7 +68,7 @@ register_method <- function(generic,
   signature <- as_signature(signature, generic)
 
   # Register in current session
-  if (is_generic(generic)) {
+  if (is_S7_generic(generic)) {
     check_method(method, generic, name = method_name(generic, signature))
     register_S7_method(generic, signature, method)
   } else if (is_external_generic(generic)) {
@@ -79,29 +79,18 @@ register_method <- function(generic,
     }
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method)
-  } else if (inherits(generic, "genericFunction")) {
+  } else if (is_S4_generic(generic)) {
     register_S4_method(generic, signature, method, env)
   }
 
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    if (is_generic(generic)) {
-      pkg <- package_name(generic)
-      generic <- new_external_generic(pkg, generic@name, generic@dispatch_args)
-    } else if (is_external_generic(generic)) {
-      # already in correct form
-    } else if (is_S3_generic(generic)) {
-      pkg <- package_name(generic)
-      generic <- new_external_generic(pkg, generic$name, NULL)
-    } else if (is_S4_generic(generic)) {
-      generic <- new_external_generic(generic@package, generic@generic, NULL)
-    }
-
+    generic <- as_external_generic(generic)
     external_methods_add(package, generic, signature, method)
   }
 
-  invisible()
+  invisible(generic)
 }
 
 register_S3_method <- function(generic, signature, method) {

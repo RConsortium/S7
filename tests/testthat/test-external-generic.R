@@ -27,6 +27,32 @@ test_that("displays nicely", {
   })
 })
 
+test_that("can convert existing generics to external", {
+  foo_S7 <- new_generic("foo_S7", "x")
+  env <- new.env()
+  env$.packageName <- "test"
+  environment(foo_S7) <- env
+
+  expect_equal(
+    as_external_generic(foo_S7),
+    new_external_generic("test", "foo_S7", "x")
+  )
+
+  foo_ext <- new_external_generic("pkg", "foo", "x")
+  expect_equal(as_external_generic(foo_ext), foo_ext)
+
+  expect_equal(
+    as_external_generic(as_S3_generic(sum)),
+    new_external_generic("base", "sum", "__S3__")
+  )
+
+  methods::setGeneric("foo_S4", function(x) {})
+  expect_equal(
+    as_external_generic(foo_S4),
+    new_external_generic("S7", "foo_S4", "x")
+  )
+})
+
 test_that("new_method works with both hard and soft dependencies", {
   # NB: Relies on installed S7
 
