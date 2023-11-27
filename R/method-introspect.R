@@ -36,7 +36,7 @@
 #' try(method(bizarro, class = class_data.frame))
 #' try(method(bizarro, object = "x"))
 method <- function(generic, class = NULL, object = NULL) {
-  generic <- as_generic(generic)
+  check_is_S7(generic, S7_generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
 
   method <- .Call(method_, generic, dispatch, environment(), FALSE)
@@ -78,7 +78,7 @@ method <- function(generic, class = NULL, object = NULL) {
 #'
 #' method_explain(add, list(foo2, foo2))
 method_explain <- function(generic, class = NULL, object = NULL) {
-  generic <- as_generic(generic)
+  check_is_S7(generic, S7_generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
   dispatch <- lapply(dispatch, c, "ANY")
 
@@ -108,8 +108,6 @@ method_explain <- function(generic, class = NULL, object = NULL) {
 
 
 as_dispatch <- function(generic, class = NULL, object = NULL) {
-  check_is_S7(generic, S7_generic)
-
   if (!is.null(class) && is.null(object)) {
     signature <- as_signature(class, generic)
     is_union <- vlapply(signature, is_union)

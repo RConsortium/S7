@@ -4,7 +4,7 @@
       method(print, 1)
     Condition
       Error:
-      ! `generic` must be a <S7_generic>, not a S3<S7_S3_generic>
+      ! `generic` must be a <S7_generic>, not a <closure>
     Code
       foo <- new_generic("foo", "x")
       method(foo)
