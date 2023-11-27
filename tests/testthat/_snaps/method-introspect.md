@@ -28,18 +28,32 @@
       Error:
       ! `object` must be length 2
 
-# errors if no method found
+# method introspection: errors if no method found
 
     Code
-      method(foo, list())
+      method(foo, class = class_integer)
     Condition
       Error:
-      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
+      ! Can't find method for `foo(<integer>)`.
     Code
-      method(foo, list("blah"))
+      method(foo, object = 1L)
     Condition
       Error:
-      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
+      ! Can't find method for `foo(<integer>)`.
+    Code
+      method(foo2, class = list(class_integer, class_double))
+    Condition
+      Error:
+      ! Can't find method for generic `foo(x, y)`:
+      - x: <integer>
+      - y: <double>
+    Code
+      method(foo2, object = list(1L, 2))
+    Condition
+      Error:
+      ! Can't find method for generic `foo(x, y)`:
+      - x: <integer>
+      - y: <double>
 
 # method explanation: shows all possible methods along with matches
 

@@ -19,7 +19,7 @@
 #' # Create a generic and register some methods
 #' bizarro <- new_generic("bizarro", "x")
 #' method(bizarro, class_numeric) <- function(x) rev(x)
-#' method(bizarro, new_S3_class("factor")) <- function(x) {
+#' method(bizarro, class_factor) <- function(x) {
 #'   levels(x) <- rev(levels(x))
 #'   x
 #' }
@@ -30,11 +30,25 @@
 #' # And you can use method() to inspect specific implementations
 #' method(bizarro, class = class_integer)
 #' method(bizarro, object = 1)
-#' method(bizarro, new_S3_class("factor"))
+#' method(bizarro, class = class_factor)
+#'
+#' # errors if method not found
+#' try(method(bizarro, class = class_data.frame))
+#' try(method(bizarro, object = "x"))
 method <- function(generic, class = NULL, object = NULL) {
   generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
-  .Call(method_, generic, dispatch, environment(), TRUE)
+
+  method <- .Call(method_, generic, dispatch, environment(), FALSE)
+  if (!is.null(method)) {
+    return(method)
+  }
+
+  # can't rely on usual error mechanism because it involves looking up
+  # argument values in the dispatch environment, which doesn't exist here
+  types <- error_types(generic, class = class, object = object)
+  msg <- method_lookup_error_message(generic@name, types)
+  stop(msg, call. = FALSE)
 }
 
 #' Explain method dispatch
@@ -115,4 +129,20 @@ as_dispatch <- function(generic, class = NULL, object = NULL) {
   } else {
     stop("Must supply exactly one of `class` and `object`", call. = FALSE)
   }
+}
+
+error_types <- function(generic, class = NULL, object = NULL) {
+  if (is.null(class)) {
+    n <- generic_n_dispatch(generic)
+    if (n == 1) {
+      types <- list(obj_desc(object))
+    } else {
+      types <- vcapply(object, obj_desc)
+    }
+  } else {
+    signature <- as_signature(class, generic)
+    types <- vcapply(signature, class_desc)
+  }
+  names(types) <- generic@dispatch_args
+  types
 }

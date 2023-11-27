@@ -31,7 +31,7 @@ the implementation of a specific method.
 # Create a generic and register some methods
 bizarro <- new_generic("bizarro", "x")
 method(bizarro, class_numeric) <- function(x) rev(x)
-method(bizarro, new_S3_class("factor")) <- function(x) {
+method(bizarro, class_factor) <- function(x) {
   levels(x) <- rev(levels(x))
   x
 }
@@ -42,7 +42,11 @@ bizarro
 # And you can use method() to inspect specific implementations
 method(bizarro, class = class_integer)
 method(bizarro, object = 1)
-method(bizarro, new_S3_class("factor"))
+method(bizarro, class = class_factor)
+
+# errors if method not found
+try(method(bizarro, class = class_data.frame))
+try(method(bizarro, object = "x"))
 }
 \seealso{
 \code{\link[=method_explain]{method_explain()}} to explain why a specific method was picked.
