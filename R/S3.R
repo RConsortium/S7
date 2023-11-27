@@ -2,6 +2,7 @@
 #'
 #' To use an S3 class with S7, you must explicitly declare it using
 #' `new_S3_class()` because S3 lacks a formal class definition.
+#' (Unless it's an important base class already defined in [base_s3_classes].)
 #'
 #' # Method dispatch, properties, and unions
 #' There are three ways of using S3 with S7 that only require the S3 class
@@ -180,8 +181,19 @@ validate_data.frame <- function(self) {
   }
 }
 
+#' S7 wrappers for key S3 classes
+#'
+#' @description
+#' S7 bundles [S3 definitions][new_S3_class] for key S3 classes provided by
+#' the base package:
+#'
+#' * `class_data.frame` for data frames.
+#' * `class_Date` for dates.
+#' * `class_factor` for factors.
+#' * `class_POSIXct` for `POSIXct` date-times.
+#'
 #' @export
-#' @rdname base_classes
+#' @name base_s3_classes
 #' @format NULL
 #' @order 3
 class_factor <- new_S3_class("factor",
@@ -192,7 +204,7 @@ class_factor <- new_S3_class("factor",
 )
 
 #' @export
-#' @rdname base_classes
+#' @rdname base_s3_classes
 #' @format NULL
 #' @order 3
 class_Date <- new_S3_class("Date",
@@ -203,7 +215,7 @@ class_Date <- new_S3_class("Date",
 )
 
 #' @export
-#' @rdname base_classes
+#' @rdname base_s3_classes
 #' @format NULL
 #' @order 3
 class_POSIXct <- new_S3_class("POSIXct",
@@ -214,7 +226,7 @@ class_POSIXct <- new_S3_class("POSIXct",
 )
 
 #' @export
-#' @rdname base_classes
+#' @rdname base_s3_classes
 #' @format NULL
 #' @order 3
 class_data.frame <- new_S3_class("data.frame",

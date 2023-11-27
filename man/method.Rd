@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-introspect.R
 \name{method}
 \alias{method}
-\title{Retrieve a method for an S7 generic}
+\title{Find a method for an S7 generic}
 \usage{
 method(generic, class = NULL, object = NULL)
 }
@@ -17,14 +17,15 @@ multiple dispatch then both \code{object} and \code{class} must be a list of
 classes/objects.}
 }
 \value{
-A function with class <S7_method>.
+Either a function with class \code{S7_method} or an error if no
+matching method is found.
 }
 \description{
-\code{method()} takes a generic and signature and retrieves the corresponding
-method. This is rarely needed because most of the time you'll rely on the
-the generic, via \code{\link[=S7_dispatch]{S7_dispatch()}}, to find and call the method for you.
-However, this introspection is useful if you want to see the implementation
-of a specific method.
+\code{method()} takes a generic and class signature and performs method dispatch
+to find the corresponding method implementation. This is rarely needed
+because you'll usually rely on the the generic to do dispatch for you (via
+\code{\link[=S7_dispatch]{S7_dispatch()}}). However, this introspection is useful if you want to see
+the implementation of a specific method.
 }
 \examples{
 # Create a generic and register some methods

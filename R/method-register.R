@@ -1,4 +1,4 @@
-#' Register a S7 method for a generic
+#' Register an S7 method for a generic
 #'
 #' @description
 #' A generic defines the interface of a function. Once you have created a
