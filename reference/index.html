@@ -29,7 +29,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/generics-methods.html">Generics and methods</a>
     <a class="dropdown-item" href="../articles/classes-objects.html">Classes and objects</a>
-    <a class="dropdown-item" href="../articles/compatibility.html">Compatibility</a>
+    <a class="dropdown-item" href="../articles/compatibility.html">Compatibility with S3 and S4</a>
     <a class="dropdown-item" href="../articles/packages.html">Using S7 in a package</a>
     <a class="dropdown-item" href="../articles/motivation.html">Motivation for S7</a>
     <a class="dropdown-item" href="../articles/performance.html">Performance</a>
@@ -89,7 +89,7 @@
           
           <code><a href="method-set.html">`method&lt;-`()</a></code> 
         </dt>
-        <dd>Register a S7 method for a generic</dd>
+        <dd>Register an S7 method for a generic</dd>
       </dl><dl><dt>
           
           <code><a href="S7_inherits.html">S7_inherits()</a></code> <code><a href="S7_inherits.html">check_is_S7()</a></code> 
@@ -154,25 +154,46 @@
         <dd>Convert an object from one type to another</dd>
       </dl><dl><dt>
           
-          <code><a href="super.html">super()</a></code> 
+          <code><a href="class_missing.html">class_missing</a></code> 
         </dt>
-        <dd>Force method dispatch to use a superclass</dd>
+        <dd>Dispatch on a missing argument</dd>
       </dl><dl><dt>
           
-          <code><a href="as_class.html">as_class()</a></code> 
+          <code><a href="class_any.html">class_any</a></code> 
         </dt>
-        <dd>Standard class specifications</dd>
+        <dd>Dispatch on any class</dd>
       </dl><dl><dt>
           
           <code><a href="method.html">method()</a></code> 
         </dt>
-        <dd>Retrieve a method for an S7 generic</dd>
+        <dd>Find a method for an S7 generic</dd>
       </dl><dl><dt>
           
           <code><a href="method_explain.html">method_explain()</a></code> 
         </dt>
         <dd>Explain method dispatch</dd>
       </dl><dl><dt>
+          
+          <code><a href="super.html">super()</a></code> 
+        </dt>
+        <dd>Force method dispatch to use a superclass</dd>
+      </dl><dl><dt>
+          
+          <code><a href="S7_class.html">S7_class()</a></code> 
+        </dt>
+        <dd>Retrieve the S7 class of an object</dd>
+      </dl></div><div class="section level2">
+      <h2 id="packages">Packages<a class="anchor" aria-label="anchor" href="#packages"></a></h2>
+      
+      <p class="section-desc"></p><p>Functions needed when using S7 within a package. See <code><a href="../articles/packages.html">vignette("packages")</a></code> for more details.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
           
           <code><a href="methods_register.html">methods_register()</a></code> 
         </dt>
@@ -182,6 +203,27 @@
           <code><a href="new_external_generic.html">new_external_generic()</a></code> 
         </dt>
         <dd>Generics in other packages</dd>
+      </dl></div><div class="section level2">
+      <h2 id="compatibility">Compatibility<a class="anchor" aria-label="anchor" href="#compatibility"></a></h2>
+      
+      <p class="section-desc"></p><p>These tools provide a layer of compatibility between S7 and S3 classes, S4 classes, and base types. See <code><a href="../articles/compatibility.html">vignette("compatibility")</a></code> for more details.</p>
+
+      
+    </div><div id="" class="section level2">
+      
+      
+      
+
+      <dl><dt>
+          
+          <code><a href="base_classes.html">class_logical</a></code> <code><a href="base_classes.html">class_integer</a></code> <code><a href="base_classes.html">class_double</a></code> <code><a href="base_classes.html">class_complex</a></code> <code><a href="base_classes.html">class_character</a></code> <code><a href="base_classes.html">class_raw</a></code> <code><a href="base_classes.html">class_list</a></code> <code><a href="base_classes.html">class_expression</a></code> <code><a href="base_classes.html">class_function</a></code> <code><a href="base_classes.html">class_environment</a></code> <code><a href="base_classes.html">class_numeric</a></code> <code><a href="base_classes.html">class_atomic</a></code> <code><a href="base_classes.html">class_vector</a></code> 
+        </dt>
+        <dd>S7 wrappers for base types</dd>
+      </dl><dl><dt>
+          
+          <code><a href="base_s3_classes.html">class_factor</a></code> <code><a href="base_s3_classes.html">class_Date</a></code> <code><a href="base_s3_classes.html">class_POSIXct</a></code> <code><a href="base_s3_classes.html">class_data.frame</a></code> 
+        </dt>
+        <dd>S7 wrappers for key S3 classes</dd>
       </dl><dl><dt>
           
           <code><a href="new_S3_class.html">new_S3_class()</a></code> 
@@ -192,21 +234,6 @@
           <code><a href="S4_register.html">S4_register()</a></code> 
         </dt>
         <dd>Register an S7 class with S4</dd>
-      </dl><dl><dt>
-          
-          <code><a href="S7_class.html">S7_class()</a></code> 
-        </dt>
-        <dd>Retrieve the S7 class of an object</dd>
-      </dl><dl><dt>
-          
-          <code><a href="base_classes.html">class_logical</a></code> <code><a href="base_classes.html">class_integer</a></code> <code><a href="base_classes.html">class_double</a></code> <code><a href="base_classes.html">class_complex</a></code> <code><a href="base_classes.html">class_character</a></code> <code><a href="base_classes.html">class_raw</a></code> <code><a href="base_classes.html">class_list</a></code> <code><a href="base_classes.html">class_expression</a></code> <code><a href="base_classes.html">class_function</a></code> <code><a href="base_classes.html">class_environment</a></code> <code><a href="base_classes.html">class_numeric</a></code> <code><a href="base_classes.html">class_atomic</a></code> <code><a href="base_classes.html">class_vector</a></code> <code><a href="base_classes.html">class_factor</a></code> <code><a href="base_classes.html">class_Date</a></code> <code><a href="base_classes.html">class_POSIXct</a></code> <code><a href="base_classes.html">class_data.frame</a></code> 
-        </dt>
-        <dd>Base classes</dd>
-      </dl><dl><dt>
-          
-          <code><a href="class_missing.html">class_missing</a></code> <code><a href="class_missing.html">class_any</a></code> 
-        </dt>
-        <dd>Special dispatch types</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
