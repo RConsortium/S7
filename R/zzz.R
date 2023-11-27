@@ -98,7 +98,7 @@ S7_generic <- new_class(
   parent = class_function
 )
 methods::setOldClass(c("S7_generic", "function", "S7_object"))
-is_generic <- function(x) inherits(x, "S7_generic")
+is_S7_generic <- function(x) inherits(x, "S7_generic")
 
 S7_method <- new_class("S7_method",
   parent = class_function,
