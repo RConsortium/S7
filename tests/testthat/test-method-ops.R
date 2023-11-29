@@ -84,11 +84,16 @@ test_that("Ops generics falls back to base behaviour", {
   foo <- new_class("foo", parent = class_double)
   expect_equal(foo(1) + 1, foo(2))
   expect_equal(foo(1) + 1:2, 2:3)
+  expect_equal(1 + foo(1), foo(2))
+  expect_equal(1:2 + foo(1), 2:3)
 
   # but can be overridden
   method(`+`, list(foo, class_numeric)) <- function(e1, e2) "foo-numeric"
+  method(`+`, list(class_numeric, foo)) <- function(e1, e2) "numeric-foo"
   expect_equal(foo(1) + 1, "foo-numeric")
   expect_equal(foo(1) + 1:2, "foo-numeric")
+  expect_equal(1 + foo(1), "numeric-foo")
+  expect_equal(1:2 + foo(1), "numeric-foo")
 })
 
 test_that("`%*%` dispatches to S7 methods", {
