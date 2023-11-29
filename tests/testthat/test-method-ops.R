@@ -109,3 +109,16 @@ test_that("`%*%` dispatches to S7 methods", {
   expect_equal(1 %*% ClassX(), "class_any %*% ClassX")
 })
 
+test_that("Ops methods can use super", {
+  foo <- new_class("foo", class_integer)
+  foo2 <- new_class("foo2", foo)
+
+  method(`+`, list(foo, class_double)) <- function(e1, e2) {
+    foo(S7_data(e1) + as.integer(e2))
+  }
+  method(`+`, list(foo2, class_double)) <- function(e1, e2) {
+    foo2(super(e1, foo) + e2)
+  }
+
+  expect_equal(foo2(1L) + 1, foo2(2L))
+})

@@ -7,6 +7,11 @@
   inconsistent base behaviour, but means that S7 doesn't introduce a new axis 
   of inconsistency. 
 
+* In `new_class()`, properties can either be named by naming the element
+  of the list or by supplying the `name` argument to `new_property()` (#371).
+
+* `super()` now works with Ops methods (#357).
+
 * `method()` now generates an informative message when dispatch fails (#387).
 
 * S7 provides a new automatic backward compatibility mechanism to provide
