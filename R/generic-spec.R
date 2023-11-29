@@ -1,5 +1,9 @@
+is_generic <- function(x) {
+  is_S7_generic(x) || is_external_generic(x) || is_S3_generic(x) || is_S4_generic(x)
+}
+
 as_generic <- function(x) {
-  if (is_generic(x) || is_external_generic(x) || is_S4_generic(x)) {
+  if (is_generic(x)) {
     x
   } else if (is.function(x)) {
     as_S3_generic(x)
@@ -57,13 +61,13 @@ package_name <- function(f) {
 }
 
 generic_n_dispatch <- function(x) {
-  if (is_S3_generic(x)) {
-    1
-  } else if (is_generic(x)) {
+  if (is_S7_generic(x)) {
     length(x@dispatch_args)
   } else if (is_external_generic(x)) {
     length(x$dispatch_args)
-  } else if (methods::is(x, "genericFunction")) {
+  } else if (is_S3_generic(x)) {
+    1
+  } else if (is_S4_generic(x)) {
     length(x@signature)
   } else {
     stop(sprintf("Invalid input %", obj_desc(x)), call. = FALSE)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-introspect.R
 \name{method}
 \alias{method}
-\title{Retrieve a method for an S7 generic}
+\title{Find a method for an S7 generic}
 \usage{
 method(generic, class = NULL, object = NULL)
 }
@@ -17,20 +17,21 @@ multiple dispatch then both \code{object} and \code{class} must be a list of
 classes/objects.}
 }
 \value{
-A function with class <S7_method>.
+Either a function with class \code{S7_method} or an error if no
+matching method is found.
 }
 \description{
-\code{method()} takes a generic and signature and retrieves the corresponding
-method. This is rarely needed because most of the time you'll rely on the
-the generic, via \code{\link[=S7_dispatch]{S7_dispatch()}}, to find and call the method for you.
-However, this introspection is useful if you want to see the implementation
-of a specific method.
+\code{method()} takes a generic and class signature and performs method dispatch
+to find the corresponding method implementation. This is rarely needed
+because you'll usually rely on the the generic to do dispatch for you (via
+\code{\link[=S7_dispatch]{S7_dispatch()}}). However, this introspection is useful if you want to see
+the implementation of a specific method.
 }
 \examples{
 # Create a generic and register some methods
 bizarro <- new_generic("bizarro", "x")
 method(bizarro, class_numeric) <- function(x) rev(x)
-method(bizarro, new_S3_class("factor")) <- function(x) {
+method(bizarro, class_factor) <- function(x) {
   levels(x) <- rev(levels(x))
   x
 }
@@ -41,7 +42,11 @@ bizarro
 # And you can use method() to inspect specific implementations
 method(bizarro, class = class_integer)
 method(bizarro, object = 1)
-method(bizarro, new_S3_class("factor"))
+method(bizarro, class = class_factor)
+
+# errors if method not found
+try(method(bizarro, class = class_data.frame))
+try(method(bizarro, object = "x"))
 }
 \seealso{
 \code{\link[=method_explain]{method_explain()}} to explain why a specific method was picked.

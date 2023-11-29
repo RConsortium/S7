@@ -40,6 +40,20 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
   out
 }
 
+as_external_generic <- function(x) {
+  if (is_S7_generic(x)) {
+    pkg <- package_name(x)
+    new_external_generic(pkg, x@name, x@dispatch_args)
+  } else if (is_external_generic(x)) {
+    x
+  } else if (is_S3_generic(x)) {
+    pkg <- package_name(x)
+    new_external_generic(pkg, x$name, "__S3__")
+  } else if (is_S4_generic(x)) {
+    new_external_generic(x@package, as.vector(x@generic), x@signature)
+  }
+}
+
 #' @export
 print.S7_external_generic <- function(x, ...) {
   cat(

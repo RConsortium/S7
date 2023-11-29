@@ -20,6 +20,41 @@
 #' This makes `super()` more verbose, but substantially easier to
 #' understand and reason about.
 #'
+#' ## `super()` in S3 generics
+#'
+#' Note that you can't use `super()` in methods for an S3 generic.
+#' For example, imagine that you have made a subclass of "integer":
+#'
+#' ```{r}
+#' myint <- new_class("myint", parent = class_integer)
+#' ```
+#'
+#' Now you go to write a custom print method:
+#'
+#' ```{r}
+#' method(print, myint) <- function(x, ...) {
+#'    cat("<myint>")
+#'    print(super(x, to = class_integer))
+#' }
+#'
+#' myint(10L)
+#' ```
+#'
+#' This doesn't work because `print()` isn't an S7 generic so doesn't
+#' understand how to interpret the special object that `super()` produces.
+#' While you could resolve this problem with [NextMethod()] (because S7 is
+#' implemented on top of S3), we instead recommend using [S7_data()] to extract
+#' the underlying base object:
+#'
+#' ```{r}
+#' method(print, myint) <- function(x, ...) {
+#'    cat("<myint>")
+#'    print(S7_data(x))
+#' }
+#'
+#' myint(10L)
+#' ```
+#'
 #' @param from An S7 object to cast.
 #' @param to An S7 class specification, passed to [as_class()]. Must be a
 #'   superclass of `object`.

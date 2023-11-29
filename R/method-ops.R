@@ -26,13 +26,3 @@ chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 matrixOps.S7_object <- function(x, y) {
   base_matrix_ops[[.Generic]](x, y)
 }
-
-
-on_load_define_matrixOps <- function() {
-  # if (getRversion() >= "4.3.0") {
-  # } else {
-  #   matrixOps.S7_object <<- function(e1, e2) {
-  #     base_matrix_ops[[.Generic]](e1, e2)
-  #   }
-  # }
-}
