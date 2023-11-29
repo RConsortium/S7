@@ -7,6 +7,8 @@
   inconsistent base behaviour, but means that S7 doesn't introduce a new axis 
   of inconsistency. 
 
+* `method()` now generates an informative message when dispatch fails (#387).
+
 * S7 provides a new automatic backward compatibility mechanism to provide
   a version of `@` that works in R before version 4.3 (#326).
 

@@ -3,36 +3,24 @@
 \docType{data}
 \name{class_missing}
 \alias{class_missing}
-\alias{class_any}
-\title{Special dispatch types}
-\format{
-An object of class \code{S7_missing} of length 0.
-
-An object of class \code{S7_any} of length 0.
-}
+\title{Dispatch on a missing argument}
 \usage{
 class_missing
-
-class_any
 }
 \value{
 Sentinel objects used for special types of dispatch.
 }
 \description{
-\itemize{
-\item Use \code{class_missing} when the user has not supplied an argument
-\item Use \code{class_any} for a default method that is called only if no other
-methods are matched
-}
+Use \code{class_missing} to dispatch when the user has not supplied an argument,
+i.e. it's missing in the sense of \code{\link[=missing]{missing()}}, not in the sense of
+\code{\link[=is.na]{is.na()}}.
 }
 \examples{
 foo <- new_generic("foo", "x")
-method(foo, class_integer) <- function(x) "integer"
-method(foo, class_missing) <- function(x) "missing"
+method(foo, class_numeric) <- function(x) "number"
 method(foo, class_any) <- function(x) "fallback"
 
 foo(1)
 foo()
-foo("x")
 }
 \keyword{datasets}

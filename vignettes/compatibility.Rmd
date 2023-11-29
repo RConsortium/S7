@@ -1,8 +1,8 @@
 ---
-title: "Compatibility"
+title: "Compatibility with S3 and S4"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Compatibility}
+  %\VignetteIndexEntry{Compatibility with S3 and S4}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

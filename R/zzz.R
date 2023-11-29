@@ -98,7 +98,7 @@ S7_generic <- new_class(
   parent = class_function
 )
 methods::setOldClass(c("S7_generic", "function", "S7_object"))
-is_generic <- function(x) inherits(x, "S7_generic")
+is_S7_generic <- function(x) inherits(x, "S7_generic")
 
 S7_method <- new_class("S7_method",
   parent = class_function,
@@ -122,7 +122,6 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
   activate_backward_compatiblility()
 
   on_load_make_convert_generic()
-  on_load_define_matrixOps()
   on_load_define_ops()
   on_load_define_or_methods()
   on_load_define_S7_type()
