@@ -33,9 +33,10 @@
 #' @param default When an object is created and the property is not supplied,
 #'   what should it default to? If `NULL`, defaults to the "empty" instance
 #'   of `class`.
-#' @param name Property name, primarily used for error messages. Used
-#'   primrarily for testing as it is set automatically when using a list of
-#'   properties.
+#' @param name Property name, primarily used for error messages. Generally
+#'   don't need to set this here, as it's more convenient to supply as a
+#'   the element name when defining a list of properties. If both `name`
+#'   and a list-name are supplied, the list-name will be used.
 #' @returns An S7 property, i.e. a list with class `S7_property`.
 #' @export
 #' @examples
@@ -393,7 +394,7 @@ as_properties <- function(x) {
   }
 
   out <- Map(as_property, x, names2(x), seq_along(x))
-  names(out) <- names2(x)
+  names(out) <- vapply(out, function(x) x$name, FUN.VALUE = character(1))
 
   if (anyDuplicated(names(out))) {
     stop("`properties` names must be unique", call. = FALSE)
@@ -403,15 +404,23 @@ as_properties <- function(x) {
 }
 
 as_property <- function(x, name, i) {
-  if (name == "") {
-    msg <- sprintf("`property[[%i]]` is missing a name", i)
-    stop(msg, call. = FALSE)
-  }
 
   if (is_property(x)) {
-    x$name <- name
+    if (name == "") {
+      if (is.null(x$name)) {
+        msg <- sprintf("`properties[[%i]]` must have a name or be named.", i)
+        stop(msg, call. = FALSE)
+      }
+    } else {
+      x$name <- name
+    }
     x
   } else {
+    if (name == "") {
+      msg <- sprintf("`properties[[%i]]` must be named.", i)
+      stop(msg, call. = FALSE)
+    }
+
     class <- as_class(x, arg = paste0("property$", name))
     new_property(x, name = name)
   }

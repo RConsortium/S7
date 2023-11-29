@@ -287,6 +287,16 @@ test_that("as_properties normalises properties", {
     as_properties(list(x = new_property(class = class_numeric))),
     list(x = new_property(class_numeric, name = "x")
   ))
+  expect_equal(
+    as_properties(list(new_property(name = "y"))),
+    list(y = new_property(name = "y")
+  ))
+
+  # list name wins
+  expect_equal(
+    as_properties(list(x = new_property(name = "y"))),
+    list(x = new_property(name = "x")
+  ))
 })
 
 test_that("as_properties() gives useful error messages", {
