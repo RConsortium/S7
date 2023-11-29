@@ -18,7 +18,7 @@ on_load_define_ops <- function() {
 Ops.S7_object <- function(e1, e2) {
   cnd <- tryCatch(
     return(base_ops[[.Generic]](e1, e2)),
-    methodNotFound = function(cnd) cnd
+    S7_error_method_not_found = function(cnd) cnd
   )
 
   if (S7_inherits(e1) && S7_inherits(e2)) {

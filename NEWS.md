@@ -1,6 +1,6 @@
 # S7 (development version)
 
-* When a method is not found, the error now has class `methodNotFound`.
+* When a method is not found, the error now has class `S7_error_method_not_found`.
 
 * The `Ops` generic now falls back to base Ops behaviour when one of the 
   arguments is not an S7 object (#320). This means that you get the somewhat 

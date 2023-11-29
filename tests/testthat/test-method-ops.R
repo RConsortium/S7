@@ -13,7 +13,7 @@ test_that("Ops generics dispatch to S7 methods for S7 classes", {
   expect_equal(foo2() + foo1(), "foo2-foo1")
   expect_equal(foo2() + foo2(), "foo2-foo2")
 
-  expect_error(foo1() + new_class("foo3")(), class = "methodNotFound")
+  expect_error(foo1() + new_class("foo3")(), class = "S7_error_method_not_found")
 })
 
 test_that("Ops generics dispatch to S3 methods", {
