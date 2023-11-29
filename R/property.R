@@ -407,7 +407,7 @@ as_property <- function(x, name, i) {
   if (is_property(x)) {
     if (is.null(x$name)) {
       if (name == "") {
-        msg <- sprintf("`property[[%i]]` must have a name or be named.", i)
+        msg <- sprintf("`properties[[%i]]` must have a name or be named.", i)
         stop(msg, call. = FALSE)
       }
       x$name <- name
@@ -415,7 +415,7 @@ as_property <- function(x, name, i) {
     x
   } else {
     if (name == "") {
-      msg <- sprintf("`property[[%i]]` must be named.", i)
+      msg <- sprintf("`properties[[%i]]` must be named.", i)
       stop(msg, call. = FALSE)
     }
 
