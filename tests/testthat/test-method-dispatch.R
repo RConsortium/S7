@@ -143,6 +143,8 @@ test_that("single dispatch fails with informative messages", {
     fail(foo())
     fail(Foo(x = 1))
   })
+
+  expect_error(fail(TRUE), class = "S7_error_method_not_found")
 })
 
 test_that("multiple dispatch fails with informative messages", {
@@ -157,6 +159,8 @@ test_that("multiple dispatch fails with informative messages", {
     fail(, TRUE)
     fail(TRUE, TRUE)
   })
+
+  expect_error(fail(TRUE, TRUE), class = "S7_error_method_not_found")
 })
 
 

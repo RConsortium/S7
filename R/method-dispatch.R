@@ -2,7 +2,8 @@
 method_lookup_error <- function(name, args) {
   types <- vcapply(args, obj_desc)
   msg <- method_lookup_error_message(name, types)
-  stop(msg, call. = FALSE)
+  cnd <- errorCondition(msg, class = c("S7_error_method_not_found", "error"))
+  stop(cnd)
 }
 
 method_lookup_error_message <- function(name, types) {

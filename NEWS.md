@@ -1,5 +1,12 @@
 # S7 (development version)
 
+* When a method is not found, the error now has class `S7_error_method_not_found`.
+
+* The `Ops` generic now falls back to base Ops behaviour when one of the 
+  arguments is not an S7 object (#320). This means that you get the somewhat 
+  inconsistent base behaviour, but means that S7 doesn't introduce a new axis 
+  of inconsistency. 
+
 * In `new_class()`, properties can either be named by naming the element
   of the list or by supplying the `name` argument to `new_property()` (#371).
 
