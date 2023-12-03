@@ -36,6 +36,41 @@ passed along.
 This makes \code{super()} more verbose, but substantially easier to
 understand and reason about.
 }
+
+\subsection{\code{super()} in S3 generics}{
+
+Note that you can't use \code{super()} in methods for an S3 generic.
+For example, imagine that you have made a subclass of "integer":
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{myint <- new_class("myint", parent = class_integer)
+}\if{html}{\out{</div>}}
+
+Now you go to write a custom print method:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{method(print, myint) <- function(x, ...) \{
+   cat("<myint>")
+   print(super(x, to = class_integer))
+\}
+
+myint(10L)
+#> <myint>super(<myint>, <integer>)
+}\if{html}{\out{</div>}}
+
+This doesn't work because \code{print()} isn't an S7 generic so doesn't
+understand how to interpret the special object that \code{super()} produces.
+While you could resolve this problem with \code{\link[=NextMethod]{NextMethod()}} (because S7 is
+implemented on top of S3), we instead recommend using \code{\link[=S7_data]{S7_data()}} to extract
+the underlying base object:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{method(print, myint) <- function(x, ...) \{
+   cat("<myint>")
+   print(S7_data(x))
+\}
+
+myint(10L)
+#> <myint>[1] 10
+}\if{html}{\out{</div>}}
+}
 }
 \examples{
 foo1 <- new_class("foo1", properties = list(x = class_numeric, y = class_numeric))

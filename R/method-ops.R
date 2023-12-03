@@ -16,13 +16,24 @@ on_load_define_ops <- function() {
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
-  dispatch <- list(obj_dispatch(e1), obj_dispatch(e2))
-  specific <- .Call(method_, base_ops[[.Generic]], dispatch, environment(), FALSE)
+  # Try "specific" generic
+  cnd <- tryCatch(
+    return(base_ops[[.Generic]](e1, e2)),
+    S7_error_method_not_found = function(cnd) cnd
+  )
 
-  if (!is.null(specific)) {
-    specific(e1, e2)
+  # Try group generic
+  cnd <- tryCatch(
+    return(group_generic_Ops(e1, e2, .Generic = match.fun(.Generic))),
+    S7_error_method_not_found = function(cnd) cnd
+  )
+
+  if (!S7_inherits(e1) || !S7_inherits(e2)) {
+    # Fallback to base behaviour. Must call NextMethod() directly here, not
+    # wrapped in an anonymous function.
+    NextMethod()
   } else {
-    group_generic_Ops(e1, e2, .Generic = match.fun(.Generic))
+    stop(cnd)
   }
 }
 
@@ -30,16 +41,15 @@ Ops.S7_object <- function(e1, e2) {
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
-matrixOps.S7_object <- NULL
-
-on_load_define_matrixOps <- function() {
-  if (getRversion() >= "4.4.0") {
-    matrixOps.S7_object <<- function(x, y) {
-      base_matrix_ops[[.Generic]](x, y)
-    }
-  } else {
-    matrixOps.S7_object <<- function(e1, e2) {
-      base_matrix_ops[[.Generic]](e1, e2)
-    }
-  }
+matrixOps.S7_object <- function(x, y) {
+  base_matrix_ops[[.Generic]](x, y)
 }
+
+#' @export
+Ops.S7_super <- Ops.S7_object
+
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_super)
+chooseOpsMethod.S7_super <- chooseOpsMethod.S7_object
+
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_super)
+matrixOps.S7_super <- matrixOps.S7_object

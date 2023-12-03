@@ -35,6 +35,7 @@ An S7 definition of an S3 class, i.e. a list with class
 \description{
 To use an S3 class with S7, you must explicitly declare it using
 \code{new_S3_class()} because S3 lacks a formal class definition.
+(Unless it's an important base class already defined in \link{base_s3_classes}.)
 }
 \section{Method dispatch, properties, and unions}{
 There are three ways of using S3 with S7 that only require the S3 class

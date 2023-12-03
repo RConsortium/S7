@@ -43,9 +43,10 @@ your code can assume that \code{value} has known type.}
 what should it default to? If \code{NULL}, defaults to the "empty" instance
 of \code{class}.}
 
-\item{name}{Property name, primarily used for error messages. Used
-primrarily for testing as it is set automatically when using a list of
-properties.}
+\item{name}{Property name, primarily used for error messages. Generally
+don't need to set this here, as it's more convenient to supply as a
+the element name when defining a list of properties. If both \code{name}
+and a list-name are supplied, the list-name will be used.}
 }
 \value{
 An S7 property, i.e. a list with class \code{S7_property}.

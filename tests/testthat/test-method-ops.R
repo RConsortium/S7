@@ -12,6 +12,8 @@ test_that("Ops generics dispatch to S7 methods for S7 classes", {
   expect_equal(foo1() + foo2(), "foo1-foo2")
   expect_equal(foo2() + foo1(), "foo2-foo1")
   expect_equal(foo2() + foo2(), "foo2-foo2")
+
+  expect_error(foo1() + new_class("foo3")(), class = "S7_error_method_not_found")
 })
 
 test_that("Ops generics dispatch to S3 methods", {
@@ -76,6 +78,24 @@ test_that("Ops generics dispatch to S7 methods for NULL", {
   expect_equal(NULL + foo(), "NULL-foo")
 })
 
+test_that("Ops generics falls back to base behaviour", {
+  local_methods(base_ops[["+"]])
+
+  foo <- new_class("foo", parent = class_double)
+  expect_equal(foo(1) + 1, foo(2))
+  expect_equal(foo(1) + 1:2, 2:3)
+  expect_equal(1 + foo(1), foo(2))
+  expect_equal(1:2 + foo(1), 2:3)
+
+  # but can be overridden
+  method(`+`, list(foo, class_numeric)) <- function(e1, e2) "foo-numeric"
+  method(`+`, list(class_numeric, foo)) <- function(e1, e2) "numeric-foo"
+  expect_equal(foo(1) + 1, "foo-numeric")
+  expect_equal(foo(1) + 1:2, "foo-numeric")
+  expect_equal(1 + foo(1), "numeric-foo")
+  expect_equal(1:2 + foo(1), "numeric-foo")
+})
+
 test_that("`%*%` dispatches to S7 methods", {
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
@@ -89,3 +109,16 @@ test_that("`%*%` dispatches to S7 methods", {
   expect_equal(1 %*% ClassX(), "class_any %*% ClassX")
 })
 
+test_that("Ops methods can use super", {
+  foo <- new_class("foo", class_integer)
+  foo2 <- new_class("foo2", foo)
+
+  method(`+`, list(foo, class_double)) <- function(e1, e2) {
+    foo(S7_data(e1) + as.integer(e2))
+  }
+  method(`+`, list(foo2, class_double)) <- function(e1, e2) {
+    foo2(super(e1, foo) + e2)
+  }
+
+  expect_equal(foo2(1L) + 1, foo2(2L))
+})
