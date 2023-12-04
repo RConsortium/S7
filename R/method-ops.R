@@ -23,14 +23,13 @@ Ops.S7_object <- function(e1, e2) {
   )
 
   # Try group generic
-  generic_fun <- get(.Generic, mode = "function", envir = baseenv())
   cnd <- tryCatch(
-    return(S7_Ops(e1, e2, .Generic = generic_fun)),
+    return(S7_Ops(e1, e2, .Generic = .Generic)),
     S7_error_method_not_found = function(cnd) cnd
   )
 
   if (!S7_inherits(e1) || !S7_inherits(e2)) {
-    # Fallback to base behaviour. Must call NextMethod() directly here, not
+    # Fall back to base behaviour. Must call NextMethod() directly here, not
     # wrapped in an anonymous function.
     NextMethod()
   } else {

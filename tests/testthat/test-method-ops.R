@@ -105,6 +105,7 @@ test_that("specific method overrides group generic", {
     foo(S7_data(e1) + S7_data(e2) + 100L)
   }
   method(S7_Ops, list(foo, foo)) <- function(e1, e2, .Generic) {
+    .Generic <- find_base_generic(.Generic)
     foo(.Generic(S7_data(e1), S7_data(e2)))
   }
 
