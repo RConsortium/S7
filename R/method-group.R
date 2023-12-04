@@ -46,37 +46,21 @@ S7_Complex <- NULL
 S7_Summary <- NULL
 
 on_load_define_group_generics <- function() {
-  S7_Math <<- new_generic(
-    "Math",
-    "x",
-    function(x, ..., .Generic) {
-      S7_dispatch()
-    }
-  )
+  S7_Math <<- new_generic("Math", "x", function(x, ..., .Generic) {
+    S7_dispatch()
+  })
 
-  S7_Ops <<- new_generic(
-    "Ops",
-    c("e1", "e2"),
-    function(e1, e2, ..., .Generic) {
-      S7_dispatch()
-    }
-  )
+  S7_Ops <<- new_generic("Ops", c("e1", "e2"), function(e1, e2, ..., .Generic) {
+    S7_dispatch()
+  })
 
-  S7_Complex <<- new_generic(
-    "Complex",
-    "z",
-    function(z, ..., .Generic) {
-      S7_dispatch()
-    }
-  )
+  S7_Complex <<- new_generic("Complex", "z", function(z, ..., .Generic) {
+    S7_dispatch()
+  })
 
-  S7_Summary <<- new_generic(
-    "Summary",
-    "x",
-    function(x, ..., na.rm = FALSE, .Generic) {
-      S7_dispatch()
-    }
-  )
+  S7_Summary <<- new_generic("Summary", "x", function(x, ..., na.rm = FALSE, .Generic) {
+    S7_dispatch()
+  })
 }
 
 #' @export
