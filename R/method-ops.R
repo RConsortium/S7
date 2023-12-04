@@ -25,7 +25,7 @@ Ops.S7_object <- function(e1, e2) {
   # Try group generic
   generic_fun <- get(.Generic, mode = "function", envir = baseenv())
   cnd <- tryCatch(
-    return(group_generic_Ops(e1, e2, .Generic = generic_fun)),
+    return(S7_Ops(e1, e2, .Generic = generic_fun)),
     S7_error_method_not_found = function(cnd) cnd
   )
 

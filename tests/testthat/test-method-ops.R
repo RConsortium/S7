@@ -97,12 +97,14 @@ test_that("Ops generics falls back to base behaviour", {
 })
 
 test_that("specific method overrides group generic", {
+  local_methods(base_ops[["+"]], S7_Ops)
+
   foo <- new_class("foo", class_integer)
 
   method(`+`, list(foo, foo)) <- function(e1, e2) {
     foo(S7_data(e1) + S7_data(e2) + 100L)
   }
-  method(group_generic_Ops, list(foo, foo)) <- function(e1, e2, .Generic) {
+  method(S7_Ops, list(foo, foo)) <- function(e1, e2, .Generic) {
     foo(.Generic(S7_data(e1), S7_data(e2)))
   }
 
