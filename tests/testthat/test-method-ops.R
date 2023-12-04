@@ -96,6 +96,20 @@ test_that("Ops generics falls back to base behaviour", {
   expect_equal(1:2 + foo(1), "numeric-foo")
 })
 
+test_that("specific method overrides group generic", {
+  foo <- new_class("foo", class_integer)
+
+  method(`+`, list(foo, foo)) <- function(e1, e2) {
+    foo(S7_data(e1) + S7_data(e2) + 100L)
+  }
+  method(group_generic_Ops, list(foo, foo)) <- function(e1, e2, .Generic) {
+    foo(.Generic(S7_data(e1), S7_data(e2)))
+  }
+
+  expect_equal(foo(1L) * foo(1:5), foo(1:5))
+  expect_equal(foo(1L) + foo(1:5), foo(1:5 + 1L + 100L))
+})
+
 test_that("`%*%` dispatches to S7 methods", {
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])

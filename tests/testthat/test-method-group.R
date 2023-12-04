@@ -1,14 +1,19 @@
-test_that("specific method overrides group generic", {
-  foo <- new_class("foo", class_integer)
+test_that("can provide Math group generic", {
+  local_methods(group_generic_Math)
+  foo1 <- new_class("foo1", properties = list(x = class_double, y = class_double))
+  foo2 <- new_class("foo2", class_double)
 
-  method(`+`, list(foo, foo)) <- function(e1, e2) {
-    foo(S7_data(e1) + S7_data(e2) + 100L)
+  # base behaviour
+  expect_snapshot(abs(foo1(-1, 2)), error = TRUE)
+  expect_equal(abs(foo2(c(-1, 2))), foo2(c(1, 2)))
+
+  method(group_generic_Math, foo1) <- function(x, ..., .Generic) {
+    foo1(.Generic(x@x, ...), .Generic(x@y, ...))
   }
-  method(group_generic_Ops, list(foo, foo)) <- function(e1, e2, .Generic) {
-    foo(.Generic(S7_data(e1), S7_data(e2)))
+  expect_equal(abs(foo1(-1, 2)), foo1(1, 2))
+
+  method(group_generic_Math, foo2) <- function(x, ..., .Generic) {
+    foo2(.Generic(S7_data(x, ...)))
   }
-
-  expect_equal(foo(1L) * foo(1:5), foo(1:5))
-  expect_equal(foo(1L) + foo(1:5), foo(1:5 + 101L))
-
+  expect_equal(abs(foo2(c(-1, 2))), foo2(c(1, 2)))
 })
