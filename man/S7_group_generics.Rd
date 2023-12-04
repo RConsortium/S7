@@ -6,6 +6,7 @@
 \alias{S7_Ops}
 \alias{S7_Complex}
 \alias{S7_Summary}
+\alias{find_base_generic}
 \title{S7 Group Generics}
 \usage{
 S7_Math(x, ..., .Generic)
@@ -15,6 +16,8 @@ S7_Ops(e1, e2, ..., .Generic)
 S7_Complex(z, ..., .Generic)
 
 S7_Summary(x, ..., na.rm = FALSE, .Generic)
+
+find_base_generic(.Generic)
 }
 \arguments{
 \item{x, z, e1, e2}{Objects used for dispatch.}
@@ -23,7 +26,10 @@ S7_Summary(x, ..., na.rm = FALSE, .Generic)
 
 \item{.Generic}{The name of the generic being dispatched on, i.e. if you've
 defined a method for \code{S7_Math} and the user calls \code{abs()} then \code{.Generic}
-will be \code{"abs"}.}
+will be \code{"abs"}.
+
+Use \code{find_base_generic()} to find the base generic that corresponds to the
+generic name.}
 }
 \description{
 Group generics allow you to implement methods for many generics at once.

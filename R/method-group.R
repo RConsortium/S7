@@ -12,6 +12,9 @@
 #' @param .Generic The name of the generic being dispatched on, i.e. if you've
 #'   defined a method for `S7_Math` and the user calls `abs()` then `.Generic`
 #'   will be `"abs"`.
+#'
+#'   Use `find_base_generic()` to find the base generic that corresponds to the
+#'   generic name.
 #' @details
 #' # Methods
 #'
@@ -78,13 +81,18 @@ on_load_define_group_generics <- function() {
 
 #' @export
 Math.S7_object <- function(x, ...) {
-  generic_fun <- get(.Generic, mode = "function", envir = baseenv())
   tryCatch(
-    return(S7_Math(x, ..., .Generic = generic_fun)),
+    return(S7_Math(x, ..., .Generic = .Generic)),
     S7_error_method_not_found = function(cnd) NULL
   )
 
   NextMethod()
+}
+
+#' @export
+#' @rdname S7_group_generics
+find_base_generic <- function(.Generic) {
+  get(.Generic, mode = "function", envir = baseenv())
 }
 
 
