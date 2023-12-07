@@ -111,10 +111,16 @@ group_generics <- function() {
     Summary = "Summary",
     Complex = "Complex"
   )
-
+  ## Not yet:
+  ## if((Rv <- getRversion()) >= "4.4")
+  ##   groups$matrixOps <- "matrixOps"
   out <- lapply(groups, function(x) unlist(lapply(x, methods::getGroupMembers)))
+  ## workaround (the above getGr*() is looking at S4 groups only):
   if (getRversion() >= "4.3") {
-    out$matrixOps <- c("%*%")
+    out$matrixOps <- 
+      if (getRversion() >= "4.4")
+         c("%*%", "crossprod", "tcrossprod")
+      else "%*%"
   }
   out
 }
