@@ -104,16 +104,13 @@ validate_properties <- function(object, class) {
   errors <- character()
 
   for (prop in class@properties) {
-    # Only validate static properties
-    if (!is.null(prop$getter) || !is.null(prop$setter)) {
+    # Don't validate dynamic properties
+    if (!is.null(prop$getter)) {
       next
     }
 
     value <- prop(object, prop$name)
-    if (!class_inherits(value, prop$class)) {
-      errors <- c(errors, prop_error_type(object, prop$name, prop$class, value, show_type = FALSE))
-    }
-    prop
+    errors <- c(errors, prop_validate(prop, value))
   }
 
   errors

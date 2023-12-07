@@ -8,6 +8,7 @@ new_property(
   class = class_any,
   getter = NULL,
   setter = NULL,
+  validator = NULL,
   default = NULL,
   name = NULL
 )
@@ -17,21 +18,35 @@ new_property(
 See \code{\link[=as_class]{as_class()}} for details.}
 
 \item{getter}{An optional function used to get the value. The function
-should take \code{self}  as its sole argument and return the value. If the
-property has a \code{class} the class of the value is validated.
+should take \code{self} as its sole argument and return the value. If you
+supply a \code{getter}, you are responsible for ensuring that it returns
+an object of the correct \code{class}; it will not be validated automatically.
 
 If a property has a getter but doesn't have a setter, it is read only.}
 
 \item{setter}{An optional function used to set the value. The function
 should take \code{self} and \code{value} and return a modified object.}
 
+\item{validator}{A function taking a single argument, \code{value}, the value
+to validate.
+
+The job of a validator is to determine whether the property value is valid.
+It should return \code{NULL} if the object is valid, or if it's not valid,
+a single string describing the problem. The message should not include the
+name of the property as this will be automatically appended to the
+beginning of the message.
+
+The validator will be called after the \code{class} has been verified, so
+your code can assume that \code{value} has known type.}
+
 \item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, defaults to the "empty" instance
 of \code{class}.}
 
-\item{name}{Property name, primarily used for error messages. Used
-primrarily for testing as it is set automatically when using a list of
-properties.}
+\item{name}{Property name, primarily used for error messages. Generally
+don't need to set this here, as it's more convenient to supply as a
+the element name when defining a list of properties. If both \code{name}
+and a list-name are supplied, the list-name will be used.}
 }
 \value{
 An S7 property, i.e. a list with class \code{S7_property}.

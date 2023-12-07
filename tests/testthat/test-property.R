@@ -62,17 +62,65 @@ describe("prop setting", {
       obj@foo <- 10
       obj@x <- "x"
     })
+  })
 
-    foo2 <- new_class("foo2", properties = list(x =
-      new_property(
+  it("validates all attributes if custom setter", {
+    foo <- new_class("foo", properties = list(
+      x = new_property(
         class_double,
-        setter = function(self, value) self
-      )
+        setter = function(self, value) {
+          self@x <- 123
+          self@y <- value
+          self
+        }
+      ),
+      y = new_property(class_double)
     ))
     expect_snapshot(error = TRUE, {
-      obj <- foo2(123)
+      obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     })
+  })
+
+  it("validates once after custom setter", {
+    custom_setter <- function(self, value) {
+      self@x <- as.double(value)
+      self
+    }
+    foo2 <- new_class(
+      "foo2",
+      properties = list(x = new_property(class_double, setter = custom_setter)),
+      validator = function(self) {
+        print("validating")
+        character()
+      }
+    )
+    expect_snapshot({
+      obj <- foo2("123")
+      obj@x <- "456"
+    })
+  })
+
+  it("validates once with recursive property setters", {
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(setter = function(self, value) {
+          self@x <- 1
+          self@y <- value + 1
+          self
+        }),
+        y = new_property(setter = function(self, value) {
+          self@y <- 2
+          self@z <- as.integer(value + 1)
+          self
+        }),
+        z = new_property(class_integer)
+      ),
+      validator = function(self) {print("validating"); NULL}
+    )
+    expect_snapshot(out <- foo(x = 1))
+    expect_identical(out@z, 3L)
   })
 
   it("does not run the check or validation functions if check = FALSE", {
@@ -239,6 +287,16 @@ test_that("as_properties normalises properties", {
     as_properties(list(x = new_property(class = class_numeric))),
     list(x = new_property(class_numeric, name = "x")
   ))
+  expect_equal(
+    as_properties(list(new_property(name = "y"))),
+    list(y = new_property(name = "y")
+  ))
+
+  # list name wins
+  expect_equal(
+    as_properties(list(x = new_property(name = "y"))),
+    list(x = new_property(name = "x")
+  ))
 })
 
 test_that("as_properties() gives useful error messages", {
@@ -248,5 +306,21 @@ test_that("as_properties() gives useful error messages", {
     as_properties(list(new_property(class_character)))
     as_properties(list(x = 1))
     as_properties(list(x = class_character, x = class_character))
+  })
+})
+
+test_that("can validate with custom validator", {
+  validate_scalar <- function(value) {
+    if (length(value) != 1) {
+      "must be length 1"
+    }
+  }
+  prop <- new_property(class_integer, validator = validate_scalar)
+  foo <- new_class("foo", properties = list(x = prop))
+  expect_snapshot(error = TRUE, {
+    f <- foo(x = 1L)
+    f@x <- 1:2
+
+    foo(x = 1:2)
   })
 })

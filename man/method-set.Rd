@@ -2,7 +2,7 @@
 % Please edit documentation in R/method-register.R
 \name{method<-}
 \alias{method<-}
-\title{Register a S7 method for a generic}
+\title{Register an S7 method for a generic}
 \usage{
 method(generic, signature) <- value
 }

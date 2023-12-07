@@ -134,7 +134,7 @@ test_that("single dispatch fails with informative messages", {
   fail <- new_generic("fail", "x")
 
   foo <- new_class("foo")
-  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
   expect_snapshot(error = TRUE, {
@@ -143,13 +143,15 @@ test_that("single dispatch fails with informative messages", {
     fail(foo())
     fail(Foo(x = 1))
   })
+
+  expect_error(fail(TRUE), class = "S7_error_method_not_found")
 })
 
 test_that("multiple dispatch fails with informative messages", {
   fail <- new_generic("fail", c("x", "y"))
 
   foo <- new_class("foo")
-  Foo <- setClass("Foo", slots = list("x" = "numeric"), where = globalenv())
+  Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
   expect_snapshot(error = TRUE, {
@@ -157,6 +159,8 @@ test_that("multiple dispatch fails with informative messages", {
     fail(, TRUE)
     fail(TRUE, TRUE)
   })
+
+  expect_error(fail(TRUE, TRUE), class = "S7_error_method_not_found")
 })
 
 

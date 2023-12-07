@@ -2,12 +2,12 @@ test_that("can get and append methods", {
   external_methods_reset("S7")
   on.exit(external_methods_reset("S7"), add = TRUE)
 
-  expect_equal(external_methods_get("S7"), list())
+  expect_equal(S7_methods_table("S7"), list())
 
   bar <- new_external_generic("foo", "bar", "x")
   external_methods_add("S7", bar, list(), function() {})
   expect_equal(
-    external_methods_get("S7"),
+    S7_methods_table("S7"),
     list(
       list(
         generic = bar,
@@ -27,10 +27,36 @@ test_that("displays nicely", {
   })
 })
 
+test_that("can convert existing generics to external", {
+  foo_S7 <- new_generic("foo_S7", "x")
+  env <- new.env()
+  env$.packageName <- "test"
+  environment(foo_S7) <- env
+
+  expect_equal(
+    as_external_generic(foo_S7),
+    new_external_generic("test", "foo_S7", "x")
+  )
+
+  foo_ext <- new_external_generic("pkg", "foo", "x")
+  expect_equal(as_external_generic(foo_ext), foo_ext)
+
+  expect_equal(
+    as_external_generic(as_S3_generic(sum)),
+    new_external_generic("base", "sum", "__S3__")
+  )
+
+  methods::setGeneric("foo_S4", function(x) {})
+  expect_equal(
+    as_external_generic(foo_S4),
+    new_external_generic("S7", "foo_S4", "x")
+  )
+})
+
 test_that("new_method works with both hard and soft dependencies", {
   # NB: Relies on installed S7
 
-  skip_if(getRversion() < 4.1 && Sys.info()[["sysname"]] == "Windows")
+  skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
   tmp_lib <- tempfile()

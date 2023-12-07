@@ -180,9 +180,19 @@ print.S7_class <- function(x, ...) {
   }
 
   cat(
-    sprintf("<S7_class>\n@ name  :  %s\n@ parent: %s\n@ properties:\n%s",
-      x@name,
+    sprintf(
+      paste0(
+        "%s%s class\n",
+        "@ parent     : %s\n",
+        "@ constructor: %s\n",
+        "@ validator  : %s\n",
+        "@ properties :\n%s"
+      ),
+      class_desc(x),
+      if (x@abstract) " abstract" else "",
       class_desc(x@parent),
+      show_function(x@constructor, constructor = TRUE),
+      if (!is.null(x@validator)) show_function(x@validator) else "<NULL>",
       prop_fmt
     ),
     sep = ""
@@ -245,20 +255,27 @@ new_object <- function(.parent, ...) {
   args <- list(...)
   nms <- names(args)
 
-  missing_props <- nms[vlapply(args, is_class_missing)]
-  for(prop in missing_props) {
-    args[[prop]] <- prop_default(class@properties[[prop]])
-  }
-
-  object <- .parent %||% class_construct(class@parent)
+  # TODO: Some type checking on `.parent`?
+  object <- .parent
   attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
-  for (nme in nms) {
-    prop(object, nme, check = FALSE) <- args[[nme]]
+  supplied_props <- nms[!vlapply(args, is_class_missing)]
+  for (prop in supplied_props) {
+    prop(object, prop, check = FALSE) <- args[[prop]]
   }
-  # Only needs to validate this object if parent was already an S7 object
-  validate(object, recursive = !inherits(.parent, "S7_object"))
+
+  # We have to fill in missing values after setting the initial properties,
+  # because custom setters might set property values
+  missing_props <- setdiff(nms, union(supplied_props, names(attributes(object))))
+  for (prop in missing_props) {
+    prop(object, prop, check = FALSE) <- prop_default(class@properties[[prop]])
+  }
+
+  # Don't need to validate if parent class already validated,
+  # i.e. it's a non-abstract S7 class
+  parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
+  validate(object, recursive = !parent_validated)
 
   object
 }
@@ -273,7 +290,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
-  if (typeof(object) != .S7_type) {
+  if (!is_S7_type(object)) {
     if (!typeof(object) %in% c("numeric", "integer", "character", "double"))
       cat(" ")
 

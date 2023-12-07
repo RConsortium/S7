@@ -7,9 +7,9 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![R-CMD-check](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/OOP-WG/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/RConsortium/S7/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/S7/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://app.codecov.io/gh/RConsortium/OOP-WG/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/OOP-WG?branch=main)
+coverage](https://codecov.io/gh/RConsortium/S7/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/S7?branch=main)
 
 <!-- badges: end -->
 

@@ -5,25 +5,28 @@
 \alias{check_is_S7}
 \title{Does this object inherit from an S7 class?}
 \usage{
-S7_inherits(x, class)
+S7_inherits(x, class = NULL)
 
 check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
 }
 \arguments{
 \item{x}{An object}
 
-\item{class}{An S7 class. Can be omitted in \code{check_is_S7()}.}
+\item{class}{An S7 class or \code{NULL}. If \code{NULL}, tests whether \code{x} is an
+S7 object without testing for a specific class.}
 
 \item{arg}{Argument name used in error message.}
 }
 \value{
-\code{S7_inherits()} returns a single \code{TRUE} or \code{FALSE};
-\code{check_is_S7()} returns nothing; it's called for its side-effects.
+\itemize{
+\item \code{S7_inherits()} returns a single \code{TRUE} or \code{FALSE}.
+\item \code{check_is_S7()} returns nothing; it's called for its side-effects.
+}
 }
 \description{
 \itemize{
 \item \code{S7_inherits()} returns \code{TRUE} or \code{FALSE}.
-\item \code{check_is_S7()} throws an error.
+\item \code{check_is_S7()} throws an error if \code{x} isn't the specified \code{class}.
 }
 }
 \examples{

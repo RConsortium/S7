@@ -1,17 +1,19 @@
 # Called from C
-method_lookup_error <- function(name, args, signatures) {
-  sigs <- vcapply(signatures, paste, collapse = ", ")
+method_lookup_error <- function(name, args) {
   types <- vcapply(args, obj_desc)
+  msg <- method_lookup_error_message(name, types)
+  cnd <- errorCondition(msg, class = c("S7_error_method_not_found", "error"))
+  stop(cnd)
+}
 
-  if (length(args) == 1) {
-    msg <- sprintf("Can't find method for `%s(%s)`.", name, types)
+method_lookup_error_message <- function(name, types) {
+  if (length(types) == 1) {
+    sprintf("Can't find method for `%s(%s)`.", name, types)
   } else {
-    arg_names <- paste0(names(args), collapse = ", ")
-    types <- paste0("- ", format(names(args)), ": ", types, collapse = "\n")
-    msg <- sprintf("Can't find method for generic `%s(%s)`:\n%s", name, arg_names, types)
+    arg_names <- paste0(names(types), collapse = ", ")
+    types <- paste0("- ", format(names(types)), ": ", types, collapse = "\n")
+    sprintf("Can't find method for generic `%s(%s)`:\n%s", name, arg_names, types)
   }
-
-  stop(msg, call. = FALSE)
 }
 
 #' @rdname new_generic

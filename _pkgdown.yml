@@ -1,4 +1,4 @@
-url: https://RConsortium.github.io/OOP-WG
+url: https://rconsortium.github.io/S7/
 
 template:
   bootstrap: 5
@@ -24,17 +24,30 @@ reference:
 - title: Method dispatch
   contents:
   - convert
-  - super
-  - as_class
+  - class_missing
+  - class_any
   - method
   - method_explain
+  - super
+  - S7_class
+
+- title: Packages
+  desc: >
+    Functions needed when using S7 within a package. See `vignette("packages")`
+    for more details.
+  contents:
   - methods_register
   - new_external_generic
+
+- title: Compatibility
+  desc: >
+    These tools provide a layer of compatibility between S7 and S3 classes, S4
+    classes, and base types. See `vignette("compatibility")` for more details.
+  contents:
+  - base_classes
+  - base_s3_classes
   - new_S3_class
   - S4_register
-  - S7_class
-  - base_classes
-  - class_missing
 
 articles:
 - title: Learn S7

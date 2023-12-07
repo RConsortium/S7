@@ -2,9 +2,11 @@ test_that("it works", {
   foo1 <- new_class("foo1")
   foo2 <- new_class("foo2", parent = foo1)
 
+  expect_true(S7_inherits(foo1(), NULL))
   expect_true(S7_inherits(foo1(), foo1))
   expect_true(S7_inherits(foo2(), foo1))
   expect_false(S7_inherits(foo1(), foo2))
+  expect_false(S7_inherits(1, NULL))
 })
 
 test_that("checks that input is a class", {

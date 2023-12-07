@@ -39,9 +39,13 @@ describe("method registration", {
   })
 
   it("can register S7 method for S3 generic", {
-    foo <- new_class("foo")
-    method(sum, foo) <- function(x, ...) "foo"
-    expect_equal(sum(foo()), "foo")
+    foo1 <- new_class("foo")
+    method(sum, foo1) <- function(x, ...) "foo"
+    expect_equal(sum(foo1()), "foo")
+
+    foo2 <- new_class("foo", package = "bar")
+    method(sum, foo2) <- function(x, ...) "foo"
+    expect_equal(sum(foo2()), "foo")
 
     # and doesn't modify generic
     expect_equal(sum, base::sum)
@@ -51,7 +55,7 @@ describe("method registration", {
     foo <- new_class("foo")
     bar <- new_class("bar")
 
-    method(`+`, list(foo, bar)) <- function(x, y) "foobar"
+    method(`+`, list(foo, bar)) <- function(e1, e2) "foobar"
     expect_equal(foo() + bar(), "foobar")
 
     if(getRversion() >= "4.3.0") {
@@ -118,6 +122,16 @@ describe("as_signature()", {
       as_signature(class_character, foo)
       as_signature(list(class_character), foo)
     })
+  })
+
+  it("works with NULL", {
+    foo <- new_generic("foo", c("x"))
+    sig <- as_signature(NULL, foo)
+    expect_length(sig, 1)
+
+    foo <- new_generic("foo", c("x", "y", "z"))
+    sig <- as_signature(list(NULL, NULL, class_integer), foo)
+    expect_length(sig, 3)
   })
 })
 
