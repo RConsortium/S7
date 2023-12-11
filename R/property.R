@@ -163,13 +163,13 @@ prop_default <- function(prop) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
-  check_is_S7(object)
+  .Call(prop_, object, name)
+}
 
-  if (!prop_exists(object, name)) {
+validate_prop_access <- function(object, name) {
+  check_is_S7(object)
+  if (!prop_exists(object, name))
     stop(prop_error_unknown(object, name), call. = FALSE)
-  } else {
-    prop_val(object, name)
-  }
 }
 
 # Internal helper that assumes the property exists
