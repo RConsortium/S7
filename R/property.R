@@ -166,10 +166,19 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-validate_prop_access <- function(object, name) {
+propr <- function(object, name) {
+  # reference implementation of `prop()` implemented in R
   check_is_S7(object)
-  if (!prop_exists(object, name))
+
+  if (!prop_exists(object, name)) {
     stop(prop_error_unknown(object, name), call. = FALSE)
+  } else {
+    prop_val(object, name)
+  }
+}
+
+signal_prop_error_unknown <- function(object, name) {
+  stop(prop_error_unknown(object, name), call. = FALSE)
 }
 
 # Internal helper that assumes the property exists
