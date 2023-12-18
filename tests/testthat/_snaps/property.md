@@ -45,6 +45,8 @@
       [1] "validating"
     Code
       obj@x <- "456"
+    Output
+      [1] "validating"
 
 # prop setting: validates once with recursive property setters
 

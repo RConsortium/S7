@@ -18,7 +18,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"S7_object_", (DL_FUNC) &S7_object_, 0},
     {"prop_", (DL_FUNC) &prop_, 2},
     {"prop_set_", (DL_FUNC) &prop_set_, 5},
-    {"prop_setters_stack_pop_", (DL_FUNC) &prop_setters_stack_pop_, 0},
     {NULL, NULL, 0}
 };
 
@@ -35,6 +34,7 @@ SEXP sym_validator;
 SEXP sym_getter;
 
 SEXP sym_dot_should_validate;
+SEXP sym_dot_setting_prop;
 
 SEXP ns_S7;
 
@@ -55,11 +55,7 @@ void R_init_S7(DllInfo *dll)
     sym_validator = Rf_install("validator");
     sym_getter = Rf_install("getter");
     sym_dot_should_validate = Rf_install(".should_validate");
+    sym_dot_setting_prop = Rf_install(".setting_prop");
 
     ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
-
 }
-
-
-
-
