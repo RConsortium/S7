@@ -324,3 +324,29 @@ test_that("can validate with custom validator", {
     foo(x = 1:2)
   })
 })
+
+test_that("prop<- won't infinitly recurse on a custom setter", {
+  chattily_sync_ab <- function(self, value) {
+    cat("Starting syncup with value:", value, "\n")
+    a_value <- paste0("a_", value)
+    b_value <- paste0("b_", value)
+
+    cat(sprintf('setting @a <- "%s"\n', a_value))
+    self@a <- a_value
+
+    cat(sprintf('setting @b <- "%s"\n', b_value))
+    self@b <- b_value
+
+    self
+  }
+
+  foo <- new_class("foo", properties = list(
+    a = new_property(setter = chattily_sync_ab),
+    b = new_property(setter = chattily_sync_ab)
+  ))
+
+  expect_snapshot({
+    obj <- foo()
+    obj@a <- "val"
+  })
+})

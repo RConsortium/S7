@@ -192,3 +192,30 @@
       ! <foo> object properties are invalid:
       - @x must be length 1
 
+# prop<- won't infinitly recurse on a custom setter
+
+    Code
+      obj <- foo()
+    Output
+      Starting syncup with value: 
+      setting @a <- "a_"
+      setting @b <- "b_"
+      Starting syncup with value: b_ 
+      setting @a <- "a_b_"
+      setting @b <- "b_b_"
+      Starting syncup with value: 
+      setting @a <- "a_"
+      Starting syncup with value: a_ 
+      setting @a <- "a_a_"
+      setting @b <- "b_a_"
+      setting @b <- "b_"
+    Code
+      obj@a <- "val"
+    Output
+      Starting syncup with value: val 
+      setting @a <- "a_val"
+      setting @b <- "b_val"
+      Starting syncup with value: b_val 
+      setting @a <- "a_b_val"
+      setting @b <- "b_b_val"
+
