@@ -13,6 +13,7 @@ extern SEXP sym_constructor;
 extern SEXP sym_validator;
 
 extern SEXP ns_S7;
+
 extern SEXP sym_dot_should_validate;
 extern SEXP sym_dot_setting_prop;
 
