@@ -203,7 +203,12 @@ prop_obj <- function(object, name) {
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
 #' @export
-`prop<-` <- local({
+`prop<-` <- function(object, name, check = TRUE, value) {
+  .Call(prop_set_, object, name, check, value, environment())
+}
+
+`propr<-` <- local({
+    # reference implementation of `prop<-()` implemented in R
   # This flag is used to avoid infinite loops if you are assigning a property from a setter function
   setter_property <- NULL
 
@@ -246,6 +251,12 @@ prop_obj <- function(object, name) {
 prop_error_unknown <- function(object, prop_name) {
   sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
 }
+
+signal_prop_error_read_only <- function(object, name) {
+  msg <- sprintf("Can't set read-only property %s@%s", obj_desc(object), name)
+  stop(msg, call. = FALSE)
+}
+
 
 prop_validate <- function(prop, value, object = NULL) {
   if (!class_inherits(value, prop$class)) {
