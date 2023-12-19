@@ -36,7 +36,7 @@ SEXP extract_name(SEXP list, const char* name) {
 
 static inline
 Rboolean has_name(SEXP list, const char* name) {
-  return (Rboolean) name_idx(list, name) != -1;
+  return (Rboolean) (name_idx(list, name) != -1);
 }
 
 static inline
@@ -63,75 +63,8 @@ Rboolean is_s7_class(SEXP object) {
   return inherits2(object, "S7_class");
 }
 
-static
-__attribute__ ((noreturn))
-void signal_prop_error_unknown_(SEXP object, SEXP name) {
-  static SEXP signal_prop_error_unknown = NULL;
-  if (signal_prop_error_unknown == NULL)
-    signal_prop_error_unknown =
-      Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error_unknown"));
-
-  Rf_eval(Rf_lang3(signal_prop_error_unknown, object, name), ns_S7);
-  while(1);
-}
-
-SEXP prop_(SEXP object, SEXP name) {
-
-  if (!is_s7_object(object))
-    goto error;
-
-  SEXP name_rchar = STRING_ELT(name, 0);
-  const char* name_char = CHAR(name_rchar);
-  SEXP name_sym = Rf_installTrChar(name_rchar);
-
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
-  SEXP properties = Rf_getAttrib(S7_class, sym_properties);
-  SEXP value = Rf_getAttrib(object, name_sym);
-
-  // if value was accessed as an attr, we still need to validate to make sure
-  // the attr is actually a known class property
-  if (value != R_NilValue)
-    goto validate;
-
-  // property not in attrs, try to get value using the getter()
-  if (properties == R_NilValue) goto validate;
-
-  SEXP property = extract_name(properties, name_char);
-  if (property == R_NilValue) goto validate;
-
-  SEXP getter = extract_name(property, "getter");
-  if (getter == R_NilValue) goto validate;
-
-  if (TYPEOF(getter) == CLOSXP)
-    // we validated property is in properties list when accessing getter()
-    return Rf_eval(Rf_lang2(getter, object), ns_S7);
-
-
-  validate:
-
-  if(has_name(properties, name_char))
-    return value;
-
-  if (S7_class == R_NilValue &&
-      is_s7_class(object) && (
-          name_sym == sym_name  ||
-          name_sym == sym_parent  ||
-          name_sym == sym_package  ||
-          name_sym == sym_properties  ||
-          name_sym == sym_abstract  ||
-          name_sym == sym_constructor  ||
-          name_sym == sym_validator
-    ))
-      return value;
-
-  error:
-
-  signal_prop_error_unknown_(object, name);
-  return R_NilValue; // unreachable, for compiler
-}
-
 static inline
-void check_is_S7_(SEXP object) {
+void check_is_S7(SEXP object) {
   if (is_s7_object(object))
     return;
 
@@ -143,112 +76,217 @@ void check_is_S7_(SEXP object) {
   Rf_eval(Rf_lang2(check_is_S7, object), ns_S7);
 }
 
-__attribute__ ((noreturn))
-void signal_prop_error_read_only(SEXP object, SEXP name) {
-  static SEXP fn = NULL;
-  if (fn == NULL)
-    fn = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error_read_only"));
+__attribute__((noreturn))
+void signal_error(SEXP errmsg) {
+/*  Given a STRSXP, we go back out to an R closure to signal an error. We can't use
+    Rf_error() because, from the compilers perspective, `errmsg` isn't
+    sanitized for '%'--it could be interperted as a format string. Compiler says:
+    warning: format not a string literal and no format arguments [-Wformat-security]
 
-  Rf_eval(Rf_lang3(fn, object, name), ns_S7);
+    // Doing something like this segfaults for reasons I don't understand:
+    Rf_eval(Rf_lang2(Rf_findVarInFrame(Rf_install("stop"), R_BaseNamespace),
+                     errmsg), frame);
+*/
+  PROTECT(errmsg);
+  static SEXP signal_error = NULL;
+  if (signal_error == NULL)
+    signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+
+  Rf_eval(Rf_lang2(signal_error, errmsg), ns_S7);
   while(1);
 }
 
+__attribute__((noreturn))
+void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
+  static SEXP signal_prop_error = NULL;
+  if (signal_prop_error == NULL)
+    signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
 
-
-static inline
-SEXP call_setter(SEXP name_sym, SEXP setter, SEXP object, SEXP value, SEXP frame) {
-
-  // micro-optimization opportunity: getsetAttrib() that returns the "old" value
-  // it is replacing.
-  SEXP setting = Rf_getAttrib(object, sym_dot_setting_prop);
-  Rf_setAttrib(object, sym_dot_setting_prop, Rf_cons(name_sym, setting));
-
-  SEXP should_validate = Rf_getAttrib(object, sym_dot_should_validate);
-  Rf_setAttrib(object, sym_dot_should_validate, Rf_ScalarLogical(FALSE));
-
-  object = Rf_eval(Rf_lang3(setter, object, value), ns_S7);
-  PROTECT(object);
-
-  Rf_setAttrib(object, sym_dot_setting_prop, setting);
-  Rf_setAttrib(object, sym_dot_should_validate, should_validate);
-  UNPROTECT(1);
-  return object;
+  Rf_eval(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name), ns_S7);
+  while(1);
 }
 
-
-static inline
-Rboolean can_call_setter(SEXP object, SEXP name_sym) {
-  SEXP setting = Rf_getAttrib(object, sym_dot_setting_prop);
-  if (setting == R_NilValue)
-    return TRUE;
-  // if (setting == name_sym)
-  //   return FALSE;
-  for (SEXP c = setting; c != R_NilValue; c = CDR(c))
-    if (CAR(c) == name_sym)
-      return FALSE;
-  return TRUE;
+static __attribute__((noreturn))
+void signal_prop_error_unknown(SEXP object, SEXP name) {
+  signal_prop_error("Can't find property %s@%s", object, name);
 }
 
+SEXP prop_(SEXP object, SEXP name) {
 
-SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value, SEXP frame) {
-
-  check_is_S7_(object);
+  check_is_S7(object);
 
   SEXP name_rchar = STRING_ELT(name, 0);
-  const char* name_char = CHAR(name_rchar);
+  const char *name_char = CHAR(name_rchar);
+  SEXP name_sym = Rf_installTrChar(name_rchar);
+
+  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP properties = Rf_getAttrib(S7_class, sym_properties);
+  SEXP value = Rf_getAttrib(object, name_sym);
+
+  // if value was accessed as an attr, we still need to validate to make sure
+  // the attr is actually a known class property
+  if (value == R_NilValue) {
+    // property not in attrs, try to get value using the getter()
+    SEXP property = extract_name(properties, name_char);
+    SEXP getter = extract_name(property, "getter");
+    if (TYPEOF(getter) == CLOSXP)
+        // we validated property is in properties list when accessing getter()
+        return Rf_eval(Rf_lang2(getter, object), ns_S7);
+  }
+
+  if (has_name(properties, name_char))
+    return value;
+
+  if (S7_class == R_NilValue &&
+      is_s7_class(object) && (
+          name_sym == sym_name  ||
+          name_sym == sym_parent  ||
+          name_sym == sym_package  ||
+          name_sym == sym_properties  ||
+          name_sym == sym_abstract  ||
+          name_sym == sym_constructor  ||
+          name_sym == sym_validator  ))
+      return value;
+
+  // Should the constructor always set default prop values on a object instance?
+  // Maybe, instead, we can fallback here to checking for a default value from the
+  // properties list.
+
+  signal_prop_error_unknown(object, name);
+  return R_NilValue; // unreachable, for compiler
+}
+
+
+static inline
+Rboolean pairlist_contains(SEXP list, SEXP elem) {
+  for (SEXP c = list; c != R_NilValue; c = CDR(c))
+    if (CAR(c) == elem)
+      return TRUE;
+  return FALSE;
+}
+
+static inline
+SEXP pairlist_remove(SEXP list, SEXP elem) {
+  SEXP c0 = NULL, head = list;
+  for (SEXP c = list; c != R_NilValue; c0 = c, c = CDR(c))
+    if (CAR(c) == elem)
+    {
+      if (c0 == NULL)
+        return CDR(c);
+      else
+      {
+        SETCDR(c0, CDR(c));
+        return head;
+      }
+    }
+
+  Rf_warning("Tried to remove non-existent element from pairlist");
+  return R_NilValue;
+}
+
+
+static inline
+Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
+                                    Rboolean* should_validate_obj) {
+
+    SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
+    if (TYPEOF(no_recurse_list) == LISTSXP) {
+      // if there is a 'no_recurse' list, then this is not the top-most prop<-
+      // call for this object, i.e, we're currently evaluating a custom property
+      // setter. We should only call validate(object) once from the top-most
+      // prop<- call, after the custom setter() has returned.
+      *should_validate_obj = FALSE;
+      if (pairlist_contains(no_recurse_list, name_sym))
+        return FALSE;
+    }
+
+    if (TYPEOF(setter) != CLOSXP)
+      return FALSE; // setter not callable
+
+    Rf_setAttrib(object, sym_dot_setting_prop,
+                 Rf_cons(name_sym, no_recurse_list));
+    return TRUE; // setter now marked non-recursive, safe to call
+
+  // optimization opportunity: combine the actions of getAttrib()/setAttrib()
+  // into one loop, so we can avoid iterating over ATTRIB(object) twice.
+}
+
+// static inline
+void setter_no_recurse_clear(SEXP object, SEXP name_sym) {
+  SEXP list = Rf_getAttrib(object, sym_dot_setting_prop);
+  list = pairlist_remove(list, name_sym);
+  Rf_setAttrib(object, sym_dot_setting_prop, list);
+
+  // optimization opportunity: same as setter_callable_no_recurse
+}
+
+static inline
+void prop_validate(SEXP property, SEXP value, SEXP object) {
+
+  static SEXP prop_validate = NULL;
+  if (prop_validate == NULL)
+    prop_validate = Rf_findVarInFrame(ns_S7, Rf_install("prop_validate"));
+
+  SEXP errmsg = Rf_eval(Rf_lang4(prop_validate, property, value, object), ns_S7);
+  if (errmsg != R_NilValue) signal_error(errmsg);
+}
+
+static inline
+void obj_validate(SEXP object) {
+  static SEXP validate = NULL;
+  if (validate == NULL)
+    validate = Rf_findVarInFrame(ns_S7, Rf_install("validate"));
+
+  Rf_eval(Rf_lang4(validate, object,
+                   /* recursive = */ Rf_ScalarLogical(TRUE),
+                   /* properties = */ Rf_ScalarLogical(FALSE)),
+                   ns_S7);
+}
+
+SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
+
+  check_is_S7(object);
+
+  SEXP name_rchar = STRING_ELT(name, 0);
+  const char *name_char = CHAR(name_rchar);
   SEXP name_sym = Rf_installTrChar(name_rchar);
 
   Rboolean check = Rf_asLogical(check_sexp);
+  Rboolean should_validate_obj = check;
+  Rboolean should_validate_prop = check;
 
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
   SEXP property = extract_name(properties, name_char);
 
   if (property == R_NilValue)
-    signal_prop_error_unknown_(object, name);
+    signal_prop_error_unknown(object, name);
 
   SEXP setter = extract_name(property, "setter");
   SEXP getter = extract_name(property, "getter");
 
-  if(getter != R_NilValue && setter == R_NilValue)
-    signal_prop_error_read_only(object, name);
+  if (getter != R_NilValue && setter == R_NilValue)
+    signal_prop_error("Can't set read-only property %s@%s", object, name);
 
-  if (TYPEOF(setter) == CLOSXP && can_call_setter(object, name_sym)) {
-    object = call_setter(name_sym, setter, object, value, frame);
-    // return object;
-    PROTECT(object);
+  PROTECT_INDEX ipx;
+  object = Rf_duplicate(object);
+  PROTECT_WITH_INDEX(object, &ipx);
+
+  if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
+    // use setter()
+    object = Rf_eval(Rf_lang3(setter, object, value), ns_S7);
+    REPROTECT(object, ipx);
+    setter_no_recurse_clear(object, name_sym);
   } else {
-
-    if (check) {
-      static SEXP prop_validate = NULL;
-      if (prop_validate == NULL)
-        prop_validate = Rf_findVarInFrame(ns_S7, Rf_install("prop_validate"));
-      SEXP errmsg = Rf_eval(Rf_lang4(prop_validate, property, value, object), ns_S7);
-      if (errmsg != R_NilValue) {
-        if (TYPEOF(errmsg) != STRSXP || Rf_length(errmsg) != 1)
-          Rf_error("prop_validate() returned unknown value");
-        Rf_errorcall(R_NilValue, CHAR(STRING_ELT(errmsg, 0)));
-      }
-    }
-
-    object = Rf_duplicate(object);
-    PROTECT(object);
+    // don't use setter()
+    if (should_validate_prop)
+      prop_validate(property, value, object);
     Rf_setAttrib(object, name_sym, value);
   }
 
-  if(Rf_getAttrib(object, sym_dot_should_validate) != R_NilValue)
-    check = FALSE;
+  if (should_validate_obj)
+    obj_validate(object);
 
-  if (check) {
-    static SEXP validate = NULL;
-    if (validate == NULL)
-      validate = Rf_findVarInFrame(ns_S7, Rf_install("validate"));
-
-    Rf_eval(Rf_lang4(validate, object,
-                     /* recursive = */ Rf_ScalarLogical(TRUE),
-                     /* properties =*/ Rf_ScalarLogical(FALSE)),
-            ns_S7);
-  }
   UNPROTECT(1);
   return object;
 }

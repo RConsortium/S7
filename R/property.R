@@ -204,7 +204,7 @@ prop_obj <- function(object, name) {
 #'   [validate()] on the object before returning.
 #' @export
 `prop<-` <- function(object, name, check = TRUE, value) {
-  .Call(prop_set_, object, name, check, value, environment())
+  .Call(prop_set_, object, name, check, value)
 }
 
 `propr<-` <- local({
@@ -248,14 +248,22 @@ prop_obj <- function(object, name) {
   }
 })
 
+# called from src/prop.c
+signal_prop_error <- function(fmt, object, name) {
+  msg <- sprintf(fmt, obj_desc(object), name)
+  stop(msg, call. = FALSE)
+}
+
+# called from src/prop.c
+signal_error <- function(msg) {
+  stop(msg, call. = FALSE)
+}
+
+
 prop_error_unknown <- function(object, prop_name) {
   sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
 }
 
-signal_prop_error_read_only <- function(object, name) {
-  msg <- sprintf("Can't set read-only property %s@%s", obj_desc(object), name)
-  stop(msg, call. = FALSE)
-}
 
 
 prop_validate <- function(prop, value, object = NULL) {

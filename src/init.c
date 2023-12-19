@@ -16,7 +16,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"method_call_", (DL_FUNC) &method_call_, 3},
     {"S7_object_", (DL_FUNC) &S7_object_, 0},
     {"prop_", (DL_FUNC) &prop_, 2},
-    {"prop_set_", (DL_FUNC) &prop_set_, 5},
+    {"prop_set_", (DL_FUNC) &prop_set_, 4},
     {NULL, NULL, 0}
 };
 
