@@ -17,6 +17,55 @@ extern SEXP ns_S7;
 extern SEXP sym_dot_should_validate;
 extern SEXP sym_dot_setting_prop;
 
+
+static __attribute__((noreturn))
+void signal_is_not_S7(SEXP object) {
+  static SEXP check_is_S7 = NULL;
+  if (check_is_S7 == NULL)
+    check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
+
+  // will signal error
+  Rf_eval(Rf_lang2(check_is_S7, object), ns_S7);
+  while(1);
+}
+
+
+static __attribute__((noreturn))
+void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
+  static SEXP signal_prop_error = NULL;
+  if (signal_prop_error == NULL)
+    signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
+
+  Rf_eval(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name), ns_S7);
+  while(1);
+}
+
+static __attribute__((noreturn))
+void signal_prop_error_unknown(SEXP object, SEXP name) {
+  signal_prop_error("Can't find property %s@%s", object, name);
+}
+
+static __attribute__((noreturn))
+void signal_error(SEXP errmsg) {
+  /*  Given a STRSXP errmsg, we go back out to an R closure to signal the error.
+   *  We can't use Rf_error() because, from the compilers perspective, `errmsg`
+   *  isn't sanitized for '%'--it could be interpreted as a format string.
+   *  Compiler says:
+   *  warning: format not a string literal and no format arguments [-Wformat-security]
+
+   *  Doing something like this segfaults for reasons I don't understand:
+     Rf_eval(Rf_lang2(Rf_findVarInFrame(Rf_install("stop"), R_BaseNamespace),
+                      errmsg), frame);
+   */
+  PROTECT(errmsg);
+  static SEXP signal_error = NULL;
+  if (signal_error == NULL)
+    signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+
+  Rf_eval(Rf_lang2(signal_error, errmsg), ns_S7);
+  while(1);
+}
+
 static inline
 int name_idx(SEXP list, const char* name) {
   SEXP names = Rf_getAttrib(list, R_NamesSymbol);
@@ -53,12 +102,12 @@ Rboolean inherits2(SEXP object, const char* name) {
   return FALSE;
 }
 
-inline static
+static inline
 Rboolean is_s7_object(SEXP object) {
   return inherits2(object, "S7_object");
 }
 
-inline static
+static inline
 Rboolean is_s7_class(SEXP object) {
   return inherits2(object, "S7_class");
 }
@@ -67,56 +116,15 @@ static inline
 void check_is_S7(SEXP object) {
   if (is_s7_object(object))
     return;
-
-  static SEXP check_is_S7 = NULL;
-  if (check_is_S7 == NULL)
-    check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
-
-  // will signal error
-  Rf_eval(Rf_lang2(check_is_S7, object), ns_S7);
+  signal_is_not_S7(object);
 }
 
-__attribute__((noreturn))
-void signal_error(SEXP errmsg) {
-/*  Given a STRSXP, we go back out to an R closure to signal an error. We can't use
-    Rf_error() because, from the compilers perspective, `errmsg` isn't
-    sanitized for '%'--it could be interperted as a format string. Compiler says:
-    warning: format not a string literal and no format arguments [-Wformat-security]
-
-    // Doing something like this segfaults for reasons I don't understand:
-    Rf_eval(Rf_lang2(Rf_findVarInFrame(Rf_install("stop"), R_BaseNamespace),
-                     errmsg), frame);
-*/
-  PROTECT(errmsg);
-  static SEXP signal_error = NULL;
-  if (signal_error == NULL)
-    signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
-
-  Rf_eval(Rf_lang2(signal_error, errmsg), ns_S7);
-  while(1);
-}
-
-__attribute__((noreturn))
-void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
-  static SEXP signal_prop_error = NULL;
-  if (signal_prop_error == NULL)
-    signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
-
-  Rf_eval(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name), ns_S7);
-  while(1);
-}
-
-static __attribute__((noreturn))
-void signal_prop_error_unknown(SEXP object, SEXP name) {
-  signal_prop_error("Can't find property %s@%s", object, name);
-}
 
 SEXP prop_(SEXP object, SEXP name) {
-
   check_is_S7(object);
 
   SEXP name_rchar = STRING_ELT(name, 0);
-  const char *name_char = CHAR(name_rchar);
+  const char* name_char = CHAR(name_rchar);
   SEXP name_sym = Rf_installTrChar(name_rchar);
 
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
@@ -184,7 +192,6 @@ SEXP pairlist_remove(SEXP list, SEXP elem) {
   return R_NilValue;
 }
 
-
 static inline
 Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
                                     Rboolean* should_validate_obj) {
@@ -211,7 +218,7 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
   // into one loop, so we can avoid iterating over ATTRIB(object) twice.
 }
 
-// static inline
+static inline
 void setter_no_recurse_clear(SEXP object, SEXP name_sym) {
   SEXP list = Rf_getAttrib(object, sym_dot_setting_prop);
   list = pairlist_remove(list, name_sym);
