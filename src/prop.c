@@ -47,17 +47,11 @@ void signal_prop_error_unknown(SEXP object, SEXP name) {
 
 static __attribute__((noreturn))
 void signal_error(SEXP errmsg) {
-  /*  Given a STRSXP errmsg, we go back out to an R closure to signal the error.
-   *  We can't use Rf_error() because, from the compilers perspective, `errmsg`
-   *  isn't sanitized for '%'--it could be interpreted as a format string.
-   *  Compiler says:
-   *  warning: format not a string literal and no format arguments [-Wformat-security]
-
-   *  Doing something like this segfaults for reasons I don't understand:
-     Rf_eval(Rf_lang2(Rf_findVarInFrame(Rf_install("stop"), R_BaseNamespace),
-                      errmsg), frame);
-   */
   PROTECT(errmsg);
+  if(TYPEOF(errmsg) == STRSXP && Rf_length(errmsg) == 1)
+    Rf_errorcall(R_NilValue, "%s", CHAR(STRING_ELT(errmsg, 0)));
+
+  // fallback to calling base::stop(errmsg)
   static SEXP signal_error = NULL;
   if (signal_error == NULL)
     signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
