@@ -350,3 +350,38 @@ test_that("prop<- won't infinitly recurse on a custom setter", {
     obj@a <- "val"
   })
 })
+
+test_that("custom setters can invoke setters on non-self objects", {
+
+  Transmitter <- new_class("Transmitter", properties = list(
+    message = new_property(setter = function(self, value) {
+      cat("[tx] sending: ", value, "\n")
+      receiver@message <<- value
+      cat("[tx] saving last sent message.\n")
+      self@message <- value
+      cat("[tx] finished transmitting.\n")
+      self
+    })
+  ))
+
+  Receiver <- new_class("Receiver", properties = list(
+    message = new_property(setter = function(self, value) {
+      cat("[rx] receiving: ", value, "\n")
+      self@message <- value
+      cat("[rx] finished receiving.\n")
+      self
+    })
+  ))
+
+  expect_snapshot({
+    receiver <- Receiver()
+    transmitter <- Transmitter()
+
+    transmitter@message <- "hello"
+    expect_equal(receiver@message, "hello")
+
+    transmitter@message <- "goodbye"
+    expect_equal(receiver@message, "goodbye")
+  })
+
+})

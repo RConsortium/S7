@@ -221,3 +221,38 @@
       setting @a <- "a_b_val"
       setting @b <- "b_b_val"
 
+# custom setters can invoke setters on non-self objects
+
+    Code
+      receiver <- Receiver()
+    Output
+      [rx] receiving:  
+      [rx] finished receiving.
+    Code
+      transmitter <- Transmitter()
+    Output
+      [tx] sending:  
+      [rx] receiving:  
+      [rx] finished receiving.
+      [tx] saving last sent message.
+      [tx] finished transmitting.
+    Code
+      transmitter@message <- "hello"
+    Output
+      [tx] sending:  hello 
+      [rx] receiving:  hello 
+      [rx] finished receiving.
+      [tx] saving last sent message.
+      [tx] finished transmitting.
+    Code
+      expect_equal(receiver@message, "hello")
+      transmitter@message <- "goodbye"
+    Output
+      [tx] sending:  goodbye 
+      [rx] receiving:  goodbye 
+      [rx] finished receiving.
+      [tx] saving last sent message.
+      [tx] finished transmitting.
+    Code
+      expect_equal(receiver@message, "goodbye")
+

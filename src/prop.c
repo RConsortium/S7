@@ -193,9 +193,10 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
     SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
     if (TYPEOF(no_recurse_list) == LISTSXP) {
       // if there is a 'no_recurse' list, then this is not the top-most prop<-
-      // call for this object, i.e, we're currently evaluating a custom property
-      // setter. We should only call validate(object) once from the top-most
-      // prop<- call, after the custom setter() has returned.
+      // call for this object, i.e, we're currently evaluating a `prop<-` call
+      // called from within a custom property setter. We should only call
+      // validate(object) once from the top-most prop<- call, after the last
+      // custom setter() has returned.
       *should_validate_obj = FALSE;
       if (pairlist_contains(no_recurse_list, name_sym))
         return FALSE;
