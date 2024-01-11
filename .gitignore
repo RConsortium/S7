@@ -3,3 +3,4 @@ script.R
 inst/doc
 docs
 .Rhistory
+vignettes/release-announcement.Rmd
