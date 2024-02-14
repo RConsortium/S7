@@ -8,7 +8,7 @@ editor: visual
 
 R has built-in support for two functional Object Oriented Programming (OOP) systems: S3 and S4, corresponding to the third and fourth version of the S language, respectively. The two systems are, unfortunately, largely incompatible; this fragmentation in the R community and R sources is undesirable.
 
-S7 is a new OOP system being developed as a collaboration between representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community, with the goal of unifying the OOP systems and promoting interoperability. The long-term intention is to incorporate S7 into base R, following a period during which the concepts of S7 have been validated in a standalone R package.
+[S7](https://rconsortium.github.io/S7/index.html) is a new OOP system being developed as a collaboration between representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community, with the goal of unifying the OOP systems and promoting interoperability. The long-term intention is to incorporate S7 into base R, following a period during which the concepts of S7 have been validated in a standalone R package.
 
 This blog post outlines four patches that have been integrated into base R to facilitate the existence of S7 as a standalone R package. Since S7 is built on top of S3, the new capabilities are available not only to S7 but also to all packages built on top of S3.
 
@@ -23,9 +23,9 @@ This blog post describes these new generics, the features in S7 that motivated t
 
 ### `chooseOpsMethod()`
 
-S3 only supports dispatching generics on their first argument, while S4 supports dispatching generics on an arbitrary number of arguments. S7 uses S3 dispatch, but also, implements multiple dispatch. To enable both S3 support and multiple dispatch, dispatch in S7 is performed in two stages: S3 generics first dispatch on the first method to an S7 aware method, which then invokes S7-internal dispatch routines that support multiple dispatch. These are implementation details which, when everything works, are hidden from S7 users. The complication which motivated the addition of a new S3 generic is the Ops Group.
+S3 only supports dispatching generics on their first argument, while S4 supports dispatching generics on an arbitrary number of arguments. S7 uses S3 dispatch, but also implements its own double dispatch (i.e. multiple dispatch on exactly two arguments). To enable both S3 support and multiple dispatch, dispatch in S7 is performed in two stages: S3 generics first dispatch on the first method to an S7 aware method, which then invokes S7-internal dispatch routines that support multiple dispatch. These are implementation details which, when everything works, are hidden from S7 users. The complication which motivated the addition of a new S3 generic is the Ops Group.
 
-Unlike other S3 generics, the Ops Group Generics, consisting of infix binary operators like `+`, `-`, `*`, and so on, support dispatching to S3 methods on either the first or second argument. Before R 4.3.0, if both objects in the first and second arguments implemented a method for the Ops Group Generic, R would signal an error. Starting with R 4.3.0, when both the first and second argument to an Ops generic implement a suitable method, R will invoke `chooseOpsMethod()` instead of signaling an error, giving an opportunity for the object types to declare that their Ops method implementation can handle the combination. If the `chooseOpsMethod()` method for an object returns `TRUE`, then the method found for that object is used by the Ops generic.
+Unlike other S3 generics, the Ops Group Generics, consisting of infix binary operators like `+`, `-`, `*`, and so on, support dispatching to S3 methods on either the first or second argument. Before R 4.3.0, if both objects had a method for the generic, R would signal an error. Starting with R 4.3.0, when both the first and second argument to an Ops generic implement a suitable method, R will invoke `chooseOpsMethod()` instead of signaling an error, giving an opportunity for the object types to declare that their Ops method implementation can handle the combination. If the `chooseOpsMethod()` method for an object returns `TRUE`, then the method found for that object is used by the Ops generic.
 
 Because S7 implements its own generic dispatch mechanism, the `chooseOpsMethod()` method for S7 object always returns `TRUE`. This permits, for example, an S7 object type to define a `+` method that works with other S3 objects, like `Sys.Date()`.
 
@@ -34,17 +34,18 @@ library(S7)
 
 ClassX <- new_class("ClassX")
 
-method(`+`, list(ClassX, class_any)) <-
-  function(e1, e2) "method: X + class_any"
+method(`+`, list(ClassX, class_any)) <- function(e1, e2) {
+  "method: X + class_any"
+}
 
 x <- ClassX()
 
 x + Sys.Date()
 ```
 
-This also has utility for other packages that implement alternative OO systems. For example, reticulate is an R package that embeds Python in an R session, and allows R users to operate with Python objects directly. Python has its own implementation of method dispatch for infix operators like `+`.
+This also has utility for other packages that implement alternative OO systems. For example, reticulate is an R package that embeds Python in an R session, and allows R users to operate with Python objects directly. Python has its own implementation of method dispatch for infix operators like `+`. The addition of `chooseOpsMethod()` enables reticulate to implement a default fallback `+` method that dispatches to the corresponding Python routines, while still allowing R users to define a custom `+` method for specific Python object types. 
 
-The addition of `chooseOpsMethod()` now allows both arguments in a call like `a + b` to implement a suitable `+` method. Specifically, it enables reticulate to implement a default fallback `+` method that dispatches to the corresponding Python routines, while also allowing R users to define a custom `+` method for specific Python object types. For example, the `+` operator can now select the appropriate method if methods for TensorFlow tensors and Python objects generally are both be implemented. Previously, the restriction of only one of the arguments implementing an S3 method required that the second argument in an Ops call not be an S3 class.
+For example, the `+` operator can now select the appropriate method if methods for TensorFlow tensors and Python objects generally are both be implemented. Previously, the restriction of only one of the arguments implementing an S3 method required that the second argument in an Ops call not be an S3 class.
 
 ```{r, eval = FALSE}
 library(reticulate)
@@ -69,7 +70,7 @@ np_array(1:3) + as_tensor(1:3)
 
 Though S7 uses S3 dispatch, the class name used for S3 dispatch is considered an implementation detail (it is non-syntatic and mangled to minimize the potential for conflicts, and not intended to be user-facing). Additionally, it can be subject to change if the generic definition migrates between packages.
 
-For these reasons, it is desirable to be able to check for inheritance without directly using the S3 class name. To enable this, beginning with R 4.3.0 `base::inherits()` now accepts arbitrary objects for the second argument. If the second argument is an S3 object, the new `nameOfClass()` S3 generic is invoked to resolve the appropriate class name.
+For these reasons, it is desirable to be able to check for inheritance without directly using the S3 class name. To enable this, beginning with R 4.3.0 `base::inherits()` now accepts arbitrary objects for the second argument: if the second argument is an S3 object, the new `nameOfClass()` S3 generic is invoked to resolve the appropriate class name.
 
 This permits usage in S7 like this:
 
@@ -91,7 +92,7 @@ inherits(x, tensorflow::tf$Variable)
 
 Prior to R 4.3.0, `@` could be used only with S4 objects. Beginning with R 4.3.0, this operator can now perform dispatch S3 dispatch as well. This bring `@` to parity with `@<-` (which has long been able to do S3 dispatch), and makes `@` a peer (in dispatch-ability) of `$`. This is a strictly backwards compatible change, as S3 dispatch is only performed *after* S4 routines have had an opportunity to dispatch.
 
-The ability to have formally defined properties is one of the benefits of S4; it enables collaborative work at a greater scale than the ad-hoc conventions of S3 classes, and having a dedicated operator for property access in S7 is desirable. Other than performing S3 dispatch, there are no other user-facing changes with `@` in base R.
+The ability to have formally defined properties is one of the benefits of S4 and S7; it enables collaborative work at a greater scale than the ad-hoc conventions of S3 classes, and having a dedicated operator for property access in S7 is desirable. Other than performing S3 dispatch, there are no other user-facing changes with `@` in base R.
 
 ### `%*%`
 
