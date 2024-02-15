@@ -7,7 +7,7 @@ output: html_document
 
 R has built-in support for two functional Object Oriented Programming (OOP) systems: S3 and S4, corresponding to the third and fourth version of the S language, respectively. The two systems are, unfortunately, largely incompatible; this fragmentation in the R community and R sources is undesirable.
 
-[S7](https://rconsortium.github.io/S7/index.html) is a new OOP system being developed as a collaboration between representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community, with the goal of unifying the OOP systems and promoting interoperability. The long-term intention is to incorporate S7 into base R, following a period during which the concepts of S7 have been validated in a standalone R package.
+[S7](https://rconsortium.github.io/S7/index.html) is a new OOP system being developed as a collaboration between representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community, with the goal of unifying the OOP systems and promoting interoperability. The long-term hope is to incorporate S7 into base R, following a period during which the concepts of S7 have been validated in a standalone R package.
 
 This blog post outlines four patches that have been integrated into base R to facilitate the existence of S7 as a standalone R package. Since S7 is built on top of S3, the new capabilities are available not only to S7 but also to all packages built on top of S3.
 
