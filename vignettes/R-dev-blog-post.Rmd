@@ -1,7 +1,6 @@
 ---
 title: "Enhancements to S3"
-format: html
-editor: visual
+output: html_document
 ---
 
 ## Recent Enhancements to S3
@@ -43,7 +42,7 @@ x <- ClassX()
 x + Sys.Date()
 ```
 
-This also has utility for other packages that implement alternative OO systems. For example, reticulate is an R package that embeds Python in an R session, and allows R users to operate with Python objects directly. Python has its own implementation of method dispatch for infix operators like `+`. The addition of `chooseOpsMethod()` enables reticulate to implement a default fallback `+` method that dispatches to the corresponding Python routines, while still allowing R users to define a custom `+` method for specific Python object types. 
+This also has utility for other packages that implement alternative OO systems. For example, reticulate is an R package that embeds Python in an R session, and allows R users to operate with Python objects directly. Python has its own implementation of method dispatch for infix operators like `+`. The addition of `chooseOpsMethod()` enables reticulate to implement a default fallback `+` method that dispatches to the corresponding Python routines, while still allowing R users to define a custom `+` method for specific Python object types.
 
 For example, the `+` operator can now select the appropriate method if methods for TensorFlow tensors and Python objects generally are both be implemented. Previously, the restriction of only one of the arguments implementing an S3 method required that the second argument in an Ops call not be an S3 class.
 
