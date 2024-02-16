@@ -277,9 +277,9 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (getter != R_NilValue && setter == R_NilValue)
     signal_prop_error("Can't set read-only property %s@%s", object, name);
 
-  PROTECT_INDEX ipx;
+  PROTECT_INDEX object_pi;
   object = Rf_shallow_duplicate(object);
-  PROTECT_WITH_INDEX(object, &ipx);
+  PROTECT_WITH_INDEX(object, &object_pi);
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
