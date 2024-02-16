@@ -17,48 +17,55 @@ extern SEXP ns_S7;
 extern SEXP sym_dot_should_validate;
 extern SEXP sym_dot_setting_prop;
 
-
-static __attribute__((noreturn))
-void signal_is_not_S7(SEXP object) {
-  static SEXP check_is_S7 = NULL;
-  if (check_is_S7 == NULL)
-    check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
-
-  // will signal error
-  Rf_eval(Rf_lang2(check_is_S7, object), ns_S7);
-  while(1);
-}
-
-
-static __attribute__((noreturn))
-void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
-  static SEXP signal_prop_error = NULL;
-  if (signal_prop_error == NULL)
-    signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
-
-  Rf_eval(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name), ns_S7);
-  while(1);
+static inline
+SEXP eval_here(SEXP lang) {
+  PROTECT(lang);
+  SEXP ans = Rf_eval(lang, ns_S7);
+  UNPROTECT(1);
+  return ans;
 }
 
 static __attribute__((noreturn))
-void signal_prop_error_unknown(SEXP object, SEXP name) {
-  signal_prop_error("Can't find property %s@%s", object, name);
-}
+  void signal_is_not_S7(SEXP object) {
+    static SEXP check_is_S7 = NULL;
+    if (check_is_S7 == NULL)
+      check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
+
+    // will signal error
+    eval_here(Rf_lang2(check_is_S7, object));
+    while(1);
+  }
+
 
 static __attribute__((noreturn))
-void signal_error(SEXP errmsg) {
-  PROTECT(errmsg);
-  if(TYPEOF(errmsg) == STRSXP && Rf_length(errmsg) == 1)
-    Rf_errorcall(R_NilValue, "%s", CHAR(STRING_ELT(errmsg, 0)));
+  void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
+    static SEXP signal_prop_error = NULL;
+    if (signal_prop_error == NULL)
+      signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
 
-  // fallback to calling base::stop(errmsg)
-  static SEXP signal_error = NULL;
-  if (signal_error == NULL)
-    signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+    eval_here(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name));
+    while(1);
+  }
 
-  Rf_eval(Rf_lang2(signal_error, errmsg), ns_S7);
-  while(1);
-}
+static __attribute__((noreturn))
+  void signal_prop_error_unknown(SEXP object, SEXP name) {
+    signal_prop_error("Can't find property %s@%s", object, name);
+  }
+
+static __attribute__((noreturn))
+  void signal_error(SEXP errmsg) {
+    PROTECT(errmsg);
+    if(TYPEOF(errmsg) == STRSXP && Rf_length(errmsg) == 1)
+      Rf_errorcall(R_NilValue, "%s", CHAR(STRING_ELT(errmsg, 0)));
+
+    // fallback to calling base::stop(errmsg)
+    static SEXP signal_error = NULL;
+    if (signal_error == NULL)
+      signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+
+    eval_here(Rf_lang2(signal_error, errmsg));
+    while(1);
+  }
 
 static inline
 int name_idx(SEXP list, const char* name) {
@@ -68,7 +75,7 @@ int name_idx(SEXP list, const char* name) {
     for (int i = 0, n = Rf_length(names); i < n; i++)
       if (strcmp(CHAR(STRING_ELT(names, i)), name) == 0)
         return i;
-  return -1;
+      return -1;
 }
 
 static inline
@@ -133,7 +140,7 @@ SEXP prop_(SEXP object, SEXP name) {
     SEXP getter = extract_name(property, "getter");
     if (TYPEOF(getter) == CLOSXP)
         // we validated property is in properties list when accessing getter()
-        return Rf_eval(Rf_lang2(getter, object), ns_S7);
+        return eval_here(Rf_lang2(getter, object));
   }
 
   if (has_name(properties, name_char))
@@ -229,7 +236,7 @@ void prop_validate(SEXP property, SEXP value, SEXP object) {
   if (prop_validate == NULL)
     prop_validate = Rf_findVarInFrame(ns_S7, Rf_install("prop_validate"));
 
-  SEXP errmsg = Rf_eval(Rf_lang4(prop_validate, property, value, object), ns_S7);
+  SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value, object));
   if (errmsg != R_NilValue) signal_error(errmsg);
 }
 
@@ -239,10 +246,10 @@ void obj_validate(SEXP object) {
   if (validate == NULL)
     validate = Rf_findVarInFrame(ns_S7, Rf_install("validate"));
 
-  Rf_eval(Rf_lang4(validate, object,
-                   /* recursive = */ Rf_ScalarLogical(TRUE),
-                   /* properties = */ Rf_ScalarLogical(FALSE)),
-                   ns_S7);
+  eval_here(Rf_lang4(
+    validate, object,
+    /* recursive = */ Rf_ScalarLogical(TRUE),
+    /* properties = */ Rf_ScalarLogical(FALSE)));
 }
 
 SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
@@ -276,7 +283,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
-    object = Rf_eval(Rf_lang3(setter, object, value), ns_S7);
+    object = eval_here(Rf_lang3(setter, object, value));
     REPROTECT(object, ipx);
     setter_no_recurse_clear(object, name_sym);
   } else {
