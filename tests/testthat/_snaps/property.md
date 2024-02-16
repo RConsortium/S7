@@ -45,6 +45,8 @@
       [1] "validating"
     Code
       obj@x <- "456"
+    Output
+      [1] "validating"
 
 # prop setting: validates once with recursive property setters
 
@@ -191,4 +193,66 @@
       Error:
       ! <foo> object properties are invalid:
       - @x must be length 1
+
+# prop<- won't infinitly recurse on a custom setter
+
+    Code
+      obj <- foo()
+    Output
+      Starting syncup with value: 
+      setting @a <- "a_"
+      setting @b <- "b_"
+      Starting syncup with value: b_ 
+      setting @a <- "a_b_"
+      setting @b <- "b_b_"
+      Starting syncup with value: 
+      setting @a <- "a_"
+      Starting syncup with value: a_ 
+      setting @a <- "a_a_"
+      setting @b <- "b_a_"
+      setting @b <- "b_"
+    Code
+      obj@a <- "val"
+    Output
+      Starting syncup with value: val 
+      setting @a <- "a_val"
+      setting @b <- "b_val"
+      Starting syncup with value: b_val 
+      setting @a <- "a_b_val"
+      setting @b <- "b_b_val"
+
+# custom setters can invoke setters on non-self objects
+
+    Code
+      receiver <- Receiver()
+    Output
+      [rx] receiving:  
+      [rx] finished receiving.
+    Code
+      transmitter <- Transmitter()
+    Output
+      [tx] sending:  
+      [rx] receiving:  
+      [rx] finished receiving.
+      [tx] saving last sent message.
+      [tx] finished transmitting.
+    Code
+      transmitter@message <- "hello"
+    Output
+      [tx] sending:  hello 
+      [rx] receiving:  hello 
+      [rx] finished receiving.
+      [tx] saving last sent message.
+      [tx] finished transmitting.
+    Code
+      expect_equal(receiver@message, "hello")
+      transmitter@message <- "goodbye"
+    Output
+      [tx] sending:  goodbye 
+      [rx] receiving:  goodbye 
+      [rx] finished receiving.
+      [tx] saving last sent message.
+      [tx] finished transmitting.
+    Code
+      expect_equal(receiver@message, "goodbye")
 
