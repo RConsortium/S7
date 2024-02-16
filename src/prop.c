@@ -189,7 +189,7 @@ SEXP pairlist_remove(SEXP list, SEXP elem) {
       }
     }
 
-  Rf_warning("Tried to remove non-existent element from pairlist");
+  Rf_error("Tried to remove non-existent element from pairlist");
   return R_NilValue;
 }
 
