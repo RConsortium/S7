@@ -265,7 +265,7 @@ prop_error_unknown <- function(object, prop_name) {
 }
 
 
-
+# called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
   if (!class_inherits(value, prop$class)) {
     sprintf("%s must be %s, not %s",
