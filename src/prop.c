@@ -284,7 +284,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
     object = eval_here(Rf_lang3(setter, object, value));
-    REPROTECT(object, ipx);
+    REPROTECT(object, object_pi);
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
