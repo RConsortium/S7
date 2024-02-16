@@ -154,7 +154,7 @@ SEXP prop_(SEXP object, SEXP name) {
           name_sym == sym_properties  ||
           name_sym == sym_abstract  ||
           name_sym == sym_constructor  ||
-          name_sym == sym_validator  ))
+          name_sym == sym_validator))
       return value;
 
   // Should the constructor always set default prop values on a object instance?
