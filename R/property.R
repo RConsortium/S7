@@ -163,6 +163,11 @@ prop_default <- function(prop) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
+  .Call(prop_, object, name)
+}
+
+propr <- function(object, name) {
+  # reference implementation of `prop()` implemented in R
   check_is_S7(object)
 
   if (!prop_exists(object, name)) {
@@ -170,6 +175,10 @@ prop <- function(object, name) {
   } else {
     prop_val(object, name)
   }
+}
+
+signal_prop_error_unknown <- function(object, name) {
+  stop(prop_error_unknown(object, name), call. = FALSE)
 }
 
 # Internal helper that assumes the property exists

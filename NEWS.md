@@ -2,10 +2,10 @@
 
 * When a method is not found, the error now has class `S7_error_method_not_found`.
 
-* The `Ops` generic now falls back to base Ops behaviour when one of the 
-  arguments is not an S7 object (#320). This means that you get the somewhat 
-  inconsistent base behaviour, but means that S7 doesn't introduce a new axis 
-  of inconsistency. 
+* The `Ops` generic now falls back to base Ops behaviour when one of the
+  arguments is not an S7 object (#320). This means that you get the somewhat
+  inconsistent base behaviour, but means that S7 doesn't introduce a new axis
+  of inconsistency.
 
 * In `new_class()`, properties can either be named by naming the element
   of the list or by supplying the `name` argument to `new_property()` (#371).
@@ -19,13 +19,15 @@
 
 * Can create multimethods that dispatch on `NULL`.
 
+* `prop()` optimized and rewritten in C (#395).
+
 # S7 0.1.1
 
 * Classes get a more informative print method (#346).
 
 * Correctly register S3 methods for S7 objects with a package (#333).
 
-* External methods are now registered using an attribute of the S3 methods 
+* External methods are now registered using an attribute of the S3 methods
   table rather than an element of that environment. This prevents a warning
   being generated during the "code/documentation mismatches" check in
   `R CMD check` (#342).
@@ -37,7 +39,7 @@
 * `new_object()` now correctly runs the validator from abstract parent classes
   (#329).
 
-* `new_object()` works better when custom property setters modify other 
+* `new_object()` works better when custom property setters modify other
   properties.
 
 * `new_property()` gains a `validator` argument that allows you to specify
@@ -47,7 +49,7 @@
   the correct class; it is _not_ automatically validated.
 
 * Properties with a custom setter are now validated _after_ the setter has
-  run and are validated when the object is constructed or when you call 
+  run and are validated when the object is constructed or when you call
   `validate()`, not just when you modify them after construction.
 
 * `S7_inherits()` now accepts `class = NULL` to test if an object is any
@@ -66,7 +68,7 @@
 
 * Subclasses of abstract class can have readonly properties (#269).
 
-* During construction, validation is now only performed once for each 
+* During construction, validation is now only performed once for each
   element of the class hierarchy (#248).
 
 * Implemented a better filtering strategy for the S4 class hierarchy so
@@ -74,7 +76,7 @@
 
 * New `set_props()` to make a modified copy of an object (#229).
 
-* `R CMD check` now passes on R 3.5 and greater (for tidyverse 
+* `R CMD check` now passes on R 3.5 and greater (for tidyverse
   compatibility).
 
 * Dispatching on an evaluated argument no longer causes a crash (#254).
