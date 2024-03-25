@@ -140,7 +140,7 @@ inherits(x, tensorflow::tf$Variable)
 ### `@`
 
 Prior to R 4.3.0, `@` could be used to access slots of S4 objects.
-Beginning with R 4.3.0, this operator can now perform dispatch S3 dispatch as well.
+Beginning with R 4.3.0, this operator can now perform S3 dispatch as well.
 This bring `@` to parity with `@<-` (which has long been able to do S3 dispatch), and makes `@` a peer (in dispatch-ability) of `$`.
 This is a strictly backwards compatible change, as S3 dispatch is only performed *after* S4 routines have had an opportunity to dispatch.
 
