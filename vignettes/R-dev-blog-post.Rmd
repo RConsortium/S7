@@ -14,10 +14,14 @@ The two systems are largely compatible; however, they are two fundamentally dist
 [S7](https://rconsortium.github.io/S7/index.html) is a new OOP system being developed as a collaboration between representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community, with the goal of unifying S3 and S4 and promoting interoperability.
 The long-term hope is to incorporate S7 into base R, following a period during which the concepts of S7 have been validated in a standalone R package.
 
-The development of S7 has prompted its authors to reflect on how to generally enable functional OOP systems like S3, S4 and S7, as their remains a lot of room for innovation in this area. Considering just the three mentioned systems, a number of commonalities become evident, including:
-1. Reifying classes, generics and methods as objects (in S4 and S7),
-1. Achieving polymorphism through generics dispatching to implementations (methods) based on one or more of their inputs, and
-1. Modeling objects as collections of components, such as slots or properties, that can be accessed and modified.
+The development of S7 has prompted its authors to reflect on how to generally enable functional OOP systems like S3, S4 and S7, as their remains a lot of room for innovation in this area.
+Considering just the three mentioned systems, a number of commonalities become evident, including:
+
+1.  Reifying classes, generics and methods as objects (in S4 and S7),
+
+2.  Achieving polymorphism through generics dispatching to implementations (methods) based on one or more of their inputs, and
+
+3.  Modeling objects as collections of components, such as slots or properties, that can be accessed and modified.
 
 This blog post outlines four patches that have been integrated into base R to make it easier for an S3-based package like S7 to implement the above features.
 
@@ -39,7 +43,8 @@ S3 generics only support dispatching on their first argument, while S4 generics 
 S7 implements double dispatch (i.e. multiple dispatch on exactly two arguments) on top of S3 dispatch.
 Dispatch in S7 is performed in two stages: S3 generics first dispatch on the first argument to an S7 aware method, which then invokes S7-internal dispatch routines that support multiple dispatch.
 These are implementation details which, when everything works, are hidden from S7 users.
-A general complication with implementing any sort of dispatch is that primitives and other functions with internal implementations must dispatch internally, in C code. Internal dispatch and multiple dispatch intersect at the Ops group generics.
+A general complication with implementing any sort of dispatch is that primitives and other functions with internal implementations must dispatch internally, in C code.
+Internal dispatch and multiple dispatch intersect at the Ops group generics.
 
 Unlike other S3 generics, the Ops group generics, consisting of infix binary operators like `+`, `-`, `*`, and so on, support dispatching to S3 methods on either the first or second argument.
 Before R 4.3.0, if the two arguments would cause single dispatch to different methods, R would signal a warning and use neither.
@@ -92,7 +97,8 @@ np_array(1:3) + tensorflow::as_tensor(1:3)
 
 ### `nameOfClass()`
 
-Though S7 uses S3 dispatch, S7 reifies classes as objects, and its user interface is based on those objects, instead of class names. The class name stored in the class vector for S3 dispatch is considered an implementation detail (it is non-syntatic and mangled to minimize the potential for conflicts, and not intended to be user-facing).
+Though S7 uses S3 dispatch, S7 reifies classes as objects, and its user interface is based on those objects, instead of class names.
+The class name stored in the class vector for S3 dispatch is considered an implementation detail (it is non-syntatic and mangled to minimize the potential for conflicts, and not intended to be user-facing).
 Additionally, it can be subject to change if the generic definition migrates between packages.
 
 For these reasons, it is desirable to be able to check for inheritance without directly using the S3 class name.
@@ -124,7 +130,8 @@ Beginning with R 4.3.0, this operator can now perform dispatch S3 dispatch as we
 This bring `@` to parity with `@<-` (which has long been able to do S3 dispatch), and makes `@` a peer (in dispatch-ability) of `$`.
 This is a strictly backwards compatible change, as S3 dispatch is only performed *after* S4 routines have had an opportunity to dispatch.
 
-The ability to have formally defined slots or properties is one of the benefits of S4 and S7; it enables collaborative work at a greater scale than the ad-hoc conventions of S3 classes, and having a dedicated operator for property access in S7 is desirable. We expect other OOP systems will have similar concepts and also benefit from this generalization.
+The ability to have formally defined slots or properties is one of the benefits of S4 and S7; it enables collaborative work at a greater scale than the ad-hoc conventions of S3 classes, and having a dedicated operator for property access in S7 is desirable.
+We expect other OOP systems will have similar concepts and also benefit from this generalization.
 Other than performing S3 dispatch, there are no other user-facing changes with `@` in base R---the default behavior of `@` in the absence of an S3 method is unchanged.
 
 ### `%*%`
