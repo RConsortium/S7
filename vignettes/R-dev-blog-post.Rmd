@@ -28,9 +28,9 @@ This blog post outlines four patches that have been integrated into base R to ma
 Each of these four patches introduces a new S3 generic:
 
 -   `chooseOpsMethod()`
+-   `%*%`
 -   `nameOfClass()`
 -   `@`
--   `%*%`
 
 This blog post describes these new generics, the features in S7 that motivated their implementation, and their utility to the broader R community outside of S7.
 These enhancements are generally beneficial for packages integrating or implementing alternative OOP systems.
@@ -73,7 +73,7 @@ For example, reticulate is an R package that embeds Python in an R session, and 
 Python has its own implementation of method dispatch for infix operators like `+`.
 The addition of `chooseOpsMethod()` enables reticulate to implement a default fallback `+` method that dispatches to the corresponding Python routines, while still allowing R users to define a custom `+` method for specific Python object types.
 
-For example, the `+` operator can now select the appropriate method when passed a TensorFlow tensor and some other Python object.
+For example, the `+` operator can now select the appropriate method when passed a TensorFlow Tensor and some other Python object.
 Previously, dispatch failed, because both arguments are instances of an S3 class but would cause dispatch to different methods.
 
 ```{r, eval = FALSE}
@@ -94,6 +94,20 @@ array(1:3) + tensorflow::as_tensor(1:3)
 # Ops method, and this now works
 np_array(1:3) + tensorflow::as_tensor(1:3)
 ```
+
+### `%*%`
+
+Base R defines additional operators that dispatch internally and support some form of multiple dispatch, but are not in the Ops group. The matrix multiplication operator, `%*%`, is a prime example.
+
+Prior to R 4.3.0, `%*%` only worked with S4 objects or base R objects.
+Now, S3 methods for this operator can be defined as well.
+Just like the Ops group generics, `%*%` will dispatch on the second argument, and use `chooseOpsMethod()` to resolve conflicts.
+
+To enable this new behavior, a new generics group was created: `matrixOps`.
+Presently, the sole member of the group is `%*%`, though in the future, `crossprod()` and `tcrossprod()` are expected to join the group.
+
+The addition of the `"matrixOps"` group is a narrow backwards-compatible change, intended to enable existing operators to work with S3 and S7.
+Future functions that aim to support double dispatch via S3 will be able to make use of this general mechanism, rather than requiring further changes to R's S3 semantics.
 
 ### `nameOfClass()`
 
@@ -133,17 +147,3 @@ This is a strictly backwards compatible change, as S3 dispatch is only performed
 The ability to have formally defined slots or properties is one of the benefits of S4 and S7; it enables collaborative work at a greater scale than the ad-hoc conventions of S3 classes, and having a dedicated operator for property access in S7 is desirable.
 We expect other OOP systems will have similar concepts and also benefit from this generalization.
 Other than performing S3 dispatch, there are no other user-facing changes with `@` in base R---the default behavior of `@` in the absence of an S3 method is unchanged.
-
-### `%*%`
-
-Similar to `@`, the matrix multiplication operator prior to R 4.3.0 only worked with S4 objects or base R objects.
-Now, S3 methods for this operator can be defined as well.
-
-Because `%*%` is an infix operator, it was desirable for it to be able to dispatch on either the first or second argument, like members of the `Ops` group.
-However, including `%*%` in the `Ops` group, while perhaps expedient, would not be strictly correct.
-Matrix multiplication has different semantics from the other Ops operators, in particular with regards to broadcast semantics---the length of the returned object from `a + b` cannot be expected to be the same as that from `a %*% b`.
-For this reason, a new generics Group was created, `matrixOps`.
-Presently, the sole member of the group is `%*%`, though in the future, `crossprod()` and `tcrossprod()` are expected to join the group.
-This permits for `Ops`-like dispatch behavior (including the new `chooseOpsMethod()`), while also being backwards compatible and a minimally invasive change to the R sources.
-The addition of the `"matrixOps"` group is strictly a narrow backwards-compatible change, intended to enable existing operators to work with S3 and S7.
-Future functions that aim to support S3 while also dispatching on more than the first argument will be able to make use of this general mechanism, rather than requiring further changes to R's S3 semantics.
