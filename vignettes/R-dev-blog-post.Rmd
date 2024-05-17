@@ -54,7 +54,8 @@ If the `chooseOpsMethod()` method for an object returns `TRUE`, then the method 
 Because S7 implements its own generic dispatch mechanism, the `chooseOpsMethod()` method for an S7 object always returns `TRUE`.
 This permits, for example, an S7 object type to define a `+` method that works with other S3 objects, like `Sys.Date()`.
 
-```{r, eval = FALSE}
+
+``` r
 library(S7)
 
 ClassX <- new_class("ClassX")
@@ -76,7 +77,8 @@ The addition of `chooseOpsMethod()` enables reticulate to implement a default fa
 For example, the `+` operator can now select the appropriate method when passed a TensorFlow Tensor and some other Python object.
 Previously, dispatch failed, because both arguments are instances of an S3 class but would cause dispatch to different methods.
 
-```{r, eval = FALSE}
+
+``` r
 library(reticulate)
 
 # Adding a NumPy array and an R array dispatches to the default
@@ -120,7 +122,8 @@ To enable this for S7 and potentially other packages with their own class repres
 
 This permits usage in S7 like this:
 
-```{r, eval = FALSE}
+
+``` r
 ClassX <- S7::new_class("ClassX")
 
 x <- ClassX()
@@ -133,7 +136,8 @@ For example, in reticulate, the S3 class vector for Python object is generated f
 However, in sophisticated codebases like Keras and TensorFlow, the location where a class is defined in the Python sources is considered an internal implementation detail, and often changes between library versions (i.e., the module where a class is defined is decoupled from the module where users are meant to access the class).
 To ensure compatibility between and across Python library versions, reticulate now implements a `nameOfClass()` method which enables R usage like this:
 
-```{r, eval = FALSE}
+
+``` r
 inherits(x, tensorflow::tf$Variable)
 ```
 
