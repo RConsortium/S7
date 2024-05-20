@@ -55,7 +55,8 @@ Because S7 implements its own generic dispatch mechanism, the `chooseOpsMethod()
 This permits, for example, an S7 object type to define a `+` method that works with other S3 objects, like `Sys.Date()`.
 
 
-```{r}
+
+``` r
 library(S7)
 
 ClassX <- new_class("ClassX")
@@ -69,6 +70,10 @@ x <- ClassX()
 x + Sys.Date()
 ```
 
+```
+## [1] "method: X + class_any"
+```
+
 This also has utility for other packages that implement alternative OO systems.
 For example, reticulate is an R package that embeds Python in an R session, and allows R users to operate with Python objects directly.
 Python has its own implementation of method dispatch for infix operators like `+`.
@@ -78,23 +83,40 @@ For example, the `+` operator can now select the appropriate method when passed 
 Previously, dispatch failed, because both arguments are instances of an S3 class but would cause dispatch to different methods.
 
 
-```{r}
+
+``` r
 library(reticulate)
 
 # Adding a NumPy array and an R array dispatches to the default
 # `+` method for "python.builtin.object"
 np_array(1:3) + array(1:3)
+```
 
+```
+## array([2, 4, 6], dtype=int32)
+```
+
+``` r
 # Adding a TensorFlow Tensor and an R array invokes
 # invokes the specific `+` method for "tensorflow.tensor"
 array(1:3) + tensorflow::as_tensor(1:3)
+```
 
+```
+## tf.Tensor([2 4 6], shape=(3), dtype=int32)
+```
+
+``` r
 # Adding a NumPy array with a TensorFlow Tensor.
 # Prior to R 4.3.0, this would signal an error and warn:
 #   Incompatible methods ("+.tensorflow.tensor", "+.python.builtin.object")
 # Beginning with R 4.3.0, chooseOpsMethod() is called to choose the appropriate
 # Ops method, and this now works
 np_array(1:3) + tensorflow::as_tensor(1:3)
+```
+
+```
+## tf.Tensor([2 4 6], shape=(3), dtype=int32)
 ```
 
 ### `%*%`
@@ -123,12 +145,17 @@ To enable this for S7 and potentially other packages with their own class repres
 This permits usage in S7 like this:
 
 
-```{r}
+
+``` r
 ClassX <- S7::new_class("ClassX")
 
 x <- ClassX()
 
 inherits(x, ClassX)
+```
+
+```
+## [1] TRUE
 ```
 
 This also has utility for other R packages, in particular, packages where an external class hierarchy is being mirrored in R.
@@ -137,10 +164,15 @@ However, in sophisticated codebases like Keras and TensorFlow, the location wher
 To ensure compatibility between and across Python library versions, reticulate now implements a `nameOfClass()` method which enables R usage like this:
 
 
-```{r}
+
+``` r
 library(tensorflow)
 x <- tf$Variable(1:3)
 inherits(x, tf$Variable)
+```
+
+```
+## [1] TRUE
 ```
 
 ### `@`
