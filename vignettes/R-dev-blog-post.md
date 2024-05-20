@@ -168,6 +168,7 @@ To ensure compatibility between and across Python library versions, reticulate n
 ``` r
 library(tensorflow)
 x <- tf$Variable(1:3)
+
 inherits(x, tf$Variable)
 ```
 
