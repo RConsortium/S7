@@ -102,6 +102,7 @@ describe("prop setting", {
   })
 
   it("validates once with recursive property setters", {
+    times_validated <- 0L;  `add<-` <- `+`
     foo <- new_class(
       "foo",
       properties = list(
@@ -117,9 +118,10 @@ describe("prop setting", {
         }),
         z = new_property(class_integer)
       ),
-      validator = function(self) {print("validating"); NULL}
+      validator = function(self) { add(times_validated) <<- 1L; NULL }
     )
-    expect_snapshot(out <- foo(x = 1))
+    out <- foo(x = 1)
+    expect_equal(times_validated, 1L)
     expect_identical(out@z, 3L)
   })
 

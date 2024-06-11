@@ -48,13 +48,6 @@
     Output
       [1] "validating"
 
-# prop setting: validates once with recursive property setters
-
-    Code
-      out <- foo(x = 1)
-    Output
-      [1] "validating"
-
 # new_property(): validates getter and settor
 
     Code
