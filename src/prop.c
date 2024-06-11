@@ -26,46 +26,46 @@ SEXP eval_here(SEXP lang) {
 }
 
 static __attribute__((noreturn))
-  void signal_is_not_S7(SEXP object) {
-    static SEXP check_is_S7 = NULL;
-    if (check_is_S7 == NULL)
-      check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
+void signal_is_not_S7(SEXP object) {
+  static SEXP check_is_S7 = NULL;
+  if (check_is_S7 == NULL)
+    check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
 
-    // will signal error
-    eval_here(Rf_lang2(check_is_S7, object));
-    while(1);
-  }
+  // will signal error
+  eval_here(Rf_lang2(check_is_S7, object));
+  while(1);
+}
 
-
-static __attribute__((noreturn))
-  void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
-    static SEXP signal_prop_error = NULL;
-    if (signal_prop_error == NULL)
-      signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
-
-    eval_here(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name));
-    while(1);
-  }
 
 static __attribute__((noreturn))
-  void signal_prop_error_unknown(SEXP object, SEXP name) {
-    signal_prop_error("Can't find property %s@%s", object, name);
-  }
+void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
+  static SEXP signal_prop_error = NULL;
+  if (signal_prop_error == NULL)
+    signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
+
+  eval_here(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name));
+  while(1);
+}
 
 static __attribute__((noreturn))
-  void signal_error(SEXP errmsg) {
-    PROTECT(errmsg);
-    if(TYPEOF(errmsg) == STRSXP && Rf_length(errmsg) == 1)
-      Rf_errorcall(R_NilValue, "%s", CHAR(STRING_ELT(errmsg, 0)));
+void signal_prop_error_unknown(SEXP object, SEXP name) {
+  signal_prop_error("Can't find property %s@%s", object, name);
+}
 
-    // fallback to calling base::stop(errmsg)
-    static SEXP signal_error = NULL;
-    if (signal_error == NULL)
-      signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+static __attribute__((noreturn))
+void signal_error(SEXP errmsg) {
+  PROTECT(errmsg);
+  if(TYPEOF(errmsg) == STRSXP && Rf_length(errmsg) == 1)
+    Rf_errorcall(R_NilValue, "%s", CHAR(STRING_ELT(errmsg, 0)));
 
-    eval_here(Rf_lang2(signal_error, errmsg));
-    while(1);
-  }
+  // fallback to calling base::stop(errmsg)
+  static SEXP signal_error = NULL;
+  if (signal_error == NULL)
+    signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+
+  eval_here(Rf_lang2(signal_error, errmsg));
+  while(1);
+}
 
 static inline
 int name_idx(SEXP list, const char* name) {
@@ -140,6 +140,7 @@ SEXP prop_(SEXP object, SEXP name) {
     SEXP getter = extract_name(property, "getter");
     if (TYPEOF(getter) == CLOSXP)
         // we validated property is in properties list when accessing getter()
+        // TODO: mark/check object for getter non-recursion. https://github.com/RConsortium/S7/issues/403
         return eval_here(Rf_lang2(getter, object));
   }
 
@@ -196,6 +197,7 @@ SEXP pairlist_remove(SEXP list, SEXP elem) {
 static inline
 Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
                                     Rboolean* should_validate_obj) {
+  // Check if we should call `setter` and if so, prepare `setter` for calling.
 
     SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
     if (TYPEOF(no_recurse_list) == LISTSXP) {
@@ -278,13 +280,14 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     signal_prop_error("Can't set read-only property %s@%s", object, name);
 
   PROTECT_INDEX object_pi;
+  // maybe use R_shallow_duplicate_attr() here instead
+  // once it becomes API or S7 becomes part of R
   object = Rf_shallow_duplicate(object);
   PROTECT_WITH_INDEX(object, &object_pi);
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
-    object = eval_here(Rf_lang3(setter, object, value));
-    REPROTECT(object, object_pi);
+    REPROTECT(object = eval_here(Rf_lang3(setter, object, value)), object_pi);
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
