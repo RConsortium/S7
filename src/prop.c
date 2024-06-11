@@ -121,51 +121,6 @@ void check_is_S7(SEXP object) {
 }
 
 
-SEXP prop_(SEXP object, SEXP name) {
-  check_is_S7(object);
-
-  SEXP name_rchar = STRING_ELT(name, 0);
-  const char* name_char = CHAR(name_rchar);
-  SEXP name_sym = Rf_installTrChar(name_rchar);
-
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
-  SEXP properties = Rf_getAttrib(S7_class, sym_properties);
-  SEXP value = Rf_getAttrib(object, name_sym);
-
-  // if value was accessed as an attr, we still need to validate to make sure
-  // the attr is actually a known class property
-  if (value == R_NilValue) {
-    // property not in attrs, try to get value using the getter()
-    SEXP property = extract_name(properties, name_char);
-    SEXP getter = extract_name(property, "getter");
-    if (TYPEOF(getter) == CLOSXP)
-        // we validated property is in properties list when accessing getter()
-        // TODO: mark/check object for getter non-recursion. https://github.com/RConsortium/S7/issues/403
-        return eval_here(Rf_lang2(getter, object));
-  }
-
-  if (has_name(properties, name_char))
-    return value;
-
-  if (S7_class == R_NilValue &&
-      is_s7_class(object) && (
-          name_sym == sym_name  ||
-          name_sym == sym_parent  ||
-          name_sym == sym_package  ||
-          name_sym == sym_properties  ||
-          name_sym == sym_abstract  ||
-          name_sym == sym_constructor  ||
-          name_sym == sym_validator))
-      return value;
-
-  // Should the constructor always set default prop values on a object instance?
-  // Maybe, instead, we can fallback here to checking for a default value from the
-  // properties list.
-
-  signal_prop_error_unknown(object, name);
-  return R_NilValue; // unreachable, for compiler
-}
-
 
 static inline
 Rboolean pairlist_contains(SEXP list, SEXP elem) {
@@ -253,6 +208,53 @@ void obj_validate(SEXP object) {
     /* recursive = */ Rf_ScalarLogical(TRUE),
     /* properties = */ Rf_ScalarLogical(FALSE)));
 }
+
+
+SEXP prop_(SEXP object, SEXP name) {
+  check_is_S7(object);
+
+  SEXP name_rchar = STRING_ELT(name, 0);
+  const char* name_char = CHAR(name_rchar);
+  SEXP name_sym = Rf_installTrChar(name_rchar);
+
+  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP properties = Rf_getAttrib(S7_class, sym_properties);
+  SEXP value = Rf_getAttrib(object, name_sym);
+
+  // if value was accessed as an attr, we still need to validate to make sure
+  // the attr is actually a known class property
+  if (value == R_NilValue) {
+    // property not in attrs, try to get value using the getter()
+    SEXP property = extract_name(properties, name_char);
+    SEXP getter = extract_name(property, "getter");
+    if (TYPEOF(getter) == CLOSXP)
+        // we validated property is in properties list when accessing getter()
+        // TODO: mark/check object for getter non-recursion. https://github.com/RConsortium/S7/issues/403
+        return eval_here(Rf_lang2(getter, object));
+  }
+
+  if (has_name(properties, name_char))
+    return value;
+
+  if (S7_class == R_NilValue &&
+      is_s7_class(object) && (
+          name_sym == sym_name  ||
+          name_sym == sym_parent  ||
+          name_sym == sym_package  ||
+          name_sym == sym_properties  ||
+          name_sym == sym_abstract  ||
+          name_sym == sym_constructor  ||
+          name_sym == sym_validator))
+      return value;
+
+  // Should the constructor always set default prop values on a object instance?
+  // Maybe, instead, we can fallback here to checking for a default value from the
+  // properties list.
+
+  signal_prop_error_unknown(object, name);
+  return R_NilValue; // unreachable, for compiler
+}
+
 
 SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
