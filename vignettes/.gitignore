@@ -1,3 +1,5 @@
 *.html
 *.R
 performance_cache
+
+/.quarto/
