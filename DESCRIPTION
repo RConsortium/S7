@@ -1,6 +1,5 @@
 Package: S7
-Title: 
-    An Object Oriented System Meant to Become a Successor to S3 and S4
+Title: An Object Oriented System Meant to Become a Successor to S3 and S4
 Version: 0.1.1.9000
 Authors@R: c(
     person("Object-Oriented Programming Working Group", role = "cph"),
@@ -16,15 +15,15 @@ Authors@R: c(
     person("Hadley", "Wickham", , "hadley@posit.co", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-4757-117X"))
   )
-Description: A new object oriented programming system designed to be a successor 
-  to S3 and S4. It includes formal class, generic, and method specification, 
-  and a limited form of multiple dispatch. It has been designed and implemented 
-  collaboratively by the R Consortium Object-Oriented Programming Working Group, 
-  which includes representatives from R-Core, 'Bioconductor', 
-  'Posit'/'tidyverse', and the wider R community.
+Description: A new object oriented programming system designed to be a
+    successor to S3 and S4. It includes formal class, generic, and method
+    specification, and a limited form of multiple dispatch. It has been
+    designed and implemented collaboratively by the R Consortium
+    Object-Oriented Programming Working Group, which includes
+    representatives from R-Core, 'Bioconductor', 'Posit'/'tidyverse', and
+    the wider R community.
 License: MIT + file LICENSE
-URL: https://github.com/rconsortium/S7/,
-    https://rconsortium.github.io/S7/
+URL: https://github.com/rconsortium/S7/, https://rconsortium.github.io/S7/
 BugReports: https://github.com/rconsortium/S7/issues
 Depends: 
     R (>= 3.5.0)
@@ -46,4 +45,4 @@ Config/testthat/parallel: TRUE
 Config/testthat/start-first: external-generic
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
