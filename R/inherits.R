@@ -32,6 +32,7 @@ S7_inherits <- function(x, class = NULL) {
 
 #' @export
 #' @rdname S7_inherits
+# called from src/prop.c
 check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
   if (S7_inherits(x, class)) {
     return(invisible())

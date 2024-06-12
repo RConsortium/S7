@@ -324,3 +324,64 @@ test_that("can validate with custom validator", {
     foo(x = 1:2)
   })
 })
+
+test_that("prop<- won't infinitly recurse on a custom setter", {
+  chattily_sync_ab <- function(self, value) {
+    cat("Starting syncup with value:", value, "\n")
+    a_value <- paste0("a_", value)
+    b_value <- paste0("b_", value)
+
+    cat(sprintf('setting @a <- "%s"\n', a_value))
+    self@a <- a_value
+
+    cat(sprintf('setting @b <- "%s"\n', b_value))
+    self@b <- b_value
+
+    self
+  }
+
+  foo <- new_class("foo", properties = list(
+    a = new_property(setter = chattily_sync_ab),
+    b = new_property(setter = chattily_sync_ab)
+  ))
+
+  expect_snapshot({
+    obj <- foo()
+    obj@a <- "val"
+  })
+})
+
+test_that("custom setters can invoke setters on non-self objects", {
+
+  Transmitter <- new_class("Transmitter", properties = list(
+    message = new_property(setter = function(self, value) {
+      cat("[tx] sending: ", value, "\n")
+      receiver@message <<- value
+      cat("[tx] saving last sent message.\n")
+      self@message <- value
+      cat("[tx] finished transmitting.\n")
+      self
+    })
+  ))
+
+  Receiver <- new_class("Receiver", properties = list(
+    message = new_property(setter = function(self, value) {
+      cat("[rx] receiving: ", value, "\n")
+      self@message <- value
+      cat("[rx] finished receiving.\n")
+      self
+    })
+  ))
+
+  expect_snapshot({
+    receiver <- Receiver()
+    transmitter <- Transmitter()
+
+    transmitter@message <- "hello"
+    expect_equal(receiver@message, "hello")
+
+    transmitter@message <- "goodbye"
+    expect_equal(receiver@message, "goodbye")
+  })
+
+})
