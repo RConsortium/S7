@@ -37,24 +37,6 @@
       Error:
       ! <foo>@y must be <double>, not <character>
 
-# prop setting: validates once after custom setter
-
-    Code
-      obj <- foo2("123")
-    Output
-      [1] "validating"
-    Code
-      obj@x <- "456"
-    Output
-      [1] "validating"
-
-# prop setting: validates once with recursive property setters
-
-    Code
-      out <- foo(x = 1)
-    Output
-      [1] "validating"
-
 # new_property(): validates getter and settor
 
     Code

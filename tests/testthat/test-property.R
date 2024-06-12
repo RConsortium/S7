@@ -83,6 +83,7 @@ describe("prop setting", {
   })
 
   it("validates once after custom setter", {
+    times_validated <- 0L;  `add<-` <- `+`
     custom_setter <- function(self, value) {
       self@x <- as.double(value)
       self
@@ -91,17 +92,18 @@ describe("prop setting", {
       "foo2",
       properties = list(x = new_property(class_double, setter = custom_setter)),
       validator = function(self) {
-        print("validating")
+        add(times_validated) <<- 1L
         character()
       }
     )
-    expect_snapshot({
-      obj <- foo2("123")
-      obj@x <- "456"
-    })
+    obj <- foo2("123")
+    expect_equal(times_validated, 1)
+    obj@x <- "456"
+    expect_equal(times_validated, 2)
   })
 
   it("validates once with recursive property setters", {
+    times_validated <- 0L;  `add<-` <- `+`
     foo <- new_class(
       "foo",
       properties = list(
@@ -117,9 +119,10 @@ describe("prop setting", {
         }),
         z = new_property(class_integer)
       ),
-      validator = function(self) {print("validating"); NULL}
+      validator = function(self) { add(times_validated) <<- 1L; NULL }
     )
-    expect_snapshot(out <- foo(x = 1))
+    out <- foo(x = 1)
+    expect_equal(times_validated, 1L)
     expect_identical(out@z, 3L)
   })
 
@@ -385,3 +388,30 @@ test_that("custom setters can invoke setters on non-self objects", {
   })
 
 })
+
+test_that("custom getters don't infinitely recurse", {
+  # https://github.com/RConsortium/S7/issues/403
+
+  someclass <- new_class("someclass", properties = list(
+    action = new_property(
+      class_character,
+      getter = function(self) self@action,
+      setter = function(self, value) {
+        self@action <- toupper(value)
+        self
+      },
+      default = "some action"
+    )
+  ))
+
+  x <- someclass()
+  expect_equal(x@action, "SOME ACTION")
+  # 1. We probably want x@action to be the default here, not the result
+  #    of setter(): "some action" instead of "SOME ACTION"
+  # 2. We need a setter(), otherwise object construction fails due to
+  #   "trying to set a read-only property". Instead of requiring a dummy setters here,
+  #    maybe we should mark properties as read-only be providing a setter() that
+  #    signals an error.
+
+})
+

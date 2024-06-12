@@ -301,12 +301,7 @@ prop_label <- function(object, name) {
 `@.S7_object` <- prop
 
 #' @rawNamespace S3method("@<-",S7_object)
-`@<-.S7_object` <- function(object, name, value) {
-  nme <- as.character(substitute(name))
-  prop(object, nme) <- value
-
-  invisible(object)
-}
+`@<-.S7_object` <- `prop<-`
 
 
 #' Property introspection
