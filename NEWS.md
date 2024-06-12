@@ -19,7 +19,7 @@
 
 * Can create multimethods that dispatch on `NULL`.
 
-* `prop()` optimiazed and rewritten in C (#395).
+* `prop()` optimized and rewritten in C (#395).
 
 # S7 0.1.1
 

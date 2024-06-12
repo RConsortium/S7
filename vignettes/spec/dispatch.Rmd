@@ -65,7 +65,7 @@ Once the method has been found, it must be called.
 
 -   Changes to arguments are ignored.
 
--   Method can access objects created in generic.
+-   Method can access objects created in generic. (Changed in R 4.4.0.)
 
 -   The parent frame of the method call is the parent frame of the generic.
 
@@ -81,8 +81,21 @@ foo.numeric <- function(x, y) {
   print(parent.frame())
   c(x = x, y = y, z = z)
 }
+```
+
+```{r}
+#| eval: false
+# In R 4.3 and earlier
+foo(1, 1)
+#> x y z 
+#> 1 1 2
+```
+
+```{r}
+#| error: true
 foo(1, 1)
 ```
+
 
 ### S7
 
