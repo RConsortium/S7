@@ -11,7 +11,7 @@ global_variables <- function(names) {
 
 vlapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
 vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
-`%||%` <- function(x, y) if (length(x) == 0) y else x
+`%||%` <- function(x, y) if (is.null(x)) y else x
 
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
