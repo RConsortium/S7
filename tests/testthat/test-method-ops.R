@@ -109,6 +109,14 @@ test_that("`%*%` dispatches to S7 methods", {
   expect_equal(1 %*% ClassX(), "class_any %*% ClassX")
 })
 
+test_that("`matOps` methods work", {
+    skip_if(getRversion() < "4.4")
+    expect_identical(c(utils::methods("matrixOps")), # {why on earth do we see hidden S7 objects here ?!}
+                     paste("matrixOps", c("S7_object", "S7_super"), sep="."))
+    expect_in(c("%*%", "crossprod", "tcrossprod"),
+              S7:::group_generics()[["matrixOps"]])
+})
+
 test_that("Ops methods can use super", {
   foo <- new_class("foo", class_integer)
   foo2 <- new_class("foo2", foo)
