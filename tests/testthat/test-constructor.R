@@ -16,6 +16,13 @@ test_that("generates correct arguments from parent + properties",  {
   expect_equal(args$self, character())
   expect_equal(args$parent, character())
 
+  args <- constructor_args(S7_object,
+    as_properties(list(x = new_property(getter = function(self) self@x - 1L,
+                                        setter = function(self, value) self@x + 1L)))
+  )
+  expect_equal(args$self, "x")
+  expect_equal(args$parent, character())
+
   # Includes parent properties
   foo <- new_class("foo", properties = list(x = class_numeric))
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
