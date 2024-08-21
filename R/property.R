@@ -65,7 +65,7 @@
 #' # These can be useful if you want to deprecate a property
 #' person <- new_class("person", properties = list(
 #'   first_name = class_character,
-#'   firstName = new_property(
+#'   firstName = new_property(class_character,
 #'      getter = function(self) {
 #'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
 #'        self@first_name
