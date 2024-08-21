@@ -220,7 +220,7 @@ prop_obj <- function(object, name) {
       stop(prop_error_unknown(object, name), call. = FALSE)
     }
 
-    if (!is.null(prop$getter) && is.null(prop$setter)) {
+    if (prop_is_read_only(prop)) {
       msg <- sprintf("Can't set read-only property %s@%s", obj_desc(object), name)
       stop(msg, call. = FALSE)
     }

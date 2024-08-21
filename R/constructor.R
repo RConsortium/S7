@@ -48,7 +48,7 @@ constructor_args <- function(parent, properties = list()) {
 
   self_args <- names2(properties)
   # Remove dynamic arguments
-  self_args <- self_args[vlapply(properties, function(x) is.null(x$getter))]
+  self_args <- self_args[vlapply(properties, Negate(prop_is_read_only))]
   if (is_class(parent) && !parent@abstract) {
     # Remove any parent properties; can't use parent_args() since the constructor
     # might automatically set some properties.
