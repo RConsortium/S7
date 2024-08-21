@@ -85,7 +85,7 @@ register_method <- function(generic,
 
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
-  if (is_S7_generic(generic) && !is.null(package) && !is_local_generic(generic, package)) {
+  if ((is_S7_generic(generic) || is_external_generic(generic)) && !is.null(package) && !is_local_generic(generic, package)) {
     generic <- as_external_generic(generic)
     external_methods_add(package, generic, signature, method)
   }
