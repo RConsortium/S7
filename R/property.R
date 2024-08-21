@@ -453,3 +453,7 @@ as_property <- function(x, name, i) {
     new_property(x, name = name)
   }
 }
+
+prop_is_read_only <- function(x) {
+    !is.null(x$getter) && is.null(x$setter) 
+}
