@@ -47,7 +47,7 @@ as_external_generic <- function(x) {
   } else if (is_external_generic(x)) {
     x
   } else if (is_S3_generic(x)) {
-    pkg <- package_name(x)
+    pkg <- package_name(x$generic)
     new_external_generic(pkg, x$name, "__S3__")
   } else if (is_S4_generic(x)) {
     new_external_generic(x@package, as.vector(x@generic), x@signature)
