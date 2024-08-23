@@ -78,7 +78,7 @@ register_method <- function(generic,
       register_method(gen, signature, method, package = NULL)
     }
   } else if (is_S3_generic(generic)) {
-    register_S3_method(generic, signature, method)
+    register_S3_method(generic, signature, method, env)
   } else if (is_S4_generic(generic)) {
     register_S4_method(generic, signature, method, env)
   }
@@ -93,7 +93,7 @@ register_method <- function(generic,
   invisible(generic)
 }
 
-register_S3_method <- function(generic, signature, method) {
+register_S3_method <- function(generic, signature, method, envir = parent.frame()) {
   if (class_type(signature[[1]]) != "S7") {
     msg <- sprintf(
       "When registering methods for S3 generic %s(), signature must be an S7 class, not %s.",
@@ -103,7 +103,7 @@ register_S3_method <- function(generic, signature, method) {
     stop(msg, call. = FALSE)
   }
   class <- S7_class_name(signature[[1]])
-  registerS3method(generic$name, class, method, envir = parent.frame())
+  registerS3method(generic$name, class, method, envir)
 }
 
 register_S7_method <- function(generic, signature, method) {
