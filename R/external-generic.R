@@ -91,7 +91,7 @@ methods_register <- function() {
   tbl <- S7_methods_table(package)
 
   for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method)
+    register <- registrar(x$generic, x$signature, x$method, parent.frame())
 
     if (isNamespaceLoaded(x$generic$package)) {
       register()
@@ -103,7 +103,7 @@ methods_register <- function() {
   invisible()
 }
 
-registrar <- function(generic, signature, method) {
+registrar <- function(generic, signature, method, env) {
   # Force all arguments
   list(generic, signature, method)
 
@@ -115,7 +115,7 @@ registrar <- function(generic, signature, method) {
         warning(msg, call. = FALSE)
       } else {
         generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
-        register_method(generic_fun, signature, method, package = NULL)
+        register_method(generic_fun, signature, method, env, package = NULL)
       }
     }
   }
