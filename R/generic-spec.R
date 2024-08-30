@@ -70,7 +70,10 @@ generic_dispatch_args <- function(x) {
   } else if (is_external_generic(x)) {
     x$dispatch_args
   } else if (is_S3_generic(x)) {
-    names(formals(x$generic))[1L]
+    fun <- x$generic
+    if (is.null(formals(fun)))
+      methods::getGeneric(fun)@signature[1L]
+    else names(formals(fun))[1L]
   } else if (is_S4_generic(x)) {
     x@signature
   } else {
