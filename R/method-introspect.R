@@ -68,7 +68,7 @@ select_S3_method <- function(generic, dispatch) {
 
   classes <- c(dispatch[[1L]], "default")
   for (class in classes) {
-    method <- getS3method(generic$name, class, optional = TRUE)
+    method <- utils::getS3method(generic$name, class, optional = TRUE)
     if (!is.null(method))
       return(method)
   }
@@ -78,7 +78,7 @@ select_S3_method <- function(generic, dispatch) {
 
 select_S4_method <- function(generic, dispatch) {
   sig <- vapply(dispatch, `[`, character(1L), 1L)
-  selectMethod(generic, sig, optional = TRUE)
+  methods::selectMethod(generic, sig, optional = TRUE)
 }
 
 #' Explain method dispatch
