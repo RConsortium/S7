@@ -99,6 +99,11 @@ convert <- function(from, to, ...) {
       stop("Unreachable")
     }
     from
+  } else if (from_dispatch[1L] %in% class_dispatch(to) && is_class(to)) {
+    args <- props(from)
+    if (".data" %in% names(formals(to)))
+      args$.data <- S7_data(from)
+    do.call(to, args[names(formals(to))], ...)
   } else {
     msg <- paste0(
       "Can't find method for generic `convert()` with dispatch classes:\n",
