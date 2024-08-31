@@ -453,3 +453,122 @@ as_property <- function(x, name, i) {
     new_property(x, name = name)
   }
 }
+
+nullable <- function(prop) {
+  prop$class <- new_union(NULL, prop$class)
+  prop["default"] <- list(NULL)
+  prop
+}
+
+new_scalar_property <- function(class, ..., validator = NULL, default) {
+  check_scalar(default, class)
+  prop <- new_property(class, ..., validator = function(value) {
+    if (is.null(value))
+      return(NULL)
+    c(if (length(value) != 1L || is.na(value))
+        "must be of length one and not missing",
+      if (!is.null(validator))
+        validator(value)
+    )
+  }, default = default)
+  class(prop) <- c("scalar_S7_property", class(prop))
+  prop
+}
+
+new_string_property <- function(..., validator = NULL,
+                                default = "", choices = NULL)
+{
+  prop <- new_scalar_property(
+    class_character, ...,
+    validator = function(value) {
+      c(if (!is.null(choices) && !all(value %in% choices))
+          paste("contains values not in",
+                deparse(choices)),
+        if (!is.null(validator))
+          validator(value)
+        )
+    }, default = default
+  )
+  prop$choices <- choices
+  class(prop) <- c("string_S7_property", class(prop))
+  prop
+}
+
+new_flag_property <- function(..., default = FALSE) {
+  new_scalar_property(class_logical, ..., default = default)
+}
+
+## TODO: make this handle non-scalars as well
+new_number_property <- function(class = class_numeric, ..., validator = NULL,
+                                default = min(max(min, 0), max),
+                                min = -Inf, max = Inf)
+{
+  prop <- new_scalar_property(
+    class, ...,
+    validator = function(value) {
+      c(if (any(value < min))
+        paste("must be >=", min),
+        if (any(value > max))
+          paste("must be <=", max),
+        if (!is.null(validator))
+          validator(value)
+      )
+    }, default = default
+  )
+  prop$min <- min
+  prop$max <- max
+  class(prop) <- c("numeric_S7_property", class(prop))
+  prop
+}
+
+## Should integer() properties be encouraged? It seems hygienic to use
+## integers when appropriate, but the user might be inconvenienced. We
+## tried adding a setter that performs the conversion with an
+## epsilon check, but just using numeric() seemed simpler.
+new_int_property <- function(..., default = min(max(min, 0L), max),
+                             min = .Machine$integer.min,
+                             max = .Machine$integer.max)
+{
+  new_number_property(class_integer, ..., default = default, min = min,
+                      max = max)
+}
+
+new_list_property <- function(..., validator = NULL, of = class_any, named = NA)
+{
+  prop <- new_property(class_list, ..., validator = function(value) {
+    c(if (!identical(of, class_any) &&
+              !all(vapply(value, inherits, logical(1L), of)))
+      paste("must only contain elements of class", of@name),
+      if (isTRUE(named) && is.null(names(value)))
+        "must have names",
+      if (identical(named, FALSE) && !is.null(names(value)))
+        "must not have names",
+      if (!is.null(validator))
+        valdiator(value)
+      )
+  })
+  prop$of <- of
+  prop$named <- named
+  class(prop) <- c("list_S7_property", class(prop))
+  prop
+}
+
+prop_string <- NULL
+prop_flag <- NULL
+prop_number <- NULL
+prop_number_nn <- NULL
+prop_prob <- NULL
+prop_int <- NULL
+prop_int_nn <- NULL
+prop_int_pos <- NULL
+
+on_load_define_props <- function() {
+  prop_string <<- new_string_property()
+  prop_flag <<- new_flag_property()
+  prop_number <<- new_number_property()
+  prop_number_nn <<- new_number_property(min = 0)
+  prop_prob <<- new_number_property(min = 0, max = 1)
+  prop_int <<- new_int_property()
+  prop_int_nn <<- new_int_property(min = 0L)
+  prop_int_pos <<- new_int_property(min = 1L)
+}

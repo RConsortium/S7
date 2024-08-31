@@ -91,6 +91,19 @@ check_name <- function(name, arg = deparse(substitute(name))) {
   }
 }
 
+check_scalar <- function(scalar, class, arg = deparse(substitute(scalar)))
+{
+  if (length(scalar) != 1 || !class_inherits(scalar, class)) {
+    type_name <- if (identical(class, class_numeric)) "numeric" else class$name
+    msg <- sprintf("`%s` must be a single %s value", arg, type_name)
+    stop(msg, call. = FALSE)
+  }
+  if (is.na(scalar)) {
+    msg <- sprintf("`%s` must not be NA", arg)
+    stop(msg, call. = FALSE)
+  }
+}
+
 check_function <- function(f, args, arg = deparse(substitute(f))) {
   if (!is.function(f)) {
     msg <- sprintf("`%s` must be a function", arg)
