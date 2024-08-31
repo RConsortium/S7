@@ -66,7 +66,14 @@ convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
-  dispatch <- list(obj_dispatch(from), class_register(to))
+  from_dispatch <- obj_dispatch(from)
+  to_class <- class_register(to)
+  m <- match(to_class, from_dispatch)
+  if (!is.na(m)) # upcasting case: avoid downcasting methods
+    from_dispatch <- head(from_dispatch, m - 1L)
+  if (length(from_dispatch) == 0L)
+    return(from)
+  dispatch <- list(from_dispatch, to_class)
   convert <- .Call(method_, convert, dispatch, environment(), FALSE)
 
   if (!is.null(convert)) {
