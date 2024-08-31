@@ -544,7 +544,7 @@ new_list_property <- function(..., validator = NULL, of = class_any, named = NA)
       if (identical(named, FALSE) && !is.null(names(value)))
         "must not have names",
       if (!is.null(validator))
-        valdiator(value)
+        validator(value)
       )
   })
   prop$of <- of
