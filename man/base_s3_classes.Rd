@@ -6,7 +6,13 @@
 \alias{class_factor}
 \alias{class_Date}
 \alias{class_POSIXct}
+\alias{class_POSIXlt}
+\alias{class_POSIXt}
 \alias{class_data.frame}
+\alias{class_matrix}
+\alias{class_array}
+\alias{class_formula}
+
 \title{S7 wrappers for key S3 classes}
 \usage{
 class_factor
@@ -15,16 +21,29 @@ class_Date
 
 class_POSIXct
 
+class_POSIXlt
+
+class_POSIXt
+
 class_data.frame
+
+class_matrix
+
+class_array
+
+class_formula
 }
 \description{
 S7 bundles \link[=new_S3_class]{S3 definitions} for key S3 classes provided by
-the base package:
+the base packages:
 \itemize{
 \item \code{class_data.frame} for data frames.
 \item \code{class_Date} for dates.
 \item \code{class_factor} for factors.
-\item \code{class_POSIXct} for \code{POSIXct} date-times.
+\item \code{class_POSIXct}, \code{class_POSIXlt} and \code{class_POSIXt} for date-times.
+\item \code{class_matrix} for matrices.
+\item \code{class_array} for arrays.
+\item \code{class_formula} for formulas.
 }
 }
 \keyword{datasets}

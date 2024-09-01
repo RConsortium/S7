@@ -163,6 +163,13 @@ validate_POSIXct <- function(self) {
   }
 }
 
+validate_POSIXlt <- function(self) {
+  tryCatch({
+    format(self) # calls valid_POSIXlt() in C
+    invisible(NULL)
+  }, error = function(e) conditionMessage(e))
+}
+
 validate_data.frame <- function(self) {
   if (!is.list(self)) {
     return("Underlying data must be a <list>")
@@ -181,16 +188,64 @@ validate_data.frame <- function(self) {
   }
 }
 
+valid_dimnames <- function(self) {
+  dn <- dimnames(self)
+  if (is.null(dn))
+    TRUE
+  else if (!is.list(dn) || length(dn) != length(dim(self)))
+    FALSE
+  else for (i in seq_along(dimnames(self))) {
+    if (is.null(dn[[i]]))
+      next
+    if (!is.character(dn[[i]]) || length(dn[[i]]) != dim(self)[[i]])
+      return(FALSE)
+  }
+  TRUE
+}
+
+validate_matrix <- function(self) {
+  if (is.matrix(self)) # is.matrix() methods should only return TRUE if valid
+    return(invisible(NULL))
+  if (!is.integer(dim(self)) || length(dim(self)) != 2L || !all(dim(self) > 0L))
+    return("dim(self) must be a non-negative integer vector of length 2")
+  if (!valid_dimnames(self))
+    return("dimnames(self) must be NULL or a length 2 list of either NULL or a character vector of length equal to its corresponding dimension")
+  "is.matrix(self) is FALSE"
+}
+
+validate_array <- function(self) {
+  if (is.array(self)) # is.array() methods should only return TRUE if valid
+    return(invisible(NULL))
+  if (!is.integer(dim(self)) || length(dim(self)) == 0L || !all(dim(self) > 0L))
+    return("dim(self) must be a non-empty non-negative integer vector")
+  if (!valid_dimnames(self))
+    return("dimnames(self) must be NULL or a list of either NULL or a character vector of length equal to its corresponding dimension")
+  "is.array(self) is FALSE"
+}
+
+validate_formula <- function(self) {
+  if (is.null(environment(self)))
+    return("environment(self) must be non-NULL")
+  if (identical(self, stats::formula(NULL, environment(self)))) # weird NULL case
+    return(invisible(NULL))
+  if (!is.call(self) || !length(self) %in% 2:3 || self[[1L]] != quote(`~`))
+    return("must be a call to `~` of length 2 or 3")
+}
+
 #' S7 wrappers for key S3 classes
 #'
 #' @description
 #' S7 bundles [S3 definitions][new_S3_class] for key S3 classes provided by
-#' the base package:
+#' the base packages:
 #'
 #' * `class_data.frame` for data frames.
 #' * `class_Date` for dates.
 #' * `class_factor` for factors.
-#' * `class_POSIXct` for `POSIXct` date-times.
+#' * `class_POSIXct`, `class_POSIXlt` and `class_POSIXt` for date-times.
+#' * `class_matrix` for matrices.
+#' * `class_array` for arrays.
+#' * `class_formula` for formulas.
+
 #'
 #' @export
 #' @name base_s3_classes
@@ -229,6 +284,23 @@ class_POSIXct <- new_S3_class("POSIXct",
 #' @rdname base_s3_classes
 #' @format NULL
 #' @order 3
+class_POSIXlt <- new_S3_class("POSIXlt",
+  constructor = function(.data = NULL, tz = "") {
+    as.POSIXlt(NULL, tz = tz)
+  },
+  validator = validate_POSIXlt
+)
+
+#' @export
+#' @rdname base_s3_classes
+#' @format NULL
+#' @order 3
+class_POSIXt <- new_S3_class("POSIXt") # abstract class
+
+#' @export
+#' @rdname base_s3_classes
+#' @format NULL
+#' @order 3
 class_data.frame <- new_S3_class("data.frame",
   constructor = function(.data = list(), row.names = NULL) {
     if (is.null(row.names)) {
@@ -240,4 +312,37 @@ class_data.frame <- new_S3_class("data.frame",
     }
   },
   validator = validate_data.frame
+)
+
+#' @export
+#' @rdname base_s3_classes
+#' @format NULL
+#' @order 3
+class_matrix <- new_S3_class("matrix",
+  constructor = function(.data = NA, nrow = 1, ncol = 1, byrow = FALSE, dimnames  = NULL) {
+    matrix(.data, nrow, ncol, byrow, dimnames)
+  },
+  validator = validate_matrix
+)
+
+#' @export
+#' @rdname base_s3_classes
+#' @format NULL
+#' @order 3
+class_array <- new_S3_class("array",
+  constructor = function(.data = NA, dim = length(data), dimnames = NULL) {
+    array(.data, dim, dimnames)
+  },
+  validator = validate_array
+)
+
+#' @export
+#' @rdname base_s3_classes
+#' @format NULL
+#' @order 3
+class_formula <- new_S3_class("formula",
+  constructor = function(.data = NULL, env = parent.frame()) {
+    stats::formula(.data, env)
+  },
+  validator = validate_formula
 )
