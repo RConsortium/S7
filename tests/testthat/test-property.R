@@ -389,23 +389,26 @@ test_that("custom setters can invoke setters on non-self objects", {
 
 })
 
+
 test_that("custom getters don't infinitely recurse", {
   # https://github.com/RConsortium/S7/issues/403
 
   someclass <- new_class("someclass", properties = list(
-    action = new_property(
+    someprop = new_property(
       class_character,
-      getter = function(self) self@action,
+      getter = function(self)
+        self@someprop,
       setter = function(self, value) {
-        self@action <- toupper(value)
+        self@someprop <- toupper(value)
         self
-      },
-      default = "some action"
+      }
     )
   ))
 
   x <- someclass()
-  expect_equal(x@action, "SOME ACTION")
+  expect_null(x@someprop)
+  x@someprop <- "foo"
+  expect_equal(x@someprop, "FOO")
 
 })
 
@@ -418,17 +421,19 @@ test_that("custom setters can call custom getters", {
       class_character,
       getter = function(self) self@someprop,
       setter = function(self, value) {
-
         self@someprop <- paste0(self@someprop, toupper(value))
         self
-      },
-      default = "someprop"
+      }
     )
   ))
 
   x <- someclass()
-  expect_equal(x@someprop, "SOMEPROP")
-  x@someprop <- "_foo"
-  expect_equal(x@someprop, "SOMEPROP_FOO")
+  expect_null(x@someprop)
+
+  x@someprop <- "foo"
+  expect_equal(x@someprop, "FOO")
+
+  x@someprop <- "foo"
+  expect_equal(x@someprop, "FOOFOO")
 
 })
