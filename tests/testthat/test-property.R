@@ -406,12 +406,29 @@ test_that("custom getters don't infinitely recurse", {
 
   x <- someclass()
   expect_equal(x@action, "SOME ACTION")
-  # 1. We probably want x@action to be the default here, not the result
-  #    of setter(): "some action" instead of "SOME ACTION"
-  # 2. We need a setter(), otherwise object construction fails due to
-  #   "trying to set a read-only property". Instead of requiring a dummy setters here,
-  #    maybe we should mark properties as read-only be providing a setter() that
-  #    signals an error.
 
 })
 
+
+test_that("custom setters can call custom getters", {
+  # https://github.com/RConsortium/S7/issues/403
+
+  someclass <- new_class("someclass", properties = list(
+    someprop = new_property(
+      class_character,
+      getter = function(self) self@someprop,
+      setter = function(self, value) {
+
+        self@someprop <- paste0(self@someprop, toupper(value))
+        self
+      },
+      default = "someprop"
+    )
+  ))
+
+  x <- someclass()
+  expect_equal(x@someprop, "SOMEPROP")
+  x@someprop <- "_foo"
+  expect_equal(x@someprop, "SOMEPROP_FOO")
+
+})
