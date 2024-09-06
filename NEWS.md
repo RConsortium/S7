@@ -1,6 +1,9 @@
 # S7 (development version)
 
-* Propert setting (via `prop<-` and `@<-`) rewritten in C for performance (#396).
+* Fixed an issue where a custom property `getter()` would infinitely recurse 
+  when accessing itself (reported in #403, fixed in #406).
+
+* Property setting (via `prop<-` and `@<-`) rewritten in C for performance (#396).
 
 * Fixed a regression where `validate()` would not be called after a custom
   property setter was invoked (reported in #393, fixed in #396).
