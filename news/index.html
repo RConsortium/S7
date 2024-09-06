@@ -46,7 +46,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li><p>Propert setting (via <code>prop&lt;-</code> and <code>@&lt;-</code>) rewritten in C for performance (<a href="https://github.com/rconsortium/S7/issues/396" class="external-link">#396</a>).</p></li>
+<ul><li><p>Fixed an issue where a custom property <code>getter()</code> would infinitely recurse when accessing itself (reported in <a href="https://github.com/rconsortium/S7/issues/403" class="external-link">#403</a>, fixed in <a href="https://github.com/rconsortium/S7/issues/406" class="external-link">#406</a>).</p></li>
+<li><p>Property setting (via <code>prop&lt;-</code> and <code>@&lt;-</code>) rewritten in C for performance (<a href="https://github.com/rconsortium/S7/issues/396" class="external-link">#396</a>).</p></li>
 <li><p>Fixed a regression where <code><a href="../reference/validate.html">validate()</a></code> would not be called after a custom property setter was invoked (reported in <a href="https://github.com/rconsortium/S7/issues/393" class="external-link">#393</a>, fixed in <a href="https://github.com/rconsortium/S7/issues/396" class="external-link">#396</a>).</p></li>
 <li><p>When a method is not found, the error now has class <code>S7_error_method_not_found</code>.</p></li>
 <li><p>The <code>Ops</code> generic now falls back to base Ops behaviour when one of the arguments is not an S7 object (<a href="https://github.com/rconsortium/S7/issues/320" class="external-link">#320</a>). This means that you get the somewhat inconsistent base behaviour, but means that S7 doesn’t introduce a new axis of inconsistency.</p></li>
