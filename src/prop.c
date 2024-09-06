@@ -15,6 +15,7 @@ extern SEXP sym_validator;
 extern SEXP ns_S7;
 
 extern SEXP sym_dot_should_validate;
+extern SEXP sym_dot_getting_prop;
 extern SEXP sym_dot_setting_prop;
 
 static inline
@@ -84,10 +85,6 @@ SEXP extract_name(SEXP list, const char* name) {
   return i == -1 ? R_NilValue : VECTOR_ELT(list, i);
 }
 
-static inline
-Rboolean has_name(SEXP list, const char* name) {
-  return (Rboolean) (name_idx(list, name) != -1);
-}
 
 static inline
 Rboolean inherits2(SEXP object, const char* name) {
@@ -118,52 +115,6 @@ void check_is_S7(SEXP object) {
   if (is_s7_object(object))
     return;
   signal_is_not_S7(object);
-}
-
-
-SEXP prop_(SEXP object, SEXP name) {
-  check_is_S7(object);
-
-  SEXP name_rchar = STRING_ELT(name, 0);
-  const char* name_char = CHAR(name_rchar);
-  SEXP name_sym = Rf_installTrChar(name_rchar);
-
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
-  SEXP properties = Rf_getAttrib(S7_class, sym_properties);
-  SEXP value = Rf_getAttrib(object, name_sym);
-
-  // if value was accessed as an attr, we still need to validate to make sure
-  // the attr is actually a known class property
-  if (value == R_NilValue) {
-    // property not in attrs, try to get value using the getter()
-    SEXP property = extract_name(properties, name_char);
-    SEXP getter = extract_name(property, "getter");
-    if (TYPEOF(getter) == CLOSXP)
-        // we validated property is in properties list when accessing getter()
-        // TODO: mark/check object for getter non-recursion. https://github.com/RConsortium/S7/issues/403
-        return eval_here(Rf_lang2(getter, object));
-  }
-
-  if (has_name(properties, name_char))
-    return value;
-
-  if (S7_class == R_NilValue &&
-      is_s7_class(object) && (
-          name_sym == sym_name  ||
-          name_sym == sym_parent  ||
-          name_sym == sym_package  ||
-          name_sym == sym_properties  ||
-          name_sym == sym_abstract  ||
-          name_sym == sym_constructor  ||
-          name_sym == sym_validator))
-      return value;
-
-  // Should the constructor always set default prop values on a object instance?
-  // Maybe, instead, we can fallback here to checking for a default value from the
-  // properties list.
-
-  signal_prop_error_unknown(object, name);
-  return R_NilValue; // unreachable, for compiler
 }
 
 
@@ -216,20 +167,26 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
 
     Rf_setAttrib(object, sym_dot_setting_prop,
                  Rf_cons(name_sym, no_recurse_list));
-    return TRUE; // setter now marked non-recursive, safe to call
+    return TRUE; // object is now now marked non-recursive for this property setter, safe to call
 
   // optimization opportunity: combine the actions of getAttrib()/setAttrib()
   // into one loop, so we can avoid iterating over ATTRIB(object) twice.
 }
 
 static inline
-void setter_no_recurse_clear(SEXP object, SEXP name_sym) {
-  SEXP list = Rf_getAttrib(object, sym_dot_setting_prop);
+void accessor_no_recurse_clear(SEXP object, SEXP name_sym, SEXP no_recurse_list_sym) {
+  SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
   list = pairlist_remove(list, name_sym);
-  Rf_setAttrib(object, sym_dot_setting_prop, list);
+  Rf_setAttrib(object, no_recurse_list_sym, list);
 
   // optimization opportunity: same as setter_callable_no_recurse
 }
+
+#define getter_no_recurse_clear(...) \
+    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_getting_prop)
+
+#define setter_no_recurse_clear(...) \
+    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_setting_prop)
 
 static inline
 void prop_validate(SEXP property, SEXP value, SEXP object) {
@@ -253,6 +210,76 @@ void obj_validate(SEXP object) {
     /* recursive = */ Rf_ScalarLogical(TRUE),
     /* properties = */ Rf_ScalarLogical(FALSE)));
 }
+
+
+
+static inline
+Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
+  // Check if we should call getter and if so, prepare object for calling the getter.
+
+  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_getting_prop);
+  if (TYPEOF(no_recurse_list) == LISTSXP &&
+      pairlist_contains(no_recurse_list, name_sym))
+    return FALSE;
+
+  Rf_setAttrib(object, sym_dot_getting_prop,
+               Rf_cons(name_sym, no_recurse_list));
+  return TRUE; // object is now now marked non-recursive for this property accessor, safe to call
+
+  // optimization opportunity: combine the actions of getAttrib()/setAttrib()
+  // into one loop, so we can avoid iterating over ATTRIB(object) twice.
+}
+
+
+SEXP prop_(SEXP object, SEXP name) {
+  check_is_S7(object);
+
+  SEXP name_rchar = STRING_ELT(name, 0);
+  const char* name_char = CHAR(name_rchar);
+  SEXP name_sym = Rf_installTrChar(name_rchar);
+
+  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP properties = Rf_getAttrib(S7_class, sym_properties);
+
+  // try getter() if appropriate
+  SEXP property = extract_name(properties, name_char);
+  SEXP getter = extract_name(property, "getter");
+  if (TYPEOF(getter) == CLOSXP &&
+      getter_callable_no_recurse(getter, object, name_sym)) {
+    SEXP value = PROTECT(eval_here(Rf_lang2(getter, object)));
+    getter_no_recurse_clear(object, name_sym);
+    UNPROTECT(1);
+    return value;
+  }
+
+  // try to resolve property from the object attributes
+  SEXP value = Rf_getAttrib(object, name_sym);
+
+  // This is commented out because we currently have no way to distinguish between
+  // a prop with a value of NULL, and a prop value that is unset/missing.
+  // // fall back to fetching the default property value from the object class
+  // if (value == R_NilValue)
+  //   value = extract_name(property, "default");
+
+  // validate that we're accessing a valid property
+  if (property != R_NilValue)
+    return value;
+
+  if (S7_class == R_NilValue &&
+      is_s7_class(object) && (
+          name_sym == sym_name  ||
+          name_sym == sym_parent  ||
+          name_sym == sym_package  ||
+          name_sym == sym_properties  ||
+          name_sym == sym_abstract  ||
+          name_sym == sym_constructor  ||
+          name_sym == sym_validator))
+      return value;
+
+  signal_prop_error_unknown(object, name);
+  return R_NilValue; // unreachable, for compiler
+}
+
 
 SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
