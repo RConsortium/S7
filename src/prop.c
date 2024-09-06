@@ -15,7 +15,8 @@ extern SEXP sym_validator;
 extern SEXP ns_S7;
 
 extern SEXP sym_dot_should_validate;
-extern SEXP sym_dot_accessing_prop;
+extern SEXP sym_dot_getting_prop;
+extern SEXP sym_dot_setting_prop;
 
 static inline
 SEXP eval_here(SEXP lang) {
@@ -149,7 +150,7 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
                                     Rboolean* should_validate_obj) {
   // Check if we should call `setter` and if so, prepare `setter` for calling.
 
-    SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_accessing_prop);
+    SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
     if (TYPEOF(no_recurse_list) == LISTSXP) {
       // if there is a 'no_recurse' list, then this is not the top-most prop<-
       // call for this object, i.e, we're currently evaluating a `prop<-` call
@@ -164,7 +165,7 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
     if (TYPEOF(setter) != CLOSXP)
       return FALSE; // setter not callable
 
-    Rf_setAttrib(object, sym_dot_accessing_prop,
+    Rf_setAttrib(object, sym_dot_setting_prop,
                  Rf_cons(name_sym, no_recurse_list));
     return TRUE; // object is now now marked non-recursive for this property setter, safe to call
 
@@ -173,13 +174,19 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
 }
 
 static inline
-void accessor_no_recurse_clear(SEXP object, SEXP name_sym) {
-  SEXP list = Rf_getAttrib(object, sym_dot_accessing_prop);
+void accessor_no_recurse_clear(SEXP object, SEXP name_sym, SEXP no_recurse_list_sym) {
+  SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
   list = pairlist_remove(list, name_sym);
-  Rf_setAttrib(object, sym_dot_accessing_prop, list);
+  Rf_setAttrib(object, no_recurse_list_sym, list);
 
   // optimization opportunity: same as setter_callable_no_recurse
 }
+
+#define getter_no_recurse_clear(...) \
+    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_getting_prop)
+
+#define setter_no_recurse_clear(...) \
+    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_setting_prop)
 
 static inline
 void prop_validate(SEXP property, SEXP value, SEXP object) {
@@ -210,12 +217,12 @@ static inline
 Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
   // Check if we should call getter and if so, prepare object for calling the getter.
 
-  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_accessing_prop);
+  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_getting_prop);
   if (TYPEOF(no_recurse_list) == LISTSXP &&
       pairlist_contains(no_recurse_list, name_sym))
     return FALSE;
 
-  Rf_setAttrib(object, sym_dot_accessing_prop,
+  Rf_setAttrib(object, sym_dot_getting_prop,
                Rf_cons(name_sym, no_recurse_list));
   return TRUE; // object is now now marked non-recursive for this property accessor, safe to call
 
@@ -240,7 +247,7 @@ SEXP prop_(SEXP object, SEXP name) {
   if (TYPEOF(getter) == CLOSXP &&
       getter_callable_no_recurse(getter, object, name_sym)) {
     SEXP value = PROTECT(eval_here(Rf_lang2(getter, object)));
-    accessor_no_recurse_clear(object, name_sym);
+    getter_no_recurse_clear(object, name_sym);
     UNPROTECT(1);
     return value;
   }
@@ -308,7 +315,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
     REPROTECT(object = eval_here(Rf_lang3(setter, object, value)), object_pi);
-    accessor_no_recurse_clear(object, name_sym);
+    setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
     if (should_validate_prop)

@@ -33,7 +33,8 @@ SEXP sym_validator;
 SEXP sym_getter;
 
 SEXP sym_dot_should_validate;
-SEXP sym_dot_accessing_prop;
+SEXP sym_dot_getting_prop;
+SEXP sym_dot_setting_prop;
 
 SEXP ns_S7;
 
@@ -54,7 +55,8 @@ void R_init_S7(DllInfo *dll)
     sym_validator = Rf_install("validator");
     sym_getter = Rf_install("getter");
     sym_dot_should_validate = Rf_install(".should_validate");
-    sym_dot_accessing_prop = Rf_install(".accessing_prop");
+    sym_dot_getting_prop = Rf_install(".getting_prop");
+    sym_dot_setting_prop = Rf_install(".setting_prop");
 
     ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 }
