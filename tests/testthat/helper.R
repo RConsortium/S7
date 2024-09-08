@@ -62,3 +62,19 @@ defer <- function(expr, frame = parent.frame(), after = FALSE) {
   thunk <- as.call(list(function() expr))
   do.call(on.exit, list(thunk, TRUE, after), envir = frame)
 }
+
+# always returns a named list
+nlist <- function(...) {
+  x <- list(...)
+  nms <- names2(x)
+
+  for (i in which(nms == "")) {
+    nm <- substitute(str2lang(paste0("..", i)))
+    if (!is.symbol(nm))
+      stop("Please provide a name for `", deparse(nm), "`")
+    nms[i] <- as.character(nm)
+  }
+
+  names(x) <- nms
+  x
+}

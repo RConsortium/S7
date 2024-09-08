@@ -244,7 +244,7 @@ test_that("properties can be base, S3, S4, S7, or S7 union", {
       anything = class_any,
       null = NULL,
       base = class_integer,
-      S3 = new_S3_class("factor"),
+      S3 = class_factor,
       S4 = class_S4,
       S7 = class_S7,
       S7_union = new_union(class_integer, class_logical)

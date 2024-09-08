@@ -1,26 +1,26 @@
 test_that("generates correct arguments from parent + properties",  {
   # No arguments
   args <- constructor_args(S7_object)
-  expect_equal(args$self, character())
-  expect_equal(args$parent, character())
+  expect_equal(args$self, nlist())
+  expect_equal(args$parent, nlist())
 
   # Includes properties
   args <- constructor_args(S7_object, as_properties(list(x = class_numeric)))
-  expect_equal(args$self, "x")
-  expect_equal(args$parent, character())
+  expect_equal(args$self, list(x = integer()))
+  expect_equal(args$parent, nlist())
 
   # unless they're dynamic
   args <- constructor_args(S7_object,
     as_properties(list(x = new_property(getter = function(self) 10)))
   )
-  expect_equal(args$self, character())
-  expect_equal(args$parent, character())
+  expect_equal(args$self, nlist())
+  expect_equal(args$parent, nlist())
 
   # Includes parent properties
   foo <- new_class("foo", properties = list(x = class_numeric))
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
-  expect_equal(args$self, "y")
-  expect_equal(args$parent, "x")
+  expect_equal(args$self, list(y = integer()))
+  expect_equal(args$parent, list(x = integer()))
 
   # But only those in the constructor
   foo <- new_class("foo",
@@ -28,8 +28,8 @@ test_that("generates correct arguments from parent + properties",  {
     constructor = function() new_object(x = 1)
   )
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
-  expect_equal(args$self, "y")
-  expect_equal(args$parent, character())
+  expect_equal(args$self, list(y = integer()))
+  expect_equal(args$parent, nlist())
 })
 
 test_that("generates meaningful constructors", {
