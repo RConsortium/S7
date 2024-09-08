@@ -80,7 +80,7 @@ class_friendly <- function(x) {
   )
 }
 
-class_constructor <- function(.x, ...) {
+class_constructor <- function(.x) {
   switch(class_type(.x),
     NULL = function() NULL,
     any = function() NULL,
@@ -92,8 +92,14 @@ class_constructor <- function(.x, ...) {
     stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
   )
 }
+
+class_construct_expr <- function(.x, ...) {
+  f <- class_constructor(.x)
+  as.call(list(f, ...))
+}
+
 class_construct <- function(.x, ...) {
-  class_constructor(.x)(...)
+  eval(class_construct_expr(.x, ...))
 }
 
 class_validate <- function(class, object) {

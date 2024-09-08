@@ -1,12 +1,8 @@
 new_base_class <- function(name, constructor_name = name) {
   force(name)
 
-  constructor <- function(.data = class_missing) {
-    if (is_class_missing(.data)) {
-      .data <- base_default(name)
-    }
-    .data
-  }
+  constructor <- as.function.default(list(.data = base_default(name), quote(.data)),
+                                     baseenv())
 
   validator <- function(object) {
     if (base_class(object) != name) {
@@ -35,8 +31,8 @@ base_default <- function(type) {
     list = list(),
     expression = expression(),
 
-    `function` = function() {},
-    environment = new.env(parent = emptyenv())
+    `function` = quote(function() {}),
+    environment = quote(new.env(parent = emptyenv()))
 )}
 
 

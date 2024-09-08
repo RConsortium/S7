@@ -1,10 +1,11 @@
 new_constructor <- function(parent, properties) {
+  properties <- as_properties(properties)
   arg_info <- constructor_args(parent, properties)
-  self_args <- as_names(arg_info$self, named = TRUE)
+  self_args <- as_names(names(arg_info$self), named = TRUE)
 
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     return(new_function(
-      args = missing_args(arg_info$self),
+      args = arg_info$self,
       body = new_call("new_object", c(list(quote(S7_object())), self_args)),
       env = asNamespace("S7")
     ))
@@ -13,16 +14,16 @@ new_constructor <- function(parent, properties) {
   if (is_class(parent)) {
     parent_name <- parent@name
     parent_fun <- parent
-    args <- missing_args(union(arg_info$parent, arg_info$self))
+    args <- modify_list(arg_info$parent, arg_info$self)
   } else if (is_base_class(parent)) {
     parent_name <- parent$constructor_name
     parent_fun <- parent$constructor
-    args <- missing_args(union(arg_info$parent, arg_info$self))
+    args <- modify_list(arg_info$parent, arg_info$self)
   } else if (is_S3_class(parent)) {
     parent_name <- paste0("new_", parent$class[[1]])
     parent_fun <- parent$constructor
     args <- formals(parent$constructor)
-    args[arg_info$self] <- missing_args(arg_info$self)
+    args[names(arg_info$self)] <- arg_info$self
   } else {
     # user facing error in S7_class()
     stop("Unsupported `parent` type", call. = FALSE)
@@ -33,7 +34,8 @@ new_constructor <- function(parent, properties) {
     args[names(args) == "..."] <- list(quote(expr = ))
   }
 
-  parent_args <- as_names(arg_info$parent, named = TRUE)
+  parent_args <- as_names(names(arg_info$parent), named = TRUE)
+  names(parent_args)[names(parent_args) == "..."] <- ""
   parent_call <- new_call(parent_name, parent_args)
   body <- new_call("new_object", c(parent_call, self_args))
 
@@ -44,7 +46,8 @@ new_constructor <- function(parent, properties) {
 }
 
 constructor_args <- function(parent, properties = list()) {
-  parent_args <- names2(formals(class_constructor(parent)))
+  parent_constructor_formals <- formals(class_constructor(parent))
+  parent_args <- names2(parent_constructor_formals)
 
   self_args <- names2(properties)
   # Remove dynamic arguments
@@ -55,22 +58,21 @@ constructor_args <- function(parent, properties = list()) {
     self_args <- setdiff(self_args, names2(parent@properties))
   }
 
-  list(
-    parent = parent_args,
-    self = self_args
-  )
+  self_args <- lapply(setNames(nm = self_args),
+                      function(name) prop_default(properties[[name]]))
+  parent_args <- parent_constructor_formals %||%
+    structure(list(), names = character())
+
+  list(parent = as.list(parent_args),
+       self = as.list(self_args))
 }
+
+is_property_dynamic <- function(prop) is.function(x$getter)
 
 # helpers -----------------------------------------------------------------
 
 new_function <- function(args, body, env) {
-  f <- function() {}
-  formals(f) <- args
-  body(f) <- body
-  environment(f) <- env
-  attr(f, "srcref") <- NULL
-
-  f
+  as.function.default(c(args, body), env)
 }
 missing_args <- function(names) {
   lapply(setNames(, names), function(i) quote(class_missing))

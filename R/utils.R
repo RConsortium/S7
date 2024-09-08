@@ -136,6 +136,16 @@ show_args <- function(x, name = "function", suffix = "") {
   paste0(name, "(", args, ")", suffix)
 }
 
+modify_list <- function (x, new_vals) {
+  stopifnot(is.list(x))
+
+  for (name in names(new_vals))
+    x[name] <- new_vals[name]
+
+  x
+}
+
+
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {
   paste(deparse(expr, width.cutoff, ...), collapse = collapse)

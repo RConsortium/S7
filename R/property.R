@@ -131,7 +131,7 @@ str.S7_property <- function(object, ..., nest.lev = 0) {
 }
 
 prop_default <- function(prop) {
-  prop$default %||% class_construct(prop$class)
+  prop$default %||% class_construct_expr(prop$class)
 }
 
 #' Get/set a property
