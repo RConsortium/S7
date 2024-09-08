@@ -113,13 +113,9 @@ show_function <- function(x, constructor = FALSE) {
   args <- formals(x)
 
   if (constructor) {
-    args <- lapply(args, function(x) {
-      if (identical(x, quote(class_missing))) {
-        quote(expr = )
-      } else {
-        x
-      }
-    })
+    # don't show the defaults arg values in the constructor, keep it compact
+    # TODO: do show the default values next to properties in class printouts.
+    args <- lapply(args, function(q) quote(expr =))
   }
 
   show_args(args, suffix = " {...}")
