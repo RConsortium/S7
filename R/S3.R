@@ -206,7 +206,7 @@ valid_dimnames <- function(self) {
 validate_matrix <- function(self) {
   if (is.matrix(self)) # is.matrix() methods should only return TRUE if valid
     return(invisible(NULL))
-  if (!is.integer(dim(self)) || length(dim(self)) != 2L || !all(dim(self) > 0L))
+  if (!is.integer(dim(self)) || length(dim(self)) != 2L || !all(dim(self) >= 0L))
     return("dim(self) must be a non-negative integer vector of length 2")
   if (!valid_dimnames(self))
     return("dimnames(self) must be NULL or a length 2 list of either NULL or a character vector of length equal to its corresponding dimension")
@@ -216,7 +216,7 @@ validate_matrix <- function(self) {
 validate_array <- function(self) {
   if (is.array(self)) # is.array() methods should only return TRUE if valid
     return(invisible(NULL))
-  if (!is.integer(dim(self)) || length(dim(self)) == 0L || !all(dim(self) > 0L))
+  if (!is.integer(dim(self)) || length(dim(self)) == 0L || !all(dim(self) >= 0L))
     return("dim(self) must be a non-empty non-negative integer vector")
   if (!valid_dimnames(self))
     return("dimnames(self) must be NULL or a list of either NULL or a character vector of length equal to its corresponding dimension")
