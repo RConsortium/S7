@@ -71,9 +71,6 @@ is_property_dynamic <- function(prop) is.function(x$getter)
 
 # helpers -----------------------------------------------------------------
 
-new_function <- function(args, body, env) {
-  as.function.default(c(args, body), env)
-}
 missing_args <- function(names) {
   lapply(setNames(, names), function(i) quote(class_missing))
 }

@@ -97,33 +97,43 @@ class_construct_expr <- function(.x, ...) {
   f <- class_constructor(.x)
   # If the constructor is a closure wrapping a simple expression, try to extract the expression
   # (mostly for nicer printing and introspection.)
-  fb <- body(f)
-  ff <- formals(f)
+
+  ## early return if not safe to unwrap
+  # can't unwrap if we're passing on ...
+  if(...length()) {
+    return(as.call(list(f, ...)))
+  }
+
+  # can't unwrap if the closure is potentially important
+  # (this can probably be relaxed to allow additional environments)
   fe <- environment(f)
-
-  # early return if not safe to unwrap
-  if(length(list(...)))
+  if(!identical(fe, baseenv())) {
     return(as.call(list(f, ...)))
+  }
 
-  if(!identical(fe, baseenv()))
+  # `new_object()` must be called from the class constructor, can't
+  # be safely unwrapped
+  fb <- body(f)
+  if("new_object" %in% all.names(fb)) {
     return(as.call(list(f, ...)))
-
-  if("new_object" %in% all.names(fb))
-    return(as.call(list(f, ...)))
+  }
 
   # maybe unwrap if body is a single expression wrapped in `{`
   if (length(fb) == 2L && identical(fb[[1L]], quote(`{`)))
     fb <- fb[[2L]]
 
+  ff <- formals(f)
   # If all the all the work happens in the promise to the `.data` arg,
   # return the `.data` expression.
   if ((identical(fb, quote(.data))) &&
-      identical(names(ff), ".data"))
+      identical(names(ff), ".data")) {
     return(ff$.data)
+  }
 
   # if all the work happens in the function body, return the body.
-  if (is.null(ff))
+  if (is.null(ff)) {
     return(fb)
+  }
 
   #else, return a call to the constructor
   as.call(list(f, ...))

@@ -1,12 +1,16 @@
 new_base_class <- function(name, constructor_name = name) {
   force(name)
 
-  constructor <- as.function.default(list(.data = base_default(name), quote(.data)),
-                                     baseenv())
+  constructor <- new_function(
+    args = list(.data = base_default(name)),
+    body = quote(.data),
+    env = baseenv()
+  )
 
   validator <- function(object) {
     if (base_class(object) != name) {
-      sprintf("Underlying data must be <%s> not <%s>", name, base_class(object))
+      sprintf("Underlying data must be <%s> not <%s>",
+              name, base_class(object))
     }
   }
 
