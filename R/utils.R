@@ -133,10 +133,14 @@ show_args <- function(x, name = "function", suffix = "") {
 }
 
 modify_list <- function (x, new_vals) {
-  stopifnot(is.list(x))
+  stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
 
-  for (name in names(new_vals))
-    x[name] <- new_vals[name]
+  if (length(new_vals)) {
+    nms <- names2(new_vals)
+    if (!all(nzchar(nms)))
+      stop("all elements in `new_vals` must be named")
+    x[nms] <- new_vals
+  }
 
   x
 }
