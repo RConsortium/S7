@@ -104,9 +104,13 @@ class_construct_expr <- function(.x, ...) {
     return(as.call(list(f, ...)))
   }
 
+  # special case for `class_missing`
+  if (identical(body(f) -> fb, quote(expr =))) {
+    return(quote(expr =))
+  }
+
   # `new_object()` must be called from the class constructor, can't
   # be safely unwrapped
-  fb <- body(f)
   if("new_object" %in% all.names(fb)) {
     return(as.call(list(f, ...)))
   }
@@ -135,6 +139,7 @@ class_construct_expr <- function(.x, ...) {
 class_constructor <- function(.x) {
   switch(class_type(.x),
          NULL = function() NULL,
+         missing = new_function(, quote(expr =), baseenv()),
          any = function() NULL,
          S4 = function(...) methods::new(.x, ...),
          S7 = .x,

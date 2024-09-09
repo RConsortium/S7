@@ -89,7 +89,7 @@ new_property <- function(class = class_any,
                          name = NULL) {
   class <- as_class(class)
   if (!is.null(default) &&
-      (!is.call(default) || identical(default, quote(expr=))) && # allow calls or missing
+      !(is.call(default) || identical(default, quote(expr=))) && # allow calls or missing
       !class_inherits(default, class)) {
     msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
     stop(msg)
