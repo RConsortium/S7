@@ -114,7 +114,7 @@ describe("prop setting", {
         }),
         y = new_property(setter = function(self, value) {
           self@y <- value
-          self@z <- paste0(value, "_set_by_z_setter")
+          self@z <- paste0(value, "_set_by_y_setter")
           self
         }),
         z = new_property(class_character)
@@ -126,7 +126,7 @@ describe("prop setting", {
 
     out@x <- "VAL"
     expect_equal(times_validated, 2L)
-    expect_equal(out@z, "VAL_set_by_x_setter_set_by_z_setter")
+    expect_equal(out@z, "VAL_set_by_x_setter_set_by_y_setter")
   })
 
   it("does not run the check or validation functions if check = FALSE", {
