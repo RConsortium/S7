@@ -5,5 +5,3 @@ docs
 .Rhistory
 compile_commands.json
 .cache
-fetch_github_issue.py
-.Rbuildignore
