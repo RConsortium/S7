@@ -80,22 +80,15 @@ class_friendly <- function(x) {
   )
 }
 
-class_constructor <- function(.x) {
-  switch(class_type(.x),
-    NULL = function() NULL,
-    any = function() NULL,
-    S4 = function(...) methods::new(.x, ...),
-    S7 = .x,
-    S7_base = .x$constructor,
-    S7_union = class_constructor(.x$classes[[1]]),
-    S7_S3 = .x$constructor,
-    stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
-  )
+class_construct <- function(.x, ...) {
+  eval(class_construct_expr(.x, ...))
 }
+
 
 class_construct_expr <- function(.x, ...) {
   f <- class_constructor(.x)
-  # If the constructor is a closure wrapping a simple expression, try to extract the expression
+  # If the constructor is a closure wrapping a simple expression, try
+  # to extract the expression
   # (mostly for nicer printing and introspection.)
 
   ## early return if not safe to unwrap
@@ -118,13 +111,13 @@ class_construct_expr <- function(.x, ...) {
     return(as.call(list(f, ...)))
   }
 
-  # maybe unwrap if body is a single expression wrapped in `{`
+  # maybe unwrap body if it is a single expression wrapped in `{`
   if (length(fb) == 2L && identical(fb[[1L]], quote(`{`)))
     fb <- fb[[2L]]
 
-  ff <- formals(f)
   # If all the all the work happens in the promise to the `.data` arg,
   # return the `.data` expression.
+  ff <- formals(f)
   if ((identical(fb, quote(.data))) &&
       identical(names(ff), ".data")) {
     return(ff$.data)
@@ -139,8 +132,17 @@ class_construct_expr <- function(.x, ...) {
   as.call(list(f, ...))
 }
 
-class_construct <- function(.x, ...) {
-  eval(class_construct_expr(.x, ...))
+class_constructor <- function(.x) {
+  switch(class_type(.x),
+         NULL = function() NULL,
+         any = function() NULL,
+         S4 = function(...) methods::new(.x, ...),
+         S7 = .x,
+         S7_base = .x$constructor,
+         S7_union = class_constructor(.x$classes[[1]]),
+         S7_S3 = .x$constructor,
+         stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
+  )
 }
 
 class_validate <- function(class, object) {
