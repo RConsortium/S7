@@ -46,30 +46,31 @@ new_constructor <- function(parent, properties) {
 }
 
 constructor_args <- function(parent, properties = list()) {
-  parent_constructor_formals <- formals(class_constructor(parent))
-  parent_args <- names2(parent_constructor_formals)
+  parent_args <- formals(class_constructor(parent))
 
-  self_args <- names2(properties)
+  self_arg_nms <- names2(properties)
   # Remove dynamic arguments
-  self_args <- self_args[vlapply(properties, function(x) is.null(x$getter))]
+  self_arg_nms <- self_arg_nms[vlapply(properties, function(x) is.null(x$getter))]
+
   if (is_class(parent) && !parent@abstract) {
     # Remove any parent properties; can't use parent_args() since the constructor
     # might automatically set some properties.
-    self_args <- setdiff(self_args, names2(parent@properties))
+    self_arg_nms <- setdiff(self_arg_nms, names2(parent@properties))
   }
 
-  self_args <- lapply(setNames(nm = self_args),
-                      function(name) prop_default(properties[[name]]))
-  parent_args <- parent_constructor_formals %||%
-    structure(list(), names = character())
+  self_args <- as.pairlist(lapply(
+    setNames(, self_arg_nms),
+    function(name) prop_default(properties[[name]]))
+  )
 
-  list(parent = as.list(parent_args),
-       self = as.list(self_args))
+  list(parent = parent_args,
+       self = self_args)
 }
 
-is_property_dynamic <- function(prop) is.function(x$getter)
 
 # helpers -----------------------------------------------------------------
+
+is_property_dynamic <- function(x) is.function(x$getter)
 
 missing_args <- function(names) {
   lapply(setNames(, names), function(i) quote(class_missing))
