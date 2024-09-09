@@ -273,7 +273,7 @@ class_Date <- new_S3_class("Date",
 #' @rdname base_s3_classes
 #' @format NULL
 #' @order 3
-class_POSIXct <- new_S3_class("POSIXct",
+class_POSIXct <- new_S3_class(c("POSIXct", "POSIXt"),
   constructor = function(.data = double(), tz = "") {
     .POSIXct(.data, tz = tz)
   },
@@ -284,7 +284,7 @@ class_POSIXct <- new_S3_class("POSIXct",
 #' @rdname base_s3_classes
 #' @format NULL
 #' @order 3
-class_POSIXlt <- new_S3_class("POSIXlt",
+class_POSIXlt <- new_S3_class(c("POSIXlt", "POSIXt"),
   constructor = function(.data = NULL, tz = "") {
     as.POSIXlt(NULL, tz = tz)
   },
