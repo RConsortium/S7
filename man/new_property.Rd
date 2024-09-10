@@ -58,7 +58,8 @@ limited to a data of a specific \code{class}.
 
 By specifying a \code{getter} and/or \code{setter}, you can make the property
 "dynamic" so that it's computed when accessed or has some non-standard
-behaviour when modified.
+behaviour when modified. Dynamic properties are not included as an argument
+to the default class constructor.
 }
 \examples{
 # Simple properties store data inside an object
@@ -80,8 +81,12 @@ clock <- new_class("clock", properties = list(
 my_clock <- clock()
 my_clock@now; Sys.sleep(1)
 my_clock@now
-# This property is read only
+# This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
+
+# Because the property is dynamic, it is not included as an
+# argument to the default constructor
+"now" \%in\% names(formals(clock)) # FALSE
 
 # These can be useful if you want to deprecate a property
 person <- new_class("person", properties = list(
@@ -102,4 +107,16 @@ hadley <- person(first_name = "Hadley")
 hadley@firstName
 hadley@firstName <- "John"
 hadley@first_name
+
+# Properties can have default values that are language objects.
+# These become standard function promises in the default constructor,
+# evaluated at the time the object is constructed.
+stopwatch <- new_class("stopwatch", properties = list(
+  starttime = new_property(class = class_POSIXct, default = quote(Sys.time())),
+  totaltime = new_property(getter = function(self)
+    difftime(Sys.time(), self@starttime, units = "secs"))
+))
+args(stopwatch)
+round( stopwatch()@totaltime )
+round( stopwatch(Sys.time() - 1)@totaltime )
 }
