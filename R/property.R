@@ -96,8 +96,8 @@
 #'     difftime(Sys.time(), self@starttime, units = "secs"))
 #' ))
 #' args(stopwatch)
-#' round( stopwatch()@totaltime )
-#' round( stopwatch(Sys.time() - 1)@totaltime )
+#' round(stopwatch()@totaltime)
+#' round(stopwatch(Sys.time() - 1)@totaltime)
 #'
 #' # Properties can also have a 'missing' default value, making them
 #' # required arguments to the default constructor.
