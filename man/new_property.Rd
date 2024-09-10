@@ -40,8 +40,10 @@ The validator will be called after the \code{class} has been verified, so
 your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
-what should it default to? If \code{NULL}, defaults to the "empty" instance
-of \code{class}.}
+what should it default to? If \code{NULL}, it defaults to the "empty" instance
+of \code{class}. This can also be a quoted call, which then becomes a standard
+function promise in the default constructor, evaluated at the time the
+object is constructed.}
 
 \item{name}{Property name, primarily used for error messages. Generally
 don't need to set this here, as it's more convenient to supply as a
@@ -86,7 +88,8 @@ try(my_clock@now <- 10)
 
 # Because the property is dynamic, it is not included as an
 # argument to the default constructor
-"now" \%in\% names(formals(clock)) # FALSE
+try(clock(now = 10))
+args(clock)
 
 # These can be useful if you want to deprecate a property
 person <- new_class("person", properties = list(
@@ -108,7 +111,7 @@ hadley@firstName
 hadley@firstName <- "John"
 hadley@first_name
 
-# Properties can have default values that are language objects.
+# Properties can have default values that are quoted calls.
 # These become standard function promises in the default constructor,
 # evaluated at the time the object is constructed.
 stopwatch <- new_class("stopwatch", properties = list(
@@ -117,8 +120,8 @@ stopwatch <- new_class("stopwatch", properties = list(
     difftime(Sys.time(), self@starttime, units = "secs"))
 ))
 args(stopwatch)
-round( stopwatch()@totaltime )
-round( stopwatch(Sys.time() - 1)@totaltime )
+round(stopwatch()@totaltime)
+round(stopwatch(Sys.time() - 1)@totaltime)
 
 # Properties can also have a 'missing' default value, making them
 # required arguments to the default constructor.

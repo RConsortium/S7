@@ -32,8 +32,10 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to? If `NULL`, defaults to the "empty" instance
-#'   of `class`.
+#'   what should it default to? If `NULL`, it defaults to the "empty" instance
+#'   of `class`. This can also be a quoted call, which then becomes a standard
+#'   function promise in the default constructor, evaluated at the time the
+#'   object is constructed.
 #' @param name Property name, primarily used for error messages. Generally
 #'   don't need to set this here, as it's more convenient to supply as a
 #'   the element name when defining a list of properties. If both `name`
@@ -65,7 +67,8 @@
 #'
 #' # Because the property is dynamic, it is not included as an
 #' # argument to the default constructor
-#' "now" %in% names(formals(clock)) # FALSE
+#' try(clock(now = 10))
+#' args(clock)
 #'
 #' # These can be useful if you want to deprecate a property
 #' person <- new_class("person", properties = list(
