@@ -98,6 +98,15 @@
 #' args(stopwatch)
 #' round( stopwatch()@totaltime )
 #' round( stopwatch(Sys.time() - 1)@totaltime )
+#'
+#' # Properties can also have a 'missing' default value, making them
+#' # required arguments to the default constructor.
+#' # You can generate a missing arg with `quote(expr =)` or `rlang::missing_arg()`
+#' Person <- new_class("Person", properties = list(
+#'   name = new_property(class_character, default = quote(expr = ))
+#' ))
+#' try(Person())
+#' Person("Alice")
 new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
