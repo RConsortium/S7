@@ -87,7 +87,7 @@
 #' hadley@firstName <- "John"
 #' hadley@first_name
 #'
-#' # Properties can have default values that are language objects.
+#' # Properties can have default values that are quoted calls.
 #' # These become standard function promises in the default constructor,
 #' # evaluated at the time the object is constructed.
 #' stopwatch <- new_class("stopwatch", properties = list(
