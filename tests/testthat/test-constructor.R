@@ -85,3 +85,66 @@ test_that("can use `...` in parent constructor", {
   expect_equal(bar(2)@x, list(2))
   expect_equal(bar(y = 2)@x, list())
 })
+
+test_that("can create constructors with missing or lazy defaults", {
+
+  Person <- new_class(
+    name = "Person",
+    properties = list(
+      # non-dynamic, default missing (required constructor arg)
+      first_name = new_property(class_character, default = quote(expr = )),
+
+      # non-dynamic, static default (optional constructor arg)
+      middle_name = new_property(class_character, default = ""),
+
+      # non-dynamic, default missing (required constructor arg) (same as first_name)
+      last_name = new_property(class_missing | class_character),
+
+      # non-dynamic, but defaults to the value of another property
+      nick_name = new_property(class_character, default = quote(first_name)),
+
+      # non-dynamic, optional constructor argument, read-only after construction.
+      birthdate = new_property(
+        class = class_Date,
+        default = quote(Sys.Date()),
+        setter = function(self, value) {
+          if (!is.null(self@birthdate))
+            stop("Can't set read-only property Person@birthdate")
+          self@birthdate <- value
+          self
+        }
+      ),
+
+      # dynamic property, not a constructor argument
+      age = new_property(class = class_any, getter = \(self) {
+        Sys.Date() - self@birthdate
+      })
+    )
+  )
+
+  expect_equal(formals(Person), as.pairlist(alist(
+    first_name = ,
+    middle_name = "",
+    last_name = ,
+    nick_name = first_name,
+    birthdate = Sys.Date()
+  ))) # no age
+
+  expect_error(Person(), 'argument "first_name" is missing, with no default')
+  expect_error(Person("Alice"), 'argument "last_name" is missing, with no default')
+
+  p <- Person("Alice", ,"Smith")
+
+  expect_equal(p@nick_name, "Alice")
+  expect_equal(p@middle_name, "")
+  expect_equal(p@birthdate, Sys.Date())
+  expect_equal(p@age, Sys.Date() - Sys.Date())
+
+  p <- Person("Bob", nick_name = "Bobby", "Allen" , "Smith", as.Date('1970-01-01'))
+  expect_equal(p@nick_name, "Bobby")
+  expect_equal(p@birthdate, as.Date('1970-01-01'))
+  expect_equal(p@age, Sys.Date() - as.Date('1970-01-01'))
+  expect_equal(p@middle_name, "Allen")
+  expect_error(p@birthdate <- as.Date('1970-01-01'),
+               "Can\'t set read-only property Person@birthdate")
+})
