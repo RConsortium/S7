@@ -116,7 +116,7 @@ test_that("can create constructors with missing or lazy defaults", {
       ),
 
       # dynamic property, not a constructor argument
-      age = new_property(class = class_any, getter = \(self) {
+      age = new_property(class = class_any, getter = function(self) {
         Sys.Date() - self@birthdate
       })
     )
