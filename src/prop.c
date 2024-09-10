@@ -72,11 +72,13 @@ static inline
 int name_idx(SEXP list, const char* name) {
   SEXP names = Rf_getAttrib(list, R_NamesSymbol);
 
-  if (TYPEOF(names) == STRSXP)
-    for (int i = 0, n = Rf_length(names); i < n; i++)
+  if (TYPEOF(names) == STRSXP) {
+    for (int i = 0, n = Rf_length(names); i < n; i++) {
       if (strcmp(CHAR(STRING_ELT(names, i)), name) == 0)
         return i;
-      return -1;
+    }
+  }
+  return -1;
 }
 
 static inline
