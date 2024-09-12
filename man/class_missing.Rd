@@ -18,9 +18,11 @@ i.e. it's missing in the sense of \code{\link[=missing]{missing()}}, not in the 
 \examples{
 foo <- new_generic("foo", "x")
 method(foo, class_numeric) <- function(x) "number"
+method(foo, class_missing) <- function(x) "missing"
 method(foo, class_any) <- function(x) "fallback"
 
 foo(1)
 foo()
+foo("")
 }
 \keyword{datasets}

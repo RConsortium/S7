@@ -260,17 +260,9 @@ new_object <- function(.parent, ...) {
   attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
-  supplied_props <- nms[!vlapply(args, is_class_missing)]
-  for (prop in supplied_props) {
-    prop(object, prop, check = FALSE) <- args[[prop]]
-  }
-
-  # We have to fill in missing values after setting the initial properties,
-  # because custom setters might set property values
-  missing_props <- setdiff(nms, union(supplied_props, names(attributes(object))))
-  for (prop in missing_props) {
-    prop(object, prop, check = FALSE) <- prop_default(class@properties[[prop]])
-  }
+  # Set properties. This will potentially invoke custom property setters
+  for (name in names(args))
+    prop(object, name, check = FALSE) <- args[[name]]
 
   # Don't need to validate if parent class already validated,
   # i.e. it's a non-abstract S7 class

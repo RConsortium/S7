@@ -7,7 +7,8 @@
 #'
 #' By specifying a `getter` and/or `setter`, you can make the property
 #' "dynamic" so that it's computed when accessed or has some non-standard
-#' behaviour when modified.
+#' behaviour when modified. Dynamic properties are not included as an argument
+#' to the default class constructor.
 #'
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
@@ -31,8 +32,10 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to? If `NULL`, defaults to the "empty" instance
-#'   of `class`.
+#'   what should it default to? If `NULL`, it defaults to the "empty" instance
+#'   of `class`. This can also be a quoted call, which then becomes a standard
+#'   function promise in the default constructor, evaluated at the time the
+#'   object is constructed.
 #' @param name Property name, primarily used for error messages. Generally
 #'   don't need to set this here, as it's more convenient to supply as a
 #'   the element name when defining a list of properties. If both `name`
@@ -59,8 +62,13 @@
 #' my_clock <- clock()
 #' my_clock@now; Sys.sleep(1)
 #' my_clock@now
-#' # This property is read only
+#' # This property is read only, because there is a 'getter' but not a 'setter'
 #' try(my_clock@now <- 10)
+#'
+#' # Because the property is dynamic, it is not included as an
+#' # argument to the default constructor
+#' try(clock(now = 10))
+#' args(clock)
 #'
 #' # These can be useful if you want to deprecate a property
 #' person <- new_class("person", properties = list(
@@ -81,6 +89,27 @@
 #' hadley@firstName
 #' hadley@firstName <- "John"
 #' hadley@first_name
+#'
+#' # Properties can have default values that are quoted calls.
+#' # These become standard function promises in the default constructor,
+#' # evaluated at the time the object is constructed.
+#' stopwatch <- new_class("stopwatch", properties = list(
+#'   starttime = new_property(class = class_POSIXct, default = quote(Sys.time())),
+#'   totaltime = new_property(getter = function(self)
+#'     difftime(Sys.time(), self@starttime, units = "secs"))
+#' ))
+#' args(stopwatch)
+#' round(stopwatch()@totaltime)
+#' round(stopwatch(Sys.time() - 1)@totaltime)
+#'
+#' # Properties can also have a 'missing' default value, making them
+#' # required arguments to the default constructor.
+#' # You can generate a missing arg with `quote(expr =)` or `rlang::missing_arg()`
+#' Person <- new_class("Person", properties = list(
+#'   name = new_property(class_character, default = quote(expr = ))
+#' ))
+#' try(Person())
+#' Person("Alice")
 new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
@@ -88,7 +117,9 @@ new_property <- function(class = class_any,
                          default = NULL,
                          name = NULL) {
   class <- as_class(class)
-  if (!is.null(default) && !class_inherits(default, class)) {
+  if (!is.null(default) &&
+      !(is.call(default) || is.symbol(default)) && # allow promises
+      !class_inherits(default, class)) {
     msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
     stop(msg)
   }
@@ -131,7 +162,7 @@ str.S7_property <- function(object, ..., nest.lev = 0) {
 }
 
 prop_default <- function(prop) {
-  prop$default %||% class_construct(prop$class)
+  prop$default %||% class_construct_expr(prop$class)
 }
 
 #' Get/set a property

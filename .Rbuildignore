@@ -15,3 +15,6 @@
 ^pkgdown$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+^compile_commands\.json$
+^\.cache$
+^\.vscode$

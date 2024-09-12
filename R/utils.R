@@ -11,7 +11,6 @@ global_variables <- function(names) {
 
 vlapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
 vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
-`%||%` <- function(x, y) if (is.null(x)) y else x
 
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
@@ -113,13 +112,9 @@ show_function <- function(x, constructor = FALSE) {
   args <- formals(x)
 
   if (constructor) {
-    args <- lapply(args, function(x) {
-      if (identical(x, quote(class_missing))) {
-        quote(expr = )
-      } else {
-        x
-      }
-    })
+    # don't show the defaults arg values in the constructor, keep it compact
+    # TODO: do show the default values next to properties in class printouts.
+    args <- lapply(args, function(q) quote(expr =))
   }
 
   show_args(args, suffix = " {...}")
@@ -135,6 +130,20 @@ show_args <- function(x, name = "function", suffix = "") {
 
   paste0(name, "(", args, ")", suffix)
 }
+
+modify_list <- function (x, new_vals) {
+  stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
+
+  if (length(new_vals)) {
+    nms <- names2(new_vals)
+    if (!all(nzchar(nms)))
+      stop("all elements in `new_vals` must be named")
+    x[nms] <- new_vals
+  }
+
+  x
+}
+
 
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {

@@ -108,22 +108,25 @@ describe("prop setting", {
       "foo",
       properties = list(
         x = new_property(setter = function(self, value) {
-          self@x <- 1
-          self@y <- value + 1
+          self@x <- value
+          self@y <- paste0(value, "_set_by_x_setter")
           self
         }),
         y = new_property(setter = function(self, value) {
-          self@y <- 2
-          self@z <- as.integer(value + 1)
+          self@y <- value
+          self@z <- paste0(value, "_set_by_y_setter")
           self
         }),
-        z = new_property(class_integer)
+        z = new_property(class_character)
       ),
       validator = function(self) { add(times_validated) <<- 1L; NULL }
     )
-    out <- foo(x = 1)
+    out <- foo()
     expect_equal(times_validated, 1L)
-    expect_identical(out@z, 3L)
+
+    out@x <- "VAL"
+    expect_equal(times_validated, 2L)
+    expect_equal(out@z, "VAL_set_by_x_setter_set_by_y_setter")
   })
 
   it("does not run the check or validation functions if check = FALSE", {
@@ -244,7 +247,7 @@ test_that("properties can be base, S3, S4, S7, or S7 union", {
       anything = class_any,
       null = NULL,
       base = class_integer,
-      S3 = new_S3_class("factor"),
+      S3 = class_factor,
       S4 = class_S4,
       S7 = class_S7,
       S7_union = new_union(class_integer, class_logical)
@@ -396,8 +399,7 @@ test_that("custom getters don't infinitely recurse", {
   someclass <- new_class("someclass", properties = list(
     someprop = new_property(
       class_character,
-      getter = function(self)
-        self@someprop,
+      getter = function(self) self@someprop,
       setter = function(self, value) {
         self@someprop <- toupper(value)
         self
