@@ -62,8 +62,9 @@ str_nest <- function(
   for (i in seq_along(object)) {
     cat(indent.str, prefix, " ", names[[i]], ":", sep = "")
 
-    xi <- object[[i]]
-    if (is.function(xi)) {
+    if(identical(xi <- object[[i]], quote(expr =))) {
+      cat(" <missing>\n")
+    } else if (is.function(xi)) {
       str_function(xi, nest.lev = nest.lev + 1)
     } else {
       str(xi, ..., nest.lev = nest.lev + 1)

@@ -24,16 +24,16 @@
        ..  ..$ getter   : NULL
        ..  ..$ setter   : NULL
        ..  ..$ validator: NULL
-       ..  ..$ default  : NULL
+       ..  ..$ default  : <missing>
        .. $ y: <S7_property> 
        ..  ..$ name     : chr "y"
        ..  ..$ class    : <S7_base_class>: <integer>
        ..  ..$ getter   : NULL
        ..  ..$ setter   : NULL
        ..  ..$ validator: NULL
-       ..  ..$ default  : NULL
+       ..  ..$ default  : <missing>
        @ abstract   : logi FALSE
-       @ constructor: function (x = integer(0), y = integer(0))  
+       @ constructor: function (x, y)  
        @ validator  : NULL
     Code
       str(list(foo2))
@@ -175,18 +175,18 @@
 
     Code
       foo <- new_class("foo", properties = list(x = class_double, y = class_double))
-      foo()
+      foo(1, 1)
     Output
       <foo>
-       @ x: num(0) 
-       @ y: num(0) 
+       @ x: num 1
+       @ y: num 1
     Code
-      str(list(foo()))
+      str(list(foo(1, 1)))
     Output
       List of 1
        $ : <foo>
-        ..@ x: num(0) 
-        ..@ y: num(0) 
+        ..@ x: num 1
+        ..@ y: num 1
 
 # S7 object: displays objects with data nicely
 

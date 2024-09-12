@@ -42,7 +42,7 @@ describe("prop setting", {
         self
       })
     ))
-    obj <- foo()
+    obj <- foo(NULL)
     obj@x <- 1
     expect_equal(obj@x, 2)
   })
@@ -121,7 +121,7 @@ describe("prop setting", {
       ),
       validator = function(self) { add(times_validated) <<- 1L; NULL }
     )
-    out <- foo()
+    out <- foo(NULL, NULL, "")
     expect_equal(times_validated, 1L)
 
     out@x <- "VAL"
@@ -352,7 +352,7 @@ test_that("prop<- won't infinitly recurse on a custom setter", {
   ))
 
   expect_snapshot({
-    obj <- foo()
+    obj <- foo(NULL, NULL)
     obj@a <- "val"
   })
 })
@@ -360,7 +360,9 @@ test_that("prop<- won't infinitly recurse on a custom setter", {
 test_that("custom setters can invoke setters on non-self objects", {
 
   Transmitter <- new_class("Transmitter", properties = list(
-    message = new_property(setter = function(self, value) {
+    message = new_property(
+      getter = function(self) self@message,
+      setter = function(self, value) {
       cat("[tx] sending: ", value, "\n")
       receiver@message <<- value
       cat("[tx] saving last sent message.\n")
@@ -371,7 +373,9 @@ test_that("custom setters can invoke setters on non-self objects", {
   ))
 
   Receiver <- new_class("Receiver", properties = list(
-    message = new_property(setter = function(self, value) {
+    message = new_property(
+      getter = function(self) self@message,
+      setter = function(self, value) {
       cat("[rx] receiving: ", value, "\n")
       self@message <- value
       cat("[rx] finished receiving.\n")

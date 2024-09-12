@@ -6,7 +6,7 @@ test_that("generates correct arguments from parent + properties",  {
 
   # Includes properties
   args <- constructor_args(S7_object, as_properties(list(x = class_numeric)))
-  expect_equal(args$self, pairlist(x = integer()))
+  expect_equal(args$self, as.pairlist(alist(x = ))
   expect_equal(args$parent, pairlist())
 
   # unless they're dynamic
@@ -19,8 +19,8 @@ test_that("generates correct arguments from parent + properties",  {
   # Includes parent properties
   foo <- new_class("foo", properties = list(x = class_numeric))
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
-  expect_equal(args$self, pairlist(y = integer()))
-  expect_equal(args$parent, pairlist(x = integer()))
+  expect_equal(args$self, as.pairlist(alist(y = ))
+  expect_equal(args$parent, as.pairlist(alist(x = ))
 
   # But only those in the constructor
   foo <- new_class("foo",
@@ -28,7 +28,7 @@ test_that("generates correct arguments from parent + properties",  {
     constructor = function() new_object(x = 1)
   )
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
-  expect_equal(args$self, pairlist(y = integer()))
+  expect_equal(args$self, as.pairlist(alist(y = ))
   expect_equal(args$parent, pairlist())
 })
 
@@ -81,7 +81,7 @@ test_that("can use `...` in parent constructor", {
 
   # And check that arguments matched correctly
   bar <- new_class("bar", foo, properties = list(y = class_double))
-  expect_equal(bar()@x, list())
+  expect_equal(bar(NULL)@x, list())
   expect_equal(bar(2)@x, list(2))
   expect_equal(bar(y = 2)@x, list())
 })

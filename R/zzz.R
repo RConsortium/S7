@@ -98,7 +98,7 @@ on_load_define_S7_generic <- function() {
     name = "S7_generic",
     properties = list(
       name = class_character,
-      methods = class_environment,
+      methods = new_property(class_environment, default = NULL),
       dispatch_args = class_character
     ),
     parent = class_function

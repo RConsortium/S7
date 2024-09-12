@@ -145,8 +145,8 @@ describe("S7 object", {
   it("displays nicely", {
     expect_snapshot({
       foo <- new_class("foo", properties = list(x = class_double, y = class_double))
-      foo()
-      str(list(foo()))
+      foo(1, 1)
+      str(list(foo(1, 1)))
     })
   })
 
@@ -180,16 +180,16 @@ describe("S7 object", {
 describe("default constructor", {
   it("initializes properties with defaults", {
     foo1 <- new_class("foo1", properties = list(x = class_double))
-    expect_equal(props(foo1()), list(x = double()))
+    expect_equal(props(foo1(as.double(NULL))), list(x = double()))
 
     foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
-    expect_equal(props(foo2()), list(x = double(), y = double()))
+    expect_equal(props(foo2(as.double(NULL), as.double(NULL))), list(x = double(), y = double()))
   })
 
   it("overrides properties with arguments", {
     foo1 <- new_class("foo1", properties = list(x = class_double))
     foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
-    expect_equal(props(foo2(x = 1)), list(x = 1, y = double()))
+    expect_equal(props(foo2(x = 1, y = double())), list(x = 1, y = double()))
     expect_equal(props(foo2(x = 1, y = 2)), list(x = 1, y = 2))
   })
 
@@ -215,7 +215,7 @@ describe("default constructor", {
   it("initializes property with S7 object", {
     foo1 <- new_class("foo1")
     foo2 <- new_class("foo2", properties = list(x = foo1))
-    x <- foo2()
+    x <- foo2(foo1())
     expect_s3_class(x@x, "foo1")
   })
 })

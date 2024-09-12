@@ -69,7 +69,7 @@
        $ getter   : NULL
        $ setter   : NULL
        $ validator: NULL
-       $ default  : NULL
+       $ default  : <missing>
     Code
       str(list(x))
     Output
@@ -80,7 +80,7 @@
         ..$ getter   : NULL
         ..$ setter   : NULL
         ..$ validator: NULL
-        ..$ default  : NULL
+        ..$ default  : <missing>
 
 # properties can be base, S3, S4, S7, or S7 union
 
@@ -179,7 +179,7 @@
 # prop<- won't infinitly recurse on a custom setter
 
     Code
-      obj <- foo()
+      obj <- foo(NULL, NULL)
     Output
       Starting syncup with value: 
       setting @a <- "a_"
@@ -207,18 +207,7 @@
 
     Code
       receiver <- Receiver()
-    Output
-      [rx] receiving:  
-      [rx] finished receiving.
-    Code
       transmitter <- Transmitter()
-    Output
-      [tx] sending:  
-      [rx] receiving:  
-      [rx] finished receiving.
-      [tx] saving last sent message.
-      [tx] finished transmitting.
-    Code
       transmitter@message <- "hello"
     Output
       [tx] sending:  hello 

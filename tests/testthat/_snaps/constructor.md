@@ -9,7 +9,7 @@
     Code
       new_constructor(S7_object, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
-      function (x = integer(0), y = integer(0)) 
+      function (x, y) 
       new_object(S7_object(), x = x, y = y)
       <environment: namespace:S7>
     Code
@@ -38,8 +38,7 @@
     Code
       new_constructor(class_factor, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
-      function (.data = integer(), levels = character(), x = integer(0), 
-          y = integer(0)) 
+      function (.data = integer(), levels = character(), x, y) 
       new_object(new_factor(.data = .data, levels = levels), x = x, 
           y = y)
       <environment: 0x0>
@@ -56,7 +55,7 @@
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
-      function (y = numeric(0)) 
+      function (y) 
       new_object(S7_object(), y = y)
       <environment: namespace:S7>
 
@@ -65,7 +64,7 @@
     Code
       new_constructor(foo, list(y = class_double))
     Output
-      function (..., y = numeric(0)) 
+      function (..., y) 
       new_object(foo(...), y = y)
       <environment: 0x0>
 

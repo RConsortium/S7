@@ -114,8 +114,12 @@ new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
                          validator = NULL,
-                         default = NULL,
+                         default,
                          name = NULL) {
+  required <- missing(default)
+  if (required)
+    default <- NULL
+
   class <- as_class(class)
   if (!is.null(default) &&
       !(is.call(default) || is.symbol(default)) && # allow promises
@@ -140,7 +144,7 @@ new_property <- function(class = class_any,
     getter = getter,
     setter = setter,
     validator = validator,
-    default = default
+    default = if (required) quote(expr =) else default
   )
   class(out) <- "S7_property"
 
