@@ -363,7 +363,7 @@ and <code>value</code> that returns a modified object.</p>
 the <code>constructor</code> property:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">range</span><span class="op">@</span><span class="va">constructor</span></span>
-<span><span class="co">#&gt; function (start = class_missing, end = class_missing) </span></span>
+<span><span class="co">#&gt; function (start = numeric(0), end = numeric(0)) </span></span>
 <span><span class="co">#&gt; new_object(S7_object(), start = start, end = end)</span></span>
 <span><span class="co">#&gt; &lt;environment: namespace:S7&gt;</span></span></code></pre></div>
 <p>In most cases, S7’s default constructor will be all you need.
