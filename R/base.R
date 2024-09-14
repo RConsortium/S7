@@ -34,7 +34,7 @@ base_default <- function(type) {
     raw = raw(),
     list = list(),
     expression = expression(),
-    name = alist(x=)$x,
+    name = quote(quote(x)),
     call = call("{"),
 
     `function` = function() {},
