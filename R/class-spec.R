@@ -138,9 +138,9 @@ class_construct_expr <- function(.x, ...) {
 
 class_constructor <- function(.x) {
   switch(class_type(.x),
-         NULL = function() NULL,
+         any = ,
+         NULL = new_function(env = baseenv()),
          missing = new_function(, quote(expr =), baseenv()),
-         any = function() NULL,
          S4 = function(...) methods::new(.x, ...),
          S7 = .x,
          S7_base = .x$constructor,
