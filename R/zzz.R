@@ -139,4 +139,5 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
   on_load_define_or_methods()
   on_load_define_S7_type()
   on_load_define_union_classes()
+  on_load_define_props()
 }
