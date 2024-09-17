@@ -9,6 +9,16 @@ test_that("generates correct arguments from parent + properties",  {
   expect_equal(args$self, pairlist(x = integer()))
   expect_equal(args$parent, pairlist())
 
+  # test constructor arg defaults
+  args <- constructor_args(S7_object, as_properties(list(
+    a = class_any,
+    b = class_missing,
+    c = NULL | class_character,
+    d = class_missing | class_numeric
+  )))
+  expect_identical(args$self, as.pairlist(alist(a = NULL, b =, c = NULL, d =)))
+  expect_identical(args$parent, pairlist())
+
   # unless they're dynamic
   args <- constructor_args(S7_object,
     as_properties(list(x = new_property(getter = function(self) 10)))
