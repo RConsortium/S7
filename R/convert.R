@@ -92,7 +92,7 @@ convert <- function(from, to, ...) {
       stop("Unreachable")
     }
     from
-  } else if (inherits(from, class_dispatch(to))) {
+  } else if (inherits(from, setdiff(class_dispatch(to), "S7_object"))) {
     # We're up-casting, using `from` as a prototype/seed when constructing `to`.
     # Essentially, we copy over property values from `from` and supply them as
     # arguments to the `to` constructor.
