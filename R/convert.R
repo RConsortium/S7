@@ -103,7 +103,7 @@ convert <- function(from, to, ...) {
       stop("Unreachable")
     }
     from
-  } else if (inherits(from, setdiff(class_dispatch(to), "S7_object"))) {
+  } else if (is_parent_instance(from, to)) {
     # We're up-casting, using `from` as a prototype/seed when constructing `to`.
     # Essentially, we copy over property values from `from` and supply them as
     # arguments to the `to` constructor.
@@ -152,4 +152,8 @@ on_load_make_convert_generic <- function() {
     name = "convert",
     dispatch_args = c("from", "to")
   )
+}
+
+is_parent_instance <- function(x, class) {
+  inherits(x, setdiff(class_dispatch(class), "S7_object"))
 }
