@@ -158,3 +158,37 @@ test_that("can create constructors with missing or lazy defaults", {
   expect_error(p@birthdate <- as.Date('1970-01-01'),
                "Can\'t set read-only property Person@birthdate")
 })
+
+
+
+test_that("Dynamic settable properties are included in constructor", {
+  Foo <- new_class(
+    name = "Foo",
+    properties = list(
+      dynamic_settable = new_property(
+        class_numeric,
+        getter = function(self) self@dynamic_settable,
+        setter = function(self, value) {
+          self@dynamic_settable <- value
+          self
+        }
+      ),
+
+      dynamic_read_only = new_property(
+        class_numeric,
+        getter = function(self) 99,
+      )
+    )
+  )
+
+  expect_equal(formals(Foo), pairlist(dynamic_settable = numeric()))
+  expect_equal(Foo()@dynamic_settable, numeric())
+  expect_equal(Foo(3)@dynamic_settable, 3)
+
+  foo <- Foo()
+  expect_error(foo@dynamic_read_only <- 1,
+               "Can't set read-only property <Foo>@dynamic_read_only")
+  foo@dynamic_settable <- 1
+  expect_equal(foo@dynamic_settable, 1)
+
+})

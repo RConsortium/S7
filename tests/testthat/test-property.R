@@ -407,8 +407,9 @@ test_that("custom getters don't infinitely recurse", {
     )
   ))
 
+  expect_equal(someclass("foo")@someprop, "FOO")
   x <- someclass()
-  expect_null(x@someprop)
+  expect_equal(x@someprop, character())
   x@someprop <- "foo"
   expect_equal(x@someprop, "FOO")
 
@@ -429,8 +430,11 @@ test_that("custom setters can call custom getters", {
     )
   ))
 
+  x <- someclass("foo")
+  expect_equal(x@someprop, "FOO")
+
   x <- someclass()
-  expect_null(x@someprop)
+  expect_equal(x@someprop, character())
 
   x@someprop <- "foo"
   expect_equal(x@someprop, "FOO")
