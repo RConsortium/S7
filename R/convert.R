@@ -127,8 +127,7 @@ convert <- function(from, to, ...) {
     from_prop_names <- setdiff(from_prop_names, names(user_args))
 
     # Extract property values from 'from'
-    from_prop_values <- lapply(setNames(, from_prop_names),
-                               function(name) prop(from, name))
+    from_prop_values <- props(from, from_prop_names)
 
     # Combine property values with user-supplied arguments
     constructor_args <- c(from_prop_values, user_args)
