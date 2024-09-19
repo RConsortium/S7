@@ -92,6 +92,38 @@ convert <- function(from, to, ...) {
       stop("Unreachable")
     }
     from
+  } else if (inherits(from, class_dispatch(to))) {
+    # We're up-casting, using `from` as a prototype/seed when constructing `to`.
+    # Essentially, we copy over property values from `from` and supply them as
+    # arguments to the `to` constructor.
+
+    # Get properties of 'from' class
+    from_props <- S7_class(from)@properties
+
+    # Remove read-only properties
+    from_props <- Filter(Negate(prop_is_read_only), from_props)
+    from_prop_names <- names(from_props)
+
+    # Check if 'to' constructor can accept all properties
+    to_constructor_arg_names <- names(formals(to))
+    if (!"..." %in% to_constructor_arg_names) {
+      # If no ..., only use properties that match constructor arguments
+      from_prop_names <- intersect(from_prop_names, to_constructor_arg_names)
+    }
+
+    # Remove properties that are overridden in user-supplied arguments
+    user_args <- list(...)
+    from_prop_names <- setdiff(from_prop_names, names(user_args))
+
+    # Extract property values from 'from'
+    from_prop_values <- lapply(setNames(, from_prop_names),
+                               function(name) prop(from, name))
+
+    # Combine property values with user-supplied arguments
+    constructor_args <- c(from_prop_values, user_args)
+
+    # Create and return new object of class 'to'
+    do.call(to, constructor_args)
   } else {
     msg <- paste0(
       "Can't find method for generic `convert()` with dispatch classes:\n",
