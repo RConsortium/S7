@@ -11,7 +11,8 @@ convert(from, to, ...)
 
 \item{to}{An S7 class specification, passed to \code{\link[=as_class]{as_class()}}.}
 
-\item{...}{Other arguments passed to custom \code{convert()} methods.}
+\item{...}{Other arguments passed to custom \code{convert()} methods. For upcasting,
+these can be used to override existing properties or set new ones.}
 }
 \value{
 Either \code{from} coerced to class \code{to}, or an error if the coercion
@@ -32,9 +33,14 @@ to work because those methods will return \code{classParent} objects, not
 \code{classChild} objects.
 }
 
-\code{convert()} provides a default implementation when \code{from} inherits from
-\code{to}. This default strips any properties that \code{from} possesses that \code{to}
-does not.
+\code{convert()} provides two default implementations:
+\enumerate{
+\item When \code{from} inherits from \code{to}, it strips any properties that \code{from}
+possesses that \code{to} does not (downcasting).
+\item When \code{to} is a subclass of \code{from}'s class, it creates a new object of
+class \code{to}, copying over existing properties from \code{from} and initializing
+new properties of \code{to} (upcasting).
+}
 
 If you are converting an object solely for the purposes of accessing a method
 on a superclass, you probably want \code{\link[=super]{super()}} instead. See its docs for more
@@ -49,9 +55,15 @@ functions/generics in S3, and to \code{as()}/\code{setAs()} in S4.
 foo1 <- new_class("foo1", properties = list(x = class_integer))
 foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
 
-# S7 provides a default implementation for coercing an object to one of
-# its parent classes:
+# Downcasting: S7 provides a default implementation for coercing an object
+# to one of its parent classes:
 convert(foo2(x = 1L, y = 2), to = foo1)
+
+# Upcasting: S7 also provides a default implementation for coercing an object
+# to one of its child classes:
+convert(foo1(x = 1L), to = foo2)
+convert(foo1(x = 1L), to = foo2, y = 2.5)  # Set new property
+convert(foo1(x = 1L), to = foo2, x = 2L, y = 2.5)  # Override existing and set new
 
 # For all other cases, you'll need to provide your own.
 try(convert(foo1(x = 1L), to = class_integer))
