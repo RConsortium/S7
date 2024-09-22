@@ -319,7 +319,7 @@ class_data.frame <- new_S3_class("data.frame",
 #' @format NULL
 #' @order 3
 class_matrix <- new_S3_class("matrix",
-  constructor = function(.data = NA, nrow = 1, ncol = 1, byrow = FALSE, dimnames  = NULL) {
+  constructor = function(.data = NA, nrow = length(.data), ncol = 1, byrow = FALSE, dimnames  = NULL) {
     matrix(.data, nrow, ncol, byrow, dimnames)
   },
   validator = validate_matrix
