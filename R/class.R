@@ -252,7 +252,7 @@ new_object <- function(.parent, ...) {
     stop(msg)
   }
 
-  args <- list(...)
+  args <- list2(...)
   nms <- names(args)
 
   # TODO: Some type checking on `.parent`?

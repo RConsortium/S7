@@ -10,6 +10,7 @@ extern SEXP S7_class_(SEXP, SEXP);
 extern SEXP S7_object_(void);
 extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
+extern SEXP collect_dots_skip_missing_(SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"method_", (DL_FUNC) &method_, 4},
@@ -17,6 +18,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"S7_object_", (DL_FUNC) &S7_object_, 0},
     {"prop_", (DL_FUNC) &prop_, 2},
     {"prop_set_", (DL_FUNC) &prop_set_, 4},
+    {"collect_dots_skip_missing_", (DL_FUNC) &collect_dots_skip_missing_, 2},
     {NULL, NULL, 0}
 };
 
