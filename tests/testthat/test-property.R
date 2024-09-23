@@ -188,7 +188,7 @@ describe("property access", {
   it("can with property-less object", {
     x <- new_class("x")()
     expect_equal(prop_names(x), character())
-    expect_equal(props(x), list())
+    expect_equal(props(x), named_list())
     expect_equal(prop_exists(x, "y"), FALSE)
   })
 
@@ -197,7 +197,7 @@ describe("property access", {
     attr(x, "extra") <- 1
 
     expect_equal(prop_names(x), character())
-    expect_equal(props(x), list())
+    expect_equal(props(x), named_list())
     expect_false(prop_exists(x, "extra"))
   })
 })
