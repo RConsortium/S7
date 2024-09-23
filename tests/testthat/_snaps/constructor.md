@@ -69,3 +69,23 @@
       new_object(foo(...), y = y)
       <environment: 0x0>
 
+# can create constructors with missing or lazy defaults
+
+    Code
+      Person()
+    Condition
+      Error:
+      ! <Person> object properties are invalid:
+      - @first_name must be <character>, not <NULL>
+      - @last_name must be <MISSING> or <character>, not <NULL>
+      - @nick_name must be <character>, not <NULL>
+
+---
+
+    Code
+      Person("Alice")
+    Condition
+      Error:
+      ! <Person> object properties are invalid:
+      - @last_name must be <MISSING> or <character>, not <NULL>
+

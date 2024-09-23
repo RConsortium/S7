@@ -140,8 +140,8 @@ test_that("can create constructors with missing or lazy defaults", {
     birthdate = Sys.Date()
   ))) # no age
 
-  expect_error(Person(), "@first_name")
-  expect_error(Person("Alice"), "@last_name")
+  expect_snapshot(Person(), error = TRUE)
+  expect_snapshot(Person("Alice"), error = TRUE)
 
   p <- Person("Alice", ,"Smith")
 
