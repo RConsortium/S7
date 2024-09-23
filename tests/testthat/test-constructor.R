@@ -140,8 +140,8 @@ test_that("can create constructors with missing or lazy defaults", {
     birthdate = Sys.Date()
   ))) # no age
 
-  expect_error(Person(), 'argument "first_name" is missing, with no default')
-  expect_error(Person("Alice"), 'argument "last_name" is missing, with no default')
+  expect_error(Person(), "@first_name")
+  expect_error(Person("Alice"), "@last_name")
 
   p <- Person("Alice", ,"Smith")
 
