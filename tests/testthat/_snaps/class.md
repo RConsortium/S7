@@ -19,19 +19,21 @@
        @ package    : NULL
        @ properties :List of 2
        .. $ x: <S7_property> 
-       ..  ..$ name     : chr "x"
-       ..  ..$ class    : <S7_base_class>: <integer>
-       ..  ..$ getter   : NULL
-       ..  ..$ setter   : NULL
-       ..  ..$ validator: NULL
-       ..  ..$ default  : NULL
+       ..  ..$ name       : chr "x"
+       ..  ..$ class      : <S7_base_class>: <integer>
+       ..  ..$ getter     : NULL
+       ..  ..$ setter     : NULL
+       ..  ..$ validator  : NULL
+       ..  ..$ initializer: NULL
+       ..  ..$ default    : NULL
        .. $ y: <S7_property> 
-       ..  ..$ name     : chr "y"
-       ..  ..$ class    : <S7_base_class>: <integer>
-       ..  ..$ getter   : NULL
-       ..  ..$ setter   : NULL
-       ..  ..$ validator: NULL
-       ..  ..$ default  : NULL
+       ..  ..$ name       : chr "y"
+       ..  ..$ class      : <S7_base_class>: <integer>
+       ..  ..$ getter     : NULL
+       ..  ..$ setter     : NULL
+       ..  ..$ validator  : NULL
+       ..  ..$ initializer: NULL
+       ..  ..$ default    : NULL
        @ abstract   : logi FALSE
        @ constructor: function (x = integer(0), y = integer(0))  
        @ validator  : NULL

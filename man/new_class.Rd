@@ -12,6 +12,7 @@ new_class(
   properties = list(),
   abstract = FALSE,
   constructor = NULL,
+  initializer = NULL,
   validator = NULL
 )
 
@@ -54,6 +55,10 @@ argument for each property.
 A custom constructor should call \code{new_object()} to create the S7 object.
 The first argument, \code{.data}, should be an instance of the parent class
 (if used). The subsequent arguments are used to set the properties.}
+
+\item{initializer}{An optional initializer function. If provided, this
+function is called after \code{constructor()} but before \code{validator()}. It
+should take a single argument, \code{self}.}
 
 \item{validator}{A function taking a single argument, \code{self}, the object
 to validate.

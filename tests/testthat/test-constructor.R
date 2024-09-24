@@ -117,11 +117,12 @@ test_that("can create constructors with missing or lazy defaults", {
       birthdate = new_property(
         class = class_Date,
         default = quote(Sys.Date()),
-        setter = function(self, value) {
-          if (!is.null(self@birthdate))
-            stop("Can't set read-only property Person@birthdate")
+        initializer = function(self, value) {
           self@birthdate <- value
           self
+        },
+        setter = function(self, value) {
+          stop("Can't set read-only property Person@birthdate")
         }
       ),
 

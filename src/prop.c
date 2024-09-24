@@ -10,6 +10,7 @@ extern SEXP sym_package;
 extern SEXP sym_properties;
 extern SEXP sym_abstract;
 extern SEXP sym_constructor;
+extern SEXP sym_initializer;
 extern SEXP sym_validator;
 
 extern SEXP ns_S7;
@@ -275,6 +276,7 @@ SEXP prop_(SEXP object, SEXP name) {
           name_sym == sym_properties  ||
           name_sym == sym_abstract  ||
           name_sym == sym_constructor  ||
+          name_sym == sym_initializer  ||
           name_sym == sym_validator))
       return value;
 

@@ -20,6 +20,9 @@
 #'   If a property has a getter but doesn't have a setter, it is read only.
 #' @param setter An optional function used to set the value. The function
 #'   should take `self` and `value` and return a modified object.
+#' @param initializer An optional initializer function. If provided, this
+#'   function is called when the instance is first constructed, instead of
+#'   `prop<-` (which invokes `setter`, if provided).
 #' @param validator A function taking a single argument, `value`, the value
 #'   to validate.
 #'
@@ -71,9 +74,10 @@
 #' args(clock)
 #'
 #' # These can be useful if you want to deprecate a property
-#' person <- new_class("person", properties = list(
+#' Person <- new_class("Person", properties = list(
 #'   first_name = class_character,
 #'   firstName = new_property(
+#'      class_character,
 #'      getter = function(self) {
 #'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
 #'        self@first_name
@@ -82,13 +86,22 @@
 #'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
 #'        self@first_name <- value
 #'        self
+#'      },
+#'      initializer = function(self, value) {
+#'        if (length(value)) {
+#'          warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
+#'          self@first_name <- value # will warn
+#'        }
+#'        self@firstName <- character() # for validator
+#'        self
 #'      }
 #'    )
 #' ))
-#' hadley <- person(first_name = "Hadley")
-#' hadley@firstName
-#' hadley@firstName <- "John"
-#' hadley@first_name
+#' Hadley <- Person(firstName = "Hadley")   # warning
+#' Hadley <- Person(first_name = "Hadley")
+#' Hadley@firstName                         # warning
+#' Hadley@firstName <- "John"               # warning
+#' Hadley@first_name
 #'
 #' # Properties can have default values that are quoted calls.
 #' # These become standard function promises in the default constructor,
@@ -114,6 +127,7 @@ new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
                          validator = NULL,
+                         initializer = NULL,
                          default = NULL,
                          name = NULL) {
   class <- as_class(class)
@@ -130,6 +144,9 @@ new_property <- function(class = class_any,
   if (!is.null(setter)) {
     check_function(setter, alist(self = , value = ))
   }
+  if (!is.null(initializer)) {
+    check_function(initializer, alist(self = , value = ))
+  }
   if (!is.null(validator)) {
     check_function(validator, alist(value = ))
   }
@@ -140,6 +157,7 @@ new_property <- function(class = class_any,
     getter = getter,
     setter = setter,
     validator = validator,
+    initializer = initializer,
     default = default
   )
   class(out) <- "S7_property"

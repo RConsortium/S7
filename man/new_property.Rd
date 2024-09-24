@@ -9,6 +9,7 @@ new_property(
   getter = NULL,
   setter = NULL,
   validator = NULL,
+  initializer = NULL,
   default = NULL,
   name = NULL
 )
@@ -38,6 +39,10 @@ beginning of the message.
 
 The validator will be called after the \code{class} has been verified, so
 your code can assume that \code{value} has known type.}
+
+\item{initializer}{An optional initializer function. If provided, this
+function is called when the instance is first constructed, instead of
+\verb{prop<-} (which invokes \code{setter}, if provided).}
 
 \item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, it defaults to the "empty" instance
@@ -92,9 +97,10 @@ try(clock(now = 10))
 args(clock)
 
 # These can be useful if you want to deprecate a property
-person <- new_class("person", properties = list(
+Person <- new_class("Person", properties = list(
   first_name = class_character,
   firstName = new_property(
+     class_character,
      getter = function(self) {
        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name
@@ -103,13 +109,22 @@ person <- new_class("person", properties = list(
        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name <- value
        self
+     },
+     initializer = function(self, value) {
+       if (length(value)) {
+         warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
+         self@first_name <- value # will warn
+       }
+       self@firstName <- character() # for validator
+       self
      }
    )
 ))
-hadley <- person(first_name = "Hadley")
-hadley@firstName
-hadley@firstName <- "John"
-hadley@first_name
+Hadley <- Person(firstName = "Hadley")   # warning
+Hadley <- Person(first_name = "Hadley")
+Hadley@firstName                         # warning
+Hadley@firstName <- "John"               # warning
+Hadley@first_name
 
 # Properties can have default values that are quoted calls.
 # These become standard function promises in the default constructor,

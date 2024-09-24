@@ -29,6 +29,7 @@ SEXP sym_package;
 SEXP sym_properties;
 SEXP sym_abstract;
 SEXP sym_constructor;
+SEXP sym_initializer;
 SEXP sym_validator;
 SEXP sym_getter;
 
@@ -52,6 +53,7 @@ void R_init_S7(DllInfo *dll)
     sym_properties = Rf_install("properties");
     sym_abstract = Rf_install("abstract");
     sym_constructor = Rf_install("constructor");
+    sym_initializer = Rf_install("initializer");
     sym_validator = Rf_install("validator");
     sym_getter = Rf_install("getter");
     sym_dot_should_validate = Rf_install(".should_validate");

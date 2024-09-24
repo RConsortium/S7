@@ -33,6 +33,9 @@
 #'   A custom constructor should call `new_object()` to create the S7 object.
 #'   The first argument, `.data`, should be an instance of the parent class
 #'   (if used). The subsequent arguments are used to set the properties.
+#' @param initializer An optional initializer function. If provided, this
+#'   function is called after `constructor()` but before `validator()`. It
+#'   should take a single argument, `self`.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.
 #'
@@ -104,6 +107,7 @@ new_class <- function(
     properties = list(),
     abstract = FALSE,
     constructor = NULL,
+    initializer = NULL,
     validator = NULL) {
 
   check_name(name)
@@ -144,13 +148,14 @@ new_class <- function(
   attr(object, "properties") <- all_props
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
+  attr(object, "initializer") <- initializer
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
   global_variables(names(all_props))
   object
 }
-globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
+globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator", "initializer"))
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
 S7_class_name <- function(x) {
@@ -260,12 +265,23 @@ new_object <- function(.parent, ...) {
   attr(object, "S7_class") <- class
   class(object) <- class_dispatch(class)
 
-  # Set properties. This will potentially invoke custom property setters
-  for (name in names(args))
-    prop(object, name, check = FALSE) <- args[[name]]
+  args <- list(...)
+  for (name in names(args)) {
+    if (is.function(prop_initializer <- class@properties[[name]]$initializer)) {
+      attr(object, ".setting_prop") <- pairlist(as.symbol(name))
+      object <- prop_initializer(object, args[[name]])
+      attr(object, ".setting_prop") <- NULL
+    } else {
+      prop(object, name, check = FALSE) <- args[[name]]
+    }
+  }
+
+  if (is.function(class@initializer))
+    object <- class@initializer(object)
 
   # Don't need to validate if parent class already validated,
   # i.e. it's a non-abstract S7 class
+  # if(interactive() && !pkgload::is_loading()) browser()
   parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
   validate(object, recursive = !parent_validated)
 

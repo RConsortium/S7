@@ -64,23 +64,25 @@
       print(x)
     Output
       <S7_property> 
-       $ name     : chr "foo"
-       $ class    : <S7_base_class>: <integer>
-       $ getter   : NULL
-       $ setter   : NULL
-       $ validator: NULL
-       $ default  : NULL
+       $ name       : chr "foo"
+       $ class      : <S7_base_class>: <integer>
+       $ getter     : NULL
+       $ setter     : NULL
+       $ validator  : NULL
+       $ initializer: NULL
+       $ default    : NULL
     Code
       str(list(x))
     Output
       List of 1
        $ : <S7_property> 
-        ..$ name     : chr "foo"
-        ..$ class    : <S7_base_class>: <integer>
-        ..$ getter   : NULL
-        ..$ setter   : NULL
-        ..$ validator: NULL
-        ..$ default  : NULL
+        ..$ name       : chr "foo"
+        ..$ class      : <S7_base_class>: <integer>
+        ..$ getter     : NULL
+        ..$ setter     : NULL
+        ..$ validator  : NULL
+        ..$ initializer: NULL
+        ..$ default    : NULL
 
 # properties can be base, S3, S4, S7, or S7 union
 
