@@ -64,6 +64,12 @@ constructor_args <- function(parent, properties = list()) {
     function(name) prop_default(properties[[name]]))
   )
 
+  is_dots <- vlapply(self_args, identical, quote(...))
+  if (any(is_dots)) {
+    self_args[is_dots] <- NULL
+    append(self_args, after = which.max(is_dots)-1) <- alist(... = )
+  }
+
   list(parent = parent_args,
        self = self_args)
 }
@@ -85,4 +91,8 @@ as_names <- function(x, named = FALSE) {
     names(x) <- x
   }
   lapply(x, as.name)
+}
+
+`append<-` <- function(x, after = length(x), value) {
+  append(x, value, after)
 }
