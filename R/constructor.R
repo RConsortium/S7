@@ -1,7 +1,7 @@
 new_constructor <- function(parent, properties) {
   properties <- as_properties(properties)
   arg_info <- constructor_args(parent, properties)
-  self_args <- as_names(names(arg_info$self), named = TRUE)
+  self_args <- as_names(names(arg_info$self), named = TRUE, unnamed = "...")
 
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     return(new_function(
@@ -86,11 +86,16 @@ new_call <- function(call, args) {
   as.call(c(list(as.name(call)), args))
 }
 
-as_names <- function(x, named = FALSE) {
+as_names <- function(x, named = FALSE, unnamed = "...") {
   if (named) {
     names(x) <- x
   }
-  lapply(x, as.name)
+  out <- lapply(x, as.name)
+  if (!is.null(nms <- names(out)) && length(unnamed)) {
+    nms[nms %in% unnamed] <- ""
+    names(out) <- nms
+  }
+  out
 }
 
 `append<-` <- function(x, after = length(x), value) {
