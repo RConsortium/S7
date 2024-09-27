@@ -10,6 +10,9 @@
 #' behaviour when modified. Dynamic properties are not included as an argument
 #' to the default class constructor.
 #'
+#' See the "Properties: Common Patterns" section in `vignette("class-objects")`
+#' for more examples.
+#'
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
 #' @param getter An optional function used to get the value. The function
@@ -69,78 +72,6 @@
 #' # argument to the default constructor
 #' try(clock(now = 10))
 #' args(clock)
-#'
-#' # These can be useful if you want to deprecate a property
-#' person <- new_class("person", properties = list(
-#'   first_name = class_character,
-#'   firstName = new_property(
-#'      getter = function(self) {
-#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-#'        self@first_name
-#'      },
-#'      setter = function(self, value) {
-#'        if(is.null(value)) {
-#'          return(self)
-#'        }
-#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-#'        self@first_name <- value
-#'        self
-#'      }
-#'    )
-#' ))
-#' hadley <- person(firstName = "Hadley")   # Warning
-#' hadley <- person(first_name = "Hadley")
-#' hadley@firstName                         # Warning
-#' hadley@firstName <- "John"               # Warning
-#' hadley@first_name
-#'
-#' # Properties can have default values that are quoted calls.
-#' # These become standard function promises in the default constructor,
-#' # evaluated at the time the object is constructed.
-#' stopwatch <- new_class("stopwatch", properties = list(
-#'   starttime = new_property(class = class_POSIXct, default = quote(Sys.time())),
-#'   totaltime = new_property(getter = function(self)
-#'     difftime(Sys.time(), self@starttime, units = "secs"))
-#' ))
-#' args(stopwatch)
-#' round(stopwatch()@totaltime)
-#' round(stopwatch(Sys.time() - 1)@totaltime)
-#'
-#' # You can make a property required by the constructor either by:
-#' # - relying on the validator to error with the default value, or by
-#' # - setting the property default to a quoted error call.
-#' Person <- new_class("Person", properties = list(
-#'   name = new_property(class_character, validator = function(value) {
-#'     if (length(value) != 1 || is.na(value) || value == "")
-#'       "must be a non-empty string"
-#'   }))
-#' )
-#' try(Person())
-#' try(Person(1)) # class_character$validator() is also checked.
-#' Person("Alice")
-#'
-#' Person <- new_class("Person", properties = list(
-#'   name = new_property(class_character,
-#'                       default = quote(stop("@name is required")))
-#' ))
-#' try(Person())
-#' Person("Alice")
-#'
-#' # You can mark a property as read-only after construction by
-#' # providing a custom setter.
-#' Person <- new_class("Person", properties = list(
-#'   birth_date = new_property(
-#'     class_Date,
-#'     setter = function(self, value) {
-#'       if(!is.null(self@birth_date)) {
-#'         stop("@birth_date is read-only", call. = FALSE)
-#'       }
-#'       self@birth_date <- as.Date(value)
-#'       self
-#'     }
-#' )))
-#' person <- Person("1999-12-31")
-#' try(person@birth_date <- "2000-01-01")
 new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,

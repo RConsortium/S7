@@ -194,6 +194,24 @@ empty <- new_class("empty",
 empty()
 ```
 
+A quoted call becomes a standard function promise in the default constructor,
+evaluated at the time the object is constructed.
+```{r}
+stopwatch <- new_class("stopwatch", properties = list(
+  start_time = new_property(
+    class = class_POSIXct,  
+    default = quote(Sys.time())
+  ), 
+  elapsed = new_property(
+    getter = function(self) {
+      difftime(Sys.time(), self@start_time, units = "secs")
+    }
+  )
+))
+args(stopwatch)
+round(stopwatch()@elapsed)
+round(stopwatch(Sys.time() - 1)@elapsed)
+```
 ### Computed properties
 
 It's sometimes useful to have a property that is computed on demand.
@@ -224,6 +242,9 @@ x@length <- 20
 ### Dynamic properties
 
 You can make a computed property fully dynamic so that it can be read and written by also supplying a `setter`.
+
+A `setter` is a function with arguments `self` and `value` that returns a modified object.
+
 For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
 
 ```{r}
@@ -249,7 +270,103 @@ x@length <- 5
 x
 ```
 
-A `setter` is a function with arguments `self` and `value` that returns a modified object.
+### Common Patterns
+
+`getter`, `setter`, `default`, and `validator` can be used to implement many common patterns of properties.
+
+#### Deprecated properties 
+
+A `setter` + `getter` can be used to to deprecate a property:
+
+```{r}
+Person <- new_class("Person", properties = list(
+ first_name = class_character,
+ firstName = new_property(
+    getter = function(self) {
+      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
+      self@first_name
+    },
+    setter = function(self, value) {
+      if(is.null(value)) {
+        return(self)
+      }
+      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
+      self@first_name <- value
+      self
+    }
+  )
+))
+
+hadley <- Person(firstName = "Hadley")   
+
+hadley <- Person(first_name = "Hadley") # no warning
+
+hadley@firstName                       
+
+hadley@firstName <- "John"              
+
+hadley@first_name  # no warning
+```
+
+
+#### Required properties
+
+You can make a property required by the constructor either by:
+
+- relying on the validator to error with the default value, or by
+- setting the property default to a quoted error call.
+
+```{r}
+Person <- new_class("Person", properties = list(
+ name = new_property(class_character, validator = function(value) {
+   if (length(value) != 1 || is.na(value) || value == "")
+     "must be a non-empty string"
+ }))
+)
+
+try(Person())
+
+try(Person(1)) # class_character$validator() is also checked.
+
+Person("Alice")
+```
+
+
+```{r}
+Person <- new_class("Person", properties = list(
+ name = new_property(class_character,
+                     default = quote(stop("@name is required")))
+))
+
+try(Person())
+
+Person("Alice")
+```
+
+
+#### Frozen properties
+
+You can mark a property as read-only after construction by
+providing a custom `setter`.
+
+```{r}
+Person <- new_class("Person", properties = list(
+ birth_date = new_property(
+   class_Date,
+   setter = function(self, value) {
+     if(!is.null(self@birth_date)) {
+       stop("@birth_date is read-only", call. = FALSE)
+     }
+     self@birth_date <- as.Date(value)
+     self
+   }
+)))
+
+person <- Person("1999-12-31")
+
+try(person@birth_date <- "2000-01-01")
+```
+
 
 ## Constructors
 
