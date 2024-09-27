@@ -100,15 +100,19 @@ person <- new_class("person", properties = list(
        self@first_name
      },
      setter = function(self, value) {
+       if(is.null(value)) {
+         return(self)
+       }
        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name <- value
        self
      }
    )
 ))
+hadley <- person(firstName = "Hadley")   # Warning
 hadley <- person(first_name = "Hadley")
-hadley@firstName
-hadley@firstName <- "John"
+hadley@firstName                         # Warning
+hadley@firstName <- "John"               # Warning
 hadley@first_name
 
 # Properties can have default values that are quoted calls.
@@ -123,11 +127,22 @@ args(stopwatch)
 round(stopwatch()@totaltime)
 round(stopwatch(Sys.time() - 1)@totaltime)
 
-# Properties can also have a 'missing' default value, making them
-# required arguments to the default constructor.
-# You can generate a missing arg with `quote(expr =)` or `rlang::missing_arg()`
+# You can make a property required by the constructor either by:
+# - relying on the validator to error with the default value, or by
+# - setting the property default to a quoted error call.
 Person <- new_class("Person", properties = list(
-  name = new_property(class_character, default = quote(expr = ))
+  name = new_property(class_character, validator = function(value) {
+    if (length(value) != 1 || is.na(value) || value == "")
+      "must be a non-empty string"
+  }))
+)
+try(Person())
+try(Person(1)) # class_character$validator() is also checked.
+Person("Alice")
+
+Person <- new_class("Person", properties = list(
+  name = new_property(class_character,
+                      default = quote(stop("@name is required")))
 ))
 try(Person())
 Person("Alice")
