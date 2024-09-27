@@ -267,9 +267,11 @@ new_object <- function(.parent, ...) {
   # TODO: Some type checking on `.parent`?
   object <- .parent
 
-  attrs <- c(list(class = class_dispatch(class), S7_class = class),
-             static_prop_vals,
-             attributes(object))
+  attrs <- c(
+    list(class = class_dispatch(class), S7_class = class),
+    static_prop_vals,
+    attributes(object)
+  )
   attrs <- attrs[!duplicated(names(attrs))]
   attributes(object) <- attrs
 
