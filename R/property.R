@@ -546,3 +546,7 @@ as_property <- function(x, name, i) {
 prop_is_read_only <- function(prop) {
   is.function(prop$getter) && !is.function(prop$setter)
 }
+
+prop_has_setter <- function(prop) is.function(prop$setter)
+
+prop_is_dynamic <- function(prop) is.function(prop$getter)
