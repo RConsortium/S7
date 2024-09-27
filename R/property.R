@@ -132,12 +132,7 @@ new_property <- function(class = class_any,
                          default = NULL,
                          name = NULL) {
   class <- as_class(class)
-  if (!is.null(default) &&
-      !(is.call(default) || is.symbol(default)) && # allow promises
-      !class_inherits(default, class)) {
-    msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
-    stop(msg)
-  }
+  check_prop_default(default, class)
 
   if (!is.null(getter)) {
     check_function(getter, alist(self = ))
@@ -160,6 +155,43 @@ new_property <- function(class = class_any,
   class(out) <- "S7_property"
 
   out
+}
+
+check_prop_default <- function(default, class) {
+  if (is.null(default)) {
+    return() # always valid.
+  }
+
+  if (is.call(default)) {
+    # A promise default; delay checking until constructor called.
+    return()
+  }
+
+  if (is.symbol(default)) {
+    if (identical(default, quote(...))) {
+      # The meaning of a `...` prop default needs discussion
+      stop.parent("`default` cannot be `...`")
+    }
+    if (identical(default, quote(expr =))) {
+      # The meaning of a missing prop default needs discussion
+      stop.parent("`default` cannot be missing")
+    }
+
+    # other symbols are treated as promises
+    return()
+  }
+
+  if (class_inherits(default, class))
+    return()
+
+  msg <- sprintf("`default` must be an instance of %s, not a %s",
+                 class_desc(class), obj_desc(default))
+
+  stop.parent(msg)
+}
+
+stop.parent <- function(..., call = sys.call(-2)) {
+  stop(simpleError(.makeMessage(...), call))
 }
 
 is_property <- function(x) inherits(x, "S7_property")
