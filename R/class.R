@@ -257,7 +257,8 @@ new_object <- function(.parent, ...) {
     stop("All arguments to `new_object(...)` must be named")
   }
 
-  dynamic_setter_prop_names <- names(Filter(\(p) is.function(p$setter), class@properties))
+  dynamic_setter_prop_names <- names(Filter(function(p) is.function(p$setter),
+                                            class@properties))
 
   static_prop_vals <- args[setdiff(names(args), dynamic_setter_prop_names)]
   dynamic_prop_vals <- args[intersect(names(args), dynamic_setter_prop_names)]
