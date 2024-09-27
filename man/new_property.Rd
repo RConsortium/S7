@@ -41,11 +41,9 @@ your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
 what should it default to? If \code{NULL}, it defaults to the "empty" instance
-of \code{class}. Quoted calls become standard function argument promises in the
-default constructor, evaluated at the time the object is constructed. A
-value of \code{quote(...)} indicates that the property is not a named argument
-in the constructor, and it is not set unless explicitly supplied. The
-default value for the unset property in that case is \code{NULL}.}
+of \code{class}. This can also be a quoted call, which then becomes a standard
+function promise in the default constructor, evaluated at the time the
+object is constructed.}
 
 \item{name}{Property name, primarily used for error messages. Generally
 don't need to set this here, as it's more convenient to supply as a
@@ -94,12 +92,7 @@ try(clock(now = 10))
 args(clock)
 
 # These can be useful if you want to deprecate a property
-# For example, say, at first you define
-Person <- new_class("Person", properties = list(
-  firstName = class_character
-))
-# Then, to deprecate `firstName` and rename it to `first_name`
-Person <- new_class("Person", properties = list(
+person <- new_class("person", properties = list(
   first_name = class_character,
   firstName = new_property(
      getter = function(self) {
@@ -110,14 +103,12 @@ Person <- new_class("Person", properties = list(
        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
        self@first_name <- value
        self
-     },
-     default = quote(...)
+     }
    )
 ))
-hadley <- Person(firstName = "Hadley")   # warning
-hadley <- Person(first_name = "Hadley")
-hadley@firstName                      # warning
-hadley@firstName <- "John"            # warning
+hadley <- person(first_name = "Hadley")
+hadley@firstName
+hadley@firstName <- "John"
 hadley@first_name
 
 # Properties can have default values that are quoted calls.
