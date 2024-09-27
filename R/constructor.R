@@ -6,7 +6,12 @@ new_constructor <- function(parent, properties) {
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     return(new_function(
       args = arg_info$self,
-      body = new_call("new_object", c(list(quote(S7_object())), self_args)),
+      body = as.call(c(quote(`{`),
+        # Force all promises here so that any errors are signaled from
+        # the constructor() call instead of the new_object() call.
+        unname(self_args),
+        new_call("new_object", c(list(quote(S7_object())), self_args))
+      )),
       env = asNamespace("S7")
     ))
   }
