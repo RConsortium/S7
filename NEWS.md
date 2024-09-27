@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* `convert()` now provides a default method to transform a parent class instance 
+  into a subclass, enabling class construction from a prototype (#444).
+
 * The default object constructor returned by `new_class()` has been updated. 
   It now accepts missing and lazy (promise) property defaults. Additionally, 
   all custom property setters are now consistently invoked by the default 

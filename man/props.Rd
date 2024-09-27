@@ -6,7 +6,7 @@
 \alias{set_props}
 \title{Get/set multiple properties}
 \usage{
-props(object)
+props(object, names = prop_names(object))
 
 props(object) <- value
 
@@ -14,6 +14,9 @@ set_props(object, ...)
 }
 \arguments{
 \item{object}{An object from a S7 class}
+
+\item{names}{A character vector of property names to retrieve. Default is all
+properties.}
 
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
