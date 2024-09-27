@@ -253,16 +253,28 @@ new_object <- function(.parent, ...) {
   }
 
   args <- list(...)
-  nms <- names(args)
+  if ("" %in% names2(args)) {
+    stop("All arguments to `new_object(...)` must be named")
+  }
+
+  dynamic_setter_prop_names <- names(Filter(\(p) is.function(p$setter), class@properties))
+
+  static_prop_vals <- args[setdiff(names(args), dynamic_setter_prop_names)]
+  dynamic_prop_vals <- args[intersect(names(args), dynamic_setter_prop_names)]
+
 
   # TODO: Some type checking on `.parent`?
   object <- .parent
-  attr(object, "S7_class") <- class
-  class(object) <- class_dispatch(class)
 
-  # Set properties. This will potentially invoke custom property setters
-  for (name in names(args))
-    prop(object, name, check = FALSE) <- args[[name]]
+  attrs <- c(list(class = class_dispatch(class), S7_class = class),
+             static_prop_vals,
+             attributes(object))
+  attrs <- attrs[!duplicated(names(attrs))]
+  attributes(object) <- attrs
+
+  # invoke custom property setters
+  for (name in names(dynamic_prop_vals))
+    prop(object, name, check = FALSE) <- dynamic_prop_vals[[name]]
 
   # Don't need to validate if parent class already validated,
   # i.e. it's a non-abstract S7 class
