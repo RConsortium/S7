@@ -146,4 +146,20 @@ Person <- new_class("Person", properties = list(
 ))
 try(Person())
 Person("Alice")
+
+# You can mark a property as read-only after construction by
+# providing a custom setter.
+Person <- new_class("Person", properties = list(
+  birth_date = new_property(
+    class_Date,
+    setter = function(self, value) {
+      if(!is.null(self@birth_date)) {
+        stop("@birth_date is read-only", call. = FALSE)
+      }
+      self@birth_date <- as.Date(value)
+      self
+    }
+)))
+person <- Person("1999-12-31")
+try(person@birth_date <- "2000-01-01")
 }
