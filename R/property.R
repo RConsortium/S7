@@ -173,7 +173,7 @@ new_property <- function(class = class_any,
   out
 }
 
-check_prop_default <- function(default, class) {
+check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   if (is.null(default)) {
     return() # always valid.
   }
@@ -186,11 +186,11 @@ check_prop_default <- function(default, class) {
   if (is.symbol(default)) {
     if (identical(default, quote(...))) {
       # The meaning of a `...` prop default needs discussion
-      stop.parent("`default` cannot be `...`")
+      stop(simpleError("`default` cannot be `...`", error_call))
     }
     if (identical(default, quote(expr =))) {
       # The meaning of a missing prop default needs discussion
-      stop.parent("`default` cannot be missing")
+      stop(simpleError("`default` cannot be missing", error_call))
     }
 
     # other symbols are treated as promises
@@ -203,7 +203,7 @@ check_prop_default <- function(default, class) {
   msg <- sprintf("`default` must be an instance of %s, not a %s",
                  class_desc(class), obj_desc(default))
 
-  stop.parent(msg)
+  stop(simpleError(msg, error_call))
 }
 
 stop.parent <- function(..., call = sys.call(-2)) {
