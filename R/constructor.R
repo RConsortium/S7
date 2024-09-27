@@ -67,7 +67,7 @@ constructor_args <- function(parent, properties = list()) {
   is_dots <- vlapply(self_args, identical, quote(...))
   if (any(is_dots)) {
     self_args[is_dots] <- NULL
-    append(self_args) <- alist(... = )
+    append(self_args, after = which.max(is_dots)-1) <- alist(... = )
   }
 
   list(parent = parent_args,
