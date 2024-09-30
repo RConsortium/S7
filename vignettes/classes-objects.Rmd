@@ -282,12 +282,14 @@ A `setter` + `getter` can be used to to deprecate a property:
 Person <- new_class("Person", properties = list(
  first_name = class_character,
  firstName = new_property(
+    class_character,
+    default = quote(first_name),
     getter = function(self) {
       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
       self@first_name
     },
     setter = function(self, value) {
-      if(is.null(value)) {
+      if (identical(value, self@first_name)) {
         return(self)
       }
       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
@@ -297,7 +299,9 @@ Person <- new_class("Person", properties = list(
   )
 ))
 
-hadley <- Person(firstName = "Hadley")   
+args(Person)
+
+hadley <- Person(firstName = "Hadley")
 
 hadley <- Person(first_name = "Hadley") # no warning
 
