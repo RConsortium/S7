@@ -386,6 +386,8 @@ prop_exists <- function(object, name) {
 #'
 #' @importFrom stats setNames
 #' @inheritParams prop
+#' @param names A character vector of property names to retrieve. Default is all
+#'   properties.
 #' @returns A named list of property values.
 #' @export
 #' @examples
@@ -399,13 +401,12 @@ prop_exists <- function(object, name) {
 #' props(lexington)
 #' props(lexington) <- list(height = 14, name = "Lexington")
 #' lexington
-props <- function(object) {
+props <- function(object, names = prop_names(object)) {
   check_is_S7(object)
-  prop_names <- prop_names(object)
-  if (length(prop_names) == 0) {
-    list()
+  if (length(names) == 0) {
+    structure(list(), names = character(0))
   } else {
-    setNames(lapply(prop_names, prop, object = object), prop_names)
+    setNames(lapply(names, prop, object = object), names)
   }
 }
 #' @rdname props
@@ -481,3 +482,4 @@ prop_is_read_only <- function(prop) {
 prop_has_setter <- function(prop) is.function(prop$setter)
 
 prop_is_dynamic <- function(prop) is.function(prop$getter)
+

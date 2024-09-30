@@ -62,3 +62,10 @@ defer <- function(expr, frame = parent.frame(), after = FALSE) {
   thunk <- as.call(list(function() expr))
   do.call(on.exit, list(thunk, TRUE, after), envir = frame)
 }
+
+# always returns a named list, even in the empty case.
+named_list <- function(...) {
+  x <- list(...)
+  names(x) <- names2(x)
+  x
+}

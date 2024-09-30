@@ -44,6 +44,38 @@ describe("fallback convert", {
     expect_equal(attr(obj, "y"), NULL)
   })
 
+  it("can convert to subclass", {
+    Foo <- new_class("Foo", properties = list(x = class_numeric))
+    Bar <- new_class("Bar", Foo, properties = list(y = class_numeric))
+
+    foo <- Foo(x = 1)
+
+    # Basic conversion
+    bar <- convert(foo, Bar)
+    expect_s3_class(bar, c("Bar", "Foo", "S7_object"))
+    expect_equal(S7_class(bar), Bar)
+    expect_equal(bar@x, 1)
+    expect_equal(bar@y, numeric(0))
+
+    # Overriding existing property
+    bar <- convert(foo, Bar, x = 2)
+    expect_equal(bar@x, 2)
+
+    # Setting new property
+    bar <- convert(foo, Bar, y = 2)
+    expect_equal(bar@x, 1)
+    expect_equal(bar@y, 2)
+
+    # Setting both properties
+    bar <- convert(foo, Bar, y = 2, x = 3)
+    expect_equal(bar@x, 3)
+    expect_equal(bar@y, 2)
+
+    # Error on converting to unrelated class
+    Unrelated <- new_class("Unrelated", properties = list(z = class_character))
+    expect_error(convert(foo, Unrelated), "Can't find method")
+  })
+
   it("can convert to S3 class", {
     factor2 <- new_class("factor2", class_factor, properties = list(x = class_double))
     obj <- convert(factor2(1, "x", x = 1), to = class_factor)
