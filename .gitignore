@@ -3,3 +3,6 @@ script.R
 inst/doc
 docs
 .Rhistory
+compile_commands.json
+.cache
+.vscode

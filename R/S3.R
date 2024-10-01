@@ -64,7 +64,8 @@
 #'   name.
 #' @param constructor An optional constructor that can be used to create
 #'   objects of the specified class. This is only needed if you wish to
-#'   have an S7 class inherit from an S3 class. It must be specified in the
+#'   have an S7 class inherit from an S3 class or to use the S3 class as a
+#'   property without a default. It must be specified in the
 #'   same way as a S7 constructor: the first argument should be `.data`
 #'   (the base type whose attributes will be modified).
 #'

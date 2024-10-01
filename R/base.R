@@ -1,16 +1,16 @@
 new_base_class <- function(name, constructor_name = name) {
   force(name)
 
-  constructor <- function(.data = class_missing) {
-    if (is_class_missing(.data)) {
-      .data <- base_default(name)
-    }
-    .data
-  }
+  constructor <- new_function(
+    args = list(.data = base_default(name)),
+    body = quote(.data),
+    env = baseenv()
+  )
 
   validator <- function(object) {
     if (base_class(object) != name) {
-      sprintf("Underlying data must be <%s> not <%s>", name, base_class(object))
+      sprintf("Underlying data must be <%s> not <%s>",
+              name, base_class(object))
     }
   }
 
@@ -37,8 +37,8 @@ base_default <- function(type) {
     name = quote(quote(x)),
     call = call("{"),
 
-    `function` = function() {},
-    environment = new.env(parent = emptyenv())
+    `function` = quote(function() {}),
+    environment = quote(new.env(parent = emptyenv()))
 )}
 
 
