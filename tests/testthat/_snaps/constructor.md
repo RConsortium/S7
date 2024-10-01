@@ -13,8 +13,10 @@
     Output
       function (x = integer(0), y = integer(0)) 
       {
-          x
-          y
+          if (!missing(x)) 
+              x
+          if (!missing(y)) 
+              y
           new_object(S7_object(), x = x, y = y)
       }
       <environment: namespace:S7>
@@ -66,7 +68,8 @@
     Output
       function (y = numeric(0)) 
       {
-          y
+          if (!missing(y)) 
+              y
           new_object(S7_object(), y = y)
       }
       <environment: namespace:S7>
@@ -79,24 +82,4 @@
       function (..., y = numeric(0)) 
       new_object(foo(...), y = y)
       <environment: 0x0>
-
-# can create constructors with missing or lazy defaults
-
-    Code
-      Person()
-    Condition
-      Error:
-      ! <Person> object properties are invalid:
-      - @first_name must be <character>, not <NULL>
-      - @last_name must be <MISSING> or <character>, not <NULL>
-      - @nick_name must be <character>, not <NULL>
-
----
-
-    Code
-      Person("Alice")
-    Condition
-      Error:
-      ! <Person> object properties are invalid:
-      - @last_name must be <MISSING> or <character>, not <NULL>
 
