@@ -101,14 +101,15 @@ test_that("can create constructors with missing or lazy defaults", {
   Person <- new_class(
     name = "Person",
     properties = list(
-      # non-dynamic, default missing (required constructor arg)
-      first_name = new_property(class_character, default = quote(expr = )),
+      # non-dynamic, default error call (required constructor arg)
+      first_name = new_property(class_character, default = quote(stop(
+        'argument "first_name" is missing, with no default'))),
 
       # non-dynamic, static default (optional constructor arg)
       middle_name = new_property(class_character, default = ""),
 
-      # non-dynamic, default missing (required constructor arg) (same as first_name)
-      last_name = new_property(class_missing | class_character),
+      # non-dynamic, nullable character
+      last_name = new_property(NULL | class_character),
 
       # non-dynamic, but defaults to the value of another property
       nick_name = new_property(class_character, default = quote(first_name)),
@@ -133,15 +134,15 @@ test_that("can create constructors with missing or lazy defaults", {
   )
 
   expect_equal(formals(Person), as.pairlist(alist(
-    first_name = ,
+    first_name = stop('argument "first_name" is missing, with no default'),
     middle_name = "",
-    last_name = ,
+    last_name = NULL,
     nick_name = first_name,
     birthdate = Sys.Date()
   ))) # no age
 
   expect_error(Person(), 'argument "first_name" is missing, with no default')
-  expect_error(Person("Alice"), 'argument "last_name" is missing, with no default')
+  expect_null(Person("Alice")@last_name)
 
   p <- Person("Alice", ,"Smith")
 
@@ -157,4 +158,38 @@ test_that("can create constructors with missing or lazy defaults", {
   expect_equal(p@middle_name, "Allen")
   expect_error(p@birthdate <- as.Date('1970-01-01'),
                "Can\'t set read-only property Person@birthdate")
+})
+
+
+
+test_that("Dynamic settable properties are included in constructor", {
+  Foo <- new_class(
+    name = "Foo",
+    properties = list(
+      dynamic_settable = new_property(
+        class_numeric,
+        getter = function(self) self@dynamic_settable,
+        setter = function(self, value) {
+          self@dynamic_settable <- value
+          self
+        }
+      ),
+
+      dynamic_read_only = new_property(
+        class_numeric,
+        getter = function(self) 99,
+      )
+    )
+  )
+
+  expect_equal(formals(Foo), pairlist(dynamic_settable = numeric()))
+  expect_equal(Foo()@dynamic_settable, numeric())
+  expect_equal(Foo(3)@dynamic_settable, 3)
+
+  foo <- Foo()
+  expect_error(foo@dynamic_read_only <- 1,
+               "Can't set read-only property <Foo>@dynamic_read_only")
+  foo@dynamic_settable <- 1
+  expect_equal(foo@dynamic_settable, 1)
+
 })

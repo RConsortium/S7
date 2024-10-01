@@ -10,6 +10,9 @@
 #' behaviour when modified. Dynamic properties are not included as an argument
 #' to the default class constructor.
 #'
+#' See the "Properties: Common Patterns" section in `vignette("class-objects")`
+#' for more examples.
+#'
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
 #' @param getter An optional function used to get the value. The function
@@ -69,47 +72,6 @@
 #' # argument to the default constructor
 #' try(clock(now = 10))
 #' args(clock)
-#'
-#' # These can be useful if you want to deprecate a property
-#' person <- new_class("person", properties = list(
-#'   first_name = class_character,
-#'   firstName = new_property(
-#'      getter = function(self) {
-#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-#'        self@first_name
-#'      },
-#'      setter = function(self, value) {
-#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-#'        self@first_name <- value
-#'        self
-#'      }
-#'    )
-#' ))
-#' hadley <- person(first_name = "Hadley")
-#' hadley@firstName
-#' hadley@firstName <- "John"
-#' hadley@first_name
-#'
-#' # Properties can have default values that are quoted calls.
-#' # These become standard function promises in the default constructor,
-#' # evaluated at the time the object is constructed.
-#' stopwatch <- new_class("stopwatch", properties = list(
-#'   starttime = new_property(class = class_POSIXct, default = quote(Sys.time())),
-#'   totaltime = new_property(getter = function(self)
-#'     difftime(Sys.time(), self@starttime, units = "secs"))
-#' ))
-#' args(stopwatch)
-#' round(stopwatch()@totaltime)
-#' round(stopwatch(Sys.time() - 1)@totaltime)
-#'
-#' # Properties can also have a 'missing' default value, making them
-#' # required arguments to the default constructor.
-#' # You can generate a missing arg with `quote(expr =)` or `rlang::missing_arg()`
-#' Person <- new_class("Person", properties = list(
-#'   name = new_property(class_character, default = quote(expr = ))
-#' ))
-#' try(Person())
-#' Person("Alice")
 new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
@@ -117,12 +79,7 @@ new_property <- function(class = class_any,
                          default = NULL,
                          name = NULL) {
   class <- as_class(class)
-  if (!is.null(default) &&
-      !(is.call(default) || is.symbol(default)) && # allow promises
-      !class_inherits(default, class)) {
-    msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
-    stop(msg)
-  }
+  check_prop_default(default, class)
 
   if (!is.null(getter)) {
     check_function(getter, alist(self = ))
@@ -145,6 +102,43 @@ new_property <- function(class = class_any,
   class(out) <- "S7_property"
 
   out
+}
+
+check_prop_default <- function(default, class, error_call = sys.call(-1)) {
+  if (is.null(default)) {
+    return() # always valid.
+  }
+
+  if (is.call(default)) {
+    # A promise default; delay checking until constructor called.
+    return()
+  }
+
+  if (is.symbol(default)) {
+    if (identical(default, quote(...))) {
+      # The meaning of a `...` prop default needs discussion
+      stop(simpleError("`default` cannot be `...`", error_call))
+    }
+    if (identical(default, quote(expr =))) {
+      # The meaning of a missing prop default needs discussion
+      stop(simpleError("`default` cannot be missing", error_call))
+    }
+
+    # other symbols are treated as promises
+    return()
+  }
+
+  if (class_inherits(default, class))
+    return()
+
+  msg <- sprintf("`default` must be an instance of %s, not a %s",
+                 class_desc(class), obj_desc(default))
+
+  stop(simpleError(msg, error_call))
+}
+
+stop.parent <- function(..., call = sys.call(-2)) {
+  stop(simpleError(.makeMessage(...), call))
 }
 
 is_property <- function(x) inherits(x, "S7_property")
@@ -484,3 +478,8 @@ as_property <- function(x, name, i) {
 prop_is_read_only <- function(prop) {
   is.function(prop$getter) && !is.function(prop$setter)
 }
+
+prop_has_setter <- function(prop) is.function(prop$setter)
+
+prop_is_dynamic <- function(prop) is.function(prop$getter)
+
