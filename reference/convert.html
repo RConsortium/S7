@@ -12,9 +12,14 @@ to work because those methods will return classParent objects, not
 classChild objects.
 
 
-convert() provides a default implementation when from inherits from
-to. This default strips any properties that from possesses that to
-does not.
+convert() provides two default implementations:
+When from inherits from to, it strips any properties that from
+possesses that to does not (downcasting).
+When to is a subclass of from's class, it creates a new object of
+class to, copying over existing properties from from and initializing
+new properties of to (upcasting).
+
+
 If you are converting an object solely for the purposes of accessing a method
 on a superclass, you probably want super() instead. See its docs for more
 details.
@@ -37,9 +42,14 @@ to work because those methods will return classParent objects, not
 classChild objects.
 
 
-convert() provides a default implementation when from inherits from
-to. This default strips any properties that from possesses that to
-does not.
+convert() provides two default implementations:
+When from inherits from to, it strips any properties that from
+possesses that to does not (downcasting).
+When to is a subclass of from's class, it creates a new object of
+class to, copying over existing properties from from and initializing
+new properties of to (upcasting).
+
+
 If you are converting an object solely for the purposes of accessing a method
 on a superclass, you probably want super() instead. See its docs for more
 details.
@@ -106,10 +116,12 @@ why, imagine you have written methods to objects of various types to
 <code>classParent</code>, you can't expect the methods written for <code>classParent</code>
 to work because those methods will return <code>classParent</code> objects, not
 <code>classChild</code> objects.</p></li>
-</ul><p><code>convert()</code> provides a default implementation when <code>from</code> inherits from
-<code>to</code>. This default strips any properties that <code>from</code> possesses that <code>to</code>
-does not.</p>
-<p>If you are converting an object solely for the purposes of accessing a method
+</ul><p><code>convert()</code> provides two default implementations:</p><ol><li><p>When <code>from</code> inherits from <code>to</code>, it strips any properties that <code>from</code>
+possesses that <code>to</code> does not (downcasting).</p></li>
+<li><p>When <code>to</code> is a subclass of <code>from</code>'s class, it creates a new object of
+class <code>to</code>, copying over existing properties from <code>from</code> and initializing
+new properties of <code>to</code> (upcasting).</p></li>
+</ol><p>If you are converting an object solely for the purposes of accessing a method
 on a superclass, you probably want <code><a href="super.html">super()</a></code> instead. See its docs for more
 details.</p><div class="section">
 <h3 id="s-amp-s-">S3 &amp; S4<a class="anchor" aria-label="anchor" href="#s-amp-s-"></a></h3>
@@ -139,7 +151,8 @@ functions/generics in S3, and to <code>as()</code>/<code>setAs()</code> in S4.</
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Other arguments passed to custom <code>convert()</code> methods.</p></dd>
+<dd><p>Other arguments passed to custom <code>convert()</code> methods. For upcasting,
+these can be used to override existing properties or set new ones.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -153,11 +166,26 @@ is not possible.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo1"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">class_integer</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">foo2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo2"</span>, <span class="va">foo1</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">class_double</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># S7 provides a default implementation for coercing an object to one of</span></span></span>
-<span class="r-in"><span><span class="co"># its parent classes:</span></span></span>
+<span class="r-in"><span><span class="co"># Downcasting: S7 provides a default implementation for coercing an object</span></span></span>
+<span class="r-in"><span><span class="co"># to one of its parent classes:</span></span></span>
 <span class="r-in"><span><span class="fu">convert</span><span class="op">(</span><span class="fu">foo2</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span>, y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">foo1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;foo1&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  @ x: int 1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Upcasting: S7 also provides a default implementation for coercing an object</span></span></span>
+<span class="r-in"><span><span class="co"># to one of its child classes:</span></span></span>
+<span class="r-in"><span><span class="fu">convert</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">foo2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;foo2&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ x: int 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ y: num(0) </span>
+<span class="r-in"><span><span class="fu">convert</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">foo2</span>, y <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span>  <span class="co"># Set new property</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;foo2&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ x: int 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ y: num 2.5</span>
+<span class="r-in"><span><span class="fu">convert</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">foo2</span>, x <span class="op">=</span> <span class="fl">2L</span>, y <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span>  <span class="co"># Override existing and set new</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;foo2&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ x: int 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ y: num 2.5</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># For all other cases, you'll need to provide your own.</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">convert</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">class_integer</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -200,7 +228,7 @@ is not possible.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer></div>

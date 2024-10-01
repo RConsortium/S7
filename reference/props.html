@@ -72,7 +72,7 @@ object with new values for the specified properties.</p></li>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">props</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">props</span><span class="op">(</span><span class="va">object</span>, names <span class="op">=</span> <span class="fu"><a href="prop_names.html">prop_names</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">props</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
@@ -85,6 +85,11 @@ object with new values for the specified properties.</p></li>
 
 <dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>An object from a S7 class</p></dd>
+
+
+<dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
+<dd><p>A character vector of property names to retrieve. Default is all
+properties.</p></dd>
 
 
 <dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
@@ -137,7 +142,7 @@ only after all replacements are performed.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer></div>
