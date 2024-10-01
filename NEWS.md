@@ -4,10 +4,11 @@
   into a subclass, enabling class construction from a prototype (#444).
 
 * The default object constructor returned by `new_class()` has been updated. 
-  It now accepts missing and lazy (promise) property defaults. Additionally, 
-  all custom property setters are now consistently invoked by the default 
-  constructor. If you're using S7 in an R package, you'll need to re-document 
-  to ensure that your docs match the updated usage (#438).
+  It now accepts lazy (promise) property defaults and includes dynamic properties
+  with a `setter` in the constructor. Additionally, all custom property setters 
+  are now consistently invoked by the default constructor. If you're using S7 in 
+  an R package, you'll need to re-document to ensure that your documentation 
+  matches the updated usage (#438, #445).
 
 * Fixed an issue where a custom property `getter()` would infinitely recurse 
   when accessing itself (reported in #403, fixed in #406).
