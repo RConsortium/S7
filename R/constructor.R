@@ -6,7 +6,12 @@ new_constructor <- function(parent, properties) {
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     return(new_function(
       args = arg_info$self,
-      body = new_call("new_object", c(list(quote(S7_object())), self_args)),
+      body = as.call(c(quote(`{`),
+        # Force all promises here so that any errors are signaled from
+        # the constructor() call instead of the new_object() call.
+        unname(self_args),
+        new_call("new_object", c(list(quote(S7_object())), self_args))
+      )),
       env = asNamespace("S7")
     ))
   }
@@ -48,9 +53,10 @@ new_constructor <- function(parent, properties) {
 constructor_args <- function(parent, properties = list()) {
   parent_args <- formals(class_constructor(parent))
 
+  # Remove read-only properties
+  properties <- properties[!vlapply(properties, prop_is_read_only)]
+
   self_arg_nms <- names2(properties)
-  # Remove dynamic arguments
-  self_arg_nms <- self_arg_nms[vlapply(properties, function(x) is.null(x$getter))]
 
   if (is_class(parent) && !parent@abstract) {
     # Remove any parent properties; can't use parent_args() since the constructor

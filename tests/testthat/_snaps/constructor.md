@@ -4,13 +4,19 @@
       new_constructor(S7_object, list())
     Output
       function () 
-      new_object(S7_object())
+      {
+          new_object(S7_object())
+      }
       <environment: namespace:S7>
     Code
       new_constructor(S7_object, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
       function (x = integer(0), y = integer(0)) 
-      new_object(S7_object(), x = x, y = y)
+      {
+          x
+          y
+          new_object(S7_object(), x = x, y = y)
+      }
       <environment: namespace:S7>
     Code
       foo <- new_class("foo", parent = class_character)
@@ -51,13 +57,18 @@
       new_constructor(foo1, list())
     Output
       function () 
-      new_object(S7_object())
+      {
+          new_object(S7_object())
+      }
       <environment: namespace:S7>
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
       function (y = numeric(0)) 
-      new_object(S7_object(), y = y)
+      {
+          y
+          new_object(S7_object(), y = y)
+      }
       <environment: namespace:S7>
 
 # can use `...` in parent constructor

@@ -253,16 +253,27 @@ new_object <- function(.parent, ...) {
   }
 
   args <- list2(...)
-  nms <- names(args)
+  if ("" %in% names2(args)) {
+    stop("All arguments to `...` must be named")
+  }
+
+  has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
 
   # TODO: Some type checking on `.parent`?
   object <- .parent
-  attr(object, "S7_class") <- class
-  class(object) <- class_dispatch(class)
 
-  # Set properties. This will potentially invoke custom property setters
-  for (name in names(args))
-    prop(object, name, check = FALSE) <- args[[name]]
+  attrs <- c(
+    list(class = class_dispatch(class), S7_class = class),
+    args[!has_setter],
+    attributes(object)
+  )
+  attrs <- attrs[!duplicated(names(attrs))]
+  attributes(object) <- attrs
+
+  # invoke custom property setters
+  prop_setter_vals <- args[has_setter]
+  for (name in names(prop_setter_vals))
+    prop(object, name, check = FALSE) <- prop_setter_vals[[name]]
 
   # Don't need to validate if parent class already validated,
   # i.e. it's a non-abstract S7 class

@@ -62,6 +62,9 @@ By specifying a \code{getter} and/or \code{setter}, you can make the property
 "dynamic" so that it's computed when accessed or has some non-standard
 behaviour when modified. Dynamic properties are not included as an argument
 to the default class constructor.
+
+See the "Properties: Common Patterns" section in \code{vignette("class-objects")}
+for more examples.
 }
 \examples{
 # Simple properties store data inside an object
@@ -90,45 +93,4 @@ try(my_clock@now <- 10)
 # argument to the default constructor
 try(clock(now = 10))
 args(clock)
-
-# These can be useful if you want to deprecate a property
-person <- new_class("person", properties = list(
-  first_name = class_character,
-  firstName = new_property(
-     getter = function(self) {
-       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-       self@first_name
-     },
-     setter = function(self, value) {
-       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-       self@first_name <- value
-       self
-     }
-   )
-))
-hadley <- person(first_name = "Hadley")
-hadley@firstName
-hadley@firstName <- "John"
-hadley@first_name
-
-# Properties can have default values that are quoted calls.
-# These become standard function promises in the default constructor,
-# evaluated at the time the object is constructed.
-stopwatch <- new_class("stopwatch", properties = list(
-  starttime = new_property(class = class_POSIXct, default = quote(Sys.time())),
-  totaltime = new_property(getter = function(self)
-    difftime(Sys.time(), self@starttime, units = "secs"))
-))
-args(stopwatch)
-round(stopwatch()@totaltime)
-round(stopwatch(Sys.time() - 1)@totaltime)
-
-# Properties can also have a 'missing' default value, making them
-# required arguments to the default constructor.
-# You can generate a missing arg with `quote(expr =)` or `rlang::missing_arg()`
-Person <- new_class("Person", properties = list(
-  name = new_property(class_character, default = quote(expr = ))
-))
-try(Person())
-Person("Alice")
 }
