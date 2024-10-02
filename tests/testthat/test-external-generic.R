@@ -74,13 +74,17 @@ test_that("new_method works with both hard and soft dependencies", {
 
   quick_install(test_path(c("t0", "t1")), tmp_lib)
   quick_install(test_path("t2"), tmp_lib)
+
   library("t2")
 
-  # t2 has a soft dependency on t1
-  library("t1")
-  expect_equal(foo("x"), "foo")
-
-  # t2 has a hard dependency on t0
   library("t0")
-  expect_equal(bar("x"), "bar")
+  # t2 has a hard dependency on t0
+  expect_equal(an_s3_generic("x"), "foo")
+  expect_equal(an_s7_generic("x"), "foo")
+
+  library("t1")
+  # t2 has a soft dependency on t1
+  expect_equal(another_s3_generic("x"), "foo")
+  expect_equal(another_s7_generic("x"), "foo")
+
 })
