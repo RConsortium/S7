@@ -70,6 +70,8 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_raw`
 #' * `class_list`
 #' * `class_expression`
+#' * `class_name`
+#' * `class_call`
 #' * `class_function`
 #' * `class_environment` (can only be used for properties)
 #'

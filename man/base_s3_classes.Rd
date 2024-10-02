@@ -12,7 +12,6 @@
 \alias{class_matrix}
 \alias{class_array}
 \alias{class_formula}
-
 \title{S7 wrappers for key S3 classes}
 \usage{
 class_factor
