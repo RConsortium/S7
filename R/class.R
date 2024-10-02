@@ -122,7 +122,7 @@ new_class <- function(
     if (!is.null(validator)) {
       check_function(validator, alist(self = ))
     }
-    if (abstract && !(parent@abstract || parent@name == "S7_object")) {
+    if (abstract && (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))) {
       stop("Abstract classes must have abstract parents")
     }
   }
