@@ -148,13 +148,11 @@ validate_factor <- function(self) {
 }
 
 validate_date <- function(self) {
-  if (!is.numeric(self)) {
-    "Underlying data must be numeric"
-  }
+    if (mode(self) != "numeric")
 }
 
 validate_POSIXct <- function(self) {
-  if (!is.numeric(self)) {
+  if (mode(self) != "numeric") {
     return("Underlying data must be numeric")
   }
 
@@ -230,7 +228,7 @@ validate_formula <- function(self) {
     return("environment(self) must be non-NULL")
   if (identical(self, stats::formula(NULL, environment(self)))) # weird NULL case
     return(invisible(NULL))
-  if (!is.call(self) || !length(self) %in% 2:3 || self[[1L]] != quote(`~`))
+  if (!is.call(self) || !length(self) %in% 2:3 || unclass(self)[[1L]] != quote(`~`))
     return("must be a call to `~` of length 2 or 3")
 }
 
@@ -288,7 +286,7 @@ class_POSIXct <- new_S3_class(c("POSIXct", "POSIXt"),
 #' @order 3
 class_POSIXlt <- new_S3_class(c("POSIXlt", "POSIXt"),
   constructor = function(.data = NULL, tz = "") {
-    as.POSIXlt(NULL, tz = tz)
+    as.POSIXlt(.data, tz = tz)
   },
   validator = validate_POSIXlt
 )
@@ -321,7 +319,14 @@ class_data.frame <- new_S3_class("data.frame",
 #' @format NULL
 #' @order 3
 class_matrix <- new_S3_class("matrix",
-  constructor = function(.data = NA, nrow = length(.data), ncol = 1, byrow = FALSE, dimnames  = NULL) {
+  constructor = function(.data = logical(), nrow = NULL, ncol = NULL, byrow = FALSE, dimnames = NULL) {
+    nrow <- nrow %||% NROW(.data)
+    if(is.null(ncol)) {
+      ncol <- NCOL(.data)
+      if(length(.data) != (nrow * ncol)) {
+        ncol <- length(.data) %/% nrow
+      }
+    }
     matrix(.data, nrow, ncol, byrow, dimnames)
   },
   validator = validate_matrix
@@ -332,7 +337,7 @@ class_matrix <- new_S3_class("matrix",
 #' @format NULL
 #' @order 3
 class_array <- new_S3_class("array",
-  constructor = function(.data = NA, dim = length(data), dimnames = NULL) {
+  constructor = function(.data = logical(), dim = base::dim(.data) %||% length(.data), dimnames = base::dimnames(.data)) {
     array(.data, dim, dimnames)
   },
   validator = validate_array

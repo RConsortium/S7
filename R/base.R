@@ -35,7 +35,7 @@ base_default <- function(type) {
     list = list(),
     expression = expression(),
     name = quote(quote(x)),
-    call = call("{"),
+    call = quote(quote({})),
 
     `function` = quote(function() {}),
     environment = quote(new.env(parent = emptyenv()))
