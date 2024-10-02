@@ -205,13 +205,14 @@ valid_dimnames <- function(self) {
 }
 
 validate_matrix <- function(self) {
-  if (is.matrix(self)) # is.matrix() methods should only return TRUE if valid
-    return(invisible(NULL))
-  if (!is.integer(dim(self)) || length(dim(self)) != 2L || !all(dim(self) >= 0L))
-    return("dim(self) must be a non-negative integer vector of length 2")
-  if (!valid_dimnames(self))
-    return("dimnames(self) must be NULL or a length 2 list of either NULL or a character vector of length equal to its corresponding dimension")
-  "is.matrix(self) is FALSE"
+  if (!is.matrix(self)) {
+    # is.matrix() methods should only return TRUE if valid
+    "is.matrix(self) is FALSE"
+  } else if (!is.integer(dim(self)) || length(dim(self)) != 2L || !all(dim(self) >= 0L)) {
+    "dim(self) must be a non-negative integer vector of length 2"
+  } else if (!valid_dimnames(self)) {
+    "dimnames(self) must be NULL or a length 2 list of either NULL or a character vector of length equal to its corresponding dimension"
+  }
 }
 
 validate_array <- function(self) {
