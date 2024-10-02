@@ -69,3 +69,21 @@ named_list <- function(...) {
   names(x) <- names2(x)
   x
 }
+
+`:=` <- function(sym, val) {
+  cl <- sys.call()
+  cl[[1L]] <- quote(`<-`)
+  stopifnot(is.symbol(cl[[2L]]) && is.call(cl[[3L]]))
+  cl[[3L]]$name <- as.character(cl[[2L]])
+  eval.parent(cl)
+}
+
+`append1<-` <- function (x, value) {
+  stopifnot(is.list(x) || identical(mode(x), mode(value)))
+  x[[length(x) + 1L]] <- value
+  x
+}
+
+`append<-` <- `c`
+
+`add<-` <- `+`
