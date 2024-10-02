@@ -142,13 +142,20 @@ validate_factor <- function(self) {
   c(
     if (typeof(self) != "integer")
       "Underlying data must be an <integer>",
-    if (!is.character(attr(self, "levels")))
-      "attr(, 'levels') must be a <character>"
+    if (!is.character(attr(self, "levels", TRUE)))
+      "attr(, 'levels') must be a <character>",
+    if (max(unclass(self), 0L) > length(attr(self, "levels", TRUE)))
+      "Not enough 'levels' for underlying data"
   )
 }
 
 validate_date <- function(self) {
+  c(
     if (mode(self) != "numeric")
+      "Underlying data must be numeric",
+    if (!inherits(self, "Date"))
+      "Underlying data must have class 'Date'"
+  )
 }
 
 validate_POSIXct <- function(self) {
@@ -349,7 +356,7 @@ class_array <- new_S3_class("array",
 #' @order 3
 class_formula <- new_S3_class("formula",
   constructor = function(.data = NULL, env = parent.frame()) {
-    stats::formula(.data, env)
+    stats::formula(.data, env = env)
   },
   validator = validate_formula
 )

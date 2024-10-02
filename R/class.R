@@ -252,15 +252,16 @@ new_object <- function(.parent, ...) {
     stop(msg)
   }
 
+  # force .parent before ...
+  # TODO: Some type checking on `.parent`?
+  object <- .parent
+
   args <- list(...)
   if ("" %in% names2(args)) {
     stop("All arguments to `...` must be named")
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
-
-  # TODO: Some type checking on `.parent`?
-  object <- .parent
 
   attrs <- c(
     list(class = class_dispatch(class), S7_class = class),
