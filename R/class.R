@@ -301,7 +301,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
     if (is.environment(object)) {
       attributes(object) <- NULL
     } else {
-      attributes(object) <- list(names = names(object))
+      attributes(object) <- list(names = names(object), dim = dim(object))
     }
 
     str(object, nest.lev = nest.lev)
