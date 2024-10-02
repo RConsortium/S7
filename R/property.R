@@ -7,7 +7,11 @@
 #'
 #' By specifying a `getter` and/or `setter`, you can make the property
 #' "dynamic" so that it's computed when accessed or has some non-standard
-#' behaviour when modified.
+#' behaviour when modified. Dynamic properties are not included as an argument
+#' to the default class constructor.
+#'
+#' See the "Properties: Common Patterns" section in `vignette("class-objects")`
+#' for more examples.
 #'
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
@@ -31,8 +35,10 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to? If `NULL`, defaults to the "empty" instance
-#'   of `class`.
+#'   what should it default to? If `NULL`, it defaults to the "empty" instance
+#'   of `class`. This can also be a quoted call, which then becomes a standard
+#'   function promise in the default constructor, evaluated at the time the
+#'   object is constructed.
 #' @param name Property name, primarily used for error messages. Generally
 #'   don't need to set this here, as it's more convenient to supply as a
 #'   the element name when defining a list of properties. If both `name`
@@ -59,28 +65,13 @@
 #' my_clock <- clock()
 #' my_clock@now; Sys.sleep(1)
 #' my_clock@now
-#' # This property is read only
+#' # This property is read only, because there is a 'getter' but not a 'setter'
 #' try(my_clock@now <- 10)
 #'
-#' # These can be useful if you want to deprecate a property
-#' person <- new_class("person", properties = list(
-#'   first_name = class_character,
-#'   firstName = new_property(
-#'      getter = function(self) {
-#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-#'        self@first_name
-#'      },
-#'      setter = function(self, value) {
-#'        warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-#'        self@first_name <- value
-#'        self
-#'      }
-#'    )
-#' ))
-#' hadley <- person(first_name = "Hadley")
-#' hadley@firstName
-#' hadley@firstName <- "John"
-#' hadley@first_name
+#' # Because the property is dynamic, it is not included as an
+#' # argument to the default constructor
+#' try(clock(now = 10))
+#' args(clock)
 new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
@@ -88,10 +79,7 @@ new_property <- function(class = class_any,
                          default = NULL,
                          name = NULL) {
   class <- as_class(class)
-  if (!is.null(default) && !class_inherits(default, class)) {
-    msg <- sprintf("`default` must be an instance of %s, not a %s", class_desc(class), obj_desc(default))
-    stop(msg)
-  }
+  check_prop_default(default, class)
 
   if (!is.null(getter)) {
     check_function(getter, alist(self = ))
@@ -116,6 +104,43 @@ new_property <- function(class = class_any,
   out
 }
 
+check_prop_default <- function(default, class, error_call = sys.call(-1)) {
+  if (is.null(default)) {
+    return() # always valid.
+  }
+
+  if (is.call(default)) {
+    # A promise default; delay checking until constructor called.
+    return()
+  }
+
+  if (is.symbol(default)) {
+    if (identical(default, quote(...))) {
+      # The meaning of a `...` prop default needs discussion
+      stop(simpleError("`default` cannot be `...`", error_call))
+    }
+    if (identical(default, quote(expr =))) {
+      # The meaning of a missing prop default needs discussion
+      stop(simpleError("`default` cannot be missing", error_call))
+    }
+
+    # other symbols are treated as promises
+    return()
+  }
+
+  if (class_inherits(default, class))
+    return()
+
+  msg <- sprintf("`default` must be an instance of %s, not a %s",
+                 class_desc(class), obj_desc(default))
+
+  stop(simpleError(msg, error_call))
+}
+
+stop.parent <- function(..., call = sys.call(-2)) {
+  stop(simpleError(.makeMessage(...), call))
+}
+
 is_property <- function(x) inherits(x, "S7_property")
 
 #' @export
@@ -131,7 +156,7 @@ str.S7_property <- function(object, ..., nest.lev = 0) {
 }
 
 prop_default <- function(prop) {
-  prop$default %||% class_construct(prop$class)
+  prop$default %||% class_construct_expr(prop$class)
 }
 
 #' Get/set a property
@@ -301,12 +326,7 @@ prop_label <- function(object, name) {
 `@.S7_object` <- prop
 
 #' @rawNamespace S3method("@<-",S7_object)
-`@<-.S7_object` <- function(object, name, value) {
-  nme <- as.character(substitute(name))
-  prop(object, nme) <- value
-
-  invisible(object)
-}
+`@<-.S7_object` <- `prop<-`
 
 
 #' Property introspection
@@ -366,6 +386,8 @@ prop_exists <- function(object, name) {
 #'
 #' @importFrom stats setNames
 #' @inheritParams prop
+#' @param names A character vector of property names to retrieve. Default is all
+#'   properties.
 #' @returns A named list of property values.
 #' @export
 #' @examples
@@ -379,13 +401,12 @@ prop_exists <- function(object, name) {
 #' props(lexington)
 #' props(lexington) <- list(height = 14, name = "Lexington")
 #' lexington
-props <- function(object) {
+props <- function(object, names = prop_names(object)) {
   check_is_S7(object)
-  prop_names <- prop_names(object)
-  if (length(prop_names) == 0) {
-    list()
+  if (length(names) == 0) {
+    structure(list(), names = character(0))
   } else {
-    setNames(lapply(prop_names, prop, object = object), prop_names)
+    setNames(lapply(names, prop, object = object), names)
   }
 }
 #' @rdname props
@@ -453,3 +474,12 @@ as_property <- function(x, name, i) {
     new_property(x, name = name)
   }
 }
+
+prop_is_read_only <- function(prop) {
+  is.function(prop$getter) && !is.function(prop$setter)
+}
+
+prop_has_setter <- function(prop) is.function(prop$setter)
+
+prop_is_dynamic <- function(prop) is.function(prop$getter)
+

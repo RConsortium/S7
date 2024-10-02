@@ -40,8 +40,10 @@ The validator will be called after the \code{class} has been verified, so
 your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
-what should it default to? If \code{NULL}, defaults to the "empty" instance
-of \code{class}.}
+what should it default to? If \code{NULL}, it defaults to the "empty" instance
+of \code{class}. This can also be a quoted call, which then becomes a standard
+function promise in the default constructor, evaluated at the time the
+object is constructed.}
 
 \item{name}{Property name, primarily used for error messages. Generally
 don't need to set this here, as it's more convenient to supply as a
@@ -58,7 +60,11 @@ limited to a data of a specific \code{class}.
 
 By specifying a \code{getter} and/or \code{setter}, you can make the property
 "dynamic" so that it's computed when accessed or has some non-standard
-behaviour when modified.
+behaviour when modified. Dynamic properties are not included as an argument
+to the default class constructor.
+
+See the "Properties: Common Patterns" section in \code{vignette("class-objects")}
+for more examples.
 }
 \examples{
 # Simple properties store data inside an object
@@ -80,26 +86,11 @@ clock <- new_class("clock", properties = list(
 my_clock <- clock()
 my_clock@now; Sys.sleep(1)
 my_clock@now
-# This property is read only
+# This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 
-# These can be useful if you want to deprecate a property
-person <- new_class("person", properties = list(
-  first_name = class_character,
-  firstName = new_property(
-     getter = function(self) {
-       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-       self@first_name
-     },
-     setter = function(self, value) {
-       warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-       self@first_name <- value
-       self
-     }
-   )
-))
-hadley <- person(first_name = "Hadley")
-hadley@firstName
-hadley@firstName <- "John"
-hadley@first_name
+# Because the property is dynamic, it is not included as an
+# argument to the default constructor
+try(clock(now = 10))
+args(clock)
 }

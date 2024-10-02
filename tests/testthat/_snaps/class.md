@@ -33,7 +33,7 @@
        ..  ..$ validator: NULL
        ..  ..$ default  : NULL
        @ abstract   : logi FALSE
-       @ constructor: function (x = class_missing, y = class_missing)  
+       @ constructor: function (x = integer(0), y = integer(0))  
        @ validator  : NULL
     Code
       str(list(foo2))

@@ -10,10 +10,12 @@
 #' @examples
 #' foo <- new_generic("foo", "x")
 #' method(foo, class_numeric) <- function(x) "number"
+#' method(foo, class_missing) <- function(x) "missing"
 #' method(foo, class_any) <- function(x) "fallback"
 #'
 #' foo(1)
 #' foo()
+#' foo("")
 class_missing <- structure(list(), class = "S7_missing")
 
 is_class_missing <- function(x) inherits(x, "S7_missing")
