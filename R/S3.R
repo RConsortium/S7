@@ -259,7 +259,8 @@ validate_formula <- function(self) {
 #' @format NULL
 #' @order 3
 class_factor <- new_S3_class("factor",
-  constructor = function(.data = integer(), levels = character()) {
+  constructor = function(.data = integer(), levels = NULL) {
+    levels <- levels %||% attr(.data, "levels", TRUE) %||% character()
     structure(.data, levels = levels, class = "factor")
   },
   validator = validate_factor
@@ -344,7 +345,9 @@ class_matrix <- new_S3_class("matrix",
 #' @format NULL
 #' @order 3
 class_array <- new_S3_class("array",
-  constructor = function(.data = logical(), dim = base::dim(.data) %||% length(.data), dimnames = base::dimnames(.data)) {
+  constructor = function(.data = logical(),
+                         dim = base::dim(.data) %||% length(.data),
+                         dimnames = base::dimnames(.data)) {
     array(.data, dim, dimnames)
   },
   validator = validate_array

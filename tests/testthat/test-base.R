@@ -219,6 +219,7 @@ test_that("Base S3 classes can be parents", {
     Foo := new_class(class_factor)
     Foo()
     Foo(1L, levels = letters[1:3])
+    Foo(factor(letters[1:3]))
   })
 
   expect_no_error({
