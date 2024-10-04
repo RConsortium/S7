@@ -20,19 +20,19 @@ dbg <- function(..., .display = utils::str) {
   exprs <- as.list(substitute(list(...)))[-1L]
 
   for (i in seq_len(...length())) {
-    arg_i <- as.symbol(sprintf("..%i", i))
-    if (eval(substitute(missing(arg_i)))) next
+    ..i <- as.symbol(sprintf("..%i", i))
+    if (eval(substitute(missing(..i)))) next
 
     name <- names(exprs)[[i]]
     expr <- deparse1(exprs[[i]])
 
     label <- if (is.null(name)) {
-      sprintf("`%s`: ", expr)
+      sprintf("`%s`", expr)
     } else {
-      sprintf("(%s) `%s`: ", name, expr)
+      sprintf("(%s) `%s`", name, expr)
     }
-    cat(label)
-    .display(out <- eval(arg_i))
+    cat(label, ": ", sep = "")
+    .display(out <- eval(..i))
   }
 
   cl <- sys.call()
