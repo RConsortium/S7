@@ -59,10 +59,6 @@ test_that("new_method works with both hard and soft dependencies", {
   skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
-  tmp_lib <- tempfile()
-  dir.create(tmp_lib)
-  old_libpaths <- .libPaths()
-  .libPaths(c(tmp_lib, old_libpaths))
 
   on.exit({
     .libPaths(old_libpaths)
@@ -70,21 +66,52 @@ test_that("new_method works with both hard and soft dependencies", {
     try(detach("package:t1", unload = TRUE), silent = TRUE)
     try(detach("package:t0", unload = TRUE), silent = TRUE)
     unlink(tmp_lib, recursive = TRUE)
+    # remove.packages(c("t1", "t0", "t2"))
   })
 
-  quick_install(test_path(c("t0", "t1")), tmp_lib)
+  tmp_lib <- tempfile()
+  dir.create(tmp_lib)
+  old_libpaths <- .libPaths()
+  .libPaths(c(tmp_lib, old_libpaths))
+
+  # t2 has a hard dependency on t0
+  # t2 has a soft dependency on t1
+
+  # First, ensure that t2 can install and run successfully without t1 installed
+  quick_install(test_path("t0"), tmp_lib)
   quick_install(test_path("t2"), tmp_lib)
 
   library("t2")
-
   library("t0")
-  # t2 has a hard dependency on t0
-  expect_equal(an_s3_generic("x"), "foo")
+  expect_equal(an_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(an_s7_generic("x"), "foo")
 
+  # Now install the soft dependency
+  quick_install(test_path("t1"), tmp_lib)
+
   library("t1")
-  # t2 has a soft dependency on t1
-  expect_equal(another_s3_generic("x"), "foo")
+  expect_equal(another_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(another_s7_generic("x"), "foo")
+
+
+  ## Check again in a fresh session, with everything installed
+  expect_no_error(callr::r(function() {
+    library(t2)
+
+    stopifnot(exprs = {
+      t0::an_s3_generic(an_s7_class()) == "foo"
+      t0::an_s7_generic("x") == "foo"
+    })
+
+    if(isNamespaceLoaded("t1"))
+      stop("Prematurely loaded {t1}")
+
+    stopifnot(exprs = {
+      t1::another_s3_generic(an_s7_class()) == "foo"
+      t1::another_s7_generic("x") == "foo"
+    })
+
+    NULL
+  }))
 
 })

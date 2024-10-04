@@ -88,10 +88,13 @@ is_external_generic <- function(x) {
 #' }
 methods_register <- function() {
   package <- packageName(parent.frame())
+  ns <- topenv(parent.frame())
+  # TODO?: check/enforce that methods_register() is being called from .onLoad()
+
   tbl <- S7_methods_table(package)
 
   for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method, parent.frame())
+    register <- registrar(x$generic, x$signature, x$method, ns)
 
     if (isNamespaceLoaded(x$generic$package)) {
       register()
@@ -105,7 +108,7 @@ methods_register <- function() {
 
 registrar <- function(generic, signature, method, env) {
   # Force all arguments
-  list(generic, signature, method)
+  generic; signature; method; env;
 
   function(...) {
     ns <- asNamespace(generic$package)
@@ -129,12 +132,11 @@ external_methods_reset <- function(package) {
 external_methods_add <- function(package, generic, signature, method) {
   tbl <- S7_methods_table(package)
 
-  methods <- append(
-    tbl,
-    list(list(generic = generic, signature = signature, method = method))
-  )
+  append1(tbl) <- list(generic = generic,
+                       signature = signature,
+                       method = method)
 
-  S7_methods_table(package) <- methods
+  S7_methods_table(package) <- tbl
   invisible()
 }
 
@@ -144,7 +146,7 @@ external_methods_add <- function(package, generic, signature, method) {
 S7_methods_table <- function(package) {
   ns <- asNamespace(package)
   tbl <- ns[[".__S3MethodsTable__."]]
-  attr(tbl, "S7methods")
+  attr(tbl, "S7methods") %||% list()
 }
 `S7_methods_table<-` <- function(package, value) {
   ns <- asNamespace(package)
