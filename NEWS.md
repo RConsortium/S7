@@ -1,5 +1,9 @@
 # S7 (development version)
 
+* Added support for more base/S3 classes (#434):
+    `class_POSIXlt`, `class_POSIXt`, `class_matrix`, `class_array`,
+    `class_formula`, `class_call`, `class_language`, `class_name`
+
 * Fixed S3 methods registration across packages (#422).
 
 * `convert()` now provides a default method to transform a parent class instance
