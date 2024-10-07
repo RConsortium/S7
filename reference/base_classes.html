@@ -9,6 +9,8 @@ class_character
 class_raw
 class_list
 class_expression
+class_name
+class_call
 class_function
 class_environment (can only be used for properties)
 
@@ -20,6 +22,7 @@ class_atomic is a union of class_logical, class_numeric,
 class_complex, class_character, and class_raw.
 class_vector is a union of class_atomic, class_list, and
 class_expression.
+class_language is a union of class_name and class_call.
 
 "><meta property="og:description" content="The following S7 classes represent base types allowing them to be used
 within S7:
@@ -31,6 +34,8 @@ class_character
 class_raw
 class_list
 class_expression
+class_name
+class_call
 class_function
 class_environment (can only be used for properties)
 
@@ -42,6 +47,7 @@ class_atomic is a union of class_logical, class_numeric,
 class_complex, class_character, and class_raw.
 class_vector is a union of class_atomic, class_list, and
 class_expression.
+class_language is a union of class_name and class_call.
 
 "></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -99,6 +105,8 @@ within S7:</p><ul><li><p><code>class_logical</code></p></li>
 <li><p><code>class_raw</code></p></li>
 <li><p><code>class_list</code></p></li>
 <li><p><code>class_expression</code></p></li>
+<li><p><code>class_name</code></p></li>
+<li><p><code>class_call</code></p></li>
 <li><p><code>class_function</code></p></li>
 <li><p><code>class_environment</code> (can only be used for properties)</p></li>
 </ul><p>We also include three union types to model numerics, atomics, and vectors
@@ -107,6 +115,7 @@ respectively:</p><ul><li><p><code>class_numeric</code> is a union of <code>class
 <code>class_complex</code>, <code>class_character</code>, and <code>class_raw</code>.</p></li>
 <li><p><code>class_vector</code> is a union of <code>class_atomic</code>, <code>class_list</code>, and
 <code>class_expression</code>.</p></li>
+<li><p><code>class_language</code> is a union of <code>class_name</code> and <code>class_call</code>.</p></li>
 </ul></div>
 
     <div class="section level2">
@@ -127,6 +136,10 @@ respectively:</p><ul><li><p><code>class_numeric</code> is a union of <code>class
 <span></span>
 <span><span class="va">class_expression</span></span>
 <span></span>
+<span><span class="va">class_name</span></span>
+<span></span>
+<span><span class="va">class_call</span></span>
+<span></span>
 <span><span class="va">class_function</span></span>
 <span></span>
 <span><span class="va">class_environment</span></span>
@@ -135,7 +148,9 @@ respectively:</p><ul><li><p><code>class_numeric</code> is a union of <code>class
 <span></span>
 <span><span class="va">class_atomic</span></span>
 <span></span>
-<span><span class="va">class_vector</span></span></code></pre></div>
+<span><span class="va">class_vector</span></span>
+<span></span>
+<span><span class="va">class_language</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
