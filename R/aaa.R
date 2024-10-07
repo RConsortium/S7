@@ -7,3 +7,9 @@ new_function <- function(args = NULL,
                          env = asNamespace("S7")) {
   as.function.default(c(args, body) %||% list(NULL), env)
 }
+
+`append1<-` <- function (x, value) {
+  stopifnot(is.list(x) || identical(mode(x), mode(value)))
+  x[[length(x) + 1L]] <- value
+  x
+}

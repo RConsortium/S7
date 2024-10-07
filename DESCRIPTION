@@ -36,6 +36,7 @@ Suggests:
     methods,
     rmarkdown,
     testthat (>= 3.2.0),
+    callr,
     tibble
 VignetteBuilder: 
     knitr
