@@ -67,18 +67,17 @@ register_method <- function(generic,
   generic <- as_generic(generic)
   signature <- as_signature(signature, generic)
 
+
+  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+    generic <- as_generic(getFromNamespace(generic$name, generic$package))
+  }
+
   # Register in current session
   if (is_S7_generic(generic)) {
     check_method(method, generic, name = method_name(generic, signature))
     register_S7_method(generic, signature, method)
-  } else if (is_external_generic(generic)) {
-    # Only register immediately if soft dependency is available
-    if (requireNamespace(generic$package, quietly = TRUE)) {
-      gen <- getFromNamespace(generic$name, asNamespace(generic$package))
-      register_method(gen, signature, method, package = NULL)
-    }
   } else if (is_S3_generic(generic)) {
-    register_S3_method(generic, signature, method)
+    register_S3_method(generic, signature, method, env)
   } else if (is_S4_generic(generic)) {
     register_S4_method(generic, signature, method, env)
   }
@@ -93,7 +92,7 @@ register_method <- function(generic,
   invisible(generic)
 }
 
-register_S3_method <- function(generic, signature, method) {
+register_S3_method <- function(generic, signature, method, envir = parent.frame()) {
   if (class_type(signature[[1]]) != "S7") {
     msg <- sprintf(
       "When registering methods for S3 generic %s(), signature must be an S7 class, not %s.",
@@ -102,8 +101,14 @@ register_S3_method <- function(generic, signature, method) {
     )
     stop(msg, call. = FALSE)
   }
+
+  if (is_external_generic(external_generic <- get0(generic$name, envir = envir))) {
+    envir <- asNamespace(external_generic$package)
+  }
+
   class <- S7_class_name(signature[[1]])
-  registerS3method(generic$name, class, method, envir = parent.frame())
+  # dbg(generic$name, class, method, envir)
+  registerS3method(generic$name, class, method, envir)
 }
 
 register_S7_method <- function(generic, signature, method) {
