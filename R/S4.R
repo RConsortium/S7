@@ -42,15 +42,14 @@ S4_to_S7_class <- function(x, error_base = "") {
     subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
     do.call("new_union", subclasses)
   } else if (methods::is(x, "classRepresentation")) {
+    if (x@package == "methods") {
+      basic_classes <- S4_basic_classes()
+      if (hasName(basic_classes, x@className)) {
+        return(basic_classes[[x@className]])
+      }
+    }
     if (methods::extends(x, "oldClass")) {
       new_S3_class(as.character(x@className))
-    } else if (x@package == "methods") {
-      base_classes <- S4_base_classes()
-      if (hasName(base_classes, x@className)) {
-        base_classes[[x@className]]
-      } else {
-        x
-      }
     } else {
       x
     }
@@ -63,7 +62,7 @@ S4_to_S7_class <- function(x, error_base = "") {
   }
 }
 
-S4_base_classes <- function() {
+S4_basic_classes <- function() {
   list(
     NULL = NULL,
     logical = class_logical,
@@ -77,7 +76,18 @@ S4_base_classes <- function() {
     expression = class_expression,
     vector = class_vector,
     `function` = class_function,
-    environment = class_environment
+    environment = class_environment,
+    name = class_name,
+    call = class_call,
+    data.frame = class_data.frame,
+    Date = class_Date,
+    factor = class_factor,
+    POSIXct = class_POSIXct,
+    POSIXlt = class_POSIXlt,
+    POSIXt = class_POSIXt,
+    matrix = class_matrix,
+    array = class_array,
+    formula = class_formula
   )
 }
 
@@ -110,7 +120,7 @@ S4_class_name <- function(x) {
   class <- x@className
   package <- x@package %||% attr(class, "package")
 
-  if (identical(package, "methods") && class %in% names(S4_base_classes())) {
+  if (identical(package, "methods") && class %in% names(S4_basic_classes())) {
     class
   } else if (is.null(package) || identical(package, ".GlobalEnv")) {
     paste0("S4/", class)

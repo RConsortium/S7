@@ -11,11 +11,14 @@
 \alias{class_raw}
 \alias{class_list}
 \alias{class_expression}
+\alias{class_name}
+\alias{class_call}
 \alias{class_function}
 \alias{class_environment}
 \alias{class_numeric}
 \alias{class_atomic}
 \alias{class_vector}
+\alias{class_language}
 \title{S7 wrappers for base types}
 \usage{
 class_logical
@@ -34,6 +37,10 @@ class_list
 
 class_expression
 
+class_name
+
+class_call
+
 class_function
 
 class_environment
@@ -43,6 +50,8 @@ class_numeric
 class_atomic
 
 class_vector
+
+class_language
 }
 \value{
 S7 classes wrapping around common base types and S3 classes.
@@ -59,6 +68,8 @@ within S7:
 \item \code{class_raw}
 \item \code{class_list}
 \item \code{class_expression}
+\item \code{class_name}
+\item \code{class_call}
 \item \code{class_function}
 \item \code{class_environment} (can only be used for properties)
 }
@@ -71,6 +82,7 @@ respectively:
 \code{class_complex}, \code{class_character}, and \code{class_raw}.
 \item \code{class_vector} is a union of \code{class_atomic}, \code{class_list}, and
 \code{class_expression}.
+\item \code{class_language} is a union of \code{class_name} and \code{class_call}.
 }
 }
 \examples{

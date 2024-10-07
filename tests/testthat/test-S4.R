@@ -30,7 +30,7 @@ test_that("converts S4 unions to S7 unions", {
 })
 
 test_that("converts S4 representation of S3 classes to S7 representation", {
-  expect_equal(S4_to_S7_class(getClass("Date")), new_S3_class("Date"), ignore_function_env = TRUE)
+  expect_equal(S4_to_S7_class(getClass("Date")), class_Date, ignore_function_env = TRUE)
 })
 
 test_that("errors on non-S4 classes", {

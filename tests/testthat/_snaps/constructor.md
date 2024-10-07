@@ -38,14 +38,13 @@
     Code
       new_constructor(class_factor, list())
     Output
-      function (.data = integer(), levels = character()) 
+      function (.data = integer(), levels = NULL) 
       new_object(new_factor(.data = .data, levels = levels))
       <environment: 0x0>
     Code
       new_constructor(class_factor, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
-      function (.data = integer(), levels = character(), x = integer(0), 
-          y = integer(0)) 
+      function (.data = integer(), levels = NULL, x = integer(0), y = integer(0)) 
       new_object(new_factor(.data = .data, levels = levels), x = x, 
           y = y)
       <environment: 0x0>

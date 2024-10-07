@@ -252,15 +252,16 @@ new_object <- function(.parent, ...) {
     stop(msg)
   }
 
+  # force .parent before ...
+  # TODO: Some type checking on `.parent`?
+  object <- .parent
+
   args <- list(...)
   if ("" %in% names2(args)) {
     stop("All arguments to `...` must be named")
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
-
-  # TODO: Some type checking on `.parent`?
-  object <- .parent
 
   attrs <- c(
     list(class = class_dispatch(class), S7_class = class),
@@ -301,7 +302,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
     if (is.environment(object)) {
       attributes(object) <- NULL
     } else {
-      attributes(object) <- list(names = names(object))
+      attributes(object) <- list(names = names(object), dim = dim(object))
     }
 
     str(object, nest.lev = nest.lev)

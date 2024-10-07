@@ -282,6 +282,7 @@ base_class <- function(x) {
     special = "function",
     builtin = "function",
     language = "call",
+    symbol = "name",
     typeof(x)
   )
 }
