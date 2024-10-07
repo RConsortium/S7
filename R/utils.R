@@ -144,6 +144,9 @@ modify_list <- function (x, new_vals) {
   x
 }
 
+list2 <- function(...)
+  .Call(collect_dots_skip_missing_, environment(), substitute(list(...)))
+
 
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {

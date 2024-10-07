@@ -9,7 +9,8 @@ new_constructor <- function(parent, properties) {
       body = as.call(c(quote(`{`),
         # Force all promises here so that any errors are signaled from
         # the constructor() call instead of the new_object() call.
-        unname(self_args),
+        # allow missing.
+        lapply(unname(self_args), \(sym) bquote(if(!missing(.(sym))) .(sym))),
         new_call("new_object", c(list(quote(S7_object())), self_args))
       )),
       env = asNamespace("S7")

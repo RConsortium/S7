@@ -102,14 +102,17 @@ test_that("can create constructors with missing or lazy defaults", {
     name = "Person",
     properties = list(
       # non-dynamic, default error call (required constructor arg)
-      first_name = new_property(class_character, default = quote(stop(
-        'argument "first_name" is missing, with no default'))),
+      first_name = new_property(
+        class_character,
+        default = quote(stop('argument "first_name" is missing, with no default'))
+      ),
 
       # non-dynamic, static default (optional constructor arg)
       middle_name = new_property(class_character, default = ""),
 
       # non-dynamic, nullable character
-      last_name = new_property(NULL | class_character),
+      last_name = new_property(NULL | class_character,
+                               default = quote(expr =)),
 
       # non-dynamic, but defaults to the value of another property
       nick_name = new_property(class_character, default = quote(first_name)),
@@ -136,7 +139,7 @@ test_that("can create constructors with missing or lazy defaults", {
   expect_equal(formals(Person), as.pairlist(alist(
     first_name = stop('argument "first_name" is missing, with no default'),
     middle_name = "",
-    last_name = NULL,
+    last_name = ,
     nick_name = first_name,
     birthdate = Sys.Date()
   ))) # no age

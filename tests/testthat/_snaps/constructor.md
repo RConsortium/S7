@@ -13,8 +13,10 @@
     Output
       function (x = integer(0), y = integer(0)) 
       {
-          x
-          y
+          if (!missing(x)) 
+              x
+          if (!missing(y)) 
+              y
           new_object(S7_object(), x = x, y = y)
       }
       <environment: namespace:S7>
@@ -66,7 +68,8 @@
     Output
       function (y = numeric(0)) 
       {
-          y
+          if (!missing(y)) 
+              y
           new_object(S7_object(), y = y)
       }
       <environment: namespace:S7>

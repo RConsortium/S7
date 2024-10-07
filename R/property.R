@@ -115,14 +115,6 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   }
 
   if (is.symbol(default)) {
-    if (identical(default, quote(...))) {
-      # The meaning of a `...` prop default needs discussion
-      stop(simpleError("`default` cannot be `...`", error_call))
-    }
-    if (identical(default, quote(expr =))) {
-      # The meaning of a missing prop default needs discussion
-      stop(simpleError("`default` cannot be missing", error_call))
-    }
 
     # other symbols are treated as promises
     return()

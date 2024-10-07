@@ -252,7 +252,7 @@ new_object <- function(.parent, ...) {
     stop(msg)
   }
 
-  args <- list(...)
+  args <- list2(...)
   if ("" %in% names2(args)) {
     stop("All arguments to `...` must be named")
   }
