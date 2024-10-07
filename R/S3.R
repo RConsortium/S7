@@ -144,7 +144,10 @@ validate_factor <- function(self) {
       "Underlying data must be an <integer>",
     if (!is.character(attr(self, "levels", TRUE)))
       "attr(, 'levels') must be a <character>",
-    if (max(unclass(self), 0L) > length(attr(self, "levels", TRUE)))
+    { rng <- range(0L, unclass(self)); NULL },
+    if (rng[1] < 0L)
+      "Underlying data must be all positive",
+    if (rng[2] > length(attr(self, "levels", TRUE)))
       "Not enough 'levels' for underlying data"
   )
 }
