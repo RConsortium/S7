@@ -293,21 +293,30 @@ prop_error_unknown <- function(object, prop_name) {
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
   if (!class_inherits(value, prop$class)) {
-    sprintf("%s must be %s, not %s",
+    return(sprintf("%s must be %s, not %s",
       prop_label(object, prop$name),
       class_desc(prop$class),
       obj_desc(value)
-    )
-  } else if (!is.null(prop$validator)) {
-    val <- prop$validator(value)
-    if (!is.null(val)) {
-      paste0(prop_label(object, prop$name), " ", val)
-    } else {
-      NULL
-    }
-  } else {
-    NULL
+    ))
   }
+
+  if (is.null(prop$validator)) {
+    return(NULL)
+  }
+
+  val <- prop$validator(value)
+  if (is.null(val)) {
+    return(NULL)
+  }
+
+  if (is_string(val)) {
+    return(paste0(prop_label(object, prop$name), " ", val))
+  }
+
+  stop(sprintf(
+    "%s validator is expected to return NULL or a string, not <%s>",
+    prop_label(object, prop$name), typeof(val)
+  ))
 }
 
 prop_label <- function(object, name) {

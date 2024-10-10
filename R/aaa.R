@@ -13,3 +13,7 @@ new_function <- function(args = NULL,
   x[[length(x) + 1L]] <- value
   x
 }
+
+is_string <- function(x) {
+  identical(class(x), "character") && length(x) == 1L && !is.na(x) && x != ""
+}
