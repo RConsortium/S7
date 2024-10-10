@@ -93,7 +93,7 @@ describe("prop setting", {
       properties = list(x = new_property(class_double, setter = custom_setter)),
       validator = function(self) {
         add(times_validated) <<- 1L
-        character()
+        NULL
       }
     )
     obj <- foo2("123")
