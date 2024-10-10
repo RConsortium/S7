@@ -8,7 +8,7 @@
 new_class(
   name,
   parent = S7_object,
-  package = NULL,
+  package = topNamespaceName(parent.frame()),
   properties = list(),
   abstract = FALSE,
   constructor = NULL,
