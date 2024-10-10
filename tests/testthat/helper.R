@@ -161,7 +161,7 @@ local({
   .topNamespaceName <- ns$topNamespaceName
   ns$topNamespaceName <- function(env = parent.frame) {
     name <- .topNamespaceName(env)
-    if (name == "S7") NULL else name
+    if (is.null(name) || name == "S7") NULL else name
   }
   lockBinding("topNamespaceName", ns)
 })
