@@ -24,6 +24,11 @@ new_base_class <- function(name, constructor_name = name) {
   out
 }
 
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass,S7_base_class)
+nameOfClass.S7_base_class <- function(x) {
+  x[["class"]]
+}
+
 base_default <- function(type) {
   switch(type,
     logical = logical(),
