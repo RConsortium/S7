@@ -327,3 +327,43 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 S7_class <- function(object) {
   attr(object, "S7_class", exact = TRUE)
 }
+
+class_lookup_table <- NULL
+on_load_define_class_lookup_table <- function() {
+  pairs <- list(
+    list(class_list, list),
+    list(class_logical, logical),
+    list(class_integer, integer),
+    list(class_double, double),
+    list(class_numeric, numeric),
+    list(class_character, character),
+    list(class_complex, complex),
+    list(class_raw, raw),
+    list(class_vector, vector),
+    list(class_formula, stats::formula),
+    list(class_call, call),
+    list(class_data.frame, data.frame),
+    list(class_factor, factor),
+    list(class_expression, expression),
+    list(class_matrix, matrix),
+    list(class_array, array),
+
+    # the rest are a little more questionable...
+    list(class_Date, .Date),
+    list(class_POSIXct, .POSIXct),
+    list(class_POSIXlt, .POSIXlt),
+    list(class_environment, environment),
+    list(class_language, quote)
+
+    # list(class_POSIXt, )
+    # list(class_atomic, ),
+    # list(class_name, )
+    # list(class_missing, )
+    # list(class_function, )
+    # list(class_any, )
+  )
+  class_lookup_table <<- utils::hashtab("address")
+  for (pair in pairs) {
+    utils::sethash(class_lookup_table, pair[[2]], pair[[1]])
+  }
+}
