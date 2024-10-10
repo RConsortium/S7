@@ -16,17 +16,24 @@ on_load_define_ops <- function() {
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
+  # Try "specific" generic
   cnd <- tryCatch(
     return(base_ops[[.Generic]](e1, e2)),
     S7_error_method_not_found = function(cnd) cnd
   )
 
-  if (S7_inherits(e1) && S7_inherits(e2)) {
-    stop(cnd)
-  } else {
-    # Must call NextMethod() directly in the method, not wrapped in an
-    # anonymous function.
+  # Try group generic
+  cnd <- tryCatch(
+    return(S7_Ops(e1, e2, .Generic = .Generic)),
+    S7_error_method_not_found = function(cnd) cnd
+  )
+
+  if (!S7_inherits(e1) || !S7_inherits(e2)) {
+    # Fall back to base behaviour. Must call NextMethod() directly here, not
+    # wrapped in an anonymous function.
     NextMethod()
+  } else {
+    stop(cnd)
   }
 }
 
