@@ -300,11 +300,11 @@ prop_validate <- function(prop, value, object = NULL) {
     ))
   }
 
-  if (is.null(prop$validator)) {
+  if (is.null(validator <- prop$validator)) {
     return(NULL)
   }
 
-  val <- prop$validator(value)
+  val <- validator(value)
   if (is.null(val)) {
     return(NULL)
   }
