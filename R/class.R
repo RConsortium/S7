@@ -362,7 +362,7 @@ on_load_define_class_lookup_table <- function() {
     # list(class_function, )
     # list(class_any, )
   )
-  class_lookup_table <<- utils::hashtab("address")
+  class_lookup_table <<- utils::hashtab("address", length(pairs))
   for (pair in pairs) {
     utils::sethash(class_lookup_table, pair[[2]], pair[[1]])
   }
