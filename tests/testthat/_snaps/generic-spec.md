@@ -4,7 +4,7 @@
       as_generic(function() { })
     Condition
       Error:
-      ! `generic` is a function, but not an S3 generic function
+      ! `generic` is a function, but not an S3 generic function: function ()  { }
 
 ---
 
