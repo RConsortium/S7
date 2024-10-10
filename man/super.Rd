@@ -42,7 +42,7 @@ understand and reason about.
 Note that you can't use \code{super()} in methods for an S3 generic.
 For example, imagine that you have made a subclass of "integer":
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{myint <- new_class("myint", parent = class_integer)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{myint <- new_class("myint", parent = class_integer, package = NULL)
 }\if{html}{\out{</div>}}
 
 Now you go to write a custom print method:

@@ -107,7 +107,6 @@ register_S3_method <- function(generic, signature, method, envir = parent.frame(
   }
 
   class <- S7_class_name(signature[[1]])
-  # dbg(generic$name, class, method, envir)
   registerS3method(generic$name, class, method, envir)
 }
 

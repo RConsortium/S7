@@ -100,7 +100,7 @@
 new_class <- function(
     name,
     parent = S7_object,
-    package = NULL,
+    package = topNamespaceName(parent.frame()),
     properties = list(),
     abstract = FALSE,
     constructor = NULL,

@@ -26,7 +26,7 @@
 #' For example, imagine that you have made a subclass of "integer":
 #'
 #' ```{r}
-#' myint <- new_class("myint", parent = class_integer)
+#' myint <- new_class("myint", parent = class_integer, package = NULL)
 #' ```
 #'
 #' Now you go to write a custom print method:

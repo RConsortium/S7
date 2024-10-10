@@ -13,3 +13,12 @@ new_function <- function(args = NULL,
   x[[length(x) + 1L]] <- value
   x
 }
+
+topNamespaceName <- function(env = parent.frame()) {
+  env <- topenv(env)
+  if (isNamespace(env)) {
+    getNamespaceName(env)
+  } else {
+    NULL
+  }
+}

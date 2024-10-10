@@ -10,6 +10,7 @@
 #' S7_object
 S7_object <- new_class(
   name = "S7_object",
+  package = NULL,
   parent = NULL,
   constructor = function() {
     .Call(S7_object_)
@@ -96,6 +97,7 @@ on_load_define_S7_generic <- function() {
   # errors if `@` is not usable.
   S7_generic <<- new_class(
     name = "S7_generic",
+    package = NULL,
     properties = list(
       name = class_character,
       methods = class_environment,
@@ -114,6 +116,7 @@ S7_method <- NULL
 on_load_define_S7_method <- function() {
   S7_method <<- new_class(
     "S7_method",
+    package = NULL,
     parent = class_function,
     properties = list(generic = S7_generic, signature = class_list)
   )
