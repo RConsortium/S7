@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* New `nameOfClass()` method exported for S7 base classes, to enable usage like
+  `inherits("foo", S7::class_character)` (#432, #458)
+
 * Added support for more base/S3 classes (#434):
     `class_POSIXlt`, `class_POSIXt`, `class_matrix`, `class_array`,
     `class_formula`, `class_call`, `class_language`, `class_name`
