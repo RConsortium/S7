@@ -30,6 +30,8 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     x
   } else if (isS4(x)) {
     S4_to_S7_class(x, error_base)
+  } else if (!is.null(cls <- class_lookup_table[[x]])) {
+    cls
   } else {
     msg <- sprintf("Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a %s.", obj_desc(x))
     stop(paste0(error_base, msg), call. = FALSE)
