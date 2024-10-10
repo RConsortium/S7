@@ -16,8 +16,9 @@ new_function <- function(args = NULL,
 
 topNamespaceName <- function(env = parent.frame()) {
   env <- topenv(env)
-  if (isNamespace(env))
+  if (isNamespace(env)) {
     getNamespaceName(env)
-  else
+  } else {
     NULL
+  }
 }
