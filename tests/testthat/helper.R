@@ -146,3 +146,15 @@ dbg <- function(..., .display = utils::str) {
 
   invisible(out)
 }
+
+# prevent new_class() from creating `S7::` prefixed S3 class names in tests.
+local({
+  ns <- asNamespace("S7")
+  unlockBinding("topNamespaceName", ns)
+  .topNamespaceName <- ns$topNamespaceName
+  ns$topNamespaceName <- function(env = parent.frame) {
+    name <- .topNamespaceName(env)
+    if (name == "S7") NULL else name
+  }
+  lockBinding("topNamespaceName", ns)
+})
