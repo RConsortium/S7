@@ -14,6 +14,8 @@ new_base_class <- function(name, constructor_name = name) {
     }
   }
 
+  validator <- utils::removeSource(validator)
+
   out <- list(
     class = name,
     constructor_name = constructor_name,
