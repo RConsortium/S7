@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Improved error message when custom validators return invalid values (#454, #457).
+
 * Added support for more base/S3 classes (#434):
     `class_POSIXlt`, `class_POSIXt`, `class_matrix`, `class_array`,
     `class_formula`, `class_call`, `class_language`, `class_name`
