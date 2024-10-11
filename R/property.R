@@ -309,12 +309,16 @@ prop_validate <- function(prop, value, object = NULL) {
     return(NULL)
   }
 
-  if (is_string(val)) {
-    return(paste0(prop_label(object, prop$name), " ", val))
+  if (is.character(val)) {
+    if (length(val)) {
+      return(paste0(prop_label(object, prop$name), " ", val))
+    } else {
+      return(NULL)
+    }
   }
 
   stop(sprintf(
-    "%s validator is expected to return NULL or a string, not <%s>",
+    "%s validator is expected to return NULL or a character, not <%s>",
     prop_label(object, prop$name), typeof(val)
   ))
 }
