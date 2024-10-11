@@ -338,3 +338,16 @@ test_that("Base S3 classes can be properties", {
   expect_error(Foo(x = 1), "@x must be S3<POSIXt>, not <double>")
 
 })
+
+
+test_that("inherits() works with S7_base_class", {
+  # nameOfClass() introduced in R 4.3
+  skip_if(getRversion() < "4.3")
+
+  # test nameOfClass.S7_base_class
+  expect_true(inherits("foo", class_character))
+
+  Foo := new_class(class_character)
+  expect_true(inherits(Foo(), "character"))
+  expect_true(inherits(Foo(), class_character))
+})

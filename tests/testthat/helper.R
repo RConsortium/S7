@@ -78,19 +78,6 @@ named_list <- function(...) {
   eval.parent(cl)
 }
 
-`append1<-` <- function (x, value) {
-  stopifnot(is.list(x) || identical(mode(x), mode(value)))
-  x[[length(x) + 1L]] <- value
-  x
-}
-
-`append<-` <- function(x, after, value) {
-  if (missing(after))
-    c(x, value)
-  else
-    append(x, value, after = after)
-}
-
 `add<-` <- `+`
 
 dbg <- function(..., .display = utils::str, .file = NULL) {

@@ -84,11 +84,21 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
 
   # Next, recursively validate the object
   errors <- character()
-  repeat({
-    errors <- c(errors, class_validate(class, object))
+  repeat {
+    error <- class_validate(class, object)
+    if (is.null(error)) {
+
+    } else if (is.character(error)) {
+      append(errors) <- error
+    } else {
+      stop(sprintf(
+        "%s validator must return NULL or a character, not <%s>.",
+        obj_desc(class), typeof(error)
+      ))
+    }
     if (!is_class(class) || !recursive) break
     class <- class@parent
-  })
+  }
 
   # If needed, report errors
   if (length(errors) > 0) {
