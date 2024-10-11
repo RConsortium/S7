@@ -14,6 +14,8 @@ new_base_class <- function(name, constructor_name = name) {
     }
   }
 
+  validator <- utils::removeSource(validator)
+
   out <- list(
     class = name,
     constructor_name = constructor_name,
@@ -22,6 +24,11 @@ new_base_class <- function(name, constructor_name = name) {
   )
   class(out) <- "S7_base_class"
   out
+}
+
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass,S7_base_class)
+nameOfClass.S7_base_class <- function(x) {
+  x[["class"]]
 }
 
 base_default <- function(type) {
