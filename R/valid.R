@@ -92,7 +92,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
       append(errors) <- error
     } else {
       stop(sprintf(
-        "%s validator is expected to return NULL or a character, not <%s>",
+        "%s validator must return NULL or a character, not <%s>.",
         obj_desc(class), typeof(error)
       ))
     }
