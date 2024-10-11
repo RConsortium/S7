@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Improved error message when custom validators return invalid values (#454, #457).
+
 * New `nameOfClass()` method exported for S7 base classes, to enable usage like
   `inherits("foo", S7::class_character)` (#432, #458)
 
