@@ -252,8 +252,8 @@ validate_formula <- function(self) {
 #' * `class_Date` for dates.
 #' * `class_factor` for factors.
 #' * `class_POSIXct`, `class_POSIXlt` and `class_POSIXt` for date-times.
-#' * `class_matrix` for matrices.
-#' * `class_array` for arrays.
+# * `class_matrix` for matrices.
+# * `class_array` for arrays.
 #' * `class_formula` for formulas.
 
 #'
@@ -325,10 +325,10 @@ class_data.frame <- new_S3_class("data.frame",
   validator = validate_data.frame
 )
 
-#' @export
-#' @rdname base_s3_classes
-#' @format NULL
-#' @order 3
+#  @export
+#  @rdname base_s3_classes
+#  @format NULL
+#  @order 3
 class_matrix <- new_S3_class("matrix",
   constructor = function(.data = logical(), nrow = NULL, ncol = NULL, byrow = FALSE, dimnames = NULL) {
     nrow <- nrow %||% NROW(.data)
@@ -343,10 +343,10 @@ class_matrix <- new_S3_class("matrix",
   validator = validate_matrix
 )
 
-#' @export
-#' @rdname base_s3_classes
-#' @format NULL
-#' @order 3
+#  @export
+#  @rdname base_s3_classes
+#  @format NULL
+#  @order 3
 class_array <- new_S3_class("array",
   constructor = function(.data = logical(),
                          dim = base::dim(.data) %||% length(.data),

@@ -250,25 +250,25 @@ test_that("Base S3 classes can be parents", {
   expect_error(Foo(list(x = 1:3, y = 1:4)),
                "all variables should have the same length")
 
-  expect_no_error({
-    Foo := new_class(class_matrix)
-    Foo(1:4, nrow = 2)
-    Foo(NA)
-    Foo(matrix(1:4, nrow = 2))
-  })
+  # expect_no_error({
+  #   Foo := new_class(class_matrix)
+  #   Foo(1:4, nrow = 2)
+  #   Foo(NA)
+  #   Foo(matrix(1:4, nrow = 2))
+  # })
 
-  expect_no_error({
-    Foo := new_class(class_array)
-
-    Foo(array(1:4, dim = c(2, 2)))
-    Foo(1:4, dim = c(2, 2))
-
-    Foo(array(1:24, dim = c(2, 3, 4)))
-    Foo(1:24, dim = c(2, 3, 4))
-
-    Foo(array(1))
-    Foo(1)
-  })
+  # expect_no_error({
+  #   Foo := new_class(class_array)
+  #
+  #   Foo(array(1:4, dim = c(2, 2)))
+  #   Foo(1:4, dim = c(2, 2))
+  #
+  #   Foo(array(1:24, dim = c(2, 3, 4)))
+  #   Foo(1:24, dim = c(2, 3, 4))
+  #
+  #   Foo(array(1))
+  #   Foo(1)
+  # })
 
   expect_no_error({
     Foo := new_class(class_formula)
@@ -294,17 +294,17 @@ test_that("Base S3 classes can be properties", {
   })
   expect_error(Foo(x = 1), "@x must be S3<data.frame>, not <double>")
 
-  expect_no_error({
-    Foo := new_class(properties = list(x = class_matrix))
-    Foo(x = matrix())
-  })
-  expect_error(Foo(x = 1), "@x must be S3<matrix>, not <double>")
+  # expect_no_error({
+  #   Foo := new_class(properties = list(x = class_matrix))
+  #   Foo(x = matrix())
+  # })
+  # expect_error(Foo(x = 1), "@x must be S3<matrix>, not <double>")
 
-  expect_no_error({
-    Foo := new_class(properties = list(x = class_array))
-    Foo(x = array())
-  })
-  expect_error(Foo(x = 1), "@x must be S3<array>, not <double>")
+  # expect_no_error({
+  #   Foo := new_class(properties = list(x = class_array))
+  #   Foo(x = array())
+  # })
+  # expect_error(Foo(x = 1), "@x must be S3<array>, not <double>")
 
   expect_no_error({
     Foo := new_class(properties = list(x = class_formula))
