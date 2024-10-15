@@ -9,8 +9,6 @@
 \alias{class_POSIXlt}
 \alias{class_POSIXt}
 \alias{class_data.frame}
-\alias{class_matrix}
-\alias{class_array}
 \alias{class_formula}
 \title{S7 wrappers for key S3 classes}
 \usage{
@@ -26,10 +24,6 @@ class_POSIXt
 
 class_data.frame
 
-class_matrix
-
-class_array
-
 class_formula
 }
 \description{
@@ -40,8 +34,6 @@ the base packages:
 \item \code{class_Date} for dates.
 \item \code{class_factor} for factors.
 \item \code{class_POSIXct}, \code{class_POSIXlt} and \code{class_POSIXt} for date-times.
-\item \code{class_matrix} for matrices.
-\item \code{class_array} for arrays.
 \item \code{class_formula} for formulas.
 }
 }

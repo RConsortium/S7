@@ -85,8 +85,8 @@ S4_basic_classes <- function() {
     POSIXct = class_POSIXct,
     POSIXlt = class_POSIXlt,
     POSIXt = class_POSIXt,
-    matrix = class_matrix,
-    array = class_array,
+    # matrix = class_matrix,
+    # array = class_array,
     formula = class_formula
   )
 }
