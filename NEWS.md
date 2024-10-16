@@ -1,13 +1,16 @@
 # S7 (development version)
 
+* `new_class()` now automatically infers the package name when called from 
+  within an R package (#459).
+
 * Improved error message when custom validators return invalid values (#454, #457).
 
 * New `nameOfClass()` method exported for S7 base classes, to enable usage like
   `inherits("foo", S7::class_character)` (#432, #458)
 
 * Added support for more base/S3 classes (#434):
-    `class_POSIXlt`, `class_POSIXt`, `class_matrix`, `class_array`,
-    `class_formula`, `class_call`, `class_language`, `class_name`
+    `class_POSIXlt`, `class_POSIXt`, `class_formula`, 
+    `class_call`, `class_language`, `class_name`
 
 * Fixed S3 methods registration across packages (#422).
 

@@ -1,5 +1,5 @@
 test_that("S7_class validates its underlying data", {
-  x <- new_class("X")()
+  x <- new_class("X", package = NULL)()
   expect_snapshot_error(S7_data(x) <- 1)
 })
 

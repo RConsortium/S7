@@ -1,5 +1,5 @@
 test_that("validate() validates object and type recursively", {
-  klass <- new_class("klass",
+  klass <- new_class("klass", package = NULL,
     properties = list(x = class_double, y = class_double),
     validator = function(self) {
       c(
@@ -18,7 +18,8 @@ test_that("validate() validates object and type recursively", {
     validate(obj)
   })
 
-  klass2 <- new_class("klass2", parent = klass, properties = list(z = class_double))
+  klass2 <- new_class("klass2", parent = klass, package = NULL,
+                      properties = list(z = class_double))
   expect_snapshot(error = TRUE, {
     obj <- klass2(1, -1, 1)
     attr(obj, "x") <- -1
@@ -31,7 +32,7 @@ test_that("validate() validates object and type recursively", {
 })
 
 test_that("validate checks base type", {
-  Double <- new_class("Double", parent = class_double)
+  Double <- new_class("Double", package = NULL, parent = class_double)
   x <- Double(10)
   mode(x) <- "character"
 
@@ -39,7 +40,7 @@ test_that("validate checks base type", {
 })
 
 test_that("validate checks the type of setters", {
-  foo <- new_class("foo", properties = list(x =
+  foo <- new_class("foo", package = NULL, properties = list(x =
     new_property(
       class_double,
       setter = function(self, value) {

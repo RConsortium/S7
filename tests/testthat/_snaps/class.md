@@ -174,7 +174,8 @@
 # S7 object: displays nicely
 
     Code
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double))
+      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
+      package = NULL)
       foo()
     Output
       <foo>
@@ -191,7 +192,7 @@
 # S7 object: displays objects with data nicely
 
     Code
-      text <- new_class("text", class_character)
+      text <- new_class("text", class_character, package = NULL)
       text("x")
     Output
       <text> chr "x"

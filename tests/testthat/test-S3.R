@@ -3,7 +3,7 @@ test_that("new_S3_class has a print method", {
 })
 
 test_that("can construct objects that extend S3 classes", {
-  ordered2 <- new_class("ordered2", parent = class_factor)
+  ordered2 <- new_class("ordered2", parent = class_factor, package = NULL)
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
   expect_equal(class(x), c("ordered2", "factor", "S7_object"))
   expect_equal(prop_names(x), character())
@@ -15,7 +15,7 @@ test_that("subclasses inherit validator", {
     function(.data) structure(.data, class = "foo"),
     function(x) if (!is.double(x)) "Underlying data must be a double"
   )
-  foo2 <- new_class("foo2", foo)
+  foo2 <- new_class("foo2", foo, package = NULL)
 
   expect_snapshot(error = TRUE, foo2("a"))
 })

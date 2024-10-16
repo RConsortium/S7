@@ -11,8 +11,8 @@ describe("S7 classes", {
   })
 
   it("print nicely", {
-    foo1 <- new_class("foo1", properties = list(x = class_integer, y = class_integer))
-    foo2 <- new_class("foo2", foo1)
+    foo1 <- new_class("foo1", properties = list(x = class_integer, y = class_integer), package = NULL)
+    foo2 <- new_class("foo2", foo1, package = NULL)
 
     expect_snapshot({
       foo2
@@ -85,8 +85,8 @@ describe("abstract classes", {
     })
   })
   it("can construct concrete subclasses", {
-    foo1 <- new_class("foo1", abstract = TRUE)
-    foo2 <- new_class("foo2", parent = foo1)
+    foo1 <- new_class("foo1", abstract = TRUE, package = NULL)
+    foo2 <- new_class("foo2", parent = foo1, package = NULL)
     expect_s3_class(foo2(), "foo2")
   })
   it("can use inherited validator from abstract class", {
@@ -96,9 +96,10 @@ describe("abstract classes", {
       abstract = TRUE,
       validator = function(self) {
         if (self@x == 2) "@x has bad value"
-      }
+      },
+      package = NULL
     )
-    foo2 <- new_class("foo2", parent = foo1)
+    foo2 <- new_class("foo2", parent = foo1, package = NULL)
     expect_no_error(foo2(x = 1))
     expect_snapshot(foo2(x = 2), error = TRUE)
   })
@@ -112,7 +113,8 @@ describe("new_object()", {
   it("validates object", {
     foo <- new_class("foo",
       properties = list(x = new_property(class_double)),
-      validator = function(self) if (self@x < 0) "x must be positive"
+      validator = function(self) if (self@x < 0) "x must be positive",
+      package = NULL
     )
 
     expect_snapshot(error = TRUE, {
@@ -136,7 +138,7 @@ describe("new_object()", {
 
 describe("S7 object", {
   it("has an S7 and S3 class", {
-    foo <- new_class("foo")
+    foo <- new_class("foo", package = NULL)
     x <- foo()
     expect_equal(S7_class(x), foo)
     expect_equal(class(x), c("foo", "S7_object"))
@@ -144,7 +146,8 @@ describe("S7 object", {
 
   it("displays nicely", {
     expect_snapshot({
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double))
+      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
+                       package = NULL)
       foo()
       str(list(foo()))
     })
@@ -152,7 +155,7 @@ describe("S7 object", {
 
   it("displays objects with data nicely", {
     expect_snapshot({
-      text <- new_class("text", class_character)
+      text <- new_class("text", class_character, package = NULL)
       text("x")
       str(list(text("x")))
     })
@@ -162,7 +165,8 @@ describe("S7 object", {
     foo1 <- new_class(
       "foo1",
       parent = class_list,
-      properties = list(x = class_double, y = class_list)
+      properties = list(x = class_double, y = class_list),
+      package = NULL
     )
     expect_snapshot(
       foo1(
@@ -213,8 +217,8 @@ describe("default constructor", {
   })
 
   it("initializes property with S7 object", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", properties = list(x = foo1))
+    foo1 <- new_class("foo1", package = NULL)
+    foo2 <- new_class("foo2", properties = list(x = foo1), package = NULL)
     x <- foo2()
     expect_s3_class(x@x, "foo1")
   })

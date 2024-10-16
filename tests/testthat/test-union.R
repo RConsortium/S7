@@ -1,7 +1,7 @@
 test_that("has useful print method", {
   expect_snapshot({
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2")
+    foo1 <- new_class("foo1", package = NULL)
+    foo2 <- new_class("foo2", package = NULL)
     new_union(foo1, foo2)
   })
 })

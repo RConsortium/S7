@@ -133,7 +133,7 @@ test_that("can dispatch on base 'union' types", {
 test_that("single dispatch fails with informative messages", {
   fail <- new_generic("fail", "x")
 
-  foo <- new_class("foo")
+  foo <- new_class("foo", package = NULL)
   Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 

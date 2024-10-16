@@ -1,7 +1,7 @@
 # super(): checks to
 
     Code
-      foo <- new_class("foo")
+      foo <- new_class("foo", package = NULL)
       super(foo(), class_character)
     Condition
       Error in `super()`:

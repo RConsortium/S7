@@ -9,8 +9,8 @@
 # throws informative error
 
     Code
-      foo1 <- new_class("foo1")
-      foo2 <- new_class("foo2")
+      foo1 <- new_class("foo1", package = NULL)
+      foo2 <- new_class("foo2", package = NULL)
       check_is_S7(foo1(), foo2)
     Condition
       Error:

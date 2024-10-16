@@ -22,6 +22,13 @@ new_function <- function(args = NULL,
   x
 }
 
+
+topNamespaceName <- function(env = parent.frame()) {
+  env <- topenv(env)
+  if (isNamespace(env))
+    getNamespaceName(env)
+}
+
 is_string <- function(x) {
   identical(class(x), "character") && length(x) == 1L && !is.na(x) && x != ""
 }

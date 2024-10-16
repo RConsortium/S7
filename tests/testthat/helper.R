@@ -80,9 +80,14 @@ named_list <- function(...) {
 
 `add<-` <- `+`
 
-dbg <- function(..., .display = utils::str) {
+dbg <- function(..., .display = utils::str, .file = NULL) {
   out <- NULL
   exprs <- as.list(substitute(list(...)))[-1L]
+
+  if (!is.null(.file)) {
+    sink(.file, append = TRUE)
+    on.exit(sink())
+  }
 
   for (i in seq_len(...length())) {
     ..i <- as.symbol(sprintf("..%i", i))
@@ -98,7 +103,7 @@ dbg <- function(..., .display = utils::str) {
     } else {
       sprintf("(%s) `%s`", name, expr)
     }
-    cat(label, ": ", sep = "")
+    cat(label, if (identical(.display, utils::str)) ": " else "\n", sep = "")
     .display(out <- eval(..i))
   }
 
@@ -127,9 +132,11 @@ dbg <- function(..., .display = utils::str) {
     cat(loc, "\n")
   } else {
     cat(sprintf("(from call: %s (srcfile missing))\n", trimws(
-      deparse1(sys.call(-2), width.cutoff = 60)
+      deparse1(sys.call(-2) %error% sys.call(-1), width.cutoff = 60)
     )))
   }
 
   invisible(out)
 }
+
+`%error%` <- function(x, y) tryCatch(x, error = function(e) y)

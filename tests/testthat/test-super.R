@@ -31,14 +31,14 @@ describe("super()", {
 
   it("checks to", {
     expect_snapshot(error = TRUE, {
-      foo <- new_class("foo")
+      foo <- new_class("foo", package = NULL)
       super(foo(), class_character)
     })
   })
 
   it("displays nicely", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 <- new_class("foo1", package = NULL)
+    foo2 <- new_class("foo2", foo1, package = NULL)
 
     expect_snapshot({
       f1 <- super(foo2(), foo1)

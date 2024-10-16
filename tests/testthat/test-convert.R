@@ -1,6 +1,6 @@
 test_that("can register convert methods", {
   local_methods(convert)
-  converttest <- new_class("converttest")
+  converttest <- new_class("converttest", package = NULL)
   method(convert, list(converttest, class_character)) <- function(from, to, ...) "c"
   method(convert, list(converttest, class_integer)) <- function(from, to, ...) "i"
 
@@ -25,8 +25,8 @@ describe("fallback convert", {
   local_methods(convert)
 
   it("can convert to own class", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 <- new_class("foo1", package = NULL)
+    foo2 <- new_class("foo2", foo1, package = NULL)
 
     obj <- convert(foo2(), to = foo2)
     expect_equal(class(obj), c("foo2", "foo1", "S7_object"))
@@ -34,8 +34,8 @@ describe("fallback convert", {
   })
 
   it("can convert to super class", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
+    foo1 <- new_class("foo1", properties = list(x = class_double), package = NULL)
+    foo2 <- new_class("foo2", foo1, properties = list(y = class_double), package = NULL)
 
     obj <- convert(foo2(1, 2), to = foo1)
     expect_equal(class(obj), c("foo1", "S7_object"))

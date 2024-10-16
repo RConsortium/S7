@@ -164,7 +164,7 @@ test_that("can create constructors with missing or lazy defaults", {
 
 test_that("Dynamic settable properties are included in constructor", {
   Foo <- new_class(
-    name = "Foo",
+    name = "Foo", package = NULL,
     properties = list(
       dynamic_settable = new_property(
         class_numeric,
