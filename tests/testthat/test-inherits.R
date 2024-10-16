@@ -15,8 +15,8 @@ test_that("checks that input is a class", {
 
 test_that("throws informative error", {
   expect_snapshot(error = TRUE, {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2")
+    foo1 <- new_class("foo1", package = NULL)
+    foo2 <- new_class("foo2", package = NULL)
     check_is_S7(foo1(), foo2)
   })
   expect_snapshot(check_is_S7("a"), error = TRUE)

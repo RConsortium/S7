@@ -73,7 +73,7 @@ describe("method registration", {
 
   it("can register S7 method for S4 generic", {
     methods::setGeneric("bar", function(x) standardGeneric("bar"))
-    S4foo <- new_class("S4foo")
+    S4foo <- new_class("S4foo", package = NULL)
 
     expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
 

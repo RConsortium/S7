@@ -1,6 +1,6 @@
 describe("property retrieval", {
   it("retrieves the properties that exist & errors otherwise", {
-    foo <- new_class("foo", properties = list(xyz = class_double))
+    foo <- new_class("foo", properties = list(xyz = class_double), package = NULL)
     obj <- foo(1)
     expect_equal(prop(obj, "xyz"), 1)
     expect_equal(obj@xyz, 1)
@@ -48,7 +48,7 @@ describe("prop setting", {
   })
 
   it("can't set read-only properties", {
-    foo <- new_class("foo", properties = list(
+    foo <- new_class("foo", package = NULL, properties = list(
       x = new_property(getter = function(self) 1
     )))
     obj <- foo()
@@ -56,7 +56,7 @@ describe("prop setting", {
   })
 
   it("errors if the property doesn't exist or is wrong class", {
-    foo <- new_class("foo", properties = list(x = class_double))
+    foo <- new_class("foo", properties = list(x = class_double), package = NULL)
     expect_snapshot(error = TRUE, {
       obj <- foo(123)
       obj@foo <- 10
@@ -65,7 +65,7 @@ describe("prop setting", {
   })
 
   it("validates all attributes if custom setter", {
-    foo <- new_class("foo", properties = list(
+    foo <- new_class("foo", package = NULL, properties = list(
       x = new_property(
         class_double,
         setter = function(self, value) {
@@ -239,10 +239,11 @@ describe("new_property()", {
 })
 
 test_that("properties can be base, S3, S4, S7, or S7 union", {
-  class_S7 <- new_class("class_S7")
+  class_S7 <- new_class("class_S7", package = NULL)
   class_S4 <- methods::setClass("class_S4", slots = c(x = "numeric"))
 
   my_class <- new_class("my_class",
+    package = NULL,
     properties = list(
       anything = class_any,
       null = NULL,
@@ -322,7 +323,7 @@ test_that("can validate with custom validator", {
     }
   }
   prop <- new_property(class_integer, validator = validate_scalar)
-  foo <- new_class("foo", properties = list(x = prop))
+  foo <- new_class("foo", package = NULL, properties = list(x = prop))
   expect_snapshot(error = TRUE, {
     f <- foo(x = 1L)
     f@x <- 1:2

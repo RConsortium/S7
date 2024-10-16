@@ -140,21 +140,3 @@ dbg <- function(..., .display = utils::str, .file = NULL) {
 }
 
 `%error%` <- function(x, y) tryCatch(x, error = function(e) y)
-
-# prevent new_class() from creating `S7::` prefixed S3 class names in tests.
-{
-  body(topNamespaceName) <- bquote({
-    if (testthat::testing_package() == "S7") {
-      return()
-    }
-
-    .(body(topNamespaceName))
-  })
-
-  local({
-    ns <- asNamespace("S7")
-    unlockBinding("topNamespaceName", ns)
-    ns$topNamespaceName <- topNamespaceName
-    lockBinding("topNamespaceName", ns)
-  })
-}
