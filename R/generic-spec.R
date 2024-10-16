@@ -28,8 +28,8 @@ as_S3_generic <- function(x) {
     }
   }
 
-  stop("`generic` is a function, but not an S3 generic function: ",
-       deparse1(x, width.cutoff = 100L), call. = FALSE)
+  stop("`generic` is a function, but not an S3 generic function: \n",
+       deparse_trunc(x, 100), call. = FALSE)
 }
 
 S3_generic <- function(generic, name) {
