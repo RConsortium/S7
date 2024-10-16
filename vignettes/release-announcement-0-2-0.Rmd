@@ -1,0 +1,137 @@
+```{r}
+#| include: false
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+We're excited to announce that the second release of the S7 package is now available on CRAN!
+S7 is a new object-oriented programming (OOP) system designed to succeed both S3 and S4.
+You might wonder why R needs a new OOP system when we already have two.
+The reason lies in the history of R's OOP journey: S3 is a simple and effective system for single dispatch, while S4 adds formal class definitions and multiple dispatch, but at the cost of complexity.
+This has forced developers to choose between the simplicity of S3 and the sophistication of S4.
+
+The goal of S7 is to unify the OOP landscape by building on S3’s existing dispatch system and incorporating the most useful features of S4 (along with some new ones), all with a simpler syntax.
+
+S7’s design and implementation have been a collaborative effort by a working group from the [R Consortium](https://www.r-consortium.org), including representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community.
+Since S7 builds on S3, it is fully compatible with existing S3-based code.
+It's also been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7, we’ll continue to add features to ease this process.
+
+Our long-term goal is to include S7 in base R, but for now, you can install it from CRAN:
+
+```{r, eval = FALSE}
+install.packages("S7")
+```
+
+## What’s New in the Second Release
+
+The second release of S7 brings refinements and bug fixes.
+Key new features include:
+
+-   The ability to define classes with lazy property default values.
+-   Initialization logic for properties with custom setters.
+-   Substantial speed improvements for property setting and getting with `@` and `@<-`.
+-   Expanded support for base S3 classes.
+-   `convert()` now has a default method for transforming a parent class instance into a subclass.
+
+Additionally, there are numerous bug fixes and quality-of-life improvements, such as better error messages, improved support for base Ops methods, and compatibility improvements for using `@` in R versions prior to 4.3.
+
+## Usage
+
+Let’s dive into the basics of S7.
+To learn more, check out the package vignettes, including a more detailed introduction in [`vignette("S7")`](https://rconsortium.github.io/OOP-WG/articles/S7.html), and coverage of generics and methods in [`vignette("generics-methods")`](https://rconsortium.github.io/OOP-WG/articles/generics-methods.html), and classes and objects in [`vignette("classes-objects")`](https://rconsortium.github.io/OOP-WG/articles/classes-objects.html).
+
+```{r}
+library(S7)
+```
+
+### Classes and Objects
+
+S7 classes have formal definitions, specified by `new_class()`, which includes a list of properties and an optional validator.
+For example, the following code creates a `range` class with `start` and `end` properties, and a validator to ensure that `start` is always less than `end`:
+
+```{r}
+range <- new_class("range",
+  properties = list(
+    start = class_double,
+    end = class_double
+  ),
+  validator = function(self) {
+    if (length(self@start) != 1) {
+      "@start must be length 1"
+    } else if (length(self@end) != 1) {
+      "@end must be length 1"
+    } else if (self@end < self@start) {
+      "@end must be greater than or equal to @start"
+    }
+  }
+)
+```
+
+`new_class()` returns the class object, which also serves as the constructor to create instances of the class:
+
+```{r}
+x <- range(start = 1, end = 10)
+x
+```
+
+### Properties
+
+The data an object holds are called its **properties**.
+Use `@` to get and set properties:
+
+```{r}
+x@start
+x@end <- 20
+x
+```
+
+Properties are automatically validated against the type declared in `new_class()` (in this case, `double`) and checked by the class **validator**:
+
+```{r, error = TRUE}
+x@end <- "x"  # Error: must be a double
+x@end <- -1   # Error: must be >= start
+```
+
+### Generics and Methods
+
+Like S3 and S4, S7 uses **functional OOP**, where methods belong to **generic** functions, and method calls look like regular function calls: `generic(object, arg2, arg3)`.
+A generic uses the types of its arguments to automatically pick the appropriate method implementation.
+
+You can create a new generic with `new_generic()`, specifying the arguments to dispatch on:
+
+```{r}
+inside <- new_generic("inside", "x")
+```
+
+To define a method for a specific class, use `method(generic, class) <- implementation`:
+
+```{r}
+method(inside, range) <- function(x, y) {
+  y >= x@start & y <= x@end
+}
+
+inside(x, c(0, 5, 10, 15))
+```
+
+Printing the generic shows its methods:
+
+```{r}
+inside
+```
+
+And you can retrieve the method for a specific class:
+
+```{r}
+method(inside, range)
+```
+
+## Known Limitations
+
+While we are pleased with S7’s design, there are still some limitations:
+
+-   S7 objects can be serialized to disk (with `saveRDS()`), but the current implementation saves the entire class specification with each object. This may change in the future.
+-   Support for implicit S3 classes `"array"` and `"matrix"` is still in development.
+
+We expect the community will uncover more issues as S7 is more widely adopted.
+If you encounter any problems, please file an issue at <https://github.com/RConsortium/OOP-WG/issues>.
+We appreciate your feedback in helping us make S7 even better!
+😃
