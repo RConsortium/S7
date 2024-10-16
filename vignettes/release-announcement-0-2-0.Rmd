@@ -35,12 +35,13 @@ Additionally, there are numerous bug fixes and quality-of-life improvements, suc
 
 ## Usage
 
-Let’s dive into the basics of S7.
-To learn more, check out the package vignettes, including a more detailed introduction in [`vignette("S7")`](https://rconsortium.github.io/OOP-WG/articles/S7.html), and coverage of generics and methods in [`vignette("generics-methods")`](https://rconsortium.github.io/OOP-WG/articles/generics-methods.html), and classes and objects in [`vignette("classes-objects")`](https://rconsortium.github.io/OOP-WG/articles/classes-objects.html).
-
 ```{r}
 library(S7)
 ```
+
+Let's dive into the basics of S7.
+To learn more, check out the package vignettes, including a more detailed introduction in [`vignette("S7")`](https://rconsortium.github.io/OOP-WG/articles/S7.html), and coverage of generics and methods in [`vignette("generics-methods")`](https://rconsortium.github.io/OOP-WG/articles/generics-methods.html), and classes and objects in [`vignette("classes-objects")`](https://rconsortium.github.io/OOP-WG/articles/classes-objects.html).
+
 
 ### Classes and Objects
 
