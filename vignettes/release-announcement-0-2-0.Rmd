@@ -9,10 +9,10 @@ You might wonder why R needs a new OOP system when we already have two.
 The reason lies in the history of R's OOP journey: S3 is a simple and effective system for single dispatch, while S4 adds formal class definitions and multiple dispatch, but at the cost of complexity.
 This has forced developers to choose between the simplicity of S3 and the sophistication of S4.
 
-The goal of S7 is to unify the OOP landscape by building on S3’s existing dispatch system and incorporating the most useful features of S4 (along with some new ones), all with a simpler syntax.
-S7’s design and implementation have been a collaborative effort by a working group from the [R Consortium](https://www.r-consortium.org), including representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community.
+The goal of S7 is to unify the OOP landscape by building on S3's existing dispatch system and incorporating the most useful features of S4 (along with some new ones), all with a simpler syntax.
+S7's design and implementation have been a collaborative effort by a working group from the [R Consortium](https://www.r-consortium.org), including representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community.
 Since S7 builds on S3, it is fully compatible with existing S3-based code.
-It's also been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7, we’ll continue to add features to ease this process.
+It's also been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7, we'll continue to add features to ease this process.
 
 Our long-term goal is to include S7 in base R, but for now, you can install it from CRAN:
 
@@ -20,7 +20,7 @@ Our long-term goal is to include S7 in base R, but for now, you can install it f
 install.packages("S7")
 ```
 
-## What’s new in the second release
+## What's new in the second release
 
 The second release of S7 brings refinements and bug fixes.
 Key new features include:
@@ -88,7 +88,7 @@ Properties are automatically validated against the type declared in `new_class()
 
 ```{r, error = TRUE}
 x@end <- "x"
-x@end <- -1 
+x@end <- -1
 ```
 
 ### Generics and Methods
@@ -126,7 +126,7 @@ method(inside, range)
 
 ## Known Limitations
 
-While we are pleased with S7’s design, there are still some limitations:
+While we are pleased with S7's design, there are still some limitations:
 
 -   S7 objects can be serialized to disk (with `saveRDS()`), but the current implementation saves the entire class specification with each object. This may change in the future.
 -   Support for implicit S3 classes `"array"` and `"matrix"` is still in development.
