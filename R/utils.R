@@ -144,6 +144,13 @@ modify_list <- function (x, new_vals) {
   x
 }
 
+deparse_trunc <- function(x, width, collapse = "\n") {
+  x <- deparse1(x, collapse)
+  if (nchar(x)> width)
+    x <- sprintf("%s....", substr(x, 0, width-4))
+  x
+}
+
 
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {
