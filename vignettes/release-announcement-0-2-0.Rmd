@@ -20,7 +20,7 @@ Our long-term goal is to include S7 in base R, but for now, you can install it f
 install.packages("S7")
 ```
 
-## What’s New in the Second Release
+## What’s new in the second release
 
 The second release of S7 brings refinements and bug fixes.
 Key new features include:
