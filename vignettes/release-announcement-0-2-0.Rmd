@@ -86,8 +86,8 @@ x
 Properties are automatically validated against the type declared in `new_class()` (in this case, `double`) and checked by the class **validator**:
 
 ```{r, error = TRUE}
-x@end <- "x"  # Error: must be a double
-x@end <- -1   # Error: must be >= start
+x@end <- "x"
+x@end <- -1 
 ```
 
 ### Generics and Methods
