@@ -25,7 +25,7 @@ super() in S3 generics
 
 Note that you can't use super() in methods for an S3 generic.
 For example, imagine that you have made a subclass of &quot;integer&quot;:
-myint &amp;lt;- new_class(&quot;myint&quot;, parent = class_integer)
+myint &amp;lt;- new_class(&quot;myint&quot;, parent = class_integer, package = NULL)
 
 Now you go to write a custom print method:
 method(print, myint) &amp;lt;- function(x, ...) {
@@ -76,7 +76,7 @@ super() in S3 generics
 
 Note that you can't use super() in methods for an S3 generic.
 For example, imagine that you have made a subclass of &quot;integer&quot;:
-myint &amp;lt;- new_class(&quot;myint&quot;, parent = class_integer)
+myint &amp;lt;- new_class(&quot;myint&quot;, parent = class_integer, package = NULL)
 
 Now you go to write a custom print method:
 method(print, myint) &amp;lt;- function(x, ...) {
@@ -171,7 +171,7 @@ understand and reason about.</p>
 
 <p>Note that you can't use <code>super()</code> in methods for an S3 generic.
 For example, imagine that you have made a subclass of "integer":</p>
-<p></p><div class="sourceCode r"><pre><code><span><span class="va">myint</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"myint"</span>, parent <span class="op">=</span> <span class="va">class_integer</span><span class="op">)</span></span></code></pre><p></p></div>
+<p></p><div class="sourceCode r"><pre><code><span><span class="va">myint</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"myint"</span>, parent <span class="op">=</span> <span class="va">class_integer</span>, package <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre><p></p></div>
 <p>Now you go to write a custom print method:</p>
 <p></p><div class="sourceCode r"><pre><code><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">print</span>, <span class="va">myint</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"&lt;myint&gt;"</span><span class="op">)</span></span>

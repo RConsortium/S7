@@ -63,7 +63,7 @@ when an object is passed to a generic.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">new_class</span><span class="op">(</span></span>
 <span>  <span class="va">name</span>,</span>
 <span>  parent <span class="op">=</span> <span class="va">S7_object</span>,</span>
-<span>  package <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  package <span class="op">=</span> <span class="fu">topNamespaceName</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  abstract <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  constructor <span class="op">=</span> <span class="cn">NULL</span>,</span>
