@@ -10,7 +10,6 @@ The reason lies in the history of R's OOP journey: S3 is a simple and effective 
 This has forced developers to choose between the simplicity of S3 and the sophistication of S4.
 
 The goal of S7 is to unify the OOP landscape by building on S3’s existing dispatch system and incorporating the most useful features of S4 (along with some new ones), all with a simpler syntax.
-
 S7’s design and implementation have been a collaborative effort by a working group from the [R Consortium](https://www.r-consortium.org), including representatives from R-Core, Bioconductor, tidyverse/Posit, ROpenSci, and the wider R community.
 Since S7 builds on S3, it is fully compatible with existing S3-based code.
 It's also been thoughtfully designed to work with S4, and as we learn more about the challenges of transitioning from S4 to S7, we’ll continue to add features to ease this process.
