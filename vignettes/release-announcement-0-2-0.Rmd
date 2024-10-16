@@ -33,6 +33,10 @@ Key new features include:
 
 Additionally, there are numerous bug fixes and quality-of-life improvements, such as better error messages, improved support for base Ops methods, and compatibility improvements for using `@` in R versions prior to 4.3.
 
+## Who should use S7
+
+S7 is a great fit for R users who like to try new things but don't need to be the first. It's already used in several CRAN packages, and the tidyverse team is applying it in new projects. While you may still run into a few issues, many early problems have been resolved.
+
 ## Usage
 
 ```{r}
