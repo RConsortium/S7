@@ -444,3 +444,25 @@ test_that("custom setters can call custom getters", {
   expect_equal(x@someprop, "FOOFOO")
 
 })
+
+
+test_that("custom getters don't evaulate call objects", {
+  QuotedCall :=  new_class(class_call, properties = list(
+    name = new_property(getter = function(self) {
+      stopifnot(is.call(self))
+      as.character(self[[1]])
+    }),
+    args = new_property(getter = function(self) {
+      stopifnot(is.call(self))
+      as.list(self)[-1]
+    })
+  ), constructor = function(x) {
+    new_object(substitute(x))
+  })
+
+  cl <- QuotedCall(stop("boom"))
+  expect_equal(cl@name, "stop")
+  expect_equal(cl@args, list("boom"))
+
+  # traceback()
+})

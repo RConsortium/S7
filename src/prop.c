@@ -18,7 +18,7 @@ extern SEXP sym_dot_should_validate;
 extern SEXP sym_dot_getting_prop;
 extern SEXP sym_dot_setting_prop;
 
-extern fn_base_quote;
+extern SEXP fn_base_quote;
 
 static inline
 SEXP eval_here(SEXP lang) {
