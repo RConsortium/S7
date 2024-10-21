@@ -28,6 +28,51 @@ SEXP eval_here(SEXP lang) {
   return ans;
 }
 
+static inline
+SEXP eval_call1(SEXP fn, SEXP arg) {
+  SEXP call, answer;
+  switch (TYPEOF(arg)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg = PROTECT(Rf_lang2(fn_base_quote, arg));
+    call = PROTECT(Rf_lang2(fn, arg));
+    answer = Rf_eval(call, ns_S7);
+    UNPROTECT(2);
+    return answer;
+  default:
+    call = PROTECT(Rf_lang2(fn, arg));
+    answer = Rf_eval(call, ns_S7);
+    UNPROTECT(1);
+    return answer;
+  }
+}
+
+static inline SEXP eval_call2(SEXP fn, SEXP arg1, SEXP arg2) {
+  int n_protected = 0;
+  // Protect the arguments from evaluation if they are SYMSXP or LANGSXP
+  switch (TYPEOF(arg1)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg1 = PROTECT(Rf_lang2(fn_base_quote, arg1));
+    ++n_protected;
+  }
+
+  switch (TYPEOF(arg2)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg2 = PROTECT(Rf_lang2(fn_base_quote, arg2));
+    ++n_protected;
+  }
+
+  SEXP call = PROTECT(Rf_lang3(fn, arg1, arg2));
+  ++n_protected;
+
+  SEXP result = Rf_eval(call, ns_S7);
+
+  UNPROTECT(n_protected);
+  return result;
+}
+
 static __attribute__((noreturn))
 void signal_is_not_S7(SEXP object) {
   static SEXP check_is_S7 = NULL;
@@ -209,13 +254,25 @@ void obj_validate(SEXP object) {
   if (validate == NULL)
     validate = Rf_findVarInFrame(ns_S7, Rf_install("validate"));
 
-  eval_here(Rf_lang4(
-    validate, object,
-    /* recursive = */ Rf_ScalarLogical(TRUE),
-    /* properties = */ Rf_ScalarLogical(FALSE)));
+  switch (TYPEOF(object)) {
+  case LANGSXP:
+  case SYMSXP: {
+    // Wrap the call or symbol in quote(), so it doesn't evaluate in Rf_eval()
+    object = PROTECT(Rf_lang2(fn_base_quote, object));
+    eval_here(Rf_lang4(validate, object,
+                       /* recursive = */ Rf_ScalarLogical(TRUE),
+                       /* properties = */ Rf_ScalarLogical(FALSE)));
+    UNPROTECT(1); // object
+    return;
+  }
+
+  default:
+    eval_here(Rf_lang4(
+        validate, object,
+        /* recursive = */ Rf_ScalarLogical(TRUE),
+        /* properties = */ Rf_ScalarLogical(FALSE)));
+  }
 }
-
-
 
 static inline
 Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
@@ -333,7 +390,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
-    REPROTECT(object = eval_here(Rf_lang3(setter, object, value)), object_pi);
+    REPROTECT(object = eval_call2(setter, object, value), object_pi);
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
