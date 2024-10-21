@@ -18,6 +18,8 @@ extern SEXP sym_dot_should_validate;
 extern SEXP sym_dot_getting_prop;
 extern SEXP sym_dot_setting_prop;
 
+extern fn_base_quote;
+
 static inline
 SEXP eval_here(SEXP lang) {
   PROTECT(lang);
@@ -248,10 +250,25 @@ SEXP prop_(SEXP object, SEXP name) {
   SEXP getter = extract_name(property, "getter");
   if (TYPEOF(getter) == CLOSXP &&
       getter_callable_no_recurse(getter, object, name_sym)) {
-    SEXP value = PROTECT(eval_here(Rf_lang2(getter, object)));
-    getter_no_recurse_clear(object, name_sym);
-    UNPROTECT(1);
-    return value;
+
+    switch (TYPEOF(object)) {
+    case LANGSXP:
+    case SYMSXP: {
+      // Wrap the call or symbol in quote(), so it doesn't evaluate in Rf_eval()
+      SEXP quoted_object = PROTECT(Rf_lang2(fn_base_quote, object));
+      SEXP value = PROTECT(eval_here(Rf_lang2(getter, quoted_object)));
+      getter_no_recurse_clear(object, name_sym);
+      UNPROTECT(2); // quoted_object, value
+      return value;
+    }
+
+    default: {
+      SEXP value = PROTECT(eval_here(Rf_lang2(getter, object)));
+      getter_no_recurse_clear(object, name_sym);
+      UNPROTECT(1); // value
+      return value;
+    }
+    }
   }
 
   // try to resolve property from the object attributes
