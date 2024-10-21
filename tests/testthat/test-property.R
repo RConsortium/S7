@@ -464,5 +464,59 @@ test_that("custom getters don't evaulate call objects", {
   expect_equal(cl@name, "stop")
   expect_equal(cl@args, list("boom"))
 
-  # traceback()
+})
+
+
+test_that("custom setters don't evaulate call objects", {
+
+  Call :=  new_class(class_call, properties = list(
+    name = new_property(
+      getter = function(self) {
+        stopifnot(is.call(self))
+        as.character(self[[1]])
+      },
+      setter = function(self, value) {
+        stopifnot(is.call(self), is.name(value))
+        self[[1]] <- value
+        self
+      }
+    ),
+    args = new_property(
+      getter = function(self) {
+        stopifnot(is.call(self))
+        as.list(self)[-1]
+      },
+      setter = function(self, value) {
+        stopifnot(is.call(self), is.list(value) || is.pairlist(value))
+        # self[seq(2, length.out = length(value))] <- value
+        # names(self) <- c("", names(value))
+        # self
+        out <- as.call(c(self[[1]], value))
+        attributes(out) <- attributes(self)
+        out
+      })
+  ), constructor = function(name, ...) {
+    new_object(as.call(c(as.name(name), ...)))
+  })
+
+  cl <- Call("stop", "boom")
+  expect_identical(cl@name, "stop")
+  expect_identical(cl@args, list("boom"))
+
+  abort <- stop
+  cl@name <- quote(abort)
+  expect_identical(cl@name, "abort")
+  expect_identical(cl[[1]], quote(abort))
+
+  cl@args <- pairlist("boom2")
+  expect_identical(cl[[2]], "boom2")
+  expect_identical(cl@args, list("boom2"))
+  expect_identical(drop_attributes(cl), quote(abort("boom2")))
+
+  cl@args <- alist(msg = "boom3", foo = bar, baz)
+  expect_identical(cl@args, alist(msg = "boom3", foo = bar, baz))
+
+  expect_identical(drop_attributes(cl),
+                   quote(abort(msg = "boom3", foo = bar, baz)))
+
 })
