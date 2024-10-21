@@ -29,7 +29,7 @@ SEXP eval_here(SEXP lang) {
 }
 
 static inline
-SEXP eval_call1(SEXP fn, SEXP arg) {
+SEXP do_call1(SEXP fn, SEXP arg) {
   SEXP call, answer;
   switch (TYPEOF(arg)) {
   case LANGSXP:
@@ -47,7 +47,7 @@ SEXP eval_call1(SEXP fn, SEXP arg) {
   }
 }
 
-static inline SEXP eval_call2(SEXP fn, SEXP arg1, SEXP arg2) {
+static inline SEXP do_call2(SEXP fn, SEXP arg1, SEXP arg2) {
   int n_protected = 0;
   // Protect the arguments from evaluation if they are SYMSXP or LANGSXP
   switch (TYPEOF(arg1)) {
@@ -308,24 +308,10 @@ SEXP prop_(SEXP object, SEXP name) {
   if (TYPEOF(getter) == CLOSXP &&
       getter_callable_no_recurse(getter, object, name_sym)) {
 
-    switch (TYPEOF(object)) {
-    case LANGSXP:
-    case SYMSXP: {
-      // Wrap the call or symbol in quote(), so it doesn't evaluate in Rf_eval()
-      SEXP quoted_object = PROTECT(Rf_lang2(fn_base_quote, object));
-      SEXP value = PROTECT(eval_here(Rf_lang2(getter, quoted_object)));
-      getter_no_recurse_clear(object, name_sym);
-      UNPROTECT(2); // quoted_object, value
-      return value;
-    }
-
-    default: {
-      SEXP value = PROTECT(eval_here(Rf_lang2(getter, object)));
-      getter_no_recurse_clear(object, name_sym);
-      UNPROTECT(1); // value
-      return value;
-    }
-    }
+    SEXP value = PROTECT(do_call1(getter, object));
+    getter_no_recurse_clear(object, name_sym);
+    UNPROTECT(1); // value
+    return value;
   }
 
   // try to resolve property from the object attributes
@@ -390,7 +376,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
-    REPROTECT(object = eval_call2(setter, object, value), object_pi);
+    REPROTECT(object = do_call2(setter, object, value), object_pi);
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
