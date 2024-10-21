@@ -61,7 +61,12 @@ constructor_args <- function(parent, properties = list()) {
   if (is_class(parent) && !parent@abstract) {
     # Remove any parent properties; can't use parent_args() since the constructor
     # might automatically set some properties.
-    self_arg_nms <- setdiff(self_arg_nms, names2(parent@properties))
+    parent_prop_nms <- names2(parent@properties)
+    overridden <- intersect(self_arg_nms, parent_prop_nms)
+    for(name in overridden)
+      parent_args[[name]] <- prop_default(properties[[name]])
+
+    self_arg_nms <- setdiff(self_arg_nms, parent_prop_nms)
   }
 
   self_args <- as.pairlist(lapply(
