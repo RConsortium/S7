@@ -138,6 +138,8 @@ modify_list <- function (x, new_vals) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms)))
       stop("all elements in `new_vals` must be named")
+    if (is.null(x))
+      x <- list()
     x[nms] <- new_vals
   }
 
@@ -146,7 +148,7 @@ modify_list <- function (x, new_vals) {
 
 deparse_trunc <- function(x, width, collapse = "\n") {
   x <- deparse1(x, collapse)
-  if (nchar(x)> width)
+  if (nchar(x) > width)
     x <- sprintf("%s....", substr(x, 0, width-4))
   x
 }
