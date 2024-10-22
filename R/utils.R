@@ -138,6 +138,8 @@ modify_list <- function (x, new_vals) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms)))
       stop("all elements in `new_vals` must be named")
+    if (is.null(x))
+      x <- list()
     x[nms] <- new_vals
   }
 
