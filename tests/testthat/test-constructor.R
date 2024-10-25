@@ -160,8 +160,6 @@ test_that("can create constructors with missing or lazy defaults", {
                "Can\'t set read-only property Person@birthdate")
 })
 
-
-
 test_that("Dynamic settable properties are included in constructor", {
   Foo <- new_class(
     name = "Foo", package = NULL,
@@ -192,4 +190,15 @@ test_that("Dynamic settable properties are included in constructor", {
   foo@dynamic_settable <- 1
   expect_equal(foo@dynamic_settable, 1)
 
+})
+
+test_that("package exported classes are not inlined in constructor formals", {
+  # https://github.com/RConsortium/S7/issues/477
+  Foo := new_class(package = "pkgname")
+  Bar := new_class(properties = list(foo = Foo))
+
+  expect_identical(
+    formals(Bar)$foo,
+    quote(pkgname::Foo())
+  )
 })
