@@ -91,6 +91,14 @@ class_construct_expr <- function(.x, ...) {
   # to extract the expression
   # (mostly for nicer printing and introspection.)
 
+  # If the constructor is an S7 class, avoid inlining the full class def
+  # instead, inline an expression like `pkgname::classname()`
+  # note: if f@package is not NULL, the class is assumed to be exported.
+  if (is_class(f) && !is.null(f@package)) {
+    cl <- call("::", as.name(f@package), as.name(f@name))
+    return(as.call(list(cl, ...)))
+  }
+
   ## early return if not safe to unwrap
   # can't unwrap if we're passing on ...
   if(...length()) {
