@@ -24,8 +24,12 @@ new_function <- function(args = NULL,
 
 
 topNamespaceName <- function(env = parent.frame()) {
-  (if (isNamespace(env <- topenv(env)))
-    getNamespaceName(env))
+  env <- topenv(env)
+  if (!isNamespace(env)) {
+    return()
+  }
+
+  getNamespaceName(env)
 }
 
 is_string <- function(x) {
