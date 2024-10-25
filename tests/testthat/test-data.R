@@ -20,3 +20,32 @@ describe("S7_data", {
     expect_equal(S7_data(x), "bar")
   })
 })
+
+
+describe("S7_data<-", {
+
+  it("uses updated 'names'", {
+    # local_methods(`$<-`, `[[<-`) # no support for unregistering S3 generic methods
+
+    write_once_list <- new_class("write_once_list", class_list,
+      constructor = function(...) new_object(list(...))
+    )
+
+    method(`$<-`, write_once_list) <-
+    method(`[[<-`, write_once_list) <- function(x, name, value) {
+      .x <- S7_data(x)
+      stopifnot(is_string(name))
+      if (hasName(.x, name))
+        stop("entry exists: ", name)
+      .x[[name]] <- value
+      S7_data(x) <- .x
+      x
+    }
+    w <- write_once_list(x = 3, y = 4)
+    w$bar <- 1
+    expect_equal(names(w), c("x", "y", "bar"))
+    expect_error(w$bar <- 2, "entry exists:")
+
+  })
+
+})
