@@ -140,3 +140,8 @@ dbg <- function(..., .display = utils::str, .file = NULL) {
 }
 
 `%error%` <- function(x, y) tryCatch(x, error = function(e) y)
+
+drop_attributes <- function(x) {
+  attributes(x) <- NULL
+  x
+}

@@ -22,12 +22,12 @@
       x <- new_class("foo")()
       x[1]
     Condition
-      Error:
+      Error in `check_subsettable()`:
       ! S7 objects are not subsettable.
     Code
       x[1] <- 1
     Condition
-      Error:
+      Error in `check_subsettable()`:
       ! S7 objects are not subsettable.
 
 # [[ gives more accurate error
@@ -36,11 +36,11 @@
       x <- new_class("foo")()
       x[[1]]
     Condition
-      Error:
+      Error in `check_subsettable()`:
       ! S7 objects are not subsettable.
     Code
       x[[1]] <- 1
     Condition
-      Error:
+      Error in `check_subsettable()`:
       ! S7 objects are not subsettable.
 

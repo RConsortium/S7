@@ -36,6 +36,8 @@ SEXP sym_dot_should_validate;
 SEXP sym_dot_getting_prop;
 SEXP sym_dot_setting_prop;
 
+SEXP fn_base_quote;
+
 SEXP ns_S7;
 
 
@@ -57,6 +59,8 @@ void R_init_S7(DllInfo *dll)
     sym_dot_should_validate = Rf_install(".should_validate");
     sym_dot_getting_prop = Rf_install(".getting_prop");
     sym_dot_setting_prop = Rf_install(".setting_prop");
+
+    fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
 
     ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 }

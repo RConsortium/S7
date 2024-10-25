@@ -82,9 +82,9 @@ is_S7_type <- function(x) {
 }
 
 check_subsettable <- function(x, allow_env = FALSE) {
-  allowed_types <- c("list", if (allow_env) "environment")
+  allowed_types <- c("list", "language", "pairlist", if (allow_env) "environment")
   if (!typeof(x) %in% allowed_types) {
-    stop("S7 objects are not subsettable.", call. = FALSE)
+    stop("S7 objects are not subsettable.")
   }
   invisible(TRUE)
 }
