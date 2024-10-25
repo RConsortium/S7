@@ -181,8 +181,8 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
 
   if (!"..." %in% generic_args && !identical(generic_formals, method_formals)) {
     msg <- sprintf(
-      "%s() lacks `...` so method formals must match generic formals exactly",
-      generic@name
+      "%s lacks `...` so method formals must match generic formals exactly",
+      show_args(formals(generic), name = generic@name)
     )
     stop(msg, call. = FALSE)
   }
