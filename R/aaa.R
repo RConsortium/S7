@@ -26,10 +26,10 @@ new_function <- function(args = NULL,
 topNamespaceName <- function(env = parent.frame()) {
   env <- topenv(env)
   if (!isNamespace(env)) {
-    return()
+    return() # print visible
   }
 
-  getNamespaceName(env)
+  as.character(getNamespaceName(env)) # unname
 }
 
 is_string <- function(x) {
