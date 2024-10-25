@@ -29,7 +29,7 @@ S7_data <- function(object) {
 `S7_data<-` <- function(object, check = TRUE, value) {
   attrs <- attributes(object)
   object <- value
-  attributes(object) <- attrs
+  attributes(object) <- modify_list(attrs, attributes(value))
   if (isTRUE(check)) {
     validate(object)
   }
