@@ -4,6 +4,28 @@
 
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
+extern SEXP ns_S7;
+extern SEXP sym_obj_dispatch;
+extern SEXP sym_dispatch_args;
+extern SEXP sym_methods;
+extern SEXP fn_base_quote;
+extern SEXP fn_base_missing;
+
+// extern Rboolean is_S7_object(SEXP);
+// extern Rboolean is_s7_class(SEXP);
+// extern void check_is_S7(SEXP object);
+
+
+static
+SEXP maybe_enquote(SEXP x) {
+  switch (TYPEOF(x)) {
+    case SYMSXP:
+    case LANGSXP:
+      return Rf_lang2(fn_base_quote, x);
+    default:
+      return x;
+  }
+}
 
 // Recursively walk through method table to perform iterated dispatch
 SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
@@ -38,47 +60,49 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
 
 SEXP generic_args(SEXP generic, SEXP envir) {
   // How many arguments are used for dispatch?
-  SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+  SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
   R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
   // Allocate a list to store the arguments
   SEXP args = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
+  SEXP missing_call = PROTECT(Rf_lang2(fn_base_missing, R_NilValue));
+  PROTECT_INDEX pi;
+  PROTECT_WITH_INDEX(R_NilValue, &pi);
+
   // Find the value of each argument.
   SEXP formals = FORMALS(generic);
   for (R_xlen_t i = 0; i < n_dispatch; ++i) {
     SEXP name = TAG(formals);
-    SEXP arg = Rf_findVar(name, envir);
 
-    if (PRCODE(arg) == R_MissingArg) {
+    SETCADR(missing_call, name);
+    SEXP is_missing = Rf_eval(missing_call, envir);
+    REPROTECT(is_missing, pi);
+
+    if (Rf_asLogical(is_missing))  {
       SET_VECTOR_ELT(args, i, R_MissingArg);
     } else {
       // method_call_() has already done the necessary computation
-      SET_VECTOR_ELT(args, i, Rf_eval(arg, R_EmptyEnv));
+      SET_VECTOR_ELT(args, i, Rf_eval(name, envir));
     }
 
     formals = CDR(formals);
   }
   Rf_setAttrib(args, R_NamesSymbol, dispatch_args);
 
-  UNPROTECT(1);
+  UNPROTECT(3);
 
   return args;
 }
 
 __attribute__ ((noreturn))
 void S7_method_lookup_error(SEXP generic, SEXP envir) {
-  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
-  static SEXP S7_method_lookup_error_fun = NULL;
-  if (S7_method_lookup_error_fun == NULL) {
-    S7_method_lookup_error_fun = Rf_findVarInFrame(ns, Rf_install("method_lookup_error"));
-  }
 
   SEXP name = Rf_getAttrib(generic, R_NameSymbol);
   SEXP args = generic_args(generic, envir);
 
-  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang3(S7_method_lookup_error_fun, name, args));
-  Rf_eval(S7_method_lookup_error_call, ns);
+  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang3(Rf_install("method_lookup_error"), name, args));
+  Rf_eval(S7_method_lookup_error_call, ns_S7);
 
   while(1);
 }
@@ -88,14 +112,14 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
     return R_NilValue;
   }
 
-  SEXP table = Rf_getAttrib(generic, Rf_install("methods"));
+  SEXP table = Rf_getAttrib(generic, sym_methods);
   if (TYPEOF(table) != ENVSXP) {
     Rf_error("Corrupt S7_generic: @methods isn't an environment");
   }
 
+  Rboolean error = Rf_asLogical(error_);
   SEXP m = method_rec(table, signature, 0);
 
-  int error = Rf_asInteger(error_);
   if (error && m == R_NilValue) {
     S7_method_lookup_error(generic, envir);
   }
@@ -103,16 +127,32 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
   return m;
 }
 
+Rboolean is_missing(SEXP name_sym, SEXP envir) {
+    static SEXP missing_call = NULL;
+    if (missing_call == NULL) {
+      missing_call = Rf_lang2(fn_base_missing, R_NilValue);
+      R_PreserveObject(missing_call);
+    }
+
+    if (TYPEOF(name_sym) != SYMSXP)
+      Rf_error("is_missing() must be called with a symbol");
+    // Update the argument in the static call
+    SETCADR(missing_call, name_sym);
+
+    // Evaluate the call in the provided environment
+    SEXP result = PROTECT(Rf_eval(missing_call, envir));
+
+    // Convert result to Rboolean, handling potential NA case
+    Rboolean is_miss = Rf_asLogical(result);
+
+    UNPROTECT(1);
+    return is_miss;
+}
+
 SEXP S7_obj_dispatch(SEXP object) {
-  SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 
-  static SEXP obj_dispatch_fun = NULL;
-  if (obj_dispatch_fun == NULL) {
-    obj_dispatch_fun = Rf_findVarInFrame(ns, Rf_install("obj_dispatch"));
-  }
-
-  SEXP obj_dispatch_call = PROTECT(Rf_lang2(obj_dispatch_fun, object));
-  SEXP res = Rf_eval(obj_dispatch_call, ns);
+  SEXP obj_dispatch_call = PROTECT(Rf_lang2(sym_obj_dispatch, maybe_enquote(object)));
+  SEXP res = Rf_eval(obj_dispatch_call, ns_S7);
   UNPROTECT(1);
 
   return res;
@@ -133,7 +173,7 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   SEXP formals = FORMALS(generic);
   R_xlen_t n_args = Rf_xlength(formals);
   // And how many are used for dispatch
-  SEXP dispatch_args = Rf_getAttrib(generic, Rf_install("dispatch_args"));
+  SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
   R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
 
   // Allocate a list to store the classes for the arguments
@@ -150,31 +190,24 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
 
     // Find its name and look up its value (a promise)
     SEXP name = TAG(formals);
-    SEXP arg = Rf_findVar(name, envir);
+    // SEXP arg = Rf_findVar(name, envir);
 
     if (i < n_dispatch) {
-      if (PRCODE(arg) != R_MissingArg) {
-        // Evaluate the original promise so we can look up its class
-        SEXP val = PROTECT(Rf_eval(arg, R_EmptyEnv));
-
+      if (!is_missing(name, envir)) {
+        // force the arg promise so we can look up its class
+        SEXP val = PROTECT(Rf_eval(name, envir));
         if (!Rf_inherits(val, "S7_super")) {
 
-          // If it's a promise, update the value of the promise to avoid
-          // evaluating it again in the method body
-          if (TYPEOF(val) == PROMSXP) {
-            SET_PRVALUE(arg, val);
-          }
-
           // Then add to arguments of method call
-          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+          SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
 
           // Determine class string to use for method look up
           SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
         } else {
           // If it's a superclass, we get the stored value and dispatch class
           SEXP true_val = VECTOR_ELT(val, 0);
-          SET_PRVALUE(arg, true_val);
-          SETCDR(mcall_tail, Rf_cons(arg, R_NilValue));
+          Rf_defineVar(name, true_val, envir);
+          SETCDR(mcall_tail, Rf_cons(name, R_NilValue));
           SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
         }
         UNPROTECT(1);
@@ -194,7 +227,9 @@ SEXP method_call_(SEXP call, SEXP generic, SEXP envir) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes, envir, Rf_ScalarLogical(1));
+  SEXP error_if_not_found = PROTECT(Rf_ScalarLogical(1));
+  ++n_protect;
+  SEXP m = method_(generic, dispatch_classes, envir, error_if_not_found);
   SETCAR(mcall, m);
 
   UNPROTECT(n_protect);

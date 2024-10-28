@@ -35,8 +35,12 @@ SEXP sym_getter;
 SEXP sym_dot_should_validate;
 SEXP sym_dot_getting_prop;
 SEXP sym_dot_setting_prop;
+SEXP sym_obj_dispatch;
+SEXP sym_dispatch_args;
+SEXP sym_methods;
 
 SEXP fn_base_quote;
+SEXP fn_base_missing;
 
 SEXP ns_S7;
 
@@ -59,8 +63,12 @@ void R_init_S7(DllInfo *dll)
     sym_dot_should_validate = Rf_install(".should_validate");
     sym_dot_getting_prop = Rf_install(".getting_prop");
     sym_dot_setting_prop = Rf_install(".setting_prop");
+    sym_obj_dispatch = Rf_install("obj_dispatch");
+    sym_dispatch_args = Rf_install("dispatch_args");
+    sym_methods = Rf_install("methods");
 
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
+    fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
     ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 }
