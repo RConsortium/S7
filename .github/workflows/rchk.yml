@@ -2,22 +2,34 @@ name: rchk
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+
 
 jobs:
-  check:
+  rchk:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/r-hub/containers/rchk:latest
-
     steps:
+
     - uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        R -q -e 'pak::pkg_install(c("deps::.", "any::rcmdcheck"), dependencies = TRUE)'
+    - uses: r-lib/actions/setup-pandoc@v2
+    - uses: r-lib/actions/setup-r@v2
+    - uses: r-lib/actions/setup-r-dependencies@v2
 
-    - uses: r-lib/actions/check-r-package@v2
+    - run: R CMD build .
+
+    - run: docker pull kalibera/rchk:latest
+
+    - name: run rchk
+      run: |
+          pkgtar=$(ls S7_*.tar.gz)
+          mkdir -p rchk/packages
+          mv $pkgtar rchk/packages/
+          cd rchk
+          docker run -v `pwd`/packages:/rchk/packages kalibera/rchk:latest /rchk/packages/$pkgtar > rchk.log 2>&1
+          cat rchk.log
+
+    - name: upload rchk log
+      uses: actions/upload-artifact@v4
+      with:
+        name: rchk-log
+        path: rchk/rchk.log
