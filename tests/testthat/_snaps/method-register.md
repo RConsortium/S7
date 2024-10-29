@@ -83,7 +83,7 @@
       Error:
       ! foo() generic lacks `...` so method formals must match generic formals exactly.
       - generic formals: foo(x)
-      -  method formals: foo(x, y)
+      - method formals:  foo(x, y)
 
 # check_method warn if default arguments don't match
 
