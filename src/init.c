@@ -13,11 +13,15 @@ extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"method_", (DL_FUNC) &method_, 4},
-    {"method_call_", (DL_FUNC) &method_call_, 3},
     {"S7_object_", (DL_FUNC) &S7_object_, 0},
     {"prop_", (DL_FUNC) &prop_, 2},
     {"prop_set_", (DL_FUNC) &prop_set_, 4},
     {NULL, NULL, 0}
+};
+
+static const R_ExternalMethodDef ExternalEntries[] = {
+  {"method_call_", (DL_FUNC) &method_call_, 2},
+  {NULL, NULL, 0}
 };
 
 SEXP sym_ANY;
@@ -47,11 +51,11 @@ SEXP ns_S7;
 
 void R_init_S7(DllInfo *dll)
 {
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_registerRoutines(dll, NULL, CallEntries, NULL, ExternalEntries);
     R_useDynamicSymbols(dll, FALSE);
+
     sym_ANY = Rf_install("ANY");
     sym_S7_class = Rf_install("S7_class");
-
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
     sym_package = Rf_install("package");
@@ -70,5 +74,8 @@ void R_init_S7(DllInfo *dll)
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
     fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
-    ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
+    SEXP S7_str = PROTECT(Rf_mkString("S7"));
+    SEXP getS7ns_call = PROTECT(Rf_lang2(Rf_install("getNamespace"), S7_str));
+    ns_S7 = Rf_eval(getS7ns_call, R_BaseEnv);
+    UNPROTECT(2);
 }
