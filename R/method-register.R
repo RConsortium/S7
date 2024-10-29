@@ -186,7 +186,7 @@ check_method <- function(method, generic, name = paste0(generic@name, "(???)")) 
     )
     bullets <- c(
       sprintf("- generic formals: %s", show_args(generic_formals, name = generic@name)),
-      sprintf("-  method formals: %s", show_args(method_formals, name = generic@name))
+      sprintf("- method formals:  %s", show_args(method_formals, name = generic@name))
     )
     msg <- paste0(c(msg, bullets), collapse = "\n")
     stop(msg, call. = FALSE)
