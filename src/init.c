@@ -74,8 +74,5 @@ void R_init_S7(DllInfo *dll)
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
     fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
-    SEXP S7_str = PROTECT(Rf_mkString("S7"));
-    SEXP getS7ns_call = PROTECT(Rf_lang2(Rf_install("getNamespace"), S7_str));
-    ns_S7 = Rf_eval(getS7ns_call, R_BaseEnv);
-    UNPROTECT(2);
+    ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
 }

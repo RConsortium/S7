@@ -63,6 +63,9 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
 }
 
 SEXP generic_args(SEXP generic, SEXP envir) {
+  // This function is only used to generate an informative message when
+  // signalling an S7_method_lookup_error, so it doesn't need to be maximally efficient.
+
   // How many arguments are used for dispatch?
   SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
   R_xlen_t n_dispatch = Rf_xlength(dispatch_args);
@@ -131,27 +134,6 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
   return m;
 }
 
-Rboolean is_missing(SEXP name_sym, SEXP envir) {
-    static SEXP missing_call = NULL;
-    if (missing_call == NULL) {
-      missing_call = Rf_lang2(fn_base_missing, R_NilValue);
-      R_PreserveObject(missing_call);
-    }
-
-    if (TYPEOF(name_sym) != SYMSXP)
-      Rf_error("is_missing() must be called with a symbol");
-    // Update the argument in the static call
-    SETCADR(missing_call, name_sym);
-
-    // Evaluate the call in the provided environment
-    SEXP result = PROTECT(Rf_eval(missing_call, envir));
-
-    // Convert result to Rboolean, handling potential NA case
-    Rboolean is_miss = Rf_asLogical(result);
-
-    UNPROTECT(1);
-    return is_miss;
-}
 
 SEXP S7_obj_dispatch(SEXP object) {
 
