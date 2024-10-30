@@ -44,7 +44,7 @@ base_default <- function(type) {
     name = quote(quote(x)),
     call = quote(quote({})),
 
-    `function` = quote(function() {}),
+    `function` = quote(function() NULL),
     environment = quote(new.env(parent = emptyenv()))
 )}
 

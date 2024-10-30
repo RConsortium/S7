@@ -133,7 +133,7 @@ new_class <- function(
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
-    constructor <- new_constructor(parent, all_props)
+    constructor <- new_constructor(parent, all_props, envir = parent.frame())
   }
 
   object <- constructor
