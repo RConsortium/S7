@@ -50,7 +50,7 @@ new_constructor <- function(parent, properties, envir = asNamespace("S7")) {
   names(parent_args)[names(parent_args) == "..."] <- ""
   parent_call <- new_call(parent_name, parent_args)
   body <- new_call(
-    if (has_S7_symbols(envir, "new_object")) "new_object" else "S7::new_object",
+    if (has_S7_symbols(envir, "new_object")) "new_object" else c("S7", "new_object"),
     c(parent_call, self_args)
   )
 
@@ -93,7 +93,12 @@ missing_args <- function(names) {
 }
 
 new_call <- function(call, args) {
-  as.call(c(list(str2lang(call)), args))
+  if (is.character(call)) {
+    call <- switch(length(call),
+                   as.name(call),
+                   as.call(c(quote(`::`), lapply(call, as.name))))
+  }
+  as.call(c(list(call), args))
 }
 
 as_names <- function(x, named = FALSE) {
