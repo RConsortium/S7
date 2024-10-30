@@ -28,6 +28,9 @@ jobs:
           docker run -v `pwd`/packages:/rchk/packages kalibera/rchk:latest /rchk/packages/$pkgtar > rchk.log 2>&1
           cat rchk.log
 
+    - run: cat rchk.log
+      working-directory: rchk
+
     - name: upload rchk log
       uses: actions/upload-artifact@v4
       with:
