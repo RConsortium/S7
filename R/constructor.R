@@ -1,6 +1,7 @@
-new_constructor <- function(parent, properties, envir = asNamespace("S7")) {
+new_constructor <- function(parent, properties,
+                            envir = asNamespace("S7"), package = NULL) {
   properties <- as_properties(properties)
-  arg_info <- constructor_args(parent, properties, envir)
+  arg_info <- constructor_args(parent, properties, envir, package)
   self_args <- as_names(names(arg_info$self), named = TRUE)
 
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
@@ -60,7 +61,8 @@ new_constructor <- function(parent, properties, envir = asNamespace("S7")) {
   new_function(args, body, env)
 }
 
-constructor_args <- function(parent, properties = list(), envir = asNamespace("S7")) {
+constructor_args <- function(parent, properties = list(),
+                             envir = asNamespace("S7"), package = NULL) {
   parent_args <- formals(class_constructor(parent))
 
   # Remove read-only properties
@@ -76,7 +78,7 @@ constructor_args <- function(parent, properties = list(), envir = asNamespace("S
 
   self_args <- as.pairlist(lapply(
     setNames(, self_arg_nms),
-    function(name) prop_default(properties[[name]], envir))
+    function(name) prop_default(properties[[name]], envir, package))
   )
 
   list(parent = parent_args,

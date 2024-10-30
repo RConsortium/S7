@@ -85,7 +85,7 @@ class_construct <- function(.x, ...) {
 }
 
 
-class_construct_expr <- function(.x, envir = NULL) {
+class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   f <- class_constructor(.x)
 
   # If the constructor is an S7 class that is exported from a package, avoid
@@ -93,10 +93,12 @@ class_construct_expr <- function(.x, envir = NULL) {
   # `pkgname::classname()` or `classname()`
   if (is_class(f) && !is.null(f@package)) {
     # Check if the class can be resolved as a bare symbol without pkgname::
-    if(identical(topNamespaceName(envir), f@package) &&
-       identical(f, get0(f@name, envir, mode = "function"))) {
+    if (identical(package, f@package)) {
+
       return(call(f@name))
+
     } else {
+
       # namespace the pkgname::classname() call
       cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
       return(as.call(list(cl)))
