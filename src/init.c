@@ -48,6 +48,8 @@ SEXP fn_base_missing;
 
 SEXP ns_S7;
 
+SEXP R_TRUE, R_FALSE;
+
 
 void R_init_S7(DllInfo *dll)
 {
@@ -74,5 +76,7 @@ void R_init_S7(DllInfo *dll)
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
     fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
-    ns_S7 = Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("S7"));
+    ns_S7 = Rf_eval(Rf_install("S7"), R_NamespaceRegistry);
+    R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
+    R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
 }
