@@ -225,3 +225,26 @@
       Error:
       ! Can not combine S7 class objects
 
+# can't create class with reserved property names
+
+    Code
+      new_class("foo", properties = list(names = class_character))
+    Condition
+      Error in `new_class()`:
+      ! property can't be named: names
+    Code
+      new_class("foo", properties = list(dim = NULL | class_integer))
+    Condition
+      Error in `new_class()`:
+      ! property can't be named: dim
+    Code
+      new_class("foo", properties = list(dim = NULL | class_integer, dimnames = class_list))
+    Condition
+      Error in `new_class()`:
+      ! property can't be named: dim, dimnames
+    Code
+      new_class("foo", class_factor, properties = list(levels = class_character))
+    Condition
+      Error in `new_class()`:
+      ! property can't be named: levels
+
