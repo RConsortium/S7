@@ -14,6 +14,13 @@ extern SEXP fn_base_missing;
 extern SEXP R_TRUE;
 
 
+static inline
+void APPEND_NODE(SEXP node, SEXP val, SEXP tag) {
+  SEXP new_node = Rf_cons(val, R_NilValue);
+  SETCDR(node, new_node);
+  SET_TAG(new_node, tag);
+}
+
 // extern Rboolean is_S7_object(SEXP);
 // extern Rboolean is_s7_class(SEXP);
 // extern void check_is_S7(SEXP object);
@@ -193,9 +200,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
       if (arg == R_MissingArg ||
          (TYPEOF(arg) == PROMSXP && PRCODE(arg) == R_MissingArg)) {
 
-        SEXP node = Rf_cons(arg, R_NilValue);
-        SETCDR(mcall_tail, node);
-        SET_TAG(node, name);
+        APPEND_NODE(mcall_tail, arg, name);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
 
       } else { // arg not missing
@@ -223,18 +228,14 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
           else
             arg = true_val;
 
-          SEXP node = Rf_cons(arg, R_NilValue);
-          SETCDR(mcall_tail, node);
-          SET_TAG(node, name);
+          APPEND_NODE(mcall_tail, arg, name);
           SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
 
         } else { // not a S7_super, a regular value
 
           // A PROMSXP arg will have been updated in place by Rf_eval() above.
           // Add to arguments of method call
-          SEXP node = Rf_cons(arg, R_NilValue);
-          SETCDR(mcall_tail, node);
-          SET_TAG(node, name);
+          APPEND_NODE(mcall_tail, arg, name);
 
           // Determine class string to use for method look up
           SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
