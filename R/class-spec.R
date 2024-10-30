@@ -94,11 +94,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   if (is_class(f) && !is.null(f@package)) {
     # Check if the class can be resolved as a bare symbol without pkgname::
     if (identical(package, f@package)) {
-
       return(call(f@name))
-
     } else {
-
       # namespace the pkgname::classname() call
       cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
       return(as.call(list(cl)))
@@ -108,12 +105,6 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   # If the constructor is a closure wrapping a simple expression, try
   # to extract the expression
   # (mostly for nicer printing and introspection.)
-
-  ## early return if not safe to unwrap
-  # can't unwrap if we're passing on ...
-  if (is.null(envir)) {
-    return(as.call(list(f)))
-  }
 
   # can't unwrap if the closure is potentially important
   # (this can probably be relaxed to allow additional environments)
