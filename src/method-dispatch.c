@@ -193,20 +193,20 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
     // Find its name and look up its value (a promise)
     SEXP name = TAG(formals);
-    SEXP arg = Rf_findVar(name, envir);
+    SEXP arg = Rf_findVarInFrame(envir, name);
 
+    // n_dispatch is always either 1 or 2.
     if (i < n_dispatch) {
-      // return(arg);
-      if (arg == R_MissingArg ||
-         (TYPEOF(arg) == PROMSXP && PRCODE(arg) == R_MissingArg)) {
+
+      if (arg == R_MissingArg) {
 
         APPEND_NODE(mcall_tail, arg, name);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
 
-      } else { // arg not missing
+      } else { // arg not missing, is a PROMSXP
 
         // Force the promise so we can look up its class.
-        // However, we preserve the promise itself so that
+        // However, we preserve and pass along the promise itself so that
         // methods can still call substitute()
         // Instead of Rf_eval(arg, R_EmptyEnv), we do Rf_eval(name, envir), so that
         // - if TYPEOF(arg) == LANGSXP or SYMSXP, arg doesn't need to be enquoted and
@@ -217,23 +217,22 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
         if (Rf_inherits(val, "S7_super")) {
 
           // If it's a superclass,
-          // - update the promise with the super() stored value
-          // - populate dispatch_classes with super() class dispatch vector
           SEXP true_val = VECTOR_ELT(val, 0);
 
-          // could do arg = true_val always, to avoid non-API usage, but
-          // then substitute() in methods would not work.
-          if (TYPEOF(arg) == PROMSXP)
-            SET_PRVALUE(arg, true_val);
-          else
-            arg = true_val;
-
+          // Put the super() stored value into the method call
+          // Note, this means we don't pass along the arg PROMSXP and
+          // then substitute() in methods on args where `super()` is used.
+          // If we wanted substitute() to work to, we could do:
+          //   if (TYPEOF(arg) == PROMSXP) {SET_PRVALUE(arg, true_val)} else {arg = true_val}
+          arg = true_val;
           APPEND_NODE(mcall_tail, arg, name);
+
+          // Put the super() stored class dispatch vector into dispatch_classes
           SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
 
-        } else { // not a S7_super, a regular value
+        } else { // val is not a S7_super, a regular value
 
-          // A PROMSXP arg will have been updated in place by Rf_eval() above.
+          // The PROMSXP arg will have been updated in place by Rf_eval() above.
           // Add to arguments of method call
           APPEND_NODE(mcall_tail, arg, name);
 
