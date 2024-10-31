@@ -333,7 +333,7 @@ S7_class <- function(object) {
 check_prop_names <- function(properties, error_call = sys.call(-1L)) {
   # these attributes have special C handlers in base R
   forbidden <- c("names", "dim", "dimnames", "class",
-                 "tsp", "comment", "row.names")
+                 "tsp", "comment", "row.names", "...")
   forbidden <- intersect(forbidden, names(properties))
   if (length(forbidden)) {
     msg <- paste0("property can't be named: ",
