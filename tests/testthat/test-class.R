@@ -243,3 +243,13 @@ test_that("can round trip to disk and back", {
 
   expect_equal(f2, f)
 })
+
+
+test_that("can't create class with reserved property names", {
+  expect_snapshot(error = TRUE, {
+    new_class("foo", properties = list(names = class_character))
+    new_class("foo", properties = list(dim = NULL | class_integer))
+    new_class("foo", properties = list(dim = NULL | class_integer,
+                                       dimnames = class_list))
+  })
+})
