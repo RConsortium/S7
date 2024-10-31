@@ -219,11 +219,11 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
           // If it's a superclass,
           SEXP true_val = VECTOR_ELT(val, 0);
 
-          // Put the super() stored value into the method call
-          // Note, this means we don't pass along the arg PROMSXP and
-          // then substitute() in methods on args where `super()` is used.
-          // If we wanted substitute() to work to, we could do:
-          //   if (TYPEOF(arg) == PROMSXP) {SET_PRVALUE(arg, true_val)} else {arg = true_val}
+          // Put the super() stored value into the method call.
+          // Note: This means we don't pass along the arg PROMSXP, meaning that
+          // substitute() in methods does not retrieve the `super()` call.
+          // If we wanted substitute() to work here too, we could do:
+          //   if (TYPEOF(arg) == PROMSXP) { SET_PRVALUE(arg, true_val); } else { arg = true_val; }
           arg = true_val;
           APPEND_NODE(mcall_tail, arg, name);
 
