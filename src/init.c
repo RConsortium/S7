@@ -5,23 +5,26 @@
 
 /* .Call calls */
 extern SEXP method_(SEXP, SEXP, SEXP, SEXP);
-extern SEXP method_call_(SEXP, SEXP, SEXP);
+extern SEXP method_call_(SEXP, SEXP, SEXP, SEXP);
+extern SEXP test_call_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP S7_class_(SEXP, SEXP);
 extern SEXP S7_object_(void);
 extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
 
+#define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
+
 static const R_CallMethodDef CallEntries[] = {
-    {"method_", (DL_FUNC) &method_, 4},
-    {"S7_object_", (DL_FUNC) &S7_object_, 0},
-    {"prop_", (DL_FUNC) &prop_, 2},
-    {"prop_set_", (DL_FUNC) &prop_set_, 4},
+    CALLDEF(method_, 4),
+    CALLDEF(S7_object_, 0),
+    CALLDEF(prop_, 2),
+    CALLDEF(prop_set_, 4),
     {NULL, NULL, 0}
 };
 
 static const R_ExternalMethodDef ExternalEntries[] = {
-  {"method_call_", (DL_FUNC) &method_call_, 2},
-  {NULL, NULL, 0}
+    CALLDEF(method_call_, 2),
+    {NULL, NULL, 0}
 };
 
 SEXP sym_ANY;
