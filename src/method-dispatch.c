@@ -134,10 +134,9 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
     Rf_error("Corrupt S7_generic: @methods isn't an environment");
   }
 
-  Rboolean error = Rf_asLogical(error_);
   SEXP m = method_rec(table, signature, 0);
 
-  if (error && m == R_NilValue) {
+  if (m == R_NilValue && Rf_asLogical(error_)) {
     S7_method_lookup_error(generic, envir);
   }
 
@@ -254,9 +253,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP error_if_not_found = PROTECT(Rf_ScalarLogical(1));
-  ++n_protect;
-  SEXP m = method_(generic, dispatch_classes, envir, error_if_not_found);
+  SEXP m = method_(generic, dispatch_classes, envir, R_TRUE);
   SETCAR(mcall, m);
 
   SEXP out = Rf_eval(mcall, envir);
