@@ -186,3 +186,17 @@ test_that("can dispatch on evaluated arguments", {
   method(my_generic, class_numeric) <- function(x) 100
   expect_equal(my_generic("x"), 100)
 })
+
+
+test_that("method dispatch works for class_missing", {
+
+  foo <- new_generic("foo", "x")
+  method(foo, class_missing) <- function(x) missing(x)
+
+  expect_true(foo())
+
+  # dispatch on class_missing only works directly in the generic call
+  foo_wrapper <- function(xx) foo(xx)
+  expect_error(foo_wrapper(), 'argument "xx" is missing, with no default')
+
+})
