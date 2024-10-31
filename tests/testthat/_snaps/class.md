@@ -242,9 +242,4 @@
     Condition
       Error in `new_class()`:
       ! property can't be named: dim, dimnames
-    Code
-      new_class("foo", class_factor, properties = list(levels = class_character))
-    Condition
-      Error in `new_class()`:
-      ! property can't be named: levels
 

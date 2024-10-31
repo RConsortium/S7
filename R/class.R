@@ -130,7 +130,7 @@ new_class <- function(
   # Combine properties from parent, overriding as needed
   all_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
-  check_prop_names(parent, new_props)
+  check_prop_names(new_props)
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
@@ -330,10 +330,10 @@ S7_class <- function(object) {
 }
 
 
-check_prop_names <- function(parent, properties, error_call = sys.call(-1L)) {
-  forbidden <- c("names", "dim", "dimnames", "class", "tsp",
-                 "comment", "row.names",
-                 if ("factor" %in% class_dispatch(parent)) "levels")
+check_prop_names <- function(properties, error_call = sys.call(-1L)) {
+  # these attributes have special C handlers in base R
+  forbidden <- c("names", "dim", "dimnames", "class",
+                 "tsp", "comment", "row.names")
   forbidden <- intersect(forbidden, names(properties))
   if (length(forbidden)) {
     msg <- paste0("property can't be named: ",

@@ -251,6 +251,5 @@ test_that("can't create class with reserved property names", {
     new_class("foo", properties = list(dim = NULL | class_integer))
     new_class("foo", properties = list(dim = NULL | class_integer,
                                        dimnames = class_list))
-    new_class("foo", class_factor, properties = list(levels = class_character))
   })
 })
