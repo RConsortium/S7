@@ -220,6 +220,10 @@ test_that("method dispatch works for class_missing", {
 
   # dispatch on class_missing only works directly in the generic call
   foo_wrapper <- function(xx) foo(xx)
-  expect_snapshot(error = TRUE, foo_wrapper())
+  expect_snapshot(
+    error = TRUE,
+    variant = if (getRversion() < "4.3") "R-lt-4-3",
+    foo_wrapper()
+  )
 
 })
