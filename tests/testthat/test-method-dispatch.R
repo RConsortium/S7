@@ -220,6 +220,6 @@ test_that("method dispatch works for class_missing", {
 
   # dispatch on class_missing only works directly in the generic call
   foo_wrapper <- function(xx) foo(xx)
-  expect_error(foo_wrapper(), 'argument "xx" is missing, with no default')
+  expect_snapshot(error = TRUE, foo_wrapper())
 
 })
