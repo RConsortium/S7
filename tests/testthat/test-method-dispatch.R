@@ -72,9 +72,32 @@ test_that("can substitute() args", {
   )
   expect_equal(foo("x", y = letters), quote(letters))
 
-  # Doesn't work currently
-  # method(foo, class_character) <- function(x, ..., z = 1) substitute(z)
-  # expect_equal(foo("x", z = letters), quote(letters))
+  suppressMessages(
+    method(foo, class_character) <- function(x, ..., z = 1) substitute(z)
+  )
+  expect_equal(foo("x", z = letters), quote(letters))
+
+  suppressMessages(
+    method(foo, class_character) <- function(x, ..., z = 1) substitute(list(...))
+  )
+  expect_equal(foo("x", abc = xyz), quote(list(abc = xyz)))
+
+  suppressMessages(
+    method(foo, class_character) <- function(x, ..., z = 1, y) missing(y)
+  )
+  expect_true(foo("x"), TRUE)
+  expect_true(foo("x", y =), TRUE)
+    expect_true(foo("x", y =), TRUE)
+
+  suppressMessages(
+    method(foo, class_character) <- function(x, ..., z = 1, y) ...length()
+  )
+
+  expect_equal(foo("x"), 0)
+  expect_equal(foo("x", y =), 0)
+  expect_equal(foo("x", y =, abc), 1)
+  expect_equal(foo("x", y =, abc = xyz), 1)
+  expect_equal(foo("x", y =, abc, xyz), 2)
 })
 
 test_that("methods get values modified in the generic", {
@@ -185,4 +208,22 @@ test_that("can dispatch on evaluated arguments", {
   })
   method(my_generic, class_numeric) <- function(x) 100
   expect_equal(my_generic("x"), 100)
+})
+
+
+test_that("method dispatch works for class_missing", {
+
+  foo <- new_generic("foo", "x")
+  method(foo, class_missing) <- function(x) missing(x)
+
+  expect_true(foo())
+
+  # dispatch on class_missing only works directly in the generic call
+  foo_wrapper <- function(xx) foo(xx)
+  expect_snapshot(
+    error = TRUE,
+    variant = if (getRversion() < "4.3") "R-lt-4-3",
+    foo_wrapper()
+  )
+
 })
