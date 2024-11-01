@@ -79,3 +79,12 @@
       new_object(foo(...), y = y)
       <environment: 0x0>
 
+# package exported classes are not inlined in constructor formals
+
+    Code
+      formals(Bar)
+    Output
+      $foo
+      pkgname::Foo()
+      
+
