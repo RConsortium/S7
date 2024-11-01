@@ -72,9 +72,10 @@ test_that("can substitute() args", {
   )
   expect_equal(foo("x", y = letters), quote(letters))
 
-  # Doesn't work currently
-  # method(foo, class_character) <- function(x, ..., z = 1) substitute(z)
-  # expect_equal(foo("x", z = letters), quote(letters))
+  suppressMessages(
+    method(foo, class_character) <- function(x, ..., z = 1) substitute(z)
+  )
+  expect_equal(foo("x", z = letters), quote(letters))
 })
 
 test_that("methods get values modified in the generic", {

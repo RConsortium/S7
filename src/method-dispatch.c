@@ -242,10 +242,11 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
       }
     } else {
       // other arguments not used for dispatch
-      SEXP arg_wrap = Rf_cons(name, R_NilValue);
-      if (name != R_DotsSymbol)
-        SET_TAG(arg_wrap, name);
-      SETCDR(mcall_tail, arg_wrap);
+      if (name == R_DotsSymbol) {
+        SETCDR(mcall_tail, Rf_cons(R_DotsSymbol, R_NilValue));
+      } else {
+        APPEND_NODE(mcall_tail, arg, name);
+      }
     }
 
     mcall_tail = CDR(mcall_tail);
