@@ -15,7 +15,7 @@ extern SEXP R_TRUE;
 
 
 static inline
-void APPEND_NODE(SEXP node, SEXP val, SEXP tag) {
+void APPEND_NODE(SEXP node, SEXP tag, SEXP val) {
   SEXP new_node = Rf_cons(val, R_NilValue);
   SETCDR(node, new_node);
   SET_TAG(new_node, tag);
@@ -194,7 +194,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
       SEXP arg = Rf_findVarInFrame(envir, name);
       if (arg == R_MissingArg) {
 
-        APPEND_NODE(mcall_tail, arg, name);
+        APPEND_NODE(mcall_tail, name, arg);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
 
       } else { // arg not missing, is a PROMSXP
@@ -217,8 +217,8 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
           // substitute() in methods does not retrieve the `super()` call.
           // If we wanted substitute() to work here too, we could do:
           //   if (TYPEOF(arg) == PROMSXP) { SET_PRVALUE(arg, true_val); } else { arg = true_val; }
-          SEXP true_val = VECTOR_ELT(val, 0);
-          APPEND_NODE(mcall_tail, true_val, name);
+          SEXP arg = VECTOR_ELT(val, 0); // true_val used for dispatch
+          APPEND_NODE(mcall_tail, name, arg);
 
           // Put the super() stored class dispatch vector into dispatch_classes
           SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
@@ -227,7 +227,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
           // The PROMSXP arg will have been updated in place by Rf_eval() above.
           // Add to arguments of method call
-          APPEND_NODE(mcall_tail, arg, name);
+          APPEND_NODE(mcall_tail, name, arg);
 
           // Determine class string to use for method look up
           SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
@@ -240,7 +240,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
       } else {
         // pass along the promise so substitute() works
         SEXP arg = Rf_findVarInFrame(envir, name);
-        APPEND_NODE(mcall_tail, arg, name);
+        APPEND_NODE(mcall_tail, name, arg);
       }
     }
 
