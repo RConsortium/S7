@@ -81,7 +81,9 @@
       check_method(function(x, y) { }, foo)
     Condition
       Error:
-      ! foo() lacks `...` so method formals must match generic formals exactly
+      ! foo() generic lacks `...` so method formals must match generic formals exactly.
+      - generic formals: foo(x)
+      - method formals:  foo(x, y)
 
 # check_method warn if default arguments don't match
 
