@@ -47,22 +47,22 @@
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
-#' pizza <- new_class("pizza", properties = list(
+#' Pizza <- new_class("Pizza", properties = list(
 #'   slices = new_property(class_numeric, default = 10)
 #' ))
-#' my_pizza <- pizza(slices = 6)
+#' my_pizza <- Pizza(slices = 6)
 #' my_pizza@slices
 #' my_pizza@slices <- 5
 #' my_pizza@slices
 #'
-#' your_pizza <- pizza()
+#' your_pizza <- Pizza()
 #' your_pizza@slices
 #'
 #' # Dynamic properties can compute on demand
-#' clock <- new_class("clock", properties = list(
+#' Clock <- new_class("Clock", properties = list(
 #'   now = new_property(getter = function(self) Sys.time())
 #' ))
-#' my_clock <- clock()
+#' my_clock <- Clock()
 #' my_clock@now; Sys.sleep(1)
 #' my_clock@now
 #' # This property is read only, because there is a 'getter' but not a 'setter'
@@ -70,8 +70,8 @@
 #'
 #' # Because the property is dynamic, it is not included as an
 #' # argument to the default constructor
-#' try(clock(now = 10))
-#' args(clock)
+#' try(Clock(now = 10))
+#' args(Clock)
 new_property <- function(class = class_any,
                          getter = NULL,
                          setter = NULL,
@@ -176,12 +176,12 @@ prop_default <- function(prop) {
 #'    the modified object, invisibly.
 #' @export
 #' @examples
-#' horse <- new_class("horse", properties = list(
+#' Horse <- new_class("Horse", properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
 #' ))
-#' lexington <- horse(colour = "bay", height = 15, name = "Lex")
+#' lexington <- Horse(colour = "bay", height = 15, name = "Lex")
 #' lexington@colour
 #' prop(lexington, "colour")
 #'
@@ -352,8 +352,8 @@ prop_label <- function(object, name) {
 #'   a single `TRUE` or `FALSE`.
 #' @export
 #' @examples
-#' foo <- new_class("foo", properties = list(a = class_character, b = class_integer))
-#' f <- foo()
+#' Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
+#' f <- Foo()
 #'
 #' prop_names(f)
 #' prop_exists(f, "a")
@@ -404,12 +404,12 @@ prop_exists <- function(object, name) {
 #' @returns A named list of property values.
 #' @export
 #' @examples
-#' horse <- new_class("horse", properties = list(
+#' Horse <- new_class("Horse", properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
 #' ))
-#' lexington <- horse(colour = "bay", height = 15, name = "Lex")
+#' lexington <- Horse(colour = "bay", height = 15, name = "Lex")
 #'
 #' props(lexington)
 #' props(lexington) <- list(height = 14, name = "Lexington")

@@ -24,10 +24,10 @@
 #'   `S7_external_generic`.
 #' @export
 #' @examples
-#' my_class <- new_class("my_class")
+#' MyClass <- new_class("MyClass")
 #'
 #' your_generic <- new_external_generic("stats", "median", "x")
-#' method(your_generic, my_class) <- function(x) "Hi!"
+#' method(your_generic, MyClass) <- function(x) "Hi!"
 new_external_generic <- function(package, name, dispatch_args, version = NULL) {
   out <- list(
     package = package,

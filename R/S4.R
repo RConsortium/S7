@@ -12,11 +12,11 @@
 #'   standardGeneric("S4_generic")
 #' })
 #'
-#' foo <- new_class("foo")
-#' S4_register(foo)
-#' method(S4_generic, foo) <- function(x) "Hello"
+#' Foo <- new_class("Foo")
+#' S4_register(Foo)
+#' method(S4_generic, Foo) <- function(x) "Hello"
 #'
-#' S4_generic(foo())
+#' S4_generic(Foo())
 S4_register <- function(class, env = parent.frame()) {
   if (!is_class(class)) {
     msg <- sprintf("`class` must be an S7 class, not a %s", obj_desc(class))

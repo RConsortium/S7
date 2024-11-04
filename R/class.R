@@ -9,7 +9,7 @@
 #'
 #' @param name The name of the class, as a string. The result of calling
 #'   `new_class()` should always be assigned to a variable with this name,
-#'   i.e. `foo <- new_class("foo")`.
+#'   i.e. `Foo <- new_class("Foo")`.
 #' @param parent The parent class to inherit behavior from.
 #'   There are three options:
 #'
@@ -59,13 +59,13 @@
 #' @export
 #' @examples
 #' # Create an class that represents a range using a numeric start and end
-#' range <- new_class("range",
+#' Range <- new_class("Range",
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
 #'   )
 #' )
-#' r <- range(start = 10, end = 20)
+#' r <- Range(start = 10, end = 20)
 #' r
 #' # get and set properties with @
 #' r@start
@@ -73,11 +73,11 @@
 #' r@end
 #'
 #' # S7 automatically ensures that properties are of the declared types:
-#' try(range(start = "hello", end = 20))
+#' try(Range(start = "hello", end = 20))
 #'
 #' # But we might also want to use a validator to ensure that start and end
 #' # are length 1, and that start is < end
-#' range <- new_class("range",
+#' Range <- new_class("Range",
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -92,10 +92,10 @@
 #'     }
 #'   }
 #' )
-#' try(range(start = c(10, 15), end = 20))
-#' try(range(start = 20, end = 10))
+#' try(Range(start = c(10, 15), end = 20))
+#' try(Range(start = 20, end = 10))
 #'
-#' r <- range(start = 10, end = 20)
+#' r <- Range(start = 10, end = 20)
 #' try(r@start <- 25)
 new_class <- function(
     name,
@@ -323,8 +323,8 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 #' @returns An [S7 class][new_class].
 #' @export
 #' @examples
-#' foo <- new_class("foo")
-#' S7_class(foo())
+#' Foo <- new_class("Foo")
+#' S7_class(Foo())
 S7_class <- function(object) {
   attr(object, "S7_class", exact = TRUE)
 }
