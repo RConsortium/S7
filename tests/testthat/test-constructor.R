@@ -202,5 +202,5 @@ test_that("package exported classes are not inlined in constructor formals", {
     quote(pkgname::Foo())
   )
 
-  expect_snapshot(formals(Bar))
+  expect_snapshot(args(Bar))
 })

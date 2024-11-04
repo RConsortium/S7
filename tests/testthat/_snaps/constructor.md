@@ -82,9 +82,8 @@
 # package exported classes are not inlined in constructor formals
 
     Code
-      formals(Bar)
+      args(Bar)
     Output
-      $foo
-      pkgname::Foo()
-      
+      function (foo = pkgname::Foo()) 
+      NULL
 
