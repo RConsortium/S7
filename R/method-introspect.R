@@ -69,14 +69,14 @@ method <- function(generic, class = NULL, object = NULL) {
 #' @return Nothing; this function is called for it's side effects.
 #' @export
 #' @examples
-#' foo1 <- new_class("foo1")
-#' foo2 <- new_class("foo2", foo1)
+#' Foo1 <- new_class("Foo1")
+#' Foo2 <- new_class("Foo2", Foo1)
 #'
 #' add <- new_generic("add", c("x", "y"))
-#' method(add, list(foo2, foo1)) <- function(x, y) c(2, 1)
-#' method(add, list(foo1, foo1)) <- function(x, y) c(1, 1)
+#' method(add, list(Foo2, Foo1)) <- function(x, y) c(2, 1)
+#' method(add, list(Foo1, Foo1)) <- function(x, y) c(1, 1)
 #'
-#' method_explain(add, list(foo2, foo2))
+#' method_explain(add, list(Foo2, Foo2))
 method_explain <- function(generic, class = NULL, object = NULL) {
   check_is_S7(generic, S7_generic)
   dispatch <- as_dispatch(generic, class = class, object = object)

@@ -28,8 +28,8 @@ to work with the underlying object, i.e. the S7 object stripped of class
 and properties.
 }
 \examples{
-text <- new_class("text", parent = class_character)
-y <- text(c(foo = "bar"))
+Text <- new_class("Text", parent = class_character)
+y <- Text(c(foo = "bar"))
 y
 S7_data(y)
 

@@ -26,8 +26,8 @@ a single \code{TRUE} or \code{FALSE}.
 }
 }
 \examples{
-foo <- new_class("foo", properties = list(a = class_character, b = class_integer))
-f <- foo()
+Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
+f <- Foo()
 
 prop_names(f)
 prop_exists(f, "a")

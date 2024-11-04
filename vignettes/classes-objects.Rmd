@@ -28,10 +28,10 @@ A validator is a function that takes the object (called `self`) and returns `NUL
 
 ### Basics
 
-In the following example we create a range class that enforces that `@start` and `@end` are single numbers, and that `@start` is less than `@end`:
+In the following example we create a `Range` class that enforces that `@start` and `@end` are single numbers, and that `@start` is less than `@end`:
 
 ```{r}
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = class_double,
     end = class_double
@@ -62,17 +62,17 @@ As we'll discuss shortly, you can also perform validation on a per-property basi
 Objects are validated automatically when constructed and when any property is modified:
 
 ```{r, error = TRUE}
-x <- range(1, 2:3)
-x <- range(10, 1)
+x <- Range(1, 2:3)
+x <- Range(10, 1)
 
-x <- range(1, 10)
+x <- Range(1, 10)
 x@start <- 20
 ```
 
 You can also manually `validate()` an object if you use a low-level R function to bypass the usual checks and balances of `@`:
 
 ```{r, error = TRUE}
-x <- range(1, 2)
+x <- Range(1, 2)
 attr(x, "start") <- 3
 validate(x)
 ```
@@ -87,13 +87,13 @@ shift <- function(x, shift) {
   x@end <- x@end + shift
   x
 }
-shift(range(1, 10), 1)
+shift(Range(1, 10), 1)
 ```
 
 There's a problem if `shift` is larger than `@end` - `@start`:
 
 ```{r, error = TRUE}
-shift(range(1, 10), 10)
+shift(Range(1, 10), 10)
 ```
 
 While the end result of `shift()` will be valid, an intermediate state is not.
@@ -107,7 +107,7 @@ shift <- function(x, shift) {
   )
   x
 }
-shift(range(1, 10), 10)
+shift(Range(1, 10), 10)
 ```
 
 The object is still validated, but it's only validated once, after all the properties have been modified.
@@ -119,7 +119,7 @@ This is a convenient shorthand for a call to `new_property()`.
 For example, the property definition of range above is shorthand for:
 
 ```{r}
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = new_property(class_double),
     end = new_property(class_double)
@@ -137,13 +137,13 @@ For example, instead of validating the length of `start` and `end` in the valida
 
 ```{r, error = TRUE}
 prop_number <- new_property(
-  class = class_double, 
+  class = class_double,
   validator = function(value) {
     if (length(value) != 1L) "must be length 1"
   }
 )
 
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = prop_number,
     end = prop_number
@@ -159,8 +159,8 @@ range <- new_class("range",
   }
 )
 
-range(start = c(1.5, 3.5))
-range(end = c(1.5, 3.5))
+Range(start = c(1.5, 3.5))
+Range(end = c(1.5, 3.5))
 ```
 
 Note that property validators shouldn't include the name of the property in validation messages as S7 will add it automatically.
@@ -171,47 +171,48 @@ This makes it possible to use the same property definition for multiple properti
 The defaults of `new_class()` create an class that can be constructed with no arguments:
 
 ```{r}
-empty <- new_class("empty",
+Empty <- new_class("Empty",
   properties = list(
     x = class_double,
     y = class_character,
     z = class_logical
   ))
-empty()
+Empty()
 ```
 
 The default values of the properties will be filled in with "empty" instances.
 You can instead provide your own defaults by using the `default` argument:
 
 ```{r}
-empty <- new_class("empty",
+Empty <- new_class("Empty",
   properties = list(
     x = new_property(class_numeric, default = 0),
     y = new_property(class_character, default = ""),
     z = new_property(class_logical, default = NA)
   )
 )
-empty()
+Empty()
 ```
 
-A quoted call becomes a standard function promise in the default constructor,
-evaluated at the time the object is constructed.
+A quoted call becomes a standard function promise in the default constructor, evaluated at the time the object is constructed.
+
 ```{r}
-stopwatch <- new_class("stopwatch", properties = list(
+Stopwatch <- new_class("Stopwatch", properties = list(
   start_time = new_property(
-    class = class_POSIXct,  
+    class = class_POSIXct,
     default = quote(Sys.time())
-  ), 
+  ),
   elapsed = new_property(
     getter = function(self) {
       difftime(Sys.time(), self@start_time, units = "secs")
     }
   )
 ))
-args(stopwatch)
-round(stopwatch()@elapsed)
-round(stopwatch(Sys.time() - 1)@elapsed)
+args(Stopwatch)
+round(Stopwatch()@elapsed)
+round(Stopwatch(Sys.time() - 1)@elapsed)
 ```
+
 ### Computed properties
 
 It's sometimes useful to have a property that is computed on demand.
@@ -219,7 +220,7 @@ For example, it'd be convenient to pretend that our range has a length, which is
 You can dynamically compute the value of a property by defining a `getter`:
 
 ```{r}
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = class_double,
     end = class_double,
@@ -229,7 +230,7 @@ range <- new_class("range",
   )
 )
 
-x <- range(start = 1, end = 10)
+x <- Range(start = 1, end = 10)
 x
 ```
 
@@ -248,7 +249,7 @@ A `setter` is a function with arguments `self` and `value` that returns a modifi
 For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
 
 ```{r}
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = class_double,
     end = class_double,
@@ -263,7 +264,7 @@ range <- new_class("range",
   )
 )
 
-x <- range(start = 1, end = 10)
+x <- Range(start = 1, end = 10)
 x
 
 x@length <- 5
@@ -274,7 +275,7 @@ x
 
 `getter`, `setter`, `default`, and `validator` can be used to implement many common patterns of properties.
 
-#### Deprecated properties 
+#### Deprecated properties
 
 A `setter` + `getter` can be used to to deprecate a property:
 
@@ -305,28 +306,30 @@ hadley <- Person(firstName = "Hadley")
 
 hadley <- Person(first_name = "Hadley") # no warning
 
-hadley@firstName                       
+hadley@firstName
 
-hadley@firstName <- "John"              
+hadley@firstName <- "John"
 
 hadley@first_name  # no warning
 ```
-
 
 #### Required properties
 
 You can make a property required by the constructor either by:
 
-- relying on the validator to error with the default value, or by
-- setting the property default to a quoted error call.
+-   relying on the validator to error with the default value, or by
+-   setting the property default to a quoted error call.
 
 ```{r}
 Person <- new_class("Person", properties = list(
- name = new_property(class_character, validator = function(value) {
-   if (length(value) != 1 || is.na(value) || value == "")
-     "must be a non-empty string"
- }))
-)
+ name = new_property(
+   class_character,
+   validator = function(value) {
+     if (length(value) != 1 || is.na(value) || value == "")
+       "must be a non-empty string"
+   }
+ )
+))
 
 try(Person())
 
@@ -335,11 +338,11 @@ try(Person(1)) # class_character$validator() is also checked.
 Person("Alice")
 ```
 
-
 ```{r}
 Person <- new_class("Person", properties = list(
- name = new_property(class_character,
-                     default = quote(stop("@name is required")))
+ name = new_property(
+   class_character,
+   default = quote(stop("@name is required")))
 ))
 
 try(Person())
@@ -347,11 +350,9 @@ try(Person())
 Person("Alice")
 ```
 
-
 #### Frozen properties
 
-You can mark a property as read-only after construction by
-providing a custom `setter`.
+You can mark a property as read-only after construction by providing a custom `setter`.
 
 ```{r}
 Person <- new_class("Person", properties = list(
@@ -371,13 +372,12 @@ person <- Person("1999-12-31")
 try(person@birth_date <- "2000-01-01")
 ```
 
-
 ## Constructors
 
 You can see the source code for a class's constructor by accessing the `constructor` property:
 
 ```{r}
-range@constructor
+Range@constructor
 ```
 
 In most cases, S7's default constructor will be all you need.
@@ -386,13 +386,15 @@ For example, for our range class, maybe we'd like to construct it from a vector 
 To implement this we could do:
 
 ```{r}
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = class_numeric,
     end = class_numeric
   ),
   constructor = function(x) {
-    new_object(S7_object(), start = min(x, na.rm = TRUE), end = max(x, na.rm = TRUE))
+    new_object(S7_object(), 
+               start = min(x, na.rm = TRUE), 
+               end = max(x, na.rm = TRUE))
   }
 )
 

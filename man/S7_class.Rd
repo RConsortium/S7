@@ -16,6 +16,6 @@ An \link[=new_class]{S7 class}.
 Given an S7 object, find it's class.
 }
 \examples{
-foo <- new_class("foo")
-S7_class(foo())
+Foo <- new_class("Foo")
+S7_class(Foo())
 }

@@ -17,7 +17,7 @@
 #'
 #' ```R
 #' method(my_generic, new_S3_class("factor")) <- function(x) "A factor"
-#' new_class("my_class", properties = list(types = new_S3_class("factor")))
+#' new_class("MyClass", properties = list(types = new_S3_class("factor")))
 #' new_union("character", new_S3_class("factor"))
 #' ```
 #'
