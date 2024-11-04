@@ -30,14 +30,11 @@ There are three options:
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
 
-\item{package}{Package name. It is good practice to set the package
-name when exporting an S7 class from a package because it prevents
-clashes if two packages happen to export a class with the same
-name.
+\item{package}{Package name. This is automatically resolved if the class is
+defined in a package, and \code{NULL} otherwise.
 
-Setting \code{package} implies that the class is available for external use,
-so should be accompanied by exporting the constructor. Learn more
-in \code{vignette("packages")}.}
+Note, if the class is intended for external use, the constructor should be
+exported. Learn more in \code{vignette("packages")}.}
 
 \item{properties}{A named list specifying the properties (data) that
 belong to each instance of the class. Each element of the list can
