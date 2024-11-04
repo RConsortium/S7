@@ -114,15 +114,15 @@ register a method for an S7 class and S3 generic without using S7,
 because all S7 objects have S3 classes, and S3 dispatch will operate on
 them normally.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu">foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "foo"       "S7_object"</span></span>
+<code class="sourceCode R"><span><span class="va">Foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu">Foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Foo"       "S7_object"</span></span>
 <span></span>
-<span><span class="va">mean.foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">mean.Foo</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="st">"mean of foo"</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu">foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu">Foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "mean of foo"</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -177,18 +177,18 @@ data structure and using a constructor to enforce the structure:</p>
 <p>Alternatively you could convert it to the most natural representation
 using S7:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">new_rle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"rle"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">rle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"rle"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  lengths <span class="op">=</span> <span class="va">class_integer</span>,</span>
 <span>  values <span class="op">=</span> <span class="va">class_atomic</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>To allow existing methods to work you’ll need to override
 <code>$</code> to access properties instead of list elements:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">`$`</span>, <span class="va">new_rle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">prop</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">`$`</span>, <span class="va">rle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">prop</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rle.html" class="external-link">rle</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Run Length Encoding</span></span>
-<span><span class="co">#&gt;   lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1</span></span>
-<span><span class="co">#&gt;   values : int [1:10] 1 2 3 4 5 6 7 8 9 10</span></span></code></pre></div>
+<span><span class="co">#&gt;   lengths: int [1:10] 1 2 3 4 5 6 7 8 9 10</span></span>
+<span><span class="co">#&gt;   values : logi(0)</span></span></code></pre></div>
 <p>The chief disadvantage of this approach is any subclasses will need
 to be converted to S7 as well.</p>
 </div>
@@ -220,22 +220,19 @@ handled at method registration time so that registering a method for a
 union is just short-hand for registering a method for each of the
 classes.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">class1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"class1"</span><span class="op">)</span></span>
-<span><span class="va">class2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"class2"</span><span class="op">)</span></span>
-<span><span class="va">union1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_union.html">new_union</a></span><span class="op">(</span><span class="va">class1</span>, <span class="va">class2</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">Class1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Class1"</span><span class="op">)</span></span>
+<span><span class="va">Class2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Class2"</span><span class="op">)</span></span>
+<span><span class="va">Union1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_union.html">new_union</a></span><span class="op">(</span><span class="va">Class1</span>, <span class="va">Class2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"foo"</span>, <span class="st">"x"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">foo</span>, <span class="va">union1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">""</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">foo</span>, <span class="va">Union1</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">""</span></span>
 <span><span class="va">foo</span></span>
 <span><span class="co">#&gt; &lt;S7_generic&gt; foo(x, ...) with 2 methods:</span></span>
-<span><span class="co">#&gt; 1: method(foo, class1)</span></span>
-<span><span class="co">#&gt; 2: method(foo, class2)</span></span></code></pre></div>
+<span><span class="co">#&gt; 1: method(foo, Class2)</span></span>
+<span><span class="co">#&gt; 2: method(foo, Class1)</span></span></code></pre></div>
 <p>S7 unions allow you to restrict the type of a property in the same
 way that S4 unions allow you to restrict the type of a slot.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="section"></h2>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

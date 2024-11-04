@@ -81,11 +81,11 @@ an S7 class, you need to call <code>S4_register()</code> once.</p>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "S4_generic"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">S4_register</span><span class="op">(</span><span class="va">foo</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">S4_generic</span>, <span class="va">foo</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"Hello"</span></span></span>
+<span class="r-in"><span><span class="va">Foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">S4_register</span><span class="op">(</span><span class="va">Foo</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">S4_generic</span>, <span class="va">Foo</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="st">"Hello"</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">S4_generic</span><span class="op">(</span><span class="fu">foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">S4_generic</span><span class="op">(</span><span class="fu">Foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Hello"</span>
 </code></pre></div>
     </div>

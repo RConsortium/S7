@@ -94,18 +94,18 @@ S7 object without testing for a specific class.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo1"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">foo2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo2"</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">Foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">Foo2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">S7_inherits</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">foo1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">S7_inherits</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
-<span class="r-in"><span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">foo1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo1</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">S7_inherits</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">foo2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">S7_inherits</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">foo2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : `foo1()` must be a &lt;foo2&gt;, not a &lt;foo1&gt;</span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : `Foo1()` must be a &lt;Foo2&gt;, not a &lt;Foo1&gt;</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

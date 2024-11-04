@@ -101,12 +101,12 @@ property.</li>
 properties: a character <code>name</code> and a numeric
 <code>age</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"dog"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">Dog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Dog"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">class_character</span>,</span>
 <span>  age <span class="op">=</span> <span class="va">class_numeric</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">dog</span></span>
-<span><span class="co">#&gt; &lt;dog&gt; class</span></span>
+<span><span class="va">Dog</span></span>
+<span><span class="co">#&gt; &lt;Dog&gt; class</span></span>
 <span><span class="co">#&gt; @ parent     : &lt;S7_object&gt;</span></span>
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
@@ -121,9 +121,9 @@ to an object with the same name as the class. This is important! That
 object represents the class and is what you use to construct instances
 of the class:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lola</span> <span class="op">&lt;-</span> <span class="fu">dog</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Lola"</span>, age <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">lola</span> <span class="op">&lt;-</span> <span class="fu">Dog</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Lola"</span>, age <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">lola</span></span>
-<span><span class="co">#&gt; &lt;dog&gt;</span></span>
+<span><span class="co">#&gt; &lt;Dog&gt;</span></span>
 <span><span class="co">#&gt;  @ name: chr "Lola"</span></span>
 <span><span class="co">#&gt;  @ age : num 11</span></span></code></pre></div>
 <p>Once you have an S7 object, you can get and set properties using
@@ -136,12 +136,12 @@ of the class:</p>
 supplied in <code><a href="../reference/new_class.html">new_class()</a></code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lola</span><span class="op">@</span><span class="va">age</span> <span class="op">&lt;-</span> <span class="st">"twelve"</span></span>
-<span><span class="co">#&gt; Error: &lt;dog&gt;@age must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; Error: &lt;Dog&gt;@age must be &lt;integer&gt; or &lt;double&gt;, not &lt;character&gt;</span></span></code></pre></div>
 <p>Given an object, you can retrieves its class
 <code><a href="../reference/S7_class.html">S7_class()</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/S7_class.html">S7_class</a></span><span class="op">(</span><span class="va">lola</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;dog&gt; class</span></span>
+<span><span class="co">#&gt; &lt;Dog&gt; class</span></span>
 <span><span class="co">#&gt; @ parent     : &lt;S7_object&gt;</span></span>
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
@@ -153,7 +153,7 @@ compatibility with existing S3 generics and you can learn more about it
 in <code><a href="../articles/compatibility.html">vignette("compatibility")</a></code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">lola</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "dog"       "S7_object"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "Dog"       "S7_object"</span></span></code></pre></div>
 <p>If you want to learn more about the details of S7 classes and
 objects, including validation methods and more details of properties,
 please see <code><a href="../articles/classes-objects.html">vignette("classes-objects")</a></code>.</p>
@@ -180,7 +180,7 @@ the first argument.</p>
 classes with
 <code>method(generic, class) &lt;- implementation</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">speak</span>, <span class="va">dog</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">speak</span>, <span class="va">Dog</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="st">"Woof"</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Once the method is registered, the generic will use it when
@@ -191,15 +191,15 @@ appropriate:</p>
 <p>Let’s define another class, this one for cats, and define another
 method for <code>speak()</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"cat"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">Cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Cat"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="va">class_character</span>,</span>
 <span>  age <span class="op">=</span> <span class="va">class_double</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">speak</span>, <span class="va">cat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">speak</span>, <span class="va">Cat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="st">"Meow"</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">fluffy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Fluffy"</span>, age <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">fluffy</span> <span class="op">&lt;-</span> <span class="fu">Cat</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Fluffy"</span>, age <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="fu">speak</span><span class="op">(</span><span class="va">fluffy</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Meow"</span></span></code></pre></div>
 <p>You get an error if you call the generic with a class that doesn’t
@@ -215,7 +215,7 @@ have a method:</p>
 properties, so we could use a common parent class to extract out the
 duplicated specification. We first define the parent class:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"pet"</span>,</span>
+<code class="sourceCode R"><span><span class="va">Pet</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Pet"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    name <span class="op">=</span> <span class="va">class_character</span>,</span>
 <span>    age <span class="op">=</span> <span class="va">class_numeric</span></span>
@@ -224,20 +224,20 @@ duplicated specification. We first define the parent class:</p>
 <p>Then use the <code>parent</code> argument to
 <code>new_class:</code></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"cat"</span>, parent <span class="op">=</span> <span class="va">pet</span><span class="op">)</span></span>
-<span><span class="va">dog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"dog"</span>, parent <span class="op">=</span> <span class="va">pet</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">Cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Cat"</span>, parent <span class="op">=</span> <span class="va">Pet</span><span class="op">)</span></span>
+<span><span class="va">Dog</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Dog"</span>, parent <span class="op">=</span> <span class="va">Pet</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">cat</span></span>
-<span><span class="co">#&gt; &lt;cat&gt; class</span></span>
-<span><span class="co">#&gt; @ parent     : &lt;pet&gt;</span></span>
+<span><span class="va">Cat</span></span>
+<span><span class="co">#&gt; &lt;Cat&gt; class</span></span>
+<span><span class="co">#&gt; @ parent     : &lt;Pet&gt;</span></span>
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
 <span><span class="co">#&gt; @ properties :</span></span>
 <span><span class="co">#&gt;  $ name: &lt;character&gt;          </span></span>
 <span><span class="co">#&gt;  $ age : &lt;integer&gt; or &lt;double&gt;</span></span>
-<span><span class="va">dog</span></span>
-<span><span class="co">#&gt; &lt;dog&gt; class</span></span>
-<span><span class="co">#&gt; @ parent     : &lt;pet&gt;</span></span>
+<span><span class="va">Dog</span></span>
+<span><span class="co">#&gt; &lt;Dog&gt; class</span></span>
+<span><span class="co">#&gt; @ parent     : &lt;Pet&gt;</span></span>
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
 <span><span class="co">#&gt; @ properties :</span></span>
@@ -246,8 +246,8 @@ duplicated specification. We first define the parent class:</p>
 <p>Because we have created new classes, we need to recreate the existing
 <code>lola</code> and <code>fluffy</code> objects:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lola</span> <span class="op">&lt;-</span> <span class="fu">dog</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Lola"</span>, age <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
-<span><span class="va">fluffy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Fluffy"</span>, age <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">lola</span> <span class="op">&lt;-</span> <span class="fu">Dog</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Lola"</span>, age <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="va">fluffy</span> <span class="op">&lt;-</span> <span class="fu">Cat</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Fluffy"</span>, age <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
 <p>Method dispatch takes advantage of the hierarchy of parent classes:
 if a method is not defined for a class, it will try the method for the
 parent class, and so on until it finds a method or gives up with an
@@ -255,7 +255,7 @@ error. This inheritance is a powerful mechanism for sharing code across
 classes.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">describe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"describe"</span>, <span class="st">"x"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">pet</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">Pet</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">name</span>, <span class="st">" is "</span>, <span class="va">x</span><span class="op">@</span><span class="va">age</span>, <span class="st">" years old"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">describe</span><span class="op">(</span><span class="va">lola</span><span class="op">)</span></span>
@@ -263,7 +263,7 @@ classes.</p>
 <span><span class="fu">describe</span><span class="op">(</span><span class="va">fluffy</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "Fluffy is 5 years old"</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">dog</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">Dog</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">name</span>, <span class="st">" is a "</span>, <span class="va">x</span><span class="op">@</span><span class="va">age</span>, <span class="st">" year old dog"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu">describe</span><span class="op">(</span><span class="va">lola</span><span class="op">)</span></span>
@@ -277,12 +277,12 @@ method for <code>S7_object</code>:</p>
 <span>  <span class="st">"An S7 object"</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">cocktail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"cocktail"</span>,</span>
+<span><span class="va">Cocktail</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Cocktail"</span>,</span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    ingredients <span class="op">=</span> <span class="va">class_character</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">martini</span> <span class="op">&lt;-</span> <span class="fu">cocktail</span><span class="op">(</span>ingredients <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gin"</span>, <span class="st">"vermouth"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">martini</span> <span class="op">&lt;-</span> <span class="fu">Cocktail</span><span class="op">(</span>ingredients <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gin"</span>, <span class="st">"vermouth"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">describe</span><span class="op">(</span><span class="va">martini</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "An S7 object"</span></span></code></pre></div>
 <p>Printing a generic will show you which methods are currently
@@ -290,19 +290,19 @@ defined:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">describe</span></span>
 <span><span class="co">#&gt; &lt;S7_generic&gt; describe(x, ...) with 3 methods:</span></span>
-<span><span class="co">#&gt; 1: method(describe, pet)</span></span>
-<span><span class="co">#&gt; 2: method(describe, dog)</span></span>
-<span><span class="co">#&gt; 3: method(describe, S7_object)</span></span></code></pre></div>
+<span><span class="co">#&gt; 1: method(describe, Dog)</span></span>
+<span><span class="co">#&gt; 2: method(describe, S7_object)</span></span>
+<span><span class="co">#&gt; 3: method(describe, Pet)</span></span></code></pre></div>
 <p>And you can use <code><a href="../reference/method.html">method()</a></code> to retrieve the implementation
 of one of those methods:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">pet</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;S7_method&gt; method(describe, pet)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">Pet</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;S7_method&gt; method(describe, Pet)</span></span>
 <span><span class="co">#&gt; function (x) </span></span>
 <span><span class="co">#&gt; {</span></span>
 <span><span class="co">#&gt;     paste0(x@name, " is ", x@age, " years old")</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x55a9ae807d90&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;bytecode: 0x560c9340ee00&gt;</span></span></code></pre></div>
 <p>Learn more about method dispatch in
 <code><a href="../articles/generics-methods.html">vignette("generics-methods")</a></code>.</p>
 </div>
