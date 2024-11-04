@@ -61,23 +61,30 @@
 
     Code
       my_generic(10)
-    Condition
-      Error in `my_generic@methods$double`:
-      ! hi
-    Code
-      traceback()
     Output
-      No traceback available 
+      [[1]]
+      my_generic(10)
+      
+      [[2]]
+      S7::S7_dispatch()
+      
+      [[3]]
+      `method(my_generic, class_double)`(x = 10, ...)
+      
 
 ---
 
     Code
       my_generic(3, 4)
-    Condition
-      Error in `my_generic@methods$double$double`:
-      ! hi
-    Code
-      traceback()
     Output
-      No traceback available 
+      [[1]]
+      my_generic(3, 4)
+      
+      [[2]]
+      S7::S7_dispatch()
+      
+      [[3]]
+      `method(my_generic, list(class_double, class_double))`(x = 3, 
+          y = 4, ...)
+      
 
