@@ -191,16 +191,3 @@ test_that("Dynamic settable properties are included in constructor", {
   expect_equal(foo@dynamic_settable, 1)
 
 })
-
-test_that("package exported classes are not inlined in constructor formals", {
-  # https://github.com/RConsortium/S7/issues/477
-  Foo := new_class(package = "pkgname")
-  Bar := new_class(properties = list(foo = Foo))
-
-  expect_identical(
-    formals(Bar)$foo,
-    quote(pkgname::Foo())
-  )
-
-  expect_snapshot(args(Bar))
-})

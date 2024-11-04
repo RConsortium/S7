@@ -100,6 +100,17 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
     } else {
       # namespace the pkgname::classname() call
       cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
+
+      # check the call evaluates to f.
+      # This will error if package is not installed or object is not exported.
+      f2 <- eval(cl, baseenv())
+      if (!identical(f, f2)) {
+        msg <- sprintf(
+          "`%s::%s` is not identical to the class with the same @package and @name properties",
+          f@package, f@name
+        )
+        stop(msg, call. = FALSE)
+      }
       return(as.call(list(cl)))
     }
   }

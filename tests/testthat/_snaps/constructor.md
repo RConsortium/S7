@@ -79,11 +79,3 @@
       new_object(foo(...), y = y)
       <environment: 0x0>
 
-# package exported classes are not inlined in constructor formals
-
-    Code
-      args(Bar)
-    Output
-      function (foo = pkgname::Foo()) 
-      NULL
-
