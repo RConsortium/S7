@@ -214,7 +214,7 @@ generic_add_method <- function(generic, signature, method) {
   chr_signature <- vcapply(signature, class_register)
 
   if (is.null(attr(method, "name", TRUE)))
-    attr(method, "name") <- as.name(make_method_name(generic, chr_signature))
+    attr(method, "name") <- as.name(method_signature(generic, signature))
 
   for (i in seq_along(chr_signature)) {
     class_name <- chr_signature[[i]]
