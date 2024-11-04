@@ -67,5 +67,17 @@
     Code
       traceback()
     Output
-      No traceback available
+      No traceback available 
+
+---
+
+    Code
+      my_generic(3, 4)
+    Condition
+      Error in `my_generic@methods$double$double`:
+      ! hi
+    Code
+      traceback()
+    Output
+      No traceback available 
 
