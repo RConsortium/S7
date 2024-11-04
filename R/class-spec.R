@@ -88,11 +88,13 @@ class_construct <- function(.x, ...) {
 class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   f <- class_constructor(.x)
 
-  # If the constructor is an S7 class that is exported from a package, avoid
-  # inlining the full class def instead, inline an expression like
+  # For S7 class constructors with a non-NULL @package property
+  # Instead of inlining the full class definition, use either
   # `pkgname::classname()` or `classname()`
   if (is_class(f) && !is.null(f@package)) {
     # Check if the class can be resolved as a bare symbol without pkgname::
+    # Note: During package build, using pkg::class for a package's own symbols
+    # will raise an error from `::`.
     if (identical(package, f@package)) {
       return(call(f@name))
     } else {
