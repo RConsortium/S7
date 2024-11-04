@@ -194,8 +194,8 @@ empty <- new_class("empty",
 empty()
 ```
 
-A quoted call becomes a standard function promise in the default constructor,
-evaluated at the time the object is constructed.
+A quoted call becomes a standard function promise in the default constructor, evaluated at the time the object is constructed.
+
 ```{r}
 stopwatch <- new_class("stopwatch", properties = list(
   start_time = new_property(
@@ -212,6 +212,7 @@ args(stopwatch)
 round(stopwatch()@elapsed)
 round(stopwatch(Sys.time() - 1)@elapsed)
 ```
+
 ### Computed properties
 
 It's sometimes useful to have a property that is computed on demand.
@@ -274,7 +275,7 @@ x
 
 `getter`, `setter`, `default`, and `validator` can be used to implement many common patterns of properties.
 
-#### Deprecated properties 
+#### Deprecated properties
 
 A `setter` + `getter` can be used to to deprecate a property:
 
@@ -312,13 +313,12 @@ hadley@firstName <- "John"
 hadley@first_name  # no warning
 ```
 
-
 #### Required properties
 
 You can make a property required by the constructor either by:
 
-- relying on the validator to error with the default value, or by
-- setting the property default to a quoted error call.
+-   relying on the validator to error with the default value, or by
+-   setting the property default to a quoted error call.
 
 ```{r}
 Person <- new_class("Person", properties = list(
@@ -335,7 +335,6 @@ try(Person(1)) # class_character$validator() is also checked.
 Person("Alice")
 ```
 
-
 ```{r}
 Person <- new_class("Person", properties = list(
  name = new_property(class_character,
@@ -347,11 +346,9 @@ try(Person())
 Person("Alice")
 ```
 
-
 #### Frozen properties
 
-You can mark a property as read-only after construction by
-providing a custom `setter`.
+You can mark a property as read-only after construction by providing a custom `setter`.
 
 ```{r}
 Person <- new_class("Person", properties = list(
@@ -370,7 +367,6 @@ person <- Person("1999-12-31")
 
 try(person@birth_date <- "2000-01-01")
 ```
-
 
 ## Constructors
 

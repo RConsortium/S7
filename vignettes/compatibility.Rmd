@@ -153,5 +153,3 @@ foo
 ```
 
 S7 unions allow you to restrict the type of a property in the same way that S4 unions allow you to restrict the type of a slot.
-
-## 
