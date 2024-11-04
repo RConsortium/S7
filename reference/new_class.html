@@ -92,13 +92,10 @@ There are three options:</p><ul><li><p>An S7 class, like <a href="S7_object.html
 
 
 <dt id="arg-package">package<a class="anchor" aria-label="anchor" href="#arg-package"></a></dt>
-<dd><p>Package name. It is good practice to set the package
-name when exporting an S7 class from a package because it prevents
-clashes if two packages happen to export a class with the same
-name.</p>
-<p>Setting <code>package</code> implies that the class is available for external use,
-so should be accompanied by exporting the constructor. Learn more
-in <code><a href="../articles/packages.html">vignette("packages")</a></code>.</p></dd>
+<dd><p>Package name. This is automatically resolved if the class is
+defined in a package, and <code>NULL</code> otherwise.</p>
+<p>Note, if the class is intended for external use, the constructor should be
+exported. Learn more in <code><a href="../articles/packages.html">vignette("packages")</a></code>.</p></dd>
 
 
 <dt id="arg-properties">properties<a class="anchor" aria-label="anchor" href="#arg-properties"></a></dt>

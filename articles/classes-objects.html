@@ -505,9 +505,9 @@ the <code>constructor</code> property:</p>
 <span><span class="co">#&gt;     start</span></span>
 <span><span class="co">#&gt;     end</span></span>
 <span><span class="co">#&gt;     length</span></span>
-<span><span class="co">#&gt;     new_object(S7_object(), start = start, end = end, length = length)</span></span>
-<span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;environment: namespace:S7&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;     S7::new_object(S7::S7_object(), start = start, end = end, </span></span>
+<span><span class="co">#&gt;         length = length)</span></span>
+<span><span class="co">#&gt; }</span></span></code></pre></div>
 <p>In most cases, S7’s default constructor will be all you need.
 However, in some cases you might want something custom. For example, for
 our range class, maybe we’d like to construct it from a vector of
