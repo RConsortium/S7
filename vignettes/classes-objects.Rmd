@@ -322,12 +322,14 @@ You can make a property required by the constructor either by:
 
 ```{r}
 Person <- new_class("Person", properties = list(
- name = new_property(class_character, 
-                     validator = function(value) {
-   if (length(value) != 1 || is.na(value) || value == "")
-     "must be a non-empty string"
- }))
-)
+ name = new_property(
+   class_character,
+   validator = function(value) {
+     if (length(value) != 1 || is.na(value) || value == "")
+       "must be a non-empty string"
+   }
+ )
+))
 
 try(Person())
 
