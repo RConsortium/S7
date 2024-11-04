@@ -90,17 +90,17 @@ test_that("new_method works with both hard and soft dependencies", {
   # to t0::AnS7Class() (and not inline the full class object).
   # As these tests grow, consider splitting this into a separate context like:
   #   test_that("package exported classes are not inlined in constructor formals", {...})
-  Foo <- new_class("Foo", properties = list(bar = t0::AnS7Class))
-  expect_identical(formals(Foo)           , as.pairlist(alist(bar = t0::AnS7Class())))
-  expect_identical(formals(t2::AnS7Class2), as.pairlist(alist(bar = t0::AnS7Class())))
-  expect_identical(formals(t2:::AnInternalClass), as.pairlist(alist(
-    foo = t0::AnS7Class(), bar = AnS7Class2()
+  Foo <- new_class("Foo", properties = list(bar = t0::`An S7 Class`))
+  expect_identical(formals(Foo)                , as.pairlist(alist(bar = t0::`An S7 Class`())))
+  expect_identical(formals(t2::`An S7 Class 2`), as.pairlist(alist(bar = t0::`An S7 Class`())))
+  expect_identical(formals(t2:::`An Internal Class`), as.pairlist(alist(
+    foo = t0::`An S7 Class`(), bar = `An S7 Class 2`()
   )))
 
   expect_snapshot({
     args(Foo)
-    args(t2::AnS7Class2)
-    args(t2:::AnInternalClass)
+    args(t2::`An S7 Class 2`)
+    args(t2:::`An Internal Class`)
   })
 
   # test we emit informative error messages if a new_class() call with an
@@ -108,13 +108,13 @@ test_that("new_method works with both hard and soft dependencies", {
   # https://github.com/RConsortium/S7/issues/477
   expect_snapshot(error = TRUE, {
     new_class("Foo", properties = list(
-      bar = new_class("MadeUpClass", package = "t0")
+      bar = new_class("Made Up Class", package = "t0")
     ))
     new_class("Foo", properties = list(
-      bar = new_class("MadeUpClass", package = "MadeUpPackage")
+      bar = new_class("Made Up Class", package = "Made Up Package")
     ))
 
-    modified_class <- t0::AnS7Class
+    modified_class <- t0::`An S7 Class`
     attr(modified_class, "xyz") <- "abc"
     new_class("Foo", properties = list(bar = modified_class))
   })

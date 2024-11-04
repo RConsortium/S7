@@ -10,13 +10,14 @@ S7::method(an_s7_generic, an_s7_class) <- function(x) "foo"
 S7::method(an_s3_generic, an_s7_class) <- function(x) "foo"
 
 
-#' @importFrom t0 AnS7Class
+#' @rawNamespace importFrom(t0, `An S7 Class`)
 #' @export
-AnS7Class2 <- S7::new_class("AnS7Class2", properties = list(bar = AnS7Class))
+`An S7 Class 2` <- S7::new_class("An S7 Class 2", properties = list(bar = `An S7 Class`))
+NULL
 
-AnInternalClass <- S7::new_class("AnInternalClass", properties = list(
-  foo = AnS7Class,
-  bar = AnS7Class2
+`An Internal Class` <- S7::new_class("An Internal Class", properties = list(
+  foo = `An S7 Class`,
+  bar = `An S7 Class 2`
 ))
 
 
