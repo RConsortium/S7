@@ -226,4 +226,16 @@ test_that("method dispatch works for class_missing", {
     foo_wrapper()
   )
 
+test_that("errors from dispatched methods have reasonable tracebacks", {
+  my_generic <- new_generic("my_generic", "x")
+  method(my_generic, class_numeric) <- function(x) stop("hi")
+  expect_snapshot(error = TRUE, {
+    my_generic(10)
+    traceback()
+  })
+
+  my_generic <- new_generic("my_generic", c("x", "y"))
+  method(my_generic, list(class_numeric, class_numeric)) <- function(x, y) stop("hi")
+
+  my_generic(3, 4)
 })

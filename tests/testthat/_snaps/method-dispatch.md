@@ -57,3 +57,15 @@
       Error in `foo_wrapper()`:
       ! argument "xx" is missing, with no default
 
+# errors from dispatched methods have reasonable tracebacks
+
+    Code
+      my_generic(10)
+    Condition
+      Error in `my_generic@methods$double`:
+      ! hi
+    Code
+      traceback()
+    Output
+      No traceback available
+

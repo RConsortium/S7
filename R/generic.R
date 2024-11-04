@@ -189,9 +189,32 @@ methods_rec <- function(x, signature) {
   unlist(methods, recursive = FALSE)
 }
 
+make_method_name <- function(generic, chr_signature) {
+  name <- sprintf("%s@methods$%s",
+                  generic@name,
+                  paste0(chr_signature, collapse = "$"))
+
+  pkgname <- topNamespaceName(environment(generic))
+  if (is.null(pkgname))
+    return(name)
+
+  for (get in c("::", ":::")) {
+    tryCatch({
+      generic2 <- eval(call(get, as.name(pkgname), as.name(generic@name)), baseenv())
+      if (identical(generic, generic2))
+        return(paste0(c(pkgname, get, name), collapse = ""))
+    }, error = function(e) NULL)
+  }
+
+  name
+}
+
 generic_add_method <- function(generic, signature, method) {
   p_tbl <- generic@methods
   chr_signature <- vcapply(signature, class_register)
+
+  if (is.null(attr(method, "name", TRUE)))
+    attr(method, "name") <- as.name(make_method_name(generic, chr_signature))
 
   for (i in seq_along(chr_signature)) {
     class_name <- chr_signature[[i]]
