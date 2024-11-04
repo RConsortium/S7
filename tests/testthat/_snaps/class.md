@@ -112,7 +112,7 @@
       foo <- new_class("foo", abstract = TRUE)
       foo()
     Condition
-      Error in `new_object()`:
+      Error in `S7::new_object()`:
       ! Can't construct an object from abstract class <foo>
 
 # abstract classes: can't inherit from concrete class

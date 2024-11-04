@@ -160,8 +160,6 @@ test_that("can create constructors with missing or lazy defaults", {
                "Can\'t set read-only property Person@birthdate")
 })
 
-
-
 test_that("Dynamic settable properties are included in constructor", {
   Foo <- new_class(
     name = "Foo", package = NULL,

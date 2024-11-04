@@ -86,6 +86,39 @@ test_that("new_method works with both hard and soft dependencies", {
   expect_equal(an_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(an_s7_generic("x"), "foo")
 
+  # test that new_class() will construct a property default as a namespaced call
+  # to t0::AnS7Class() (and not inline the full class object).
+  # As these tests grow, consider splitting this into a separate context like:
+  #   test_that("package exported classes are not inlined in constructor formals", {...})
+  Foo <- new_class("Foo", properties = list(bar = t0::`An S7 Class`))
+  expect_identical(formals(Foo)                , as.pairlist(alist(bar = t0::`An S7 Class`())))
+  expect_identical(formals(t2::`An S7 Class 2`), as.pairlist(alist(bar = t0::`An S7 Class`())))
+  expect_identical(formals(t2:::`An Internal Class`), as.pairlist(alist(
+    foo = t0::`An S7 Class`(), bar = `An S7 Class 2`()
+  )))
+
+  expect_snapshot({
+    args(Foo)
+    args(t2::`An S7 Class 2`)
+    args(t2:::`An Internal Class`)
+  })
+
+  # test we emit informative error messages if a new_class() call with an
+  # external class dependency is malformed.
+  # https://github.com/RConsortium/S7/issues/477
+  expect_snapshot(error = TRUE, {
+    new_class("Foo", properties = list(
+      bar = new_class("Made Up Class", package = "t0")
+    ))
+    new_class("Foo", properties = list(
+      bar = new_class("Made Up Class", package = "Made Up Package")
+    ))
+
+    modified_class <- t0::`An S7 Class`
+    attr(modified_class, "xyz") <- "abc"
+    new_class("Foo", properties = list(bar = modified_class))
+  })
+
   # Now install the soft dependency
   quick_install(test_path("t1"), tmp_lib)
 

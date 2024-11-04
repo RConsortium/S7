@@ -16,14 +16,11 @@
 #'   * An S7 class, like [S7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
-#' @param package Package name. It is good practice to set the package
-#'   name when exporting an S7 class from a package because it prevents
-#'   clashes if two packages happen to export a class with the same
-#'   name.
+#' @param package Package name. This is automatically resolved if the class is
+#'   defined in a package, and `NULL` otherwise.
 #'
-#'   Setting `package` implies that the class is available for external use,
-#'   so should be accompanied by exporting the constructor. Learn more
-#'   in `vignette("packages")`.
+#'   Note, if the class is intended for external use, the constructor should be
+#'   exported. Learn more in `vignette("packages")`.
 #' @param abstract Is this an abstract class? An abstract class can not be
 #'   instantiated.
 #' @param constructor The constructor function. In most cases, you can rely
@@ -134,7 +131,9 @@ new_class <- function(
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
-    constructor <- new_constructor(parent, all_props)
+    constructor <- new_constructor(parent, all_props,
+                                   envir = parent.frame(),
+                                   package = package)
   }
 
   object <- constructor

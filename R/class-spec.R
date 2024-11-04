@@ -81,27 +81,49 @@ class_friendly <- function(x) {
 }
 
 class_construct <- function(.x, ...) {
-  eval(class_construct_expr(.x, ...))
+  class_constructor(.x)(...)
 }
 
 
-class_construct_expr <- function(.x, ...) {
+class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   f <- class_constructor(.x)
+
+  # For S7 class constructors with a non-NULL @package property
+  # Instead of inlining the full class definition, use either
+  # `pkgname::classname()` or `classname()`
+  if (is_class(f) && !is.null(f@package)) {
+    # Check if the class can be resolved as a bare symbol without pkgname::
+    # Note: During package build, using pkg::class for a package's own symbols
+    # will raise an error from `::`.
+    if (identical(package, f@package)) {
+      return(call(f@name))
+    } else {
+      # namespace the pkgname::classname() call
+      cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
+
+      # check the call evaluates to f.
+      # This will error if package is not installed or object is not exported.
+      f2 <- eval(cl, baseenv())
+      if (!identical(f, f2)) {
+        msg <- sprintf(
+          "`%s::%s` is not identical to the class with the same @package and @name properties",
+          f@package, f@name
+        )
+        stop(msg, call. = FALSE)
+      }
+      return(as.call(list(cl)))
+    }
+  }
+
   # If the constructor is a closure wrapping a simple expression, try
   # to extract the expression
   # (mostly for nicer printing and introspection.)
 
-  ## early return if not safe to unwrap
-  # can't unwrap if we're passing on ...
-  if(...length()) {
-    return(as.call(list(f, ...)))
-  }
-
   # can't unwrap if the closure is potentially important
   # (this can probably be relaxed to allow additional environments)
   fe <- environment(f)
-  if(!identical(fe, baseenv())) {
-    return(as.call(list(f, ...)))
+  if (!identical(fe, baseenv())) {
+    return(as.call(list(f)))
   }
 
   # special case for `class_missing`
@@ -111,8 +133,8 @@ class_construct_expr <- function(.x, ...) {
 
   # `new_object()` must be called from the class constructor, can't
   # be safely unwrapped
-  if("new_object" %in% all.names(fb)) {
-    return(as.call(list(f, ...)))
+  if ("new_object" %in% all.names(fb)) {
+    return(as.call(list(f)))
   }
 
   # maybe unwrap body if it is a single expression wrapped in `{`
@@ -133,7 +155,7 @@ class_construct_expr <- function(.x, ...) {
   }
 
   #else, return a call to the constructor
-  as.call(list(f, ...))
+  as.call(list(f))
 }
 
 class_constructor <- function(.x) {
