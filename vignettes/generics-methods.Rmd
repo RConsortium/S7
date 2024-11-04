@@ -267,25 +267,25 @@ Multiple dispatch is heavily used in S4; we don't expect it to be heavily used i
 Let's take our speak example from `vignette("S7")` and extend it to teach our pets how to speak multiple languages:
 
 ```{r}
-pet <- new_class("pet")
-dog <- new_class("dog", pet)
-cat <- new_class("cat", pet)
+Pet <- new_class("Pet")
+Dog <- new_class("Dog", Pet)
+Cat <- new_class("Cat", Pet)
 
-language <- new_class("language")
-english <- new_class("english", language)
-french <- new_class("french", language)
+Language <- new_class("Language")
+English <- new_class("English", Language)
+French <- new_class("French", Language)
 
 speak <- new_generic("speak", c("x", "y"))
-method(speak, list(dog, english)) <- function(x, y) "Woof"
-method(speak, list(cat, english)) <- function(x, y) "Meow"
-method(speak, list(dog, french)) <- function(x, y) "Ouaf Ouaf"
-method(speak, list(cat, french)) <- function(x, y) "Miaou"
+method(speak, list(Dog, English)) <- function(x, y) "Woof"
+method(speak, list(Cat, English)) <- function(x, y) "Meow"
+method(speak, list(Dog, French)) <- function(x, y) "Ouaf Ouaf"
+method(speak, list(Cat, French)) <- function(x, y) "Miaou"
 
-speak(cat(), english())
-speak(dog(), french())
+speak(Cat(), English())
+speak(Dog(), French())
 
 # This example was originally inspired by blog.klipse.tech/javascript/2021/10/03/multimethod.html
-# which has unfortunately since disappeaed.
+# which has unfortunately since disappeared.
 ```
 
 ### Special "classes"

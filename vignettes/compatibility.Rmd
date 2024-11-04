@@ -49,14 +49,14 @@ All up, this means most usage of S7 with S3 will just work.
 You can also register a method for an S7 class and S3 generic without using S7, because all S7 objects have S3 classes, and S3 dispatch will operate on them normally.
 
 ```{r}
-foo <- new_class("foo")
-class(foo())
+Foo <- new_class("Foo")
+class(Foo())
 
-mean.foo <- function(x, ...) {
+mean.Foo <- function(x, ...) {
   "mean of foo"
 }
 
-mean(foo())
+mean(Foo())
 ```
 
 ### Classes
@@ -109,7 +109,7 @@ rle(1:10)
 Alternatively you could convert it to the most natural representation using S7:
 
 ```{r}
-new_rle <- new_class("rle", properties = list(
+rle <- new_class("rle", properties = list(
   lengths = class_integer,
   values = class_atomic
 ))
@@ -118,7 +118,7 @@ new_rle <- new_class("rle", properties = list(
 To allow existing methods to work you'll need to override `$` to access properties instead of list elements:
 
 ```{r}
-method(`$`, new_rle) <- prop
+method(`$`, rle) <- prop
 rle(1:10)
 ```
 
@@ -143,12 +143,12 @@ In S4, they're handled at method dispatch time, so when you create `setUnion("u1
 In S7, unions are handled at method registration time so that registering a method for a union is just short-hand for registering a method for each of the classes.
 
 ```{r}
-class1 <- new_class("class1")
-class2 <- new_class("class2")
-union1 <- new_union(class1, class2)
+Class1 <- new_class("Class1")
+Class2 <- new_class("Class2")
+Union1 <- new_union(Class1, Class2)
 
 foo <- new_generic("foo", "x")
-method(foo, union1) <- function(x) ""
+method(foo, Union1) <- function(x) ""
 foo
 ```
 

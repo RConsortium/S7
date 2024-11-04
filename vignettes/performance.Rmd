@@ -21,38 +21,38 @@ library(S7)
 The dispatch performance should be roughly on par with S3 and S4, though as this is implemented in a package there is some overhead due to `.Call` vs `.Primitive`.
 
 ```{r performance, cache = FALSE}
-text <- new_class("text", parent = class_character)
-number <- new_class("number", parent = class_double)
+Text <- new_class("Text", parent = class_character)
+Number <- new_class("Number", parent = class_double)
 
-x <- text("hi")
-y <- number(1)
+x <- Text("hi")
+y <- Number(1)
 
 foo_S7 <- new_generic("foo_S7", "x")
-method(foo_S7, text) <- function(x, ...) paste0(x, "-foo")
+method(foo_S7, Text) <- function(x, ...) paste0(x, "-foo")
 
 foo_S3 <- function(x, ...) {
   UseMethod("foo_S3")
 }
 
-foo_S3.text <- function(x, ...) {
+foo_S3.Text <- function(x, ...) {
   paste0(x, "-foo")
 }
 
 library(methods)
-setOldClass(c("number", "numeric", "S7_object"))
-setOldClass(c("text", "character", "S7_object"))
+setOldClass(c("Number", "numeric", "S7_object"))
+setOldClass(c("Text", "character", "S7_object"))
 
 setGeneric("foo_S4", function(x, ...) standardGeneric("foo_S4"))
-setMethod("foo_S4", c("text"), function(x, ...) paste0(x, "-foo"))
+setMethod("foo_S4", c("Text"), function(x, ...) paste0(x, "-foo"))
 
 # Measure performance of single dispatch
 bench::mark(foo_S7(x), foo_S3(x), foo_S4(x))
 
 bar_S7 <- new_generic("bar_S7", c("x", "y"))
-method(bar_S7, list(text, number)) <- function(x, y, ...) paste0(x, "-", y, "-bar")
+method(bar_S7, list(Text, Number)) <- function(x, y, ...) paste0(x, "-", y, "-bar")
 
 setGeneric("bar_S4", function(x, y, ...) standardGeneric("bar_S4"))
-setMethod("bar_S4", c("text", "number"), function(x, y, ...) paste0(x, "-", y, "-bar"))
+setMethod("bar_S4", c("Text", "Number"), function(x, y, ...) paste0(x, "-", y, "-bar"))
 
 # Measure performance of double dispatch
 bench::mark(bar_S7(x, y), bar_S4(x, y))
@@ -80,8 +80,8 @@ bench::press(
   class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- new_class("text", parent = class_character)
-    parent <- text
+    Text <- new_class("Text", parent = class_character)
+    parent <- Text
     classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {
@@ -119,8 +119,8 @@ bench::press(
   class_nchar = c(15, 100),
   {
     # Construct a class hierarchy with that number of classes
-    text <- new_class("text", parent = class_character)
-    parent <- text
+    Text <- new_class("Text", parent = class_character)
+    parent <- Text
     classes <- gen_character(num_classes, min = class_nchar, max = class_nchar)
     env <- new.env()
     for (x in classes) {

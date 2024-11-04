@@ -34,11 +34,11 @@ There are two arguments that you'll use with almost every class:
 The following code defines a simple `dog` class with two properties: a character `name` and a numeric `age`.
 
 ```{r}
-dog <- new_class("dog", properties = list(
+Dog <- new_class("Dog", properties = list(
   name = class_character,
   age = class_numeric
 ))
-dog
+Dog
 ```
 
 S7 provides a number of built-in definitions that allow you to refer to existing base types that are not S7 classes.
@@ -49,7 +49,7 @@ This is important!
 That object represents the class and is what you use to construct instances of the class:
 
 ```{r}
-lola <- dog(name = "Lola", age = 11)
+lola <- Dog(name = "Lola", age = 11)
 lola
 ```
 
@@ -99,7 +99,7 @@ Like with `new_class()`, you should always assign the result of `new_generic()` 
 Once you have a generic, you can register methods for specific classes with `method(generic, class) <- implementation`.
 
 ```{r}
-method(speak, dog) <- function(x) {
+method(speak, Dog) <- function(x) {
   "Woof"
 }
 ```
@@ -113,15 +113,15 @@ speak(lola)
 Let's define another class, this one for cats, and define another method for `speak()`:
 
 ```{r}
-cat <- new_class("cat", properties = list(
+Cat <- new_class("Cat", properties = list(
   name = class_character,
   age = class_double
 ))
-method(speak, cat) <- function(x) {
+method(speak, Cat) <- function(x) {
   "Meow"
 }
 
-fluffy <- cat(name = "Fluffy", age = 5)
+fluffy <- Cat(name = "Fluffy", age = 5)
 speak(fluffy)
 ```
 
@@ -137,7 +137,7 @@ The `cat` and `dog` classes share the same properties, so we could use a common 
 We first define the parent class:
 
 ```{r}
-pet <- new_class("pet",
+Pet <- new_class("Pet",
   properties = list(
     name = class_character,
     age = class_numeric
@@ -148,18 +148,18 @@ pet <- new_class("pet",
 Then use the `parent` argument to `new_class:`
 
 ```{r}
-cat <- new_class("cat", parent = pet)
-dog <- new_class("dog", parent = pet)
+Cat <- new_class("Cat", parent = Pet)
+Dog <- new_class("Dog", parent = Pet)
 
-cat
-dog
+Cat
+Dog
 ```
 
 Because we have created new classes, we need to recreate the existing `lola` and `fluffy` objects:
 
 ```{r}
-lola <- dog(name = "Lola", age = 11)
-fluffy <- cat(name = "Fluffy", age = 5)
+lola <- Dog(name = "Lola", age = 11)
+fluffy <- Cat(name = "Fluffy", age = 5)
 ```
 
 Method dispatch takes advantage of the hierarchy of parent classes: if a method is not defined for a class, it will try the method for the parent class, and so on until it finds a method or gives up with an error.
@@ -167,13 +167,13 @@ This inheritance is a powerful mechanism for sharing code across classes.
 
 ```{r}
 describe <- new_generic("describe", "x")
-method(describe, pet) <- function(x) {
+method(describe, Pet) <- function(x) {
   paste0(x@name, " is ", x@age, " years old")
 }
 describe(lola)
 describe(fluffy)
 
-method(describe, dog) <- function(x) {
+method(describe, Dog) <- function(x) {
   paste0(x@name, " is a ", x@age, " year old dog")
 }
 describe(lola)
@@ -187,12 +187,12 @@ method(describe, S7_object) <- function(x) {
   "An S7 object"
 }
 
-cocktail <- new_class("cocktail",
+Cocktail <- new_class("Cocktail",
   properties = list(
     ingredients = class_character
   )
 )
-martini <- cocktail(ingredients = c("gin", "vermouth"))
+martini <- Cocktail(ingredients = c("gin", "vermouth"))
 describe(martini)
 ```
 
@@ -205,7 +205,7 @@ describe
 And you can use `method()` to retrieve the implementation of one of those methods:
 
 ```{r}
-method(describe, pet)
+method(describe, Pet)
 ```
 
 Learn more about method dispatch in `vignette("generics-methods")`.
