@@ -20,7 +20,7 @@ new_object(.parent, ...)
 \arguments{
 \item{name}{The name of the class, as a string. The result of calling
 \code{new_class()} should always be assigned to a variable with this name,
-i.e. \code{foo <- new_class("foo")}.}
+i.e. \code{Foo <- new_class("Foo")}.}
 
 \item{parent}{The parent class to inherit behavior from.
 There are three options:
@@ -89,13 +89,13 @@ Learn more in \code{vignette("classes-objects")}
 }
 \examples{
 # Create an class that represents a range using a numeric start and end
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = class_numeric,
     end = class_numeric
   )
 )
-r <- range(start = 10, end = 20)
+r <- Range(start = 10, end = 20)
 r
 # get and set properties with @
 r@start
@@ -103,11 +103,11 @@ r@end <- 40
 r@end
 
 # S7 automatically ensures that properties are of the declared types:
-try(range(start = "hello", end = 20))
+try(Range(start = "hello", end = 20))
 
 # But we might also want to use a validator to ensure that start and end
 # are length 1, and that start is < end
-range <- new_class("range",
+Range <- new_class("Range",
   properties = list(
     start = class_numeric,
     end = class_numeric
@@ -122,9 +122,9 @@ range <- new_class("range",
     }
   }
 )
-try(range(start = c(10, 15), end = 20))
-try(range(start = 20, end = 10))
+try(Range(start = c(10, 15), end = 20))
+try(Range(start = 20, end = 10))
 
-r <- range(start = 10, end = 20)
+r <- Range(start = 10, end = 20)
 try(r@start <- 25)
 }

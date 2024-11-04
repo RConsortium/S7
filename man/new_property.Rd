@@ -68,22 +68,22 @@ for more examples.
 }
 \examples{
 # Simple properties store data inside an object
-pizza <- new_class("pizza", properties = list(
+Pizza <- new_class("Pizza", properties = list(
   slices = new_property(class_numeric, default = 10)
 ))
-my_pizza <- pizza(slices = 6)
+my_pizza <- Pizza(slices = 6)
 my_pizza@slices
 my_pizza@slices <- 5
 my_pizza@slices
 
-your_pizza <- pizza()
+your_pizza <- Pizza()
 your_pizza@slices
 
 # Dynamic properties can compute on demand
-clock <- new_class("clock", properties = list(
+Clock <- new_class("Clock", properties = list(
   now = new_property(getter = function(self) Sys.time())
 ))
-my_clock <- clock()
+my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
 my_clock@now
 # This property is read only, because there is a 'getter' but not a 'setter'
@@ -91,6 +91,6 @@ try(my_clock@now <- 10)
 
 # Because the property is dynamic, it is not included as an
 # argument to the default constructor
-try(clock(now = 10))
-args(clock)
+try(Clock(now = 10))
+args(Clock)
 }
