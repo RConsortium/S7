@@ -86,9 +86,6 @@ get and set properties:
 ``` r
 x@start
 #> [1] 1
-```
-
-``` r
 x@end <- 20
 x
 #> <range>
@@ -102,9 +99,6 @@ Properties are automatically validated against the type declared in
 ``` r
 x@end <- "x"
 #> Error: <range>@end must be <double>, not <character>
-```
-
-``` r
 x@end <- -1
 #> Error: <range> object is invalid:
 #> - @end must be greater than or equal to @start
