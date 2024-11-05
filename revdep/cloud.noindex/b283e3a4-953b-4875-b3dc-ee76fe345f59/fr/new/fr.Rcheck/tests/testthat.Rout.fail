@@ -1,0 +1,280 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # This file is part of the standard setup for testthat.
+> # It is recommended that you do not modify it.
+> #
+> # Where should you do additional test configuration?
+> # Learn more about the roles of various files in:
+> # * https://r-pkgs.org/testing-design.html#sec-tests-files-overview
+> # * https://testthat.r-lib.org/articles/special-files.html
+> 
+> library(testthat)
+> library(fr)
+> 
+> test_check("fr")
+Starting 2 test processes
+[ FAIL 23 | WARN 0 | SKIP 2 | PASS 9 ]
+
+══ Skipped tests (2) ═══════════════════════════════════════════════════════════
+• On CRAN (2): 'test-fr_field.R:63:5', 'test-read_fr_tdr.R:13:3'
+
+══ Failed tests ════════════════════════════════════════════════════════════════
+── Failure ('test-fr_field.R:2:3'): fr_field works ─────────────────────────────
+fr_field(...) inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:2:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:12:3'): as_fr_field works ─────────────────────────
+as_fr_field(factor(c("ab", "cd", "ef", "ef")), name = "example_factor") inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:12:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:17:3'): as_fr_field works ─────────────────────────
+as_fr_field(1:10, name = "example_integer") inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:17:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:22:3'): as_fr_field works ─────────────────────────
+as_fr_field(0.1 * (1:10), name = "example_numeric") inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:22:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:27:3'): as_fr_field works ─────────────────────────
+as_fr_field(letters, name = "example_character") inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:27:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:32:3'): as_fr_field works ─────────────────────────
+as_fr_field(c(TRUE, FALSE, TRUE), name = "example_logical") inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:32:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:37:3'): as_fr_field works ─────────────────────────
+as_fr_field(as.Date(c("2023-09-23", "2011-11-19")), name = "example_date") inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:37:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:44:3'): fr_field from a list works ────────────────
+as_fr_field(...) inherits from 'fr::fr_field'/'S7_object' not 'fr_field'.
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_equal(...) at test-fr_field.R:44:3
+ 2. │ └─testthat::quasi_label(enquo(object), label, arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─S7::prop(...)
+ 5. └─testthat::expect_s3_class(...)
+── Failure ('test-fr_field.R:54:3'): is_fr_field works ─────────────────────────
+is_fr_field(fr_field(name = "letters", type = "string")) is not TRUE
+
+`actual`:   FALSE
+`expected`: TRUE 
+── Error ('test-fr_schema.R:2:3'): fr_schema works ─────────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_s3_class(...) at test-fr_schema.R:2:3
+ 2. │ └─testthat::quasi_label(enquo(object), arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. └─fr:::fr_schema(...)
+ 5.   └─S7::new_object(...)
+ 6.     └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-fr_schema.R:46:5'): fr_schema printing ─────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─withr::with_options(...) at test-fr_schema.R:45:3
+ 2. │ └─base::force(code)
+ 3. └─testthat::expect_snapshot(...) at test-fr_schema.R:46:5
+ 4.   └─rlang::cnd_signal(state$error)
+── Error ('test-read_fr_tdr.R:2:3'): read_fr_tdr works ─────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_s3_class(...) at test-read_fr_tdr.R:2:3
+ 2. │ └─testthat::quasi_label(enquo(object), arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020"))
+ 5.   ├─fr:::fr_tdr(...)
+ 6.   │ └─S7::new_object(...)
+ 7.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 8.     └─S7::new_object(...)
+ 9.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-fr_tdr.R:2:3'): fr_tdr works ───────────────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─testthat::expect_s3_class(...) at test-fr_tdr.R:2:3
+ 2. │ └─testthat::quasi_label(enquo(object), arg = "object")
+ 3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+ 4. ├─fr:::fr_tdr(...)
+ 5. │ └─S7::new_object(...)
+ 6. └─fr:::fr_schema(...)
+ 7.   └─S7::new_object(...)
+ 8.     └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-fr_tdr.R:100:3'): as_fr_tdr works with a .template supplied ────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─fr::update_field(...) at test-fr_tdr.R:100:3
+ 2. │ ├─S7::prop(S7::prop(x, "schema"), "fields")
+ 3. │ └─S7::prop(x, "schema")
+ 4. └─fr::as_fr_tdr(mtcars, name = "mtcars", title = "Motor Trend Car Road Tests")
+ 5.   ├─S7::S7_dispatch()
+ 6.   └─fr (local) `method(as_fr_tdr, new_S3_class("data.frame"))`(...)
+ 7.     └─fr:::fr_schema(fields = purrr::imap(x, as_fr_field))
+ 8.       └─S7::new_object(...)
+ 9.         └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-fr_tdr.R:140:3'): print methods for fr_tdr ─────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::as_fr_tdr(...) at test-fr_tdr.R:140:3
+ 2.   ├─S7::S7_dispatch()
+ 3.   └─fr (local) `method(as_fr_tdr, new_S3_class("data.frame"))`(...)
+ 4.     └─fr:::fr_schema(fields = purrr::imap(x, as_fr_field))
+ 5.       └─S7::new_object(...)
+ 6.         └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-update_field.R:3:3'): update_field works ───────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─fr:::fr_tdr(...) at test-update_field.R:3:3
+ 2. │ └─S7::new_object(...)
+ 3. └─fr:::fr_schema(...)
+ 4.   └─S7::new_object(...)
+ 5.     └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-tidyverse.R:2:3'): fr_mutate works ─────────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020")) at test-tidyverse.R:2:3
+ 2.   ├─fr:::fr_tdr(...)
+ 3.   │ └─S7::new_object(...)
+ 4.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 5.     └─S7::new_object(...)
+ 6.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-tidyverse.R:19:3'): fr_select works ────────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020")) at test-tidyverse.R:19:3
+ 2.   ├─fr:::fr_tdr(...)
+ 3.   │ └─S7::new_object(...)
+ 4.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 5.     └─S7::new_object(...)
+ 6.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-tidyverse.R:32:3'): fr_rename works ────────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020")) at test-tidyverse.R:32:3
+ 2.   ├─fr:::fr_tdr(...)
+ 3.   │ └─S7::new_object(...)
+ 4.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 5.     └─S7::new_object(...)
+ 6.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-tidyverse.R:47:3'): fr_filter works ────────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020")) at test-tidyverse.R:47:3
+ 2.   ├─fr:::fr_tdr(...)
+ 3.   │ └─S7::new_object(...)
+ 4.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 5.     └─S7::new_object(...)
+ 6.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-tidyverse.R:54:3'): fr_summarize works ─────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020")) at test-tidyverse.R:54:3
+ 2.   ├─fr:::fr_tdr(...)
+ 3.   │ └─S7::new_object(...)
+ 4.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 5.     └─S7::new_object(...)
+ 6.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-tidyverse.R:64:3'): fr_arrange works ───────────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. └─fr::read_fr_tdr(test_path("hamilton_poverty_2020")) at test-tidyverse.R:64:3
+ 2.   ├─fr:::fr_tdr(...)
+ 3.   │ └─S7::new_object(...)
+ 4.   └─fr:::fr_schema(fields = lapply(fr_descs$schema$fields, as_fr_field))
+ 5.     └─S7::new_object(...)
+ 6.       └─S7::validate(object, recursive = !parent_validated)
+── Error ('test-write_fr_tdr.R:3:3'): write_fr_tdr works ───────────────────────
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Backtrace:
+    ▆
+ 1. ├─fr::write_fr_tdr(as_fr_tdr(mtcars, name = "my_mtcars"), dir = tempdir()) at test-write_fr_tdr.R:3:3
+ 2. └─fr::as_fr_tdr(mtcars, name = "my_mtcars")
+ 3.   ├─S7::S7_dispatch()
+ 4.   └─fr (local) `method(as_fr_tdr, new_S3_class("data.frame"))`(...)
+ 5.     └─fr:::fr_schema(fields = purrr::imap(x, as_fr_field))
+ 6.       └─S7::new_object(...)
+ 7.         └─S7::validate(object, recursive = !parent_validated)
+
+[ FAIL 23 | WARN 0 | SKIP 2 | PASS 9 ]
+Deleting unused snapshots:
+• write_fr_tdr/my_mtcars.csv
+• write_fr_tdr/tabular-data-resource.yaml
+Error: Test failures
+Execution halted

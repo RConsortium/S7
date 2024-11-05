@@ -1,0 +1,46 @@
+Package: crumble
+Type: Package
+Title: Flexible and General Mediation Analysis Using Riesz Representers
+Version: 0.1.0
+Authors@R: 
+    c(person(given = "Nicholas",
+             family = "Williams",
+             role = c("aut", "cre", "cph"),
+             email = "ntwilliams.personal@gmail.com", 
+             comment = c(ORCID = "0000-0002-1378-4831")),
+      person(given = "Richard", 
+             family = "Liu", 
+             email = "li.liu@nyulangone.org",
+             role = c("ctb")),
+      person(given = "Iván", 
+             family = "Díaz", 
+             email = "ivan.diaz@nyulangone.org",
+             role = c("aut", "cph"),
+             comment = c(ORCID = "0000-0001-9056-2047")))
+Maintainer: Nicholas Williams <ntwilliams.personal@gmail.com>
+Description: Implements a modern, unified estimation strategy for common 
+	mediation estimands (natural effects, organic effects, interventional effects, 
+	and recanting twins) in combination with modified treatment policies as 
+	described in Liu, Williams, Rudolph, and Díaz (2024) 
+	<doi:10.48550/arXiv.2408.14620>. Estimation makes use of recent advancements 
+	in Riesz-learning to estimate a set of required nuisance parameters with 
+	deep learning. The result is the capability to estimate mediation effects with 
+	binary, categorical, continuous, or multivariate exposures with 
+	high-dimensional mediators and mediator-outcome confounders using machine 
+	learning.
+License: GPL (>= 3)
+Encoding: UTF-8
+Depends: R (>= 4.0.0)
+RoxygenNote: 7.3.2
+Imports: checkmate, Matrix, origami, torch, Rsymphony, purrr, cli, S7,
+        data.table, coro, generics, lmtp, mlr3superlearner, progressr
+Suggests: testthat (>= 3.0.0), truncnorm, mma
+Config/testthat/edition: 3
+NeedsCompilation: no
+Packaged: 2024-09-17 16:37:07 UTC; nicholaswilliams
+Author: Nicholas Williams [aut, cre, cph]
+    (<https://orcid.org/0000-0002-1378-4831>),
+  Richard Liu [ctb],
+  Iván Díaz [aut, cph] (<https://orcid.org/0000-0001-9056-2047>)
+Repository: CRAN
+Date/Publication: 2024-09-18 11:50:05 UTC

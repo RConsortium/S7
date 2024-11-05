@@ -1,0 +1,417 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "fr"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('fr')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("as_data_frame")
+> ### * as_data_frame
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_data_frame
+> ### Title: Coerce a 'fr_tdr' object into a data frame
+> ### Aliases: as_data_frame
+> 
+> ### ** Examples
+> 
+> as_fr_tdr(mtcars, name = "mtcars") |>
++   as_data_frame()
+    mpg cyl  disp  hp drat    wt  qsec vs am gear carb
+1  21.0   6 160.0 110 3.90 2.620 16.46  0  1    4    4
+2  21.0   6 160.0 110 3.90 2.875 17.02  0  1    4    4
+3  22.8   4 108.0  93 3.85 2.320 18.61  1  1    4    1
+4  21.4   6 258.0 110 3.08 3.215 19.44  1  0    3    1
+5  18.7   8 360.0 175 3.15 3.440 17.02  0  0    3    2
+6  18.1   6 225.0 105 2.76 3.460 20.22  1  0    3    1
+7  14.3   8 360.0 245 3.21 3.570 15.84  0  0    3    4
+8  24.4   4 146.7  62 3.69 3.190 20.00  1  0    4    2
+9  22.8   4 140.8  95 3.92 3.150 22.90  1  0    4    2
+10 19.2   6 167.6 123 3.92 3.440 18.30  1  0    4    4
+11 17.8   6 167.6 123 3.92 3.440 18.90  1  0    4    4
+12 16.4   8 275.8 180 3.07 4.070 17.40  0  0    3    3
+13 17.3   8 275.8 180 3.07 3.730 17.60  0  0    3    3
+14 15.2   8 275.8 180 3.07 3.780 18.00  0  0    3    3
+15 10.4   8 472.0 205 2.93 5.250 17.98  0  0    3    4
+16 10.4   8 460.0 215 3.00 5.424 17.82  0  0    3    4
+17 14.7   8 440.0 230 3.23 5.345 17.42  0  0    3    4
+18 32.4   4  78.7  66 4.08 2.200 19.47  1  1    4    1
+19 30.4   4  75.7  52 4.93 1.615 18.52  1  1    4    2
+20 33.9   4  71.1  65 4.22 1.835 19.90  1  1    4    1
+21 21.5   4 120.1  97 3.70 2.465 20.01  1  0    3    1
+22 15.5   8 318.0 150 2.76 3.520 16.87  0  0    3    2
+23 15.2   8 304.0 150 3.15 3.435 17.30  0  0    3    2
+24 13.3   8 350.0 245 3.73 3.840 15.41  0  0    3    4
+25 19.2   8 400.0 175 3.08 3.845 17.05  0  0    3    2
+26 27.3   4  79.0  66 4.08 1.935 18.90  1  1    4    1
+27 26.0   4 120.3  91 4.43 2.140 16.70  0  1    5    2
+28 30.4   4  95.1 113 3.77 1.513 16.90  1  1    5    2
+29 15.8   8 351.0 264 4.22 3.170 14.50  0  1    5    4
+30 19.7   6 145.0 175 3.62 2.770 15.50  0  1    5    6
+31 15.0   8 301.0 335 3.54 3.570 14.60  0  1    5    8
+32 21.4   4 121.0 109 4.11 2.780 18.60  1  1    4    2
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_fr_field")
+> ### * as_fr_field
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_fr_field
+> ### Title: Coerce 'character', 'factor', 'numeric', 'logical', and 'Date'
+> ###   vectors into 'fr_field' objects
+> ### Aliases: as_fr_field
+> 
+> ### ** Examples
+> 
+> as_fr_field(1:10, "example_integer") # -> frictionless number
+example_integer
+- type: number
+> as_fr_field((1:10) * 0.1, "example_double") # -> frictionless number
+example_double
+- type: number
+> as_fr_field(letters, "example_character") # -> frictionless string
+example_character
+- type: string
+> as_fr_field(factor(letters), "example_factor") # -> frictionless string with enum constraints
+example_factor
+- type: string
+- constraints: enum = a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, …,
+y, and z
+> as_fr_field(c(TRUE, FALSE, TRUE), "example_logical") # -> frictionless boolean
+example_logical
+- type: boolean
+> as_fr_field(as.Date(c("2023-04-23", "2004-12-31")), "example_date") # -> frictionless date
+example_date
+- type: date
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_fr_tdr")
+> ### * as_fr_tdr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_fr_tdr
+> ### Title: Coerce a data frame into a 'fr_tdr' object
+> ### Aliases: as_fr_tdr
+> 
+> ### ** Examples
+> 
+> as_fr_tdr(mtcars, name = "mtcars")
+mtcars
+# A tibble: 32 × 11
+     mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
+   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+ 1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
+ 2  21       6  160    110  3.9   2.88  17.0     0     1     4     4
+ 3  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
+ 4  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
+ 5  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
+ 6  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
+ 7  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
+ 8  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
+ 9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
+10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
+# ℹ 22 more rows
+> S7::prop(as_fr_tdr(mtcars, name = "mtcars"), "schema")
+mpg
+- type: number
+cyl
+- type: number
+disp
+- type: number
+hp
+- type: number
+drat
+- type: number
+wt
+- type: number
+qsec
+- type: number
+vs
+- type: number
+am
+- type: number
+gear
+- type: number
+carb
+- type: number
+> 
+> 
+> 
+> cleanEx()
+> nameEx("as_list")
+> ### * as_list
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_list
+> ### Title: Coerce a 'fr_tdr' object into a list
+> ### Aliases: as_list
+> 
+> ### ** Examples
+> 
+> as_fr_tdr(mtcars, name = "mtcars") |>
++   as_list()
+$name
+[1] "mtcars"
+
+$schema
+$schema$fields
+$schema$fields$mpg
+$schema$fields$mpg$name
+[1] "mpg"
+
+$schema$fields$mpg$type
+[1] "number"
+
+
+$schema$fields$cyl
+$schema$fields$cyl$name
+[1] "cyl"
+
+$schema$fields$cyl$type
+[1] "number"
+
+
+$schema$fields$disp
+$schema$fields$disp$name
+[1] "disp"
+
+$schema$fields$disp$type
+[1] "number"
+
+
+$schema$fields$hp
+$schema$fields$hp$name
+[1] "hp"
+
+$schema$fields$hp$type
+[1] "number"
+
+
+$schema$fields$drat
+$schema$fields$drat$name
+[1] "drat"
+
+$schema$fields$drat$type
+[1] "number"
+
+
+$schema$fields$wt
+$schema$fields$wt$name
+[1] "wt"
+
+$schema$fields$wt$type
+[1] "number"
+
+
+$schema$fields$qsec
+$schema$fields$qsec$name
+[1] "qsec"
+
+$schema$fields$qsec$type
+[1] "number"
+
+
+$schema$fields$vs
+$schema$fields$vs$name
+[1] "vs"
+
+$schema$fields$vs$type
+[1] "number"
+
+
+$schema$fields$am
+$schema$fields$am$name
+[1] "am"
+
+$schema$fields$am$type
+[1] "number"
+
+
+$schema$fields$gear
+$schema$fields$gear$name
+[1] "gear"
+
+$schema$fields$gear$type
+[1] "number"
+
+
+$schema$fields$carb
+$schema$fields$carb$name
+[1] "carb"
+
+$schema$fields$carb$type
+[1] "number"
+
+
+
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("dplyr_methods")
+> ### * dplyr_methods
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: dplyr_methods
+> ### Title: dplyr methods for fr_tdr objects
+> ### Aliases: dplyr_methods fr_mutate fr_rename fr_select fr_filter
+> ###   fr_summarize fr_arrange
+> 
+> ### ** Examples
+> 
+> read_fr_tdr(fs::path_package("fr", "hamilton_poverty_2020")) |>
++   fr_mutate(next_year = year + 1) |>
++   fr_rename(new_year = next_year) |>
++   fr_select(-new_year) |>
++   fr_filter(fraction_poverty > 0.1) |>
++   fr_summarize(median_poverty_fraction = median(fraction_poverty)) |>
++   fr_arrange(median_poverty_fraction)
+hamilton_poverty_2020
+- version: 0.0.1
+- title: Hamilton County Poverty Rates in 2020
+# A tibble: 1 × 1
+  median_poverty_fraction
+                    <dbl>
+1                   0.216
+> 
+> 
+> 
+> cleanEx()
+> nameEx("is_fr_field")
+> ### * is_fr_field
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: is_fr_field
+> ### Title: Test if an object is a 'fr_field' object
+> ### Aliases: is_fr_field
+> 
+> ### ** Examples
+> 
+> is_fr_field(letters)
+[1] FALSE
+> is_fr_field(as_fr_field(letters, "letters"))
+[1] TRUE
+> 
+> 
+> 
+> cleanEx()
+> nameEx("read_fr_tdr")
+> ### * read_fr_tdr
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: read_fr_tdr
+> ### Title: read a tabular-data-resource into R
+> ### Aliases: read_fr_tdr
+> 
+> ### ** Examples
+> 
+> read_fr_tdr(fs::path_package("fr", "hamilton_poverty_2020"))
+hamilton_poverty_2020
+- version: 0.0.1
+- title: Hamilton County Poverty Rates in 2020
+# A tibble: 226 × 3
+   census_tract_id_2020  year fraction_poverty
+   <chr>                <dbl>            <dbl>
+ 1 39061021508           2020            0.057
+ 2 39061021421           2020            0.031
+ 3 39061023300           2020            0.03 
+ 4 39061002000           2020            0.098
+ 5 39061002500           2020            0.442
+ 6 39061007700           2020            0.603
+ 7 39061009902           2020            0.15 
+ 8 39061010700           2020            0.15 
+ 9 39061023902           2020            0.013
+10 39061022301           2020            0.247
+# ℹ 216 more rows
+> 
+> 
+> 
+> cleanEx()
+> nameEx("update_field")
+> ### * update_field
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: update_field
+> ### Title: add or update field-specific metadata in a fr_tdr object
+> ### Aliases: update_field
+> 
+> ### ** Examples
+> 
+> my_mtcars <-
++   mtcars |>
++   as_fr_tdr(name = "mtcars") |>
++   update_field("mpg", title = "Miles Per Gallon")
+> 
+> S7::prop(my_mtcars, "schema")
+mpg
+- type: number
+- title: Miles Per Gallon
+cyl
+- type: number
+disp
+- type: number
+hp
+- type: number
+drat
+- type: number
+wt
+- type: number
+qsec
+- type: number
+vs
+- type: number
+am
+- type: number
+gear
+- type: number
+carb
+- type: number
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  1.497 0.059 1.587 0.003 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

@@ -1,0 +1,41 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "fr"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('fr')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("as_data_frame")
+> ### * as_data_frame
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: as_data_frame
+> ### Title: Coerce a 'fr_tdr' object into a data frame
+> ### Aliases: as_data_frame
+> 
+> ### ** Examples
+> 
+> as_fr_tdr(mtcars, name = "mtcars") |>
++   as_data_frame()
+Error: <fr::fr_schema> object is invalid:
+- all items in @fields should be fr_field objects
+Execution halted

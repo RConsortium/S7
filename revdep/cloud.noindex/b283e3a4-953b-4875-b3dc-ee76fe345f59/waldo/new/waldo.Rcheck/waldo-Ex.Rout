@@ -1,0 +1,104 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "waldo"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('waldo')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("compare")
+> ### * compare
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: compare
+> ### Title: Compare two objects
+> ### Aliases: compare
+> 
+> ### ** Examples
+> 
+> # Thanks to diffobj package comparison of atomic vectors shows differences
+> # with a little context
+> compare(letters, c("z", letters[-26]))
+`old[1:3]`:     "a" "b" "c"
+`new[1:4]`: "z" "a" "b" "c"
+
+`old[23:26]`: "w" "x" "y" "z"
+`new[24:26]`: "w" "x" "y"    
+> compare(c(1, 2, 3), c(1, 3))
+`old`: 1 2 3
+`new`: 1   3
+> compare(c(1, 2, 3), c(1, 3, 4, 5))
+`old`: 1 2 3  
+`new`: 1 3 4 5
+> compare(c(1, 2, 3), c(1, 2, 5))
+`old`: 1.0 2.0 3.0
+`new`: 1.0 2.0 5.0
+> 
+> # More complex objects are traversed, stopping only when the types are
+> # different
+> compare(
++   list(x = list(y = list(structure(1, z = 2)))),
++   list(x = list(y = list(structure(1, z = "a"))))
++ )
+`attr(old$x$y[[1]], 'z')` is a double vector (2)
+`attr(new$x$y[[1]], 'z')` is a character vector ('a')
+> 
+> # Where possible, recursive structures are compared by name
+> compare(iris, rev(iris))
+    names(old)     | names(new)        
+[1] "Sepal.Length" - "Species"      [1]
+[2] "Sepal.Width"  - "Petal.Width"  [2]
+[3] "Petal.Length" | "Petal.Length" [3]
+[4] "Petal.Width"  - "Sepal.Width"  [4]
+[5] "Species"      - "Sepal.Length" [5]
+> 
+> compare(list(x = "x", y = "y"), list(y = "y", x = "x"))
+`names(old)`: "x" "y"
+`names(new)`: "y" "x"
+> # Otherwise they're compared by position
+> compare(list("x", "y"), list("x", "z"))
+`old[[2]]`: "y"
+`new[[2]]`: "z"
+> compare(list(x = "x", x = "y"), list(x = "x", y = "z"))
+`names(old)`: "x" "x"
+`names(new)`: "x" "y"
+
+`old[[2]]`: "y"
+`new[[2]]`: "z"
+> 
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.754 0.07 0.825 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

@@ -1,0 +1,25 @@
+Package: fr
+Title: Frictionless Standards
+Version: 0.5.1
+Authors@R: 
+    person("Cole", "Brokamp", , "cole@colebrokamp.com", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0002-0289-3151"))
+Description: A "tabular-data-resource" (<https://specs.frictionlessdata.io/tabular-data-resource/>) is a simple format to describe a singular tabular data resource such as a CSV file. It includes support both for metadata such as author and title and a schema to describe the data, for example the types of the fields/columns in the data. Create a tabular-data-resource by providing a data.frame and specifying metadata. Write and read tabular-data-resources to and from disk. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.2.3
+Imports: cli, purrr, vroom, S7 (>= 0.1.1), tibble, tidyselect, yaml,
+        dplyr, rlang
+Suggests: testthat (>= 3.0.0), withr, fs, knitr, rmarkdown
+Config/testthat/edition: 3
+Config/testthat/parallel: true
+URL: https://github.com/cole-brokamp/fr,
+        https://cole-brokamp.github.io/fr/
+BugReports: https://github.com/cole-brokamp/fr/issues
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2023-11-30 19:49:46 UTC; cole
+Author: Cole Brokamp [aut, cre, cph] (<https://orcid.org/0000-0002-0289-3151>)
+Maintainer: Cole Brokamp <cole@colebrokamp.com>
+Repository: CRAN
+Date/Publication: 2023-11-30 20:00:02 UTC

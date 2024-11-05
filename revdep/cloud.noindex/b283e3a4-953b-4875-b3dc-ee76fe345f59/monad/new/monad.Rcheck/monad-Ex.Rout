@@ -1,0 +1,195 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "monad"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> library('monad')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("List")
+> ### * List
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: List
+> ### Title: The List Monad
+> ### Aliases: List
+> 
+> ### ** Examples
+> 
+> ## Don't show: 
+> if (requireNamespace("purrr", quietly = TRUE)) withAutoprint({ # examplesIf
++ ## End(Don't show)
++ # The fmap operator corresponds to purrr::map().
++ list(1, 2) %>>% `+`(1)
++ 
++ # The bind operator is a "flat map" that combines output lists.
++ list(1, 2) %>-% \(x) list(x * 2, x / 2)
++ ## Don't show: 
++ }) # examplesIf
+> list(1, 2) %>>% +1
+[[1]]
+[1] 2
+
+[[2]]
+[1] 3
+
+> list(1, 2) %>-% function(x) list(x * 2, x/2)
+[[1]]
+[1] 2
+
+[[2]]
+[1] 0.5
+
+[[3]]
+[1] 4
+
+[[4]]
+[1] 1
+
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("Maybe")
+> ### * Maybe
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Maybe
+> ### Title: The Maybe Monad
+> ### Aliases: Maybe
+> 
+> ### ** Examples
+> 
+> ## Don't show: 
+> if (requireNamespace("maybe", quietly = TRUE)) withAutoprint({ # examplesIf
++ ## End(Don't show)
++ # The fmap operator corresponds to maybe::maybe_map().
++ maybe::just(1) %>>% `+`(1)
++ maybe::nothing() %>>% `+`(1)
++ 
++ # The bind operator corresponds to maybe::and_then().
++ maybe::just(1) %>-% \(x) maybe::just(x + 1)
++ maybe::just(1) %>-% \(x) maybe::nothing()
++ maybe::nothing() %>-% \(x) maybe::just(1)
++ ## Don't show: 
++ }) # examplesIf
+> maybe::just(1) %>>% +1
+Just
+[1] 2
+> maybe::nothing() %>>% +1
+Nothing
+> maybe::just(1) %>-% function(x) maybe::just(x + 1)
+Just
+[1] 2
+> maybe::just(1) %>-% function(x) maybe::nothing()
+Nothing
+> maybe::nothing() %>-% function(x) maybe::just(1)
+Nothing
+> ## End(Don't show)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("monad")
+> ### * monad
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: monad
+> ### Title: Monad Operators and Generics
+> ### Aliases: monad %>>% %>-% fmap bind join
+> 
+> ### ** Examples
+> 
+> # We demonstrate by implementing a simple Either monad.
+> library(S7)
+> 
+> # Start by defining constructors of the Left and Right variants. Conventionally
+> # a Right variant signifies success and Left an error condition with a context.
+> left <- function(x) structure(list(value = x), class = c("left", "either"))
+> right <- function(x) structure(list(value = x), class = c("right", "either"))
+> 
+> # Implement fmap() and bind() methods to gain access to monad operators.
+> class_either <- new_S3_class("either")
+> 
+> method(fmap, class_either) <- function(m, f, ...) {
++   if (inherits(m, "left")) m else right(f(m$value))
++ }
+> 
+> method(bind, class_either) <- function(m, f, ...) {
++   if (inherits(m, "left")) m else f(m$value)
++ }
+> 
+> # Use with your function that handles errors by returning a monadic value.
+> mlog <- function(x) {
++   if (x > 0) right(log(x)) else left("`x` must be strictly positive.")
++ }
+> 
+> # fmap() modifies the contained value with a regular function.
+> mlog(2) %>>% \(x) x + 1
+$value
+[1] 1.693147
+
+attr(,"class")
+[1] "right"  "either"
+> mlog(0) %>>% \(x) x + 1
+$value
+[1] "`x` must be strictly positive."
+
+attr(,"class")
+[1] "left"   "either"
+> 
+> # bind() modifies the contained value with a function that returns an Either.
+> mlog(2) %>-% mlog()
+$value
+[1] -0.3665129
+
+attr(,"class")
+[1] "right"  "either"
+> mlog(0) %>-% mlog()
+$value
+[1] "`x` must be strictly positive."
+
+attr(,"class")
+[1] "left"   "either"
+> 
+> 
+> 
+> ### * <FOOTER>
+> ###
+> cleanEx()
+
+detaching ‘package:S7’
+
+> options(digits = 7L)
+> base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
+Time elapsed:  0.283 0.012 0.295 0 0 
+> grDevices::dev.off()
+null device 
+          1 
+> ###
+> ### Local variables: ***
+> ### mode: outline-minor ***
+> ### outline-regexp: "\\(> \\)?### [*]+" ***
+> ### End: ***
+> quit('no')

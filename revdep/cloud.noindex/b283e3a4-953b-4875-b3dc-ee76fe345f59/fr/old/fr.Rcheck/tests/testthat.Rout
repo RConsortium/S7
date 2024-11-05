@@ -1,0 +1,44 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # This file is part of the standard setup for testthat.
+> # It is recommended that you do not modify it.
+> #
+> # Where should you do additional test configuration?
+> # Learn more about the roles of various files in:
+> # * https://r-pkgs.org/testing-design.html#sec-tests-files-overview
+> # * https://testthat.r-lib.org/articles/special-files.html
+> 
+> library(testthat)
+> library(fr)
+> 
+> test_check("fr")
+Starting 2 test processes
+[ FAIL 0 | WARN 0 | SKIP 5 | PASS 60 ]
+
+══ Skipped tests (5) ═══════════════════════════════════════════════════════════
+• On CRAN (5): 'test-fr_field.R:63:5', 'test-fr_schema.R:46:5',
+  'test-fr_tdr.R:153:5', 'test-read_fr_tdr.R:13:3', 'test-write_fr_tdr.R:4:3'
+
+[ FAIL 0 | WARN 0 | SKIP 5 | PASS 60 ]
+Deleting unused snapshots:
+• write_fr_tdr/my_mtcars.csv
+• write_fr_tdr/tabular-data-resource.yaml
+> 
+> proc.time()
+   user  system elapsed 
+  6.219   0.463   3.765 

@@ -1,0 +1,62 @@
+
+R version 4.3.1 (2023-06-16) -- "Beagle Scouts"
+Copyright (C) 2023 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(testthat)
+> library(waldo)
+
+Attaching package: 'waldo'
+
+The following object is masked from 'package:testthat':
+
+    compare
+
+> 
+> test_check("waldo")
+[ FAIL 0 | WARN 0 | SKIP 61 | PASS 104 ]
+
+══ Skipped tests (61) ══════════════════════════════════════════════════════════
+• On CRAN (61): 'test-compare-class.R:11:3', 'test-compare-data-frame.R:2:3',
+  'test-compare-data-frame.R:10:3', 'test-compare-data-frame.R:18:3',
+  'test-compare-data-frame.R:35:3', 'test-compare-data-frame.R:41:3',
+  'test-compare-data-frame.R:66:3', 'test-compare-opts.R:22:3',
+  'test-compare-value.R:2:3', 'test-compare-value.R:27:3',
+  'test-compare-value.R:31:3', 'test-compare-value.R:42:3',
+  'test-compare-value.R:49:3', 'test-compare-value.R:57:3',
+  'test-compare-value.R:64:3', 'test-compare-value.R:97:3',
+  'test-compare-value.R:104:3', 'test-compare-value.R:112:3',
+  'test-compare-value.R:119:3', 'test-compare-value.R:130:3',
+  'test-compare-value.R:138:3', 'test-compare-value.R:146:3',
+  'test-compare-value.R:154:3', 'test-compare-value.R:165:3',
+  'test-compare-value.R:171:3', 'test-compare-value.R:178:3',
+  'test-compare-value.R:187:3', 'test-compare.R:22:3', 'test-compare.R:55:3',
+  'test-compare.R:73:3', 'test-compare.R:102:3', 'test-compare.R:110:3',
+  'test-compare.R:118:3', 'test-compare.R:134:3', 'test-compare.R:141:3',
+  'test-compare.R:172:3', 'test-compare.R:178:3', 'test-compare.R:192:3',
+  'test-compare.R:229:3', 'test-compare.R:238:3', 'test-compare.R:245:3',
+  'test-compare.R:261:3', 'test-compare.R:280:3', 'test-compare.R:286:3',
+  'test-compare.R:314:3', 'test-compare.R:334:3', 'test-compare.R:341:3',
+  'test-compare.R:355:3', 'test-compare.R:368:3', 'test-compare.R:385:3',
+  'test-compare.R:411:3', 'test-compare.R:423:3', 'test-compare.R:429:3',
+  'test-compare.R:465:3', 'test-compare.R:495:3', 'test-diff.R:2:3',
+  'test-diff.R:28:3', 'test-diff.R:40:3', 'test-diff.R:51:3',
+  'test-num_equal.R:41:3', 'test-proxy.R:2:3'
+
+[ FAIL 0 | WARN 0 | SKIP 61 | PASS 104 ]
+> 
+> proc.time()
+   user  system elapsed 
+ 10.593   0.309  10.842 
