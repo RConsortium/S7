@@ -52,7 +52,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rconsortium/S7/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/RConsortium/S7/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -79,7 +79,7 @@
 </h2>
 <p>This section gives a very brief overview of the entirety of S7. Learn more of the basics in <code><a href="articles/S7.html">vignette("S7")</a></code>, generics and methods in <code><a href="articles/generics-methods.html">vignette("generics-methods")</a></code>, classes and objects in <code><a href="articles/classes-objects.html">vignette("classes-objects")</a></code>, and compatibility with S3 and S4 in <code><a href="articles/compatibility.html">vignette("compatibility")</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rconsortium/S7/" class="external-link">S7</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rconsortium.github.io/S7/">S7</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="classes-and-objects">Classes and objects<a class="anchor" aria-label="anchor" href="#classes-and-objects"></a>
 </h3>
@@ -114,19 +114,17 @@
 <p>The data possessed by an object is called its <strong>properties</strong>. Use <code>@</code> to get and set properties:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">@</span><span class="va">start</span></span>
-<span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
+<span><span class="co">#&gt; [1] 1</span></span>
+<span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
 <span><span class="va">x</span></span>
 <span><span class="co">#&gt; &lt;range&gt;</span></span>
 <span><span class="co">#&gt;  @ start: num 1</span></span>
 <span><span class="co">#&gt;  @ end  : num 20</span></span></code></pre></div>
 <p>Properties are automatically validated against the type declared in <code><a href="reference/new_class.html">new_class()</a></code> (<code>double</code> in this case), and with the class <strong>validator</strong>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="st">"x"</span></span>
-<span><span class="co">#&gt; Error: &lt;range&gt;@end must be &lt;double&gt;, not &lt;character&gt;</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1</span></span>
+<span><span class="co">#&gt; Error: &lt;range&gt;@end must be &lt;double&gt;, not &lt;character&gt;</span></span>
+<span><span class="va">x</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">1</span></span>
 <span><span class="co">#&gt; Error: &lt;range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end must be greater than or equal to @start</span></span></code></pre></div>
 </div>
@@ -135,10 +133,10 @@
 </h3>
 <p>Like S3 and S4, S7 uses <strong>functional OOP</strong> where methods belong to <strong>generic</strong> functions, and method calls look like all other function calls: <code>generic(object, arg2, arg3)</code>. This style is called functional because from the outside it looks like a regular function call, and internally the components are also functions.</p>
 <p>Use <code><a href="reference/new_generic.html">new_generic()</a></code> to create a new generic: the first argument is the generic name (used in error messages) and the second gives the arguments used for dispatch. The third, and optional argument, supplies the body of the generic. This is only needed if your generic has additional arguments that aren’t used for method dispatch.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inside</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"inside"</span>, <span class="st">"x"</span><span class="op">)</span></span></code></pre></div>
 <p>Once you have a generic, you can define a method for a specific class with <code>method&lt;-</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add a method for our class</span></span>
 <span><span class="fu"><a href="reference/method.html">method</a></span><span class="op">(</span><span class="va">inside</span>, <span class="va">range</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">y</span> <span class="op">&gt;=</span> <span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">&amp;</span> <span class="va">y</span> <span class="op">&lt;=</span> <span class="va">x</span><span class="op">@</span><span class="va">end</span></span>
@@ -154,8 +152,8 @@
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://cloud.r-project.org/package=S7" class="external-link">View on CRAN</a></li>
-<li><a href="https://github.com/rconsortium/S7/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/rconsortium/S7/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/RConsortium/S7/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/RConsortium/S7/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 

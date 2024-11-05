@@ -31,7 +31,7 @@
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rconsortium/S7/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/RConsortium/S7/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -41,100 +41,104 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/rconsortium/S7/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/RConsortium/S7/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li><p>The call context of a dispatched method (as visible in <code><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">sys.calls()</a></code> and <code><a href="https://rdrr.io/r/base/traceback.html" class="external-link">traceback()</a></code>) no longer includes the inlined method and generic, resulting in more compact and readable tracebacks. The dispatched method call now contains only the method name, which serves as a hint for retrieving the method. For example: <code>method(my_generic, class_double)</code>(x=10, …). (<a href="https://github.com/rconsortium/S7/issues/486" class="external-link">#486</a>)</p></li>
-<li><p><code><a href="../reference/new_class.html">new_class()</a></code> now automatically infers the package name when called from within an R package (<a href="https://github.com/rconsortium/S7/issues/459" class="external-link">#459</a>).</p></li>
-<li><p>Improved error message when custom validators return invalid values (<a href="https://github.com/rconsortium/S7/issues/454" class="external-link">#454</a>, <a href="https://github.com/rconsortium/S7/issues/457" class="external-link">#457</a>).</p></li>
-<li><p>New <code><a href="https://rdrr.io/r/base/class.html" class="external-link">nameOfClass()</a></code> method exported for S7 base classes, to enable usage like <code>inherits("foo", S7::class_character)</code> (<a href="https://github.com/rconsortium/S7/issues/432" class="external-link">#432</a>, <a href="https://github.com/rconsortium/S7/issues/458" class="external-link">#458</a>)</p></li>
-<li><p>Added support for more base/S3 classes (<a href="https://github.com/rconsortium/S7/issues/434" class="external-link">#434</a>): <code>class_POSIXlt</code>, <code>class_POSIXt</code>, <code>class_formula</code>, <code>class_call</code>, <code>class_language</code>, <code>class_name</code></p></li>
-<li><p>Fixed S3 methods registration across packages (<a href="https://github.com/rconsortium/S7/issues/422" class="external-link">#422</a>).</p></li>
-<li><p><code><a href="../reference/convert.html">convert()</a></code> now provides a default method to transform a parent class instance into a subclass, enabling class construction from a prototype (<a href="https://github.com/rconsortium/S7/issues/444" class="external-link">#444</a>).</p></li>
-<li><p>The default object constructor returned by <code><a href="../reference/new_class.html">new_class()</a></code> has been updated. It now accepts lazy (promise) property defaults and includes dynamic properties with a <code>setter</code> in the constructor. Additionally, all custom property setters are now consistently invoked by the default constructor. If you’re using S7 in an R package, you’ll need to re-document to ensure that your documentation matches the updated usage (<a href="https://github.com/rconsortium/S7/issues/438" class="external-link">#438</a>, <a href="https://github.com/rconsortium/S7/issues/445" class="external-link">#445</a>).</p></li>
-<li><p>Fixed an issue where a custom property <code>getter()</code> would infinitely recurse when accessing itself (reported in <a href="https://github.com/rconsortium/S7/issues/403" class="external-link">#403</a>, fixed in <a href="https://github.com/rconsortium/S7/issues/406" class="external-link">#406</a>).</p></li>
-<li><p>Property setting (via <code>prop&lt;-</code> and <code>@&lt;-</code>) rewritten in C for performance (<a href="https://github.com/rconsortium/S7/issues/396" class="external-link">#396</a>).</p></li>
-<li><p>Fixed a regression where <code><a href="../reference/validate.html">validate()</a></code> would not be called after a custom property setter was invoked (reported in <a href="https://github.com/rconsortium/S7/issues/393" class="external-link">#393</a>, fixed in <a href="https://github.com/rconsortium/S7/issues/396" class="external-link">#396</a>).</p></li>
-<li><p>When a method is not found, the error now has class <code>S7_error_method_not_found</code>.</p></li>
-<li><p>The <code>Ops</code> generic now falls back to base Ops behaviour when one of the arguments is not an S7 object (<a href="https://github.com/rconsortium/S7/issues/320" class="external-link">#320</a>). This means that you get the somewhat inconsistent base behaviour, but means that S7 doesn’t introduce a new axis of inconsistency.</p></li>
-<li><p>In <code><a href="../reference/new_class.html">new_class()</a></code>, properties can either be named by naming the element of the list or by supplying the <code>name</code> argument to <code><a href="../reference/new_property.html">new_property()</a></code> (<a href="https://github.com/rconsortium/S7/issues/371" class="external-link">#371</a>).</p></li>
-<li><p><code><a href="../reference/super.html">super()</a></code> now works with Ops methods (<a href="https://github.com/rconsortium/S7/issues/357" class="external-link">#357</a>).</p></li>
-<li><p><code><a href="../reference/method.html">method()</a></code> now generates an informative message when dispatch fails (<a href="https://github.com/rconsortium/S7/issues/387" class="external-link">#387</a>).</p></li>
-<li><p>S7 provides a new automatic backward compatibility mechanism to provide a version of <code>@</code> that works in R before version 4.3 (<a href="https://github.com/rconsortium/S7/issues/326" class="external-link">#326</a>).</p></li>
-<li><p>Can create multimethods that dispatch on <code>NULL</code>.</p></li>
-<li><p><code><a href="../reference/prop.html">prop()</a></code> optimized and rewritten in C (<a href="https://github.com/rconsortium/S7/issues/395" class="external-link">#395</a>).</p></li>
+<div class="section level3">
+<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li><p>The default object constructor returned by <code><a href="../reference/new_class.html">new_class()</a></code> has been updated. It now accepts lazy (promise) property defaults and includes dynamic properties with a <code>setter</code> in the constructor. Additionally, all custom property setters are now consistently invoked by the default constructor. If you’re using S7 in an R package, you’ll need to re-document to ensure that your documentation matches the updated usage (<a href="https://github.com/RConsortium/S7/issues/438" class="external-link">#438</a>, <a href="https://github.com/RConsortium/S7/issues/445" class="external-link">#445</a>).</p></li>
+<li><p>The call context of a dispatched method (as visible in <code><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">sys.calls()</a></code> and <code><a href="https://rdrr.io/r/base/traceback.html" class="external-link">traceback()</a></code>) no longer includes the inlined method and generic, resulting in more compact and readable tracebacks. The dispatched method call now contains only the method name, which serves as a hint for retrieving the method. For example: <code>method(my_generic, class_double)</code>(x=10, …). (<a href="https://github.com/RConsortium/S7/issues/486" class="external-link">#486</a>)</p></li>
+<li><p>New <code><a href="https://rdrr.io/r/base/class.html" class="external-link">nameOfClass()</a></code> method exported for S7 base classes, to enable usage like <code>inherits("foo", S7::class_character)</code> (<a href="https://github.com/RConsortium/S7/issues/432" class="external-link">#432</a>, <a href="https://github.com/RConsortium/S7/issues/458" class="external-link">#458</a>)</p></li>
+<li><p>Added support for more base/S3 classes (<a href="https://github.com/RConsortium/S7/issues/434" class="external-link">#434</a>): <code>class_POSIXlt</code>, <code>class_POSIXt</code>, <code>class_formula</code>, <code>class_call</code>, <code>class_language</code>, and <code>class_name</code>.</p></li>
+<li><p>S7 provides a new automatic backward compatibility mechanism to provide a version of <code>@</code> that works in R before version 4.3 (<a href="https://github.com/RConsortium/S7/issues/326" class="external-link">#326</a>).</p></li>
 </ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-and-minor-improvements-development-version">Bug fixes and minor improvements<a class="anchor" aria-label="anchor" href="#bug-fixes-and-minor-improvements-development-version"></a></h3>
+<ul><li><p><code><a href="../reference/new_class.html">new_class()</a></code> now automatically infers the package name when called from within an R package (<a href="https://github.com/RConsortium/S7/issues/459" class="external-link">#459</a>).</p></li>
+<li><p>Improved error message when custom validators return invalid values (<a href="https://github.com/RConsortium/S7/issues/454" class="external-link">#454</a>, <a href="https://github.com/RConsortium/S7/issues/457" class="external-link">#457</a>).</p></li>
+<li><p>Fixed S3 methods registration across packages (<a href="https://github.com/RConsortium/S7/issues/422" class="external-link">#422</a>).</p></li>
+<li><p><code><a href="../reference/convert.html">convert()</a></code> now provides a default method to transform a parent class instance into a subclass, enabling class construction from a prototype (<a href="https://github.com/RConsortium/S7/issues/444" class="external-link">#444</a>).</p></li>
+<li><p>A custom property <code>getter()</code> no longer infinitely recurses when accessing itself (reported in <a href="https://github.com/RConsortium/S7/issues/403" class="external-link">#403</a>, fixed in <a href="https://github.com/RConsortium/S7/issues/406" class="external-link">#406</a>).</p></li>
+<li><p><code><a href="../reference/method.html">method()</a></code>generates an informative message with class <code>S7_error_method_not_found</code> when dispatch fails (<a href="https://github.com/RConsortium/S7/issues/387" class="external-link">#387</a>).</p></li>
+<li><p><code>method&lt;-()</code> can create multimethods that dispatch on <code>NULL</code>.</p></li>
+<li><p>In <code><a href="../reference/new_class.html">new_class()</a></code>, properties can either be named by naming the element of the list or by supplying the <code>name</code> argument to <code><a href="../reference/new_property.html">new_property()</a></code> (<a href="https://github.com/RConsortium/S7/issues/371" class="external-link">#371</a>).</p></li>
+<li><p>The <code>Ops</code> generic now falls back to base Ops behaviour when one of the arguments is not an S7 object (<a href="https://github.com/RConsortium/S7/issues/320" class="external-link">#320</a>). This means that you get the somewhat inconsistent base behaviour, but means that S7 doesn’t introduce a new axis of inconsistency.</p></li>
+<li><p><code><a href="../reference/prop.html">prop()</a></code> (<a href="https://github.com/RConsortium/S7/issues/395" class="external-link">#395</a>) and <code>prop&lt;-</code>/<code>@&lt;-</code> (<a href="https://github.com/RConsortium/S7/issues/396" class="external-link">#396</a>) have been optimized and rewritten in C.</p></li>
+<li><p><code><a href="../reference/super.html">super()</a></code> now works with Ops methods (<a href="https://github.com/RConsortium/S7/issues/357" class="external-link">#357</a>).</p></li>
+<li><p><code><a href="../reference/validate.html">validate()</a></code> is now always called after a custom property setter was invoked (reported in <a href="https://github.com/RConsortium/S7/issues/393" class="external-link">#393</a>, fixed in <a href="https://github.com/RConsortium/S7/issues/396" class="external-link">#396</a>).</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="s7-011">S7 0.1.1<a class="anchor" aria-label="anchor" href="#s7-011"></a></h2><p class="text-muted">CRAN release: 2023-09-17</p>
-<ul><li><p>Classes get a more informative print method (<a href="https://github.com/rconsortium/S7/issues/346" class="external-link">#346</a>).</p></li>
-<li><p>Correctly register S3 methods for S7 objects with a package (<a href="https://github.com/rconsortium/S7/issues/333" class="external-link">#333</a>).</p></li>
-<li><p>External methods are now registered using an attribute of the S3 methods table rather than an element of that environment. This prevents a warning being generated during the “code/documentation mismatches” check in <code>R CMD check</code> (<a href="https://github.com/rconsortium/S7/issues/342" class="external-link">#342</a>).</p></li>
-<li><p><code>class_missing</code> and <code>class_any</code> can now be unioned with <code>|</code> (<a href="https://github.com/rconsortium/S7/issues/337" class="external-link">#337</a>).</p></li>
+<ul><li><p>Classes get a more informative print method (<a href="https://github.com/RConsortium/S7/issues/346" class="external-link">#346</a>).</p></li>
+<li><p>Correctly register S3 methods for S7 objects with a package (<a href="https://github.com/RConsortium/S7/issues/333" class="external-link">#333</a>).</p></li>
+<li><p>External methods are now registered using an attribute of the S3 methods table rather than an element of that environment. This prevents a warning being generated during the “code/documentation mismatches” check in <code>R CMD check</code> (<a href="https://github.com/RConsortium/S7/issues/342" class="external-link">#342</a>).</p></li>
+<li><p><code>class_missing</code> and <code>class_any</code> can now be unioned with <code>|</code> (<a href="https://github.com/RConsortium/S7/issues/337" class="external-link">#337</a>).</p></li>
 <li><p><code><a href="../reference/new_class.html">new_object()</a></code> no longer accepts <code>NULL</code> as <code>.parent</code>.</p></li>
-<li><p><code><a href="../reference/new_class.html">new_object()</a></code> now correctly runs the validator from abstract parent classes (<a href="https://github.com/rconsortium/S7/issues/329" class="external-link">#329</a>).</p></li>
+<li><p><code><a href="../reference/new_class.html">new_object()</a></code> now correctly runs the validator from abstract parent classes (<a href="https://github.com/RConsortium/S7/issues/329" class="external-link">#329</a>).</p></li>
 <li><p><code><a href="../reference/new_class.html">new_object()</a></code> works better when custom property setters modify other properties.</p></li>
-<li><p><code><a href="../reference/new_property.html">new_property()</a></code> gains a <code>validator</code> argument that allows you to specify a per-property validator (<a href="https://github.com/rconsortium/S7/issues/275" class="external-link">#275</a>).</p></li>
+<li><p><code><a href="../reference/new_property.html">new_property()</a></code> gains a <code>validator</code> argument that allows you to specify a per-property validator (<a href="https://github.com/RConsortium/S7/issues/275" class="external-link">#275</a>).</p></li>
 <li><p><code><a href="../reference/new_property.html">new_property()</a></code> clarifies that it’s the user’s responsibility to return the correct class; it is <em>not</em> automatically validated.</p></li>
 <li><p>Properties with a custom setter are now validated <em>after</em> the setter has run and are validated when the object is constructed or when you call <code><a href="../reference/validate.html">validate()</a></code>, not just when you modify them after construction.</p></li>
-<li><p><code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> now accepts <code>class = NULL</code> to test if an object is any sort of S7 object (<a href="https://github.com/rconsortium/S7/issues/347" class="external-link">#347</a>).</p></li>
+<li><p><code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> now accepts <code>class = NULL</code> to test if an object is any sort of S7 object (<a href="https://github.com/RConsortium/S7/issues/347" class="external-link">#347</a>).</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="s7-010">S7 0.1.0<a class="anchor" aria-label="anchor" href="#s7-010"></a></h2><p class="text-muted">CRAN release: 2023-08-24</p>
 <div class="section level3">
 <h3 id="may-july-0-1-0">May-July 2023<a class="anchor" aria-label="anchor" href="#may-july-0-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/new_external_generic.html">new_external_generic()</a></code> is only needed when you want a soft dependency on another package.</p></li>
-<li><p><code><a href="../reference/methods_register.html">methods_register()</a></code> now also registers S3 and S4 methods (<a href="https://github.com/rconsortium/S7/issues/306" class="external-link">#306</a>).</p></li>
+<li><p><code><a href="../reference/methods_register.html">methods_register()</a></code> now also registers S3 and S4 methods (<a href="https://github.com/RConsortium/S7/issues/306" class="external-link">#306</a>).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="jan-may-0-1-0">Jan-May 2023<a class="anchor" aria-label="anchor" href="#jan-may-0-1-0"></a></h3>
-<ul><li><p>Subclasses of abstract class can have readonly properties (<a href="https://github.com/rconsortium/S7/issues/269" class="external-link">#269</a>).</p></li>
-<li><p>During construction, validation is now only performed once for each element of the class hierarchy (<a href="https://github.com/rconsortium/S7/issues/248" class="external-link">#248</a>).</p></li>
-<li><p>Implemented a better filtering strategy for the S4 class hierarchy so you can now correctly dispatch on virtual classes (<a href="https://github.com/rconsortium/S7/issues/252" class="external-link">#252</a>).</p></li>
-<li><p>New <code><a href="../reference/props.html">set_props()</a></code> to make a modified copy of an object (<a href="https://github.com/rconsortium/S7/issues/229" class="external-link">#229</a>).</p></li>
+<ul><li><p>Subclasses of abstract class can have readonly properties (<a href="https://github.com/RConsortium/S7/issues/269" class="external-link">#269</a>).</p></li>
+<li><p>During construction, validation is now only performed once for each element of the class hierarchy (<a href="https://github.com/RConsortium/S7/issues/248" class="external-link">#248</a>).</p></li>
+<li><p>Implemented a better filtering strategy for the S4 class hierarchy so you can now correctly dispatch on virtual classes (<a href="https://github.com/RConsortium/S7/issues/252" class="external-link">#252</a>).</p></li>
+<li><p>New <code><a href="../reference/props.html">set_props()</a></code> to make a modified copy of an object (<a href="https://github.com/RConsortium/S7/issues/229" class="external-link">#229</a>).</p></li>
 <li><p><code>R CMD check</code> now passes on R 3.5 and greater (for tidyverse compatibility).</p></li>
-<li><p>Dispatching on an evaluated argument no longer causes a crash (<a href="https://github.com/rconsortium/S7/issues/254" class="external-link">#254</a>).</p></li>
-<li><p>Improve method dispatch failure message (<a href="https://github.com/rconsortium/S7/issues/231" class="external-link">#231</a>).</p></li>
-<li><p>Can use <code>|</code> to create unions from S7 classes (<a href="https://github.com/rconsortium/S7/issues/224" class="external-link">#224</a>).</p></li>
-<li><p>Can no longer subclass an environment via <code>class_environment</code> because we need to think the consequences of this behaviour through more fully (<a href="https://github.com/rconsortium/S7/issues/253" class="external-link">#253</a>).</p></li>
+<li><p>Dispatching on an evaluated argument no longer causes a crash (<a href="https://github.com/RConsortium/S7/issues/254" class="external-link">#254</a>).</p></li>
+<li><p>Improve method dispatch failure message (<a href="https://github.com/RConsortium/S7/issues/231" class="external-link">#231</a>).</p></li>
+<li><p>Can use <code>|</code> to create unions from S7 classes (<a href="https://github.com/RConsortium/S7/issues/224" class="external-link">#224</a>).</p></li>
+<li><p>Can no longer subclass an environment via <code>class_environment</code> because we need to think the consequences of this behaviour through more fully (<a href="https://github.com/RConsortium/S7/issues/253" class="external-link">#253</a>).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="rest-of-0-1-0">Rest of 2022<a class="anchor" aria-label="anchor" href="#rest-of-0-1-0"></a></h3>
-<ul><li><p>Add <code>[.S7_object</code>, <code>[&lt;-.S7_object</code>, <code>[[.S7_object</code>, and <code>[[&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/jamieRowen" class="external-link">@jamieRowen</a>, <a href="https://github.com/rconsortium/S7/issues/236" class="external-link">#236</a>).</p></li>
-<li><p>Combining S7 classes with <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now gives an error (<a href="https://github.com/rconsortium/S7/issues/230" class="external-link">#230</a>)</p></li>
-<li><p>Base classes now show as <code>class_x</code> instead of <code>"x"</code> in method print (<a href="https://github.com/rconsortium/S7/issues/232" class="external-link">#232</a>)</p></li>
+<ul><li><p>Add <code>[.S7_object</code>, <code>[&lt;-.S7_object</code>, <code>[[.S7_object</code>, and <code>[[&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/jamieRowen" class="external-link">@jamieRowen</a>, <a href="https://github.com/RConsortium/S7/issues/236" class="external-link">#236</a>).</p></li>
+<li><p>Combining S7 classes with <code><a href="https://rdrr.io/r/base/c.html" class="external-link">c()</a></code> now gives an error (<a href="https://github.com/RConsortium/S7/issues/230" class="external-link">#230</a>)</p></li>
+<li><p>Base classes now show as <code>class_x</code> instead of <code>"x"</code> in method print (<a href="https://github.com/RConsortium/S7/issues/232" class="external-link">#232</a>)</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="mar-0-1-0">Mar 2022<a class="anchor" aria-label="anchor" href="#mar-0-1-0"></a></h3>
 <ul><li><p>Exported <code>class_factor</code>, <code>class_Date</code>, <code>class_POSIXct</code>, and <code>class_data.frame</code>.</p></li>
-<li><p>New <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> (<a href="https://github.com/rconsortium/S7/issues/193" class="external-link">#193</a>)</p></li>
-<li><p><code><a href="../reference/new_class.html">new_class()</a></code> can create abstract classes (<a href="https://github.com/rconsortium/S7/issues/199" class="external-link">#199</a>).</p></li>
-<li><p><code>method_call()</code> is now <code><a href="../reference/new_generic.html">S7_dispatch()</a></code> (<a href="https://github.com/rconsortium/S7/issues/200" class="external-link">#200</a>).</p></li>
-<li><p>Can now register methods for double-dispatch base Ops (currently only works if both classes are S7, or the first argument is S7 and the second doesn’t have a method for the Ops generic) (<a href="https://github.com/rconsortium/S7/issues/128" class="external-link">#128</a>).</p></li>
-<li><p>All built-in wrappers around base types use <code>class_</code>. You can no longer refer to a base type with a string or a constructor function (<a href="https://github.com/rconsortium/S7/issues/170" class="external-link">#170</a>).</p></li>
-<li><p><code><a href="../reference/convert.html">convert()</a></code> allows you to convert an object into another class (<a href="https://github.com/rconsortium/S7/issues/136" class="external-link">#136</a>).</p></li>
-<li><p><code><a href="../reference/super.html">super()</a></code> replaces <code>next_method()</code> (<a href="https://github.com/rconsortium/S7/issues/110" class="external-link">#110</a>).</p></li>
+<li><p>New <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> (<a href="https://github.com/RConsortium/S7/issues/193" class="external-link">#193</a>)</p></li>
+<li><p><code><a href="../reference/new_class.html">new_class()</a></code> can create abstract classes (<a href="https://github.com/RConsortium/S7/issues/199" class="external-link">#199</a>).</p></li>
+<li><p><code>method_call()</code> is now <code><a href="../reference/new_generic.html">S7_dispatch()</a></code> (<a href="https://github.com/RConsortium/S7/issues/200" class="external-link">#200</a>).</p></li>
+<li><p>Can now register methods for double-dispatch base Ops (currently only works if both classes are S7, or the first argument is S7 and the second doesn’t have a method for the Ops generic) (<a href="https://github.com/RConsortium/S7/issues/128" class="external-link">#128</a>).</p></li>
+<li><p>All built-in wrappers around base types use <code>class_</code>. You can no longer refer to a base type with a string or a constructor function (<a href="https://github.com/RConsortium/S7/issues/170" class="external-link">#170</a>).</p></li>
+<li><p><code><a href="../reference/convert.html">convert()</a></code> allows you to convert an object into another class (<a href="https://github.com/RConsortium/S7/issues/136" class="external-link">#136</a>).</p></li>
+<li><p><code><a href="../reference/super.html">super()</a></code> replaces <code>next_method()</code> (<a href="https://github.com/RConsortium/S7/issues/110" class="external-link">#110</a>).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="feb-0-1-0">Feb 2022<a class="anchor" aria-label="anchor" href="#feb-0-1-0"></a></h3>
-<ul><li><p><code>class_any</code> and <code>class_missing</code> make it possible to dispatch on absent arguments and arguments of any class (<a href="https://github.com/rconsortium/S7/issues/67" class="external-link">#67</a>).</p></li>
-<li><p>New <code><a href="../reference/method_explain.html">method_explain()</a></code> to explain dispatch (<a href="https://github.com/rconsortium/S7/issues/194" class="external-link">#194</a>).</p></li>
-<li><p>Minor property improvements: use same syntax for naming short-hand and full property specifications; input type automatically validated for custom setters. A property with a getter but no setter is read-only (<a href="https://github.com/rconsortium/S7/issues/168" class="external-link">#168</a>).</p></li>
-<li><p>When creating an object, unspecified properties are initialized with their default value (<a href="https://github.com/rconsortium/S7/issues/67" class="external-link">#67</a>). DISCUSS: to achieve this, the constructor arguments default to <code>class_missing</code>.</p></li>
-<li><p>Add <code>$.S7_object</code> and <code>$&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/rconsortium/S7/issues/204" class="external-link">#204</a>).</p></li>
-<li><p>Dispatch now disambiguates between S4 and S3/S7, and, optionally, between S7 classes in different packages (<a href="https://github.com/rconsortium/S7/issues/48" class="external-link">#48</a>, <a href="https://github.com/rconsortium/S7/issues/163" class="external-link">#163</a>).</p></li>
-<li><p><code><a href="../reference/new_generic.html">new_generic()</a></code> now requires <code>dispatch_args</code> (<a href="https://github.com/rconsortium/S7/issues/180" class="external-link">#180</a>). This means that <code><a href="../reference/new_generic.html">new_generic()</a></code> will typically be called without names. Either <code>new_generic("foo", "x")</code> for a “standard” generic, or <code>new_generic("foo", "x", function(x, y) call_method())</code> for a non-standard method.</p></li>
+<ul><li><p><code>class_any</code> and <code>class_missing</code> make it possible to dispatch on absent arguments and arguments of any class (<a href="https://github.com/RConsortium/S7/issues/67" class="external-link">#67</a>).</p></li>
+<li><p>New <code><a href="../reference/method_explain.html">method_explain()</a></code> to explain dispatch (<a href="https://github.com/RConsortium/S7/issues/194" class="external-link">#194</a>).</p></li>
+<li><p>Minor property improvements: use same syntax for naming short-hand and full property specifications; input type automatically validated for custom setters. A property with a getter but no setter is read-only (<a href="https://github.com/RConsortium/S7/issues/168" class="external-link">#168</a>).</p></li>
+<li><p>When creating an object, unspecified properties are initialized with their default value (<a href="https://github.com/RConsortium/S7/issues/67" class="external-link">#67</a>). DISCUSS: to achieve this, the constructor arguments default to <code>class_missing</code>.</p></li>
+<li><p>Add <code>$.S7_object</code> and <code>$&lt;-.S7_object</code> methods to avoid “object of type ‘S4’ is not subsettable” error (<a href="https://github.com/RConsortium/S7/issues/204" class="external-link">#204</a>).</p></li>
+<li><p>Dispatch now disambiguates between S4 and S3/S7, and, optionally, between S7 classes in different packages (<a href="https://github.com/RConsortium/S7/issues/48" class="external-link">#48</a>, <a href="https://github.com/RConsortium/S7/issues/163" class="external-link">#163</a>).</p></li>
+<li><p><code><a href="../reference/new_generic.html">new_generic()</a></code> now requires <code>dispatch_args</code> (<a href="https://github.com/RConsortium/S7/issues/180" class="external-link">#180</a>). This means that <code><a href="../reference/new_generic.html">new_generic()</a></code> will typically be called without names. Either <code>new_generic("foo", "x")</code> for a “standard” generic, or <code>new_generic("foo", "x", function(x, y) call_method())</code> for a non-standard method.</p></li>
 <li><p><code><a href="../reference/new_external_generic.html">new_external_generic()</a></code> now requires <code>dispatch_args</code> so we can eagerly check the signature.</p></li>
 <li><p>Revamp website. README now shows brief example and more info in <code><a href="../articles/S7.html">vignette("S7")</a></code>. Initial design docs and minutes are now articles so they appear on the website.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="jan-0-1-0">Jan 2022<a class="anchor" aria-label="anchor" href="#jan-0-1-0"></a></h3>
-<ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/rconsortium/S7/issues/149" class="external-link">#149</a>).</li>
-<li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/rconsortium/S7/issues/149" class="external-link">#149</a>)</li>
-<li>Classes (base types, S3, S4, and S7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> for referring to S3 classes (<a href="https://github.com/rconsortium/S7/issues/134" class="external-link">#134</a>). S4 unions are converted to S7 unions (<a href="https://github.com/rconsortium/S7/issues/150" class="external-link">#150</a>).</li>
-<li>Base numeric, atomic, and vector “types” are now represented as class unions (<a href="https://github.com/rconsortium/S7/issues/147" class="external-link">#147</a>).</li>
-<li>Different evaluation mechanism for method dispatch, and greater restrictions on dispatch args (<a href="https://github.com/rconsortium/S7/issues/141" class="external-link">#141</a>)</li>
+<ul><li>New <code>props&lt;-</code> for setting multiple properties simultaneously and validating afterwards (<a href="https://github.com/RConsortium/S7/issues/149" class="external-link">#149</a>).</li>
+<li>Validation now happens recursively, and validates types before validating the object (<a href="https://github.com/RConsortium/S7/issues/149" class="external-link">#149</a>)</li>
+<li>Classes (base types, S3, S4, and S7) are handled consistently wherever they are used. Strings now only refer to base types. New explicit <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> for referring to S3 classes (<a href="https://github.com/RConsortium/S7/issues/134" class="external-link">#134</a>). S4 unions are converted to S7 unions (<a href="https://github.com/RConsortium/S7/issues/150" class="external-link">#150</a>).</li>
+<li>Base numeric, atomic, and vector “types” are now represented as class unions (<a href="https://github.com/RConsortium/S7/issues/147" class="external-link">#147</a>).</li>
+<li>Different evaluation mechanism for method dispatch, and greater restrictions on dispatch args (<a href="https://github.com/RConsortium/S7/issues/141" class="external-link">#141</a>)</li>
 <li>
 <code>x@.data</code> -&gt; <code><a href="../reference/S7_data.html">S7_data()</a></code>; probably to be replaced by casting.</li>
 <li>In generic, <code>signature</code> -&gt; <code>dispatch_args</code>.</li>
