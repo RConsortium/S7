@@ -45,6 +45,8 @@ SEXP sym_dot_setting_prop;
 SEXP sym_obj_dispatch;
 SEXP sym_dispatch_args;
 SEXP sym_methods;
+SEXP sym_S7_dispatch;
+SEXP sym_name;
 
 SEXP fn_base_quote;
 SEXP fn_base_missing;
@@ -75,6 +77,8 @@ void R_init_S7(DllInfo *dll)
     sym_obj_dispatch = Rf_install("obj_dispatch");
     sym_dispatch_args = Rf_install("dispatch_args");
     sym_methods = Rf_install("methods");
+    sym_S7_dispatch = Rf_install("S7_dispatch");
+    sym_name = Rf_install("name");
 
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
     fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);

@@ -193,6 +193,9 @@ generic_add_method <- function(generic, signature, method) {
   p_tbl <- generic@methods
   chr_signature <- vcapply(signature, class_register)
 
+  if (is.null(attr(method, "name", TRUE)))
+    attr(method, "name") <- as.name(method_signature(generic, signature))
+
   for (i in seq_along(chr_signature)) {
     class_name <- chr_signature[[i]]
     if (i != length(chr_signature)) {

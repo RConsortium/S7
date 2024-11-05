@@ -8,6 +8,9 @@ extern SEXP ns_S7;
 extern SEXP sym_obj_dispatch;
 extern SEXP sym_dispatch_args;
 extern SEXP sym_methods;
+extern SEXP sym_S7_dispatch;
+extern SEXP sym_name;
+
 extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
 
@@ -181,8 +184,8 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP mcall_tail = mcall;
 
   PROTECT_INDEX arg_pi, val_pi;
-  PROTECT_WITH_INDEX(R_NilValue, &arg_pi);
-  PROTECT_WITH_INDEX(R_NilValue, &val_pi);
+  PROTECT_WITH_INDEX(R_NilValue, &arg_pi); // unnecessary, for rchk only
+  PROTECT_WITH_INDEX(R_NilValue, &val_pi); // unnecessary, for rchk only
 
   // For each of the arguments to the generic
   for (R_xlen_t i = 0; i < n_args; ++i) {
@@ -205,9 +208,9 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
         // Instead of Rf_eval(arg, R_EmptyEnv), we do Rf_eval(name, envir), so that
         // - if TYPEOF(arg) == LANGSXP or SYMSXP, arg doesn't need to be enquoted and
         // - if TYPEOF(arg) == PROMSXP, arg is updated in place.
-        REPROTECT(arg, arg_pi); // not really necessary, but rchk flags spuriously
+        REPROTECT(arg, arg_pi); // unnecessary, for rchk only
         SEXP val = Rf_eval(name, envir);
-        REPROTECT(val, val_pi);
+        REPROTECT(val, val_pi); // unnecessary, for rchk only
 
         if (Rf_inherits(val, "S7_super")) {
 
@@ -250,7 +253,20 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
   // Now that we have all the classes, we can look up what method to call
   SEXP m = method_(generic, dispatch_classes, envir, R_TRUE);
-  SETCAR(mcall, m);
+  REPROTECT(m, val_pi); // unnecessary, for rchk only
+
+  /// Inlining the method closure in the call like `SETCAR(mcall, m);`
+  /// leads to extremely verbose (unreadable) traceback()s. So,
+  /// for nicer tracebacks, we set a SYMSXP at the head.
+  SEXP method_name = Rf_getAttrib(m, sym_name);
+  if (TYPEOF(method_name) != SYMSXP) {
+    // if name is missing, fallback to masking the `S7_dispatch` symbol.
+    // we could alternatively fallback to inlining m: SETCAR(mcall, m)
+    method_name = sym_S7_dispatch;
+  }
+
+  Rf_defineVar(method_name, m, envir);
+  SETCAR(mcall, method_name);
 
   SEXP out = Rf_eval(mcall, envir);
   UNPROTECT(4);

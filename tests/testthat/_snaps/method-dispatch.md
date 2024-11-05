@@ -57,3 +57,34 @@
       Error in `foo_wrapper()`:
       ! argument "xx" is missing, with no default
 
+# errors from dispatched methods have reasonable tracebacks
+
+    Code
+      my_generic(10)
+    Output
+      [[1]]
+      my_generic(10)
+      
+      [[2]]
+      S7::S7_dispatch()
+      
+      [[3]]
+      `method(my_generic, class_double)`(x = 10, ...)
+      
+
+---
+
+    Code
+      my_generic(3, 4)
+    Output
+      [[1]]
+      my_generic(3, 4)
+      
+      [[2]]
+      S7::S7_dispatch()
+      
+      [[3]]
+      `method(my_generic, list(class_double, class_double))`(x = 3, 
+          y = 4, ...)
+      
+

@@ -1,5 +1,11 @@
 # S7 (development version)
 
+* The call context of a dispatched method (as visible in `sys.calls()` and
+  `traceback()`) no longer includes the inlined method and generic, resulting in
+  more compact and readable tracebacks. The dispatched method call now contains
+  only the method name, which serves as a hint for retrieving the method. For
+  example: `method(my_generic, class_double)`(x=10, ...). (#486)
+  
 * `new_class()` now automatically infers the package name when called from 
   within an R package (#459).
 
