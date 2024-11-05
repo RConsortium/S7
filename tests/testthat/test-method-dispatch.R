@@ -228,11 +228,20 @@ test_that("method dispatch works for class_missing", {
 })
 
 test_that("errors from dispatched methods have reasonable tracebacks", {
+
+  get_call_stack <- function(n = 3) {
+    x <- sys.calls()
+    x <- x[-length(x)] # remove get_call_stack()
+    x <- tail(x, n)
+    lapply(x, rlang::zap_srcref)
+  }
+
   my_generic <- new_generic("my_generic", "x")
-  method(my_generic, class_numeric) <- function(x) tail(sys.calls(), 3)
+  method(my_generic, class_numeric) <- function(x) get_call_stack()
   expect_snapshot(my_generic(10))
 
   my_generic <- new_generic("my_generic", c("x", "y"))
-  method(my_generic, list(class_numeric, class_numeric)) <- function(x, y) tail(sys.calls(), 3)
+  method(my_generic, list(class_numeric, class_numeric)) <-
+    function(x, y) get_call_stack()
   expect_snapshot(my_generic(3, 4))
 })
