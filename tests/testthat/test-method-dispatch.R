@@ -233,7 +233,7 @@ test_that("errors from dispatched methods have reasonable tracebacks", {
     x <- sys.calls()
     x <- x[-length(x)] # remove get_call_stack()
     x <- tail(x, n)
-    lapply(x, rlang::zap_srcref)
+    lapply(x, utils::removeSource)
   }
 
   my_generic <- new_generic("my_generic", "x")
