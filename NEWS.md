@@ -1,27 +1,6 @@
 # S7 (development version)
 
-* The call context of a dispatched method (as visible in `sys.calls()` and
-  `traceback()`) no longer includes the inlined method and generic, resulting in
-  more compact and readable tracebacks. The dispatched method call now contains
-  only the method name, which serves as a hint for retrieving the method. For
-  example: `method(my_generic, class_double)`(x=10, ...). (#486)
-  
-* `new_class()` now automatically infers the package name when called from 
-  within an R package (#459).
-
-* Improved error message when custom validators return invalid values (#454, #457).
-
-* New `nameOfClass()` method exported for S7 base classes, to enable usage like
-  `inherits("foo", S7::class_character)` (#432, #458)
-
-* Added support for more base/S3 classes (#434):
-    `class_POSIXlt`, `class_POSIXt`, `class_formula`, 
-    `class_call`, `class_language`, `class_name`
-
-* Fixed S3 methods registration across packages (#422).
-
-* `convert()` now provides a default method to transform a parent class instance
-  into a subclass, enabling class construction from a prototype (#444).
+## New features
 
 * The default object constructor returned by `new_class()` has been updated.
   It now accepts lazy (promise) property defaults and includes dynamic properties
@@ -30,34 +9,57 @@
   an R package, you'll need to re-document to ensure that your documentation
   matches the updated usage (#438, #445).
 
-* Fixed an issue where a custom property `getter()` would infinitely recurse
-  when accessing itself (reported in #403, fixed in #406).
+* The call context of a dispatched method (as visible in `sys.calls()` and
+  `traceback()`) no longer includes the inlined method and generic, resulting in
+  more compact and readable tracebacks. The dispatched method call now contains
+  only the method name, which serves as a hint for retrieving the method. For
+  example: `method(my_generic, class_double)`(x=10, ...). (#486)
 
-* Property setting (via `prop<-` and `@<-`) rewritten in C for performance (#396).
+* New `nameOfClass()` method exported for S7 base classes, to enable usage like
+  `inherits("foo", S7::class_character)` (#432, #458)
 
-* Fixed a regression where `validate()` would not be called after a custom
-  property setter was invoked (reported in #393, fixed in #396).
+* Added support for more base/S3 classes (#434): `class_POSIXlt`,
+  `class_POSIXt`, `class_formula`, `class_call`, `class_language`,
+  and `class_name`.
 
-* When a method is not found, the error now has class `S7_error_method_not_found`.
+* S7 provides a new automatic backward compatibility mechanism to provide
+  a version of `@` that works in R before version 4.3 (#326).
+
+## Bug fixes and minor improvements
+
+* `new_class()` now automatically infers the package name when called from
+  within an R package (#459).
+
+* Improved error message when custom validators return invalid values (#454, #457).
+
+* Fixed S3 methods registration across packages (#422).
+
+* `convert()` now provides a default method to transform a parent class instance
+  into a subclass, enabling class construction from a prototype (#444).
+
+* A custom property `getter()` no longer infinitely recurses when accessing
+  itself (reported in #403, fixed in #406).
+
+* `method()`generates an informative message with class
+  `S7_error_method_not_found` when dispatch fails (#387).
+
+* `method<-()` can create multimethods that dispatch on `NULL`.
+
+* In `new_class()`, properties can either be named by naming the element
+  of the list or by supplying the `name` argument to `new_property()` (#371).
 
 * The `Ops` generic now falls back to base Ops behaviour when one of the
   arguments is not an S7 object (#320). This means that you get the somewhat
   inconsistent base behaviour, but means that S7 doesn't introduce a new axis
   of inconsistency.
 
-* In `new_class()`, properties can either be named by naming the element
-  of the list or by supplying the `name` argument to `new_property()` (#371).
+* `prop()` (#395) and `prop<-`/`@<-` (#396) have been optimized and
+  rewritten in C.
 
 * `super()` now works with Ops methods (#357).
 
-* `method()` now generates an informative message when dispatch fails (#387).
-
-* S7 provides a new automatic backward compatibility mechanism to provide
-  a version of `@` that works in R before version 4.3 (#326).
-
-* Can create multimethods that dispatch on `NULL`.
-
-* `prop()` optimized and rewritten in C (#395).
+* `validate()` is now always called after a custom property setter was invoked
+  (reported in #393, fixed in #396).
 
 # S7 0.1.1
 
