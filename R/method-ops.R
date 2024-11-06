@@ -26,7 +26,7 @@ Ops.S7_object <- function(e1, e2) {
     S7_error_method_not_found = function(cnd) cnd
   )
 
-  if (S7_inherits(e1) && S7_inherits(e2)) {
+  if (S7_inherits(e1) && (missing(e2) || S7_inherits(e2))) {
     stop(cnd)
   } else {
     # Must call NextMethod() directly in the method, not wrapped in an
