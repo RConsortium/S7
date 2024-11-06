@@ -122,3 +122,13 @@ test_that("Ops methods can use super", {
 
   expect_equal(foo2(1L) + 1, foo2(2L))
 })
+
+
+test_that("Unary Ops methods work", {
+  Double := new_class(class_double)
+  method(`-`, list(Double, class_missing)) <- function(e1, e2) {
+    Double(-as.double(e1))
+  }
+
+  expect_identical(-Double(1), Double(-1))
+})
