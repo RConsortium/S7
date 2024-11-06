@@ -1,4 +1,4 @@
-# S7 (development version)
+# S7 0.2.0
 
 ## New features
 
