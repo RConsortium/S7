@@ -15,7 +15,7 @@ the implementation of a specific method."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">S7</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,7 +36,14 @@ the implementation of a specific method."></head><body>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
-<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-news"><li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
+    <li><a class="external-link dropdown-item" href="https://www.tidyverse.org/blog/2024/11/s7-0-2-0/">S7 0.2.0</a></li>
+    <li><a class="external-link dropdown-item" href="https://blog.r-project.org/2024/05/17/generalizing-support-for-functional-oop-in-r/index.html">S7 0.1.0</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../news/index.html">Changelog</a></li>
+  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/RConsortium/S7/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -115,12 +122,12 @@ matching method is found.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;S7_method&gt; method(bizarro, class_integer)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rev(x)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55ef551b75e0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x558456f35688&gt;</span>
 <span class="r-in"><span><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, object <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;S7_method&gt; method(bizarro, class_double)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x) </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> rev(x)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55ef551b75e0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x558456f35688&gt;</span>
 <span class="r-in"><span><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, class <span class="op">=</span> <span class="va">class_factor</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;S7_method&gt; method(bizarro, new_S3_class("factor"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> function (x) </span>
@@ -128,7 +135,7 @@ matching method is found.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     levels(x) &lt;- rev(levels(x))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     x</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55ef551b75e0&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x558456f35688&gt;</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># errors if method not found</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">method</span><span class="op">(</span><span class="va">bizarro</span>, class <span class="op">=</span> <span class="va">class_data.frame</span><span class="op">)</span><span class="op">)</span></span></span>
