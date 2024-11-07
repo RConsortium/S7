@@ -70,3 +70,10 @@ articles:
 
 - title: Minutes
   contents: starts_with("minutes/")
+
+news:
+ releases:
+ - text: "S7 0.2.0"
+   href: https://www.tidyverse.org/blog/2024/11/s7-0-2-0/
+ - text: "S7 0.1.0"
+   href: https://blog.r-project.org/2024/05/17/generalizing-support-for-functional-oop-in-r/index.html
