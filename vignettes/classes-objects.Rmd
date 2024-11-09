@@ -24,7 +24,7 @@ library(S7)
 ## Validation
 
 S7 classes can have an optional **validator** that checks that the values of the properties are OK.
-A validator is a function that takes the object (called `self`) and returns `NULL` if its valid or returns a character vector listing the problems.
+A validator is a function that takes the object (called `self`) and returns `NULL` if it's valid or returns a character vector listing the problems.
 
 ### Basics
 
@@ -168,7 +168,7 @@ This makes it possible to use the same property definition for multiple properti
 
 ### Default value
 
-The defaults of `new_class()` create an class that can be constructed with no arguments:
+The defaults of `new_class()` create a class that can be constructed with no arguments:
 
 ```{r}
 Empty <- new_class("Empty",
@@ -225,7 +225,7 @@ Range <- new_class("Range",
     start = class_double,
     end = class_double,
     length = new_property(
-      getter = function(self) self@end - self@start,
+      getter = function(self) self@end - self@start
     )
   )
 )
@@ -398,7 +398,7 @@ Range <- new_class("Range",
   }
 )
 
-range(c(10, 5, 0, 2, 5, 7))
+Range(c(10, 5, 0, 2, 5, 7))
 ```
 
 A constructor must always end with a call to `new_object()`.
