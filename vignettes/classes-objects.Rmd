@@ -257,6 +257,7 @@ Range <- new_class("Range",
       class = class_double,
       getter = function(self) self@end - self@start,
       setter = function(self, value) {
+        if (length(value) == 0) return(self)
         self@end <- self@start + value
         self
       }
