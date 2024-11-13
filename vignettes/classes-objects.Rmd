@@ -257,7 +257,11 @@ Range <- new_class("Range",
       class = class_double,
       getter = function(self) self@end - self@start,
       setter = function(self, value) {
-        if (length(value) == 0) return(self)
+        if (!length(value)) {
+          # Do nothing if called with the constructor default
+          # value for this property, a zero-length double vector.
+          return(self)
+        }
         self@end <- self@start + value
         self
       }
@@ -393,8 +397,8 @@ Range <- new_class("Range",
     end = class_numeric
   ),
   constructor = function(x) {
-    new_object(S7_object(), 
-               start = min(x, na.rm = TRUE), 
+    new_object(S7_object(),
+               start = min(x, na.rm = TRUE),
                end = max(x, na.rm = TRUE))
   }
 )
