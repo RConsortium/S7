@@ -213,7 +213,7 @@ The only downside to performing error checking is that you constraint the interf
 
 ## `super()`
 
-Sometimes it's useful to define a method for a class that relies on its superclass.
+Sometimes it's useful to define a method for a class that relies on the implementation for its superclass.
 A good example of this is computing the mean of a date --- since dates represent the number of days since 1970-01-01, computing the mean is just a matter of computing the mean of the underlying numeric vector and converting it back to a date.
 
 To demonstrate this idea, I'll first define a mean generic with a method for numbers:
