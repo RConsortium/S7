@@ -114,7 +114,7 @@ simple_print(list(1, 2, "x"), diggits = 3)
 
 Occasional it's useful to create a generic without `…` because such functions have a useful property: if a call succeeds for one type of input, it will succeed for any type of input.
 To create such a generic, you'll need to use the third argument to `new_generic()`: an optional function that powers the generic.
-This function has one key property: it must call `call_method()` to actually perform dispatch.
+This function has one key property: it must call `S7_dispatch()` to actually perform dispatch.
 
 In general, this property is only needed for very low-level functions with precisely defined semantics.
 A good example of such a function is `length()`:
@@ -126,7 +126,7 @@ length <- new_generic("length", "x", function(x) {
 ```
 
 Omitting `…` from the generic signature is a strong restriction as it prevents methods from adding extra arguments.
-For this reason, it's should only be used in special situations.
+For this reason, it should only be used in special situations.
 
 ## Customizing generics
 
@@ -137,7 +137,7 @@ display <- new_generic("display", "x")
 S7_data(display)
 ```
 
-The most important part of the body is `S7_dispatch()`; this function finds the method the matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
+The most important part of the body is `S7_dispatch()`; this function finds the method that matches the arguments used for dispatch and calls it with the arguments supplied to the generic.
 
 It can be useful to customize this body.
 The previous section showed one case when you might want to supply the body yourself: dropping `…` from the formals of the generic.
@@ -147,7 +147,7 @@ There are three other useful cases:
 -   To add optional arguments.
 -   Perform some standard work.
 
-A custom `fun` must always include a call to `call_method()`, which will usually be the last call.
+A custom `fun` must always include a call to `S7_dispatch()`, which will usually be the last call.
 
 ### Add required arguments
 
@@ -213,7 +213,7 @@ The only downside to performing error checking is that you constraint the interf
 
 ## `super()`
 
-Sometimes it's useful to define a method for in terms of its superclass.
+Sometimes it's useful to define a method for a class that relies on the implementation for its superclass.
 A good example of this is computing the mean of a date --- since dates represent the number of days since 1970-01-01, computing the mean is just a matter of computing the mean of the underlying numeric vector and converting it back to a date.
 
 To demonstrate this idea, I'll first define a mean generic with a method for numbers:
@@ -256,8 +256,8 @@ This explicitness makes the code easier to understand and will eventually enable
 
 ## Multiple dispatch
 
-So far we have focused primarily on single dispatch, i.e. generics where `dispatch_on` is a single string.
-It is also possible to supply a length 2 (or more!) vector `dispatch_on` to create a generic that performs multiple dispatch, i.e. it uses the classes of more than one object to find the appropriate method.
+So far we have focused primarily on single dispatch, i.e. generics where `dispatch_args` is a single string.
+It is also possible to supply a length 2 (or more!) vector `dispatch_args` to create a generic that performs multiple dispatch, i.e. it uses the classes of more than one object to find the appropriate method.
 
 Multiple dispatch is a feature primarily of S4, although S3 includes some limited special cases for arithmetic operators.
 Multiple dispatch is heavily used in S4; we don't expect it to be heavily used in S7, but it is occasionally useful.

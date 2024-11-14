@@ -109,7 +109,7 @@ rle(1:10)
 Alternatively you could convert it to the most natural representation using S7:
 
 ```{r}
-rle <- new_class("rle", properties = list(
+new_rle <- new_class("rle", properties = list(
   lengths = class_integer,
   values = class_atomic
 ))
@@ -118,7 +118,7 @@ rle <- new_class("rle", properties = list(
 To allow existing methods to work you'll need to override `$` to access properties instead of list elements:
 
 ```{r}
-method(`$`, rle) <- prop
+method(`$`, new_rle) <- prop
 rle(1:10)
 ```
 
