@@ -94,8 +94,8 @@ write your own constructors.</p>
 <p>S7 classes can have an optional <strong>validator</strong> that
 checks that the values of the properties are OK. A validator is a
 function that takes the object (called <code>self</code>) and returns
-<code>NULL</code> if its valid or returns a character vector listing the
-problems.</p>
+<code>NULL</code> if it’s valid or returns a character vector listing
+the problems.</p>
 <div class="section level3">
 <h3 id="basics">Basics<a class="anchor" aria-label="anchor" href="#basics"></a>
 </h3>
@@ -265,7 +265,7 @@ properties of the same type, as above.</p>
 <div class="section level3">
 <h3 id="default-value">Default value<a class="anchor" aria-label="anchor" href="#default-value"></a>
 </h3>
-<p>The defaults of <code><a href="../reference/new_class.html">new_class()</a></code> create an class that can be
+<p>The defaults of <code><a href="../reference/new_class.html">new_class()</a></code> create a class that can be
 constructed with no arguments:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Empty</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Empty"</span>,</span>
@@ -331,7 +331,7 @@ by defining a <code>getter</code>:</p>
 <span>    start <span class="op">=</span> <span class="va">class_double</span>,</span>
 <span>    end <span class="op">=</span> <span class="va">class_double</span>,</span>
 <span>    length <span class="op">=</span> <span class="fu"><a href="../reference/new_property.html">new_property</a></span><span class="op">(</span></span>
-<span>      getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">-</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span>,</span>
+<span>      getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">-</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -366,6 +366,11 @@ the vector:</p>
 <span>      class <span class="op">=</span> <span class="va">class_double</span>,</span>
 <span>      getter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">-</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span>,</span>
 <span>      setter <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>          <span class="co"># Do nothing if called with the constructor default</span></span>
+<span>          <span class="co"># value for this property, a zero-length double vector.</span></span>
+<span>          <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">self</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
 <span>        <span class="va">self</span><span class="op">@</span><span class="va">end</span> <span class="op">&lt;-</span> <span class="va">self</span><span class="op">@</span><span class="va">start</span> <span class="op">+</span> <span class="va">value</span></span>
 <span>        <span class="va">self</span></span>
 <span>      <span class="op">}</span></span>
@@ -377,8 +382,8 @@ the vector:</p>
 <span><span class="va">x</span></span>
 <span><span class="co">#&gt; &lt;Range&gt;</span></span>
 <span><span class="co">#&gt;  @ start : num 1</span></span>
-<span><span class="co">#&gt;  @ end   : num(0) </span></span>
-<span><span class="co">#&gt;  @ length: num(0)</span></span>
+<span><span class="co">#&gt;  @ end   : num 10</span></span>
+<span><span class="co">#&gt;  @ length: num 9</span></span>
 <span></span>
 <span><span class="va">x</span><span class="op">@</span><span class="va">length</span> <span class="op">&lt;-</span> <span class="fl">5</span></span>
 <span><span class="va">x</span></span>
@@ -534,14 +539,16 @@ implement this we could do:</p>
 <span>    end <span class="op">=</span> <span class="va">class_numeric</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  constructor <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/new_class.html">new_object</a></span><span class="op">(</span><span class="fu"><a href="../reference/S7_object.html">S7_object</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>               start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, </span>
+<span>    <span class="fu"><a href="../reference/new_class.html">new_object</a></span><span class="op">(</span><span class="fu"><a href="../reference/S7_object.html">S7_object</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>               start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>               end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">5</span>, <span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]  0 10</span></span></code></pre></div>
+<span><span class="fu">Range</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">5</span>, <span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">5</span>, <span class="fl">7</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;Range&gt;</span></span>
+<span><span class="co">#&gt;  @ start: num 0</span></span>
+<span><span class="co">#&gt;  @ end  : num 10</span></span></code></pre></div>
 <p>A constructor must always end with a call to
 <code><a href="../reference/new_class.html">new_object()</a></code>. The first argument to
 <code><a href="../reference/new_class.html">new_object()</a></code> should be an object of the <code>parent</code>

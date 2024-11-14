@@ -185,7 +185,7 @@ one type of input, it will succeed for any type of input. To create such
 a generic, you’ll need to use the third argument to
 <code><a href="../reference/new_generic.html">new_generic()</a></code>: an optional function that powers the
 generic. This function has one key property: it must call
-<code>call_method()</code> to actually perform dispatch.</p>
+<code><a href="../reference/new_generic.html">S7_dispatch()</a></code> to actually perform dispatch.</p>
 <p>In general, this property is only needed for very low-level functions
 with precisely defined semantics. A good example of such a function is
 <code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code>:</p>
@@ -195,7 +195,7 @@ with precisely defined semantics. A good example of such a function is
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Omitting <code>…</code> from the generic signature is a strong
 restriction as it prevents methods from adding extra arguments. For this
-reason, it’s should only be used in special situations.</p>
+reason, it should only be used in special situations.</p>
 </div>
 </div>
 <div class="section level2">
@@ -210,7 +210,7 @@ body of the generic:</p>
 <span><span class="co">#&gt; function (x, ...) </span></span>
 <span><span class="co">#&gt; S7::S7_dispatch()</span></span></code></pre></div>
 <p>The most important part of the body is <code><a href="../reference/new_generic.html">S7_dispatch()</a></code>;
-this function finds the method the matches the arguments used for
+this function finds the method that matches the arguments used for
 dispatch and calls it with the arguments supplied to the generic.</p>
 <p>It can be useful to customize this body. The previous section showed
 one case when you might want to supply the body yourself: dropping
@@ -222,7 +222,7 @@ useful cases:</p>
 <li>Perform some standard work.</li>
 </ul>
 <p>A custom <code>fun</code> must always include a call to
-<code>call_method()</code>, which will usually be the last call.</p>
+<code><a href="../reference/new_generic.html">S7_dispatch()</a></code>, which will usually be the last call.</p>
 <div class="section level3">
 <h3 id="add-required-arguments">Add required arguments<a class="anchor" aria-label="anchor" href="#add-required-arguments"></a>
 </h3>
@@ -294,11 +294,12 @@ have to provide an alternative argument.</p>
 <h2 id="super">
 <code>super()</code><a class="anchor" aria-label="anchor" href="#super"></a>
 </h2>
-<p>Sometimes it’s useful to define a method for in terms of its
-superclass. A good example of this is computing the mean of a date —
-since dates represent the number of days since 1970-01-01, computing the
-mean is just a matter of computing the mean of the underlying numeric
-vector and converting it back to a date.</p>
+<p>Sometimes it’s useful to define a method for a class that relies on
+the implementation for its superclass. A good example of this is
+computing the mean of a date — since dates represent the number of days
+since 1970-01-01, computing the mean is just a matter of computing the
+mean of the underlying numeric vector and converting it back to a
+date.</p>
 <p>To demonstrate this idea, I’ll first define a mean generic with a
 method for numbers:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
@@ -345,8 +346,8 @@ that would otherwise be very difficult.</p>
 <h2 id="multiple-dispatch">Multiple dispatch<a class="anchor" aria-label="anchor" href="#multiple-dispatch"></a>
 </h2>
 <p>So far we have focused primarily on single dispatch, i.e. generics
-where <code>dispatch_on</code> is a single string. It is also possible
-to supply a length 2 (or more!) vector <code>dispatch_on</code> to
+where <code>dispatch_args</code> is a single string. It is also possible
+to supply a length 2 (or more!) vector <code>dispatch_args</code> to
 create a generic that performs multiple dispatch, i.e. it uses the
 classes of more than one object to find the appropriate method.</p>
 <p>Multiple dispatch is a feature primarily of S4, although S3 includes

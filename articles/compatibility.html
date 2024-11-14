@@ -186,18 +186,18 @@ data structure and using a constructor to enforce the structure:</p>
 <p>Alternatively you could convert it to the most natural representation
 using S7:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">rle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"rle"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">new_rle</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"rle"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  lengths <span class="op">=</span> <span class="va">class_integer</span>,</span>
 <span>  values <span class="op">=</span> <span class="va">class_atomic</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>To allow existing methods to work you’ll need to override
 <code>$</code> to access properties instead of list elements:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">`$`</span>, <span class="va">rle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">prop</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">`$`</span>, <span class="va">new_rle</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">prop</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/rle.html" class="external-link">rle</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Run Length Encoding</span></span>
-<span><span class="co">#&gt;   lengths: int [1:10] 1 2 3 4 5 6 7 8 9 10</span></span>
-<span><span class="co">#&gt;   values : logi(0)</span></span></code></pre></div>
+<span><span class="co">#&gt;   lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1</span></span>
+<span><span class="co">#&gt;   values : int [1:10] 1 2 3 4 5 6 7 8 9 10</span></span></code></pre></div>
 <p>The chief disadvantage of this approach is any subclasses will need
 to be converted to S7 as well.</p>
 </div>
