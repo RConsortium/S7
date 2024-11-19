@@ -44,8 +44,8 @@ That means you will also need to document it, and since the constructor is a fun
 If you export a class, you must also set the `package` argument, ensuring that classes with the same name are disambiguated across packages.
 
 You should document generics like regular functions (since they are!).
-If you expect others to create their own methods for your generic, you may want to include an section describing the the properties that you expect all methods to have.
-We plan to provide a an easy way to all methods for a generic, but have not yet implemented it.
+If you expect others to create their own methods for your generic, you may want to include an section describing the properties that you expect all methods to have.
+We plan to provide an easy way to document all methods for a generic, but have not yet implemented it.
 You can track progress at <https://github.com/RConsortium/S7/issues/167>.
 
 We don't currently have any recommendations on documenting methods.
