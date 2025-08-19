@@ -1,5 +1,10 @@
 # S7 (development version)
 
+## Bug fixes and minor improvements
+
+* The `str()` method, which is also used for printing, no longer throws an error
+  for classes with a custom constructor for which `dim()` is defined (#560).
+
 # S7 0.2.0
 
 ## New features

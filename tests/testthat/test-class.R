@@ -256,3 +256,17 @@ test_that("can't create class with reserved property names", {
                                        dimnames = class_list))
   })
 })
+
+test_that("printer (issue #560)", {
+  A = new_class("A",
+    constructor = function() {
+      new_object(A)
+    }
+  )
+
+  a = A()
+  method(dim, A) <- function(x) {
+    1L
+  }
+  expect_snapshot(a)
+})
