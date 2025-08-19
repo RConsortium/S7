@@ -243,3 +243,10 @@
       Error in `new_class()`:
       ! property can't be named: dim, dimnames
 
+# printer (issue #560)
+
+    Code
+      a
+    Output
+      <S7::A> function ()  
+
