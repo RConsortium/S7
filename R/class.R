@@ -301,10 +301,11 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
     attrs <- attributes(object)
     if (is.environment(object)) {
       attributes(object) <- NULL
-    } else if (is.function(object)) {
-      attributes(object) <- list()
-    } else  {
+    } else if ((is.atomic(object) && !is.null(object)) || is.list(object)) {
+      # is.atomic for NULL is only FALSE since R 4.4
       attributes(object) <- list(names = names(object), dim = dim(object))
+    } else {
+      attributes(object) <- list()
     }
 
     str(object, nest.lev = nest.lev)
