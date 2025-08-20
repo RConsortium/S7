@@ -248,5 +248,14 @@
     Code
       a
     Output
-      <S7::A> function ()  
+      function() NULL
+      <environment: 0x10a542108>
+      attr(,"class")
+      [1] "S7::A"     "function"  "S7_object"
+      attr(,"S7_class")
+      <S7::A> class
+      @ parent     : <function>
+      @ constructor: function() {...}
+      @ validator  : <NULL>
+      @ properties :
 

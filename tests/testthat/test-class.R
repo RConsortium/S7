@@ -259,8 +259,9 @@ test_that("can't create class with reserved property names", {
 
 test_that("printer (issue #560)", {
   A = new_class("A",
+    parent = class_function,
     constructor = function() {
-      new_object(A)
+      new_object(function() NULL)
     }
   )
 
