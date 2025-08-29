@@ -36,19 +36,49 @@
 #' try(method(bizarro, class = class_data.frame))
 #' try(method(bizarro, object = "x"))
 method <- function(generic, class = NULL, object = NULL) {
-  check_is_S7(generic, S7_generic)
+  generic <- as_generic(generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
 
-  method <- .Call(method_, generic, dispatch, environment(), FALSE)
-  if (!is.null(method)) {
-    return(method)
+  if (is_S7_generic(generic)) {
+    method <- select_S7_method(generic, dispatch)
+  } else if (is_S3_generic(generic)) {
+    method <- select_S3_method(generic, dispatch)
+  } else if (is_S4_generic(generic)) {
+    method <- select_S4_method(generic, dispatch)
   }
+  
+  if (!is.null(method))
+    return(method)
 
   # can't rely on usual error mechanism because it involves looking up
   # argument values in the dispatch environment, which doesn't exist here
   types <- error_types(generic, class = class, object = object)
-  msg <- method_lookup_error_message(generic@name, types)
+  msg <- method_lookup_error_message(generic_name(generic), types)
   stop(msg, call. = FALSE)
+}
+
+select_S7_method <- function(generic, dispatch) {
+  .Call(method_, generic, dispatch, environment(), FALSE)
+}
+
+select_S3_method <- function(generic, dispatch) {
+  if (length(dispatch) != 1L) {
+    stop("S3 generics support only single dispatch")
+  }
+
+  classes <- c(dispatch[[1L]], "default")
+  for (class in classes) {
+    method <- utils::getS3method(generic$name, class, optional = TRUE)
+    if (!is.null(method))
+      return(method)
+  }
+
+  NULL
+}
+
+select_S4_method <- function(generic, dispatch) {
+  sig <- vapply(dispatch, `[`, character(1L), 1L)
+  methods::selectMethod(generic, sig, optional = TRUE)
 }
 
 #' Explain method dispatch
@@ -141,6 +171,6 @@ error_types <- function(generic, class = NULL, object = NULL) {
     signature <- as_signature(class, generic)
     types <- vcapply(signature, class_desc)
   }
-  names(types) <- generic@dispatch_args
+  names(types) <- generic_dispatch_args(generic)
   types
 }
