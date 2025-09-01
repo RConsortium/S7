@@ -238,8 +238,8 @@ is_class <- function(x) inherits(x, "S7_class")
 
 # Object ------------------------------------------------------------------
 
-#' @param .parent,... Parent object and named properties used to construct the
-#'   object.
+#' @param .parent,... Parent S7 object and named properties used to construct
+#'   the object.
 #' @rdname new_class
 #' @export
 new_object <- function(.parent, ...) {
@@ -253,7 +253,15 @@ new_object <- function(.parent, ...) {
   }
 
   # force .parent before ...
-  # TODO: Some type checking on `.parent`?
+  # TODO: Some additional type checking on `.parent`?
+
+  if (!inherits(.parent, "S7_object"))
+    stop("`.parent` needs to be an S7_object")
+  if (inherits(.parent, "S7_class")) {
+    stop(paste("`.parent` cannot be of type S7_class. Did you type",
+               "`.parent = S7_object` instead of `.parent = S7_object()`?"))
+  }
+
   object <- .parent
 
   args <- list(...)
