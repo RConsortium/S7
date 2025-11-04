@@ -8,15 +8,18 @@
 \usage{
 props(object, names = prop_names(object))
 
-props(object) <- value
+props(object, check = TRUE) <- value
 
-set_props(object, ...)
+set_props(object, ..., .check = TRUE)
 }
 \arguments{
 \item{object}{An object from a S7 class}
 
 \item{names}{A character vector of property names to retrieve. Default is all
 properties.}
+
+\item{check, .check}{If \code{TRUE}, run \code{\link[=validate]{validate()}} on the object
+before returning.}
 
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}

@@ -426,14 +426,21 @@ props <- function(object, names = prop_names(object)) {
 #' @export
 #' @param value A named list of values. The object is checked for validity
 #'   only after all replacements are performed.
-`props<-` <- function(object, value) {
-  check_is_S7(object)
-  stopifnot(is.list(value))
+#' @param check,.check If `TRUE`, run [validate()] on the object
+#'   before returning.
+`props<-` <- function(object, check = TRUE, value) {
+  if (check) {
+    check_is_S7(object)
+    stopifnot(is.list(value))
+  }
 
   for (name in names(value)) {
     prop(object, name, check = FALSE) <- value[[name]]
   }
-  validate(object)
+
+  if (check) {
+    validate(object)
+  }
 
   object
 }
@@ -441,8 +448,8 @@ props <- function(object, names = prop_names(object)) {
 #' @export
 #' @param ... Name-value pairs given property to modify and new value.
 #' @rdname props
-set_props <- function(object, ...) {
-  props(object) <- list(...)
+set_props <- function(object, ..., .check = TRUE) {
+  props(object, check = .check) <- list(...)
   object
 }
 
