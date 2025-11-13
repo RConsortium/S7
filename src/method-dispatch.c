@@ -15,6 +15,7 @@ extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
 
 extern SEXP R_TRUE;
+extern SEXP s7_proto_object;
 
 
 static inline
@@ -157,11 +158,7 @@ SEXP S7_obj_dispatch(SEXP object) {
 }
 
 SEXP S7_object_(void) {
-  SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
-  Rf_classgets(obj, Rf_mkString("S7_object"));
-  UNPROTECT(1);
-
-  return obj;
+  return Rf_duplicate(s7_proto_object);
 }
 
 SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
