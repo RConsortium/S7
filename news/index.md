@@ -10,6 +10,9 @@
   ([\#574](https://github.com/RConsortium/S7/issues/574),
   [\#575](https://github.com/RConsortium/S7/issues/575)).
 
+- Internal changes to support R-devel (4.6)
+  ([\#577](https://github.com/RConsortium/S7/issues/577)).
+
 ## S7 0.2.0
 
 CRAN release: 2024-11-07
