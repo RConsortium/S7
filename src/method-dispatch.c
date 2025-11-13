@@ -3,8 +3,10 @@
 #include <Rinternals.h>
 #include <Rversion.h>
 
-#if (R_VERSION < R_Version(4, 5, 0))
-#define R_ClosureFormals FORMALS
+#if (R_VERSION >= R_Version(4, 5, 0))
+#define getClosureFormals R_ClosureFormals
+#else
+#define getClosureFormals FORMALS
 #endif
 
 extern SEXP parent_sym;
@@ -97,7 +99,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   PROTECT_WITH_INDEX(R_NilValue, &pi);
 
   // Find the value of each argument.
-  SEXP formals = R_ClosureFormals(generic);
+  SEXP formals = getClosureFormals(generic);
   for (R_xlen_t i = 0; i < n_dispatch; ++i) {
     SEXP name = TAG(formals);
 
@@ -172,7 +174,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP envir = CAR(args_); args_ = CDR(args_);
 
   // Get the number of arguments to the generic
-  SEXP formals = R_ClosureFormals(generic);
+  SEXP formals = getClosureFormals(generic);
   R_xlen_t n_args = Rf_xlength(formals);
   // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
