@@ -1,5 +1,8 @@
 # S7 (development version)
 
+* `props<-()` and `set_props()` gain `check`/`.check` arguments, letting you
+  set properties without calling `validate()` (#574, #575).
+
 # S7 0.2.0
 
 ## New features

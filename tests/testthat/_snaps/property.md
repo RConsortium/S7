@@ -37,6 +37,24 @@
       Error:
       ! <foo>@y must be <double>, not <character>
 
+# props<- / `check = FALSE` skip validation
+
+    Code
+      validate(obj)
+    Condition
+      Error:
+      ! <S7::foo> object is invalid:
+      - bad
+
+# props<- / set_props() skip validation with `.check = FALSE`
+
+    Code
+      validate(obj2)
+    Condition
+      Error:
+      ! <S7::foo> object is invalid:
+      - bad
+
 # new_property() / validates getter and settor
 
     Code
