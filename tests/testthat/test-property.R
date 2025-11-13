@@ -155,6 +155,19 @@ describe("props<-", {
     expect_equal(obj@y, 10)
   })
 
+  it("`check = FALSE` skip validation", {
+    foo <- new_class("foo",
+      properties = list(x = class_double, y = class_double),
+      validator = function(self) if (self@x > self@y) "bad"
+    )
+
+    obj <- foo(1, 2)
+    props(obj, check = FALSE) <- list(x = 2, y = 1)
+    expect_equal(obj@x, 2)
+    expect_equal(obj@y, 1)
+    expect_snapshot(validate(obj), error = TRUE)
+  })
+
   it("has ordinary syntax in set_props()", {
     foo <- new_class("foo", properties = list(x = class_double))
     obj1 <- foo(1)
@@ -162,6 +175,19 @@ describe("props<-", {
 
     expect_equal(obj1@x, 1)
     expect_equal(obj2@x, 2)
+  })
+
+  it("set_props() skip validation with `.check = FALSE`", {
+    foo <- new_class("foo",
+      properties = list(x = class_double, y = class_double),
+      validator = function(self) if (self@x > self@y) "bad"
+    )
+
+    obj <- foo(1, 2)
+    obj2 <- set_props(obj, x = 2, y = 1, .check = FALSE)
+    expect_equal(obj2@x, 2)
+    expect_equal(obj2@y, 1)
+    expect_snapshot(validate(obj2), error = TRUE)
   })
 })
 
