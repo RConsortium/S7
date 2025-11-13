@@ -3,6 +3,8 @@
 * `props<-()` and `set_props()` gain `check`/`.check` arguments, letting you
   set properties without calling `validate()` (#574, #575).
 
+* Internal changes to support R-devel (4.6) (#577).
+
 # S7 0.2.0
 
 ## New features
