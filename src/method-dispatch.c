@@ -1,6 +1,11 @@
 #define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
+
+#if (R_VERSION < R_Version(4, 5, 0))
+#define R_ClosureFormals FORMALS
+#endif
 
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
