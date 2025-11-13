@@ -91,7 +91,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   PROTECT_WITH_INDEX(R_NilValue, &pi);
 
   // Find the value of each argument.
-  SEXP formals = FORMALS(generic);
+  SEXP formals = R_ClosureFormals(generic);
   for (R_xlen_t i = 0; i < n_dispatch; ++i) {
     SEXP name = TAG(formals);
 
@@ -170,7 +170,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP envir = CAR(args_); args_ = CDR(args_);
 
   // Get the number of arguments to the generic
-  SEXP formals = FORMALS(generic);
+  SEXP formals = R_ClosureFormals(generic);
   R_xlen_t n_args = Rf_xlength(formals);
   // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
