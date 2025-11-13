@@ -1,4 +1,4 @@
-# super(): checks to
+# super() / checks to
 
     Code
       foo <- new_class("foo", package = NULL)
@@ -7,7 +7,7 @@
       Error in `super()`:
       ! <foo> doesn't inherit from <character>
 
-# super(): displays nicely
+# super() / displays nicely
 
     Code
       f1 <- super(foo2(), foo1)

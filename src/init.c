@@ -54,7 +54,20 @@ SEXP fn_base_missing;
 SEXP ns_S7;
 
 SEXP R_TRUE, R_FALSE;
+SEXP s7_proto_object;
 
+static SEXP make_s7_proto_object(void)
+{
+    SEXP obj = PROTECT(Rf_allocS4Object());
+    SEXP asS3_call = PROTECT(Rf_lang4(
+        Rf_install("asS3"), obj, /*flag =*/ R_TRUE, /*complete =*/ R_FALSE
+    ));
+    obj = PROTECT(Rf_eval(asS3_call, R_BaseEnv));
+    Rf_classgets(obj, Rf_mkString("S7_object"));
+
+    UNPROTECT(3);
+    return obj;
+}
 
 void R_init_S7(DllInfo *dll)
 {
@@ -86,4 +99,5 @@ void R_init_S7(DllInfo *dll)
     ns_S7 = Rf_eval(Rf_install("S7"), R_NamespaceRegistry);
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
+    R_PreserveObject(s7_proto_object = make_s7_proto_object());
 }

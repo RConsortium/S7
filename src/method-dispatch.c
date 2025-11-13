@@ -1,6 +1,13 @@
 #define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
+
+#if (R_VERSION >= R_Version(4, 5, 0))
+#define getClosureFormals R_ClosureFormals
+#else
+#define getClosureFormals FORMALS
+#endif
 
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
@@ -15,6 +22,7 @@ extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
 
 extern SEXP R_TRUE;
+extern SEXP s7_proto_object;
 
 
 static inline
@@ -91,7 +99,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   PROTECT_WITH_INDEX(R_NilValue, &pi);
 
   // Find the value of each argument.
-  SEXP formals = FORMALS(generic);
+  SEXP formals = getClosureFormals(generic);
   for (R_xlen_t i = 0; i < n_dispatch; ++i) {
     SEXP name = TAG(formals);
 
@@ -157,11 +165,7 @@ SEXP S7_obj_dispatch(SEXP object) {
 }
 
 SEXP S7_object_(void) {
-  SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
-  Rf_classgets(obj, Rf_mkString("S7_object"));
-  UNPROTECT(1);
-
-  return obj;
+  return Rf_duplicate(s7_proto_object);
 }
 
 SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
@@ -170,7 +174,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP envir = CAR(args_); args_ = CDR(args_);
 
   // Get the number of arguments to the generic
-  SEXP formals = FORMALS(generic);
+  SEXP formals = getClosureFormals(generic);
   R_xlen_t n_args = Rf_xlength(formals);
   // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);

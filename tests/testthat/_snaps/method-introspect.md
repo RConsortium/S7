@@ -1,4 +1,4 @@
-# method introspection: errors on invalid inputs
+# method introspection / errors on invalid inputs
 
     Code
       method(print, 1)
@@ -28,7 +28,7 @@
       Error:
       ! `object` must be length 2
 
-# method introspection: errors if no method found
+# method introspection / errors if no method found
 
     Code
       method(foo, class = class_integer)
@@ -55,7 +55,7 @@
       - x: <integer>
       - y: <double>
 
-# method explanation: shows all possible methods along with matches
+# method explanation / shows all possible methods along with matches
 
        add([foo2], [foo2])
     -> add([foo2], [foo1])
