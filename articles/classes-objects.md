@@ -1,0 +1,522 @@
+# Classes and objects
+
+This vignette dives into the details of S7 classes and objects, building
+on the basics discussed in
+[`vignette("S7")`](https://rconsortium.github.io/S7/articles/S7.md). It
+will cover validators, the finer details of properties, and finally how
+to write your own constructors.
+
+``` r
+library(S7)
+```
+
+## Validation
+
+S7 classes can have an optional **validator** that checks that the
+values of the properties are OK. A validator is a function that takes
+the object (called `self`) and returns `NULL` if it’s valid or returns a
+character vector listing the problems.
+
+### Basics
+
+In the following example we create a `Range` class that enforces that
+`@start` and `@end` are single numbers, and that `@start` is less than
+`@end`:
+
+``` r
+Range <- new_class("Range",
+  properties = list(
+    start = class_double,
+    end = class_double
+  ),
+  validator = function(self) {
+    if (length(self@start) != 1) {
+      "@start must be length 1"
+    } else if (length(self@end) != 1) {
+      "@end must be length 1"
+    } else if (self@end < self@start) {
+      sprintf(
+        "@end (%i) must be greater than or equal to @start (%i)",
+        self@end,
+        self@start
+      )
+    }
+  }
+)
+```
+
+You can typically write a validator as a series of `if`-`else`
+statements, but note that the order of the statements is important. For
+example, in the code above, we can’t check that `self@end < self@start`
+before we’ve checked that `@start` and `@end` are length 1.
+
+As we’ll discuss shortly, you can also perform validation on a
+per-property basis, so generally class validators should be reserved for
+interactions between properties.
+
+### When is validation performed?
+
+Objects are validated automatically when constructed and when any
+property is modified:
+
+``` r
+x <- Range(1, 2:3)
+#> Error: <Range> object properties are invalid:
+#> - @end must be <double>, not <integer>
+x <- Range(10, 1)
+#> Error: <Range> object is invalid:
+#> - @end (1) must be greater than or equal to @start (10)
+
+x <- Range(1, 10)
+x@start <- 20
+#> Error: <Range> object is invalid:
+#> - @end (10) must be greater than or equal to @start (20)
+```
+
+You can also manually
+[`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
+an object if you use a low-level R function to bypass the usual checks
+and balances of `@`:
+
+``` r
+x <- Range(1, 2)
+attr(x, "start") <- 3
+validate(x)
+#> Error: <Range> object is invalid:
+#> - @end (2) must be greater than or equal to @start (3)
+```
+
+### Avoiding validation
+
+Imagine you wanted to write a function that would shift a property to
+the left or the right:
+
+``` r
+shift <- function(x, shift) {
+  x@start <- x@start + shift
+  x@end <- x@end + shift
+  x
+}
+shift(Range(1, 10), 1)
+#> <Range>
+#>  @ start: num 2
+#>  @ end  : num 11
+```
+
+There’s a problem if `shift` is larger than `@end` - `@start`:
+
+``` r
+shift(Range(1, 10), 10)
+#> Error: <Range> object is invalid:
+#> - @end (10) must be greater than or equal to @start (11)
+```
+
+While the end result of `shift()` will be valid, an intermediate state
+is not. The easiest way to resolve this problem is to set the properties
+all at once:
+
+``` r
+shift <- function(x, shift) {
+  props(x) <- list(
+    start = x@start + shift,
+    end = x@end + shift
+  )
+  x
+}
+shift(Range(1, 10), 10)
+#> <Range>
+#>  @ start: num 11
+#>  @ end  : num 20
+```
+
+The object is still validated, but it’s only validated once, after all
+the properties have been modified.
+
+## Properties
+
+So far we’ve focused on the simplest form of property specification
+where you use a named list to supply the desired type for each property.
+This is a convenient shorthand for a call to
+[`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md).
+For example, the property definition of range above is shorthand for:
+
+``` r
+Range <- new_class("Range",
+  properties = list(
+    start = new_property(class_double),
+    end = new_property(class_double)
+  )
+)
+```
+
+Calling
+[`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+explicitly allows you to control aspects of the property other than its
+type. The following sections show you how to add a validator, provide a
+default value, compute the property value on demand, or provide a fully
+dynamic property.
+
+### Validation
+
+You can optionally provide a validator for each property. For example,
+instead of validating the length of `start` and `end` in the validator
+of our `Range` class, we could implement those at the property level:
+
+``` r
+prop_number <- new_property(
+  class = class_double,
+  validator = function(value) {
+    if (length(value) != 1L) "must be length 1"
+  }
+)
+
+Range <- new_class("Range",
+  properties = list(
+    start = prop_number,
+    end = prop_number
+  ),
+  validator = function(self) {
+    if (self@end < self@start) {
+      sprintf(
+        "@end (%i) must be greater than or equal to @start (%i)",
+        self@end,
+        self@start
+      )
+    }
+  }
+)
+
+Range(start = c(1.5, 3.5))
+#> Error: <Range> object properties are invalid:
+#> - @start must be length 1
+#> - @end must be length 1
+Range(end = c(1.5, 3.5))
+#> Error: <Range> object properties are invalid:
+#> - @start must be length 1
+#> - @end must be length 1
+```
+
+Note that property validators shouldn’t include the name of the property
+in validation messages as S7 will add it automatically. This makes it
+possible to use the same property definition for multiple properties of
+the same type, as above.
+
+### Default value
+
+The defaults of
+[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+create a class that can be constructed with no arguments:
+
+``` r
+Empty <- new_class("Empty",
+  properties = list(
+    x = class_double,
+    y = class_character,
+    z = class_logical
+  ))
+Empty()
+#> <Empty>
+#>  @ x: num(0) 
+#>  @ y: chr(0) 
+#>  @ z: logi(0)
+```
+
+The default values of the properties will be filled in with “empty”
+instances. You can instead provide your own defaults by using the
+`default` argument:
+
+``` r
+Empty <- new_class("Empty",
+  properties = list(
+    x = new_property(class_numeric, default = 0),
+    y = new_property(class_character, default = ""),
+    z = new_property(class_logical, default = NA)
+  )
+)
+Empty()
+#> <Empty>
+#>  @ x: num 0
+#>  @ y: chr ""
+#>  @ z: logi NA
+```
+
+A quoted call becomes a standard function promise in the default
+constructor, evaluated at the time the object is constructed.
+
+``` r
+Stopwatch <- new_class("Stopwatch", properties = list(
+  start_time = new_property(
+    class = class_POSIXct,
+    default = quote(Sys.time())
+  ),
+  elapsed = new_property(
+    getter = function(self) {
+      difftime(Sys.time(), self@start_time, units = "secs")
+    }
+  )
+))
+args(Stopwatch)
+#> function (start_time = Sys.time()) 
+#> NULL
+round(Stopwatch()@elapsed)
+#> Time difference of 0 secs
+round(Stopwatch(Sys.time() - 1)@elapsed)
+#> Time difference of 1 secs
+```
+
+### Computed properties
+
+It’s sometimes useful to have a property that is computed on demand. For
+example, it’d be convenient to pretend that our range has a length,
+which is just the distance between `@start` and `@end`. You can
+dynamically compute the value of a property by defining a `getter`:
+
+``` r
+Range <- new_class("Range",
+  properties = list(
+    start = class_double,
+    end = class_double,
+    length = new_property(
+      getter = function(self) self@end - self@start
+    )
+  )
+)
+
+x <- Range(start = 1, end = 10)
+x
+#> <Range>
+#>  @ start : num 1
+#>  @ end   : num 10
+#>  @ length: num 9
+```
+
+Computed properties are read-only:
+
+``` r
+x@length <- 20
+#> Error: Can't set read-only property <Range>@length
+```
+
+### Dynamic properties
+
+You can make a computed property fully dynamic so that it can be read
+and written by also supplying a `setter`.
+
+A `setter` is a function with arguments `self` and `value` that returns
+a modified object.
+
+For example, we could extend the previous example to allow the `@length`
+to be set, by modifying the `@end` of the vector:
+
+``` r
+Range <- new_class("Range",
+  properties = list(
+    start = class_double,
+    end = class_double,
+    length = new_property(
+      class = class_double,
+      getter = function(self) self@end - self@start,
+      setter = function(self, value) {
+        if (!length(value)) {
+          # Do nothing if called with the constructor default
+          # value for this property, a zero-length double vector.
+          return(self)
+        }
+        self@end <- self@start + value
+        self
+      }
+    )
+  )
+)
+
+x <- Range(start = 1, end = 10)
+x
+#> <Range>
+#>  @ start : num 1
+#>  @ end   : num 10
+#>  @ length: num 9
+
+x@length <- 5
+x
+#> <Range>
+#>  @ start : num 1
+#>  @ end   : num 6
+#>  @ length: num 5
+```
+
+### Common Patterns
+
+`getter`, `setter`, `default`, and `validator` can be used to implement
+many common patterns of properties.
+
+#### Deprecated properties
+
+A `setter` + `getter` can be used to to deprecate a property:
+
+``` r
+Person <- new_class("Person", properties = list(
+ first_name = class_character,
+ firstName = new_property(
+    class_character,
+    default = quote(first_name),
+    getter = function(self) {
+      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
+      self@first_name
+    },
+    setter = function(self, value) {
+      if (identical(value, self@first_name)) {
+        return(self)
+      }
+      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
+      self@first_name <- value
+      self
+    }
+  )
+))
+
+args(Person)
+#> function (first_name = character(0), firstName = first_name) 
+#> NULL
+
+hadley <- Person(firstName = "Hadley")
+#> Warning: @firstName is deprecated; please use @first_name instead
+
+hadley <- Person(first_name = "Hadley") # no warning
+
+hadley@firstName
+#> Warning: @firstName is deprecated; please use @first_name instead
+#> [1] "Hadley"
+
+hadley@firstName <- "John"
+#> Warning: @firstName is deprecated; please use @first_name instead
+
+hadley@first_name  # no warning
+#> [1] "John"
+```
+
+#### Required properties
+
+You can make a property required by the constructor either by:
+
+- relying on the validator to error with the default value, or by
+- setting the property default to a quoted error call.
+
+``` r
+Person <- new_class("Person", properties = list(
+ name = new_property(
+   class_character,
+   validator = function(value) {
+     if (length(value) != 1 || is.na(value) || value == "")
+       "must be a non-empty string"
+   }
+ )
+))
+
+try(Person())
+#> Error : <Person> object properties are invalid:
+#> - @name must be a non-empty string
+
+try(Person(1)) # class_character$validator() is also checked.
+#> Error : <Person> object properties are invalid:
+#> - @name must be <character>, not <double>
+
+Person("Alice")
+#> <Person>
+#>  @ name: chr "Alice"
+```
+
+``` r
+Person <- new_class("Person", properties = list(
+ name = new_property(
+   class_character,
+   default = quote(stop("@name is required")))
+))
+
+try(Person())
+#> Error in Person() : @name is required
+
+Person("Alice")
+#> <Person>
+#>  @ name: chr "Alice"
+```
+
+#### Frozen properties
+
+You can mark a property as read-only after construction by providing a
+custom `setter`.
+
+``` r
+Person <- new_class("Person", properties = list(
+ birth_date = new_property(
+   class_Date,
+   setter = function(self, value) {
+     if(!is.null(self@birth_date)) {
+       stop("@birth_date is read-only", call. = FALSE)
+     }
+     self@birth_date <- as.Date(value)
+     self
+   }
+)))
+
+person <- Person("1999-12-31")
+
+try(person@birth_date <- "2000-01-01")
+#> Error : @birth_date is read-only
+```
+
+## Constructors
+
+You can see the source code for a class’s constructor by accessing the
+`constructor` property:
+
+``` r
+Range@constructor
+#> function (start = numeric(0), end = numeric(0), length = numeric(0)) 
+#> {
+#>     start
+#>     end
+#>     length
+#>     S7::new_object(S7::S7_object(), start = start, end = end, 
+#>         length = length)
+#> }
+```
+
+In most cases, S7’s default constructor will be all you need. However,
+in some cases you might want something custom. For example, for our
+range class, maybe we’d like to construct it from a vector of numeric
+values, automatically computing the min and the max. To implement this
+we could do:
+
+``` r
+Range <- new_class("Range",
+  properties = list(
+    start = class_numeric,
+    end = class_numeric
+  ),
+  constructor = function(x) {
+    new_object(S7_object(),
+               start = min(x, na.rm = TRUE),
+               end = max(x, na.rm = TRUE))
+  }
+)
+
+Range(c(10, 5, 0, 2, 5, 7))
+#> <Range>
+#>  @ start: num 0
+#>  @ end  : num 10
+```
+
+A constructor must always end with a call to
+[`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md).
+The first argument to
+[`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+should be an object of the `parent` class (if you haven’t specified a
+`parent` argument to
+[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md),
+then you should use
+[`S7_object()`](https://rconsortium.github.io/S7/reference/S7_object.md)
+as the parent here). That argument should be followed by one named
+argument for each property.
+
+There’s one drawback of custom constructors that you should be aware of:
+any subclass will also require a custom constructor.

@@ -1,0 +1,169 @@
+# Compatibility with S3 and S4
+
+S7 is designed to be compatible with S3 and S4. This vignette discusses
+the details.
+
+``` r
+library(S7)
+```
+
+## S3
+
+S7 objects *are* S3 objects, because S7 is implemented on top of S3.
+There are two main differences between an S7 object and an S3 object:
+
+- As well as the `class` attribute possessed by S3 objects, S7 objects
+  have an additional `S7_class` attribute that contains the object that
+  defines the class.
+
+- S7 objects have properties; S3 objects have attributes. Properties are
+  implemented on top of attributes, so you can access them directly with
+  `attr` and friends. When working inside of S7, you should never use
+  attributes directly, but it does mean that existing code will continue
+  to work.
+
+All up, this means most usage of S7 with S3 will just work.
+
+- S7 can register methods for:
+
+  - S7 class and S3 generic
+  - S3 class and S7 generic
+
+- S7 classes can extend S3 classes
+
+- S3 classes can extend S7 classes
+
+### Methods
+
+[`method()`](https://rconsortium.github.io/S7/reference/method.md) is
+designed to be the single tool for method registration that you need
+when working with S7 classes. You can also register a method for an S7
+class and S3 generic without using S7, because all S7 objects have S3
+classes, and S3 dispatch will operate on them normally.
+
+``` r
+Foo <- new_class("Foo")
+class(Foo())
+#> [1] "Foo"       "S7_object"
+
+mean.Foo <- function(x, ...) {
+  "mean of foo"
+}
+
+mean(Foo())
+#> [1] "mean of foo"
+```
+
+### Classes
+
+It’s possible to extend an S7 class with S3. This is primarily useful
+because in many cases it allows you to change a class hierarchy from the
+inside out: you can provide a formal definition of an S3 class using S7,
+and its subclasses don’t need to change.
+
+### List classes
+
+Many simple S3 classes are implemented as lists, e.g. rle.
+
+``` r
+rle <- function(x) {
+  if (!is.vector(x) && !is.list(x)) {
+    stop("'x' must be a vector of an atomic type")
+  }
+  n <- length(x)
+  if (n == 0L) {
+    new_rle(integer(), x)
+  } else {
+    y <- x[-1L] != x[-n]
+    i <- c(which(y | is.na(y)), n)
+    new_rle(diff(c(0L, i)), x[i])
+  }
+}
+new_rle <- function(lengths, values) {
+  structure(
+    list(
+      lengths = lengths,
+      values = values
+    ),
+    class = "rle"
+  )
+}
+```
+
+There are two ways to convert this to S7. You could keep the structure
+exactly the same, using a `list` as the underlying data structure and
+using a constructor to enforce the structure:
+
+``` r
+new_rle <- new_class("rle",
+  parent = class_list,
+  constructor = function(lengths, values) {
+    new_object(list(lengths = lengths, values = values))
+  }
+)
+rle(1:10)
+#> Run Length Encoding
+#>   lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1
+#>   values : int [1:10] 1 2 3 4 5 6 7 8 9 10
+```
+
+Alternatively you could convert it to the most natural representation
+using S7:
+
+``` r
+new_rle <- new_class("rle", properties = list(
+  lengths = class_integer,
+  values = class_atomic
+))
+```
+
+To allow existing methods to work you’ll need to override `$` to access
+properties instead of list elements:
+
+``` r
+method(`$`, new_rle) <- prop
+rle(1:10)
+#> Run Length Encoding
+#>   lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1
+#>   values : int [1:10] 1 2 3 4 5 6 7 8 9 10
+```
+
+The chief disadvantage of this approach is any subclasses will need to
+be converted to S7 as well.
+
+## S4
+
+S7 properties are equivalent to S4 slots. The chief difference is that
+they can be dynamic.
+
+- S7 classes can not extend S4 classes
+- S4 classes can extend S3 classes
+- S7 can register methods for:
+  - S7 class and S4 generic
+  - S4 class and S7 generic
+
+### Unions
+
+S4 unions are automatically converted to S7 unions. There’s an important
+difference in the way that class unions are handled in S4 and S7. In S4,
+they’re handled at method dispatch time, so when you create
+`setUnion("u1", c("class1", "class2"))`, `class1` and `class2` now
+extend `u1`. In S7, unions are handled at method registration time so
+that registering a method for a union is just short-hand for registering
+a method for each of the classes.
+
+``` r
+Class1 <- new_class("Class1")
+Class2 <- new_class("Class2")
+Union1 <- new_union(Class1, Class2)
+
+foo <- new_generic("foo", "x")
+method(foo, Union1) <- function(x) ""
+foo
+#> <S7_generic> foo(x, ...) with 2 methods:
+#> 1: method(foo, Class2)
+#> 2: method(foo, Class1)
+```
+
+S7 unions allow you to restrict the type of a property in the same way
+that S4 unions allow you to restrict the type of a slot.

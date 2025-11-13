@@ -1,0 +1,294 @@
+# S7
+
+The S7 package is a new OOP system designed to be a successor to S3 and
+S4. It has been designed and implemented collaboratively by the R
+Consortium Object-Oriented Programming Working Group, which includes
+representatives from R-Core, Bioconductor, the tidyverse/Posit, and the
+wider R community.
+
+S7 is somewhat experimental; we are confident in the design but it has
+relatively little usage in the wild currently. We hope to avoid any
+major breaking changes, but reserve the right if we discover major
+problems.
+
+## Installation
+
+The long-term goal of this project is to merge S7 in to base R. For now,
+you can experiment by installing it from CRAN:
+
+``` r
+install.packages("S7")
+```
+
+## Usage
+
+This section gives a very brief overview of the entirety of S7. Learn
+more of the basics in
+[`vignette("S7")`](https://rconsortium.github.io/S7/articles/S7.md),
+generics and methods in
+[`vignette("generics-methods")`](https://rconsortium.github.io/S7/articles/generics-methods.md),
+classes and objects in
+[`vignette("classes-objects")`](https://rconsortium.github.io/S7/articles/classes-objects.md),
+and compatibility with S3 and S4 in
+[`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md).
+
+``` r
+library(S7)
+```
+
+### Classes and objects
+
+S7 classes have a formal definition, which includes a list of properties
+and an optional validator. Use
+[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+to define a class:
+
+``` r
+range <- new_class("range",
+  properties = list(
+    start = class_double,
+    end = class_double
+  ),
+  validator = function(self) {
+    if (length(self@start) != 1) {
+      "@start must be length 1"
+    } else if (length(self@end) != 1) {
+      "@end must be length 1"
+    } else if (self@end < self@start) {
+      "@end must be greater than or equal to @start"
+    }
+  }
+)
+```
+
+[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+returns the class object, which is also the constructor you use to
+create instances of the class:
+
+``` r
+x <- range(start = 1, end = 10)
+x
+#> <range>
+#>  @ start: num 1
+#>  @ end  : num 10
+```
+
+### Properties
+
+The data possessed by an object is called its **properties**. Use `@` to
+get and set properties:
+
+``` r
+x@start
+#> [1] 1
+x@end <- 20
+x
+#> <range>
+#>  @ start: num 1
+#>  @ end  : num 20
+```
+
+Properties are automatically validated against the type declared in
+[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+(`double` in this case), and with the class **validator**:
+
+``` r
+x@end <- "x"
+#> Error: <range>@end must be <double>, not <character>
+x@end <- -1
+#> Error: <range> object is invalid:
+#> - @end must be greater than or equal to @start
+```
+
+### Generics and methods
+
+Like S3 and S4, S7 uses **functional OOP** where methods belong to
+**generic** functions, and method calls look like all other function
+calls: `generic(object, arg2, arg3)`. This style is called functional
+because from the outside it looks like a regular function call, and
+internally the components are also functions.
+
+Use
+[`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+to create a new generic: the first argument is the generic name (used in
+error messages) and the second gives the arguments used for dispatch.
+The third, and optional argument, supplies the body of the generic. This
+is only needed if your generic has additional arguments that aren’t used
+for method dispatch.
+
+``` r
+inside <- new_generic("inside", "x")
+```
+
+Once you have a generic, you can define a method for a specific class
+with `method<-`:
+
+``` r
+# Add a method for our class
+method(inside, range) <- function(x, y) {
+  y >= x@start & y <= x@end
+}
+
+inside(x, c(0, 5, 10, 15))
+#> [1] FALSE  TRUE  TRUE  TRUE
+```
+
+You can use `method<-` to register methods for base types on S7
+generics, and S7 classes on S3 or S4 generics. See
+[`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md)
+for more details.
+
+# Package index
+
+## Key functions
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  : Define a new S7 class
+- [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+  [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+  : Define a new generic
+- [`new_union()`](https://rconsortium.github.io/S7/reference/new_union.md)
+  : Define a class union
+- [`` `method<-`() ``](https://rconsortium.github.io/S7/reference/method-set.md)
+  : Register an S7 method for a generic
+- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  : Does this object inherit from an S7 class?
+- [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
+  [`valid_eventually()`](https://rconsortium.github.io/S7/reference/validate.md)
+  [`valid_implicitly()`](https://rconsortium.github.io/S7/reference/validate.md)
+  : Validate an S7 object
+
+## Properties
+
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  : Define a new property
+- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md)
+  [`` `prop<-`() ``](https://rconsortium.github.io/S7/reference/prop.md)
+  [`` `@`() ``](https://rconsortium.github.io/S7/reference/prop.md) :
+  Get/set a property
+- [`prop_names()`](https://rconsortium.github.io/S7/reference/prop_names.md)
+  [`prop_exists()`](https://rconsortium.github.io/S7/reference/prop_names.md)
+  : Property introspection
+- [`props()`](https://rconsortium.github.io/S7/reference/props.md)
+  [`` `props<-`() ``](https://rconsortium.github.io/S7/reference/props.md)
+  [`set_props()`](https://rconsortium.github.io/S7/reference/props.md) :
+  Get/set multiple properties
+- [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
+  [`` `S7_data<-`() ``](https://rconsortium.github.io/S7/reference/S7_data.md)
+  : Get/set underlying "base" data
+
+## Method dispatch
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md) :
+  Convert an object from one type to another
+- [`class_missing`](https://rconsortium.github.io/S7/reference/class_missing.md)
+  : Dispatch on a missing argument
+- [`class_any`](https://rconsortium.github.io/S7/reference/class_any.md)
+  : Dispatch on any class
+- [`method()`](https://rconsortium.github.io/S7/reference/method.md) :
+  Find a method for an S7 generic
+- [`method_explain()`](https://rconsortium.github.io/S7/reference/method_explain.md)
+  : Explain method dispatch
+- [`super()`](https://rconsortium.github.io/S7/reference/super.md) :
+  Force method dispatch to use a superclass
+- [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
+  : Retrieve the S7 class of an object
+
+## Packages
+
+Functions needed when using S7 within a package. See
+[`vignette("packages")`](https://rconsortium.github.io/S7/articles/packages.md)
+for more details.
+
+- [`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+  : Register methods in a package
+- [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
+  : Generics in other packages
+
+## Compatibility
+
+These tools provide a layer of compatibility between S7 and S3 classes,
+S4 classes, and base types. See
+[`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md)
+for more details.
+
+- [`class_logical`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_integer`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_double`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_complex`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_character`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_raw`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_list`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_expression`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_name`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_call`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_function`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_environment`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_numeric`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_atomic`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_vector`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  [`class_language`](https://rconsortium.github.io/S7/reference/base_classes.md)
+  : S7 wrappers for base types
+- [`class_factor`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  [`class_Date`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  [`class_POSIXct`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  [`class_POSIXlt`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  [`class_POSIXt`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  [`class_data.frame`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  [`class_formula`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
+  : S7 wrappers for key S3 classes
+- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  : Declare an S3 class
+- [`S4_register()`](https://rconsortium.github.io/S7/reference/S4_register.md)
+  : Register an S7 class with S4
+
+# Articles
+
+### Learn S7
+
+- [S7 basics](https://rconsortium.github.io/S7/articles/S7.md):
+- [Generics and
+  methods](https://rconsortium.github.io/S7/articles/generics-methods.md):
+- [Classes and
+  objects](https://rconsortium.github.io/S7/articles/classes-objects.md):
+- [Compatibility with S3 and
+  S4](https://rconsortium.github.io/S7/articles/compatibility.md):
+- [Using S7 in a
+  package](https://rconsortium.github.io/S7/articles/packages.md):
+- [Motivation for
+  S7](https://rconsortium.github.io/S7/articles/motivation.md):
+- [Performance](https://rconsortium.github.io/S7/articles/performance.md):
+
+### Initial design and specification
+
+- [Proposal](https://rconsortium.github.io/S7/articles/spec/proposal.md):
+
+  Proposal to RConsortium to create the working group.
+
+- [Requirements](https://rconsortium.github.io/S7/articles/spec/requirements.md):
+
+  Initial technical requirements brainstorming.
+
+- [Design
+  specification](https://rconsortium.github.io/S7/articles/spec/design.md):
+
+  Design specification used to guide the implementation.
+
+- [Dispatch](https://rconsortium.github.io/S7/articles/spec/dispatch.md):
+
+  Initial notes on dispatch design
+
+### Minutes
+
+- [Minutes
+  2021-05-18](https://rconsortium.github.io/S7/articles/minutes/2021-05-18.md):
+- [Minutes
+  2022-02-12](https://rconsortium.github.io/S7/articles/minutes/2022-02-12.md):
+- [Minutes
+  2022-03-08](https://rconsortium.github.io/S7/articles/minutes/2022-03-08.md):
+- [Minutes
+  2022-08-08](https://rconsortium.github.io/S7/articles/minutes/2022-08-01.md):
+- [Minutes
+  2022-09-12](https://rconsortium.github.io/S7/articles/minutes/2022-09-12.md):

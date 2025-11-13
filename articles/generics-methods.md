@@ -1,0 +1,372 @@
+# Generics and methods
+
+This vignette dives into the details of S7 generics and method dispatch,
+building on the basics discussed in
+[`vignette("S7")`](https://rconsortium.github.io/S7/articles/S7.md).
+We’ll first introduce the concept of generic-method compatibility, then
+discuss some of the finer details of creating a generic with
+[`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md).
+This vignette first discusses generic-method compatibility, and you
+might want to customize the body of the generic, and generics that live
+in suggested packages. We’ll then pivot to talk more details of method
+dispatch including
+[`super()`](https://rconsortium.github.io/S7/reference/super.md) and
+multiple dispatch.
+
+``` r
+library(S7)
+```
+
+## Generic-method compatibility
+
+When you register a method, S7 checks that your method is compatible
+with the generic.
+
+The formal arguments of the generic and methods must agree. This means
+that:
+
+- Any arguments that the generic has, the method must have too. In
+  particular, the arguments of the method start with the arguments that
+  the generic dispatches on, and those arguments must not have default
+  arguments.
+- The method can contain arguments that the generic does not, as long as
+  the generic includes `…` in the argument list.
+
+### Generic with dots; method without dots
+
+The default generic includes `…` but generally the methods should not.
+That ensures that misspelled arguments won’t be silently swallowed by
+the method. This is an important difference from S3. Take a very simple
+implementation of [`mean()`](https://rdrr.io/r/base/mean.html):
+
+``` r
+mean <- new_generic("mean", "x")
+method(mean, class_numeric) <- function(x) sum(x) / length(x)
+```
+
+If we pass an additional argument in, we’ll get an error:
+
+``` r
+mean(100, na.rm = TRUE)
+```
+
+But we can still add additional arguments if we desired:
+
+``` r
+method(mean, class_numeric) <- function(x, na.rm = TRUE) {
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
+
+  sum(x) / length(x)
+}
+#> Overwriting method mean(<integer>)
+#> Overwriting method mean(<double>)
+mean(c(100, NA), na.rm = TRUE)
+#> [1] 100
+```
+
+(We’ll come back to the case of requiring that all methods implement a
+`na.rm = TRUE` argument shortly.)
+
+### Generic and method with dots
+
+There are cases where you do need to take `…` in a method, which is
+particularly problematic if you need to re-call the generic recursively.
+For example, imagine a simple print method like this:
+
+``` r
+simple_print <- new_generic("simple_print", "x")
+method(simple_print, class_double) <- function(x, digits = 3) {}
+method(simple_print, class_character) <- function(x, max_length = 100) {}
+```
+
+What if you want to print a list?
+
+``` r
+method(simple_print, class_list) <- function(x, ...) {
+  for (el in x) {
+    simple_print(el, ...)
+  }
+}
+```
+
+It’s fine as long as all the elements of the list are numbers, but as
+soon as we add a character vector, we get an error:
+
+``` r
+simple_print(list(1, 2, 3), digits = 3)
+simple_print(list(1, 2, "x"), digits = 3)
+```
+
+To solve this situation, methods generally need to ignore arguments that
+they haven’t been specifically designed to handle, i.e. they need to use
+`…`:
+
+``` r
+method(simple_print, class_double) <- function(x, ..., digits = 3) {}
+#> Overwriting method simple_print(<double>)
+method(simple_print, class_character) <- function(x, ..., max_length = 100) {}
+#> Overwriting method simple_print(<character>)
+
+simple_print(list(1, 2, "x"), digits = 3)
+```
+
+In this case we really do want to silently ignore unknown arguments
+because they might apply to other methods. There’s unfortunately no easy
+way to avoid this problem without relying on fairly esoteric technology
+(as done by
+[`rlang::check_dots_used()`](https://rlang.r-lib.org/reference/check_dots_used.html)).
+
+``` r
+simple_print(list(1, 2, "x"), diggits = 3)
+```
+
+### Generic and method without dots
+
+Occasional it’s useful to create a generic without `…` because such
+functions have a useful property: if a call succeeds for one type of
+input, it will succeed for any type of input. To create such a generic,
+you’ll need to use the third argument to
+[`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md):
+an optional function that powers the generic. This function has one key
+property: it must call
+[`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+to actually perform dispatch.
+
+In general, this property is only needed for very low-level functions
+with precisely defined semantics. A good example of such a function is
+[`length()`](https://rdrr.io/r/base/length.html):
+
+``` r
+length <- new_generic("length", "x", function(x) {
+  S7_dispatch()
+})
+```
+
+Omitting `…` from the generic signature is a strong restriction as it
+prevents methods from adding extra arguments. For this reason, it should
+only be used in special situations.
+
+## Customizing generics
+
+In most cases, you’ll supply the first two arguments to
+[`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+and allow it to automatically generate the body of the generic:
+
+``` r
+display <- new_generic("display", "x")
+S7_data(display)
+#> function (x, ...) 
+#> S7::S7_dispatch()
+```
+
+The most important part of the body is
+[`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md);
+this function finds the method that matches the arguments used for
+dispatch and calls it with the arguments supplied to the generic.
+
+It can be useful to customize this body. The previous section showed one
+case when you might want to supply the body yourself: dropping `…` from
+the formals of the generic. There are three other useful cases:
+
+- To add required arguments.
+- To add optional arguments.
+- Perform some standard work.
+
+A custom `fun` must always include a call to
+[`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md),
+which will usually be the last call.
+
+### Add required arguments
+
+To add required arguments that aren’t dispatched upon, you just need to
+add additional arguments that lack default values:
+
+``` r
+foo <- new_generic("foo", "x", function(x, y, ...) {
+  S7_dispatch()
+})
+```
+
+Now all methods will need to provide that `y` argument. If not, you’ll
+get a warning:
+
+``` r
+method(foo, class_integer) <- function(x, ...) {
+  10
+}
+#> Warning: foo(<integer>) doesn't have argument `y`
+```
+
+This is a warning, not an error, because the generic might be defined in
+a different package and is in the process of changing interfaces. You’ll
+always want to address this warning when you see it.
+
+### Add optional arguments
+
+Adding an optional argument is similar, but it should generally come
+after `…`. This ensures that the user must supply the full name of the
+argument when calling the function, which makes it easier to extend your
+function in the future.
+
+``` r
+mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
+  S7_dispatch()
+})
+method(mean, class_integer) <- function(x, na.rm = TRUE) {
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
+  sum(x) / length(x)
+}
+```
+
+Forgetting the argument or using a different default value will again
+generate a warning.
+
+``` r
+method(mean, class_double) <- function(x, na.rm = FALSE) {}
+#> Warning: In mean(<double>), default value of `na.rm` is not the same as the generic
+#> - Generic: TRUE
+#> - Method:  FALSE
+method(mean, class_logical) <- function(x) {}
+#> Warning: mean(<logical>) doesn't have argument `na.rm`
+```
+
+### Do some work
+
+If your generic has additional arguments, you might want to do some
+additional work to verify that they’re of the expected type. For
+example, our [`mean()`](https://rdrr.io/r/base/mean.html) function could
+verify that `na.rm` was correctly specified:
+
+``` r
+mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
+  if (!identical(na.rm, TRUE) && !identical(na.rm = FALSE)) {
+    stop("`na.rm` must be either TRUE or FALSE")
+  }
+  S7_dispatch()
+})
+```
+
+The only downside to performing error checking is that you constraint
+the interface for all methods; if for some reason a method found it
+useful to allow `na.rm` to be a number or a string, it would have to
+provide an alternative argument.
+
+## `super()`
+
+Sometimes it’s useful to define a method for a class that relies on the
+implementation for its superclass. A good example of this is computing
+the mean of a date — since dates represent the number of days since
+1970-01-01, computing the mean is just a matter of computing the mean of
+the underlying numeric vector and converting it back to a date.
+
+To demonstrate this idea, I’ll first define a mean generic with a method
+for numbers:
+
+``` r
+mean <- new_generic("mean", "x")
+method(mean, class_numeric) <- function(x) {
+  sum(x) / length(x)
+}
+mean(1:10)
+#> [1] 5.5
+```
+
+And a Date class:
+
+``` r
+date <- new_class("date", parent = class_double)
+# Cheat by using the existing base .Date class
+method(print, date) <- function(x) print(.Date(x))
+date(c(1, 10, 100))
+#> [1] "1970-01-02" "1970-01-11" "1970-04-11"
+```
+
+Now to compute a mean we write:
+
+``` r
+method(mean, date) <- function(x) {
+  date(mean(super(x, to = class_double)))
+}
+mean(date(c(1, 10, 100)))
+#> [1] "1970-02-07"
+```
+
+Let’s unpack this method from the inside out:
+
+1.  First we call `super(x, to = class_double)` — this will make the
+    call to next generic treat `x` like it’s a double, rather than a
+    date.
+2.  Then we call [`mean()`](https://rdrr.io/r/base/mean.html) which
+    because of
+    [`super()`](https://rconsortium.github.io/S7/reference/super.md)
+    will call the [`mean()`](https://rdrr.io/r/base/mean.html) method we
+    defined above.
+3.  Finally, we take the number returned by mean and convert it back to
+    a date.
+
+If you’re very familiar with S3 or S4 you might recognize that
+[`super()`](https://rconsortium.github.io/S7/reference/super.md) fills a
+similar role to [`NextMethod()`](https://rdrr.io/r/base/UseMethod.html)
+or `callNextMethod()`. However, it’s much more explicit: you need to
+supply the name of the parent class, the generic to use, and all the
+arguments to the generic. This explicitness makes the code easier to
+understand and will eventually enable certain performance optimizations
+that would otherwise be very difficult.
+
+## Multiple dispatch
+
+So far we have focused primarily on single dispatch, i.e. generics where
+`dispatch_args` is a single string. It is also possible to supply a
+length 2 (or more!) vector `dispatch_args` to create a generic that
+performs multiple dispatch, i.e. it uses the classes of more than one
+object to find the appropriate method.
+
+Multiple dispatch is a feature primarily of S4, although S3 includes
+some limited special cases for arithmetic operators. Multiple dispatch
+is heavily used in S4; we don’t expect it to be heavily used in S7, but
+it is occasionally useful.
+
+### A simple example
+
+Let’s take our speak example from
+[`vignette("S7")`](https://rconsortium.github.io/S7/articles/S7.md) and
+extend it to teach our pets how to speak multiple languages:
+
+``` r
+Pet <- new_class("Pet")
+Dog <- new_class("Dog", Pet)
+Cat <- new_class("Cat", Pet)
+
+Language <- new_class("Language")
+English <- new_class("English", Language)
+French <- new_class("French", Language)
+
+speak <- new_generic("speak", c("x", "y"))
+method(speak, list(Dog, English)) <- function(x, y) "Woof"
+method(speak, list(Cat, English)) <- function(x, y) "Meow"
+method(speak, list(Dog, French)) <- function(x, y) "Ouaf Ouaf"
+method(speak, list(Cat, French)) <- function(x, y) "Miaou"
+
+speak(Cat(), English())
+#> [1] "Meow"
+speak(Dog(), French())
+#> [1] "Ouaf Ouaf"
+
+# This example was originally inspired by blog.klipse.tech/javascript/2021/10/03/multimethod.html
+# which has unfortunately since disappeared.
+```
+
+### Special “classes”
+
+There are two special classes that become particularly useful with
+multiple dispatch:
+
+- [`class_any()`](https://rconsortium.github.io/S7/reference/class_any.md)
+  will match any class
+- [`class_missing()`](https://rconsortium.github.io/S7/reference/class_missing.md)
+  will match a missing argument (i.e. not `NA`, but an argument that was
+  not supplied)

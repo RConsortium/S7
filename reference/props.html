@@ -81,9 +81,9 @@ object with new values for the specified properties.</p></li>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">props</span><span class="op">(</span><span class="va">object</span>, names <span class="op">=</span> <span class="fu"><a href="prop_names.html">prop_names</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">props</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="fu">props</span><span class="op">(</span><span class="va">object</span>, check <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
-<span><span class="fu">set_props</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">set_props</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span>, .check <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -97,6 +97,11 @@ object with new values for the specified properties.</p></li>
 <dt id="arg-names">names<a class="anchor" aria-label="anchor" href="#arg-names"></a></dt>
 <dd><p>A character vector of property names to retrieve. Default is all
 properties.</p></dd>
+
+
+<dt id="arg-check-check">check, .check<a class="anchor" aria-label="anchor" href="#arg-check-check"></a></dt>
+<dd><p>If <code>TRUE</code>, run <code><a href="validate.html">validate()</a></code> on the object
+before returning.</p></dd>
 
 
 <dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
@@ -149,7 +154,7 @@ only after all replacements are performed.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

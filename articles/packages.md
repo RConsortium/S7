@@ -1,0 +1,77 @@
+# Using S7 in a package
+
+This vignette outlines the most important things you need to know about
+using S7 in a package. S7 is new, so few people have used it in a
+package yet; this means that this vignette is likely incomplete, and
+we’d love your help to make it better. Please [let us
+know](https://github.com/RConsortium/S7/issues/new) if you have
+questions that this vignette doesn’t answer.
+
+``` r
+library(S7)
+```
+
+## Method registration
+
+You should always call
+[`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+in your `.onLoad()`:
+
+``` r
+.onLoad <- function(...) {
+  S7::methods_register()
+}
+```
+
+This is S7’s way of registering methods, rather than using export
+directives in your `NAMESPACE` like S3 and S4 do. This is only strictly
+necessary if registering methods for generics in other packages, but
+there’s no harm in adding it and it ensures that you won’t forget later.
+(And if you’re not importing S7 into your namespace it will quiet an
+`R CMD check` `NOTE`.`)`
+
+## Documentation and exports
+
+If you want users to create instances of your class, you will need to
+export the class constructor. That means you will also need to document
+it, and since the constructor is a function, that means you have to
+document the arguments which will be the properties of the class (unless
+you have customised the constructor).
+
+If you export a class, you must also set the `package` argument,
+ensuring that classes with the same name are disambiguated across
+packages.
+
+You should document generics like regular functions (since they are!).
+If you expect others to create their own methods for your generic, you
+may want to include an section describing the properties that you expect
+all methods to have. We plan to provide an easy way to document all
+methods for a generic, but have not yet implemented it. You can track
+progress at <https://github.com/RConsortium/S7/issues/167>.
+
+We don’t currently have any recommendations on documenting methods.
+There’s no need to document them in order to pass `R CMD check`, but
+obviously there are cases where it’s nice to provide additional details
+for a method, particularly if it takes extra arguments compared to the
+generic. We’re tracking that issue at
+<https://github.com/RConsortium/S7/issues/315>.
+
+## Backward compatibility
+
+If you are using S7 in a package *and* you want your package to work in
+versions of R before 4.3.0, you need to know that in these versions of R
+`@` only works with S4 objects. There are two workarounds. The easiest
+and least convenient workaround is to just
+[`prop()`](https://rconsortium.github.io/S7/reference/prop.md) instead
+of `@`. Otherwise, you can conditionally make an S7-aware `@` available
+to your package with this custom `NAMESPACE` directive:
+
+``` r
+# enable usage of <S7_object>@name in package code
+#' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
+NULL
+```
+
+`@` will work for users of your package because S7 automatically
+attaches an environment containing the needed definition when it’s
+loaded.
