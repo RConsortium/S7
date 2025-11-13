@@ -1,4 +1,4 @@
-# property retrieval: retrieves the properties that exist & errors otherwise
+# property retrieval / retrieves the properties that exist & errors otherwise
 
     Can't find property <foo>@x
 
@@ -6,7 +6,7 @@
 
     Can't find property <foo>@x
 
-# prop setting: can't set read-only properties
+# prop setting / can't set read-only properties
 
     Code
       obj@x <- 1
@@ -14,7 +14,7 @@
       Error:
       ! Can't set read-only property <foo>@x
 
-# prop setting: errors if the property doesn't exist or is wrong class
+# prop setting / errors if the property doesn't exist or is wrong class
 
     Code
       obj <- foo(123)
@@ -28,7 +28,7 @@
       Error:
       ! <foo>@x must be <double>, not <character>
 
-# prop setting: validates all attributes if custom setter
+# prop setting / validates all attributes if custom setter
 
     Code
       obj <- foo(y = 123, x = 123)
@@ -37,7 +37,7 @@
       Error:
       ! <foo>@y must be <double>, not <character>
 
-# new_property(): validates getter and settor
+# new_property() / validates getter and settor
 
     Code
       new_property(getter = function(x) { })
@@ -50,7 +50,7 @@
       Error:
       ! `setter` must be function(self, value), not function(x, y, z)
 
-# new_property(): validates default
+# new_property() / validates default
 
     Code
       new_property(class_integer, default = "x")
@@ -58,7 +58,7 @@
       Error in `new_property()`:
       ! `default` must be an instance of <integer>, not a <character>
 
-# new_property(): displays nicely
+# new_property() / displays nicely
 
     Code
       print(x)

@@ -1,4 +1,4 @@
-# method registration: adds messages when overwriting
+# method registration / adds messages when overwriting
 
     Code
       method(foo, class_character) <- (function(x) "c")
@@ -6,7 +6,7 @@
     Message
       Overwriting method foo(<character>)
 
-# method registration: S3 registration requires a S7 class
+# method registration / S3 registration requires a S7 class
 
     Code
       method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
@@ -14,11 +14,11 @@
       Error:
       ! When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
 
-# method registration: can register S7 method for S4 generic
+# method registration / can register S7 method for S4 generic
 
     Class has not been registered with S4; please call S4_register(S4foo)
 
-# method registration: checks argument types
+# method registration / checks argument types
 
     Code
       x <- 10
@@ -32,7 +32,7 @@
       Error:
       ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
 
-# as_signature(): forbids list for single dispatch
+# as_signature() / forbids list for single dispatch
 
     Code
       as_signature(list(1), foo)
@@ -40,7 +40,7 @@
       Error:
       ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
 
-# as_signature(): requires a list of the correct length for multiple dispatch
+# as_signature() / requires a list of the correct length for multiple dispatch
 
     Code
       as_signature(class_character, foo)
