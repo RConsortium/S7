@@ -252,8 +252,22 @@ new_object <- function(.parent, ...) {
     stop(msg)
   }
 
-  # force .parent before ...
   # TODO: Some type checking on `.parent`?
+  object <- new_empty_object(class, ..., .parent = .parent)
+
+  # Don't need to validate if parent class already validated,
+  # i.e. it's a non-abstract S7 class
+  parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
+  validate(object, recursive = !parent_validated)
+
+  object
+}
+
+#' @param class The S7 class of the object to create.
+#' @rdname new_class
+#' @export
+new_empty_object <- function(class, ..., .parent = class@parent()) {
+  # force .parent before ...
   object <- .parent
 
   args <- list(...)
@@ -275,11 +289,6 @@ new_object <- function(.parent, ...) {
   prop_setter_vals <- args[has_setter]
   for (name in names(prop_setter_vals))
     prop(object, name, check = FALSE) <- prop_setter_vals[[name]]
-
-  # Don't need to validate if parent class already validated,
-  # i.e. it's a non-abstract S7 class
-  parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
-  validate(object, recursive = !parent_validated)
 
   object
 }
