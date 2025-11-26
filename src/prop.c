@@ -292,12 +292,15 @@ Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
 }
 
 
-SEXP prop_(SEXP object, SEXP name) {
+SEXP prop_(SEXP object, SEXP name, SEXP attr_name) {
   check_is_S7(object);
 
   SEXP name_rchar = STRING_ELT(name, 0);
   const char* name_char = CHAR(name_rchar);
   SEXP name_sym = Rf_installTrChar(name_rchar);
+
+  SEXP attr_name_rchar = STRING_ELT(attr_name, 0);
+  SEXP attr_name_sym = Rf_installTrChar(attr_name_rchar);
 
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
@@ -315,7 +318,7 @@ SEXP prop_(SEXP object, SEXP name) {
   }
 
   // try to resolve property from the object attributes
-  SEXP value = Rf_getAttrib(object, name_sym);
+  SEXP value = Rf_getAttrib(object, attr_name_sym);
 
   // This is commented out because we currently have no way to distinguish between
   // a prop with a value of NULL, and a prop value that is unset/missing.
@@ -343,13 +346,16 @@ SEXP prop_(SEXP object, SEXP name) {
 }
 
 
-SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
+SEXP prop_set_(SEXP object, SEXP name, SEXP attr_name, SEXP check_sexp, SEXP value) {
 
   check_is_S7(object);
 
   SEXP name_rchar = STRING_ELT(name, 0);
   const char *name_char = CHAR(name_rchar);
   SEXP name_sym = Rf_installTrChar(name_rchar);
+
+  SEXP attr_name_rchar = STRING_ELT(attr_name, 0);
+  SEXP attr_name_sym = Rf_installTrChar(attr_name_rchar);
 
   Rboolean check = Rf_asLogical(check_sexp);
   Rboolean should_validate_obj = check;
@@ -382,7 +388,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     // don't use setter()
     if (should_validate_prop)
       prop_validate(property, value, object);
-    Rf_setAttrib(object, name_sym, value);
+    Rf_setAttrib(object, attr_name_sym, value);
   }
 
   if (should_validate_obj)

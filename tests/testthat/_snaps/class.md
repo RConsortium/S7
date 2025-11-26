@@ -1,4 +1,4 @@
-# S7 classes / print nicely
+# S7 classes: print nicely
 
     Code
       foo2
@@ -41,7 +41,7 @@
       List of 1
        $ : <foo2/foo1/S7_object> constructor
 
-# S7 classes / prints @package and @abstract details
+# S7 classes: prints @package and @abstract details
 
     Code
       foo
@@ -52,7 +52,7 @@
       @ validator  : <NULL>
       @ properties :
 
-# S7 classes / checks inputs
+# S7 classes: checks inputs
 
     Code
       new_class(1)
@@ -85,7 +85,7 @@
       Error:
       ! `validator` must be function(self), not function()
 
-# S7 classes / can't inherit from S4 or class unions
+# S7 classes: can't inherit from S4 or class unions
 
     Code
       new_class("test", parent = parentS4)
@@ -98,7 +98,7 @@
       Error:
       ! Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
 
-# S7 classes / can't inherit from an environment
+# S7 classes: can't inherit from an environment
 
     Code
       new_class("test", parent = class_environment)
@@ -106,7 +106,7 @@
       Error:
       ! Can't inherit from an environment.
 
-# abstract classes / can't be instantiated
+# abstract classes: can't be instantiated
 
     Code
       foo <- new_class("foo", abstract = TRUE)
@@ -115,7 +115,7 @@
       Error in `S7::new_object()`:
       ! Can't construct an object from abstract class <foo>
 
-# abstract classes / can't inherit from concrete class
+# abstract classes: can't inherit from concrete class
 
     Code
       foo1 <- new_class("foo1")
@@ -124,7 +124,7 @@
       Error in `new_class()`:
       ! Abstract classes must have abstract parents
 
-# abstract classes / can use inherited validator from abstract class
+# abstract classes: can use inherited validator from abstract class
 
     Code
       foo2(x = 2)
@@ -133,7 +133,7 @@
       ! <foo2> object is invalid:
       - @x has bad value
 
-# new_object() / gives useful error if called directly
+# new_object(): gives useful error if called directly
 
     Code
       new_object()
@@ -141,7 +141,7 @@
       Error in `new_object()`:
       ! `new_object()` must be called from within a constructor
 
-# new_object() / validates object
+# new_object(): validates object
 
     Code
       foo("x")
@@ -156,7 +156,7 @@
       ! <foo> object is invalid:
       - x must be positive
 
-# new_object() / runs each parent validator exactly once
+# new_object(): runs each parent validator exactly once
 
     Code
       . <- A()
@@ -171,7 +171,7 @@
     Output
       A B C 
 
-# S7 object / displays nicely
+# S7 object: displays nicely
 
     Code
       foo <- new_class("foo", properties = list(x = class_double, y = class_double),
@@ -189,7 +189,7 @@
         ..@ x: num(0) 
         ..@ y: num(0) 
 
-# S7 object / displays objects with data nicely
+# S7 object: displays objects with data nicely
 
     Code
       text <- new_class("text", class_character, package = NULL)
@@ -202,7 +202,7 @@
       List of 1
        $ : <text> chr "x"
 
-# S7 object / displays list objects nicely
+# S7 object: displays list objects nicely
 
     Code
       foo1(list(x = 1, y = list(a = 21, b = 22)), x = 3, y = list(a = 41, b = 42))
@@ -225,21 +225,11 @@
       Error:
       ! Can not combine S7 class objects
 
-# can't create class with reserved property names
+# can't create class with forbidden property names
 
     Code
-      new_class("foo", properties = list(names = class_character))
+      new_class("foo", properties = list(... = class_character))
     Condition
       Error in `new_class()`:
-      ! property can't be named: names
-    Code
-      new_class("foo", properties = list(dim = NULL | class_integer))
-    Condition
-      Error in `new_class()`:
-      ! property can't be named: dim
-    Code
-      new_class("foo", properties = list(dim = NULL | class_integer, dimnames = class_list))
-    Condition
-      Error in `new_class()`:
-      ! property can't be named: dim, dimnames
+      ! property can't be named: '...'
 
