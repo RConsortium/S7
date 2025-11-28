@@ -385,11 +385,18 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
     REPROTECT(object = do_call2(setter, object, value), object_pi);
+
+    if (should_validate_prop) {
+      SEXP value = Rf_getAttrib(object, name_sym);
+      prop_validate(property, value, object);
+    }
+
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
     if (should_validate_prop)
       prop_validate(property, value, object);
+
     Rf_setAttrib(object, name_sym, value);
   }
 

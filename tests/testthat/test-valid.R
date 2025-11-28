@@ -52,6 +52,29 @@ test_that("validate checks the type of setters", {
   expect_snapshot(foo(x = 123), error = TRUE)
 })
 
+test_that("properties with validator and setter test validator after setting", {
+  hello_str <- new_class(
+    "hello_str",
+    package = NULL,
+    properties = list(
+      text = new_property(
+        class_character,
+        validator = function(value) {
+          if (!startsWith(value, "hello")) "must start with a 'hello'"
+        },
+        setter = function(self, value) {
+          prop(self, "text") <- paste0(value, "!")
+          self
+        }
+      )
+    )
+  )
+
+  expect_error(hello_str("world"), "must start with") # validator error
+  expect_no_error(hello_str("hello, world"))
+  expect_match(hello_str("hello, world")@text, "!$") # setter appended '!'
+})
+
 test_that("validate does not check type of getters", {
   # because getters can be peform arbitrary computation and we want
   # validation to always be cheap
