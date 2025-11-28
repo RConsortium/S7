@@ -40,7 +40,7 @@
 #'   function promise in the default constructor, evaluated at the time the
 #'   object is constructed.
 #' @param name Property name, primarily used for error messages. Generally
-#'   don't need to set this here, as it's more convenient to supply as
+#'   don't need to set this here, as it's more convenient to supply as 
 #'   the element name when defining a list of properties. If both `name`
 #'   and a list-name are supplied, the list-name will be used.
 #' @returns An S7 property, i.e. a list with class `S7_property`.
@@ -72,14 +72,12 @@
 #' # argument to the default constructor
 #' try(Clock(now = 10))
 #' args(Clock)
-new_property <- function(
-  class = class_any,
-  getter = NULL,
-  setter = NULL,
-  validator = NULL,
-  default = NULL,
-  name = NULL
-) {
+new_property <- function(class = class_any,
+                         getter = NULL,
+                         setter = NULL,
+                         validator = NULL,
+                         default = NULL,
+                         name = NULL) {
   class <- as_class(class)
   check_prop_default(default, class)
 
@@ -121,7 +119,7 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
       # The meaning of a `...` prop default needs discussion
       stop(simpleError("`default` cannot be `...`", error_call))
     }
-    if (identical(default, quote(expr = ))) {
+    if (identical(default, quote(expr =))) {
       # The meaning of a missing prop default needs discussion
       stop(simpleError("`default` cannot be missing", error_call))
     }
@@ -130,15 +128,11 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
     return()
   }
 
-  if (class_inherits(default, class)) {
+  if (class_inherits(default, class))
     return()
-  }
 
-  msg <- sprintf(
-    "`default` must be an instance of %s, not a %s",
-    class_desc(class),
-    obj_desc(default)
-  )
+  msg <- sprintf("`default` must be an instance of %s, not a %s",
+                 class_desc(class), obj_desc(default))
 
   stop(simpleError(msg, error_call))
 }
@@ -239,7 +233,7 @@ prop_obj <- function(object, name) {
 }
 
 `propr<-` <- local({
-  # reference implementation of `prop<-()` implemented in R
+    # reference implementation of `prop<-()` implemented in R
   # This flag is used to avoid infinite loops if you are assigning a property from a setter function
   setter_property <- NULL
 
@@ -252,11 +246,7 @@ prop_obj <- function(object, name) {
     }
 
     if (!is.null(prop$getter) && is.null(prop$setter)) {
-      msg <- sprintf(
-        "Can't set read-only property %s@%s",
-        obj_desc(object),
-        name
-      )
+      msg <- sprintf("Can't set read-only property %s@%s", obj_desc(object), name)
       stop(msg, call. = FALSE)
     }
 
@@ -303,8 +293,7 @@ prop_error_unknown <- function(object, prop_name) {
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
   if (!class_inherits(value, prop$class)) {
-    return(sprintf(
-      "%s must be %s, not %s",
+    return(sprintf("%s must be %s, not %s",
       prop_label(object, prop$name),
       class_desc(prop$class),
       obj_desc(value)
@@ -330,8 +319,7 @@ prop_validate <- function(prop, value, object = NULL) {
 
   stop(sprintf(
     "%s validator must return NULL or a character, not <%s>.",
-    prop_label(object, prop$name),
-    typeof(val)
+    prop_label(object, prop$name), typeof(val)
   ))
 }
 
@@ -375,15 +363,7 @@ prop_names <- function(object) {
 
   if (inherits(object, "S7_class")) {
     # S7_class isn't a S7_class (somewhat obviously) so we fake the property names
-    c(
-      "name",
-      "parent",
-      "package",
-      "properties",
-      "abstract",
-      "constructor",
-      "validator"
-    )
+    c("name", "parent", "package", "properties", "abstract", "constructor", "validator")
   } else {
     class <- S7_class(object)
     props <- attr(class, "properties", exact = TRUE)
@@ -493,6 +473,7 @@ as_properties <- function(x) {
 }
 
 as_property <- function(x, name, i) {
+
   if (is_property(x)) {
     if (name == "") {
       if (is.null(x$name)) {
@@ -521,3 +502,4 @@ prop_is_read_only <- function(prop) {
 prop_has_setter <- function(prop) is.function(prop$setter)
 
 prop_is_dynamic <- function(prop) is.function(prop$getter)
+
