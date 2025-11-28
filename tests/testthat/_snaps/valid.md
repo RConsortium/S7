@@ -51,5 +51,6 @@
       foo(x = 123)
     Condition
       Error:
-      ! <foo>@x must be <double>, not <character>
+      ! <foo> object properties are invalid:
+      - @x must be <double>, not <character>
 

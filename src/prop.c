@@ -355,6 +355,14 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   Rboolean should_validate_obj = check;
   Rboolean should_validate_prop = check;
 
+  // if already flagged for non-recursion, do not validate as this will be
+  // validated after top-level return
+  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
+  if (pairlist_contains(no_recurse_list, name_sym)) {
+    should_validate_obj = FALSE;
+    should_validate_prop = FALSE;
+  }
+
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
   SEXP property = extract_name(properties, name_char);
