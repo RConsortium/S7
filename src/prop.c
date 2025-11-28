@@ -355,14 +355,6 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   Rboolean should_validate_obj = check;
   Rboolean should_validate_prop = check;
 
-  // if already flagged for non-recursion, do not validate as this will be
-  // validated after top-level return
-  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
-  if (pairlist_contains(no_recurse_list, name_sym)) {
-    should_validate_obj = FALSE;
-    should_validate_prop = FALSE;
-  }
-
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
   SEXP property = extract_name(properties, name_char);
@@ -372,6 +364,14 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   SEXP setter = extract_name(property, "setter");
   SEXP getter = extract_name(property, "getter");
+
+  // if already flagged for non-recursion, do not validate as this will be
+  // validated after top-level return
+  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
+  if (pairlist_contains(no_recurse_list, name_sym)) {
+    should_validate_obj = FALSE;
+    should_validate_prop = FALSE;
+  }
 
   if (getter != R_NilValue && setter == R_NilValue)
     signal_prop_error("Can't set read-only property %s@%s", object, name);
@@ -386,7 +386,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     // use setter()
     REPROTECT(object = do_call2(setter, object, value), object_pi);
 
-    if (should_validate_prop) {
+    if (should_validate_prop && getter == R_NilValue) {
       SEXP value = Rf_getAttrib(object, name_sym);
       prop_validate(property, value, object);
     }
