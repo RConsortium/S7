@@ -1,6 +1,8 @@
 #define R_NO_REMAP
 #include <R.h>
 #include <Rinternals.h>
+#include <Rversion.h>
+#include "compat.h"
 
 extern SEXP sym_S7_class;
 
@@ -26,6 +28,14 @@ SEXP eval_here(SEXP lang) {
   SEXP ans = Rf_eval(lang, ns_S7);
   UNPROTECT(1);
   return ans;
+}
+
+static inline
+SEXP ns_get(const char* name) {
+  SEXP val = s7_get_var_in_frame(ns_S7, Rf_install(name), R_UnboundValue);
+  if (val == R_UnboundValue)
+    Rf_error("Can't find `%s` in the S7 namespace", name);
+  return val;
 }
 
 static inline
@@ -77,7 +87,7 @@ static __attribute__((noreturn))
 void signal_is_not_S7(SEXP object) {
   static SEXP check_is_S7 = NULL;
   if (check_is_S7 == NULL)
-    check_is_S7 = Rf_findVarInFrame(ns_S7, Rf_install("check_is_S7"));
+    check_is_S7 = ns_get("check_is_S7");
 
   // will signal error
   eval_here(Rf_lang2(check_is_S7, object));
@@ -89,7 +99,7 @@ static __attribute__((noreturn))
 void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
   static SEXP signal_prop_error = NULL;
   if (signal_prop_error == NULL)
-    signal_prop_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_prop_error"));
+    signal_prop_error = ns_get("signal_prop_error");
 
   eval_here(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name));
   while(1);
@@ -109,7 +119,7 @@ void signal_error(SEXP errmsg) {
   // fallback to calling base::stop(errmsg)
   static SEXP signal_error = NULL;
   if (signal_error == NULL)
-    signal_error = Rf_findVarInFrame(ns_S7, Rf_install("signal_error"));
+    signal_error = ns_get("signal_error");
 
   eval_here(Rf_lang2(signal_error, errmsg));
   while(1);
@@ -242,7 +252,7 @@ void prop_validate(SEXP property, SEXP value, SEXP object) {
 
   static SEXP prop_validate = NULL;
   if (prop_validate == NULL)
-    prop_validate = Rf_findVarInFrame(ns_S7, Rf_install("prop_validate"));
+    prop_validate = ns_get("prop_validate");
 
   SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value, object));
   if (errmsg != R_NilValue) signal_error(errmsg);
@@ -252,7 +262,7 @@ static inline
 void obj_validate(SEXP object) {
   static SEXP validate = NULL;
   if (validate == NULL)
-    validate = Rf_findVarInFrame(ns_S7, Rf_install("validate"));
+    validate = ns_get("validate");
 
   switch (TYPEOF(object)) {
   case LANGSXP:
