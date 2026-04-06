@@ -99,7 +99,8 @@ foo(1, 1)
 ``` r
 foo(1, 1)
 #> <environment: R_GlobalEnv>
-#> Error in foo.numeric(1, 1): object 'z' not found
+#> Error in `foo.numeric()`:
+#> ! object 'z' not found
 ```
 
 ### S7

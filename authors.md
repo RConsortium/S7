@@ -27,14 +27,14 @@ Source:
 [`DESCRIPTION`](https://github.com/RConsortium/S7/blob/main/DESCRIPTION)
 
 Vaughan D, Hester J, Kalinowski T, Landau W, Lawrence M, Maechler M,
-Tierney L, Wickham H (2025). *S7: An Object Oriented System Meant to
+Tierney L, Wickham H (2026). *S7: An Object Oriented System Meant to
 Become a Successor to S3 and S4*. R package version 0.2.1.9000,
 <https://rconsortium.github.io/S7/>.
 
     @Manual{,
       title = {S7: An Object Oriented System Meant to Become a Successor to S3 and S4},
       author = {Davis Vaughan and Jim Hester and Tomasz Kalinowski and Will Landau and Michael Lawrence and Martin Maechler and Luke Tierney and Hadley Wickham},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.2.1.9000},
       url = {https://rconsortium.github.io/S7/},
     }

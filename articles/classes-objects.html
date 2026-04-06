@@ -139,15 +139,18 @@ interactions between properties.</p>
 property is modified:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @end must be &lt;double&gt;, not &lt;integer&gt;</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object is invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end (1) must be greater than or equal to @start (10)</span></span>
 <span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="va">x</span><span class="op">@</span><span class="va">start</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object is invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end (10) must be greater than or equal to @start (20)</span></span></code></pre></div>
 <p>You can also manually <code><a href="../reference/validate.html">validate()</a></code> an object if you use a
 low-level R function to bypass the usual checks and balances of
@@ -156,7 +159,8 @@ low-level R function to bypass the usual checks and balances of
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"start"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object is invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end (2) must be greater than or equal to @start (3)</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -178,7 +182,8 @@ the left or the right:</p>
 <code>@end</code> - <code>@start</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">shift</span><span class="op">(</span><span class="fu">Range</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">10</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object is invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end (10) must be greater than or equal to @start (11)</span></span></code></pre></div>
 <p>While the end result of <code>shift()</code> will be valid, an
 intermediate state is not. The easiest way to resolve this problem is to
@@ -250,11 +255,13 @@ could implement those at the property level:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">Range</span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @start must be length 1</span></span>
 <span><span class="co">#&gt; - @end must be length 1</span></span>
 <span><span class="fu">Range</span><span class="op">(</span>end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error: &lt;Range&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @start must be length 1</span></span>
 <span><span class="co">#&gt; - @end must be length 1</span></span></code></pre></div>
 <p>Note that property validators shouldn’t include the name of the
@@ -345,7 +352,8 @@ by defining a <code>getter</code>:</p>
 <p>Computed properties are read-only:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span><span class="op">@</span><span class="va">length</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
-<span><span class="co">#&gt; Error: Can't set read-only property &lt;Range&gt;@length</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Can't set read-only property &lt;Range&gt;@length</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="dynamic-properties">Dynamic properties<a class="anchor" aria-label="anchor" href="#dynamic-properties"></a>

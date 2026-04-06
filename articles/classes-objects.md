@@ -61,15 +61,18 @@ property is modified:
 
 ``` r
 x <- Range(1, 2:3)
-#> Error: <Range> object properties are invalid:
+#> Error:
+#> ! <Range> object properties are invalid:
 #> - @end must be <double>, not <integer>
 x <- Range(10, 1)
-#> Error: <Range> object is invalid:
+#> Error:
+#> ! <Range> object is invalid:
 #> - @end (1) must be greater than or equal to @start (10)
 
 x <- Range(1, 10)
 x@start <- 20
-#> Error: <Range> object is invalid:
+#> Error:
+#> ! <Range> object is invalid:
 #> - @end (10) must be greater than or equal to @start (20)
 ```
 
@@ -82,7 +85,8 @@ and balances of `@`:
 x <- Range(1, 2)
 attr(x, "start") <- 3
 validate(x)
-#> Error: <Range> object is invalid:
+#> Error:
+#> ! <Range> object is invalid:
 #> - @end (2) must be greater than or equal to @start (3)
 ```
 
@@ -107,7 +111,8 @@ There’s a problem if `shift` is larger than `@end` - `@start`:
 
 ``` r
 shift(Range(1, 10), 10)
-#> Error: <Range> object is invalid:
+#> Error:
+#> ! <Range> object is invalid:
 #> - @end (10) must be greater than or equal to @start (11)
 ```
 
@@ -187,11 +192,13 @@ Range <- new_class("Range",
 )
 
 Range(start = c(1.5, 3.5))
-#> Error: <Range> object properties are invalid:
+#> Error:
+#> ! <Range> object properties are invalid:
 #> - @start must be length 1
 #> - @end must be length 1
 Range(end = c(1.5, 3.5))
-#> Error: <Range> object properties are invalid:
+#> Error:
+#> ! <Range> object properties are invalid:
 #> - @start must be length 1
 #> - @end must be length 1
 ```
@@ -294,7 +301,8 @@ Computed properties are read-only:
 
 ``` r
 x@length <- 20
-#> Error: Can't set read-only property <Range>@length
+#> Error:
+#> ! Can't set read-only property <Range>@length
 ```
 
 ### Dynamic properties
