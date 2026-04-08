@@ -1,6 +1,6 @@
 # S7 (development version)
 
-* Internal changes to support R-devel (4.6) (#592, #593, #598).
+* Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
 
 # S7 0.2.1
 
