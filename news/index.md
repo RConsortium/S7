@@ -5,7 +5,8 @@
 - Internal changes to support R-devel (4.6)
   ([\#592](https://github.com/RConsortium/S7/issues/592),
   [\#593](https://github.com/RConsortium/S7/issues/593),
-  [\#598](https://github.com/RConsortium/S7/issues/598)).
+  [\#598](https://github.com/RConsortium/S7/issues/598),
+  [\#600](https://github.com/RConsortium/S7/issues/600)).
 
 ## S7 0.2.1
 
