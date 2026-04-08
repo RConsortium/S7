@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* Internal changes to support R-devel (4.6) (#592, #593, #598).
+
 # S7 0.2.1
 
 * `props<-()` and `set_props()` gain `check`/`.check` arguments, letting you
