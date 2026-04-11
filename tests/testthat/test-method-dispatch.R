@@ -167,7 +167,8 @@ test_that("single dispatch fails with informative messages", {
     fail(Foo(x = 1))
   })
 
-  expect_error(fail(TRUE), class = "S7_error_method_not_found")
+  cnd <- tryCatch(fail(TRUE), S7_error_method_not_found = identity)
+  expect_s3_class(cnd, c("S7_error_method_not_found", "error", "condition"), exact = TRUE)
 })
 
 test_that("multiple dispatch fails with informative messages", {
@@ -183,7 +184,8 @@ test_that("multiple dispatch fails with informative messages", {
     fail(TRUE, TRUE)
   })
 
-  expect_error(fail(TRUE, TRUE), class = "S7_error_method_not_found")
+  cnd <- tryCatch(fail(TRUE, TRUE), S7_error_method_not_found = identity)
+  expect_s3_class(cnd, c("S7_error_method_not_found", "error", "condition"), exact = TRUE)
 })
 
 
