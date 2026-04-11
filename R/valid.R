@@ -78,7 +78,8 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
     if (length(errors) > 0) {
       bullets <- paste0("- ", errors, collapse = "\n")
       msg <- sprintf("%s object properties are invalid:\n%s", obj_desc(object), bullets)
-      stop(msg, call. = FALSE)
+      stop(errorCondition(msg, call = NULL,
+        class = c("S7_error_validation_property", "S7_error_validation")))
     }
   }
 
@@ -104,7 +105,8 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
     msg <- sprintf("%s object is invalid:\n%s", obj_desc(object), bullets)
-    stop(msg, call. = FALSE)
+    stop(errorCondition(msg, call = NULL,
+      class = c("S7_error_validation_object", "S7_error_validation")))
   }
 
   invisible(object)
