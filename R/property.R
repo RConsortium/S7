@@ -258,7 +258,7 @@ prop_obj <- function(object, name) {
       if (isTRUE(check)) {
         error <- prop_validate(prop, value, object)
         if (!is.null(error)) {
-          signal_error(new_error_validation_property(object, error, single = TRUE))
+          stop(error, call. = FALSE)
         }
       }
 
@@ -280,11 +280,8 @@ signal_prop_error <- function(fmt, object, name) {
 }
 
 # called from src/prop.c
-signal_error <- function(err) {
-  if (inherits(err, "condition")) {
-    stop(err)
-  }
-  stop(err, call. = FALSE)
+signal_error <- function(msg) {
+  stop(msg, call. = FALSE)
 }
 
 
@@ -505,3 +502,4 @@ prop_is_read_only <- function(prop) {
 prop_has_setter <- function(prop) is.function(prop$setter)
 
 prop_is_dynamic <- function(prop) is.function(prop$getter)
+
