@@ -247,11 +247,18 @@ static inline
 void prop_validate(SEXP property, SEXP value, SEXP object) {
 
   static SEXP prop_validate = NULL;
+  static SEXP new_error_validation_property = NULL;
   if (prop_validate == NULL)
     prop_validate = ns_get("prop_validate");
+  if (new_error_validation_property == NULL)
+    new_error_validation_property = ns_get("new_error_validation_property");
 
   SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value, object));
-  if (errmsg != R_NilValue) signal_error(errmsg);
+  if (errmsg != R_NilValue) {
+    SEXP condition = PROTECT(Rf_lang4(new_error_validation_property, object, errmsg, Rf_ScalarLogical(TRUE)));
+    signal_error(eval_here(condition));
+    UNPROTECT(1);
+  }
 }
 
 static inline

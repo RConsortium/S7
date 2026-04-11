@@ -104,6 +104,9 @@ describe("validation error classes", {
 
     cnd <- tryCatch(validate(obj), S7_error_validation_property = identity)
     expect_s3_class(cnd, c("S7_error_validation_property", "S7_error_validation", "error", "condition"), exact = TRUE)
+    expect_equal(cnd$object_class, "<klass>")
+    expect_equal(cnd$errors, "@x must be <double>, not <character>")
+    expect_null(cnd$call)
   })
 
   it("custom validator errors have class S7_error_validation_object", {
@@ -112,6 +115,9 @@ describe("validation error classes", {
 
     cnd <- tryCatch(validate(obj), S7_error_validation_object = identity)
     expect_s3_class(cnd, c("S7_error_validation_object", "S7_error_validation", "error", "condition"), exact = TRUE)
+    expect_equal(cnd$object_class, "<klass>")
+    expect_equal(cnd$errors, "x must be positive")
+    expect_null(cnd$call)
   })
 
   it("both are catchable via the parent class S7_error_validation", {
@@ -124,5 +130,15 @@ describe("validation error classes", {
     attr(obj2, "x") <- -1
     cnd2 <- tryCatch(validate(obj2), S7_error_validation = identity)
     expect_s3_class(cnd2, "S7_error_validation_object")
+  })
+
+  it("setter errors also use structured property conditions", {
+    obj <- klass(1)
+
+    cnd <- tryCatch({ obj@x <- "bad" }, S7_error_validation_property = identity)
+    expect_s3_class(cnd, c("S7_error_validation_property", "S7_error_validation", "error", "condition"), exact = TRUE)
+    expect_equal(cnd$object_class, "<klass>")
+    expect_equal(cnd$errors, "<klass>@x must be <double>, not <character>")
+    expect_null(cnd$call)
   })
 })

@@ -23,7 +23,7 @@ executing the validator.}
 \item{fun}{A function to call on the object before validation.}
 }
 \value{
-Either \code{object} invisibly if valid, otherwise an error.
+\code{object}, invisibly, if valid. Otherwise an error is signalled.
 }
 \description{
 \code{validate()} ensures that an S7 object is valid by calling the \code{validator}
@@ -40,6 +40,30 @@ relatively expensive.
 end. It should only be used rarely, and in performance critical code where
 you are certain a sequence of operations cannot produce an invalid object.
 }
+\section{Validation conditions}{
+When validation fails, \code{\link[=validate]{validate()}} signals one of the following condition
+classes, which can be caught with \code{\link[=tryCatch]{tryCatch()}}:
+\itemize{
+\item \code{S7_error_validation_property} for property type validation failures.
+\item \code{S7_error_validation_object} for custom validator failures.
+\item \code{S7_error_validation} as the parent class of both.
+}
+
+These conditions include the following fields:
+\itemize{
+\item \code{message}: the error message.
+\item \code{call}: always \code{NULL}.
+\item \code{object_class}: the formatted class description, like \code{"<Range>"}.
+\item \code{errors}: a character vector of validation errors. For single-property
+setter failures this is length 1; for \code{\link[=validate]{validate()}} failures it may contain
+multiple entries.
+}
+
+\code{S7_error_validation_property} is used both for a single property assignment
+failure from \verb{prop<-} / \verb{@<-} and for batched property validation from
+\code{\link[=validate]{validate()}}.
+}
+
 \examples{
 # A range class might validate that the start is less than the end
 Range <- new_class("Range",
