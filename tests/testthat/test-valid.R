@@ -92,37 +92,22 @@ test_that("valid implicitly does _not_ call the validation function", {
 })
 
 
-describe("validation error classes", {
+test_that("property validation errors have class S7_error_validation_failed", {
   klass <- new_class("klass", package = NULL,
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "x must be positive"
   )
+  obj <- klass(1)
+  attr(obj, "x") <- "bad"
+  expect_error(validate(obj), class = "S7_error_validation_failed")
+})
 
-  it("property errors have class S7_error_validation_property", {
-    obj <- klass(1)
-    attr(obj, "x") <- "bad"
-
-    cnd <- tryCatch(validate(obj), S7_error_validation_property = identity)
-    expect_s3_class(cnd, c("S7_error_validation_property", "S7_error_validation", "error", "condition"), exact = TRUE)
-  })
-
-  it("custom validator errors have class S7_error_validation_object", {
-    obj <- klass(1)
-    attr(obj, "x") <- -1
-
-    cnd <- tryCatch(validate(obj), S7_error_validation_object = identity)
-    expect_s3_class(cnd, c("S7_error_validation_object", "S7_error_validation", "error", "condition"), exact = TRUE)
-  })
-
-  it("both are catchable via the parent class S7_error_validation", {
-    obj <- klass(1)
-    attr(obj, "x") <- "bad"
-    cnd1 <- tryCatch(validate(obj), S7_error_validation = identity)
-    expect_s3_class(cnd1, "S7_error_validation_property")
-
-    obj2 <- klass(1)
-    attr(obj2, "x") <- -1
-    cnd2 <- tryCatch(validate(obj2), S7_error_validation = identity)
-    expect_s3_class(cnd2, "S7_error_validation_object")
-  })
+test_that("class validator errors have class S7_error_validation_failed", {
+  klass <- new_class("klass", package = NULL,
+    properties = list(x = class_double),
+    validator = function(self) if (self@x < 0) "x must be positive"
+  )
+  obj <- klass(1)
+  attr(obj, "x") <- -1
+  expect_error(validate(obj), class = "S7_error_validation_failed")
 })
