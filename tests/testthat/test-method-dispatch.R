@@ -167,8 +167,7 @@ test_that("single dispatch fails with informative messages", {
     fail(Foo(x = 1))
   })
 
-  cnd <- tryCatch(fail(TRUE), S7_error_method_not_found = identity)
-  expect_s3_class(cnd, c("S7_error_method_not_found", "error", "condition"), exact = TRUE)
+  expect_error(fail(TRUE), class = "S7_error_method_not_found")
 })
 
 test_that("multiple dispatch fails with informative messages", {
@@ -184,10 +183,14 @@ test_that("multiple dispatch fails with informative messages", {
     fail(TRUE, TRUE)
   })
 
-  cnd <- tryCatch(fail(TRUE, TRUE), S7_error_method_not_found = identity)
-  expect_s3_class(cnd, c("S7_error_method_not_found", "error", "condition"), exact = TRUE)
+  expect_error(fail(TRUE, TRUE), class = "S7_error_method_not_found")
 })
 
+test_that("S7_error_method_not_found error class is not duplicated", {
+  fail <- new_generic("fail", "x")
+  cnd <- tryCatch(fail(TRUE), S7_error_method_not_found = identity)
+  expect_s3_class(cnd, c("S7_error_method_not_found", "error", "condition"), exact = TRUE)
+})
 
 test_that("method dispatch preserves method return visibility", {
   foo <- new_generic("foo", "x")
