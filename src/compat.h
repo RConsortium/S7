@@ -4,6 +4,7 @@
 // These must be defined before including R headers.
 #define R_NO_REMAP
 #define ENABLE_LEGACY_NONAPI
+#define ENABLE_LEGACY_NONAPI_FUNS
 
 #include <R.h>
 #include <Rinternals.h>
