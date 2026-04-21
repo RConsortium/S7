@@ -15,6 +15,10 @@
   [\#598](https://github.com/RConsortium/S7/issues/598),
   [\#600](https://github.com/RConsortium/S7/issues/600)).
 
+- `S7_error_method_not_found` now has a correct class vector without a
+  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
+  [\#604](https://github.com/RConsortium/S7/issues/604))
+
 ## S7 0.2.1
 
 CRAN release: 2025-11-14
