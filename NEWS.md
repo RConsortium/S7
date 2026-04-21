@@ -5,6 +5,7 @@
   (#602, #605).
 
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
+* `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604)
 
 # S7 0.2.1
 
