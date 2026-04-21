@@ -90,3 +90,24 @@ test_that("valid implicitly does _not_ call the validation function", {
   })
   expect_error(validate(obj), "must be positive")
 })
+
+
+test_that("property validation errors have class S7_error_validation_failed", {
+  klass <- new_class("klass", package = NULL,
+    properties = list(x = class_double),
+    validator = function(self) if (self@x < 0) "x must be positive"
+  )
+  obj <- klass(1)
+  attr(obj, "x") <- "bad"
+  expect_error(validate(obj), class = "S7_error_validation_failed")
+})
+
+test_that("class validator errors have class S7_error_validation_failed", {
+  klass <- new_class("klass", package = NULL,
+    properties = list(x = class_double),
+    validator = function(self) if (self@x < 0) "x must be positive"
+  )
+  obj <- klass(1)
+  attr(obj, "x") <- -1
+  expect_error(validate(obj), class = "S7_error_validation_failed")
+})
