@@ -2,6 +2,13 @@
 
 ## S7 (development version)
 
+- [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
+  now signals validation errors with class `S7_error_validation_failed`,
+  so they can be caught with
+  [`tryCatch()`](https://rdrr.io/r/base/conditions.html)
+  ([\#602](https://github.com/RConsortium/S7/issues/602),
+  [\#605](https://github.com/RConsortium/S7/issues/605)).
+
 - Internal changes to support R-devel (4.6)
   ([\#592](https://github.com/RConsortium/S7/issues/592),
   [\#593](https://github.com/RConsortium/S7/issues/593),
