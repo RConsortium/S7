@@ -121,6 +121,168 @@ super <- function(from, to) {
   )
 }
 
+#' Force method dispatch to use the next method of a superclass
+#' @description
+#' `next_super(from, to)` causes the dispatch for the next generic to use the
+#' **next method** for the superclass `to` instead of the actual class of
+#' `from`. Unlike \link[S7:super]{`super(from, to)`}, the method of super
+#' class `to` is ignored if it exists. This is convient alternative to
+#' `super(from, to)` when `from` may inherit from other super classes that
+#' are not explicitly known.
+#'
+#' @param from an S7 object
+#' @param to an S7_class object of which to dispatch
+#' @export
+#' @examples
+#' class_a <- new_class(
+#'   "a",
+#'   properties = list(
+#'     a = class_character
+#'   )
+#' )
+#'
+#' class_b <- new_class(
+#'   "b",
+#'   parent = class_a,
+#'   properties = list(
+#'     b = class_numeric
+#'   ),
+#'   constructor = function(a_obj = class_a(), b = character()) {
+#'     new_object(a_obj, b = b)
+#'   }
+#' )
+#'
+#' class_d <- new_class(
+#'   "d",
+#'   parent = class_b,
+#'   properties = list(
+#'     d = class_any
+#'   ),
+#'   constructor = function(b_obj = class_b(), d = NULL) {
+#'     new_object(b_obj, d = d)
+#'   }
+#' )
+#'
+#' class_c <- new_class(
+#'   "c",
+#'   parent = class_a,
+#'   properties = list(
+#'     c = class_logical
+#'   ),
+#'   constructor = function(a_obj = class_a(), c = logical()) {
+#'     new_object(a_obj, c = c)
+#'   }
+#' )
+#'
+#' class_e <- new_class(
+#'   "e",
+#'   parent = class_c,
+#'   properties = list(
+#'     e = class_any
+#'   ),
+#'   constructor = function(c_obj = class_b(), e = NULL) {
+#'     new_object(c_obj, e = e)
+#'   }
+#' )
+#'
+#'
+#' aa <- class_a(a = "hello")
+#' ba <- class_b(aa, b = 1)
+#' dba <- class_d(ba)
+#' cdba <- class_c(dba, c = TRUE)
+#' ecdba <- class_e(cdba)
+#'
+#' log_class <- function(x) {
+#'   cat("inherits: ", x, "\n")
+#' }
+#'
+#' bar <- new_generic("bar", "x")
+#'
+#' method(bar, class_a) <- function(x) {
+#'   log_class("a")
+#' }
+#'
+#' method(bar, class_b) <- function(x) {
+#'   bar(super(x, class_a))
+#'   log_class("b")
+#' }
+#'
+#' method(bar, class_d) <- function(x) {
+#'   bar(super(x, class_b))
+#'   log_class("d")
+#' }
+#'
+#' method(bar, class_c) <- function(x) {
+#'   bar(super(x, class_a))
+#'   log_class("c")
+#' }
+#'
+#' method(bar, class_e) <- function(x) {
+#'   bar(super(x, class_c))
+#'   log_class("e")
+#' }
+#'
+#' baz <- new_generic("baz", "x")
+#'
+#' method(baz, class_a) <- function(x) {
+#'   log_class("a")
+#' }
+#'
+#' method(baz, class_b) <- function(x) {
+#'   baz(next_super(x, class_b))
+#'   log_class("b")
+#' }
+#'
+#' method(baz, class_d) <- function(x) {
+#'   baz(next_super(x, class_d))
+#'   log_class("d")
+#' }
+#'
+#' method(baz, class_c) <- function(x) {
+#'   baz(next_super(x, class_c))
+#'   log_class("c")
+#' }
+#'
+#' method(baz, class_e) <- function(x) {
+#'   baz(next_super(x, class_e))
+#'   log_class("e")
+#' }
+#'
+#' # bar uses  `super`, disptaching to explicit methods
+#' bar(ecdba)
+#' # bar uses `next_super`, dispatching on the next inherited superclasses
+#' baz(ecdba)
+#' # note, if no method exists, an error will be thrown:
+#' # attempt to find next method beyond the root class...
+#' try(baz(next_super(ecdba, class_a)))
+next_super <- function(from, to) {
+  check_is_S7(from)
+  to <- as_class(to)
+  check_can_inherit(to)
+  if (!class_inherits(from, to)) {
+    msg <- sprintf(
+      "%s doesn't inherit from %s", obj_desc(from),
+      class_desc(to)
+    )
+    stop(msg)
+  }
+  from_to <- S7_class(from)
+  to_name <- S7_class_name(to)
+  while (!is.null(from_to)) {
+    if (S7_class_name(from_to) == to_name) {
+      break
+    }
+    from_to <- attr(from_to, "parent")
+  }
+  structure(
+    list(
+      object = from,
+      dispatch = class_dispatch(from_to)[-1L]
+    ),
+    class = "S7_super"
+  )
+}
+
 #' @export
 print.S7_super <- function(x, ...) {
   str(x, ...)

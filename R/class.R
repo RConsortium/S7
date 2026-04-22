@@ -254,6 +254,7 @@ new_object <- function(.parent, ...) {
 
   # force .parent before ...
   # TODO: Some type checking on `.parent`?
+  class <- merge_S7_class(class, S7_class(.parent))
   object <- .parent
 
   args <- list(...)
@@ -282,6 +283,42 @@ new_object <- function(.parent, ...) {
   validate(object, recursive = !parent_validated)
 
   object
+}
+
+merge_S7_class <- function(class, other) {
+  if (!identical(class, other) && S7_inherits(other)) {
+    # browser()
+    if (!S7_class_inherits(other, parent_class <- attr(class, "parent"))) {
+      stop(
+        sprintf(
+          "The class <%s> cannot be merged with other class <%s> because <%s> is not in the other's heirarchy",
+          S7_class_name(class),
+          S7_class_name(other),
+          S7_class_name(parent_class)
+        )
+      )
+    }
+    class_props <- attr(class, "properties")
+    keep <- names(class_props)
+    other_props <- attr(other, "properties")
+    attr(class, "properties") <- c(
+      class_props,
+      other_props[!names(other_props) %in% keep]
+    )
+    attr(class, "parent") <- other
+  }
+  class
+}
+
+S7_class_inherits <- function(S7_class, S7_inherts) {
+  name <- S7_class_name(S7_inherts)
+  while (!is.null(S7_class)) {
+    if (S7_class_name(S7_class) == name) {
+      return(TRUE)
+    }
+    S7_class <- attr(S7_class, "parent")
+  }
+  FALSE
 }
 
 #' @export
