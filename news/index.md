@@ -1,5 +1,16 @@
 # Changelog
 
+## S7 (development version)
+
+- Internal changes to support R-devel (4.6)
+  ([\#592](https://github.com/RConsortium/S7/issues/592),
+  [\#593](https://github.com/RConsortium/S7/issues/593),
+  [\#598](https://github.com/RConsortium/S7/issues/598),
+  [\#600](https://github.com/RConsortium/S7/issues/600)).
+- `S7_error_method_not_found` now has a correct class vector without a
+  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
+  [\#604](https://github.com/RConsortium/S7/issues/604))
+
 ## S7 0.2.2
 
 CRAN release: 2026-04-22
@@ -10,16 +21,6 @@ CRAN release: 2026-04-22
   [`tryCatch()`](https://rdrr.io/r/base/conditions.html)
   ([\#602](https://github.com/RConsortium/S7/issues/602),
   [\#605](https://github.com/RConsortium/S7/issues/605)).
-
-- Internal changes to support R-devel (4.6)
-  ([\#592](https://github.com/RConsortium/S7/issues/592),
-  [\#593](https://github.com/RConsortium/S7/issues/593),
-  [\#598](https://github.com/RConsortium/S7/issues/598),
-  [\#600](https://github.com/RConsortium/S7/issues/600)).
-
-- `S7_error_method_not_found` now has a correct class vector without a
-  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
-  [\#604](https://github.com/RConsortium/S7/issues/604))
 
 ## S7 0.2.1
 
