@@ -19,7 +19,8 @@
 #' @param recursive If `TRUE`, calls validator of parent classes recursively.
 #' @param properties If `TRUE`, the default, checks property types before
 #'   executing the validator.
-#' @returns Either `object` invisibly if valid, otherwise an error.
+#' @returns Either `object` invisibly if valid, otherwise an error of
+#'   class `S7_error_validation_failed`
 #' @export
 #' @examples
 #' # A range class might validate that the start is less than the end
@@ -78,7 +79,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
     if (length(errors) > 0) {
       bullets <- paste0("- ", errors, collapse = "\n")
       msg <- sprintf("%s object properties are invalid:\n%s", obj_desc(object), bullets)
-      stop(msg, call. = FALSE)
+      stop(errorCondition(msg, call = NULL, class = "S7_error_validation_failed"))
     }
   }
 
@@ -104,7 +105,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
     msg <- sprintf("%s object is invalid:\n%s", obj_desc(object), bullets)
-    stop(msg, call. = FALSE)
+    stop(errorCondition(msg, call = NULL, class = "S7_error_validation_failed"))
   }
 
   invisible(object)
