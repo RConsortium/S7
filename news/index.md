@@ -1,6 +1,8 @@
 # Changelog
 
-## S7 (development version)
+## S7 0.2.2
+
+CRAN release: 2026-04-22
 
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
   now signals validation errors with class `S7_error_validation_failed`,
