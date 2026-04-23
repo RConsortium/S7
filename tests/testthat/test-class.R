@@ -11,7 +11,11 @@ describe("S7 classes", {
   })
 
   it("print nicely", {
-    foo1 <- new_class("foo1", properties = list(x = class_integer, y = class_integer), package = NULL)
+    foo1 <- new_class(
+      "foo1",
+      properties = list(x = class_integer, y = class_integer),
+      package = NULL
+    )
     foo2 <- new_class("foo2", foo1, package = NULL)
 
     expect_snapshot({
@@ -106,12 +110,13 @@ describe("abstract classes", {
 })
 
 describe("new_object()", {
-  it("gives useful error if called directly",{
+  it("gives useful error if called directly", {
     expect_snapshot(new_object(), error = TRUE)
   })
 
   it("validates object", {
-    foo <- new_class("foo",
+    foo <- new_class(
+      "foo",
       properties = list(x = new_property(class_double)),
       validator = function(self) if (self@x < 0) "x must be positive",
       package = NULL
@@ -146,8 +151,11 @@ describe("S7 object", {
 
   it("displays nicely", {
     expect_snapshot({
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
-                       package = NULL)
+      foo <- new_class(
+        "foo",
+        properties = list(x = class_double, y = class_double),
+        package = NULL
+      )
       foo()
       str(list(foo()))
     })
@@ -198,9 +206,12 @@ describe("default constructor", {
   })
 
   it("can initialise a property to NULL", {
-    foo <- new_class("foo", properties = list(
-      x = new_property(default = 10)
-    ))
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(default = 10)
+      )
+    )
     x <- foo(x = NULL)
     expect_equal(x@x, NULL)
   })
@@ -232,11 +243,14 @@ test_that("c(<S7_class>, ...) gives error", {
 })
 
 test_that("can round trip to disk and back", {
-  eval(quote({
-    foo1 <- new_class("foo1", properties = list(y = class_integer))
-    foo2 <- new_class("foo2", properties = list(x = foo1))
-    f <- foo2(x = foo1(y = 1L))
-  }), globalenv())
+  eval(
+    quote({
+      foo1 <- new_class("foo1", properties = list(y = class_integer))
+      foo2 <- new_class("foo2", properties = list(x = foo1))
+      f <- foo2(x = foo1(y = 1L))
+    }),
+    globalenv()
+  )
 
   f <- globalenv()[["f"]]
   path <- tempfile()
@@ -247,12 +261,59 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
-
-test_that("can't create class with reserved property names", {
+test_that("can't create class with forbidden property names", {
   expect_snapshot(error = TRUE, {
-    new_class("foo", properties = list(names = class_character))
-    new_class("foo", properties = list(dim = NULL | class_integer))
-    new_class("foo", properties = list(dim = NULL | class_integer,
-                                       dimnames = class_list))
+    new_class("foo", properties = list("..." = class_character))
   })
+})
+
+test_that("can create class with reserved property names", {
+  expect_no_error({
+    cls <- new_class("foo", properties = list(names = class_character))
+    cls()
+    cls(names = "test")
+
+    cls <- new_class("foo", properties = list(dim = NULL | class_integer))
+    cls()
+    cls(dim = NULL)
+    cls(dim = 1L)
+
+    cls <- new_class(
+      "foo",
+      properties = list(dim = NULL | class_integer, dimnames = class_list)
+    )
+
+    cls()
+    cls(dimnames = list(1, 2, 3))
+  })
+})
+
+test_that("get and set properties with resrved attribute names", {
+  obj <- expect_no_error({
+    cls <- new_class(
+      "foo",
+      properties = list(
+        names = class_character,
+        dim = NULL | class_integer,
+        class = class_logical
+      )
+    )
+
+    cls()
+  })
+
+  expect_no_error(obj@names <- "test")
+  expect_equal(obj@names, "test")
+  expect_no_error(prop(obj, "names") <- "test")
+  expect_equal(prop(obj, "names"), "test")
+
+  expect_no_error(obj@dim <- 2L)
+  expect_equal(obj@dim, 2L)
+  expect_no_error(prop(obj, "dim") <- 2L)
+  expect_equal(prop(obj, "dim"), 2L)
+
+  expect_no_error(obj@class <- FALSE)
+  expect_equal(obj@class, FALSE)
+  expect_no_error(prop(obj, "class") <- FALSE)
+  expect_equal(prop(obj, "class"), FALSE)
 })
