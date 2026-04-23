@@ -191,3 +191,19 @@ test_that("Dynamic settable properties are included in constructor", {
   expect_equal(foo@dynamic_settable, 1)
 
 })
+
+
+test_that("Child classes can change property default value", {
+
+  Foo1 = new_class("Foo1", properties = list(
+    bar = class_vector
+  ))
+
+  Foo2 = new_class("Foo2", Foo1, properties = list(
+    bar = new_property(default = 99)
+  ))
+
+  expect_identical(formals(Foo1), pairlist(bar = logical()))
+  expect_identical(formals(Foo2), pairlist(bar = 99))
+
+})
