@@ -2,7 +2,7 @@
 
     Code
       method(foo, class_character) <- (function(x) "c")
-      method(foo, class_character) <- (function(x) "c")
+      method(foo, class_character) <- (function(x) "d")
     Message
       Overwriting method foo(<character>)
 

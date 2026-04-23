@@ -10,7 +10,7 @@ describe("method registration", {
     foo <- new_generic("foo", "x")
     expect_snapshot({
       method(foo, class_character) <- function(x) "c"
-      method(foo, class_character) <- function(x) "c"
+      method(foo, class_character) <- function(x) "d"
     })
     expect_length(methods(foo), 1)
   })
