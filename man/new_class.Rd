@@ -3,6 +3,7 @@
 \name{new_class}
 \alias{new_class}
 \alias{new_object}
+\alias{new_empty_object}
 \title{Define a new S7 class}
 \usage{
 new_class(
@@ -16,6 +17,8 @@ new_class(
 )
 
 new_object(.parent, ...)
+
+new_empty_object(class, ..., .parent = class@parent())
 }
 \arguments{
 \item{name}{The name of the class, as a string. The result of calling
@@ -72,6 +75,8 @@ suppress validation when needed.}
 
 \item{.parent, ...}{Parent object and named properties used to construct the
 object.}
+
+\item{class}{The S7 class of the object to create.}
 }
 \value{
 A object constructor, a function that can be used to create objects
