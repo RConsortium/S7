@@ -1,11 +1,13 @@
-#' Does this object inherit from an S7 class?
+#' Does this object inherit from a class?
 #'
 #' * `S7_inherits()` returns `TRUE` or `FALSE`.
 #' * `check_is_S7()` throws an error if `x` isn't the specified `class`.
 #'
-#' @param x An object
-#' @param class An S7 class or `NULL`. If `NULL`, tests whether `x` is an
-#'   S7 object without testing for a specific class.
+#' @param x An object.
+#' @param class A class specification (anything accepted by [as_class()]:
+#'   an S7 class, S7 union, S3 class, S4 class, base type wrapper like
+#'   [class_integer], or [class_any]/[class_missing]). If `NULL`, only tests
+#'   whether `x` is an S7 object, without testing for a specific class.
 #' @param arg Argument name used in error message.
 #' @returns
 #' * `S7_inherits()` returns a single `TRUE` or `FALSE`.
@@ -25,21 +27,28 @@
 #' S7_inherits(Foo1(), Foo2)
 #' try(check_is_S7(Foo1(), Foo2))
 #'
-#' if (getRversion() >= "4.3.0")
+#' # Also works with other class specifications
+#' S7_inherits(1L, class_integer)
+#' S7_inherits(data.frame(), new_S3_class("data.frame"))
+#' S7_inherits(1L, class_integer | class_character)
+#'
+#' if (getRversion() >= "4.3.0") {
 #'   inherits(Foo1(), Foo1)
+#' }
 S7_inherits <- function(x, class = NULL) {
-  if (!(is.null(class) || inherits(class, "S7_class"))) {
-    stop("`class` must be an <S7_class> or NULL")
+  class <- as_class(class)
+  if (is.null(class)) {
+    inherits(x, "S7_object")
+  } else {
+    class_inherits(x, class)
   }
-
-  inherits(x, "S7_object") &&
-    (is.null(class) || inherits(x, S7_class_name(class)))
 }
 
 #' @export
 #' @rdname S7_inherits
 # called from src/prop.c
 check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
+  class <- as_class(class)
   if (S7_inherits(x, class)) {
     return(invisible())
   }
