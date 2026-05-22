@@ -44,6 +44,7 @@ Classes are constructed by supplying these components to a call to
 construct an object of that class.
 
 ``` r
+
 newClass(
   name,
   parent = Object,
@@ -56,6 +57,7 @@ newClass(
 For example:
 
 ``` r
+
 Range <- newClass("Range",
   Vector,
   constructor = function(start, end) {
@@ -108,6 +110,7 @@ transition through a temporarily invalid state), S7 provides
 `eventuallyValid()`:
 
 ``` r
+
 eventuallyValid <- function(object, fun) {
   object$internal_validation_flag <- FALSE
   out <- fun(object)
@@ -120,6 +123,7 @@ For example, if you wanted to move a Range object to the right, you
 could write:
 
 ``` r
+
 move_right <- function(x, y) {
   eventuallyValid(x, function(x) {
     x@start <- x@start + y
@@ -152,6 +156,7 @@ method dispatch as a convenience for defining a method for multiple
 classes.
 
 ``` r
+
 ClassUnion <- defineClass("ClassUnion",
   properties = list(classes = "list"),
   validator = function(x) {
@@ -192,6 +197,7 @@ Every property definition has a:
 Property objects are created by `newProperty()`:
 
 ``` r
+
 newProperty(
   name,
   class = NULL,
@@ -224,6 +230,7 @@ in its signature (the arguments considered during dispatch).
 Calling `newGeneric()` defines a new generic. It has the signature:
 
 ``` r
+
 newGeneric(name, FUN, signature)
 ```
 
@@ -243,6 +250,7 @@ be used to find the class object in the calling frame.
 Methods are defined by calling `method<-(generic, signature, method)`:
 
 ``` r
+
 method(generic, signature) <- function(x, ...) {}
 ```
 
@@ -265,6 +273,7 @@ typically occurs when providing methods for generics or classes in
 suggested packages.
 
 ``` r
+
 whenLoaded("pkg", {
   method(mean, pkg::A) <- function() 10
   method(sum, pkg::A) <- function() 5
@@ -285,6 +294,7 @@ For example, a [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
 generic dispatching on `x` could be implemented like this:
 
 ``` r
+
 plot <- function(x) {
   method(plot, classObject(x))(x)
 }
@@ -294,6 +304,7 @@ While a `publish()` that publishes an object `x` to a destination `y`,
 dispatching on both arguments, could be implemented as:
 
 ``` r
+
 publish <- function(x, y, ...) {
   sig <- list(classObject(x), classObject(y))
   method(publish, sig)(x, y, ...)
@@ -304,6 +315,7 @@ Because method dispatch is nested, this is presumably equivalent to
 something like:
 
 ``` r
+
 publish <- function(x, y, ...) {
   publish_x <- method(publish, classObject(x))
   publish_xy <- method(publish_x, classObject(y))

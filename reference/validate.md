@@ -48,7 +48,8 @@ valid_implicitly(object, fun)
 
 ## Value
 
-Either `object` invisibly if valid, otherwise an error.
+Either `object` invisibly if valid, otherwise an error of class
+`S7_error_validation_failed`
 
 ## Examples
 

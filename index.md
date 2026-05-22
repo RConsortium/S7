@@ -17,6 +17,7 @@ The long-term goal of this project is to merge S7 in to base R. For now,
 you can experiment by installing it from CRAN:
 
 ``` r
+
 install.packages("S7")
 ```
 
@@ -33,6 +34,7 @@ and compatibility with S3 and S4 in
 [`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md).
 
 ``` r
+
 library(S7)
 ```
 
@@ -44,6 +46,7 @@ and an optional validator. Use
 to define a class:
 
 ``` r
+
 range <- new_class("range",
   properties = list(
     start = class_double,
@@ -66,6 +69,7 @@ returns the class object, which is also the constructor you use to
 create instances of the class:
 
 ``` r
+
 x <- range(start = 1, end = 10)
 x
 #> <range>
@@ -79,6 +83,7 @@ The data possessed by an object is called its **properties**. Use `@` to
 get and set properties:
 
 ``` r
+
 x@start
 #> [1] 1
 x@end <- 20
@@ -93,10 +98,13 @@ Properties are automatically validated against the type declared in
 (`double` in this case), and with the class **validator**:
 
 ``` r
+
 x@end <- "x"
-#> Error: <range>@end must be <double>, not <character>
+#> Error:
+#> ! <range>@end must be <double>, not <character>
 x@end <- -1
-#> Error: <range> object is invalid:
+#> Error:
+#> ! <range> object is invalid:
 #> - @end must be greater than or equal to @start
 ```
 
@@ -117,6 +125,7 @@ is only needed if your generic has additional arguments that aren’t used
 for method dispatch.
 
 ``` r
+
 inside <- new_generic("inside", "x")
 ```
 
@@ -124,6 +133,7 @@ Once you have a generic, you can define a method for a specific class
 with `method<-`:
 
 ``` r
+
 # Add a method for our class
 method(inside, range) <- function(x, y) {
   y >= x@start & y <= x@end

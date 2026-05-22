@@ -83,6 +83,7 @@ S7 classes wrapping around common base types and S3 classes.
 ## Examples
 
 ``` r
+
 class_integer
 #> <S7_base_class>: <integer>
 class_numeric

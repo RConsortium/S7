@@ -15,6 +15,7 @@ The base S7 object.
 ## Examples
 
 ``` r
+
 S7_object
 #> <S7_object> class
 #> @ parent     : <NULL>

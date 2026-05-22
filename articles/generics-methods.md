@@ -14,6 +14,7 @@ dispatch including
 multiple dispatch.
 
 ``` r
+
 library(S7)
 ```
 
@@ -40,6 +41,7 @@ the method. This is an important difference from S3. Take a very simple
 implementation of [`mean()`](https://rdrr.io/r/base/mean.html):
 
 ``` r
+
 mean <- new_generic("mean", "x")
 method(mean, class_numeric) <- function(x) sum(x) / length(x)
 ```
@@ -47,12 +49,14 @@ method(mean, class_numeric) <- function(x) sum(x) / length(x)
 If we pass an additional argument in, we’ll get an error:
 
 ``` r
+
 mean(100, na.rm = TRUE)
 ```
 
 But we can still add additional arguments if we desired:
 
 ``` r
+
 method(mean, class_numeric) <- function(x, na.rm = TRUE) {
   if (na.rm) {
     x <- x[!is.na(x)]
@@ -76,6 +80,7 @@ particularly problematic if you need to re-call the generic recursively.
 For example, imagine a simple print method like this:
 
 ``` r
+
 simple_print <- new_generic("simple_print", "x")
 method(simple_print, class_double) <- function(x, digits = 3) {}
 method(simple_print, class_character) <- function(x, max_length = 100) {}
@@ -84,6 +89,7 @@ method(simple_print, class_character) <- function(x, max_length = 100) {}
 What if you want to print a list?
 
 ``` r
+
 method(simple_print, class_list) <- function(x, ...) {
   for (el in x) {
     simple_print(el, ...)
@@ -95,6 +101,7 @@ It’s fine as long as all the elements of the list are numbers, but as
 soon as we add a character vector, we get an error:
 
 ``` r
+
 simple_print(list(1, 2, 3), digits = 3)
 simple_print(list(1, 2, "x"), digits = 3)
 ```
@@ -104,6 +111,7 @@ they haven’t been specifically designed to handle, i.e. they need to use
 `…`:
 
 ``` r
+
 method(simple_print, class_double) <- function(x, ..., digits = 3) {}
 #> Overwriting method simple_print(<double>)
 method(simple_print, class_character) <- function(x, ..., max_length = 100) {}
@@ -119,6 +127,7 @@ way to avoid this problem without relying on fairly esoteric technology
 [`rlang::check_dots_used()`](https://rlang.r-lib.org/reference/check_dots_used.html)).
 
 ``` r
+
 simple_print(list(1, 2, "x"), diggits = 3)
 ```
 
@@ -139,6 +148,7 @@ with precisely defined semantics. A good example of such a function is
 [`length()`](https://rdrr.io/r/base/length.html):
 
 ``` r
+
 length <- new_generic("length", "x", function(x) {
   S7_dispatch()
 })
@@ -155,6 +165,7 @@ In most cases, you’ll supply the first two arguments to
 and allow it to automatically generate the body of the generic:
 
 ``` r
+
 display <- new_generic("display", "x")
 S7_data(display)
 #> function (x, ...) 
@@ -184,6 +195,7 @@ To add required arguments that aren’t dispatched upon, you just need to
 add additional arguments that lack default values:
 
 ``` r
+
 foo <- new_generic("foo", "x", function(x, y, ...) {
   S7_dispatch()
 })
@@ -193,6 +205,7 @@ Now all methods will need to provide that `y` argument. If not, you’ll
 get a warning:
 
 ``` r
+
 method(foo, class_integer) <- function(x, ...) {
   10
 }
@@ -211,6 +224,7 @@ argument when calling the function, which makes it easier to extend your
 function in the future.
 
 ``` r
+
 mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
   S7_dispatch()
 })
@@ -226,6 +240,7 @@ Forgetting the argument or using a different default value will again
 generate a warning.
 
 ``` r
+
 method(mean, class_double) <- function(x, na.rm = FALSE) {}
 #> Warning: In mean(<double>), default value of `na.rm` is not the same as the generic
 #> - Generic: TRUE
@@ -242,6 +257,7 @@ example, our [`mean()`](https://rdrr.io/r/base/mean.html) function could
 verify that `na.rm` was correctly specified:
 
 ``` r
+
 mean <- new_generic("mean", "x", function(x, ..., na.rm = TRUE) {
   if (!identical(na.rm, TRUE) && !identical(na.rm = FALSE)) {
     stop("`na.rm` must be either TRUE or FALSE")
@@ -267,6 +283,7 @@ To demonstrate this idea, I’ll first define a mean generic with a method
 for numbers:
 
 ``` r
+
 mean <- new_generic("mean", "x")
 method(mean, class_numeric) <- function(x) {
   sum(x) / length(x)
@@ -278,6 +295,7 @@ mean(1:10)
 And a Date class:
 
 ``` r
+
 date <- new_class("date", parent = class_double)
 # Cheat by using the existing base .Date class
 method(print, date) <- function(x) print(.Date(x))
@@ -288,6 +306,7 @@ date(c(1, 10, 100))
 Now to compute a mean we write:
 
 ``` r
+
 method(mean, date) <- function(x) {
   date(mean(super(x, to = class_double)))
 }
@@ -337,6 +356,7 @@ Let’s take our speak example from
 extend it to teach our pets how to speak multiple languages:
 
 ``` r
+
 Pet <- new_class("Pet")
 Dog <- new_class("Dog", Pet)
 Cat <- new_class("Cat", Pet)

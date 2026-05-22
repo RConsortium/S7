@@ -8,6 +8,7 @@ know](https://github.com/RConsortium/S7/issues/new) if you have
 questions that this vignette doesn’t answer.
 
 ``` r
+
 library(S7)
 ```
 
@@ -18,6 +19,7 @@ You should always call
 in your `.onLoad()`:
 
 ``` r
+
 .onLoad <- function(...) {
   S7::methods_register()
 }
@@ -67,6 +69,7 @@ of `@`. Otherwise, you can conditionally make an S7-aware `@` available
 to your package with this custom `NAMESPACE` directive:
 
 ``` r
+
 # enable usage of <S7_object>@name in package code
 #' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
 NULL

@@ -98,11 +98,11 @@ dominance. This had led to social fracturing in the community and
 technical impediments to compatibility and interoperability. We
 summarize those limitations in the table below.
 
-| S3 limitations                  | S4 limitations                                       | S4 implementation issues |
-|---------------------------------|------------------------------------------------------|--------------------------|
-| Classes are only implicit       | Multiple inheritance and dispatch hard to understand | Poor performance         |
-| No systematic object validation | Syntax is unusual (side effects)                     | Difficult to maintain    |
-| Single dispatch only            | Lack of transparency of object structure and methods |                          |
+| S3 limitations | S4 limitations | S4 implementation issues |
+|----|----|----|
+| Classes are only implicit | Multiple inheritance and dispatch hard to understand | Poor performance |
+| No systematic object validation | Syntax is unusual (side effects) | Difficult to maintain |
+| Single dispatch only | Lack of transparency of object structure and methods |  |
 
 S3 defines classes implicitly at the instance level, so there is no
 explicit class hierarchy. While the S3 system supports tracking the

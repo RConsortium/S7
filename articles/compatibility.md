@@ -4,6 +4,7 @@ S7 is designed to be compatible with S3 and S4. This vignette discusses
 the details.
 
 ``` r
+
 library(S7)
 ```
 
@@ -42,6 +43,7 @@ class and S3 generic without using S7, because all S7 objects have S3
 classes, and S3 dispatch will operate on them normally.
 
 ``` r
+
 Foo <- new_class("Foo")
 class(Foo())
 #> [1] "Foo"       "S7_object"
@@ -66,6 +68,7 @@ and its subclasses don’t need to change.
 Many simple S3 classes are implemented as lists, e.g. rle.
 
 ``` r
+
 rle <- function(x) {
   if (!is.vector(x) && !is.list(x)) {
     stop("'x' must be a vector of an atomic type")
@@ -95,6 +98,7 @@ exactly the same, using a `list` as the underlying data structure and
 using a constructor to enforce the structure:
 
 ``` r
+
 new_rle <- new_class("rle",
   parent = class_list,
   constructor = function(lengths, values) {
@@ -111,6 +115,7 @@ Alternatively you could convert it to the most natural representation
 using S7:
 
 ``` r
+
 new_rle <- new_class("rle", properties = list(
   lengths = class_integer,
   values = class_atomic
@@ -121,6 +126,7 @@ To allow existing methods to work you’ll need to override `$` to access
 properties instead of list elements:
 
 ``` r
+
 method(`$`, new_rle) <- prop
 rle(1:10)
 #> Run Length Encoding
@@ -153,6 +159,7 @@ that registering a method for a union is just short-hand for registering
 a method for each of the classes.
 
 ``` r
+
 Class1 <- new_class("Class1")
 Class2 <- new_class("Class2")
 Union1 <- new_union(Class1, Class2)

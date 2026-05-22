@@ -7,6 +7,7 @@ focussing on the aspects of S3 and S4 that have been found to be
 particularly challenging in practice.
 
 ``` r
+
 library(S7)
 ```
 

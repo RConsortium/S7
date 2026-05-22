@@ -7,6 +7,7 @@ will cover validators, the finer details of properties, and finally how
 to write your own constructors.
 
 ``` r
+
 library(S7)
 ```
 
@@ -24,6 +25,7 @@ In the following example we create a `Range` class that enforces that
 `@end`:
 
 ``` r
+
 Range <- new_class("Range",
   properties = list(
     start = class_double,
@@ -60,6 +62,7 @@ Objects are validated automatically when constructed and when any
 property is modified:
 
 ``` r
+
 x <- Range(1, 2:3)
 #> Error:
 #> ! <Range> object properties are invalid:
@@ -82,6 +85,7 @@ an object if you use a low-level R function to bypass the usual checks
 and balances of `@`:
 
 ``` r
+
 x <- Range(1, 2)
 attr(x, "start") <- 3
 validate(x)
@@ -96,6 +100,7 @@ Imagine you wanted to write a function that would shift a property to
 the left or the right:
 
 ``` r
+
 shift <- function(x, shift) {
   x@start <- x@start + shift
   x@end <- x@end + shift
@@ -110,6 +115,7 @@ shift(Range(1, 10), 1)
 There’s a problem if `shift` is larger than `@end` - `@start`:
 
 ``` r
+
 shift(Range(1, 10), 10)
 #> Error:
 #> ! <Range> object is invalid:
@@ -121,6 +127,7 @@ is not. The easiest way to resolve this problem is to set the properties
 all at once:
 
 ``` r
+
 shift <- function(x, shift) {
   props(x) <- list(
     start = x@start + shift,
@@ -146,6 +153,7 @@ This is a convenient shorthand for a call to
 For example, the property definition of range above is shorthand for:
 
 ``` r
+
 Range <- new_class("Range",
   properties = list(
     start = new_property(class_double),
@@ -168,6 +176,7 @@ instead of validating the length of `start` and `end` in the validator
 of our `Range` class, we could implement those at the property level:
 
 ``` r
+
 prop_number <- new_property(
   class = class_double,
   validator = function(value) {
@@ -215,6 +224,7 @@ The defaults of
 create a class that can be constructed with no arguments:
 
 ``` r
+
 Empty <- new_class("Empty",
   properties = list(
     x = class_double,
@@ -233,6 +243,7 @@ instances. You can instead provide your own defaults by using the
 `default` argument:
 
 ``` r
+
 Empty <- new_class("Empty",
   properties = list(
     x = new_property(class_numeric, default = 0),
@@ -251,6 +262,7 @@ A quoted call becomes a standard function promise in the default
 constructor, evaluated at the time the object is constructed.
 
 ``` r
+
 Stopwatch <- new_class("Stopwatch", properties = list(
   start_time = new_property(
     class = class_POSIXct,
@@ -279,6 +291,7 @@ which is just the distance between `@start` and `@end`. You can
 dynamically compute the value of a property by defining a `getter`:
 
 ``` r
+
 Range <- new_class("Range",
   properties = list(
     start = class_double,
@@ -300,6 +313,7 @@ x
 Computed properties are read-only:
 
 ``` r
+
 x@length <- 20
 #> Error:
 #> ! Can't set read-only property <Range>@length
@@ -317,6 +331,7 @@ For example, we could extend the previous example to allow the `@length`
 to be set, by modifying the `@end` of the vector:
 
 ``` r
+
 Range <- new_class("Range",
   properties = list(
     start = class_double,
@@ -362,6 +377,7 @@ many common patterns of properties.
 A `setter` + `getter` can be used to to deprecate a property:
 
 ``` r
+
 Person <- new_class("Person", properties = list(
  first_name = class_character,
  firstName = new_property(
@@ -410,6 +426,7 @@ You can make a property required by the constructor either by:
 - setting the property default to a quoted error call.
 
 ``` r
+
 Person <- new_class("Person", properties = list(
  name = new_property(
    class_character,
@@ -434,6 +451,7 @@ Person("Alice")
 ```
 
 ``` r
+
 Person <- new_class("Person", properties = list(
  name = new_property(
    class_character,
@@ -454,6 +472,7 @@ You can mark a property as read-only after construction by providing a
 custom `setter`.
 
 ``` r
+
 Person <- new_class("Person", properties = list(
  birth_date = new_property(
    class_Date,
@@ -478,6 +497,7 @@ You can see the source code for a class’s constructor by accessing the
 `constructor` property:
 
 ``` r
+
 Range@constructor
 #> function (start = numeric(0), end = numeric(0), length = numeric(0)) 
 #> {
@@ -496,6 +516,7 @@ values, automatically computing the min and the max. To implement this
 we could do:
 
 ``` r
+
 Range <- new_class("Range",
   properties = list(
     start = class_numeric,

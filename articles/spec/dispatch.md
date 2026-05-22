@@ -41,6 +41,7 @@ methods? As of R 4.0.0, it looks in the following three places:
 S7 methods are defined using assignment:
 
 ``` r
+
 method("mean", "numeric") <- function(x) sum(x) / length(x)
 ```
 
@@ -78,6 +79,7 @@ like a regular function call but instead:
 These properties are summarised in the following example:
 
 ``` r
+
 foo <- function(x, y)  {
   y <- 2
   z <- 2
@@ -90,6 +92,7 @@ foo.numeric <- function(x, y) {
 ```
 
 ``` r
+
 # In R 4.3 and earlier
 foo(1, 1)
 #> x y z 
@@ -97,6 +100,7 @@ foo(1, 1)
 ```
 
 ``` r
+
 foo(1, 1)
 #> <environment: R_GlobalEnv>
 #> Error in `foo.numeric()`:
@@ -115,6 +119,7 @@ foo(1, 1)
   assumes that this works:
 
   ``` r
+
   foo <- function(x, y)  {
     UseMethod("foo")
   }
@@ -139,6 +144,7 @@ work: currently most state recorded in special variables like
 Can we avoid this confusion:
 
 ``` r
+
 foo <- function(x)  {
   UseMethod("foo")
 }
@@ -162,6 +168,7 @@ Want to avoid this sort of code, where we rely on magic from
 `callGeneric()` to pass on values from current call.
 
 ``` r
+
 method("mean", "foofy") <- function(x, ..., na.rm = TRUE) {
   x <- x@values
   callGeneric()
@@ -174,6 +181,7 @@ Can we require `generic` and `object` arguments to make code easier to
 reason about?
 
 ``` r
+
 method("mean", "POSIXct") <- function(x) {
   POSIXct(NextMethod(), tz = attr(x, "tz"))
 }
@@ -195,6 +203,7 @@ Group generics (`Math`, `Ops`, `Summary`, `Complex`): exist for some
 internal generics. Looked for before final fallback.
 
 ``` r
+
 sloop::s3_dispatch(sum(Sys.time()))
 #>    sum.POSIXct
 #>    sum.POSIXt
@@ -228,6 +237,7 @@ order. User responsible for ensuring that `x + y` equivalent to `y + x`
 different).
 
 ``` r
+
 double_dispatch <- function(x, y, generic = "+") {
   grid <- rev(expand.grid(sloop::s3_class(y), sloop::s3_class(x)))
   writeLines(paste0("* ", generic, ".", grid[[1]], ".", grid[[2]]))
@@ -269,6 +279,7 @@ provided by [`.class2()`](https://rdrr.io/r/base/class.html). This is
 made up of four rough categories: dimension, type, language, numeric.
 
 ``` r
+
 # dimension class
 .class2(matrix("a"))
 #> [1] "matrix"    "array"     "character"
