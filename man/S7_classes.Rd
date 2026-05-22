@@ -10,7 +10,9 @@ S7_classes(env = parent.frame())
 S7_generics(env = parent.frame())
 }
 \arguments{
-\item{env}{An environment. Defaults to the caller's environment.}
+\item{env}{An environment. Defaults to the caller's environment.
+To inspect a package, pass \code{asNamespace("pkg")}; to inspect the global
+environment, pass \code{globalenv()}.}
 }
 \value{
 A character vector of names.
@@ -20,9 +22,6 @@ A character vector of names.
 \item \code{S7_classes()} returns the names of S7 classes defined in \code{env}.
 \item \code{S7_generics()} returns the names of S7 generics defined in \code{env}.
 }
-
-To inspect a package, pass \code{asNamespace("pkg")}; to inspect the global
-environment, pass \code{globalenv()}.
 }
 \examples{
 # List S7 classes exported by the S7 package itself
