@@ -95,14 +95,14 @@
 #' r <- Range(start = 10, end = 20)
 #' try(r@start <- 25)
 new_class <- function(
-    name,
-    parent = S7_object,
-    package = topNamespaceName(parent.frame()),
-    properties = list(),
-    abstract = FALSE,
-    constructor = NULL,
-    validator = NULL) {
-
+  name,
+  parent = S7_object,
+  package = topNamespaceName(parent.frame()),
+  properties = list(),
+  abstract = FALSE,
+  constructor = NULL,
+  validator = NULL
+) {
   check_name(name)
 
   parent <- as_class(parent)
@@ -119,7 +119,10 @@ new_class <- function(
     if (!is.null(validator)) {
       check_function(validator, alist(self = ))
     }
-    if (abstract && (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))) {
+    if (
+      abstract &&
+        (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
+    ) {
       stop("Abstract classes must have abstract parents")
     }
   }
@@ -131,9 +134,12 @@ new_class <- function(
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
-    constructor <- new_constructor(parent, all_props,
-                                   envir = parent.frame(),
-                                   package = package)
+    constructor <- new_constructor(
+      parent,
+      all_props,
+      envir = parent.frame(),
+      package = package
+    )
   }
 
   object <- constructor
@@ -150,7 +156,15 @@ new_class <- function(
   global_variables(names(all_props))
   object
 }
-globalVariables(c("name", "parent", "package", "properties", "abstract", "constructor", "validator"))
+globalVariables(c(
+  "name",
+  "parent",
+  "package",
+  "properties",
+  "abstract",
+  "constructor",
+  "validator"
+))
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
 S7_class_name <- function(x) {
@@ -203,7 +217,12 @@ print.S7_class <- function(x, ...) {
 #' @export
 str.S7_class <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("<", paste0(class_dispatch(object), collapse = "/"), "> constructor", sep = "")
+  cat(
+    "<",
+    paste0(class_dispatch(object), collapse = "/"),
+    "> constructor",
+    sep = ""
+  )
   cat("\n")
 
   if (nest.lev == 0) {
@@ -248,7 +267,10 @@ new_object <- function(.parent, ...) {
     stop("`new_object()` must be called from within a constructor")
   }
   if (class@abstract) {
-    msg <- sprintf("Can't construct an object from abstract class <%s>", class@name)
+    msg <- sprintf(
+      "Can't construct an object from abstract class <%s>",
+      class@name
+    )
     stop(msg)
   }
 
@@ -273,12 +295,14 @@ new_object <- function(.parent, ...) {
 
   # invoke custom property setters
   prop_setter_vals <- args[has_setter]
-  for (name in names(prop_setter_vals))
+  for (name in names(prop_setter_vals)) {
     prop(object, name, check = FALSE) <- prop_setter_vals[[name]]
+  }
 
   # Don't need to validate if parent class already validated,
   # i.e. it's a non-abstract S7 class
-  parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
+  parent_validated <- inherits(class@parent, "S7_object") &&
+    !class@parent@abstract
   validate(object, recursive = !parent_validated)
 
   object
@@ -295,8 +319,9 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(obj_desc(object))
 
   if (!is_S7_type(object)) {
-    if (!typeof(object) %in% c("numeric", "integer", "character", "double"))
+    if (!typeof(object) %in% c("numeric", "integer", "character", "double")) {
       cat(" ")
+    }
 
     attrs <- attributes(object)
     if (is.environment(object)) {
@@ -331,12 +356,22 @@ S7_class <- function(object) {
 
 check_prop_names <- function(properties, error_call = sys.call(-1L)) {
   # these attributes have special C handlers in base R
-  forbidden <- c("names", "dim", "dimnames", "class",
-                 "tsp", "comment", "row.names", "...")
+  forbidden <- c(
+    "names",
+    "dim",
+    "dimnames",
+    "class",
+    "tsp",
+    "comment",
+    "row.names",
+    "..."
+  )
   forbidden <- intersect(forbidden, names(properties))
   if (length(forbidden)) {
-    msg <- paste0("property can't be named: ",
-                  paste0(forbidden, collapse = ", "))
+    msg <- paste0(
+      "property can't be named: ",
+      paste0(forbidden, collapse = ", ")
+    )
     stop(simpleError(msg, error_call))
   }
 }

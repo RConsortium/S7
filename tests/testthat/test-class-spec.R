@@ -122,7 +122,8 @@ test_that("dispatch for base objects use underlying type", {
 # S3 ----------------------------------------------------------------------
 
 test_that("can work with S3 classes", {
-  klass <- new_S3_class(c("ordered", "factor"),
+  klass <- new_S3_class(
+    c("ordered", "factor"),
     constructor = function(.data = numeric(), levels) ordered(.data, levels)
   )
   expect_equal(as_class(klass), klass)
@@ -143,9 +144,15 @@ test_that("can work with S3 classes", {
 })
 
 test_that("can work with S7 classes that extend S3 classes", {
-  Date <- new_S3_class("Date", constructor = function(.data = numeric()) .Date(.data))
-  Date2 <- new_class("Date2", parent = Date, properties = list(x = class_numeric),
-                     package = NULL)
+  Date <- new_S3_class("Date", constructor = function(.data = numeric()) {
+    .Date(.data)
+  })
+  Date2 <- new_class(
+    "Date2",
+    parent = Date,
+    properties = list(x = class_numeric),
+    package = NULL
+  )
 
   expect_equal(class_type(Date2), "S7")
   expect_equal(class_dispatch(Date2), c("Date2", "Date", "S7_object"))
@@ -173,7 +180,10 @@ test_that("can work with S4 classes", {
   klass <- methods::getClass("Foo4")
 
   expect_equal(class_type(klass), "S4")
-  expect_equal(class_dispatch(klass), c("S4/S7::Foo4", "S4/S7::Foo2", "S4/S7::Foo3", "S4/S7::Foo1", "character"))
+  expect_equal(
+    class_dispatch(klass),
+    c("S4/S7::Foo4", "S4/S7::Foo2", "S4/S7::Foo3", "S4/S7::Foo1", "character")
+  )
   expect_equal(class_register(klass), "S4/S7::Foo4")
   expect_s4_class(class_construct(klass, 1, x = 2), "Foo4")
   expect_equal(class_desc(klass), "S4<Foo4>")

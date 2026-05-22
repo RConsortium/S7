@@ -13,7 +13,10 @@ test_that("Ops generics dispatch to S7 methods for S7 classes", {
   expect_equal(foo2() + foo1(), "foo2-foo1")
   expect_equal(foo2() + foo2(), "foo2-foo2")
 
-  expect_error(foo1() + new_class("foo3")(), class = "S7_error_method_not_found")
+  expect_error(
+    foo1() + new_class("foo3")(),
+    class = "S7_error_method_not_found"
+  )
 })
 
 test_that("Ops generics dispatch to S3 methods", {
@@ -101,8 +104,12 @@ test_that("`%*%` dispatches to S7 methods", {
   local_methods(base_ops[["+"]])
 
   ClassX <- new_class("ClassX")
-  method(`%*%`, list(ClassX, class_any)) <- function(x, y) "ClassX %*% class_any"
-  method(`%*%`, list(class_any, ClassX)) <- function(x, y) "class_any %*% ClassX"
+  method(`%*%`, list(ClassX, class_any)) <- function(x, y) {
+    "ClassX %*% class_any"
+  }
+  method(`%*%`, list(class_any, ClassX)) <- function(x, y) {
+    "class_any %*% ClassX"
+  }
 
   expect_equal(ClassX() %*% ClassX(), "ClassX %*% class_any")
   expect_equal(ClassX() %*% 1, "ClassX %*% class_any")

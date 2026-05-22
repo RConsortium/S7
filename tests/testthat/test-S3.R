@@ -11,7 +11,8 @@ test_that("can construct objects that extend S3 classes", {
 })
 
 test_that("subclasses inherit validator", {
-  foo <- new_S3_class("foo",
+  foo <- new_S3_class(
+    "foo",
     function(.data) structure(.data, class = "foo"),
     function(x) if (!is.double(x)) "Underlying data must be a double"
   )

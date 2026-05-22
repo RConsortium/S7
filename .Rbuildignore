@@ -19,3 +19,4 @@
 ^\.cache$
 ^\.vscode$
 ^revdep$
+^[.]?air[.]toml$

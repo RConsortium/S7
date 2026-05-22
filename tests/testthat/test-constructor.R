@@ -1,4 +1,4 @@
-test_that("generates correct arguments from parent + properties",  {
+test_that("generates correct arguments from parent + properties", {
   # No arguments
   args <- constructor_args(S7_object)
   expect_equal(args$self, pairlist())
@@ -10,17 +10,24 @@ test_that("generates correct arguments from parent + properties",  {
   expect_equal(args$parent, pairlist())
 
   # test constructor arg defaults
-  args <- constructor_args(S7_object, as_properties(list(
-    a = class_any,
-    b = class_missing,
-    c = NULL | class_character,
-    d = class_missing | class_numeric
-  )))
-  expect_identical(args$self, as.pairlist(alist(a = NULL, b =, c = NULL, d =)))
+  args <- constructor_args(
+    S7_object,
+    as_properties(list(
+      a = class_any,
+      b = class_missing,
+      c = NULL | class_character,
+      d = class_missing | class_numeric
+    ))
+  )
+  expect_identical(
+    args$self,
+    as.pairlist(alist(a = NULL, b = , c = NULL, d = ))
+  )
   expect_identical(args$parent, pairlist())
 
   # unless they're dynamic
-  args <- constructor_args(S7_object,
+  args <- constructor_args(
+    S7_object,
     as_properties(list(x = new_property(getter = function(self) 10)))
   )
   expect_equal(args$self, pairlist())
@@ -33,7 +40,8 @@ test_that("generates correct arguments from parent + properties",  {
   expect_equal(args$parent, pairlist(x = integer()))
 
   # But only those in the constructor
-  foo <- new_class("foo",
+  foo <- new_class(
+    "foo",
     properties = list(x = class_numeric),
     constructor = function() new_object(x = 1)
   )
@@ -43,31 +51,50 @@ test_that("generates correct arguments from parent + properties",  {
 })
 
 test_that("generates meaningful constructors", {
-  expect_snapshot({
-    new_constructor(S7_object, list())
-    new_constructor(S7_object, as_properties(list(x = class_numeric, y = class_numeric)))
+  expect_snapshot(
+    {
+      new_constructor(S7_object, list())
+      new_constructor(
+        S7_object,
+        as_properties(list(x = class_numeric, y = class_numeric))
+      )
 
-    foo <- new_class("foo", parent = class_character)
-    new_constructor(foo, list())
+      foo <- new_class("foo", parent = class_character)
+      new_constructor(foo, list())
 
-    foo2 <- new_class("foo2", parent = foo)
-    new_constructor(foo2, list())
-  }, transform = scrub_environment)
+      foo2 <- new_class("foo2", parent = foo)
+      new_constructor(foo2, list())
+    },
+    transform = scrub_environment
+  )
 })
 
 test_that("can generate constructors for S3 classes", {
-  expect_snapshot({
-    new_constructor(class_factor, list())
-    new_constructor(class_factor, as_properties(list(x = class_numeric, y = class_numeric)))
-  }, transform = scrub_environment)
+  expect_snapshot(
+    {
+      new_constructor(class_factor, list())
+      new_constructor(
+        class_factor,
+        as_properties(list(x = class_numeric, y = class_numeric))
+      )
+    },
+    transform = scrub_environment
+  )
 })
 
 test_that("can generate constructor for inherited abstract classes", {
-  expect_snapshot({
-    foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = class_double))
-    new_constructor(foo1, list())
-    new_constructor(foo1, as_properties(list(y = class_double)))
-  }, transform = scrub_environment)
+  expect_snapshot(
+    {
+      foo1 <- new_class(
+        "foo1",
+        abstract = TRUE,
+        properties = list(x = class_double)
+      )
+      new_constructor(foo1, list())
+      new_constructor(foo1, as_properties(list(y = class_double)))
+    },
+    transform = scrub_environment
+  )
   child <- new_class("child", foo1, properties = list(y = class_double))
   expect_no_error(child(y = 0.5))
 
@@ -97,13 +124,16 @@ test_that("can use `...` in parent constructor", {
 })
 
 test_that("can create constructors with missing or lazy defaults", {
-
   Person <- new_class(
     name = "Person",
     properties = list(
       # non-dynamic, default error call (required constructor arg)
-      first_name = new_property(class_character, default = quote(stop(
-        'argument "first_name" is missing, with no default'))),
+      first_name = new_property(
+        class_character,
+        default = quote(stop(
+          'argument "first_name" is missing, with no default'
+        ))
+      ),
 
       # non-dynamic, static default (optional constructor arg)
       middle_name = new_property(class_character, default = ""),
@@ -119,8 +149,9 @@ test_that("can create constructors with missing or lazy defaults", {
         class = class_Date,
         default = quote(Sys.Date()),
         setter = function(self, value) {
-          if (!is.null(self@birthdate))
+          if (!is.null(self@birthdate)) {
             stop("Can't set read-only property Person@birthdate")
+          }
           self@birthdate <- value
           self
         }
@@ -133,36 +164,48 @@ test_that("can create constructors with missing or lazy defaults", {
     )
   )
 
-  expect_equal(formals(Person), as.pairlist(alist(
-    first_name = stop('argument "first_name" is missing, with no default'),
-    middle_name = "",
-    last_name = NULL,
-    nick_name = first_name,
-    birthdate = Sys.Date()
-  ))) # no age
+  expect_equal(
+    formals(Person),
+    as.pairlist(alist(
+      first_name = stop('argument "first_name" is missing, with no default'),
+      middle_name = "",
+      last_name = NULL,
+      nick_name = first_name,
+      birthdate = Sys.Date()
+    ))
+  ) # no age
 
   expect_error(Person(), 'argument "first_name" is missing, with no default')
   expect_null(Person("Alice")@last_name)
 
-  p <- Person("Alice", ,"Smith")
+  p <- Person("Alice", , "Smith")
 
   expect_equal(p@nick_name, "Alice")
   expect_equal(p@middle_name, "")
   expect_equal(p@birthdate, Sys.Date())
   expect_equal(p@age, Sys.Date() - Sys.Date())
 
-  p <- Person("Bob", nick_name = "Bobby", "Allen" , "Smith", as.Date('1970-01-01'))
+  p <- Person(
+    "Bob",
+    nick_name = "Bobby",
+    "Allen",
+    "Smith",
+    as.Date('1970-01-01')
+  )
   expect_equal(p@nick_name, "Bobby")
   expect_equal(p@birthdate, as.Date('1970-01-01'))
   expect_equal(p@age, Sys.Date() - as.Date('1970-01-01'))
   expect_equal(p@middle_name, "Allen")
-  expect_error(p@birthdate <- as.Date('1970-01-01'),
-               "Can\'t set read-only property Person@birthdate")
+  expect_error(
+    p@birthdate <- as.Date('1970-01-01'),
+    "Can\'t set read-only property Person@birthdate"
+  )
 })
 
 test_that("Dynamic settable properties are included in constructor", {
   Foo <- new_class(
-    name = "Foo", package = NULL,
+    name = "Foo",
+    package = NULL,
     properties = list(
       dynamic_settable = new_property(
         class_numeric,
@@ -185,9 +228,10 @@ test_that("Dynamic settable properties are included in constructor", {
   expect_equal(Foo(3)@dynamic_settable, 3)
 
   foo <- Foo()
-  expect_error(foo@dynamic_read_only <- 1,
-               "Can't set read-only property <Foo>@dynamic_read_only")
+  expect_error(
+    foo@dynamic_read_only <- 1,
+    "Can't set read-only property <Foo>@dynamic_read_only"
+  )
   foo@dynamic_settable <- 1
   expect_equal(foo@dynamic_settable, 1)
-
 })

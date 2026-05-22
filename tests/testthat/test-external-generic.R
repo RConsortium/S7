@@ -59,7 +59,6 @@ test_that("new_method works with both hard and soft dependencies", {
   skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
-
   on.exit({
     .libPaths(old_libpaths)
     try(detach("package:t2", unload = TRUE), silent = TRUE)
@@ -91,11 +90,18 @@ test_that("new_method works with both hard and soft dependencies", {
   # As these tests grow, consider splitting this into a separate context like:
   #   test_that("package exported classes are not inlined in constructor formals", {...})
   Foo <- new_class("Foo", properties = list(bar = t0::`An S7 Class`))
-  expect_identical(formals(Foo)                , as.pairlist(alist(bar = t0::`An S7 Class`())))
-  expect_identical(formals(t2::`An S7 Class 2`), as.pairlist(alist(bar = t0::`An S7 Class`())))
-  expect_identical(formals(t2:::`An Internal Class`), as.pairlist(alist(
-    foo = t0::`An S7 Class`(), bar = `An S7 Class 2`()
-  )))
+  expect_identical(formals(Foo), as.pairlist(alist(bar = t0::`An S7 Class`())))
+  expect_identical(
+    formals(t2::`An S7 Class 2`),
+    as.pairlist(alist(bar = t0::`An S7 Class`()))
+  )
+  expect_identical(
+    formals(t2:::`An Internal Class`),
+    as.pairlist(alist(
+      foo = t0::`An S7 Class`(),
+      bar = `An S7 Class 2`()
+    ))
+  )
 
   expect_snapshot({
     args(Foo)
@@ -107,12 +113,18 @@ test_that("new_method works with both hard and soft dependencies", {
   # external class dependency is malformed.
   # https://github.com/RConsortium/S7/issues/477
   expect_snapshot(error = TRUE, {
-    new_class("Foo", properties = list(
-      bar = new_class("Made Up Class", package = "t0")
-    ))
-    new_class("Foo", properties = list(
-      bar = new_class("Made Up Class", package = "Made Up Package")
-    ))
+    new_class(
+      "Foo",
+      properties = list(
+        bar = new_class("Made Up Class", package = "t0")
+      )
+    )
+    new_class(
+      "Foo",
+      properties = list(
+        bar = new_class("Made Up Class", package = "Made Up Package")
+      )
+    )
 
     modified_class <- t0::`An S7 Class`
     attr(modified_class, "xyz") <- "abc"
@@ -126,7 +138,6 @@ test_that("new_method works with both hard and soft dependencies", {
   expect_equal(another_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(another_s7_generic("x"), "foo")
 
-
   ## Check again in a fresh session, with everything installed
   expect_no_error(callr::r(function() {
     library(t2)
@@ -136,8 +147,9 @@ test_that("new_method works with both hard and soft dependencies", {
       t0::an_s7_generic("x") == "foo"
     })
 
-    if(isNamespaceLoaded("t1"))
+    if (isNamespaceLoaded("t1")) {
       stop("Prematurely loaded {t1}")
+    }
 
     stopifnot(exprs = {
       t1::another_s3_generic(an_s7_class()) == "foo"
@@ -146,5 +158,4 @@ test_that("new_method works with both hard and soft dependencies", {
 
     NULL
   }))
-
 })

@@ -78,8 +78,16 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
     errors <- validate_properties(object, class)
     if (length(errors) > 0) {
       bullets <- paste0("- ", errors, collapse = "\n")
-      msg <- sprintf("%s object properties are invalid:\n%s", obj_desc(object), bullets)
-      stop(errorCondition(msg, call = NULL, class = "S7_error_validation_failed"))
+      msg <- sprintf(
+        "%s object properties are invalid:\n%s",
+        obj_desc(object),
+        bullets
+      )
+      stop(errorCondition(
+        msg,
+        call = NULL,
+        class = "S7_error_validation_failed"
+      ))
     }
   }
 
@@ -87,17 +95,18 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   errors <- character()
   repeat {
     error <- class_validate(class, object)
-    if (is.null(error)) {
-
-    } else if (is.character(error)) {
+    if (is.null(error)) {} else if (is.character(error)) {
       append(errors) <- error
     } else {
       stop(sprintf(
         "%s validator must return NULL or a character, not <%s>.",
-        obj_desc(class), typeof(error)
+        obj_desc(class),
+        typeof(error)
       ))
     }
-    if (!is_class(class) || !recursive) break
+    if (!is_class(class) || !recursive) {
+      break
+    }
     class <- class@parent
   }
 

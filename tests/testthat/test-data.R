@@ -5,7 +5,11 @@ describe("S7_data", {
     expect_equal(S7_data(x), "hi")
   })
   it("strips properties", {
-    text <- new_class("text", class_character, properties = list(x = class_integer))
+    text <- new_class(
+      "text",
+      class_character,
+      properties = list(x = class_integer)
+    )
     x <- text("hi", x = 10L)
     expect_equal(attributes(S7_data(x)), NULL)
   })

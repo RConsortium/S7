@@ -58,7 +58,12 @@ as_external_generic <- function(x) {
 print.S7_external_generic <- function(x, ...) {
   cat(
     "<S7_external_generic> ",
-    x$package, "::", x$name, "(", paste(x$dispatch_args, collapse = ", "), ")",
+    x$package,
+    "::",
+    x$name,
+    "(",
+    paste(x$dispatch_args, collapse = ", "),
+    ")",
     if (!is.null(x$version)) paste0(" (>= ", x$version, ")"),
     "\n",
     sep = ""
@@ -108,13 +113,22 @@ methods_register <- function() {
 
 registrar <- function(generic, signature, method, env) {
   # Force all arguments
-  generic; signature; method; env;
+  generic
+  signature
+  method
+  env
 
   function(...) {
     ns <- asNamespace(generic$package)
-    if (is.null(generic$version) || getNamespaceVersion(ns) >= generic$version) {
+    if (
+      is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
+    ) {
       if (!exists(generic$name, envir = ns, inherits = FALSE)) {
-        msg <- sprintf("[S7] Failed to find generic %s() in package %s", generic$name, generic$package)
+        msg <- sprintf(
+          "[S7] Failed to find generic %s() in package %s",
+          generic$name,
+          generic$package
+        )
         warning(msg, call. = FALSE)
       } else {
         generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
@@ -132,9 +146,11 @@ external_methods_reset <- function(package) {
 external_methods_add <- function(package, generic, signature, method) {
   tbl <- S7_methods_table(package)
 
-  append1(tbl) <- list(generic = generic,
-                       signature = signature,
-                       method = method)
+  append1(tbl) <- list(
+    generic = generic,
+    signature = signature,
+    method = method
+  )
 
   S7_methods_table(package) <- tbl
   invisible()
