@@ -335,6 +335,26 @@ test_that("Base S3 classes can be properties", {
 })
 
 
+test_that("ALTREP vectors aren't materialised (#607)", {
+  skip_on_cran()
+
+  # The bug only triggers when `new_object()` is byte-compiled, which is the
+  # case for the installed package but not under `devtools::load_all()`. Force
+  # compilation here so the test reproduces in both contexts.
+  local_mocked_bindings(new_object = compiler::cmpfun(new_object))
+
+  # parent
+  myint <- new_class("myint", parent = class_integer)
+  expect_true(is_altrep_preserved(myint(seq_len(1e6))))
+
+  # properties, set during construction and via @<-
+  Foo <- new_class("Foo", properties = list(x = class_integer))
+  y <- Foo(x = seq_len(1e6))
+  expect_true(is_altrep_preserved(y@x))
+  y@x <- seq_len(1e6)
+  expect_true(is_altrep_preserved(y@x))
+})
+
 test_that("inherits() works with S7_base_class", {
   # nameOfClass() introduced in R 4.3
   skip_if(getRversion() < "4.3")
