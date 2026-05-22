@@ -24,7 +24,7 @@ superclass.
 \subsection{S3 & S4}{
 
 \code{super()} performs a similar role to \code{\link[=NextMethod]{NextMethod()}} in S3 or
-\code{\link[methods:NextMethod]{methods::callNextMethod()}} in S4, but is much more explicit:
+\code{\link[methods:callNextMethod]{methods::callNextMethod()}} in S4, but is much more explicit:
 \itemize{
 \item The super class that \code{super()} will use is known when write \code{super()}
 (i.e. statically) as opposed to when the generic is called
