@@ -258,6 +258,37 @@ describe("property access", {
     expect_equal(props(x), named_list())
     expect_false(prop_exists(x, "extra"))
   })
+
+  it("prop_names(type = ) filters by property kind (#551)", {
+    foo <- new_class(
+      "foo",
+      package = NULL,
+      properties = list(
+        plain = class_character,
+        ro = new_property(getter = \(self) "x"),
+        setter_hook = new_property(setter = \(self, value) self),
+        dyn = new_property(getter = \(self) "x", setter = \(self, value) self)
+      )
+    )
+    x <- foo(plain = "p", setter_hook = "a", dyn = "q")
+
+    expect_setequal(
+      prop_names(x),
+      c("plain", "ro", "setter_hook", "dyn")
+    )
+    expect_setequal(prop_names(x, "plain"), "plain")
+    expect_setequal(prop_names(x, "only-getter"), "ro")
+    expect_setequal(prop_names(x, "only-setter"), "setter_hook")
+    expect_setequal(prop_names(x, "dynamic"), "dyn")
+  })
+
+  it("prop_names(type = ) is empty for prop-less objects", {
+    x <- new_class("x")()
+    expect_equal(prop_names(x, "plain"), character())
+    expect_equal(prop_names(x, "only-getter"), character())
+    expect_equal(prop_names(x, "only-setter"), character())
+    expect_equal(prop_names(x, "dynamic"), character())
+  })
 })
 
 

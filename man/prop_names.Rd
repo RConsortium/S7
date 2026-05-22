@@ -5,12 +5,27 @@
 \alias{prop_exists}
 \title{Property introspection}
 \usage{
-prop_names(object)
+prop_names(
+  object,
+  type = c("all", "plain", "only-getter", "only-setter", "dynamic")
+)
 
 prop_exists(object, name)
 }
 \arguments{
 \item{object}{An object from a S7 class}
+
+\item{type}{Which properties to return:
+\itemize{
+\item \code{"all"} (default): every declared property.
+\item \code{"plain"}: neither a getter nor a setter (pure attribute storage).
+\item \code{"only-getter"}: has a getter but no setter (read-only).
+\item \code{"only-setter"}: has a setter but no getter (custom write hook).
+\item \code{"dynamic"}: has both a getter and a setter.
+}
+
+The non-\code{"all"} types are mutually exclusive and together cover every
+property.}
 
 \item{name}{The name of the parameter as a character. Partial matching
 is not performed.}
@@ -21,15 +36,23 @@ a single \code{TRUE} or \code{FALSE}.
 }
 \description{
 \itemize{
-\item \code{prop_names(x)} returns the names of the properties
+\item \code{prop_names(x)} returns the names of the properties.
 \item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
 }
 }
 \examples{
-Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
+Foo <- new_class("Foo", properties = list(
+  a = class_character,
+  b = class_integer,
+  c = new_property(getter = function(self) self@a)
+))
 f <- Foo()
 
 prop_names(f)
+prop_names(f, "writable")
+prop_names(f, "read-only")
+prop_names(f, "dynamic")
+
 prop_exists(f, "a")
-prop_exists(f, "c")
+prop_exists(f, "z")
 }

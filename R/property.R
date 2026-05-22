@@ -356,26 +356,48 @@ prop_label <- function(object, name) {
 
 #' Property introspection
 #'
-#' - `prop_names(x)` returns the names of the properties
+#' - `prop_names(x)` returns the names of the properties.
 #' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
 #'
 #' @inheritParams prop
+#' @param type Which properties to return:
+#'   * `"all"` (default): every declared property.
+#'   * `"plain"`: neither a getter nor a setter (pure attribute storage).
+#'   * `"only-getter"`: has a getter but no setter (read-only).
+#'   * `"only-setter"`: has a setter but no getter (custom write hook).
+#'   * `"dynamic"`: has both a getter and a setter.
+#'
+#' The non-`"all"` types are mutually exclusive and together cover every
+#' property.
 #' @returns `prop_names()` returns a character vector; `prop_exists()` returns
 #'   a single `TRUE` or `FALSE`.
 #' @export
 #' @examples
-#' Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
+#' Foo <- new_class("Foo", properties = list(
+#'   a = class_character,
+#'   b = class_integer,
+#'   c = new_property(getter = function(self) self@a)
+#' ))
 #' f <- Foo()
 #'
 #' prop_names(f)
+#' prop_names(f, "writable")
+#' prop_names(f, "read-only")
+#' prop_names(f, "dynamic")
+#'
 #' prop_exists(f, "a")
-#' prop_exists(f, "c")
-prop_names <- function(object) {
+#' prop_exists(f, "z")
+prop_names <- function(
+  object,
+  type = c("all", "plain", "only-getter", "only-setter", "dynamic")
+) {
   check_is_S7(object)
+  type <- match.arg(type)
 
   if (inherits(object, "S7_class")) {
-    # S7_class isn't a S7_class (somewhat obviously) so we fake the property names
-    c(
+    # S7_class isn't a S7_class (somewhat obviously) so we fake the property
+    # names. All of them are plain attribute-backed properties.
+    all_names <- c(
       "name",
       "parent",
       "package",
@@ -384,15 +406,26 @@ prop_names <- function(object) {
       "constructor",
       "validator"
     )
-  } else {
-    class <- S7_class(object)
-    props <- attr(class, "properties", exact = TRUE)
-    if (length(props) == 0) {
-      character()
-    } else {
-      names(props)
-    }
+    return(switch(type, all = , plain = all_names, character()))
   }
+
+  class <- S7_class(object)
+  props <- attr(class, "properties", exact = TRUE)
+  if (length(props) == 0) {
+    return(character())
+  }
+
+  has_getter <- vlapply(props, prop_is_dynamic)
+  has_setter <- vlapply(props, prop_has_setter)
+  keep <- switch(
+    type,
+    all = rep(TRUE, length(props)),
+    plain = !has_getter & !has_setter,
+    `only-getter` = has_getter & !has_setter,
+    `only-setter` = !has_getter & has_setter,
+    dynamic = has_getter & has_setter
+  )
+  names(props)[keep]
 }
 
 # .AtNames not exported on r-devel yet, causes installation failure
