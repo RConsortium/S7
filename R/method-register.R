@@ -32,7 +32,8 @@
 #'   * A special type like [class_missing] or [class_any].
 #'
 #'   For S7 generics that use multiple dispatch, this must be a list of any of
-#'   the above types.
+#'   the above types. (For convenience you can also use a list in the single
+#'   dispatch case too.)
 #'
 #'   For S3 generics, this must be a single S7 class.
 #'
@@ -153,6 +154,11 @@ as_signature <- function(signature, generic) {
 
   n <- generic_n_dispatch(generic)
   if (n == 1) {
+    # Accept a bare list of length 1 too, for symmetry with multi-dispatch
+    # generics where a list is required (#555).
+    if (is.list(signature) && !is.object(signature) && length(signature) == 1) {
+      signature <- signature[[1]]
+    }
     new_signature(list(as_class(signature, arg = "signature")))
   } else {
     check_signature_list(signature, n)
