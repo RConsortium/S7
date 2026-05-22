@@ -26,10 +26,13 @@ reference:
   - convert
   - class_missing
   - class_any
+  - super
+
+- title: Introspection
   - method
   - method_explain
-  - super
   - S7_class
+  - S7_classes
 
 - title: Packages
   desc: >
