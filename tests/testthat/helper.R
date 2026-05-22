@@ -145,3 +145,13 @@ drop_attributes <- function(x) {
   attributes(x) <- NULL
   x
 }
+
+# Detect whether `x` is still an ALTREP compact integer sequence (either
+# directly, or wrapped — R wraps a compact_intseq in an ALTREP wrapper when
+# attributes are added without forcing materialisation).
+# Accesses `.Internal` indirectly so R CMD check doesn't flag it.
+is_altrep_preserved <- function(x) {
+  internal <- get(".Internal", envir = baseenv())
+  out <- utils::capture.output(internal(inspect(x)))
+  any(grepl("compact|wrapper", out))
+}

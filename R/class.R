@@ -252,10 +252,6 @@ new_object <- function(.parent, ...) {
     stop(msg)
   }
 
-  # force .parent before ...
-  # TODO: Some type checking on `.parent`?
-  object <- .parent
-
   args <- list(...)
   if ("" %in% names2(args)) {
     stop("All arguments to `...` must be named")
@@ -263,25 +259,28 @@ new_object <- function(.parent, ...) {
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
 
+  # We must awkwardly operate on `.parent` rather than binding to a local
+  # variable; since otherwise the extra binding causes ALTREP-wrapped values to
+  # be materialised when byte-compiled (#607).
   attrs <- c(
     list(class = class_dispatch(class), S7_class = class),
     args[!has_setter],
-    attributes(object)
+    attributes(.parent)
   )
   attrs <- attrs[!duplicated(names(attrs))]
-  attributes(object) <- attrs
+  attributes(.parent) <- attrs
 
   # invoke custom property setters
   prop_setter_vals <- args[has_setter]
   for (name in names(prop_setter_vals))
-    prop(object, name, check = FALSE) <- prop_setter_vals[[name]]
+    prop(.parent, name, check = FALSE) <- prop_setter_vals[[name]]
 
   # Don't need to validate if parent class already validated,
   # i.e. it's a non-abstract S7 class
   parent_validated <- inherits(class@parent, "S7_object") && !class@parent@abstract
-  validate(object, recursive = !parent_validated)
+  validate(.parent, recursive = !parent_validated)
 
-  object
+  .parent
 }
 
 #' @export
