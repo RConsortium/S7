@@ -21,8 +21,11 @@
 #'   an object of the correct `class`; it will not be validated automatically.
 #'
 #'   If a property has a getter but doesn't have a setter, it is read only.
-#' @param setter An optional function used to set the value. The function
-#'   should take `self` and `value` and return a modified object.
+#' @param setter An optional function used to set the value. It should take
+#'   either `self, value` or `self, name, value` and return a modified
+#'   object. The three-argument form receives the property name being set,
+#'   which makes it easy to reuse the same property definition under
+#'   different names within a class.
 #' @param validator A function taking a single argument, `value`, the value
 #'   to validate.
 #'
@@ -87,7 +90,13 @@ new_property <- function(
     check_function(getter, alist(self = ))
   }
   if (!is.null(setter)) {
-    check_function(setter, alist(self = , value = ))
+    check_function(
+      setter,
+      list(
+        alist(self = , value = ),
+        alist(self = , name = , value = )
+      )
+    )
   }
   if (!is.null(validator)) {
     check_function(validator, alist(value = ))
@@ -263,7 +272,7 @@ prop_obj <- function(object, name) {
     if (!is.null(prop$setter) && !identical(setter_property, name)) {
       setter_property <<- name
       on.exit(setter_property <<- NULL, add = TRUE)
-      object <- prop$setter(object, value)
+      object <- call_setter(prop$setter, object, name, value)
     } else {
       if (isTRUE(check)) {
         error <- prop_validate(prop, value, object)
@@ -521,3 +530,13 @@ prop_is_read_only <- function(prop) {
 prop_has_setter <- function(prop) is.function(prop$setter)
 
 prop_is_dynamic <- function(prop) is.function(prop$getter)
+
+# Call a property setter, supporting both `function(self, value)` and
+# `function(self, name, value)` signatures.
+call_setter <- function(setter, self, name, value) {
+  if ("name" %in% names(formals(setter))) {
+    setter(self, name, value)
+  } else {
+    setter(self, value)
+  }
+}

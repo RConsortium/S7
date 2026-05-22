@@ -79,6 +79,38 @@ static inline SEXP do_call2(SEXP fn, SEXP arg1, SEXP arg2) {
   return result;
 }
 
+static inline SEXP do_call3(SEXP fn, SEXP arg1, SEXP arg2, SEXP arg3) {
+  int n_protected = 0;
+  switch (TYPEOF(arg1)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg1 = PROTECT(Rf_lang2(fn_base_quote, arg1));
+    ++n_protected;
+  }
+
+  switch (TYPEOF(arg2)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg2 = PROTECT(Rf_lang2(fn_base_quote, arg2));
+    ++n_protected;
+  }
+
+  switch (TYPEOF(arg3)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg3 = PROTECT(Rf_lang2(fn_base_quote, arg3));
+    ++n_protected;
+  }
+
+  SEXP call = PROTECT(Rf_lang4(fn, arg1, arg2, arg3));
+  ++n_protected;
+
+  SEXP result = Rf_eval(call, ns_S7);
+
+  UNPROTECT(n_protected);
+  return result;
+}
+
 static __attribute__((noreturn))
 void signal_is_not_S7(SEXP object) {
   static SEXP check_is_S7 = NULL;
@@ -381,8 +413,13 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   PROTECT_WITH_INDEX(object, &object_pi);
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
-    // use setter()
-    REPROTECT(object = do_call2(setter, object, value), object_pi);
+    // use setter() — support both function(self, value) and
+    // function(self, name, value) signatures.
+    if (Rf_length(FORMALS(setter)) >= 3) {
+      REPROTECT(object = do_call3(setter, object, name, value), object_pi);
+    } else {
+      REPROTECT(object = do_call2(setter, object, value), object_pi);
+    }
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()

@@ -66,7 +66,7 @@
       new_property(setter = function(x, y, z) { })
     Condition
       Error:
-      ! `setter` must be function(self, value), not function(x, y, z)
+      ! `setter` must be function(self, value) or function(self, name, value), not function(x, y, z)
 
 # new_property() / validates default
 
