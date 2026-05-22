@@ -49,14 +49,6 @@
       - x: <logical>
       - y: <logical>
 
-# method dispatch works for class_missing
-
-    Code
-      foo_wrapper()
-    Condition
-      Error in `foo_wrapper()`:
-      ! argument "xx" is missing, with no default
-
 # errors from dispatched methods have reasonable tracebacks
 
     Code

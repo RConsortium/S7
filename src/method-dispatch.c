@@ -188,6 +188,8 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   PROTECT_WITH_INDEX(R_NilValue, &arg_pi); // unnecessary, for rchk only
   PROTECT_WITH_INDEX(R_NilValue, &val_pi); // unnecessary, for rchk only
 
+  SEXP missing_call = PROTECT(Rf_lang2(fn_base_missing, R_NilValue));
+
   // For each of the arguments to the generic
   for (R_xlen_t i = 0; i < n_args; ++i) {
 
@@ -196,9 +198,13 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
     if (i < n_dispatch) {
 
       SEXP arg = Rf_findVarInFrame(envir, name);
-      if (arg == R_MissingArg) {
 
-        APPEND_NODE(mcall_tail, name, arg);
+      SETCADR(missing_call, name);
+      int is_missing = Rf_asLogical(Rf_eval(missing_call, envir));
+
+      if (is_missing) {
+
+        APPEND_NODE(mcall_tail, name, R_MissingArg);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
 
       } else { // arg not missing, is a PROMSXP
@@ -270,6 +276,6 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SETCAR(mcall, method_name);
 
   SEXP out = Rf_eval(mcall, envir);
-  UNPROTECT(4);
+  UNPROTECT(5);
   return out;
 }
