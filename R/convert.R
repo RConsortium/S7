@@ -137,8 +137,12 @@ convert <- function(from, to, ...) {
   } else {
     msg <- paste0(
       "Can't find method for generic `convert()` with dispatch classes:\n",
-      "- from: ", obj_desc(from), "\n",
-      "- to  : ", class_desc(to), "\n"
+      "- from: ",
+      obj_desc(from),
+      "\n",
+      "- to  : ",
+      class_desc(to),
+      "\n"
     )
     stop(msg, call. = FALSE)
   }

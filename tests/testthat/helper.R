@@ -43,16 +43,19 @@ scrub_environment <- function(x) {
 local_methods <- function(..., frame = parent.frame()) {
   generics <- list(...)
   methods <- lapply(generics, function(x) as.list(x@methods))
-  defer(for(i in seq_along(methods)) {
-    env <- generics[[i]]@methods
-    rm(list = ls(envir = env), envir = env)
-    list2env(methods[[i]], envir = env)
-  }, frame = frame)
+  defer(
+    for (i in seq_along(methods)) {
+      env <- generics[[i]]@methods
+      rm(list = ls(envir = env), envir = env)
+      list2env(methods[[i]], envir = env)
+    },
+    frame = frame
+  )
   invisible()
 }
 
 local_S4_class <- function(name, ..., env = parent.frame()) {
-  out <- methods::setClass(name , contains = "character")
+  out <- methods::setClass(name, contains = "character")
   defer(S4_remove_classes(name, env), env)
   out
 }
@@ -111,8 +114,10 @@ dbg <- function(..., .display = utils::str, .file = NULL) {
   filepath <- utils::getSrcFilename(cl)
 
   if (length(filepath)) {
-    if (!file.exists(filepath) &&
-        file.exists(file.path("R", filepath))) {
+    if (
+      !file.exists(filepath) &&
+        file.exists(file.path("R", filepath))
+    ) {
       filepath <- file.path("R", filepath)
     }
 
@@ -131,9 +136,12 @@ dbg <- function(..., .display = utils::str, .file = NULL) {
 
     cat(loc, "\n")
   } else {
-    cat(sprintf("(from call: %s (srcfile missing))\n", trimws(
-      deparse1(sys.call(-2) %error% sys.call(-1), width.cutoff = 60)
-    )))
+    cat(sprintf(
+      "(from call: %s (srcfile missing))\n",
+      trimws(
+        deparse1(sys.call(-2) %error% sys.call(-1), width.cutoff = 60)
+      )
+    ))
   }
 
   invisible(out)

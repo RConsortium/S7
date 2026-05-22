@@ -12,7 +12,12 @@ method_lookup_error_message <- function(name, types) {
   } else {
     arg_names <- paste0(names(types), collapse = ", ")
     types <- paste0("- ", format(names(types)), ": ", types, collapse = "\n")
-    sprintf("Can't find method for generic `%s(%s)`:\n%s", name, arg_names, types)
+    sprintf(
+      "Can't find method for generic `%s(%s)`:\n%s",
+      name,
+      arg_names,
+      types
+    )
   }
 }
 

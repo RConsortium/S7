@@ -26,7 +26,6 @@ test_that("classes can inherit from base types", {
 
 
 test_that("Base classes can be a parent class", {
-
   expect_no_error({
     Foo := new_class(class_logical)
     Foo()
@@ -109,7 +108,6 @@ test_that("Base classes can be a parent class", {
 
   # class_environment cannot currently be a parent
   # (this is expected to change in the future)
-
 })
 
 
@@ -209,12 +207,10 @@ test_that("All base classes can be a property class", {
     Foo(x = 1)
   })
   expect_error(Foo(x = TRUE), "@x must be .*, not <logical>")
-
 })
 
 
 test_that("Base S3 classes can be parents", {
-
   expect_no_error({
     Foo := new_class(class_factor)
     Foo()
@@ -247,8 +243,10 @@ test_that("Base S3 classes can be parents", {
     Foo(list(x = 1))
     Foo(list(x = 1), "rowname")
   })
-  expect_error(Foo(list(x = 1:3, y = 1:4)),
-               "all variables should have the same length")
+  expect_error(
+    Foo(list(x = 1:3, y = 1:4)),
+    "all variables should have the same length"
+  )
 
   # expect_no_error({
   #   Foo := new_class(class_matrix)
@@ -272,16 +270,14 @@ test_that("Base S3 classes can be parents", {
 
   expect_no_error({
     Foo := new_class(class_formula)
-    Foo(~ x)
+    Foo(~x)
     Foo("~ x")
     Foo(call("~", 1, 2))
     Foo(quote(~x))
   })
-
 })
 
 test_that("Base S3 classes can be properties", {
-
   expect_no_error({
     Foo := new_class(properties = list(x = class_factor))
     Foo(x = factor())
@@ -308,7 +304,7 @@ test_that("Base S3 classes can be properties", {
 
   expect_no_error({
     Foo := new_class(properties = list(x = class_formula))
-    Foo(x = ~ x)
+    Foo(x = ~x)
   })
   expect_error(Foo(x = 1), "@x must be S3<formula>, not <double>")
 
@@ -336,7 +332,6 @@ test_that("Base S3 classes can be properties", {
     Foo(x = as.POSIXlt(Sys.time()))
   })
   expect_error(Foo(x = 1), "@x must be S3<POSIXt>, not <double>")
-
 })
 
 

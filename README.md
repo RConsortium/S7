@@ -9,7 +9,7 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/RConsortium/S7/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/S7/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/RConsortium/S7/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/S7?branch=main)
+coverage](https://codecov.io/gh/RConsortium/S7/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/S7)
 <!-- badges: end -->
 
 The S7 package is a new OOP system designed to be a successor to S3 and
@@ -98,9 +98,11 @@ Properties are automatically validated against the type declared in
 
 ``` r
 x@end <- "x"
-#> Error: <range>@end must be <double>, not <character>
+#> Error:
+#> ! <range>@end must be <double>, not <character>
 x@end <- -1
-#> Error: <range> object is invalid:
+#> Error:
+#> ! <range> object is invalid:
 #> - @end must be greater than or equal to @start
 ```
 

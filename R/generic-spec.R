@@ -1,5 +1,8 @@
 is_generic <- function(x) {
-  is_S7_generic(x) || is_external_generic(x) || is_S3_generic(x) || is_S4_generic(x)
+  is_S7_generic(x) ||
+    is_external_generic(x) ||
+    is_S3_generic(x) ||
+    is_S4_generic(x)
 }
 
 as_generic <- function(x) {
@@ -28,8 +31,11 @@ as_S3_generic <- function(x) {
     }
   }
 
-  stop("`generic` is a function, but not an S3 generic function: \n",
-       deparse_trunc(x, 100), call. = FALSE)
+  stop(
+    "`generic` is a function, but not an S3 generic function: \n",
+    deparse_trunc(x, 100),
+    call. = FALSE
+  )
 }
 
 S3_generic <- function(generic, name) {
@@ -98,8 +104,18 @@ internal_generics <- function() {
   primitive <- .S3PrimitiveGenerics
 
   # Extracted from ?"internal generic"
-  internal <- c("[", "[[", "$", "[<-", "[[<-", "$<-", "unlist",
-    "cbind", "rbind", "as.vector")
+  internal <- c(
+    "[",
+    "[[",
+    "$",
+    "[<-",
+    "[[<-",
+    "$<-",
+    "unlist",
+    "cbind",
+    "rbind",
+    "as.vector"
+  )
 
   c(group, primitive, internal)
 }

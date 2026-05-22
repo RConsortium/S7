@@ -103,7 +103,10 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
     arg_names <- names(formals(fun))
 
     if (!is_prefix(dispatch_args, arg_names)) {
-      stop("`dispatch_args` must be a prefix of the generic arguments", call. = FALSE)
+      stop(
+        "`dispatch_args` must be a prefix of the generic arguments",
+        call. = FALSE
+      )
     }
   }
 
@@ -114,7 +117,10 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
 print.S7_generic <- function(x, ...) {
   methods <- methods(x)
   formals <- show_args(formals(x), x@name)
-  cat(sprintf("<S7_generic> %s with %i methods:\n", formals, length(methods)), sep = "")
+  cat(
+    sprintf("<S7_generic> %s with %i methods:\n", formals, length(methods)),
+    sep = ""
+  )
 
   if (length(methods) > 0) {
     signatures <- lapply(methods, prop, "signature")
@@ -168,7 +174,9 @@ find_call <- function(x, name, ns = NULL) {
 }
 
 is_ns_call <- function(x, name, ns = NULL) {
-  if (is.null(ns)) return(FALSE)
+  if (is.null(ns)) {
+    return(FALSE)
+  }
 
   length(x) == 3 &&
     identical(x[[2]], as.symbol(ns)) &&
@@ -185,7 +193,9 @@ methods_rec <- function(x, signature) {
   }
 
   # Recursively collapse environments to a list
-  methods <- lapply(names(x), function(class) methods_rec(x[[class]], c(signature, class)))
+  methods <- lapply(names(x), function(class) {
+    methods_rec(x[[class]], c(signature, class))
+  })
   unlist(methods, recursive = FALSE)
 }
 
@@ -193,8 +203,9 @@ generic_add_method <- function(generic, signature, method) {
   p_tbl <- generic@methods
   chr_signature <- vcapply(signature, class_register)
 
-  if (is.null(attr(method, "name", TRUE)))
+  if (is.null(attr(method, "name", TRUE))) {
     attr(method, "name") <- as.name(method_signature(generic, signature))
+  }
 
   for (i in seq_along(chr_signature)) {
     class_name <- chr_signature[[i]]

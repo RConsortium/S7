@@ -31,9 +31,11 @@ Ops.S7_object <- function(e1, e2) {
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
+#' @exportS3Method NULL
 chooseOpsMethod.S7_object <- function(x, y, mx, my, cl, reverse) TRUE
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(matrixOps, S7_object)
+#' @exportS3Method NULL
 matrixOps.S7_object <- function(x, y) {
   base_matrix_ops[[.Generic]](x, y)
 }

@@ -19,3 +19,6 @@
 ^\.cache$
 ^\.vscode$
 ^revdep$
+^[.]?air[.]toml$
+^\.claude$
+^\.git-blame-ignore-revs$

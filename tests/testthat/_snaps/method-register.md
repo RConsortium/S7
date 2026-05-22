@@ -108,6 +108,8 @@
     Output
       <S7_method> method(foo, list(class_integer, class_integer))
       function (x, y, ...) 
-      paste0("bar:", x, y)
+      {
+          paste0("bar:", x, y)
+      }
       <environment: 0x0>
 
