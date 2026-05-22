@@ -255,6 +255,31 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
 
 is_class <- function(x) inherits(x, "S7_class")
 
+check_parent <- function(parent, class) {
+  parent_class <- class@parent
+  if (is.null(parent_class)) {
+    stop(
+      "`.parent` must not be supplied when class has no parent.",
+      call. = FALSE
+    )
+  }
+
+  # Ignore abstract classes since you can't supply an instance
+  if (is_class(parent_class) && parent_class@abstract) {
+    return()
+  }
+
+  if (class_inherits(parent, parent_class)) {
+    return()
+  }
+  msg <- sprintf(
+    "`.parent` must be an instance of %s, not %s.",
+    class_desc(parent_class),
+    obj_desc(parent)
+  )
+  stop(msg, call. = FALSE)
+}
+
 # Object ------------------------------------------------------------------
 
 #' @param .parent,... Parent object and named properties used to construct the
@@ -272,6 +297,10 @@ new_object <- function(.parent, ...) {
       class@name
     )
     stop(msg)
+  }
+
+  if (!missing(.parent)) {
+    check_parent(.parent, class)
   }
 
   args <- list(...)

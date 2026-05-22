@@ -114,6 +114,49 @@ describe("new_object()", {
     expect_snapshot(new_object(), error = TRUE)
   })
 
+  it("errors if `.parent` doesn't inherit from the parent class (#409)", {
+    Bar <- new_class("Bar", package = NULL)
+    # `.parent` should be `Bar()`, not the class spec `Bar`
+    Foo <- new_class(
+      "Foo",
+      parent = Bar,
+      package = NULL,
+      constructor = function() new_object(class_integer)
+    )
+    # wrong-type instance
+    Baz <- new_class(
+      "Baz",
+      parent = class_integer,
+      package = NULL,
+      constructor = function() new_object("hello")
+    )
+    expect_snapshot(error = TRUE, {
+      Foo()
+      Baz()
+    })
+  })
+
+  it("allows S7_object placeholder for abstract parents", {
+    Abstract <- new_class(
+      "Abstract",
+      package = NULL,
+      properties = list(x = class_integer),
+      abstract = TRUE
+    )
+    Concrete <- new_class("Concrete", parent = Abstract, package = NULL)
+    expect_no_error(Concrete(x = 1L))
+  })
+
+  it("errors if `.parent` is supplied but class has no parent", {
+    NoParent <- new_class(
+      "NoParent",
+      package = NULL,
+      parent = NULL,
+      constructor = function() new_object(42L)
+    )
+    expect_snapshot(NoParent(), error = TRUE)
+  })
+
   it("validates object", {
     foo <- new_class(
       "foo",
