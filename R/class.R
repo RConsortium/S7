@@ -338,18 +338,39 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   str_nest(props(object), "@", ..., nest.lev = nest.lev)
 }
 
-#' Retrieve the S7 class of an object
+#' Retrieve the class specification of an object
 #'
-#' Given an S7 object, find it's class.
+#' @description
+#' `S7_class()` returns a [class specification][as_class] for any R object, in a form
+#' that can be passed to [method()] or used in any S7 dispatch context.
 #'
-#' @param object The S7 object
-#' @returns An [S7 class][new_class].
+#' * For S7 objects, the [S7 class][new_class].
+#' * For S3 objects, a [new_S3_class()] wrapping `class(x)`.
+#' * For S4 objects, the S4 class.
+#' * For base types, the matching `class_*` (e.g. [class_integer]).
+#' * For missing arguments, returns [class_missing].
+#'
+#' @param object Any R object.
+#' @returns A class specification.
 #' @export
 #' @examples
 #' Foo <- new_class("Foo")
 #' S7_class(Foo())
+#'
+#' # Also works on non-S7 objects
+#' S7_class(1L)
+#' S7_class("x")
+#' S7_class(mean)
+#' S7_class(factor("a"))
 S7_class <- function(object) {
-  attr(object, "S7_class", exact = TRUE)
+  switch(
+    obj_type(object),
+    missing = class_missing,
+    S7 = attr(object, "S7_class", exact = TRUE),
+    S4 = methods::getClass(class(object)),
+    S3 = new_S3_class(class(object)),
+    base = base_S7_class(object)
+  )
 }
 
 

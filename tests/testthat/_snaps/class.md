@@ -243,3 +243,11 @@
       Error in `new_class()`:
       ! property can't be named: dim, dimnames
 
+# S7_class() gives informative error if no S7 spec available
+
+    Code
+      S7_class(pairlist(x = 1))
+    Condition
+      Error:
+      ! No S7 class for base type <pairlist>.
+
