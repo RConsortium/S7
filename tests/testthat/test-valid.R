@@ -1,5 +1,7 @@
 test_that("validate() validates object and type recursively", {
-  klass <- new_class("klass", package = NULL,
+  klass <- new_class(
+    "klass",
+    package = NULL,
     properties = list(x = class_double, y = class_double),
     validator = function(self) {
       c(
@@ -18,8 +20,12 @@ test_that("validate() validates object and type recursively", {
     validate(obj)
   })
 
-  klass2 <- new_class("klass2", parent = klass, package = NULL,
-                      properties = list(z = class_double))
+  klass2 <- new_class(
+    "klass2",
+    parent = klass,
+    package = NULL,
+    properties = list(z = class_double)
+  )
   expect_snapshot(error = TRUE, {
     obj <- klass2(1, -1, 1)
     attr(obj, "x") <- -1
@@ -40,15 +46,19 @@ test_that("validate checks base type", {
 })
 
 test_that("validate checks the type of setters", {
-  foo <- new_class("foo", package = NULL, properties = list(x =
-    new_property(
-      class_double,
-      setter = function(self, value) {
-        self@x <- as.character(value)
-        self
-      }
+  foo <- new_class(
+    "foo",
+    package = NULL,
+    properties = list(
+      x = new_property(
+        class_double,
+        setter = function(self, value) {
+          self@x <- as.character(value)
+          self
+        }
+      )
     )
-  ))
+  )
   expect_snapshot(foo(x = 123), error = TRUE)
 })
 
@@ -57,13 +67,14 @@ test_that("validate does not check type of getters", {
   # validation to always be cheap
 
   prop <- new_property(class_integer, getter = function(self) "x")
-  foo <- new_class("foo", properties =  list(x = prop))
+  foo <- new_class("foo", properties = list(x = prop))
 
   expect_no_error(foo())
 })
 
 test_that("valid eventually calls the validation function only at the end", {
-  foo <- new_class("foo",
+  foo <- new_class(
+    "foo",
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "must be positive"
   )
@@ -78,7 +89,8 @@ test_that("valid eventually calls the validation function only at the end", {
 })
 
 test_that("valid implicitly does _not_ call the validation function", {
-  foo <- new_class("foo",
+  foo <- new_class(
+    "foo",
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "must be positive"
   )
@@ -93,7 +105,9 @@ test_that("valid implicitly does _not_ call the validation function", {
 
 
 test_that("property validation errors have class S7_error_validation_failed", {
-  klass <- new_class("klass", package = NULL,
+  klass <- new_class(
+    "klass",
+    package = NULL,
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "x must be positive"
   )
@@ -103,7 +117,9 @@ test_that("property validation errors have class S7_error_validation_failed", {
 })
 
 test_that("class validator errors have class S7_error_validation_failed", {
-  klass <- new_class("klass", package = NULL,
+  klass <- new_class(
+    "klass",
+    package = NULL,
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "x must be positive"
   )

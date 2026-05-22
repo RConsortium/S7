@@ -31,7 +31,10 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   } else if (isS4(x)) {
     S4_to_S7_class(x, error_base)
   } else {
-    msg <- sprintf("Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a %s.", obj_desc(x))
+    msg <- sprintf(
+      "Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a %s.",
+      obj_desc(x)
+    )
     stop(paste0(error_base, msg), call. = FALSE)
   }
 }
@@ -68,7 +71,8 @@ class_type <- function(x) {
 }
 
 class_friendly <- function(x) {
-  switch(class_type(x),
+  switch(
+    class_type(x),
     NULL = "NULL",
     missing = "a missing argument",
     any = "any type",
@@ -107,7 +111,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
       if (!identical(f, f2)) {
         msg <- sprintf(
           "`%s::%s` is not identical to the class with the same @package and @name properties",
-          f@package, f@name
+          f@package,
+          f@name
         )
         stop(msg, call. = FALSE)
       }
@@ -127,8 +132,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   }
 
   # special case for `class_missing`
-  if (identical(body(f) -> fb, quote(expr =))) {
-    return(quote(expr =))
+  if (identical(body(f) -> fb, quote(expr = ))) {
+    return(quote(expr = ))
   }
 
   # `new_object()` must be called from the class constructor, can't
@@ -138,14 +143,17 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   }
 
   # maybe unwrap body if it is a single expression wrapped in `{`
-  if (length(fb) == 2L && identical(fb[[1L]], quote(`{`)))
+  if (length(fb) == 2L && identical(fb[[1L]], quote(`{`))) {
     fb <- fb[[2L]]
+  }
 
   # If all the all the work happens in the promise to the `.data` arg,
   # return the `.data` expression.
   ff <- formals(f)
-  if ((identical(fb, quote(.data))) &&
-      identical(names(ff), ".data")) {
+  if (
+    (identical(fb, quote(.data))) &&
+      identical(names(ff), ".data")
+  ) {
     return(ff$.data)
   }
 
@@ -159,21 +167,23 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
 }
 
 class_constructor <- function(.x) {
-  switch(class_type(.x),
-         any = ,
-         NULL = new_function(env = baseenv()),
-         missing = new_function(, quote(expr =), baseenv()),
-         S4 = function(...) methods::new(.x, ...),
-         S7 = .x,
-         S7_base = .x$constructor,
-         S7_union = class_constructor(.x$classes[[1]]),
-         S7_S3 = .x$constructor,
-         stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
+  switch(
+    class_type(.x),
+    any = ,
+    NULL = new_function(env = baseenv()),
+    missing = new_function(, quote(expr = ), baseenv()),
+    S4 = function(...) methods::new(.x, ...),
+    S7 = .x,
+    S7_base = .x$constructor,
+    S7_union = class_constructor(.x$classes[[1]]),
+    S7_S3 = .x$constructor,
+    stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
   )
 }
 
 class_validate <- function(class, object) {
-  validator <- switch(class_type(class),
+  validator <- switch(
+    class_type(class),
     S4 = methods::validObject,
     S7 = class@validator,
     S7_base = class$validator,
@@ -189,7 +199,8 @@ class_validate <- function(class, object) {
 }
 
 class_desc <- function(x) {
-  switch(class_type(x),
+  switch(
+    class_type(x),
     NULL = "<NULL>",
     missing = "<MISSING>",
     any = "<ANY>",
@@ -207,7 +218,8 @@ class_dispatch <- function(x) {
     return("S7_object")
   }
 
-  switch(class_type(x),
+  switch(
+    class_type(x),
     NULL = "NULL",
     missing = "MISSING",
     any = character(),
@@ -221,7 +233,8 @@ class_dispatch <- function(x) {
 
 # Class name when registering an S7 method
 class_register <- function(x) {
-  switch(class_type(x),
+  switch(
+    class_type(x),
     NULL = "NULL",
     missing = "MISSING",
     any = "ANY",
@@ -235,7 +248,8 @@ class_register <- function(x) {
 
 # Used when printing method signature to generate executable code
 class_deparse <- function(x) {
-  switch(class_type(x),
+  switch(
+    class_type(x),
     "NULL" = "NULL",
     missing = "class_missing",
     any = "class_any",
@@ -251,7 +265,8 @@ class_deparse <- function(x) {
 }
 
 class_inherits <- function(x, what) {
-  switch(class_type(what),
+  switch(
+    class_type(what),
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
@@ -280,7 +295,8 @@ obj_type <- function(x) {
   }
 }
 obj_desc <- function(x) {
-  switch(obj_type(x),
+  switch(
+    obj_type(x),
     missing = "MISSING",
     base = paste0("<", typeof(x), ">"),
     S3 = paste0("S3<", paste(class(x), collapse = "/"), ">"),
@@ -289,7 +305,8 @@ obj_desc <- function(x) {
   )
 }
 obj_dispatch <- function(x) {
-  switch(obj_type(x),
+  switch(
+    obj_type(x),
     missing = "MISSING",
     base = base_class(x),
     S3 = class(x),
@@ -299,7 +316,8 @@ obj_dispatch <- function(x) {
 }
 
 base_class <- function(x) {
-  switch(typeof(x),
+  switch(
+    typeof(x),
     closure = "function",
     special = "function",
     builtin = "function",

@@ -34,7 +34,10 @@ S4_to_S7_class <- function(x, error_base = "") {
 
   # Convert generator function to class
   if (methods::is(x, "classGeneratorFunction")) {
-    return(S4_to_S7_class(methods::getClass(as.character(x@className)), error_base))
+    return(S4_to_S7_class(
+      methods::getClass(as.character(x@className)),
+      error_base
+    ))
   }
 
   if (methods::is(x, "ClassUnionRepresentation")) {
@@ -101,9 +104,15 @@ S4_class_dispatch <- function(x) {
   classes <- lapply(extends, function(x) methods::getClass(x@superClass))
 
   # Remove unions: S7 handles them in method registration, not dispatch.
-  classes <- Filter(function(x) !methods::is(x, "ClassUnionRepresentation"), classes)
+  classes <- Filter(
+    function(x) !methods::is(x, "ClassUnionRepresentation"),
+    classes
+  )
   # Remove specially named union base classes
-  classes <- Filter(function(x) !x@className %in% c("oldClass", "vector"), classes)
+  classes <- Filter(
+    function(x) !x@className %in% c("oldClass", "vector"),
+    classes
+  )
 
   c(self, vcapply(classes, S4_class_name))
 }

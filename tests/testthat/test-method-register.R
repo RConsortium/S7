@@ -58,7 +58,7 @@ describe("method registration", {
     method(`+`, list(foo, bar)) <- function(e1, e2) "foobar"
     expect_equal(foo() + bar(), "foobar")
 
-    if(getRversion() >= "4.3.0") {
+    if (getRversion() >= "4.3.0") {
       method(`%*%`, list(foo, bar)) <- function(x, y) "foo.bar"
       expect_equal(foo() %*% bar(), "foo.bar")
     }
@@ -170,7 +170,9 @@ test_that("check_method warn if default arguments don't match", {
 
 test_that("S7_method printing", {
   foo <- new_generic("foo", c("x", "y"))
-  method(foo, list(class_integer, class_integer)) <- function(x, y, ...) paste0("bar:", x, y)
+  method(foo, list(class_integer, class_integer)) <- function(x, y, ...) {
+    paste0("bar:", x, y)
+  }
   expect_snapshot(
     method(foo, list(class_integer, class_integer)),
     transform = scrub_environment

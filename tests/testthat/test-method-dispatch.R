@@ -78,7 +78,9 @@ test_that("can substitute() args", {
   expect_equal(foo("x", z = letters), quote(letters))
 
   suppressMessages(
-    method(foo, class_character) <- function(x, ..., z = 1) substitute(list(...))
+    method(foo, class_character) <- function(x, ..., z = 1) {
+      substitute(list(...))
+    }
   )
   expect_equal(foo("x", abc = xyz), quote(list(abc = xyz)))
 
@@ -86,18 +88,18 @@ test_that("can substitute() args", {
     method(foo, class_character) <- function(x, ..., z = 1, y) missing(y)
   )
   expect_true(foo("x"), TRUE)
-  expect_true(foo("x", y =), TRUE)
-    expect_true(foo("x", y =), TRUE)
+  expect_true(foo("x", y = ), TRUE)
+  expect_true(foo("x", y = ), TRUE)
 
   suppressMessages(
     method(foo, class_character) <- function(x, ..., z = 1, y) ...length()
   )
 
   expect_equal(foo("x"), 0)
-  expect_equal(foo("x", y =), 0)
-  expect_equal(foo("x", y =, abc), 1)
-  expect_equal(foo("x", y =, abc = xyz), 1)
-  expect_equal(foo("x", y =, abc, xyz), 2)
+  expect_equal(foo("x", y = ), 0)
+  expect_equal(foo("x", y = , abc), 1)
+  expect_equal(foo("x", y = , abc = xyz), 1)
+  expect_equal(foo("x", y = , abc, xyz), 2)
 })
 
 test_that("methods get values modified in the generic", {
@@ -189,7 +191,11 @@ test_that("multiple dispatch fails with informative messages", {
 test_that("S7_error_method_not_found error class is not duplicated", {
   fail <- new_generic("fail", "x")
   cnd <- tryCatch(fail(TRUE), S7_error_method_not_found = identity)
-  expect_s3_class(cnd, c("S7_error_method_not_found", "error", "condition"), exact = TRUE)
+  expect_s3_class(
+    cnd,
+    c("S7_error_method_not_found", "error", "condition"),
+    exact = TRUE
+  )
 })
 
 test_that("method dispatch preserves method return visibility", {
@@ -198,7 +204,9 @@ test_that("method dispatch preserves method return visibility", {
   expect_invisible(foo(1L))
 
   method(foo, class_character) <- function(x) {
-    if (x == "nope") return(invisible("bar"))
+    if (x == "nope") {
+      return(invisible("bar"))
+    }
     "bar"
   }
 
@@ -217,7 +225,6 @@ test_that("can dispatch on evaluated arguments", {
 
 
 test_that("method dispatch works for class_missing", {
-
   foo <- new_generic("foo", "x")
   method(foo, class_missing) <- function(x) missing(x)
 
@@ -233,7 +240,6 @@ test_that("method dispatch works for class_missing", {
 })
 
 test_that("errors from dispatched methods have reasonable tracebacks", {
-
   get_call_stack <- function(n = 3) {
     x <- sys.calls()
     x <- x[-length(x)] # remove get_call_stack()

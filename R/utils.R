@@ -1,6 +1,9 @@
 global_variables <- function(names) {
   env <- topenv(parent.frame())
-  if (exists(".__global__", envir = env) && bindingIsLocked(".__global__", env = env)) {
+  if (
+    exists(".__global__", envir = env) &&
+      bindingIsLocked(".__global__", env = env)
+  ) {
     get("unlockBinding", baseenv())(".__global__", env = env)
     on.exit(lockBinding(".__global__", env = env))
   }
@@ -9,8 +12,12 @@ global_variables <- function(names) {
   assign(".__global__", current, envir = env)
 }
 
-vlapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
-vcapply <- function(X, FUN, ...) vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
+vlapply <- function(X, FUN, ...) {
+  vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
+}
+vcapply <- function(X, FUN, ...) {
+  vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
+}
 
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
@@ -37,7 +44,7 @@ is_prefix <- function(x, y) {
   length(x) <= length(y) && identical(unclass(x), unclass(y)[seq_along(x)])
 }
 
-oxford_or <- function (x)  {
+oxford_or <- function(x) {
   n <- length(x)
   if (n == 1) {
     x
@@ -50,13 +57,12 @@ oxford_or <- function (x)  {
 }
 
 str_nest <- function(
-    object,
-    prefix,
-    ...,
-    nest.lev = 0,
-    indent.str = paste(rep.int(" ", max(0, nest.lev + 1)), collapse = "..")
+  object,
+  prefix,
+  ...,
+  nest.lev = 0,
+  indent.str = paste(rep.int(" ", max(0, nest.lev + 1)), collapse = "..")
 ) {
-
   names <- format(names(object))
 
   for (i in seq_along(object)) {
@@ -114,7 +120,7 @@ show_function <- function(x, constructor = FALSE) {
   if (constructor) {
     # don't show the defaults arg values in the constructor, keep it compact
     # TODO: do show the default values next to properties in class printouts.
-    args <- lapply(args, function(q) quote(expr =))
+    args <- lapply(args, function(q) quote(expr = ))
   }
 
   show_args(args, suffix = " {...}")
@@ -131,15 +137,17 @@ show_args <- function(x, name = "function", suffix = "") {
   paste0(name, "(", args, ")", suffix)
 }
 
-modify_list <- function (x, new_vals) {
+modify_list <- function(x, new_vals) {
   stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
 
   if (length(new_vals)) {
     nms <- names2(new_vals)
-    if (!all(nzchar(nms)))
+    if (!all(nzchar(nms))) {
       stop("all elements in `new_vals` must be named")
-    if (is.null(x))
+    }
+    if (is.null(x)) {
       x <- list()
+    }
     x[nms] <- new_vals
   }
 
@@ -148,8 +156,9 @@ modify_list <- function (x, new_vals) {
 
 deparse_trunc <- function(x, width, collapse = "\n") {
   x <- deparse1(x, collapse)
-  if (nchar(x) > width)
-    x <- sprintf("%s....", substr(x, 0, width-4))
+  if (nchar(x) > width) {
+    x <- sprintf("%s....", substr(x, 0, width - 4))
+  }
   x
 }
 

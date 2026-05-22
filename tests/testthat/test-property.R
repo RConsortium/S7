@@ -1,6 +1,10 @@
 describe("property retrieval", {
   it("retrieves the properties that exist & errors otherwise", {
-    foo <- new_class("foo", properties = list(xyz = class_double), package = NULL)
+    foo <- new_class(
+      "foo",
+      properties = list(xyz = class_double),
+      package = NULL
+    )
     obj <- foo(1)
     expect_equal(prop(obj, "xyz"), 1)
     expect_equal(obj@xyz, 1)
@@ -9,9 +13,12 @@ describe("property retrieval", {
     expect_snapshot_error(obj@x)
   })
   it("evalutes dynamic properties", {
-    foo <- new_class("foo", properties = list(
-      x = new_property(getter = function(self) 1)
-    ))
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(getter = function(self) 1)
+      )
+    )
     obj <- foo()
     expect_equal(prop(obj, "x"), 1)
     expect_equal(obj@x, 1)
@@ -36,21 +43,28 @@ describe("prop setting", {
   })
 
   it("can set dynamic properties", {
-    foo <- new_class("foo", properties = list(
-      x = new_property(setter = function(self, value) {
-        self@x <- value * 2
-        self
-      })
-    ))
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(setter = function(self, value) {
+          self@x <- value * 2
+          self
+        })
+      )
+    )
     obj <- foo()
     obj@x <- 1
     expect_equal(obj@x, 2)
   })
 
   it("can't set read-only properties", {
-    foo <- new_class("foo", package = NULL, properties = list(
-      x = new_property(getter = function(self) 1
-    )))
+    foo <- new_class(
+      "foo",
+      package = NULL,
+      properties = list(
+        x = new_property(getter = function(self) 1)
+      )
+    )
     obj <- foo()
     expect_snapshot(obj@x <- 1, error = TRUE)
   })
@@ -65,17 +79,21 @@ describe("prop setting", {
   })
 
   it("validates all attributes if custom setter", {
-    foo <- new_class("foo", package = NULL, properties = list(
-      x = new_property(
-        class_double,
-        setter = function(self, value) {
-          self@x <- 123
-          self@y <- value
-          self
-        }
-      ),
-      y = new_property(class_double)
-    ))
+    foo <- new_class(
+      "foo",
+      package = NULL,
+      properties = list(
+        x = new_property(
+          class_double,
+          setter = function(self, value) {
+            self@x <- 123
+            self@y <- value
+            self
+          }
+        ),
+        y = new_property(class_double)
+      )
+    )
     expect_snapshot(error = TRUE, {
       obj <- foo(y = 123, x = 123)
       obj@x <- "x"
@@ -83,7 +101,8 @@ describe("prop setting", {
   })
 
   it("validates once after custom setter", {
-    times_validated <- 0L;  `add<-` <- `+`
+    times_validated <- 0L
+    `add<-` <- `+`
     custom_setter <- function(self, value) {
       self@x <- as.double(value)
       self
@@ -103,7 +122,8 @@ describe("prop setting", {
   })
 
   it("validates once with recursive property setters", {
-    times_validated <- 0L;  `add<-` <- `+`
+    times_validated <- 0L
+    `add<-` <- `+`
     foo <- new_class(
       "foo",
       properties = list(
@@ -119,7 +139,10 @@ describe("prop setting", {
         }),
         z = new_property(class_character)
       ),
-      validator = function(self) { add(times_validated) <<- 1L; NULL }
+      validator = function(self) {
+        add(times_validated) <<- 1L
+        NULL
+      }
     )
     out <- foo()
     expect_equal(times_validated, 1L)
@@ -144,7 +167,8 @@ describe("prop setting", {
 
 describe("props<-", {
   it("validates after setting all properties", {
-    foo <- new_class("foo",
+    foo <- new_class(
+      "foo",
       properties = list(x = class_double, y = class_double),
       validator = function(self) if (self@x > self@y) "bad"
     )
@@ -156,7 +180,8 @@ describe("props<-", {
   })
 
   it("`check = FALSE` skip validation", {
-    foo <- new_class("foo",
+    foo <- new_class(
+      "foo",
       properties = list(x = class_double, y = class_double),
       validator = function(self) if (self@x > self@y) "bad"
     )
@@ -178,7 +203,8 @@ describe("props<-", {
   })
 
   it("set_props() skip validation with `.check = FALSE`", {
-    foo <- new_class("foo",
+    foo <- new_class(
+      "foo",
       properties = list(x = class_double, y = class_double),
       validator = function(self) if (self@x > self@y) "bad"
     )
@@ -193,7 +219,10 @@ describe("props<-", {
 
 describe("property access", {
   it("access en masse", {
-    foo <- new_class("foo", properties = list(x = class_numeric, y = class_numeric))
+    foo <- new_class(
+      "foo",
+      properties = list(x = class_numeric, y = class_numeric)
+    )
     x <- foo(x = 1, y = 2)
     expect_equal(prop_names(x), c("x", "y"))
     expect_equal(props(x), list(x = 1, y = 2))
@@ -203,10 +232,13 @@ describe("property access", {
   })
 
   it("can access dynamic properties", {
-    foo <- new_class("foo", properties = list(
-      x = new_property(getter = function(self) 10),
-      y = new_property()
-    ))
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(getter = function(self) 10),
+        y = new_property()
+      )
+    )
     x <- foo(y = 2)
     expect_equal(props(x), list(x = 10, y = 2))
   })
@@ -268,7 +300,8 @@ test_that("properties can be base, S3, S4, S7, or S7 union", {
   class_S7 <- new_class("class_S7", package = NULL)
   class_S4 <- methods::setClass("class_S4", slots = c(x = "numeric"))
 
-  my_class <- new_class("my_class",
+  my_class <- new_class(
+    "my_class",
     package = NULL,
     properties = list(
       anything = class_any,
@@ -314,22 +347,22 @@ test_that("as_properties normalises properties", {
   expect_equal(as_properties(NULL), list())
   expect_equal(
     as_properties(list(x = class_numeric)),
-    list(x = new_property(class_numeric, name = "x")
-  ))
+    list(x = new_property(class_numeric, name = "x"))
+  )
   expect_equal(
     as_properties(list(x = new_property(class = class_numeric))),
-    list(x = new_property(class_numeric, name = "x")
-  ))
+    list(x = new_property(class_numeric, name = "x"))
+  )
   expect_equal(
     as_properties(list(new_property(name = "y"))),
-    list(y = new_property(name = "y")
-  ))
+    list(y = new_property(name = "y"))
+  )
 
   # list name wins
   expect_equal(
     as_properties(list(x = new_property(name = "y"))),
-    list(x = new_property(name = "x")
-  ))
+    list(x = new_property(name = "x"))
+  )
 })
 
 test_that("as_properties() gives useful error messages", {
@@ -373,10 +406,13 @@ test_that("prop<- won't infinitly recurse on a custom setter", {
     self
   }
 
-  foo <- new_class("foo", properties = list(
-    a = new_property(setter = chattily_sync_ab),
-    b = new_property(setter = chattily_sync_ab)
-  ))
+  foo <- new_class(
+    "foo",
+    properties = list(
+      a = new_property(setter = chattily_sync_ab),
+      b = new_property(setter = chattily_sync_ab)
+    )
+  )
 
   expect_snapshot({
     obj <- foo()
@@ -385,26 +421,31 @@ test_that("prop<- won't infinitly recurse on a custom setter", {
 })
 
 test_that("custom setters can invoke setters on non-self objects", {
+  Transmitter <- new_class(
+    "Transmitter",
+    properties = list(
+      message = new_property(setter = function(self, value) {
+        cat("[tx] sending: ", value, "\n")
+        receiver@message <<- value
+        cat("[tx] saving last sent message.\n")
+        self@message <- value
+        cat("[tx] finished transmitting.\n")
+        self
+      })
+    )
+  )
 
-  Transmitter <- new_class("Transmitter", properties = list(
-    message = new_property(setter = function(self, value) {
-      cat("[tx] sending: ", value, "\n")
-      receiver@message <<- value
-      cat("[tx] saving last sent message.\n")
-      self@message <- value
-      cat("[tx] finished transmitting.\n")
-      self
-    })
-  ))
-
-  Receiver <- new_class("Receiver", properties = list(
-    message = new_property(setter = function(self, value) {
-      cat("[rx] receiving: ", value, "\n")
-      self@message <- value
-      cat("[rx] finished receiving.\n")
-      self
-    })
-  ))
+  Receiver <- new_class(
+    "Receiver",
+    properties = list(
+      message = new_property(setter = function(self, value) {
+        cat("[rx] receiving: ", value, "\n")
+        self@message <- value
+        cat("[rx] finished receiving.\n")
+        self
+      })
+    )
+  )
 
   expect_snapshot({
     receiver <- Receiver()
@@ -416,46 +457,50 @@ test_that("custom setters can invoke setters on non-self objects", {
     transmitter@message <- "goodbye"
     expect_equal(receiver@message, "goodbye")
   })
-
 })
 
 
 test_that("custom getters don't infinitely recurse", {
   # https://github.com/RConsortium/S7/issues/403
 
-  someclass <- new_class("someclass", properties = list(
-    someprop = new_property(
-      class_character,
-      getter = function(self) self@someprop,
-      setter = function(self, value) {
-        self@someprop <- toupper(value)
-        self
-      }
+  someclass <- new_class(
+    "someclass",
+    properties = list(
+      someprop = new_property(
+        class_character,
+        getter = function(self) self@someprop,
+        setter = function(self, value) {
+          self@someprop <- toupper(value)
+          self
+        }
+      )
     )
-  ))
+  )
 
   expect_equal(someclass("foo")@someprop, "FOO")
   x <- someclass()
   expect_equal(x@someprop, character())
   x@someprop <- "foo"
   expect_equal(x@someprop, "FOO")
-
 })
 
 
 test_that("custom setters can call custom getters", {
   # https://github.com/RConsortium/S7/issues/403
 
-  someclass <- new_class("someclass", properties = list(
-    someprop = new_property(
-      class_character,
-      getter = function(self) self@someprop,
-      setter = function(self, value) {
-        self@someprop <- paste0(self@someprop, toupper(value))
-        self
-      }
+  someclass <- new_class(
+    "someclass",
+    properties = list(
+      someprop = new_property(
+        class_character,
+        getter = function(self) self@someprop,
+        setter = function(self, value) {
+          self@someprop <- paste0(self@someprop, toupper(value))
+          self
+        }
+      )
     )
-  ))
+  )
 
   x <- someclass("foo")
   expect_equal(x@someprop, "FOO")
@@ -468,62 +513,68 @@ test_that("custom setters can call custom getters", {
 
   x@someprop <- "foo"
   expect_equal(x@someprop, "FOOFOO")
-
 })
 
 
 test_that("custom getters don't evaulate call objects", {
-  QuotedCall :=  new_class(class_call, properties = list(
-    name = new_property(getter = function(self) {
-      stopifnot(is.call(self))
-      as.character(self[[1]])
-    }),
-    args = new_property(getter = function(self) {
-      stopifnot(is.call(self))
-      as.list(self)[-1]
-    })
-  ), constructor = function(x) {
-    new_object(substitute(x))
-  })
+  QuotedCall := new_class(
+    class_call,
+    properties = list(
+      name = new_property(getter = function(self) {
+        stopifnot(is.call(self))
+        as.character(self[[1]])
+      }),
+      args = new_property(getter = function(self) {
+        stopifnot(is.call(self))
+        as.list(self)[-1]
+      })
+    ),
+    constructor = function(x) {
+      new_object(substitute(x))
+    }
+  )
 
   cl <- QuotedCall(stop("boom"))
   expect_equal(cl@name, "stop")
   expect_equal(cl@args, list("boom"))
-
 })
 
 
 test_that("custom setters don't evaulate call objects", {
-
-  Call :=  new_class(class_call, properties = list(
-    name = new_property(
-      getter = function(self) {
-        stopifnot(is.call(self))
-        as.character(self[[1]])
-      },
-      setter = function(self, value) {
-        stopifnot(is.call(self), is.name(value))
-        self[[1]] <- value
-        self
-      }
+  Call := new_class(
+    class_call,
+    properties = list(
+      name = new_property(
+        getter = function(self) {
+          stopifnot(is.call(self))
+          as.character(self[[1]])
+        },
+        setter = function(self, value) {
+          stopifnot(is.call(self), is.name(value))
+          self[[1]] <- value
+          self
+        }
+      ),
+      args = new_property(
+        getter = function(self) {
+          stopifnot(is.call(self))
+          as.list(self)[-1]
+        },
+        setter = function(self, value) {
+          stopifnot(is.call(self), is.list(value) || is.pairlist(value))
+          # self[seq(2, length.out = length(value))] <- value
+          # names(self) <- c("", names(value))
+          # self
+          out <- as.call(c(self[[1]], value))
+          attributes(out) <- attributes(self)
+          out
+        }
+      )
     ),
-    args = new_property(
-      getter = function(self) {
-        stopifnot(is.call(self))
-        as.list(self)[-1]
-      },
-      setter = function(self, value) {
-        stopifnot(is.call(self), is.list(value) || is.pairlist(value))
-        # self[seq(2, length.out = length(value))] <- value
-        # names(self) <- c("", names(value))
-        # self
-        out <- as.call(c(self[[1]], value))
-        attributes(out) <- attributes(self)
-        out
-      })
-  ), constructor = function(name, ...) {
-    new_object(as.call(c(as.name(name), ...)))
-  })
+    constructor = function(name, ...) {
+      new_object(as.call(c(as.name(name), ...)))
+    }
+  )
 
   cl <- Call("stop", "boom")
   expect_identical(cl@name, "stop")
@@ -542,7 +593,8 @@ test_that("custom setters don't evaulate call objects", {
   cl@args <- alist(msg = "boom3", foo = bar, baz)
   expect_identical(cl@args, alist(msg = "boom3", foo = bar, baz))
 
-  expect_identical(drop_attributes(cl),
-                   quote(abort(msg = "boom3", foo = bar, baz)))
-
+  expect_identical(
+    drop_attributes(cl),
+    quote(abort(msg = "boom3", foo = bar, baz))
+  )
 })

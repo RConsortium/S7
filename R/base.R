@@ -9,8 +9,7 @@ new_base_class <- function(name, constructor_name = name) {
 
   validator <- function(object) {
     if (base_class(object) != name) {
-      sprintf("Underlying data must be <%s> not <%s>",
-              name, base_class(object))
+      sprintf("Underlying data must be <%s> not <%s>", name, base_class(object))
     }
   }
 
@@ -33,7 +32,8 @@ nameOfClass.S7_base_class <- function(x) {
 }
 
 base_default <- function(type) {
-  switch(type,
+  switch(
+    type,
     logical = logical(),
     integer = integer(),
     double = double(),
@@ -47,7 +47,8 @@ base_default <- function(type) {
 
     `function` = quote(function() NULL),
     environment = quote(new.env(parent = emptyenv()))
-)}
+  )
+}
 
 
 is_base_class <- function(x) inherits(x, "S7_base_class")
@@ -202,7 +203,13 @@ class_language <- NULL
 # Define onload to avoid dependencies between files
 on_load_define_union_classes <- function() {
   class_numeric <<- new_union(class_integer, class_double)
-  class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
+  class_atomic <<- new_union(
+    class_logical,
+    class_numeric,
+    class_complex,
+    class_character,
+    class_raw
+  )
   class_vector <<- new_union(class_atomic, class_expression, class_list)
   class_language <<- new_union(class_name, class_call)
 }

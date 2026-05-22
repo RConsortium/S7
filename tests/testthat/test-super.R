@@ -1,4 +1,3 @@
-
 describe("super()", {
   it("overrides dispatch, matching inherited behaviour", {
     foo1 <- new_class("foo1")
@@ -45,6 +44,5 @@ describe("super()", {
       f1
       str(list(f1))
     })
-
   })
 })
