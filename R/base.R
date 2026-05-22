@@ -27,6 +27,7 @@ new_base_class <- function(name, constructor_name = name) {
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass,S7_base_class)
+#' @exportS3Method NULL
 nameOfClass.S7_base_class <- function(x) {
   x[["class"]]
 }

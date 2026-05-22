@@ -23,7 +23,8 @@ executing the validator.}
 \item{fun}{A function to call on the object before validation.}
 }
 \value{
-Either \code{object} invisibly if valid, otherwise an error.
+Either \code{object} invisibly if valid, otherwise an error of
+class \code{S7_error_validation_failed}
 }
 \description{
 \code{validate()} ensures that an S7 object is valid by calling the \code{validator}
