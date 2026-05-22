@@ -20,6 +20,7 @@
 #' y
 S7_data <- function(object) {
   check_is_S7(object)
+  check_not_environment(object, "S7_data()")
 
   zap_attr(object, c(prop_names(object), "class", "S7_class"))
 }
@@ -27,6 +28,7 @@ S7_data <- function(object) {
 #' @export
 #' @rdname S7_data
 `S7_data<-` <- function(object, check = TRUE, value) {
+  check_not_environment(object, "S7_data<-")
   attrs <- attributes(object)
   object <- value
   attributes(object) <- attrs
@@ -34,6 +36,19 @@ S7_data <- function(object) {
     validate(object)
   }
   return(invisible(object))
+}
+
+check_not_environment <- function(object, fn) {
+  if (!is.environment(object)) {
+    return(invisible())
+  }
+  stop(
+    sprintf(
+      "Can't call `%s` on an environment because attribute changes are made in place.",
+      fn
+    ),
+    call. = FALSE
+  )
 }
 
 

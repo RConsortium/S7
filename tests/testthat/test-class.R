@@ -53,12 +53,6 @@ describe("S7 classes", {
       new_class("test", parent = new_union("character"))
     })
   })
-
-  it("can't inherit from an environment", {
-    expect_snapshot(error = TRUE, {
-      new_class("test", parent = class_environment)
-    })
-  })
 })
 
 describe("inheritance", {
@@ -261,7 +255,6 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
-
 test_that("can't create class with reserved property names", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(names = class_character))
@@ -270,5 +263,33 @@ test_that("can't create class with reserved property names", {
       "foo",
       properties = list(dim = NULL | class_integer, dimnames = class_list)
     )
+  })
+})
+
+test_that("can inherit from environments", {
+  Foo <- new_class(
+    "Foo",
+    parent = class_environment,
+    properties = list(name = class_character),
+    package = NULL
+  )
+  e <- Foo(new.env(parent = emptyenv()), name = "bob")
+  expect_true(S7_inherits(e, Foo))
+  expect_true(is.environment(e))
+  expect_equal(e@name, "bob")
+
+  # Property setters and method dispatch work
+  e@name <- "alice"
+  expect_equal(e@name, "alice")
+
+  gen <- new_generic("gen", "x")
+  method(gen, Foo) <- function(x) "foo"
+  expect_equal(gen(e), "foo")
+
+  # S7_data() / S7_data<- refuse to operate on environments because they
+  # would destroy `e`'s S7 attributes in place.
+  expect_snapshot(error = TRUE, {
+    S7_data(e)
+    S7_data(e) <- new.env()
   })
 })
