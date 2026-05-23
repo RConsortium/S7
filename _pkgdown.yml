@@ -30,6 +30,7 @@ reference:
   - method_explain
   - super
   - S7_class
+  - S7_group_generics
 
 - title: Packages
   desc: >
