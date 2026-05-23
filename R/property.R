@@ -194,7 +194,7 @@ prop_default <- function(prop, envir, package) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
-  .Call(prop_, object, name)
+  with_prop_call(object, name, .Call(prop_, object, name))
 }
 
 propr <- function(object, name) {
@@ -235,7 +235,32 @@ prop_obj <- function(object, name) {
 #'   [validate()] on the object before returning.
 #' @export
 `prop<-` <- function(object, name, check = TRUE, value) {
-  .Call(prop_set_, object, name, check, value)
+  with_prop_call(
+    object,
+    name,
+    .Call(prop_set_, object, name, check, value)
+  )
+}
+
+# Rewrite the `call` attribute of any error raised by `expr` to a synthetic
+# `<Class>@<prop>` expression so the displayed error points at the property
+# being read or set, instead of dumping the body of a custom getter/setter
+# closure (#536).
+with_prop_call <- function(object, name, expr) {
+  withCallingHandlers(
+    expr,
+    error = function(cnd) {
+      # Only replace if call is null or an inlined function
+      if (!is.null(cnd$call) && !is.function(cnd$call[[1]])) {
+        return()
+      }
+      class_name <- attr(S7_class(object), "name", exact = TRUE) %||% "<S7>"
+      call <- call("@", as.name(class_name), as.name(name))
+
+      cnd$call <- call
+      stop(cnd)
+    }
+  )
 }
 
 `propr<-` <- local({

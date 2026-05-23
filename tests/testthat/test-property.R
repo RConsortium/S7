@@ -598,3 +598,23 @@ test_that("custom setters don't evaulate call objects", {
     quote(abort(msg = "boom3", foo = bar, baz))
   )
 })
+
+test_that("sys.call() inside a setter is named after the property (#536)", {
+  error <- FALSE
+  foo <- new_class(
+    "foo",
+    properties = list(
+      x = new_property(
+        setter = \(self, value) if (error) stop("nope") else self,
+        getter = \(self) if (error) stop("nope") else 1
+      )
+    )
+  )
+
+  x <- foo()
+  error <- TRUE
+  expect_snapshot(error = TRUE, {
+    x@x
+    x@x <- -1
+  })
+})
