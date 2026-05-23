@@ -4,7 +4,7 @@
       method(print, 1)
     Condition
       Error:
-      ! `generic` must be a <S7_generic>, not a <closure>
+      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
     Code
       foo <- new_generic("foo", "x")
       method(foo)
