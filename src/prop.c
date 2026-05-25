@@ -140,16 +140,16 @@ Rboolean pairlist_contains(SEXP list, SEXP elem) {
 }
 
 enum prop_accessor {
-  PROP_ACCESSOR_GETTER,
-  PROP_ACCESSOR_SETTER
+  PROP_GETTER,
+  PROP_SETTER
 };
 
 static inline
 SEXP prop_accessor_marker(enum prop_accessor accessor) {
   switch (accessor) {
-  case PROP_ACCESSOR_GETTER:
+  case PROP_GETTER:
     return sym_dot_getting_prop;
-  case PROP_ACCESSOR_SETTER:
+  case PROP_SETTER:
     return sym_dot_setting_prop;
   }
 
@@ -162,7 +162,7 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
                                     Rboolean* should_validate_obj) {
   // Check if we should call `setter` and if so, prepare `setter` for calling.
 
-  SEXP marker_sym = prop_accessor_marker(PROP_ACCESSOR_SETTER);
+  SEXP marker_sym = prop_accessor_marker(PROP_SETTER);
   SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
   if (TYPEOF(no_recurse_pairlist) == LISTSXP) {
     // if there is a 'no_recurse' list, then this is not the top-most prop<-
@@ -271,7 +271,7 @@ static void prop_call_cleanup(void* data, Rboolean jump) {
   s7_clear_var_in_frame(call_data->env, call_data->fn_sym);
 
   SEXP object = call_data->marked_object;
-  if (!jump && call_data->accessor == PROP_ACCESSOR_SETTER)
+  if (!jump && call_data->accessor == PROP_SETTER)
     object = call_data->result;
 
   accessor_no_recurse_clear_if_present(
@@ -305,7 +305,7 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
     marked_object,
     name_sym,
     R_NilValue,
-    PROP_ACCESSOR_GETTER
+    PROP_GETTER
   };
 
   SEXP result = R_UnwindProtect(
@@ -351,7 +351,7 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
     marked_object,
     name_sym,
     R_NilValue,
-    PROP_ACCESSOR_SETTER
+    PROP_SETTER
   };
 
   SEXP result = R_UnwindProtect(
@@ -404,7 +404,7 @@ static inline
 Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
   // Check if we should call getter and if so, prepare object for calling the getter.
 
-  SEXP marker_sym = prop_accessor_marker(PROP_ACCESSOR_GETTER);
+  SEXP marker_sym = prop_accessor_marker(PROP_GETTER);
   SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
   if (TYPEOF(no_recurse_pairlist) == LISTSXP &&
       pairlist_contains(no_recurse_pairlist, name_sym))
