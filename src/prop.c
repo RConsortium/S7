@@ -147,10 +147,8 @@ enum prop_accessor {
 static inline
 SEXP prop_accessor_marker(enum prop_accessor accessor) {
   switch (accessor) {
-  case PROP_GETTER:
-    return sym_dot_getting_prop;
-  case PROP_SETTER:
-    return sym_dot_setting_prop;
+  case PROP_GETTER: return sym_dot_getting_prop;
+  case PROP_SETTER: return sym_dot_setting_prop;
   }
 
   Rf_error("Internal error: unknown property accessor kind");
