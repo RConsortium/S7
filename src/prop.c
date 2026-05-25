@@ -251,20 +251,7 @@ static void prop_call_remove_binding(SEXP env, SEXP sym) {
   if (s7_get_var_in_frame(env, sym, R_UnboundValue) == R_UnboundValue)
     return;
 
-#if (R_VERSION >= R_Version(4, 0, 0))
-  R_removeVarFromFrame(sym, env);
-#else
-  SEXP list = PROTECT(Rf_allocVector(STRSXP, 1));
-  SET_STRING_ELT(list, 0, PRINTNAME(sym));
-
-  SEXP call = PROTECT(Rf_lang4(Rf_install("rm"), list, env, R_FALSE));
-  SET_TAG(CDR(call), Rf_install("list"));
-  SET_TAG(CDDR(call), Rf_install("envir"));
-  SET_TAG(CDDDR(call), Rf_install("inherits"));
-  Rf_eval(call, R_BaseEnv);
-
-  UNPROTECT(2);
-#endif
+  s7_clear_var_in_frame(env, sym);
 }
 
 struct prop_call_data {
