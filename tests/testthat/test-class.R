@@ -169,6 +169,11 @@ describe("S7 object", {
     })
   })
 
+  it("displays data.frame subclasses without error (#494)", {
+    mydf <- new_class("mydf", class_data.frame, package = NULL)
+    expect_snapshot(str(mydf(data.frame(a = 1:2, b = 1:2))))
+  })
+
   it("displays list objects nicely", {
     foo1 <- new_class(
       "foo1",

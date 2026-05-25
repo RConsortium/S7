@@ -322,15 +322,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
       cat(" ")
     }
 
-    attrs <- attributes(object)
-    if (is.environment(object)) {
-      attributes(object) <- NULL
-    } else {
-      attributes(object) <- list(names = names(object), dim = dim(object))
-    }
-
-    str(object, nest.lev = nest.lev)
-    attributes(object) <- attrs
+    str(S7_data(object), nest.lev = nest.lev)
   } else {
     cat("\n")
   }
