@@ -200,10 +200,10 @@ class_validate <- function(class, object) {
 
 #' Format a class specification as a string
 #'
-#' `S7_class_desc()` turns any class specification accepted by [as_class()]
-#' into a short human-readable string, suitable for use in error messages or
+#' `S7_class_desc()` turns any [class specification][as_class] into a short,
+#' human-readable, string, suitable for use in user-facing messages.
 #'
-#' @param x A class specification, processed with [as_class()].
+#' @param x A [class specification][as_class].
 #' @returns A string.
 #' @export
 #' @examples

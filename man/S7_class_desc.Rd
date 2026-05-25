@@ -7,14 +7,14 @@
 S7_class_desc(class)
 }
 \arguments{
-\item{x}{A class specification, processed with \code{\link[=as_class]{as_class()}}.}
+\item{x}{A \link[=as_class]{class specification}.}
 }
 \value{
 A string.
 }
 \description{
-\code{S7_class_desc()} turns any class specification accepted by \code{\link[=as_class]{as_class()}}
-into a short human-readable string, suitable for use in error messages or
+\code{S7_class_desc()} turns any \link[=as_class]{class specification} into a short,
+human-readable, string, suitable for use in user-facing messages.
 }
 \examples{
 S7_class_desc(class_integer)
