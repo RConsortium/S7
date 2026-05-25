@@ -252,7 +252,7 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
 struct prop_call_data {
   SEXP call;
   SEXP fn_sym;
-  SEXP marked_object;
+  SEXP object;
   SEXP property_sym;
   SEXP result;
   enum prop_accessor accessor;
@@ -269,7 +269,7 @@ static void prop_call_cleanup(void* data, Rboolean jump) {
 
   s7_clear_var_in_frame(prop_call_env, call_data->fn_sym);
 
-  SEXP object = call_data->marked_object;
+  SEXP object = call_data->object;
   if (!jump && call_data->accessor == PROP_SETTER)
     object = call_data->result;
 
@@ -282,9 +282,17 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
-  SEXP marked_object = object;
 
   Rf_defineVar(fn_sym, getter, prop_call_env);
+
+  struct prop_call_data call_data = {
+    R_NilValue,
+    fn_sym,
+    object,
+    name_sym,
+    R_NilValue,
+    PROP_GETTER
+  };
 
   switch (TYPEOF(object)) {
   case LANGSXP:
@@ -295,15 +303,7 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
 
   SEXP call = PROTECT(Rf_lang2(fn_sym, object));
   ++n_protected;
-
-  struct prop_call_data call_data = {
-    call,
-    fn_sym,
-    marked_object,
-    name_sym,
-    R_NilValue,
-    PROP_GETTER
-  };
+  call_data.call = call;
 
   SEXP result = R_UnwindProtect(
       prop_call_eval, &call_data,
@@ -319,9 +319,17 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym, SEXP value) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
-  SEXP marked_object = object;
 
   Rf_defineVar(fn_sym, setter, prop_call_env);
+
+  struct prop_call_data call_data = {
+    R_NilValue,
+    fn_sym,
+    object,
+    name_sym,
+    R_NilValue,
+    PROP_SETTER
+  };
 
   switch (TYPEOF(object)) {
   case LANGSXP:
@@ -339,15 +347,7 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
 
   SEXP call = PROTECT(Rf_lang3(fn_sym, object, value));
   ++n_protected;
-
-  struct prop_call_data call_data = {
-    call,
-    fn_sym,
-    marked_object,
-    name_sym,
-    R_NilValue,
-    PROP_SETTER
-  };
+  call_data.call = call;
 
   SEXP result = R_UnwindProtect(
       prop_call_eval, &call_data,
