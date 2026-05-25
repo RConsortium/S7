@@ -249,13 +249,6 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
   return call_sym;
 }
 
-static void prop_call_remove_binding(SEXP env, SEXP sym) {
-  if (s7_get_var_in_frame(env, sym, R_UnboundValue) == R_UnboundValue)
-    return;
-
-  s7_clear_var_in_frame(env, sym);
-}
-
 struct prop_call_data {
   SEXP call;
   SEXP env;
@@ -273,7 +266,7 @@ static SEXP prop_call_eval(void* data) {
 static void prop_call_cleanup(void* data, Rboolean jump) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
 
-  prop_call_remove_binding(call_data->env, call_data->sym);
+  s7_clear_var_in_frame(call_data->env, call_data->sym);
 
   accessor_no_recurse_clear_from_data(
       &call_data->no_recurse, call_data->result, jump);
