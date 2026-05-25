@@ -32,6 +32,20 @@ describe("S7 classes", {
     expect_snapshot(foo)
   })
 
+  it("shows property defaults and read-only annotations", {
+    Person <- new_class(
+      "Person",
+      properties = list(
+        implicit_default = new_property(class_character),
+        default_value = new_property(class_character, default = ""),
+        default_expr = new_property(class_Date, default = quote(Sys.Date())),
+        read_only = new_property(getter = \(self) Sys.Date() - self@birthdate)
+      ),
+      package = NULL
+    )
+    expect_snapshot(Person)
+  })
+
   it("checks inputs", {
     expect_snapshot(error = TRUE, {
       new_class(1)

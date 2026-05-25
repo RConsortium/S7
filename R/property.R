@@ -165,6 +165,16 @@ prop_default <- function(prop, envir, package) {
   prop$default %||% class_construct_expr(prop$class, envir, package)
 }
 
+prop_default_desc <- function(prop) {
+  if (prop_is_read_only(prop)) {
+    "<read-only>"
+  } else if (!is.null(prop$default)) {
+    paste0("= ", deparse1(prop$default))
+  } else {
+    ""
+  }
+}
+
 #' Get/set a property
 #'
 #' - `prop(x, "name")` / `prop@name` get the value of the a property,

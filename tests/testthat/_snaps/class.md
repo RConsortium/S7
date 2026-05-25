@@ -8,8 +8,8 @@
       @ constructor: function(x, y) {...}
       @ validator  : <NULL>
       @ properties :
-       $ x: <integer>
-       $ y: <integer>
+       $ x (<integer>)
+       $ y (<integer>)
     Code
       str(foo2)
     Output
@@ -51,6 +51,21 @@
       @ constructor: function() {...}
       @ validator  : <NULL>
       @ properties :
+
+# S7 classes / shows property defaults and read-only annotations
+
+    Code
+      Person
+    Output
+      <Person> class
+      @ parent     : <S7_object>
+      @ constructor: function(implicit_default, default_value, default_expr) {...}
+      @ validator  : <NULL>
+      @ properties :
+       $ implicit_default (<character>)
+       $ default_value = "" (<character>)
+       $ default_expr = Sys.Date() (S3<Date>)
+       $ read_only <read-only> (<ANY>)
 
 # S7 classes / checks inputs
 

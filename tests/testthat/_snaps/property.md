@@ -110,13 +110,13 @@
       @ constructor: function(anything, null, base, S3, S4, S7, S7_union) {...}
       @ validator  : <NULL>
       @ properties :
-       $ anything: <ANY>                 
-       $ null    : <NULL>                
-       $ base    : <integer>             
-       $ S3      : S3<factor>            
-       $ S4      : S4<class_S4>          
-       $ S7      : <class_S7>            
-       $ S7_union: <integer> or <logical>
+       $ anything (<ANY>)
+       $ null (<NULL>)
+       $ base (<integer>)
+       $ S3 (S3<factor>)
+       $ S4 (S4<class_S4>)
+       $ S7 (<class_S7>)
+       $ S7_union (<integer> or <logical>)
 
 ---
 
