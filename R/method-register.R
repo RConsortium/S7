@@ -99,13 +99,16 @@ register_S3_method <- function(
   method,
   envir = parent.frame()
 ) {
-  if (class_type(signature[[1]]) != "S7") {
-    msg <- sprintf(
-      "When registering methods for S3 generic %s(), signature must be an S7 class, not %s.",
-      generic$name,
-      class_friendly(signature[[1]])
-    )
-    stop(msg, call. = FALSE)
+  signatures <- flatten_signature(signature)
+  for (sig in signatures) {
+    if (class_type(sig[[1]]) != "S7") {
+      msg <- sprintf(
+        "When registering methods for S3 generic %s(), signature must be an S7 class, not %s.",
+        generic$name,
+        class_friendly(sig[[1]])
+      )
+      stop(msg, call. = FALSE)
+    }
   }
 
   if (
@@ -114,8 +117,10 @@ register_S3_method <- function(
     envir <- asNamespace(external_generic$package)
   }
 
-  class <- S7_class_name(signature[[1]])
-  registerS3method(generic$name, class, method, envir)
+  for (sig in signatures) {
+    class <- S7_class_name(sig[[1]])
+    registerS3method(generic$name, class, method, envir)
+  }
 }
 
 register_S7_method <- function(generic, signature, method) {

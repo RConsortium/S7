@@ -51,6 +51,18 @@ describe("method registration", {
     expect_equal(sum, base::sum)
   })
 
+  it("can register S7 union for S3 generic", {
+    foo <- new_class("foo")
+    bar <- new_class("bar")
+
+    method(sum, foo | bar) <- function(x, ...) "foobar"
+    expect_equal(sum(foo()), "foobar")
+    expect_equal(sum(bar()), "foobar")
+
+    # and doesn't modify generic
+    expect_equal(sum, base::sum)
+  })
+
   it("can register S7 method for S3 Ops generic", {
     foo <- new_class("foo")
     bar <- new_class("bar")
@@ -68,6 +80,7 @@ describe("method registration", {
     foo <- new_class("foo")
     expect_snapshot(error = TRUE, {
       method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
+      method(sum, foo | new_S3_class("bar")) <- function(x, ...) "foo"
     })
   })
 

@@ -13,6 +13,11 @@
     Condition
       Error:
       ! When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
+    Code
+      method(sum, foo | new_S3_class("bar")) <- (function(x, ...) "foo")
+    Condition
+      Error:
+      ! When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
 
 # method registration / can register S7 method for S4 generic
 
