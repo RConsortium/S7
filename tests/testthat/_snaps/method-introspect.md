@@ -4,53 +4,58 @@
       method(print, 1)
     Condition
       Error:
-      ! `generic` must be a <S7_generic>, not a <closure>
+      ! `generic` must be a <S7_generic>, not a <closure>.
     Code
       foo <- new_generic("foo", "x")
       method(foo)
     Condition
       Error:
-      ! Must supply exactly one of `class` and `object`
+      ! Must supply exactly one of `class` and `object`.
     Code
       method(foo, 1)
     Condition
       Error:
-      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      ! Can't convert `signature` to a valid class.
+      Class specification must be one of the following, not a <double>:
+       * An S7 class object
+       * The result of `new_S3_class()`
+       * An S4 class object
+       * A base class
     Code
       method(foo, new_union(class_integer, class_double))
     Condition
-      Error in `as_dispatch()`:
-      ! Can't dispatch on unions; must be a concrete type
+      Error:
+      ! Can't dispatch on unions; must be a concrete type.
     Code
       foo2 <- new_generic("foo2", c("x", "y"))
       method(foo2, object = list(class_character))
     Condition
       Error:
-      ! `object` must be length 2
+      ! `object` must be length 2.
 
 # method introspection / errors if no method found
 
     Code
       method(foo, class = class_integer)
     Condition
-      Error:
+      Error in `method()`:
       ! Can't find method for `foo(<integer>)`.
     Code
       method(foo, object = 1L)
     Condition
-      Error:
+      Error in `method()`:
       ! Can't find method for `foo(<integer>)`.
     Code
       method(foo2, class = list(class_integer, class_double))
     Condition
-      Error:
+      Error in `method()`:
       ! Can't find method for generic `foo(x, y)`:
       - x: <integer>
       - y: <double>
     Code
       method(foo2, object = list(1L, 2))
     Condition
-      Error:
+      Error in `method()`:
       ! Can't find method for generic `foo(x, y)`:
       - x: <integer>
       - y: <double>

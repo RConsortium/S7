@@ -104,7 +104,7 @@ super <- function(from, to) {
   check_can_inherit(to)
   if (!class_inherits(from, to)) {
     msg <- sprintf(
-      "%s doesn't inherit from %s",
+      "%s doesn't inherit from %s.",
       obj_desc(from),
       class_desc(to)
     )

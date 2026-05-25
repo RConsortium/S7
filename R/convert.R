@@ -100,7 +100,7 @@ convert <- function(from, to, ...) {
       attr(from, "S7_class") <- to
       class(from) <- class_dispatch(to)
     } else {
-      stop("Unreachable")
+      stop("Unreachable.")
     }
     from
   } else if (is_parent_instance(from, to)) {
@@ -136,15 +136,14 @@ convert <- function(from, to, ...) {
     do.call(to, constructor_args)
   } else {
     msg <- paste0(
-      "Can't find method for generic `convert()` with dispatch classes:\n",
+      "Can't find method with dispatch classes:\n",
       "- from: ",
       obj_desc(from),
       "\n",
       "- to  : ",
-      class_desc(to),
-      "\n"
+      class_desc(to)
     )
-    stop(msg, call. = FALSE)
+    stop(msg)
   }
 }
 
