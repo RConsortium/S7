@@ -258,9 +258,7 @@ struct prop_call_data {
   SEXP call;
   SEXP env;
   SEXP sym;
-  SEXP old_value;
   SEXP result;
-  Rboolean had_binding;
   struct accessor_no_recurse_data no_recurse;
 };
 
@@ -273,11 +271,7 @@ static SEXP prop_call_eval(void* data) {
 static void prop_call_cleanup(void* data, Rboolean jump) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
 
-  if (call_data->had_binding) {
-    Rf_defineVar(call_data->sym, call_data->old_value, call_data->env);
-  } else {
-    prop_call_remove_binding(call_data->env, call_data->sym);
-  }
+  prop_call_remove_binding(call_data->env, call_data->sym);
 
   accessor_no_recurse_clear_from_data(
       &call_data->no_recurse, call_data->result, jump);
@@ -289,14 +283,7 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
   SEXP env = prop_call_env;
-  SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
-  Rboolean had_binding = old_value != R_UnboundValue;
   SEXP no_recurse_object = object;
-
-  if (had_binding) {
-    PROTECT(old_value);
-    ++n_protected;
-  }
 
   Rf_defineVar(fn_sym, getter, env);
 
@@ -314,9 +301,7 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
     call,
     env,
     fn_sym,
-    old_value,
     R_NilValue,
-    had_binding,
     { no_recurse_object, name_sym, sym_dot_getting_prop, FALSE }
   };
 
@@ -335,14 +320,7 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
   SEXP env = prop_call_env;
-  SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
-  Rboolean had_binding = old_value != R_UnboundValue;
   SEXP no_recurse_object = object;
-
-  if (had_binding) {
-    PROTECT(old_value);
-    ++n_protected;
-  }
 
   Rf_defineVar(fn_sym, setter, env);
 
@@ -367,9 +345,7 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
     call,
     env,
     fn_sym,
-    old_value,
     R_NilValue,
-    had_binding,
     { no_recurse_object, name_sym, sym_dot_setting_prop, TRUE }
   };
 
