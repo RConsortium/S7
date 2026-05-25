@@ -251,7 +251,6 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
 
 struct prop_call_data {
   SEXP call;
-  SEXP env;
   SEXP fn_sym;
   SEXP marked_object;
   SEXP property_sym;
@@ -261,14 +260,14 @@ struct prop_call_data {
 
 static SEXP prop_call_eval(void* data) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
-  call_data->result = Rf_eval(call_data->call, call_data->env);
+  call_data->result = Rf_eval(call_data->call, prop_call_env);
   return call_data->result;
 }
 
 static void prop_call_cleanup(void* data, Rboolean jump) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
 
-  s7_clear_var_in_frame(call_data->env, call_data->fn_sym);
+  s7_clear_var_in_frame(prop_call_env, call_data->fn_sym);
 
   SEXP object = call_data->marked_object;
   if (!jump && call_data->accessor == PROP_SETTER)
@@ -283,10 +282,9 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
-  SEXP env = prop_call_env;
   SEXP marked_object = object;
 
-  Rf_defineVar(fn_sym, getter, env);
+  Rf_defineVar(fn_sym, getter, prop_call_env);
 
   switch (TYPEOF(object)) {
   case LANGSXP:
@@ -300,7 +298,6 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
 
   struct prop_call_data call_data = {
     call,
-    env,
     fn_sym,
     marked_object,
     name_sym,
@@ -322,10 +319,9 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym, SEXP value) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
-  SEXP env = prop_call_env;
   SEXP marked_object = object;
 
-  Rf_defineVar(fn_sym, setter, env);
+  Rf_defineVar(fn_sym, setter, prop_call_env);
 
   switch (TYPEOF(object)) {
   case LANGSXP:
@@ -346,7 +342,6 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
 
   struct prop_call_data call_data = {
     call,
-    env,
     fn_sym,
     marked_object,
     name_sym,
