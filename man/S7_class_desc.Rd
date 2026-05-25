@@ -4,7 +4,7 @@
 \alias{S7_class_desc}
 \title{Format a class specification as a string}
 \usage{
-S7_class_desc(x)
+S7_class_desc(class)
 }
 \arguments{
 \item{x}{A class specification, processed with \code{\link[=as_class]{as_class()}}.}
