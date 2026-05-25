@@ -27,7 +27,9 @@ following:
 For S7 generics that use multiple dispatch, this must be a list of any of
 the above types.
 
-For S3 generics, this must be a single S7 class.
+For S3 generics, this can be any of the above types. There's one exception:
+you can only use \link{class_missing} with S3 operators that support double
+dispatch (e.g. \code{+} and \code{-}).
 
 For S4 generics, this must either be an S7 class, or a list that includes
 at least one S7 class.}

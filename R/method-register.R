@@ -34,7 +34,9 @@
 #'   For S7 generics that use multiple dispatch, this must be a list of any of
 #'   the above types.
 #'
-#'   For S3 generics, this must be a single S7 class.
+#'   For S3 generics, this can be any of the above types. There's one exception:
+#'   you can only use [class_missing] with S3 operators that support double
+#'   dispatch (e.g. `+` and `-`).
 #'
 #'   For S4 generics, this must either be an S7 class, or a list that includes
 #'   at least one S7 class.
@@ -78,7 +80,10 @@ register_method <- function(
     check_method(method, generic, name = method_name(generic, signature))
     register_S7_method(generic, signature, method)
   } else if (is_S3_generic(generic)) {
-    register_S3_method(generic, signature, method, env)
+    signatures <- flatten_signature(signature)
+    for (signature in signatures) {
+      register_S3_method(generic, signature, method, env)
+    }
   } else if (is_S4_generic(generic)) {
     register_S4_method(generic, signature, method, env)
   }
@@ -99,14 +104,22 @@ register_S3_method <- function(
   method,
   envir = parent.frame()
 ) {
-  if (class_type(signature[[1]]) != "S7") {
-    msg <- sprintf(
-      "When registering methods for S3 generic %s(), signature must be an S7 class, not %s.",
-      generic$name,
-      class_friendly(signature[[1]])
-    )
-    stop(msg, call. = FALSE)
-  }
+  sig <- signature[[1]]
+
+  class <- switch(
+    class_type(sig),
+    `NULL` = "NULL",
+    missing = stop(
+      "`class_missing` not supported for non-operator S3 generics.",
+      call. = FALSE
+    ),
+    any = "default",
+    S7_base = sig$class,
+    S7 = S7_class_name(sig),
+    S7_union = , # Handled above
+    S7_S3 = sig$class[[1]],
+    S4 = sig@className
+  )
 
   if (
     is_external_generic(external_generic <- get0(generic$name, envir = envir))
@@ -114,7 +127,6 @@ register_S3_method <- function(
     envir <- asNamespace(external_generic$package)
   }
 
-  class <- S7_class_name(signature[[1]])
   registerS3method(generic$name, class, method, envir)
 }
 
