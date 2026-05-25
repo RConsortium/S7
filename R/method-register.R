@@ -80,9 +80,8 @@ register_method <- function(
     check_method(method, generic, name = method_name(generic, signature))
     register_S7_method(generic, signature, method)
   } else if (is_S3_generic(generic)) {
-    signatures <- flatten_signature(signature)
-    for (signature in signatures) {
-      register_S3_method(generic, signature, method, env)
+    for (sig in flatten_signature(signature)) {
+      register_S3_method(generic, sig, method, env)
     }
   } else if (is_S4_generic(generic)) {
     register_S4_method(generic, signature, method, env)
