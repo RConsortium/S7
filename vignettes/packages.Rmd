@@ -15,16 +15,18 @@ knitr::opts_chunk$set(
 ```
 
 This vignette outlines the most important things you need to know about using S7 in a package.
-S7 is new, so few people have used it in a package yet; this means that this vignette is likely incomplete, and we'd love your help to make it better.
+S7 is new, so few people have used it in a package yet; this vignette is likely incomplete, and we'd love your help to make it better.
 Please [let us know](https://github.com/RConsortium/S7/issues/new) if you have questions that this vignette doesn't answer.
 
 ```{r setup}
 library(S7)
 ```
 
-## Method registration
+## Getting started
 
-You should always call `methods_register()` in your `.onLoad()`:
+First, add `S7` to the `Imports` field of your `DESCRIPTION`. We then recommend importing all S7 functions into your package `NAMESPACE` with `import(S7)`, or, if you're using roxygen2, `@import S7`.
+
+Next, create a `.onLoad()` in `zzz.R` that calls `methods_register()`:
 
 ```{r}
 .onLoad <- function(...) {
@@ -33,30 +35,43 @@ You should always call `methods_register()` in your `.onLoad()`:
 ```
 
 This is S7's way of registering methods, rather than using export directives in your `NAMESPACE` like S3 and S4 do.
-This is only strictly necessary if registering methods for generics in other packages, but there's no harm in adding it and it ensures that you won't forget later.
-(And if you're not importing S7 into your namespace it will quiet an `R CMD check` `NOTE`.`)`
+This is only strictly necessary if you are registering methods for generics in other packages, but there's no harm in adding it and it ensures that you won't forget later.
 
-## Documentation and exports
+## Classes
 
 If you want users to create instances of your class, you will need to export the class constructor.
-That means you will also need to document it, and since the constructor is a function, that means you have to document the arguments which will be the properties of the class (unless you have customised the constructor).
+That means you will also need to document it, and since the constructor is a function, you have to document the arguments, which will be the properties of the class (unless you have customized the constructor).
+If you export a class (i.e. its constructor), you must also set the `package` argument, ensuring that classes with the same name are disambiguated across packages.
 
-If you export a class, you must also set the `package` argument, ensuring that classes with the same name are disambiguated across packages.
+NB: if your package creates a hierarchy of classes, subclasses must be defined _after_ the parent classes. That means if you define the classes in separate files, you will need to use the `DESCRIPTION` Collate field (or the equivalent roxygen2 `@include` tag) to ensure the files are loaded in the correct order.
+
+## Generics and methods
 
 You should document generics like regular functions (since they are!).
-If you expect others to create their own methods for your generic, you may want to include an section describing the properties that you expect all methods to have.
-We plan to provide an easy way to document all methods for a generic, but have not yet implemented it.
-You can track progress at <https://github.com/RConsortium/S7/issues/167>.
+If you expect others to create their own methods for your generic, you may want to include a section describing the properties that you expect all methods to have.
+If you want to list all methods for a generic, you can use the [doclisting](https://doclisting.r-lib.org) package.
 
-We don't currently have any recommendations on documenting methods.
-There's no need to document them in order to pass `R CMD check`, but obviously there are cases where it's nice to provide additional details for a method, particularly if it takes extra arguments compared to the generic.
-We're tracking that issue at <https://github.com/RConsortium/S7/issues/315>.
+If you use roxygen2, you can document S7 generics and methods by following the advice in [`vignette("rd-S7", package = "roxygen2")`](https://roxygen2.r-lib.org/articles/rd-S7.html).
+
+Note that methods can only be defined after both the class and generic have been defined. If generics/methods/classes live in different files, you will need to use the `DESCRIPTION` Collate field (or the equivalent roxygen2 `@include` tag) to ensure the files are loaded in the correct order.
 
 ## Backward compatibility
 
+### S3
+
+S7 objects are S3 objects, so it's possible to manually register an S7 method for an S3 generic without using `method<-`. The main thing to note is that the S3 class name of an S7 object is `{package}::{class}`, which means you'll need to wrap the method name in `` ` ``:
+
+```{r}
+Foo <- new_class("Foo", package = "S7")
+`length.S7::Foo` <- function(x) 10
+length(Foo())
+```
+
+### Older versions of R
+
 If you are using S7 in a package *and* you want your package to work in versions of R before 4.3.0, you need to know that in these versions of R `@` only works with S4 objects.
 There are two workarounds.
-The easiest and least convenient workaround is to just `prop()` instead of `@`.
+The easiest but least convenient workaround is to just use `prop()` instead of `@`.
 Otherwise, you can conditionally make an S7-aware `@` available to your package with this custom `NAMESPACE` directive:
 
 ``` r
