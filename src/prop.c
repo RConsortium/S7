@@ -258,7 +258,6 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
 
 struct prop_call_data {
   SEXP call;
-  SEXP result;
   SEXP fn_sym;
   SEXP object;
   SEXP property_sym;
@@ -267,37 +266,16 @@ struct prop_call_data {
 
 static SEXP prop_call_eval(void* data) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
-  call_data->result = Rf_eval(call_data->call, prop_call_env);
-  return call_data->result;
-}
-
-static void prop_call_clear_no_recurse(struct prop_call_data* call_data,
-                                       Rboolean jump) {
-  switch (call_data->accessor) {
-  case PROP_GETTER:
-    accessor_no_recurse_clear_if_present(
-        call_data->object, call_data->property_sym, PROP_GETTER);
-    return;
-
-  case PROP_SETTER:
-    if (jump) {
-      accessor_no_recurse_clear_if_present(
-          call_data->object, call_data->property_sym, PROP_SETTER);
-    } else {
-      accessor_no_recurse_clear_if_present(
-          call_data->result, call_data->property_sym, PROP_SETTER);
-    }
-    return;
-  }
-
-  Rf_error("Internal error: unknown property accessor kind");
+  return Rf_eval(call_data->call, prop_call_env);
 }
 
 static void prop_call_cleanup(void* data, Rboolean jump) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
 
   s7_clear_var_in_frame(prop_call_env, call_data->fn_sym);
-  prop_call_clear_no_recurse(call_data, jump);
+  if (jump)
+    accessor_no_recurse_clear_if_present(
+        call_data->object, call_data->property_sym, call_data->accessor);
 }
 
 static inline
@@ -310,7 +288,6 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
 
   struct prop_call_data call_data = {
     R_NilValue,  // call
-    R_NilValue,  // result
     fn_sym,      // fn_sym
     object,      // object
     name_sym,    // property_sym
@@ -332,6 +309,9 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
       prop_call_eval, &call_data,
       prop_call_cleanup, &call_data,
       NULL);
+  // Error cleanup happens in prop_call_cleanup().
+  accessor_no_recurse_clear_if_present(
+      call_data.object, call_data.property_sym, call_data.accessor);
 
   UNPROTECT(n_protected);
   return result;
@@ -347,7 +327,6 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
 
   struct prop_call_data call_data = {
     R_NilValue,  // call
-    R_NilValue,  // result
     fn_sym,      // fn_sym
     object,      // object
     name_sym,    // property_sym
@@ -376,6 +355,10 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
       prop_call_eval, &call_data,
       prop_call_cleanup, &call_data,
       NULL);
+  // A successful setter can return a shallow duplicate carrying the marker.
+  // Error cleanup happens in prop_call_cleanup().
+  accessor_no_recurse_clear_if_present(
+      result, call_data.property_sym, call_data.accessor);
 
   UNPROTECT(n_protected);
   return result;
