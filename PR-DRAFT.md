@@ -25,6 +25,18 @@ calls.
 
 This avoids adding `withCallingHandlers()` around the hot property access path.
 
+## Follow-up error classes
+
+There are two other property-error classes that should probably get similar
+call treatment in a follow-up:
+
+- Errors thrown by S7 itself for bad property operations, such as accessing or
+  assigning a property that does not exist.
+- Errors thrown from custom validators. These likely need a different approach
+  for constructing the appropriate property call, because the error originates
+  inside user-supplied validation code rather than at the direct property
+  getter/setter call boundary.
+
 ## Benchmarks
 
 Benchmarks used optimized temporary installs for `origin/main`,
