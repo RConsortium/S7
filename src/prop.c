@@ -250,7 +250,26 @@ void prop_validate(SEXP property, SEXP value, SEXP object) {
   if (prop_validate == NULL)
     prop_validate = ns_get("prop_validate");
 
+  int n_protected = 0;
+
+  // Wrap value and object in quote() if they are calls or symbols, so they
+  // don't get evaluated by Rf_eval()
+  switch (TYPEOF(value)) {
+  case LANGSXP:
+  case SYMSXP:
+    value = PROTECT(Rf_lang2(fn_base_quote, value));
+    ++n_protected;
+  }
+
+  switch (TYPEOF(object)) {
+  case LANGSXP:
+  case SYMSXP:
+    object = PROTECT(Rf_lang2(fn_base_quote, object));
+    ++n_protected;
+  }
+
   SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value, object));
+  UNPROTECT(n_protected);
   if (errmsg != R_NilValue) signal_error(errmsg);
 }
 

@@ -598,3 +598,14 @@ test_that("custom setters don't evaulate call objects", {
     quote(abort(msg = "boom3", foo = bar, baz))
   )
 })
+
+test_that("prop<- doesn't evaluate language values (#511)", {
+  Cls <- new_class("Cls", properties = list(r = class_any))
+
+  foo <- Cls()
+  foo@r <- as.symbol("x")
+  expect_equal(foo@r, quote(x))
+
+  foo@r <- quote(x + 1)
+  expect_equal(foo@r, quote(x + 1))
+})
