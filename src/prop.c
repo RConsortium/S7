@@ -163,22 +163,22 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
   // Check if we should call `setter` and if so, prepare `setter` for calling.
 
   SEXP marker_sym = prop_accessor_marker(PROP_ACCESSOR_SETTER);
-  SEXP active_props = Rf_getAttrib(object, marker_sym);
-  if (TYPEOF(active_props) == LISTSXP) {
+  SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
+  if (TYPEOF(no_recurse_pairlist) == LISTSXP) {
     // if there is a 'no_recurse' list, then this is not the top-most prop<-
     // call for this object, i.e, we're currently evaluating a `prop<-` call
     // called from within a custom property setter. We should only call
     // validate(object) once from the top-most prop<- call, after the last
     // custom setter() has returned.
     *should_validate_obj = FALSE;
-    if (pairlist_contains(active_props, name_sym))
+    if (pairlist_contains(no_recurse_pairlist, name_sym))
       return FALSE;
   }
 
   if (TYPEOF(setter) != CLOSXP)
     return FALSE; // setter not callable
 
-  Rf_setAttrib(object, marker_sym, Rf_cons(name_sym, active_props));
+  Rf_setAttrib(object, marker_sym, Rf_cons(name_sym, no_recurse_pairlist));
   return TRUE; // object is now now marked non-recursive for this property setter, safe to call
 
   // optimization opportunity: combine the actions of getAttrib()/setAttrib()
@@ -405,12 +405,12 @@ Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
   // Check if we should call getter and if so, prepare object for calling the getter.
 
   SEXP marker_sym = prop_accessor_marker(PROP_ACCESSOR_GETTER);
-  SEXP active_props = Rf_getAttrib(object, marker_sym);
-  if (TYPEOF(active_props) == LISTSXP &&
-      pairlist_contains(active_props, name_sym))
+  SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
+  if (TYPEOF(no_recurse_pairlist) == LISTSXP &&
+      pairlist_contains(no_recurse_pairlist, name_sym))
     return FALSE;
 
-  Rf_setAttrib(object, marker_sym, Rf_cons(name_sym, active_props));
+  Rf_setAttrib(object, marker_sym, Rf_cons(name_sym, no_recurse_pairlist));
   return TRUE; // object is now now marked non-recursive for this property accessor, safe to call
 
   // optimization opportunity: combine the actions of getAttrib()/setAttrib()
