@@ -220,13 +220,6 @@ void prop_init(void) {
   UNPROTECT(1);
 }
 
-static SEXP prop_call_env_get(void) {
-  if (prop_call_env == NULL)
-    Rf_error("Internal error: property call environment is not initialized");
-
-  return prop_call_env;
-}
-
 static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
   SEXP class_name = Rf_getAttrib(S7_class, sym_name);
   if (TYPEOF(class_name) != STRSXP || Rf_length(class_name) != 1)
@@ -308,7 +301,7 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
-  SEXP env = prop_call_env_get();
+  SEXP env = prop_call_env;
   SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
   Rboolean had_binding = old_value != R_UnboundValue;
   SEXP no_recurse_object = object;
@@ -354,7 +347,7 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym, SEXP value) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
-  SEXP env = prop_call_env_get();
+  SEXP env = prop_call_env;
   SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
   Rboolean had_binding = old_value != R_UnboundValue;
   SEXP no_recurse_object = object;
