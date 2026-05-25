@@ -140,25 +140,6 @@ Rboolean pairlist_contains(SEXP list, SEXP elem) {
 }
 
 static inline
-SEXP pairlist_remove(SEXP list, SEXP elem) {
-  SEXP c0 = NULL, head = list;
-  for (SEXP c = list; c != R_NilValue; c0 = c, c = CDR(c))
-    if (CAR(c) == elem)
-    {
-      if (c0 == NULL)
-        return CDR(c);
-      else
-      {
-        SETCDR(c0, CDR(c));
-        return head;
-      }
-    }
-
-  Rf_error("Tried to remove non-existent element from pairlist");
-  return R_NilValue;
-}
-
-static inline
 Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
                                     Rboolean* should_validate_obj) {
   // Check if we should call `setter` and if so, prepare `setter` for calling.
@@ -190,11 +171,22 @@ static inline
 void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
                                           SEXP no_recurse_list_sym) {
   SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
-  if (TYPEOF(list) != LISTSXP || !pairlist_contains(list, name_sym))
+  if (TYPEOF(list) != LISTSXP)
     return;
 
-  list = pairlist_remove(list, name_sym);
-  Rf_setAttrib(object, no_recurse_list_sym, list);
+  SEXP prev = R_NilValue;
+  for (SEXP node = list; node != R_NilValue; prev = node, node = CDR(node)) {
+    if (CAR(node) != name_sym)
+      continue;
+
+    SEXP rest = CDR(node);
+    if (prev == R_NilValue)
+      Rf_setAttrib(object, no_recurse_list_sym, rest);
+    else
+      SETCDR(prev, rest);
+
+    return;
+  }
 }
 
 struct accessor_no_recurse_data {
