@@ -4,25 +4,36 @@ Body:
 
 ## Summary
 
-Before this change, if a custom property getter or setter threw an error,
-the traceback pointed at the inlined closure body. It did not show which
-class or property was being accessed, which made the error harder to
-connect back to the S7 object:
+Before this change, errors from custom property getters and setters did
+not clearly identify the property being accessed. If the error had no
+call, R printed only the message:
 
 ```r
-Error in (function (self) stop("nope"))(<object>):
-! nope
+Error: nope
 ```
 
-Now the same error points at the property accessor:
+If the error used R's default call, R printed the inlined accessor
+closure:
 
 ```r
-Error in `<foo>@x`:
-! nope
+Error in (function (self)  : nope
+Calls: @ -> @.S7_object -> <Anonymous>
 ```
 
-That makes it clear that S7 was evaluating the getter or setter for
-property `x` on class `foo`.
+Neither form tells you that S7 was evaluating property `x` on class
+`foo`.
+
+With this change, ordinary errors from dynamic getters and setters now
+show the property accessor in the top-level error:
+
+```r
+Error in `<foo>@x`(<object>) : nope
+Calls: @ -> @.S7_object -> <foo>@x
+```
+
+Errors deliberately signaled with no call, such as
+`stop("nope", call. = FALSE)`, still have no call. Rewriting those would
+need a different approach, such as the handler-based approach in PR 627.
 
 The public R APIs and `.Call()` signatures are unchanged.
 
@@ -45,9 +56,9 @@ This avoids adding `withCallingHandlers()` around the hot property
 access path.
 
 This is an alternative to PR 627's `withCallingHandlers()` approach. It
-keeps the traceback improvement for dynamic property accessors, but builds
-the displayed call in the C accessor path instead of wrapping every public
-property access at the R level.
+improves the common dynamic accessor case by changing the call R sees
+while evaluating the getter or setter, instead of rewriting error
+conditions after they have been thrown.
 
 ## Follow-up Errors
 
@@ -56,9 +67,9 @@ traceback improvement:
 
 - Errors thrown by S7 itself for bad property operations, such as
   accessing or assigning a property that does not exist.
-- Errors thrown from custom validators. These likely need a different
-  way to choose the right displayed call, because the error comes from
-  user validation code rather than from the getter or setter call itself.
+- Errors thrown with no call from custom accessors or custom validators.
+  These likely need a different way to choose the right displayed call,
+  because the error condition itself does not carry one.
 
 ## Benchmarks
 
