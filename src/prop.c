@@ -197,6 +197,25 @@ void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
   Rf_setAttrib(object, no_recurse_list_sym, list);
 }
 
+struct accessor_no_recurse_data {
+  SEXP object;
+  SEXP name_sym;
+  SEXP list_sym;
+  Rboolean use_result_on_success;
+};
+
+static void accessor_no_recurse_clear_from_data(
+    struct accessor_no_recurse_data* data, SEXP result, Rboolean jump) {
+  if (data->object == R_NilValue)
+    return;
+
+  SEXP object = data->object;
+  if (!jump && data->use_result_on_success)
+    object = result;
+
+  accessor_no_recurse_clear_if_present(object, data->name_sym, data->list_sym);
+}
+
 static SEXP prop_call_env = NULL;
 
 void prop_init(void) {
@@ -270,10 +289,7 @@ struct prop_call_data {
   SEXP old_value;
   SEXP result;
   Rboolean had_binding;
-  SEXP no_recurse_object;
-  SEXP no_recurse_name_sym;
-  SEXP no_recurse_list_sym;
-  Rboolean clean_result_on_success;
+  struct accessor_no_recurse_data no_recurse;
 };
 
 static SEXP prop_call_eval(void* data) {
@@ -291,16 +307,8 @@ static void prop_call_cleanup(void* data, Rboolean jump) {
     prop_call_remove_binding(call_data->env, call_data->sym);
   }
 
-  if (call_data->no_recurse_object != R_NilValue) {
-    SEXP object = call_data->no_recurse_object;
-    if (!jump && call_data->clean_result_on_success)
-      object = call_data->result;
-
-    accessor_no_recurse_clear_if_present(
-        object,
-        call_data->no_recurse_name_sym,
-        call_data->no_recurse_list_sym);
-  }
+  accessor_no_recurse_clear_from_data(
+      &call_data->no_recurse, call_data->result, jump);
 }
 
 static inline
@@ -337,10 +345,7 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
     old_value,
     R_NilValue,
     had_binding,
-    no_recurse_object,
-    name_sym,
-    sym_dot_getting_prop,
-    FALSE
+    { no_recurse_object, name_sym, sym_dot_getting_prop, FALSE }
   };
 
   SEXP result = R_UnwindProtect(
@@ -393,10 +398,7 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
     old_value,
     R_NilValue,
     had_binding,
-    no_recurse_object,
-    name_sym,
-    sym_dot_setting_prop,
-    TRUE
+    { no_recurse_object, name_sym, sym_dot_setting_prop, TRUE }
   };
 
   SEXP result = R_UnwindProtect(
