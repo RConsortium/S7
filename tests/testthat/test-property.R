@@ -38,6 +38,7 @@ describe("property retrieval", {
     expect_true(is.call(call))
     expect_true(is.symbol(call[[1]]))
     expect_identical(as.character(call[[1]]), "foo@x")
+    expect_snapshot(foo()@x, error = TRUE)
   })
 
   it("cleans up after dynamic getter errors", {
@@ -140,6 +141,7 @@ describe("prop setting", {
     expect_true(is.symbol(call[[1]]))
     expect_identical(as.character(call[[1]]), "foo@x")
     expect_null(attr(call[[2]], ".setting_prop", exact = TRUE))
+    expect_snapshot(obj@x <- 1, error = TRUE)
   })
 
   it("cleans up after dynamic setter errors", {

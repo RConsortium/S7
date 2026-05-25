@@ -18,7 +18,7 @@ through a shared non-hash environment parented to the S7 namespace and created
 at native startup. Each call temporarily binds the closure under a synthetic
 symbol like `foo@x`, evaluates `` `foo@x`(object) `` or
 `` `foo@x`(object, value) `` with `Rf_eval()`, then uses `R_UnwindProtect()` to
-restore or remove the binding on success or error.
+clear the transient binding on success or error.
 The same unwind cleanup clears the temporary no-recursion marker used while the
 getter or setter is running.
 
@@ -40,6 +40,6 @@ iterations with `bench::mark()` on R version 4.6.0 (2026-04-24),
 ## Testing
 
 - `testthat::test_local(".", filter = "property", load_package = "source")`
-  - PASS: 102
+  - PASS: 104
 - `testthat::test_local(".", load_package = "source")`
-  - PASS: 658
+  - PASS: 660
