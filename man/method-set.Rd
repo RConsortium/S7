@@ -33,7 +33,7 @@ For S4 generics, this must either be an S7 class, or a list that includes
 at least one S7 class.}
 
 \item{value}{A function that implements the generic specification for the
-given \code{signature}.}
+given \code{signature}, or \code{NULL} to unregister an existing method.}
 }
 \value{
 The \code{generic}, invisibly.
@@ -66,4 +66,7 @@ method(bizarro, new_S3_class("data.frame")) <- function(x) {
 
 # Using a generic calls the methods automatically
 bizarro(head(mtcars))
+
+# Unregister a method by assigning `NULL`
+method(bizarro, class_numeric) <- NULL
 }

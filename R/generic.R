@@ -225,3 +225,22 @@ generic_add_method <- function(generic, signature, method) {
     }
   }
 }
+
+generic_remove_method <- function(generic, signature) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, class_register)
+
+  for (i in seq_along(chr_signature)) {
+    class_name <- chr_signature[[i]]
+    if (i != length(chr_signature)) {
+      tbl <- p_tbl[[class_name]]
+      if (is.null(tbl)) {
+        return(invisible())
+      }
+      p_tbl <- tbl
+    } else if (exists(class_name, envir = p_tbl, inherits = FALSE)) {
+      rm(list = class_name, envir = p_tbl)
+    }
+  }
+  invisible()
+}
