@@ -19,8 +19,9 @@ at native startup. Each call temporarily binds the closure under a synthetic
 symbol like `<foo>@x`, evaluates `` `<foo>@x`(object) `` or
 `` `<foo>@x`(object, value) `` with `Rf_eval()`, then uses
 `R_UnwindProtect()` to clear the transient binding on success or error.
-The same unwind cleanup clears the temporary no-recursion marker used while the
-getter or setter is running.
+The temporary no-recursion marker is cleared from the entry object on errors
+and from the relevant entry/return objects on successful getter and setter
+calls.
 
 This avoids adding `withCallingHandlers()` around the hot property access path.
 
@@ -29,13 +30,15 @@ This avoids adding `withCallingHandlers()` around the hot property access path.
 Benchmarks used optimized temporary installs for `origin/main`,
 `origin/wrap-prop-error`, and this branch. Each expression ran for 100,000
 iterations with `bench::mark()` on R version 4.6.0 (2026-04-24),
-`aarch64-apple-darwin23` on Darwin arm64.
+`aarch64-apple-darwin23` on Darwin arm64. The getter error benchmark clears
+the temporary getter marker on a local object before each access so
+`origin/main` continues to exercise the erroring getter after the first error.
 
 | Variant | Getter success median | Getter error median | Error call head |
 | --- | ---: | ---: | --- |
-| current/main | 656 ns | 2,255 ns | `<closure>` |
-| PR 627 `withCallingHandlers()` | 1,476 ns | 3,116 ns | `@` |
-| new shared-env C path | 738 ns | 7,257 ns | `<foo>@x` |
+| current/main | 656 ns | 8,569 ns | `<closure>` |
+| PR 627 `withCallingHandlers()` | 1,599 ns | 16,154 ns | `@` |
+| new shared-env C path | 779 ns | 8,938 ns | `<foo>@x` |
 
 ## Testing
 
