@@ -24,11 +24,13 @@ an object of the correct \code{class}; it will not be validated automatically.
 
 If a property has a getter but doesn't have a setter, it is read only.}
 
-\item{setter}{An optional function used to set the value. It should take
-either \verb{self, value} or \verb{self, name, value} and return a modified
-object. The three-argument form receives the property name being set,
-which makes it easy to reuse the same property definition under
-different names within a class.}
+\item{setter}{An optional function used to set the value.
+There are two supported forms:
+\itemize{
+\item \verb{function(self, value)} is supplied the object and the value.
+\item \verb{function(self, name, value)} also gets the property name being set,
+which makes it easy to reuse the same property for multiple properties.
+}}
 
 \item{validator}{A function taking a single argument, \code{value}, the value
 to validate.
