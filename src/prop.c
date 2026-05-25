@@ -232,12 +232,14 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
 
   int class_name_len = LENGTH(class_name_rchar);
   int name_len = LENGTH(name_rchar);
-  int call_name_len = class_name_len + name_len + 1;
+  int call_name_len = class_name_len + name_len + 3;
   char* call_name = R_alloc(call_name_len + 1, sizeof(char));
 
-  memcpy(call_name, class_name_char, class_name_len);
-  call_name[class_name_len] = '@';
-  memcpy(call_name + class_name_len + 1, name_char, name_len + 1);
+  call_name[0] = '<';
+  memcpy(call_name + 1, class_name_char, class_name_len);
+  call_name[class_name_len + 1] = '>';
+  call_name[class_name_len + 2] = '@';
+  memcpy(call_name + class_name_len + 3, name_char, name_len + 1);
 
   SEXP call_name_rchar = PROTECT(
       Rf_mkCharLenCE(call_name, call_name_len, CE_NATIVE));

@@ -6,8 +6,8 @@ Body:
 
 Errors from dynamic property getters and setters now have a property-specific
 call in the traceback. For a class `foo` and property `x`, errors raised inside
-the dynamic getter or setter are attributed to `` `foo@x`(...) `` instead of an
-inlined closure call.
+the dynamic getter or setter are attributed to `` `<foo>@x`(...) `` instead of
+an inlined closure call.
 
 The public R APIs and `.Call()` signatures are unchanged.
 
@@ -16,9 +16,9 @@ The public R APIs and `.Call()` signatures are unchanged.
 Internally, the C property path now evaluates dynamic getter and setter calls
 through a shared non-hash environment parented to the S7 namespace and created
 at native startup. Each call temporarily binds the closure under a synthetic
-symbol like `foo@x`, evaluates `` `foo@x`(object) `` or
-`` `foo@x`(object, value) `` with `Rf_eval()`, then uses `R_UnwindProtect()` to
-clear the transient binding on success or error.
+symbol like `<foo>@x`, evaluates `` `<foo>@x`(object) `` or
+`` `<foo>@x`(object, value) `` with `Rf_eval()`, then uses
+`R_UnwindProtect()` to clear the transient binding on success or error.
 The same unwind cleanup clears the temporary no-recursion marker used while the
 getter or setter is running.
 
@@ -35,7 +35,7 @@ iterations with `bench::mark()` on R version 4.6.0 (2026-04-24),
 | --- | ---: | ---: | --- |
 | current/main | 656 ns | 2,255 ns | `<closure>` |
 | PR 627 `withCallingHandlers()` | 1,476 ns | 3,116 ns | `@` |
-| new shared-env C path | 738 ns | 7,257 ns | `foo@x` |
+| new shared-env C path | 738 ns | 7,257 ns | `<foo>@x` |
 
 ## Testing
 

@@ -37,7 +37,7 @@ describe("property retrieval", {
     call <- conditionCall(cnd)
     expect_true(is.call(call))
     expect_true(is.symbol(call[[1]]))
-    expect_identical(as.character(call[[1]]), "foo@x")
+    expect_identical(as.character(call[[1]]), "<foo>@x")
     expect_snapshot(foo()@x, error = TRUE)
   })
 
@@ -139,7 +139,7 @@ describe("prop setting", {
     call <- conditionCall(cnd)
     expect_true(is.call(call))
     expect_true(is.symbol(call[[1]]))
-    expect_identical(as.character(call[[1]]), "foo@x")
+    expect_identical(as.character(call[[1]]), "<foo>@x")
     expect_null(attr(call[[2]], ".setting_prop", exact = TRUE))
     expect_snapshot(obj@x <- 1, error = TRUE)
   })

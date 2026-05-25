@@ -11,7 +11,7 @@
     Code
       foo()@x
     Condition
-      Error in `foo@x`:
+      Error in `<foo>@x`:
       ! nope
 
 # prop setting / reports dynamic setter errors as property calls
@@ -19,7 +19,7 @@
     Code
       obj@x <- 1
     Condition
-      Error in `foo@x`:
+      Error in `<foo>@x`:
       ! nope
 
 # prop setting / can't set read-only properties
