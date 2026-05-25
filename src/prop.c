@@ -251,10 +251,10 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
 
 struct prop_call_data {
   SEXP call;
+  SEXP result;
   SEXP fn_sym;
   SEXP object;
   SEXP property_sym;
-  SEXP result;
   enum prop_accessor accessor;
 };
 
@@ -287,10 +287,10 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
 
   struct prop_call_data call_data = {
     R_NilValue,
+    R_NilValue,
     fn_sym,
     object,
     name_sym,
-    R_NilValue,
     PROP_GETTER
   };
 
@@ -324,10 +324,10 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
 
   struct prop_call_data call_data = {
     R_NilValue,
+    R_NilValue,
     fn_sym,
     object,
     name_sym,
-    R_NilValue,
     PROP_SETTER
   };
 
