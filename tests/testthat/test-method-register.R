@@ -84,6 +84,12 @@ describe("method registration", {
     expect_equal(bar(S4foo()), "foo")
   })
 
+  it("can register method for S4 generic with base type signature", {
+    methods::setGeneric("bar2", function(x) standardGeneric("bar2"))
+    method(bar2, class_character) <- function(x) "char"
+    expect_equal(bar2("x"), "char")
+  })
+
   it("checks argument types", {
     foo <- new_generic("foo", "x")
     expect_snapshot(error = TRUE, {

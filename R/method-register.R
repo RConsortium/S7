@@ -282,7 +282,7 @@ register_S4_method <- function(
 }
 S4_class <- function(x, S4_env) {
   if (is_base_class(x)) {
-    x@name
+    x$class
   } else if (is_S4_class(x)) {
     x
   } else if (is_class(x) || is_S3_class(x)) {
