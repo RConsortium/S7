@@ -187,21 +187,6 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
 }
 
 static inline
-void accessor_no_recurse_clear(SEXP object, SEXP name_sym, SEXP no_recurse_list_sym) {
-  SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
-  list = pairlist_remove(list, name_sym);
-  Rf_setAttrib(object, no_recurse_list_sym, list);
-
-  // optimization opportunity: same as setter_callable_no_recurse
-}
-
-#define getter_no_recurse_clear(...) \
-    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_getting_prop)
-
-#define setter_no_recurse_clear(...) \
-    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_setting_prop)
-
-static inline
 void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
                                           SEXP no_recurse_list_sym) {
   SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
@@ -230,18 +215,26 @@ static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
   if (TYPEOF(class_name) != STRSXP || Rf_length(class_name) != 1)
     Rf_error("Internal error: S7 class name must be a string");
 
-  const char* class_name_char = CHAR(STRING_ELT(class_name, 0));
-  const char* name_char = CHAR(STRING_ELT(name, 0));
+  SEXP class_name_rchar = STRING_ELT(class_name, 0);
+  SEXP name_rchar = STRING_ELT(name, 0);
+  const char* class_name_char = CHAR(class_name_rchar);
+  const char* name_char = CHAR(name_rchar);
 
-  size_t class_name_len = strlen(class_name_char);
-  size_t name_len = strlen(name_char);
-  char* call_name = R_alloc(class_name_len + name_len + 2, sizeof(char));
+  int class_name_len = LENGTH(class_name_rchar);
+  int name_len = LENGTH(name_rchar);
+  int call_name_len = class_name_len + name_len + 1;
+  char* call_name = R_alloc(call_name_len + 1, sizeof(char));
 
   memcpy(call_name, class_name_char, class_name_len);
   call_name[class_name_len] = '@';
   memcpy(call_name + class_name_len + 1, name_char, name_len + 1);
 
-  return Rf_install(call_name);
+  SEXP call_name_rchar = PROTECT(
+      Rf_mkCharLenCE(call_name, call_name_len, CE_NATIVE));
+  SEXP call_sym = Rf_installTrChar(call_name_rchar);
+  UNPROTECT(1);
+
+  return call_sym;
 }
 
 static void prop_call_remove_binding(SEXP env, SEXP sym) {
@@ -269,14 +262,18 @@ struct prop_call_data {
   SEXP env;
   SEXP sym;
   SEXP old_value;
+  SEXP result;
   Rboolean had_binding;
-  SEXP getter_object;
-  SEXP getter_name_sym;
+  SEXP no_recurse_object;
+  SEXP no_recurse_name_sym;
+  SEXP no_recurse_list_sym;
+  Rboolean clean_result_on_success;
 };
 
 static SEXP prop_call_eval(void* data) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
-  return Rf_eval(call_data->call, call_data->env);
+  call_data->result = Rf_eval(call_data->call, call_data->env);
+  return call_data->result;
 }
 
 static void prop_call_cleanup(void* data, Rboolean jump) {
@@ -288,17 +285,23 @@ static void prop_call_cleanup(void* data, Rboolean jump) {
     prop_call_remove_binding(call_data->env, call_data->sym);
   }
 
-  if (jump && call_data->getter_object != R_NilValue) {
+  if (call_data->no_recurse_object != R_NilValue) {
+    SEXP object = call_data->no_recurse_object;
+    if (!jump && call_data->clean_result_on_success)
+      object = call_data->result;
+
     accessor_no_recurse_clear_if_present(
-        call_data->getter_object,
-        call_data->getter_name_sym,
-        sym_dot_getting_prop);
+        object,
+        call_data->no_recurse_name_sym,
+        call_data->no_recurse_list_sym);
   }
 }
 
 static inline
 SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
-                   SEXP getter_object, SEXP getter_name_sym) {
+                   SEXP no_recurse_object, SEXP no_recurse_name_sym,
+                   SEXP no_recurse_list_sym,
+                   Rboolean clean_result_on_success) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
   SEXP env = prop_call_env_get();
@@ -327,9 +330,12 @@ SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
     env,
     fn_sym,
     old_value,
+    R_NilValue,
     had_binding,
-    getter_object,
-    getter_name_sym
+    no_recurse_object,
+    no_recurse_name_sym,
+    no_recurse_list_sym,
+    clean_result_on_success
   };
 
   SEXP result = R_UnwindProtect(
@@ -342,7 +348,10 @@ SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
 }
 
 static inline
-SEXP do_prop_call2(SEXP fn, SEXP S7_class, SEXP name, SEXP arg1, SEXP arg2) {
+SEXP do_prop_call2(SEXP fn, SEXP S7_class, SEXP name, SEXP arg1, SEXP arg2,
+                   SEXP no_recurse_object, SEXP no_recurse_name_sym,
+                   SEXP no_recurse_list_sym,
+                   Rboolean clean_result_on_success) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
   SEXP env = prop_call_env_get();
@@ -378,9 +387,12 @@ SEXP do_prop_call2(SEXP fn, SEXP S7_class, SEXP name, SEXP arg1, SEXP arg2) {
     env,
     fn_sym,
     old_value,
-    had_binding,
     R_NilValue,
-    R_NilValue
+    had_binding,
+    no_recurse_object,
+    no_recurse_name_sym,
+    no_recurse_list_sym,
+    clean_result_on_success
   };
 
   SEXP result = R_UnwindProtect(
@@ -464,8 +476,15 @@ SEXP prop_(SEXP object, SEXP name) {
       getter_callable_no_recurse(getter, object, name_sym)) {
 
     SEXP value = PROTECT(
-        do_prop_call1(getter, S7_class, name, object, object, name_sym));
-    getter_no_recurse_clear(object, name_sym);
+        do_prop_call1(
+            getter,
+            S7_class,
+            name,
+            object,
+            object,
+            name_sym,
+            sym_dot_getting_prop,
+            FALSE));
     UNPROTECT(1); // value
     return value;
   }
@@ -533,9 +552,17 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
     REPROTECT(
-        object = do_prop_call2(setter, S7_class, name, object, value),
+        object = do_prop_call2(
+            setter,
+            S7_class,
+            name,
+            object,
+            value,
+            object,
+            name_sym,
+            sym_dot_setting_prop,
+            TRUE),
         object_pi);
-    setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
     if (should_validate_prop)

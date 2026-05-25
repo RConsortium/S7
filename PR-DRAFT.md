@@ -18,6 +18,8 @@ through a shared non-hash environment parented to the S7 namespace. Each call
 temporarily binds the closure under a synthetic symbol like `foo@x`, evaluates
 `` `foo@x`(object) `` or `` `foo@x`(object, value) `` with `Rf_eval()`, then
 uses `R_UnwindProtect()` to restore or remove the binding on success or error.
+The same unwind cleanup clears the temporary no-recursion marker used while the
+getter or setter is running.
 
 This avoids adding `withCallingHandlers()` around the hot property access path.
 
@@ -32,11 +34,11 @@ iterations with `bench::mark()` on R version 4.6.0 (2026-04-24),
 | --- | ---: | ---: | --- |
 | current/main | 656 ns | 2,255 ns | `<closure>` |
 | PR 627 `withCallingHandlers()` | 1,476 ns | 3,116 ns | `@` |
-| new shared-env C path | 779 ns | 7,339 ns | `foo@x` |
+| new shared-env C path | 738 ns | 7,257 ns | `foo@x` |
 
 ## Testing
 
 - `testthat::test_local(".", filter = "property", load_package = "source")`
-  - PASS: 101
+  - PASS: 102
 - `testthat::test_local(".", load_package = "source")`
-  - PASS: 657
+  - PASS: 658
