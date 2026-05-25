@@ -23,8 +23,8 @@ Calls: @ -> @.S7_object -> <Anonymous>
 Neither form tells you that S7 was evaluating property `x` on class
 `foo`.
 
-With this change, ordinary errors from dynamic getters and setters now
-show the property accessor in the top-level error:
+With this change, ordinary errors from dynamic getters and setters show
+the property accessor in the top-level error:
 
 ```r
 Error in `<foo>@x`(<object>) : nope
@@ -32,8 +32,18 @@ Calls: @ -> @.S7_object -> <foo>@x
 ```
 
 Errors deliberately signaled with no call, such as
-`stop("nope", call. = FALSE)`, still have no call. Rewriting those would
-need a different approach, such as the handler-based approach in PR 627.
+`stop("nope", call. = FALSE)`, still print without a call in the error
+header. But they now have a useful property frame in `traceback()`:
+
+```r
+Error: nope
+
+> traceback()
+4: stop("nope", call. = FALSE) at #1
+3: `<foo>@x`(<object>) at property.R#197
+2: `@.S7_object`(foo(), x)
+1: foo()@x
+```
 
 The public R APIs and `.Call()` signatures are unchanged.
 
@@ -58,7 +68,8 @@ access path.
 This is an alternative to PR 627's `withCallingHandlers()` approach. It
 improves the common dynamic accessor case by changing the call R sees
 while evaluating the getter or setter, instead of rewriting error
-conditions after they have been thrown.
+conditions after they have been thrown. That means this keeps the hot path
+lean, but it does not rewrite call-less error headers the way PR 627 does.
 
 ## Follow-up Errors
 
@@ -67,9 +78,9 @@ traceback improvement:
 
 - Errors thrown by S7 itself for bad property operations, such as
   accessing or assigning a property that does not exist.
-- Errors thrown with no call from custom accessors or custom validators.
-  These likely need a different way to choose the right displayed call,
-  because the error condition itself does not carry one.
+- Errors thrown from custom validators. These likely need a different way
+  to choose the right displayed call, because the error comes from
+  validation code rather than from a dynamic getter or setter.
 
 ## Benchmarks
 
