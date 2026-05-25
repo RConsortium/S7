@@ -203,7 +203,7 @@ class_validate <- function(class, object) {
 #' `S7_class_desc()` turns any [class specification][as_class] into a short,
 #' human-readable, string, suitable for use in user-facing messages.
 #'
-#' @param x A [class specification][as_class].
+#' @param class A [class specification][as_class].
 #' @returns A string.
 #' @export
 #' @examples

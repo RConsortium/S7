@@ -7,7 +7,7 @@
 S7_class_desc(class)
 }
 \arguments{
-\item{x}{A \link[=as_class]{class specification}.}
+\item{class}{A \link[=as_class]{class specification}.}
 }
 \value{
 A string.
