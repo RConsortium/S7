@@ -5,7 +5,7 @@
     Output
       <foo2> class
       @ parent     : <foo1>
-      @ constructor: function(x, y) {...}
+      @ constructor: function(...) {...}
       @ validator  : <NULL>
       @ properties :
        $ x: <integer>
@@ -33,7 +33,7 @@
        ..  ..$ validator: NULL
        ..  ..$ default  : NULL
        @ abstract   : logi FALSE
-       @ constructor: function (x = integer(0), y = integer(0))  
+       @ constructor: function (...)  
        @ validator  : NULL
     Code
       str(list(foo2))

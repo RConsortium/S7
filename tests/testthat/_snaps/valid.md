@@ -19,7 +19,7 @@
 ---
 
     Code
-      obj <- klass2(1, -1, 1)
+      obj <- klass2(x = 1, y = -1, z = 1)
       attr(obj, "x") <- -1
       validate(obj)
     Condition
