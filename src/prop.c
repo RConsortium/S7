@@ -199,13 +199,19 @@ void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
 
 static SEXP prop_call_env = NULL;
 
+void prop_init(void) {
+  if (prop_call_env != NULL)
+    Rf_error("Internal error: property call environment is already initialized");
+
+  SEXP call = PROTECT(Rf_lang3(Rf_install("new.env"), R_FALSE, ns_S7));
+  prop_call_env = Rf_eval(call, R_BaseEnv);
+  R_PreserveObject(prop_call_env);
+  UNPROTECT(1);
+}
+
 static SEXP prop_call_env_get(void) {
-  if (prop_call_env == NULL) {
-    SEXP call = PROTECT(Rf_lang3(Rf_install("new.env"), R_FALSE, ns_S7));
-    prop_call_env = Rf_eval(call, R_BaseEnv);
-    R_PreserveObject(prop_call_env);
-    UNPROTECT(1);
-  }
+  if (prop_call_env == NULL)
+    Rf_error("Internal error: property call environment is not initialized");
 
   return prop_call_env;
 }

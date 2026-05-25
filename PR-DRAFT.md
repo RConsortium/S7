@@ -14,10 +14,11 @@ The public R APIs and `.Call()` signatures are unchanged.
 ## Implementation notes
 
 Internally, the C property path now evaluates dynamic getter and setter calls
-through a shared non-hash environment parented to the S7 namespace. Each call
-temporarily binds the closure under a synthetic symbol like `foo@x`, evaluates
-`` `foo@x`(object) `` or `` `foo@x`(object, value) `` with `Rf_eval()`, then
-uses `R_UnwindProtect()` to restore or remove the binding on success or error.
+through a shared non-hash environment parented to the S7 namespace and created
+at native startup. Each call temporarily binds the closure under a synthetic
+symbol like `foo@x`, evaluates `` `foo@x`(object) `` or
+`` `foo@x`(object, value) `` with `Rf_eval()`, then uses `R_UnwindProtect()` to
+restore or remove the binding on success or error.
 The same unwind cleanup clears the temporary no-recursion marker used while the
 getter or setter is running.
 
