@@ -170,6 +170,35 @@ describe("prop setting", {
     expect_equal(calls, 2L)
   })
 
+  it("cleans up setter markers from captured objects", {
+    calls <- 0L
+    captured <- NULL
+    return_fresh <- TRUE
+    foo <- new_class(
+      "foo",
+      properties = list(
+        x = new_property(setter = function(self, value) {
+          if (is.null(value)) {
+            return(self)
+          }
+          calls <<- calls + 1L
+          if (return_fresh) {
+            captured <<- self
+            return_fresh <<- FALSE
+            return(foo())
+          }
+          self@x <- value
+          self
+        })
+      )
+    )
+
+    obj <- foo()
+    obj@x <- 1
+    captured@x <- 2
+    expect_equal(calls, 2L)
+  })
+
   it("supports nested dynamic setter calls with the same property name", {
     inner_class <- new_class(
       "foo",

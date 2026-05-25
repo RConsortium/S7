@@ -40,6 +40,6 @@ iterations with `bench::mark()` on R version 4.6.0 (2026-04-24),
 ## Testing
 
 - `testthat::test_local(".", filter = "property", load_package = "source")`
-  - PASS: 104
+  - PASS: 105
 - `testthat::test_local(".", load_package = "source")`
-  - PASS: 660
+  - PASS: 661

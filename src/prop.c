@@ -355,9 +355,13 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
       prop_call_eval, &call_data,
       prop_call_cleanup, &call_data,
       NULL);
-  // A successful setter can return a shallow duplicate carrying the marker.
+  // User code can capture the marked entry object, and a successful setter can
+  // return a shallow duplicate carrying the marker.
   // Error cleanup happens in prop_call_cleanup().
   accessor_no_recurse_clear_if_present(
+      call_data.object, call_data.property_sym, call_data.accessor);
+  if (result != call_data.object)
+    accessor_no_recurse_clear_if_present(
       result, call_data.property_sym, call_data.accessor);
 
   UNPROTECT(n_protected);
