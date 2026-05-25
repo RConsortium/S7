@@ -409,6 +409,50 @@ prop_exists <- function(object, name) {
   name %in% prop_names(object)
 }
 
+#' Summarise properties as a data frame
+#'
+#' `prop_info()` returns a data frame describing the properties of an S7
+#' object or class, with one row per property.
+#'
+#' @param object Either an S7 object (an instance) or an S7 class.
+#' @returns A data frame with one row per property and the following columns:
+#'   * `name`: a character vector of property names.
+#'   * `default`: a list column of property defaults.
+#'   * `class`: a character description of the class.
+#'   * `getter`, `setter`, `validator`: logical vectors indicating whether
+#'     the property has a getter, setter, or validator.
+#' @export
+#' @examples
+#' Horse <- new_class("Horse", properties = list(
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = new_property(class_numeric, default = 15),
+#'   age = new_property(
+#'     class_numeric,
+#'     validator = function(value) if (value < 0) "must be positive"
+#'   ),
+#'   now = new_property(getter = function(self) Sys.time())
+#' ))
+#' prop_info(Horse)
+prop_info <- function(object) {
+  check_is_S7(object)
+
+  if (inherits(object, "S7_class")) {
+    props <- attr(object, "properties", exact = TRUE)
+  } else {
+    props <- attr(S7_class(object), "properties", exact = TRUE)
+  }
+
+  data.frame(
+    name = vcapply(props, function(p) p$name),
+    default = I(unname(lapply(props, function(p) p$default))),
+    class = vcapply(props, function(p) class_desc(p$class)),
+    getter = vlapply(props, function(p) !is.null(p$getter)),
+    setter = vlapply(props, function(p) !is.null(p$setter)),
+    validator = vlapply(props, function(p) !is.null(p$validator))
+  )
+}
+
 #' Get/set multiple properties
 #'
 #' - `props(x)` returns all properties.

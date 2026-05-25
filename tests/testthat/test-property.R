@@ -273,6 +273,58 @@ test_that("properties can be NULL", {
   expect_equal(props(x), list(x = NULL))
 })
 
+describe("prop_info()", {
+  it("returns a data frame describing each property", {
+    foo <- new_class(
+      "foo",
+      properties = list(
+        a = class_character,
+        b = new_property(class_numeric, default = 1),
+        c = new_property(getter = function(self) 1),
+        d = new_property(class_numeric, setter = function(self, value) self),
+        e = new_property(
+          class_numeric,
+          validator = function(value) NULL
+        )
+      )
+    )
+
+    info <- prop_info(foo)
+    expect_s3_class(info, "data.frame")
+    expect_equal(info$name, c("a", "b", "c", "d", "e"))
+    expect_equal(
+      info$class,
+      c(
+        "<character>",
+        "<integer> or <double>",
+        "<ANY>",
+        "<integer> or <double>",
+        "<integer> or <double>"
+      )
+    )
+    expect_equal(unname(info$default), I(list(NULL, 1, NULL, NULL, NULL)))
+    expect_equal(info$getter, c(FALSE, FALSE, TRUE, FALSE, FALSE))
+    expect_equal(info$setter, c(FALSE, FALSE, FALSE, TRUE, FALSE))
+    expect_equal(info$validator, c(FALSE, FALSE, FALSE, FALSE, TRUE))
+  })
+
+  it("works on instances", {
+    foo <- new_class("foo", properties = list(x = class_numeric))
+    expect_equal(prop_info(foo(1)), prop_info(foo))
+  })
+
+  it("returns a zero-row data frame when there are no properties", {
+    foo <- new_class("foo")
+    info <- prop_info(foo)
+    expect_s3_class(info, "data.frame")
+    expect_equal(nrow(info), 0)
+    expect_named(
+      info,
+      c("name", "default", "class", "getter", "setter", "validator")
+    )
+  })
+})
+
 describe("new_property()", {
   it("validates getter and settor", {
     expect_snapshot(error = TRUE, {
