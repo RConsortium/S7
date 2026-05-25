@@ -139,20 +139,6 @@ Rboolean pairlist_contains(SEXP list, SEXP elem) {
   return FALSE;
 }
 
-static inline
-SEXP find_attrib(SEXP object, SEXP tag, SEXP* prev) {
-  *prev = R_NilValue;
-
-  for (SEXP attr = ATTRIB(object); attr != R_NilValue; attr = CDR(attr)) {
-    if (TAG(attr) == tag)
-      return attr;
-
-    *prev = attr;
-  }
-
-  return R_NilValue;
-}
-
 enum prop_accessor {
   PROP_GETTER,
   PROP_SETTER
@@ -172,24 +158,11 @@ SEXP prop_accessor_marker(enum prop_accessor accessor) {
 }
 
 static inline
-void accessor_no_recurse_push(SEXP object, SEXP marker_sym, SEXP marker_attr,
-                              SEXP prev_attr, SEXP name_sym,
+void accessor_no_recurse_push(SEXP object, SEXP marker_sym, SEXP name_sym,
                               SEXP no_recurse_pairlist) {
   SEXP new_pairlist = PROTECT(Rf_cons(name_sym, no_recurse_pairlist));
-
-  if (marker_attr != R_NilValue) {
-    SETCAR(marker_attr, new_pairlist);
-    UNPROTECT(1);
-    return;
-  }
-
-  SEXP new_attr = PROTECT(Rf_cons(new_pairlist, R_NilValue));
-  SET_TAG(new_attr, marker_sym);
-  if (prev_attr == R_NilValue)
-    SET_ATTRIB(object, new_attr);
-  else
-    SETCDR(prev_attr, new_attr);
-  UNPROTECT(2);
+  Rf_setAttrib(object, marker_sym, new_pairlist);
+  UNPROTECT(1);
 }
 
 static inline
@@ -198,11 +171,7 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
   // Check if we should call `setter` and if so, prepare `setter` for calling.
 
   SEXP marker_sym = prop_accessor_marker(PROP_SETTER);
-  SEXP prev_attr;
-  SEXP marker_attr = find_attrib(object, marker_sym, &prev_attr);
-  SEXP no_recurse_pairlist = marker_attr == R_NilValue ?
-      R_NilValue : CAR(marker_attr);
-
+  SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
   if (TYPEOF(no_recurse_pairlist) == LISTSXP) {
     // if there is a 'no_recurse' list, then this is not the top-most prop<-
     // call for this object, i.e, we're currently evaluating a `prop<-` call
@@ -218,7 +187,7 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
     return FALSE; // setter not callable
 
   accessor_no_recurse_push(
-      object, marker_sym, marker_attr, prev_attr, name_sym,
+      object, marker_sym, name_sym,
       no_recurse_pairlist);
   return TRUE; // object is now now marked non-recursive for this property setter, safe to call
 }
@@ -227,12 +196,7 @@ static inline
 void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
                                           enum prop_accessor accessor) {
   SEXP marker_sym = prop_accessor_marker(accessor);
-  SEXP prev_attr;
-  SEXP marker_attr = find_attrib(object, marker_sym, &prev_attr);
-  if (marker_attr == R_NilValue)
-    return;
-
-  SEXP list = CAR(marker_attr);
+  SEXP list = Rf_getAttrib(object, marker_sym);
   if (TYPEOF(list) != LISTSXP)
     return;
 
@@ -242,15 +206,10 @@ void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
       continue;
 
     SEXP rest = CDR(node);
-    if (prev != R_NilValue) {
+    if (prev == R_NilValue)
+      Rf_setAttrib(object, marker_sym, rest);
+    else
       SETCDR(prev, rest);
-    } else if (rest != R_NilValue) {
-      SETCAR(marker_attr, rest);
-    } else if (prev_attr == R_NilValue) {
-      SET_ATTRIB(object, CDR(marker_attr));
-    } else {
-      SETCDR(prev_attr, CDR(marker_attr));
-    }
 
     return;
   }
@@ -448,17 +407,13 @@ Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
   // Check if we should call getter and if so, prepare object for calling the getter.
 
   SEXP marker_sym = prop_accessor_marker(PROP_GETTER);
-  SEXP prev_attr;
-  SEXP marker_attr = find_attrib(object, marker_sym, &prev_attr);
-  SEXP no_recurse_pairlist = marker_attr == R_NilValue ?
-      R_NilValue : CAR(marker_attr);
-
+  SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
   if (TYPEOF(no_recurse_pairlist) == LISTSXP &&
       pairlist_contains(no_recurse_pairlist, name_sym))
     return FALSE;
 
   accessor_no_recurse_push(
-      object, marker_sym, marker_attr, prev_attr, name_sym,
+      object, marker_sym, name_sym,
       no_recurse_pairlist);
   return TRUE; // object is now now marked non-recursive for this property accessor, safe to call
 }
