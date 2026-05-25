@@ -298,31 +298,30 @@ static void prop_call_cleanup(void* data, Rboolean jump) {
 }
 
 static inline
-SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
-                   SEXP no_recurse_object, SEXP no_recurse_name_sym,
-                   SEXP no_recurse_list_sym,
-                   Rboolean clean_result_on_success) {
+SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
+                    SEXP name_sym) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
   SEXP env = prop_call_env_get();
   SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
   Rboolean had_binding = old_value != R_UnboundValue;
+  SEXP no_recurse_object = object;
 
   if (had_binding) {
     PROTECT(old_value);
     ++n_protected;
   }
 
-  Rf_defineVar(fn_sym, fn, env);
+  Rf_defineVar(fn_sym, getter, env);
 
-  switch (TYPEOF(arg)) {
+  switch (TYPEOF(object)) {
   case LANGSXP:
   case SYMSXP:
-    arg = PROTECT(Rf_lang2(fn_base_quote, arg));
+    object = PROTECT(Rf_lang2(fn_base_quote, object));
     ++n_protected;
   }
 
-  SEXP call = PROTECT(Rf_lang2(fn_sym, arg));
+  SEXP call = PROTECT(Rf_lang2(fn_sym, object));
   ++n_protected;
 
   struct prop_call_data call_data = {
@@ -333,9 +332,9 @@ SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
     R_NilValue,
     had_binding,
     no_recurse_object,
-    no_recurse_name_sym,
-    no_recurse_list_sym,
-    clean_result_on_success
+    name_sym,
+    sym_dot_getting_prop,
+    FALSE
   };
 
   SEXP result = R_UnwindProtect(
@@ -348,38 +347,37 @@ SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
 }
 
 static inline
-SEXP do_prop_call2(SEXP fn, SEXP S7_class, SEXP name, SEXP arg1, SEXP arg2,
-                   SEXP no_recurse_object, SEXP no_recurse_name_sym,
-                   SEXP no_recurse_list_sym,
-                   Rboolean clean_result_on_success) {
+SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
+                    SEXP name_sym, SEXP value) {
   int n_protected = 0;
   SEXP fn_sym = prop_call_symbol(S7_class, name);
   SEXP env = prop_call_env_get();
   SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
   Rboolean had_binding = old_value != R_UnboundValue;
+  SEXP no_recurse_object = object;
 
   if (had_binding) {
     PROTECT(old_value);
     ++n_protected;
   }
 
-  Rf_defineVar(fn_sym, fn, env);
+  Rf_defineVar(fn_sym, setter, env);
 
-  switch (TYPEOF(arg1)) {
+  switch (TYPEOF(object)) {
   case LANGSXP:
   case SYMSXP:
-    arg1 = PROTECT(Rf_lang2(fn_base_quote, arg1));
+    object = PROTECT(Rf_lang2(fn_base_quote, object));
     ++n_protected;
   }
 
-  switch (TYPEOF(arg2)) {
+  switch (TYPEOF(value)) {
   case LANGSXP:
   case SYMSXP:
-    arg2 = PROTECT(Rf_lang2(fn_base_quote, arg2));
+    value = PROTECT(Rf_lang2(fn_base_quote, value));
     ++n_protected;
   }
 
-  SEXP call = PROTECT(Rf_lang3(fn_sym, arg1, arg2));
+  SEXP call = PROTECT(Rf_lang3(fn_sym, object, value));
   ++n_protected;
 
   struct prop_call_data call_data = {
@@ -390,9 +388,9 @@ SEXP do_prop_call2(SEXP fn, SEXP S7_class, SEXP name, SEXP arg1, SEXP arg2,
     R_NilValue,
     had_binding,
     no_recurse_object,
-    no_recurse_name_sym,
-    no_recurse_list_sym,
-    clean_result_on_success
+    name_sym,
+    sym_dot_setting_prop,
+    TRUE
   };
 
   SEXP result = R_UnwindProtect(
@@ -476,15 +474,7 @@ SEXP prop_(SEXP object, SEXP name) {
       getter_callable_no_recurse(getter, object, name_sym)) {
 
     SEXP value = PROTECT(
-        do_prop_call1(
-            getter,
-            S7_class,
-            name,
-            object,
-            object,
-            name_sym,
-            sym_dot_getting_prop,
-            FALSE));
+        do_getter_call(getter, S7_class, name, object, name_sym));
     UNPROTECT(1); // value
     return value;
   }
@@ -552,16 +542,13 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
     REPROTECT(
-        object = do_prop_call2(
+        object = do_setter_call(
             setter,
             S7_class,
             name,
             object,
-            value,
-            object,
             name_sym,
-            sym_dot_setting_prop,
-            TRUE),
+            value),
         object_pi);
   } else {
     // don't use setter()
