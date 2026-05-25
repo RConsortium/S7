@@ -160,6 +160,13 @@ test_that("check_method complains if the functions are not compatible", {
   })
 })
 
+test_that("check_method rejects primitive functions", {
+  expect_snapshot(error = TRUE, {
+    foo <- new_generic("foo", "x")
+    check_method(log, foo)
+  })
+})
+
 test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
     foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())

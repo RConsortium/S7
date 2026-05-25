@@ -85,6 +85,15 @@
       - generic formals: foo(x)
       - method formals:  foo(x, y)
 
+# check_method rejects primitive functions
+
+    Code
+      foo <- new_generic("foo", "x")
+      check_method(log, foo)
+    Condition
+      Error:
+      ! foo(???) must be a function
+
 # check_method warn if default arguments don't match
 
     Code
