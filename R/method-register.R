@@ -36,8 +36,7 @@
 #'
 #'   For S3 generics, this must be a single S7 class.
 #'
-#'   For S4 generics, this must either be an S7 class, or a list that includes
-#'   at least one S7 class.
+#'   The same rules apply to S4 generics as S7 generics.
 #' @param value A function that implements the generic specification for the
 #'   given `signature`.
 #' @returns The `generic`, invisibly.
@@ -80,7 +79,10 @@ register_method <- function(
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method, env)
   } else if (is_S4_generic(generic)) {
-    register_S4_method(generic, signature, method, env)
+    signatures <- flatten_signature(signature)
+    for (signature in signatures) {
+      register_S4_method(generic, signature, method, env)
+    }
   }
 
   # if we're inside a package, we also need to be able register methods
@@ -281,26 +283,41 @@ register_S4_method <- function(
   methods::setMethod(generic, S4_signature, method, where = S4_env)
 }
 S4_class <- function(x, S4_env) {
-  if (is_base_class(x)) {
-    x@name
-  } else if (is_S4_class(x)) {
-    x
-  } else if (is_class(x) || is_S3_class(x)) {
-    class <- tryCatch(
-      methods::getClass(class_register(x)),
-      error = function(err) NULL
+  switch(
+    class_type(x),
+    `NULL` = "NULL",
+    missing = "missing",
+    any = "ANY",
+    S7_base = base_to_S4(x$class),
+    S4 = x,
+    S7 = ,
+    S7_S3 = check_registered(x),
+    S7_union = stop("Internal error: union should be flattened upstream.")
+  )
+}
+
+# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
+# not "double", so registering under "double" silently misses real doubles.
+# Mapping to "numeric" catches doubles but also matches integers too. There's
+# no clean S4 way to say "doubles only" and this seems likely to be what
+# people want.
+base_to_S4 <- function(class) {
+  switch(class, double = "numeric", class)
+}
+
+check_registered <- function(x) {
+  class <- tryCatch(
+    methods::getClass(class_register(x)),
+    error = function(err) NULL
+  )
+  if (is.null(class)) {
+    msg <- sprintf(
+      "Class has not been registered with S4; please call S4_register(%s)",
+      class_deparse(x)
     )
-    if (is.null(class)) {
-      msg <- sprintf(
-        "Class has not been registered with S4; please call S4_register(%s)",
-        class_deparse(x)
-      )
-      stop(msg, call. = FALSE)
-    }
-    class
-  } else {
-    stop("Unsupported")
+    stop(msg, call. = FALSE)
   }
+  class
 }
 
 #' @export

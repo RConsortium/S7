@@ -1,9 +1,11 @@
-#' Register an S7 class with S4
+#' Register an S7 or S3 class with S4
 #'
-#' If you want to use [method<-] to register an method for an S4 generic with
-#' an S7 class, you need to call `S4_register()` once.
+#' If you want to use [method<-] to register a method for an S4 generic with
+#' an S7 class or an S3 class (created by [new_S3_class()]), you need to call
+#' `S4_register()` once.
 #'
-#' @param class An S7 class created with [new_class()].
+#' @param class An S7 class created with [new_class()], or an S3 class created
+#'   with [new_S3_class()].
 #' @param env Expert use only. Environment where S4 class will be registered.
 #' @returns Nothing; the function is called for its side-effect.
 #' @export
@@ -18,11 +20,19 @@
 #'
 #' S4_generic(Foo())
 S4_register <- function(class, env = parent.frame()) {
-  if (!is_class(class)) {
-    msg <- sprintf("`class` must be an S7 class, not a %s", obj_desc(class))
+  if (is_class(class)) {
+    classes <- class_dispatch(class)
+  } else if (is_S3_class(class)) {
+    classes <- class$class
+  } else {
+    msg <- sprintf(
+      "`class` must be an S7 class or an S3 class, not a %s",
+      obj_desc(class)
+    )
+    stop(msg, call. = FALSE)
   }
 
-  methods::setOldClass(class_dispatch(class), where = topenv(env))
+  methods::setOldClass(classes, where = topenv(env))
   invisible()
 }
 
