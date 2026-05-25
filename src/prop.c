@@ -1,4 +1,5 @@
 #include "compat.h"
+#include <string.h>
 
 extern SEXP sym_S7_class;
 
@@ -18,6 +19,8 @@ extern SEXP sym_dot_setting_prop;
 
 extern SEXP fn_base_quote;
 
+extern SEXP R_FALSE;
+
 static inline
 SEXP eval_here(SEXP lang) {
   PROTECT(lang);
@@ -32,51 +35,6 @@ SEXP ns_get(const char* name) {
   if (val == NULL)
     Rf_error("Can't find `%s` in the S7 namespace", name);
   return val;
-}
-
-static inline
-SEXP do_call1(SEXP fn, SEXP arg) {
-  SEXP call, answer;
-  switch (TYPEOF(arg)) {
-  case LANGSXP:
-  case SYMSXP:
-    arg = PROTECT(Rf_lang2(fn_base_quote, arg));
-    call = PROTECT(Rf_lang2(fn, arg));
-    answer = Rf_eval(call, ns_S7);
-    UNPROTECT(2);
-    return answer;
-  default:
-    call = PROTECT(Rf_lang2(fn, arg));
-    answer = Rf_eval(call, ns_S7);
-    UNPROTECT(1);
-    return answer;
-  }
-}
-
-static inline SEXP do_call2(SEXP fn, SEXP arg1, SEXP arg2) {
-  int n_protected = 0;
-  // Protect the arguments from evaluation if they are SYMSXP or LANGSXP
-  switch (TYPEOF(arg1)) {
-  case LANGSXP:
-  case SYMSXP:
-    arg1 = PROTECT(Rf_lang2(fn_base_quote, arg1));
-    ++n_protected;
-  }
-
-  switch (TYPEOF(arg2)) {
-  case LANGSXP:
-  case SYMSXP:
-    arg2 = PROTECT(Rf_lang2(fn_base_quote, arg2));
-    ++n_protected;
-  }
-
-  SEXP call = PROTECT(Rf_lang3(fn, arg1, arg2));
-  ++n_protected;
-
-  SEXP result = Rf_eval(call, ns_S7);
-
-  UNPROTECT(n_protected);
-  return result;
 }
 
 static __attribute__((noreturn))
@@ -244,6 +202,197 @@ void accessor_no_recurse_clear(SEXP object, SEXP name_sym, SEXP no_recurse_list_
     accessor_no_recurse_clear(__VA_ARGS__, sym_dot_setting_prop)
 
 static inline
+void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
+                                          SEXP no_recurse_list_sym) {
+  SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
+  if (TYPEOF(list) != LISTSXP || !pairlist_contains(list, name_sym))
+    return;
+
+  list = pairlist_remove(list, name_sym);
+  Rf_setAttrib(object, no_recurse_list_sym, list);
+}
+
+static SEXP prop_call_env = NULL;
+
+static SEXP prop_call_env_get(void) {
+  if (prop_call_env == NULL) {
+    SEXP call = PROTECT(Rf_lang3(Rf_install("new.env"), R_FALSE, ns_S7));
+    prop_call_env = Rf_eval(call, R_BaseEnv);
+    R_PreserveObject(prop_call_env);
+    UNPROTECT(1);
+  }
+
+  return prop_call_env;
+}
+
+static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
+  SEXP class_name = Rf_getAttrib(S7_class, sym_name);
+  if (TYPEOF(class_name) != STRSXP || Rf_length(class_name) != 1)
+    Rf_error("Internal error: S7 class name must be a string");
+
+  const char* class_name_char = CHAR(STRING_ELT(class_name, 0));
+  const char* name_char = CHAR(STRING_ELT(name, 0));
+
+  size_t class_name_len = strlen(class_name_char);
+  size_t name_len = strlen(name_char);
+  char* call_name = R_alloc(class_name_len + name_len + 2, sizeof(char));
+
+  memcpy(call_name, class_name_char, class_name_len);
+  call_name[class_name_len] = '@';
+  memcpy(call_name + class_name_len + 1, name_char, name_len + 1);
+
+  return Rf_install(call_name);
+}
+
+static void prop_call_remove_binding(SEXP env, SEXP sym) {
+  if (s7_get_var_in_frame(env, sym, R_UnboundValue) == R_UnboundValue)
+    return;
+
+#if (R_VERSION >= R_Version(4, 0, 0))
+  R_removeVarFromFrame(sym, env);
+#else
+  SEXP list = PROTECT(Rf_allocVector(STRSXP, 1));
+  SET_STRING_ELT(list, 0, PRINTNAME(sym));
+
+  SEXP call = PROTECT(Rf_lang4(Rf_install("rm"), list, env, R_FALSE));
+  SET_TAG(CDR(call), Rf_install("list"));
+  SET_TAG(CDDR(call), Rf_install("envir"));
+  SET_TAG(CDDDR(call), Rf_install("inherits"));
+  Rf_eval(call, R_BaseEnv);
+
+  UNPROTECT(2);
+#endif
+}
+
+struct prop_call_data {
+  SEXP call;
+  SEXP env;
+  SEXP sym;
+  SEXP old_value;
+  Rboolean had_binding;
+  SEXP getter_object;
+  SEXP getter_name_sym;
+};
+
+static SEXP prop_call_eval(void* data) {
+  struct prop_call_data* call_data = (struct prop_call_data*) data;
+  return Rf_eval(call_data->call, call_data->env);
+}
+
+static void prop_call_cleanup(void* data, Rboolean jump) {
+  struct prop_call_data* call_data = (struct prop_call_data*) data;
+
+  if (call_data->had_binding) {
+    Rf_defineVar(call_data->sym, call_data->old_value, call_data->env);
+  } else {
+    prop_call_remove_binding(call_data->env, call_data->sym);
+  }
+
+  if (jump && call_data->getter_object != R_NilValue) {
+    accessor_no_recurse_clear_if_present(
+        call_data->getter_object,
+        call_data->getter_name_sym,
+        sym_dot_getting_prop);
+  }
+}
+
+static inline
+SEXP do_prop_call1(SEXP fn, SEXP S7_class, SEXP name, SEXP arg,
+                   SEXP getter_object, SEXP getter_name_sym) {
+  int n_protected = 0;
+  SEXP fn_sym = prop_call_symbol(S7_class, name);
+  SEXP env = prop_call_env_get();
+  SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
+  Rboolean had_binding = old_value != R_UnboundValue;
+
+  if (had_binding) {
+    PROTECT(old_value);
+    ++n_protected;
+  }
+
+  Rf_defineVar(fn_sym, fn, env);
+
+  switch (TYPEOF(arg)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg = PROTECT(Rf_lang2(fn_base_quote, arg));
+    ++n_protected;
+  }
+
+  SEXP call = PROTECT(Rf_lang2(fn_sym, arg));
+  ++n_protected;
+
+  struct prop_call_data call_data = {
+    call,
+    env,
+    fn_sym,
+    old_value,
+    had_binding,
+    getter_object,
+    getter_name_sym
+  };
+
+  SEXP result = R_UnwindProtect(
+      prop_call_eval, &call_data,
+      prop_call_cleanup, &call_data,
+      NULL);
+
+  UNPROTECT(n_protected);
+  return result;
+}
+
+static inline
+SEXP do_prop_call2(SEXP fn, SEXP S7_class, SEXP name, SEXP arg1, SEXP arg2) {
+  int n_protected = 0;
+  SEXP fn_sym = prop_call_symbol(S7_class, name);
+  SEXP env = prop_call_env_get();
+  SEXP old_value = s7_get_var_in_frame(env, fn_sym, R_UnboundValue);
+  Rboolean had_binding = old_value != R_UnboundValue;
+
+  if (had_binding) {
+    PROTECT(old_value);
+    ++n_protected;
+  }
+
+  Rf_defineVar(fn_sym, fn, env);
+
+  switch (TYPEOF(arg1)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg1 = PROTECT(Rf_lang2(fn_base_quote, arg1));
+    ++n_protected;
+  }
+
+  switch (TYPEOF(arg2)) {
+  case LANGSXP:
+  case SYMSXP:
+    arg2 = PROTECT(Rf_lang2(fn_base_quote, arg2));
+    ++n_protected;
+  }
+
+  SEXP call = PROTECT(Rf_lang3(fn_sym, arg1, arg2));
+  ++n_protected;
+
+  struct prop_call_data call_data = {
+    call,
+    env,
+    fn_sym,
+    old_value,
+    had_binding,
+    R_NilValue,
+    R_NilValue
+  };
+
+  SEXP result = R_UnwindProtect(
+      prop_call_eval, &call_data,
+      prop_call_cleanup, &call_data,
+      NULL);
+
+  UNPROTECT(n_protected);
+  return result;
+}
+
+static inline
 void prop_validate(SEXP property, SEXP value, SEXP object) {
 
   static SEXP prop_validate = NULL;
@@ -314,7 +463,8 @@ SEXP prop_(SEXP object, SEXP name) {
   if (TYPEOF(getter) == CLOSXP &&
       getter_callable_no_recurse(getter, object, name_sym)) {
 
-    SEXP value = PROTECT(do_call1(getter, object));
+    SEXP value = PROTECT(
+        do_prop_call1(getter, S7_class, name, object, object, name_sym));
     getter_no_recurse_clear(object, name_sym);
     UNPROTECT(1); // value
     return value;
@@ -382,7 +532,9 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
-    REPROTECT(object = do_call2(setter, object, value), object_pi);
+    REPROTECT(
+        object = do_prop_call2(setter, S7_class, name, object, value),
+        object_pi);
     setter_no_recurse_clear(object, name_sym);
   } else {
     // don't use setter()
