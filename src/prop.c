@@ -415,7 +415,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter() — support both function(self, value) and
     // function(self, name, value) signatures.
-    if (Rf_length(FORMALS(setter)) >= 3) {
+    if (Rf_length(getClosureFormals(setter)) >= 3) {
       REPROTECT(object = do_call3(setter, object, name, value), object_pi);
     } else {
       REPROTECT(object = do_call2(setter, object, value), object_pi);

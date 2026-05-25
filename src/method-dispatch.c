@@ -1,11 +1,5 @@
 #include "compat.h"
 
-#if (R_VERSION >= R_Version(4, 5, 0))
-#define getClosureFormals R_ClosureFormals
-#else
-#define getClosureFormals FORMALS
-#endif
-
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
 extern SEXP ns_S7;
