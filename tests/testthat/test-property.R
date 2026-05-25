@@ -460,6 +460,42 @@ test_that("custom setters can invoke setters on non-self objects", {
 })
 
 
+test_that("erroring getter/setter doesn't leave object in broken state", {
+  # https://github.com/RConsortium/S7/issues/520
+
+  Test <- new_class(
+    "Test",
+    properties = list(
+      a = new_property(
+        getter = function(self) {
+          if (self@a == 10) {
+            stop("a is 10")
+          }
+          self@a
+        },
+        setter = function(self, value) {
+          if (value == 11) {
+            stop("value is 11")
+          }
+          self@a <- value
+          self
+        }
+      )
+    )
+  )
+
+  t <- Test(a = 10)
+  expect_error(t@a, "a is 10")
+  expect_error(t@a, "a is 10")
+
+  expect_error(t@a <- 11, "value is 11")
+  expect_error(t@a <- 11, "value is 11")
+
+  t@a <- 1
+  expect_equal(t@a, 1)
+})
+
+
 test_that("custom getters don't infinitely recurse", {
   # https://github.com/RConsortium/S7/issues/403
 

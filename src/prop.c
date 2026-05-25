@@ -243,6 +243,23 @@ void accessor_no_recurse_clear(SEXP object, SEXP name_sym, SEXP no_recurse_list_
 #define setter_no_recurse_clear(...) \
     accessor_no_recurse_clear(__VA_ARGS__, sym_dot_setting_prop)
 
+typedef struct {
+  SEXP fn;
+  SEXP arg;
+  SEXP object;
+  SEXP name_sym;
+} accessor_call_data;
+
+static SEXP accessor_eval(void* data) {
+  accessor_call_data* d = data;
+  return do_call1(d->fn, d->arg);
+}
+
+static void getter_no_recurse_cleanup(void* data, Rboolean jump) {
+  accessor_call_data* d = data;
+  getter_no_recurse_clear(d->object, d->name_sym);
+}
+
 static inline
 void prop_validate(SEXP property, SEXP value, SEXP object) {
 
@@ -314,10 +331,16 @@ SEXP prop_(SEXP object, SEXP name) {
   if (TYPEOF(getter) == CLOSXP &&
       getter_callable_no_recurse(getter, object, name_sym)) {
 
-    SEXP value = PROTECT(do_call1(getter, object));
-    getter_no_recurse_clear(object, name_sym);
-    UNPROTECT(1); // value
-    return value;
+    // Use R_UnwindProtect so .getting_prop is cleared even if the
+    // getter signals an error (#520).
+    accessor_call_data data = {getter, object, object, name_sym};
+    return R_UnwindProtect(
+      accessor_eval, 
+      &data, 
+      getter_no_recurse_cleanup, 
+      &data, 
+      NULL
+    );
   }
 
   // try to resolve property from the object attributes
