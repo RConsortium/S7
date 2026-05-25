@@ -4,10 +4,25 @@ Body:
 
 ## Summary
 
-When a dynamic property getter or setter errors, the traceback now points
-to the property being accessed. For example, an error from property `x` on
-class `foo` is shown under `` `<foo>@x`(...) `` instead of under the body
-of the getter or setter closure.
+Before this change, if a custom property getter or setter threw an error,
+the traceback pointed at the inlined closure body. It did not show which
+class or property was being accessed, which made the error harder to
+connect back to the S7 object:
+
+```r
+Error in (function (self) stop("nope"))(<object>):
+! nope
+```
+
+Now the same error points at the property accessor:
+
+```r
+Error in `<foo>@x`:
+! nope
+```
+
+That makes it clear that S7 was evaluating the getter or setter for
+property `x` on class `foo`.
 
 The public R APIs and `.Call()` signatures are unchanged.
 
