@@ -271,17 +271,33 @@ static SEXP prop_call_eval(void* data) {
   return call_data->result;
 }
 
+static void prop_call_clear_no_recurse(struct prop_call_data* call_data,
+                                       Rboolean jump) {
+  switch (call_data->accessor) {
+  case PROP_GETTER:
+    accessor_no_recurse_clear_if_present(
+        call_data->object, call_data->property_sym, PROP_GETTER);
+    return;
+
+  case PROP_SETTER:
+    if (jump) {
+      accessor_no_recurse_clear_if_present(
+          call_data->object, call_data->property_sym, PROP_SETTER);
+    } else {
+      accessor_no_recurse_clear_if_present(
+          call_data->result, call_data->property_sym, PROP_SETTER);
+    }
+    return;
+  }
+
+  Rf_error("Internal error: unknown property accessor kind");
+}
+
 static void prop_call_cleanup(void* data, Rboolean jump) {
   struct prop_call_data* call_data = (struct prop_call_data*) data;
 
   s7_clear_var_in_frame(prop_call_env, call_data->fn_sym);
-
-  SEXP object = call_data->object;
-  if (!jump && call_data->accessor == PROP_SETTER)
-    object = call_data->result;
-
-  accessor_no_recurse_clear_if_present(
-      object, call_data->property_sym, call_data->accessor);
+  prop_call_clear_no_recurse(call_data, jump);
 }
 
 static inline
