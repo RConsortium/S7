@@ -47,8 +47,10 @@ S7_inherits <- function(x, class = NULL) {
 }
 
 has_S7_class <- function(x) {
+  classes <- attr(x, "class", exact = TRUE)
   class_name_in_attr(x, "S7_object") &&
     (
+      identical(classes, "S7_object") ||
       class_name_in_attr(x, "S7_class") ||
         !is.null(attr(x, "S7_class", exact = TRUE))
     )
