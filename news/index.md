@@ -2,22 +2,48 @@
 
 ## S7 (development version)
 
+- Internal changes to support R-devel (4.6)
+  ([\#592](https://github.com/RConsortium/S7/issues/592),
+  [\#593](https://github.com/RConsortium/S7/issues/593),
+  [\#598](https://github.com/RConsortium/S7/issues/598),
+  [\#600](https://github.com/RConsortium/S7/issues/600)).
+- Method dispatch on `class_missing` now correctly handles missing
+  arguments forwarded through a wrapper functions
+  ([\#595](https://github.com/RConsortium/S7/issues/595)).
+- `S7_error_method_not_found` now has a correct class vector without a
+  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
+  [\#604](https://github.com/RConsortium/S7/issues/604)).
 - `method<-` now gives a clear error when assigning a primitive function
   (e.g. `log`) as a method
   ([\#608](https://github.com/RConsortium/S7/issues/608)).
+- `method<-` and
+  [`method()`](https://rconsortium.github.io/S7/reference/method.md) now
+  accept a length-1 list as `signature` for single-dispatch generics,
+  matching the list-of-classes form required for multi-dispatch
+  ([\#555](https://github.com/RConsortium/S7/issues/555)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
-- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  and
-  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  now accept any class specification (S7 class, S7 union, S3 class, S4
-  class, or base type wrapper like `class_integer`), not just S7 classes
-  ([\#556](https://github.com/RConsortium/S7/issues/556)).
-- Method dispatch on `class_missing` now correctly handles missing
-  arguments forwarded through a wrapper functions
-  ([\#595](https://github.com/RConsortium/S7/issues/595)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  no longer materialises ALTREP parent values
+  (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
+  an S7 object that wraps a large compact integer sequence is now O(1)
+  in memory instead of O(n)
+  ([@kschaubroeck](https://github.com/kschaubroeck),
+  [\#607](https://github.com/RConsortium/S7/issues/607)).
+- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  objects now work with
+  [`inherits()`](https://rdrr.io/r/base/class.html) (and other functions
+  that use [`nameOfClass()`](https://rdrr.io/r/base/class.html)) in R
+  4.3 and later ([@lawremi](https://github.com/lawremi),
+  [\#521](https://github.com/RConsortium/S7/issues/521)).
+- New
+  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
+  returns a data frame summarising the properties of an S7 object or
+  class, with one row per property and columns for name, default, class,
+  getter, setter, and validator
+  ([\#551](https://github.com/RConsortium/S7/issues/551)).
 - [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
   now returns a class specification for any R object, not just S7
   objects. It returns the matching `class_*` for base types, a
@@ -27,48 +53,22 @@
   [`method()`](https://rconsortium.github.io/S7/reference/method.md) or
   other S7 dispatch helpers
   ([\#559](https://github.com/RConsortium/S7/issues/559)).
-- `method<-` and
-  [`method()`](https://rconsortium.github.io/S7/reference/method.md) now
-  accept a length-1 list as `signature` for single-dispatch generics,
-  matching the list-of-classes form required for multi-dispatch
-  ([\#555](https://github.com/RConsortium/S7/issues/555)).
 - [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
   is a new exported helper that formats a class specification as a short
   human-readable string
   ([\#594](https://github.com/RConsortium/S7/issues/594)).
-- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
-  objects now work with
-  [`inherits()`](https://rdrr.io/r/base/class.html) (and other functions
-  that use [`nameOfClass()`](https://rdrr.io/r/base/class.html)) in R
-  4.3 and later ([@lawremi](https://github.com/lawremi),
-  [\#521](https://github.com/RConsortium/S7/issues/521)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  no longer materialises ALTREP parent values
-  (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
-  an S7 object that wraps a large compact integer sequence is now O(1)
-  in memory instead of O(n)
-  ([@kschaubroeck](https://github.com/kschaubroeck),
-  [\#607](https://github.com/RConsortium/S7/issues/607)).
-- New
-  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
-  returns a data frame summarising the properties of an S7 object or
-  class, with one row per property and columns for name, default, class,
-  getter, setter, and validator
-  ([\#551](https://github.com/RConsortium/S7/issues/551)).
-- Internal changes to support R-devel (4.6)
-  ([\#592](https://github.com/RConsortium/S7/issues/592),
-  [\#593](https://github.com/RConsortium/S7/issues/593),
-  [\#598](https://github.com/RConsortium/S7/issues/598),
-  [\#600](https://github.com/RConsortium/S7/issues/600)).
 - [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
   now preserves the S3 class when the S7 class inherits from an S3
   class, so
   e.g. [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
   on a data.frame subclass now returns a data.frame
   ([\#380](https://github.com/RConsortium/S7/issues/380)).
-- `S7_error_method_not_found` now has a correct class vector without a
-  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
-  [\#604](https://github.com/RConsortium/S7/issues/604))
+- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  and
+  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  now accept any class specification (S7 class, S7 union, S3 class, S4
+  class, or base type wrapper like `class_integer`), not just S7 classes
+  ([\#556](https://github.com/RConsortium/S7/issues/556)).
 - [`str()`](https://rdrr.io/r/utils/str.html) on S7 objects that inherit
   from data.frame (or other S3 classes whose underlying data has a `dim`
   attribute incompatible with the bare base type) no longer errors
