@@ -43,6 +43,14 @@ test_that("can construct data frame subclass", {
   expect_s3_class(df, "data.frame")
 })
 
+test_that("inherits() works with S7_S3_class", {
+  skip_if(getRversion() < "4.3")
+
+  expect_true(inherits(factor("a"), class_factor))
+  expect_false(inherits(1, class_factor))
+  expect_true(inherits(Sys.Date(), new_S3_class("Date")))
+})
+
 # Basic tests of validators -----------------------------------------------
 
 test_that("catches invalid factors", {
