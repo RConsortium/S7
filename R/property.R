@@ -167,7 +167,7 @@ prop_default <- function(prop, envir, package) {
 
 prop_default_desc <- function(prop) {
   if (prop_is_read_only(prop)) {
-    "<read-only>"
+    "[read-only]"
   } else if (!is.null(prop$default)) {
     paste0("= ", deparse1(prop$default))
   } else {

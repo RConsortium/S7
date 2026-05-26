@@ -65,7 +65,7 @@
        $ implicit_default (<character>)
        $ default_value = "" (<character>)
        $ default_expr = Sys.Date() (S3<Date>)
-       $ read_only <read-only> (<ANY>)
+       $ read_only [read-only] (<ANY>)
 
 # S7 classes / checks inputs
 
