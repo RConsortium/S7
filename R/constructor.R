@@ -44,7 +44,7 @@ new_constructor <- function(
     args[names(arg_info$self)] <- arg_info$self
   } else {
     # user facing error in S7_class()
-    stop("Unsupported `parent` type", call. = FALSE)
+    stop("Unsupported `parent` type.", call. = FALSE)
   }
 
   # ensure default value for `...` is empty
