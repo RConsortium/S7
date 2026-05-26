@@ -2,6 +2,9 @@
 
 ## S7 (development version)
 
+- `method<-` now gives a clear error when assigning a primitive function
+  (e.g. `log`) as a method
+  ([\#608](https://github.com/RConsortium/S7/issues/608)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
