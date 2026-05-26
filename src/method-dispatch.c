@@ -139,7 +139,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
 
   SEXP table = Rf_getAttrib(generic, sym_methods);
   if (TYPEOF(table) != ENVSXP) {
-    Rf_error("Corrupt S7_generic: @methods isn't an environment");
+    Rf_error("Corrupt S7_generic: @methods isn't an environment.");
   }
 
   SEXP m = method_rec(table, signature, 0);

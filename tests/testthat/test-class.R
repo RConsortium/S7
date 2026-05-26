@@ -272,3 +272,20 @@ test_that("can't create class with reserved property names", {
     )
   })
 })
+
+test_that("S7_class() returns a usable spec for any object (#559)", {
+  # base types
+  expect_equal(S7_class(1L), class_integer)
+  expect_equal(S7_class(NULL), NULL)
+
+  # S3
+  expect_equal(S7_class(factor("a")), new_S3_class("factor"))
+  expect_equal(S7_class(Sys.time()), new_S3_class(c("POSIXct", "POSIXt")))
+
+  # NULL and missing
+  expect_equal(S7_class(quote(expr = )), class_missing)
+})
+
+test_that("S7_class() gives informative error if no S7 spec available", {
+  expect_snapshot(error = TRUE, S7_class(pairlist(x = 1)))
+})

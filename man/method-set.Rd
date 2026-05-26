@@ -25,7 +25,8 @@ following:
 }
 
 For S7 generics that use multiple dispatch, this must be a list of any of
-the above types.
+the above types. (For convenience you can also use a list in the single
+dispatch case too.)
 
 For S3 generics, this must be a single S7 class.
 
