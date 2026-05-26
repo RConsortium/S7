@@ -198,6 +198,24 @@ class_validate <- function(class, object) {
   }
 }
 
+#' Format a class specification as a string
+#'
+#' `S7_class_desc()` turns any [class specification][as_class] into a short,
+#' human-readable, string, suitable for use in user-facing messages.
+#'
+#' @param class A [class specification][as_class].
+#' @returns A string.
+#' @export
+#' @examples
+#' S7_class_desc(class_integer)
+#' S7_class_desc(new_S3_class("data.frame"))
+#' S7_class_desc(class_integer | class_double)
+#' S7_class_desc(NULL)
+S7_class_desc <- function(class) {
+  class <- as_class(class)
+  class_desc(class)
+}
+
 class_desc <- function(x) {
   switch(
     class_type(x),
