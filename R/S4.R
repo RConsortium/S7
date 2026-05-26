@@ -36,6 +36,27 @@ S4_register <- function(class, env = parent.frame()) {
   invisible()
 }
 
+S4_register_subclass <- function(name, parent, properties, package = NULL,
+                                 env = parent.frame()) {
+  slots <- vcapply(
+    Filter(prop_is_s4_slot, properties),
+    function(prop) S4_slot_class(prop$class)
+  )
+
+  args <- list(
+    Class = name,
+    contains = parent@className,
+    slots = slots,
+    where = topenv(env)
+  )
+  if (!is.null(package)) {
+    args$package <- package
+  }
+
+  do.call(methods::setClass, args)
+  methods::getClass(name, where = topenv(env))
+}
+
 is_S4_class <- function(x) inherits(x, "classRepresentation")
 
 S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
@@ -74,6 +95,68 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
     )
     stop2(paste0(error_base, msg), call = call)
   }
+}
+
+S4_slot_properties <- function(class) {
+  properties <- Map(S4_slot_property, class@slots, names(class@slots))
+  names(properties) <- names(class@slots)
+  properties
+}
+
+S4_slot_property <- function(class, name) {
+  prop <- new_property(
+    class = S4_slot_as_class(class),
+    getter = S4_slot_getter(name),
+    setter = S4_slot_setter(name),
+    name = name
+  )
+  attr(prop, "S4_slot") <- TRUE
+  prop
+}
+
+S4_slot_as_class <- function(class) {
+  S4_to_S7_class(methods::getClass(class))
+}
+
+S4_slot_getter <- function(name) {
+  force(name)
+  function(self) {
+    methods::slot(self, name)
+  }
+}
+
+S4_slot_setter <- function(name) {
+  force(name)
+  function(self, value) {
+    methods::slot(self, name) <- value
+    self
+  }
+}
+
+mark_S4_slot_properties <- function(properties) {
+  for (name in names(properties)) {
+    if (!prop_is_dynamic(properties[[name]])) {
+      attr(properties[[name]], "S4_slot") <- TRUE
+    }
+  }
+  properties
+}
+
+prop_is_s4_slot <- function(prop) {
+  isTRUE(attr(prop, "S4_slot", exact = TRUE))
+}
+
+S4_slot_class <- function(class) {
+  switch(class_type(class),
+    NULL = "NULL",
+    missing = "ANY",
+    any = "ANY",
+    S4 = as.character(class@className),
+    S7_base = class_register(class),
+    S7_S3 = class_register(class),
+    S7 = "ANY",
+    S7_union = "ANY"
+  )
 }
 
 S4_basic_classes <- function() {
@@ -191,8 +274,10 @@ find_package_with_symbol <- function(name, env, exclude = NULL) {
 
 S4_remove_classes <- function(classes, where = parent.frame()) {
   for (class in classes) {
-    suppressWarnings(methods::removeClass(class, topenv(where)))
+    suppressWarnings(
+      try(methods::removeClass(class, topenv(where)), silent = TRUE)
+    )
   }
 }
 
-globalVariables(c("superClass", "virtual"))
+globalVariables(c("slots", "superClass", "virtual"))

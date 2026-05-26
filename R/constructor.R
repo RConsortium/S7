@@ -2,7 +2,9 @@ new_constructor <- function(
   parent,
   properties,
   envir = asNamespace("S7"),
-  package = NULL
+  package = NULL,
+  name = NULL,
+  s4_class = NULL
 ) {
   properties <- as_properties(properties)
   arg_info <- constructor_args(parent, properties, envir, package)
@@ -27,6 +29,32 @@ new_constructor <- function(
       )),
       env = envir
     ))
+  }
+
+  if (is_S4_class(parent)) {
+    if (is.null(s4_class)) {
+      s4_class <- parent
+    }
+
+    parent_name <- ".S4_parent"
+    parent_fun <- class_constructor(s4_class)
+    args <- arg_info$self
+
+    s4_args <- self_args[vlapply(properties[names(self_args)], prop_is_s4_slot)]
+    parent_call <- new_call(parent_name, s4_args)
+    body <- new_call(
+      if (has_S7_symbols(envir, "new_object")) {
+        "new_object"
+      } else {
+        c("S7", "new_object")
+      },
+      c(list(parent_call), self_args)
+    )
+
+    env <- new.env(parent = envir)
+    env[[parent_name]] <- parent_fun
+
+    return(new_function(args, body, env))
   }
 
   if (is_class(parent)) {

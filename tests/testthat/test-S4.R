@@ -67,6 +67,36 @@ test_that("errors on non-S4 classes", {
   expect_snapshot(S4_to_S7_class(1), error = TRUE)
 })
 
+test_that("S7 classes can extend S4 classes", {
+  on.exit(S4_remove_classes(c("Parent", "Child")))
+  setClass("Parent", slots = list(x = "numeric"))
+
+  Child <- new_class(
+    "Child",
+    parent = getClass("Parent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+  child <- Child(x = 1, y = "a")
+
+  expect_true(isS4(child))
+  expect_true(methods::is(child, "Parent"))
+  expect_true(methods::validObject(child))
+  expect_true(S7_inherits(child, Child))
+  expect_equal(prop_names(child), c("x", "y"))
+  expect_equal(prop(child, "x"), 1)
+  expect_equal(prop(child, "y"), "a")
+
+  prop(child, "x") <- 2
+  prop(child, "y") <- "b"
+  expect_equal(prop(child, "x"), 2)
+  expect_equal(prop(child, "y"), "b")
+  expect_equal(methods::slot(child, "x"), 2)
+  expect_equal(methods::slot(child, "y"), "b")
+
+  expect_error(Child(x = "x", y = "a"))
+})
+
 
 describe("S4_class_dispatch", {
   it("returns name of base class", {
