@@ -70,7 +70,7 @@ within S7:
 \item \code{class_name}
 \item \code{class_call}
 \item \code{class_function}
-\item \code{class_environment} (can only be used for properties)
+\item \code{class_environment}
 }
 
 We also include three union types to model numerics, atomics, and vectors

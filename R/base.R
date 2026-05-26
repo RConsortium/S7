@@ -113,7 +113,7 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_name`
 #' * `class_call`
 #' * `class_function`
-#' * `class_environment` (can only be used for properties)
+#' * `class_environment`
 #'
 #' We also include three union types to model numerics, atomics, and vectors
 #' respectively:
