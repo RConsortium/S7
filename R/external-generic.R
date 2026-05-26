@@ -103,9 +103,8 @@ methods_register <- function() {
 
     if (isNamespaceLoaded(x$generic$package)) {
       register()
-    } else {
-      setHook(packageEvent(x$generic$package, "onLoad"), register)
     }
+    setHook(packageEvent(x$generic$package, "onLoad"), register)
   }
 
   invisible()
