@@ -40,11 +40,24 @@
 S7_inherits <- function(x, class = NULL) {
   class <- as_class(class)
   if (is.null(class)) {
-    inherits(x, "S7_object")
+    has_S7_class(x)
   } else {
     class_inherits(x, class)
   }
 }
+
+has_S7_class <- function(x) {
+  class_name_in_attr(x, "S7_object") &&
+    (
+      class_name_in_attr(x, "S7_class") ||
+        !is.null(attr(x, "S7_class", exact = TRUE))
+    )
+}
+
+class_name_in_attr <- function(x, name) {
+  any(identical(name, class(x)) || name %in% attr(x, "class", exact = TRUE))
+}
+
 
 #' @export
 #' @rdname S7_inherits
