@@ -55,6 +55,9 @@
 #'   belong to each instance of the class. Each element of the list can
 #'   either be a type specification (processed by [as_class()]) or a
 #'   full property specification created [new_property()].
+#' @section S4 compatibility:
+#' ```{r child = "man/rmd/S4-compatibility.Rmd"}
+#' ```
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
@@ -159,6 +162,10 @@ new_class <- function(
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
+
+  if (is_S4_class(parent)) {
+    S4_register(object, env = parent.frame())
+  }
 
   global_variables(names(new_props))
   object
