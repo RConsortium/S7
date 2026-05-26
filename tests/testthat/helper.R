@@ -70,16 +70,22 @@ local_s3_generic <- function(name, frame = parent.frame()) {
   defer(
     {
       rm(list = name, envir = globalenv())
-      tbl <- globalenv()[[".__S3MethodsTable__."]]
-      if (!is.null(tbl)) {
-        methods <- ls(tbl, pattern = paste0("^", name, "\\."))
-        if (length(methods)) {
-          rm(list = methods, envir = tbl)
-        }
-      }
+      unregister_s3_methods(globalenv(), name)
     },
     frame = frame
   )
+  invisible()
+}
+
+unregister_s3_methods <- function(envir, generic) {
+  tbl <- envir[[".__S3MethodsTable__."]]
+  if (is.null(tbl)) {
+    return(invisible())
+  }
+  methods <- ls(tbl, pattern = paste0("^", generic, "\\."))
+  if (length(methods)) {
+    rm(list = methods, envir = tbl)
+  }
   invisible()
 }
 
