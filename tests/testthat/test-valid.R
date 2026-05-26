@@ -27,7 +27,7 @@ test_that("validate() validates object and type recursively", {
     properties = list(z = class_double)
   )
   expect_snapshot(error = TRUE, {
-    obj <- klass2(1, -1, 1)
+    obj <- klass2(x = 1, y = -1, z = 1)
     attr(obj, "x") <- -1
     validate(obj)
 

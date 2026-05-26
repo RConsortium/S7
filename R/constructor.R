@@ -5,10 +5,16 @@ new_constructor <- function(
   package = NULL
 ) {
   properties <- as_properties(properties)
-  arg_info <- constructor_args(parent, properties, envir, package)
-  self_args <- as_names(names(arg_info$self), named = TRUE)
 
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
+    # Abstract parent: child must handle all properties since there's no
+    # parent constructor to delegate to. Combine inherited properties with
+    # any new/overridden child properties (child wins on conflicts).
+    abstract_props <- if (is_class(parent)) parent@properties else list()
+    abstract_props[names(properties)] <- properties
+    arg_info <- constructor_args(parent, abstract_props, envir, package)
+    self_args <- as_names(names(arg_info$self), named = TRUE)
+
     new_object_call <-
       if (has_S7_symbols(envir, "new_object", "S7_object")) {
         bquote(new_object(S7_object(), ..(self_args)), splice = TRUE)
@@ -29,32 +35,34 @@ new_constructor <- function(
     ))
   }
 
+  arg_info <- constructor_args(parent, properties, envir, package)
+  self_args <- as_names(names(arg_info$self), named = TRUE)
+
   if (is_class(parent)) {
     parent_name <- parent@name
     parent_fun <- parent
-    args <- modify_list(arg_info$parent, arg_info$self)
   } else if (is_base_class(parent)) {
     parent_name <- parent$constructor_name
     parent_fun <- parent$constructor
-    args <- modify_list(arg_info$parent, arg_info$self)
   } else if (is_S3_class(parent)) {
     parent_name <- paste0("new_", parent$class[[1]])
     parent_fun <- parent$constructor
-    args <- formals(parent$constructor)
-    args[names(arg_info$self)] <- arg_info$self
   } else {
     # user facing error in S7_class()
     stop("Unsupported `parent` type", call. = FALSE)
   }
 
-  # ensure default value for `...` is empty
-  if ("..." %in% names(args)) {
-    args[names(args) == "..."] <- list(quote(expr = ))
+  # Forward parent constructor arguments via `...` rather than copying
+  # parent's formals. This ensures they're evaluated in the correct
+  # environment and we can override parent properties. The downside is
+  # that we lose an explicit list of all properties.
+  if (length(formals(parent_fun)) > 0L) {
+    args <- c(alist(... = ), arg_info$self)
+    parent_call <- new_call(parent_name, list(quote(...)))
+  } else {
+    args <- arg_info$self
+    parent_call <- new_call(parent_name, list())
   }
-
-  parent_args <- as_names(names(arg_info$parent), named = TRUE)
-  names(parent_args)[names(parent_args) == "..."] <- ""
-  parent_call <- new_call(parent_name, parent_args)
   body <- new_call(
     if (has_S7_symbols(envir, "new_object")) {
       "new_object"
@@ -82,12 +90,6 @@ constructor_args <- function(
   properties <- properties[!vlapply(properties, prop_is_read_only)]
 
   self_arg_nms <- names2(properties)
-
-  if (is_class(parent) && !parent@abstract) {
-    # Remove any parent properties; can't use parent_args() since the constructor
-    # might automatically set some properties.
-    self_arg_nms <- setdiff(self_arg_nms, names2(parent@properties))
-  }
 
   self_args <- as.pairlist(lapply(
     setNames(, self_arg_nms),

@@ -22,15 +22,15 @@
       foo <- new_class("foo", parent = class_character)
       new_constructor(foo, list())
     Output
-      function (.data = character(0)) 
-      new_object(foo(.data = .data))
+      function (...) 
+      new_object(foo(...))
       <environment: 0x0>
     Code
       foo2 <- new_class("foo2", parent = foo)
       new_constructor(foo2, list())
     Output
-      function (.data = character(0)) 
-      new_object(foo2(.data = .data))
+      function (...) 
+      new_object(foo2(...))
       <environment: 0x0>
 
 # can generate constructors for S3 classes
@@ -38,15 +38,14 @@
     Code
       new_constructor(class_factor, list())
     Output
-      function (.data = integer(), levels = NULL) 
-      new_object(new_factor(.data = .data, levels = levels))
+      function (...) 
+      new_object(new_factor(...))
       <environment: 0x0>
     Code
       new_constructor(class_factor, as_properties(list(x = class_numeric, y = class_numeric)))
     Output
-      function (.data = integer(), levels = NULL, x = integer(0), y = integer(0)) 
-      new_object(new_factor(.data = .data, levels = levels), x = x, 
-          y = y)
+      function (..., x = integer(0), y = integer(0)) 
+      new_object(new_factor(...), x = x, y = y)
       <environment: 0x0>
 
 # can generate constructor for inherited abstract classes
@@ -55,18 +54,20 @@
       foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = class_double))
       new_constructor(foo1, list())
     Output
-      function () 
+      function (x = numeric(0)) 
       {
-          new_object(S7_object())
+          x
+          new_object(S7_object(), x = x)
       }
       <environment: namespace:S7>
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
-      function (y = numeric(0)) 
+      function (x = numeric(0), y = numeric(0)) 
       {
+          x
           y
-          new_object(S7_object(), y = y)
+          new_object(S7_object(), x = x, y = y)
       }
       <environment: namespace:S7>
 

@@ -60,7 +60,7 @@ describe("fallback convert", {
       package = NULL
     )
 
-    obj <- convert(foo2(1, 2), to = foo1)
+    obj <- convert(foo2(x = 1, y = 2), to = foo1)
     expect_equal(class(obj), c("foo1", "S7_object"))
     expect_equal(S7_class(obj), foo1)
     expect_equal(props(obj), list(x = 1))
