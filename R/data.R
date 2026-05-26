@@ -48,7 +48,9 @@ base_parent <- function(class) {
 #' @export
 #' @rdname S7_data
 `S7_data<-` <- function(object, check = TRUE, value) {
+  check_is_S7(object)
   check_not_environment(object, "S7_data<-")
+
   attrs <- attributes(object)
   object <- value
   attributes(object) <- attrs
