@@ -194,7 +194,7 @@ check_method <- function(
   generic,
   name = paste0(generic@name, "(???)")
 ) {
-  if (!is.function(method)) {
+  if (!is.function(method) || is.primitive(method)) {
     stop(sprintf("%s must be a function.", name), call. = FALSE)
   }
 

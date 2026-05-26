@@ -203,37 +203,8 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-propr <- function(object, name) {
-  # reference implementation of `prop()` implemented in R
-  check_is_S7(object)
-
-  if (!prop_exists(object, name)) {
-    stop(prop_error_unknown(object, name), call. = FALSE)
-  } else {
-    prop_val(object, name)
-  }
-}
-
 signal_prop_error_unknown <- function(object, name) {
   stop(prop_error_unknown(object, name), call. = FALSE)
-}
-
-# Internal helper that assumes the property exists
-prop_val <- function(object, name) {
-  val <- attr(object, name, exact = TRUE)
-  if (is.null(val)) {
-    prop <- prop_obj(object, name)
-    if (!is.null(prop$getter)) {
-      val <- prop$getter(object)
-    }
-  }
-  val
-}
-
-# Get underlying property object from class
-prop_obj <- function(object, name) {
-  class <- S7_class(object)
-  attr(class, "properties")[[name]]
 }
 
 #' @rdname prop
@@ -243,51 +214,6 @@ prop_obj <- function(object, name) {
 `prop<-` <- function(object, name, check = TRUE, value) {
   .Call(prop_set_, object, name, check, value)
 }
-
-`propr<-` <- local({
-  # reference implementation of `prop<-()` implemented in R
-  # This flag is used to avoid infinite loops if you are assigning a property from a setter function
-  setter_property <- NULL
-
-  function(object, name, check = TRUE, value) {
-    check_is_S7(object)
-
-    prop <- prop_obj(object, name)
-    if (is.null(prop)) {
-      stop(prop_error_unknown(object, name), call. = FALSE)
-    }
-
-    if (!is.null(prop$getter) && is.null(prop$setter)) {
-      msg <- sprintf(
-        "Can't set read-only property %s@%s.",
-        obj_desc(object),
-        name
-      )
-      stop(msg, call. = FALSE)
-    }
-
-    if (!is.null(prop$setter) && !identical(setter_property, name)) {
-      setter_property <<- name
-      on.exit(setter_property <<- NULL, add = TRUE)
-      object <- prop$setter(object, value)
-    } else {
-      if (isTRUE(check)) {
-        error <- prop_validate(prop, value, object)
-        if (!is.null(error)) {
-          stop(error, call. = FALSE)
-        }
-      }
-
-      attr(object, name) <- value
-    }
-
-    if (isTRUE(check) && is.null(setter_property)) {
-      validate(object, properties = FALSE)
-    }
-
-    invisible(object)
-  }
-})
 
 # called from src/prop.c
 signal_prop_error <- function(fmt, object, name) {
