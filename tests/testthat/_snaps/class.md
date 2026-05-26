@@ -289,6 +289,19 @@
       Error:
       ! Can't call `S7_data<-` on an environment because attribute changes are made in place.
 
+# str() and print() work for environment-derived classes
+
+    Code
+      str(e)
+    Output
+      <Foo> <environment: 0x0>
+       @ name: chr "bob"
+    Code
+      print(e)
+    Output
+      <Foo> <environment: 0x0>
+       @ name: chr "bob"
+
 # S7_class() gives informative error if no S7 spec available
 
     Code

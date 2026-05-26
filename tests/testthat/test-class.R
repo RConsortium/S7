@@ -342,6 +342,25 @@ test_that("can inherit from environments", {
   })
 })
 
+test_that("str() and print() work for environment-derived classes", {
+  Foo <- new_class(
+    "Foo",
+    parent = class_environment,
+    properties = list(name = class_character),
+    package = NULL
+  )
+  e <- Foo(new.env(parent = emptyenv()), name = "bob")
+
+  expect_snapshot(
+    {
+      str(e)
+      print(e)
+    },
+    transform = scrub_environment
+  )
+})
+
+
 test_that("S7_class() returns a usable spec for any object (#559)", {
   # base types
   expect_equal(S7_class(1L), class_integer)
