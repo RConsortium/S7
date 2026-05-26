@@ -44,7 +44,7 @@ test_that("can construct data frame subclass", {
 })
 
 test_that("inherits() works with S7_S3_class", {
-  skip_if(getRversion() < "4.3")
+  skip_unless_r("> 4.3.0")
 
   expect_true(inherits(factor("a"), class_factor))
   expect_false(inherits(1, class_factor))
