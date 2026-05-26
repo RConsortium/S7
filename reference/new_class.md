@@ -31,6 +31,8 @@ new_object(.parent, ...)
   `new_class()` should always be assigned to a variable with this name,
   i.e. `Foo <- new_class("Foo")`.
 
+  We recommend using CamelCase for S7 class names.
+
 - parent:
 
   The parent class to inherit behavior from. There are three options:

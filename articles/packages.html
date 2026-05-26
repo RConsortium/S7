@@ -84,68 +84,99 @@
     
 <p>This vignette outlines the most important things you need to know
 about using S7 in a package. S7 is new, so few people have used it in a
-package yet; this means that this vignette is likely incomplete, and
-we’d love your help to make it better. Please <a href="https://github.com/RConsortium/S7/issues/new" class="external-link">let us know</a> if
+package yet; this vignette is likely incomplete, and we’d love your help
+to make it better. Please <a href="https://github.com/RConsortium/S7/issues/new" class="external-link">let us know</a> if
 you have questions that this vignette doesn’t answer.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rconsortium.github.io/S7/">S7</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="method-registration">Method registration<a class="anchor" aria-label="anchor" href="#method-registration"></a>
+<h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
-<p>You should always call <code><a href="../reference/methods_register.html">methods_register()</a></code> in your
-<code>.onLoad()</code>:</p>
+<p>First, add <code>S7</code> to the <code>Imports</code> field of your
+<code>DESCRIPTION</code>. We then recommend importing all S7 functions
+into your package <code>NAMESPACE</code> with <code>import(S7)</code>,
+or, if you’re using roxygen2, <code>@import S7</code>.</p>
+<p>Next, create a <code>.onLoad()</code> in <code>zzz.R</code> that
+calls <code><a href="../reference/methods_register.html">methods_register()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">.onLoad</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="../reference/methods_register.html">methods_register</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>This is S7’s way of registering methods, rather than using export
 directives in your <code>NAMESPACE</code> like S3 and S4 do. This is
-only strictly necessary if registering methods for generics in other
-packages, but there’s no harm in adding it and it ensures that you won’t
-forget later. (And if you’re not importing S7 into your namespace it
-will quiet an <code>R CMD check</code>
-<code>NOTE</code>.<code>)</code></p>
+only strictly necessary if you are registering methods for generics in
+other packages, but there’s no harm in adding it and it ensures that you
+won’t forget later.</p>
 </div>
 <div class="section level2">
-<h2 id="documentation-and-exports">Documentation and exports<a class="anchor" aria-label="anchor" href="#documentation-and-exports"></a>
+<h2 id="classes">Classes<a class="anchor" aria-label="anchor" href="#classes"></a>
 </h2>
 <p>If you want users to create instances of your class, you will need to
 export the class constructor. That means you will also need to document
-it, and since the constructor is a function, that means you have to
-document the arguments which will be the properties of the class (unless
-you have customised the constructor).</p>
-<p>If you export a class, you must also set the <code>package</code>
-argument, ensuring that classes with the same name are disambiguated
-across packages.</p>
+it, and since the constructor is a function, you have to document the
+arguments, which will be the properties of the class (unless you have
+customized the constructor). If you export a class (i.e. its
+constructor), you must also set the <code>package</code> argument,
+ensuring that classes with the same name are disambiguated across
+packages.</p>
+<p>NB: if your package creates a hierarchy of classes, subclasses must
+be defined <em>after</em> the parent classes. That means if you define
+the classes in separate files, you will need to use the
+<code>DESCRIPTION</code> Collate field (or the equivalent roxygen2
+<code>@include</code> tag) to ensure the files are loaded in the correct
+order.</p>
+</div>
+<div class="section level2">
+<h2 id="generics-and-methods">Generics and methods<a class="anchor" aria-label="anchor" href="#generics-and-methods"></a>
+</h2>
 <p>You should document generics like regular functions (since they
 are!). If you expect others to create their own methods for your
-generic, you may want to include an section describing the properties
-that you expect all methods to have. We plan to provide an easy way to
-document all methods for a generic, but have not yet implemented it. You
-can track progress at <a href="https://github.com/RConsortium/S7/issues/167" class="external-link uri">https://github.com/RConsortium/S7/issues/167</a>.</p>
-<p>We don’t currently have any recommendations on documenting methods.
-There’s no need to document them in order to pass
-<code>R CMD check</code>, but obviously there are cases where it’s nice
-to provide additional details for a method, particularly if it takes
-extra arguments compared to the generic. We’re tracking that issue at <a href="https://github.com/RConsortium/S7/issues/315" class="external-link uri">https://github.com/RConsortium/S7/issues/315</a>.</p>
+generic, you may want to include a section describing the properties
+that you expect all methods to have. If you want to list all methods for
+a generic, you can use the <a href="https://doclisting.r-lib.org" class="external-link">doclisting</a> package.</p>
+<p>If you use roxygen2, you can document S7 generics and methods by
+following the advice in <a href="https://roxygen2.r-lib.org/articles/rd-S7.html" class="external-link"><code>vignette("rd-S7", package = "roxygen2")</code></a>.</p>
+<p>Note that methods can only be defined after both the class and
+generic have been defined. If generics/methods/classes live in different
+files, you will need to use the <code>DESCRIPTION</code> Collate field
+(or the equivalent roxygen2 <code>@include</code> tag) to ensure the
+files are loaded in the correct order.</p>
 </div>
 <div class="section level2">
 <h2 id="backward-compatibility">Backward compatibility<a class="anchor" aria-label="anchor" href="#backward-compatibility"></a>
 </h2>
+<div class="section level3">
+<h3 id="s3">S3<a class="anchor" aria-label="anchor" href="#s3"></a>
+</h3>
+<p>S7 objects are S3 objects, so it’s possible to manually register an
+S7 method for an S3 generic without using <code>method&lt;-</code>. The
+main thing to note is that the S3 class name of an S7 object is
+<code>{package}::{class}</code>, which means you’ll need to wrap the
+method name in <code>`</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo"</span>, package <span class="op">=</span> <span class="st">"S7"</span><span class="op">)</span></span>
+<span><span class="va">`length.S7::Foo`</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">10</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu">Foo</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 10</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="older-versions-of-r">Older versions of R<a class="anchor" aria-label="anchor" href="#older-versions-of-r"></a>
+</h3>
 <p>If you are using S7 in a package <em>and</em> you want your package
 to work in versions of R before 4.3.0, you need to know that in these
 versions of R <code>@</code> only works with S4 objects. There are two
-workarounds. The easiest and least convenient workaround is to just
+workarounds. The easiest but least convenient workaround is to just use
 <code><a href="../reference/prop.html">prop()</a></code> instead of <code>@</code>. Otherwise, you can
 conditionally make an S7-aware <code>@</code> available to your package
 with this custom <code>NAMESPACE</code> directive:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># enable usage of &lt;S7_object&gt;@name in package code</span></span>
 <span><span class="co">#' @rawNamespace if (getRversion() &lt; "4.3.0") importFrom("S7", "@")</span></span>
 <span><span class="cn">NULL</span></span></code></pre></div>
 <p><code>@</code> will work for users of your package because S7
 automatically attaches an environment containing the needed definition
 when it’s loaded.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
