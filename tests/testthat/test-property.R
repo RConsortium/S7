@@ -291,6 +291,7 @@ describe("prop_info()", {
 
     info <- prop_info(foo)
     expect_s3_class(info, "data.frame")
+    expect_equal(.row_names_info(info), -5L) # numeric row names
     expect_equal(info$name, c("a", "b", "c", "d", "e"))
     expect_equal(
       info$class,

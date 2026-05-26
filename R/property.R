@@ -449,7 +449,8 @@ prop_info <- function(object) {
     class = vcapply(props, function(p) class_desc(p$class)),
     getter = vlapply(props, function(p) !is.null(p$getter)),
     setter = vlapply(props, function(p) !is.null(p$setter)),
-    validator = vlapply(props, function(p) !is.null(p$validator))
+    validator = vlapply(props, function(p) !is.null(p$validator)),
+    row.names = NULL
   )
 }
 
