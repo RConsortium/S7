@@ -26,7 +26,7 @@ S4_register <- function(class, env = parent.frame()) {
     classes <- class$class
   } else {
     msg <- sprintf(
-      "`class` must be an S7 class or an S3 class, not a %s",
+      "`class` must be an S7 class or an S3 class, not a %s.",
       obj_desc(class)
     )
     stop(msg, call. = FALSE)
