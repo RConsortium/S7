@@ -7,9 +7,12 @@
 #'
 #' Learn more in `vignette("classes-objects")`
 #'
-#' @param name The name of the class, as a string. The result of calling
-#'   `new_class()` should always be assigned to a variable with this name,
-#'   i.e. `Foo <- new_class("Foo")`.
+#' @param name The name of the class, as a string. (We recommend using
+#'   CamelCase for S7 class names, but it is not required.)
+#'
+#'   The result of calling `new_class()` should always be assigned to a variable
+#'   with this name, i.e. `Foo <- new_class("Foo")`. This object both represents
+#'   the class and is used to construct new instances of the class.
 #' @param parent The parent class to inherit behavior from.
 #'   There are three options:
 #'
@@ -255,6 +258,31 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
 
 is_class <- function(x) inherits(x, "S7_class")
 
+check_parent <- function(parent, class) {
+  parent_class <- class@parent
+  if (is.null(parent_class)) {
+    stop(
+      "`.parent` must not be supplied when class has no parent.",
+      call. = FALSE
+    )
+  }
+
+  # Ignore abstract classes since you can't supply an instance
+  if (is_class(parent_class) && parent_class@abstract) {
+    return()
+  }
+
+  if (class_inherits(parent, parent_class)) {
+    return()
+  }
+  msg <- sprintf(
+    "`.parent` must be an instance of %s, not %s.",
+    class_desc(parent_class),
+    obj_desc(parent)
+  )
+  stop(msg, call. = FALSE)
+}
+
 # Object ------------------------------------------------------------------
 
 #' @param .parent,... Parent object and named properties used to construct the
@@ -272,6 +300,10 @@ new_object <- function(.parent, ...) {
       class@name
     )
     stop(msg)
+  }
+
+  if (!missing(.parent)) {
+    check_parent(.parent, class)
   }
 
   args <- list(...)
@@ -322,15 +354,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
       cat(" ")
     }
 
-    attrs <- attributes(object)
-    if (is.environment(object)) {
-      attributes(object) <- NULL
-    } else {
-      attributes(object) <- list(names = names(object), dim = dim(object))
-    }
-
-    str(object, nest.lev = nest.lev)
-    attributes(object) <- attrs
+    str(S7_data(object), nest.lev = nest.lev)
   } else {
     cat("\n")
   }

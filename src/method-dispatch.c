@@ -17,6 +17,7 @@ extern SEXP sym_name;
 
 extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
+extern SEXP missing_call;
 
 extern SEXP R_TRUE;
 extern SEXP s7_proto_object;
@@ -91,7 +92,6 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   // Allocate a list to store the arguments
   SEXP args = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
-  SEXP missing_call = PROTECT(Rf_lang2(fn_base_missing, R_NilValue));
   PROTECT_INDEX pi;
   PROTECT_WITH_INDEX(R_NilValue, &pi);
 
@@ -115,7 +115,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   }
   Rf_setAttrib(args, R_NamesSymbol, dispatch_args);
 
-  UNPROTECT(3);
+  UNPROTECT(2);
 
   return args;
 }
@@ -196,9 +196,13 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
     if (i < n_dispatch) {
 
       SEXP arg = Rf_findVarInFrame(envir, name);
-      if (arg == R_MissingArg) {
 
-        APPEND_NODE(mcall_tail, name, arg);
+      SETCADR(missing_call, name);
+      int is_missing = Rf_asLogical(Rf_eval(missing_call, envir));
+
+      if (is_missing) {
+
+        APPEND_NODE(mcall_tail, name, R_MissingArg);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
 
       } else { // arg not missing, is a PROMSXP
