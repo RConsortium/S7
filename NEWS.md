@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* `new_object()` now gives an informative error when `.parent` is a class specification rather than an instance of the parent class (#409).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
 * `S7_class()` now returns a class specification for any R object, not just S7 objects. It returns the matching `class_*` for base types, a `new_S3_class()` wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to `method()` or other S7 dispatch helpers (#559).
