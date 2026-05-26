@@ -14,7 +14,7 @@
   : Register an S7 method for a generic
 - [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
   [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  : Does this object inherit from an S7 class?
+  : Does this object inherit from a class?
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
   [`valid_eventually()`](https://rconsortium.github.io/S7/reference/validate.md)
   [`valid_implicitly()`](https://rconsortium.github.io/S7/reference/validate.md)

@@ -1,4 +1,4 @@
-# Does this object inherit from an S7 class?
+# Does this object inherit from a class?
 
 - `S7_inherits()` returns `TRUE` or `FALSE`.
 
@@ -16,12 +16,18 @@ check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
 
 - x:
 
-  An object
+  An object.
 
 - class:
 
-  An S7 class or `NULL`. If `NULL`, tests whether `x` is an S7 object
-  without testing for a specific class.
+  A class specification (anything accepted by
+  [`as_class()`](https://rconsortium.github.io/S7/reference/as_class.md):
+  an S7 class, S7 union, S3 class, S4 class, base type wrapper like
+  [class_integer](https://rconsortium.github.io/S7/reference/base_classes.md),
+  or
+  [class_any](https://rconsortium.github.io/S7/reference/class_any.md)/[class_missing](https://rconsortium.github.io/S7/reference/class_missing.md)).
+  If `NULL`, only tests whether `x` is an S7 object, without testing for
+  a specific class.
 
 - arg:
 
@@ -55,7 +61,16 @@ S7_inherits(Foo1(), Foo2)
 try(check_is_S7(Foo1(), Foo2))
 #> Error : `Foo1()` must be a <Foo2>, not a <Foo1>.
 
-if (getRversion() >= "4.3.0")
+# Also works with other class specifications
+S7_inherits(1L, class_integer)
+#> [1] TRUE
+S7_inherits(data.frame(), new_S3_class("data.frame"))
+#> [1] TRUE
+S7_inherits(1L, class_integer | class_character)
+#> [1] TRUE
+
+if (getRversion() >= "4.3.0") {
   inherits(Foo1(), Foo1)
+}
 #> [1] TRUE
 ```

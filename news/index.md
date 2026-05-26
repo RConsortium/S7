@@ -2,6 +2,12 @@
 
 ## S7 (development version)
 
+- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  and
+  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  now accept any class specification (S7 class, S7 union, S3 class, S4
+  class, or base type wrapper like `class_integer`), not just S7 classes
+  ([\#556](https://github.com/RConsortium/S7/issues/556)).
 - Method dispatch on `class_missing` now correctly handles missing
   arguments forwarded through a wrapper functions
   ([\#595](https://github.com/RConsortium/S7/issues/595)).

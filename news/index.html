@@ -53,7 +53,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
+<ul><li>
+<code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
+<li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
 <li>
 <code><a href="../reference/S7_class.html">S7_class()</a></code> now returns a class specification for any R object, not just S7 objects. It returns the matching <code>class_*</code> for base types, a <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to <code><a href="../reference/method.html">method()</a></code> or other S7 dispatch helpers (<a href="https://github.com/RConsortium/S7/issues/559" class="external-link">#559</a>).</li>
 <li>
