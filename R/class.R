@@ -131,18 +131,32 @@ new_class <- function(
     }
   }
 
-  # Combine properties from parent, overriding as needed
-  parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
   check_prop_names(new_props)
+
+  s4_class <- NULL
+  if (is_S4_class(parent)) {
+    new_props <- mark_S4_slot_properties(new_props)
+    s4_class <- S4_register_subclass(name, parent, new_props,
+      package = package,
+      env = parent.frame()
+    )
+  }
+
+  # Combine properties from parent, overriding as needed
+  parent_props <- class_properties(parent)
   check_prop_overrides(new_props, parent_props, name, parent)
+  all_props <- modify_list(parent_props, new_props)
+  constructor_props <- if (is_S4_class(parent)) all_props else new_props
 
   if (is.null(constructor)) {
     constructor <- new_constructor(
       parent,
-      new_props,
+      constructor_props,
       envir = parent.frame(),
-      package = package
+      package = package,
+      name = name,
+      s4_class = s4_class
     )
   }
 
@@ -151,7 +165,7 @@ new_class <- function(
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
-  attr(object, "properties") <- modify_list(parent_props, new_props)
+  attr(object, "properties") <- all_props
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
@@ -249,7 +263,9 @@ c.S7_class <- function(...) {
   stop2("Can not combine S7 class objects.")
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_S4_class(x)
+}
 
 check_can_inherit <- function(
   x,
@@ -258,7 +274,7 @@ check_can_inherit <- function(
 ) {
   if (!can_inherit(x)) {
     msg <- sprintf(
-      "`%s` must be an S7 class, S3 class, or base type, not %s.",
+      "`%s` must be an S7 class, S4 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
