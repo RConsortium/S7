@@ -315,8 +315,8 @@ class_inherits <- function(x, what) {
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
-    S4 = isS4(x) && methods::is(x, what),
-    S7 = S7_inherits(x, what),
+    S4 = methods::is(x, what),
+    S7 = has_S7_class(x) && class_name_in_attr(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     # This is slightly too crude as we really want them to be in the same

@@ -291,6 +291,13 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
     return()
   }
 
+  # S4 parent compatibility is checked after new_object() installs the S7
+  # class attributes, at which point methods::validObject() can see the
+  # registered oldClass structure.
+  if (is_S4_class(parent_class)) {
+    return()
+  }
+
   if (class_inherits(parent, parent_class)) {
     return()
   }
