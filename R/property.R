@@ -119,11 +119,11 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   if (is.symbol(default)) {
     if (identical(default, quote(...))) {
       # The meaning of a `...` prop default needs discussion
-      stop(simpleError("`default` cannot be `...`", error_call))
+      stop(simpleError("`default` cannot be `...`.", error_call))
     }
     if (identical(default, quote(expr = ))) {
       # The meaning of a missing prop default needs discussion
-      stop(simpleError("`default` cannot be missing", error_call))
+      stop(simpleError("`default` cannot be missing.", error_call))
     }
 
     # other symbols are treated as promises
@@ -135,7 +135,7 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   }
 
   msg <- sprintf(
-    "`default` must be an instance of %s, not a %s",
+    "`default` must be an instance of %s, not a %s.",
     class_desc(class),
     obj_desc(default)
   )
@@ -253,7 +253,7 @@ prop_obj <- function(object, name) {
 
     if (!is.null(prop$getter) && is.null(prop$setter)) {
       msg <- sprintf(
-        "Can't set read-only property %s@%s",
+        "Can't set read-only property %s@%s.",
         obj_desc(object),
         name
       )
@@ -296,7 +296,7 @@ signal_error <- function(msg) {
 
 
 prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
+  sprintf("Can't find property %s@%s.", obj_desc(object), prop_name)
 }
 
 
@@ -523,14 +523,14 @@ as_properties <- function(x) {
   }
 
   if (!is.list(x)) {
-    stop("`properties` must be a list", call. = FALSE)
+    stop("`properties` must be a list.", call. = FALSE)
   }
 
   out <- Map(as_property, x, names2(x), seq_along(x))
   names(out) <- vapply(out, function(x) x$name, FUN.VALUE = character(1))
 
   if (anyDuplicated(names(out))) {
-    stop("`properties` names must be unique", call. = FALSE)
+    stop("`properties` names must be unique.", call. = FALSE)
   }
 
   out

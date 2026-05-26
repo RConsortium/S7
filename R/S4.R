@@ -19,7 +19,8 @@
 #' S4_generic(Foo())
 S4_register <- function(class, env = parent.frame()) {
   if (!is_class(class)) {
-    msg <- sprintf("`class` must be an S7 class, not a %s", obj_desc(class))
+    msg <- sprintf("`class` must be an S7 class, not a %s.", obj_desc(class))
+    stop(msg)
   }
 
   methods::setOldClass(class_dispatch(class), where = topenv(env))
