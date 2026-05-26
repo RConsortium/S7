@@ -17,8 +17,10 @@ Nothing; the function is called for its side-effect.
 }
 \description{
 If you want to use \link{method<-} to register a method for an S4 generic with
-an S7 class or an S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}), you need to call
-\code{S4_register()} once.
+an S7 class that does not extend an S4 class, or an S3 class created by
+\code{\link[=new_S3_class]{new_S3_class()}}, you need to call
+\code{S4_register()} once. Classes created by \code{\link[=new_class]{new_class()}} with an S4 parent
+are registered automatically.
 }
 \examples{
 methods::setGeneric("S4_generic", function(x) {
