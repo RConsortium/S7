@@ -3,7 +3,7 @@
     Code
       S7_class_desc(1L)
     Condition
-      Error:
+      Error in `as_class()`:
       ! Can't convert `class` to a valid class.
       Class specification must be one of the following, not a <integer>:
        * An S7 class object
@@ -16,7 +16,7 @@
     Code
       as_class("foo")
     Condition
-      Error:
+      Error in `as_class()`:
       ! Can't convert `"foo"` to a valid class.
       Class specification must be one of the following, not a <character>:
        * An S7 class object
@@ -26,7 +26,7 @@
     Code
       as_class(TRUE)
     Condition
-      Error:
+      Error in `as_class()`:
       ! Can't convert `TRUE` to a valid class.
       Class specification must be one of the following, not a <logical>:
        * An S7 class object

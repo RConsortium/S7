@@ -42,7 +42,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
       " * A base class"
     )
 
-    stop(paste0(c(error_base, msg), collapse = "\n"), call. = FALSE)
+    stop(paste0(c(error_base, msg), collapse = "\n"))
   }
 }
 

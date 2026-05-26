@@ -29,7 +29,7 @@
     Code
       method(foo, 1) <- (function(x) ...)
     Condition
-      Error:
+      Error in `as_class()`:
       ! Can't convert `signature` to a valid class.
       Class specification must be one of the following, not a <double>:
        * An S7 class object
@@ -42,7 +42,7 @@
     Code
       as_signature(list(1), foo)
     Condition
-      Error:
+      Error in `as_class()`:
       ! Can't convert `signature` to a valid class.
       Class specification must be one of the following, not a <list>:
        * An S7 class object

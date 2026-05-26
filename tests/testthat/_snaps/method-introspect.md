@@ -14,7 +14,7 @@
     Code
       method(foo, 1)
     Condition
-      Error:
+      Error in `as_class()`:
       ! Can't convert `signature` to a valid class.
       Class specification must be one of the following, not a <double>:
        * An S7 class object
