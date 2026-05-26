@@ -74,9 +74,7 @@ test_that("S7 classes can extend S4 classes", {
   )
   child <- Child(x = 1, y = "a")
 
-  expect_true(isS4(child))
-  expect_true(methods::is(child, "Parent"))
-  expect_true(methods::validObject(child))
+  expect_false(isS4(child))
   expect_true(S7_inherits(child, Child))
   expect_equal(prop_names(child), c("x", "y"))
   expect_equal(prop(child, "x"), 1)
@@ -86,10 +84,28 @@ test_that("S7 classes can extend S4 classes", {
   prop(child, "y") <- "b"
   expect_equal(prop(child, "x"), 2)
   expect_equal(prop(child, "y"), "b")
+
+  S4_register(Child)
+  expect_true(methods::is(child, "Parent"))
+  expect_true(methods::validObject(child))
+  expect_equal(methods::slotNames("Child"), c("x", "y", ".S3Class"))
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
   expect_error(Child(x = "x", y = "a"))
+})
+
+test_that("S4_register uses S7 properties as known S4 attributes", {
+  on.exit(S4_remove_classes("Foo"))
+  Foo <- new_class("Foo", properties = list(x = class_numeric), package = NULL)
+  foo <- Foo(x = 1)
+
+  S4_register(Foo)
+  expect_true(methods::validObject(foo))
+  expect_equal(methods::slot(foo, "x"), 1)
+
+  attr(foo, "x") <- "x"
+  expect_error(methods::validObject(foo), "invalid object")
 })
 
 
