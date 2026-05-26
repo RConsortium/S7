@@ -53,7 +53,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li>
+<ul><li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
+<li>
 <code><a href="../reference/S7_class.html">S7_class()</a></code> now returns a class specification for any R object, not just S7 objects. It returns the matching <code>class_*</code> for base types, a <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to <code><a href="../reference/method.html">method()</a></code> or other S7 dispatch helpers (<a href="https://github.com/RConsortium/S7/issues/559" class="external-link">#559</a>).</li>
 <li>
 <code>method&lt;-</code> and <code><a href="../reference/method.html">method()</a></code> now accept a length-1 list as <code>signature</code> for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (<a href="https://github.com/RConsortium/S7/issues/555" class="external-link">#555</a>).</li>

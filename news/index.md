@@ -2,6 +2,9 @@
 
 ## S7 (development version)
 
+- Method dispatch on `class_missing` now correctly handles missing
+  arguments forwarded through a wrapper functions
+  ([\#595](https://github.com/RConsortium/S7/issues/595)).
 - [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
   now returns a class specification for any R object, not just S7
   objects. It returns the matching `class_*` for base types, a
