@@ -115,7 +115,7 @@ register_S3_method <- function(
     any = "default",
     S7_base = sig$class,
     S7 = S7_class_name(sig),
-    S7_union = , # Handled above
+    S7_union = stop("Unreachable"),
     S7_S3 = sig$class[[1]],
     S4 = sig@className
   )
