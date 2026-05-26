@@ -227,16 +227,15 @@ test_that("can dispatch on evaluated arguments", {
 test_that("method dispatch works for class_missing", {
   foo <- new_generic("foo", "x")
   method(foo, class_missing) <- function(x) missing(x)
+  method(foo, class_any) <- function(x) FALSE
 
   expect_true(foo())
+  expect_false(foo(1))
 
-  # dispatch on class_missing only works directly in the generic call
-  foo_wrapper <- function(xx) foo(xx)
-  expect_snapshot(
-    error = TRUE,
-    variant = if (getRversion() < "4.3") "R-lt-4-3",
-    foo_wrapper()
-  )
+  # even when forwarded (#595)
+  foo_wrapper <- function(x) foo(x)
+  expect_true(foo_wrapper())
+  expect_false(foo_wrapper(1))
 })
 
 test_that("errors from dispatched methods have reasonable tracebacks", {

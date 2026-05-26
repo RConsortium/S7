@@ -107,7 +107,7 @@ describe("fallback convert", {
     )
     obj <- convert(factor2(1, "x", x = 1), to = class_factor)
     expect_equal(class(obj), "factor")
-    expect_equal(S7_class(obj), NULL)
+    expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
 
@@ -119,7 +119,7 @@ describe("fallback convert", {
     )
     obj <- convert(character2("x", x = 1), to = class_character)
     expect_equal(attr(obj, "class"), NULL)
-    expect_equal(S7_class(obj), NULL)
+    expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
 })

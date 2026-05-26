@@ -3,8 +3,13 @@
     Code
       S7_inherits(1:10, "x")
     Condition
-      Error:
-      ! Can't convert `class` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
+      Error in `as_class()`:
+      ! Can't convert `class` to a valid class.
+      Class specification must be one of the following, not a <character>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
 
 # throws informative error
 
@@ -14,7 +19,7 @@
       check_is_S7(foo1(), foo2)
     Condition
       Error:
-      ! `foo1()` must be a <foo2>, not a <foo1>
+      ! `foo1()` must be a <foo2>, not a <foo1>.
 
 ---
 
@@ -22,7 +27,7 @@
       check_is_S7("a")
     Condition
       Error:
-      ! `"a"` must be an <S7_object>, not a <character>
+      ! `"a"` must be an <S7_object>, not a <character>.
 
 # check_is_S7() accepts any class specification (#556)
 
@@ -30,10 +35,10 @@
       check_is_S7(1L, class_character)
     Condition
       Error:
-      ! `1L` must be a <character>, not a <integer>
+      ! `1L` must be a <character>, not a <integer>.
     Code
       check_is_S7(1.5, class_integer | class_character)
     Condition
       Error:
-      ! `1.5` must be a <integer> or <character>, not a <double>
+      ! `1.5` must be a <integer> or <character>, not a <double>.
 

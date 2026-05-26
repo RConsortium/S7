@@ -32,7 +32,8 @@
 #'   * A special type like [class_missing] or [class_any].
 #'
 #'   For S7 generics that use multiple dispatch, this must be a list of any of
-#'   the above types.
+#'   the above types. (For convenience you can also use a list in the single
+#'   dispatch case too.)
 #'
 #'   For S3 generics, this must be a single S7 class.
 #'
@@ -153,6 +154,11 @@ as_signature <- function(signature, generic) {
 
   n <- generic_n_dispatch(generic)
   if (n == 1) {
+    # Accept a bare list of length 1 too, for symmetry with multi-dispatch
+    # generics where a list is required (#555).
+    if (is.list(signature) && !is.object(signature) && length(signature) == 1) {
+      signature <- signature[[1]]
+    }
     new_signature(list(as_class(signature, arg = "signature")))
   } else {
     check_signature_list(signature, n)
@@ -169,12 +175,12 @@ as_signature <- function(signature, generic) {
 check_signature_list <- function(x, n, arg = "signature") {
   if (!is.list(x) || is.object(x)) {
     stop(
-      sprintf("`%s` must be a list for multidispatch generics", arg),
+      sprintf("`%s` must be a list for multidispatch generics.", arg),
       call. = FALSE
     )
   }
   if (length(x) != n) {
-    stop(sprintf("`%s` must be length %i", arg, n), call. = FALSE)
+    stop(sprintf("`%s` must be length %i.", arg, n), call. = FALSE)
   }
 }
 
@@ -189,7 +195,7 @@ check_method <- function(
   name = paste0(generic@name, "(???)")
 ) {
   if (!is.function(method)) {
-    stop(sprintf("%s must be a function", name), call. = FALSE)
+    stop(sprintf("%s must be a function.", name), call. = FALSE)
   }
 
   generic_formals <- formals(args(generic))
@@ -221,7 +227,7 @@ check_method <- function(
     identical(method_args[1:n_dispatch], generic@dispatch_args)
   if (!has_dispatch) {
     msg <- sprintf(
-      "%s() dispatches on %s, but %s has arguments %s",
+      "%s() dispatches on %s, but %s has arguments %s.",
       generic@name,
       arg_names(generic@dispatch_args),
       name,
@@ -237,7 +243,7 @@ check_method <- function(
   )
   if (any(!empty_dispatch)) {
     msg <- sprintf(
-      "In %s, dispatch arguments (%s) must not have default values",
+      "In %s, dispatch arguments (%s) must not have default values.",
       name,
       arg_names(generic@dispatch_args)
     )
@@ -292,14 +298,14 @@ S4_class <- function(x, S4_env) {
     )
     if (is.null(class)) {
       msg <- sprintf(
-        "Class has not been registered with S4; please call S4_register(%s)",
+        "Class has not been registered with S4; please call S4_register(%s).",
         class_deparse(x)
       )
       stop(msg, call. = FALSE)
     }
     class
   } else {
-    stop("Unsupported")
+    stop("Unsupported class type.", call. = FALSE)
   }
 }
 

@@ -54,7 +54,7 @@ check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
   }
 
   msg <- sprintf(
-    "`%s` must be %s, not a %s",
+    "`%s` must be %s, not a %s.",
     arg,
     if (is.null(class)) "an <S7_object>" else paste0("a ", class_desc(class)),
     obj_desc(x)
