@@ -123,7 +123,7 @@ new_class <- function(
       abstract &&
         (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
     ) {
-      stop("Abstract classes must have abstract parents")
+      stop("Abstract classes must have abstract parents.")
     }
   }
 
@@ -173,12 +173,12 @@ S7_class_name <- function(x) {
 
 check_S7_constructor <- function(constructor) {
   if (!is.function(constructor)) {
-    stop("`constructor` must be a function", call. = FALSE)
+    stop("`constructor` must be a function.", call. = FALSE)
   }
 
   method_call <- find_call(body(constructor), quote(new_object), packageName())
   if (is.null(method_call)) {
-    stop("`constructor` must contain a call to `new_object()`", call. = FALSE)
+    stop("`constructor` must contain a call to `new_object()`.", call. = FALSE)
   }
 }
 
@@ -232,8 +232,8 @@ str.S7_class <- function(object, ..., nest.lev = 0) {
 
 #' @export
 c.S7_class <- function(...) {
-  msg <- "Can not combine S7 class objects"
-  stop(msg, call. = FALSE)
+  msg <- "Can not combine S7 class objects."
+  stop(msg)
 }
 
 can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
@@ -264,11 +264,11 @@ is_class <- function(x) inherits(x, "S7_class")
 new_object <- function(.parent, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "S7_class")) {
-    stop("`new_object()` must be called from within a constructor")
+    stop("`new_object()` must be called from within a constructor.")
   }
   if (class@abstract) {
     msg <- sprintf(
-      "Can't construct an object from abstract class <%s>",
+      "Can't construct an object from abstract class <%s>.",
       class@name
     )
     stop(msg)
@@ -276,7 +276,7 @@ new_object <- function(.parent, ...) {
 
   args <- list(...)
   if ("" %in% names2(args)) {
-    stop("All arguments to `...` must be named")
+    stop("All arguments to `...` must be named.")
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
@@ -368,8 +368,9 @@ check_prop_names <- function(properties, error_call = sys.call(-1L)) {
   forbidden <- intersect(forbidden, names(properties))
   if (length(forbidden)) {
     msg <- paste0(
-      "property can't be named: ",
-      paste0(forbidden, collapse = ", ")
+      "Property can't be named: ",
+      paste0(forbidden, collapse = ", "),
+      "."
     )
     stop(simpleError(msg, error_call))
   }

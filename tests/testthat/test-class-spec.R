@@ -196,6 +196,24 @@ test_that("can work with S4 classes", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("S7_class_desc() formats every supported class spec", {
+  Foo <- new_class("Foo", package = NULL)
+
+  expect_equal(S7_class_desc(Foo), "<Foo>")
+  expect_equal(S7_class_desc(class_integer), "<integer>")
+  expect_equal(S7_class_desc(new_S3_class("data.frame")), "S3<data.frame>")
+  expect_equal(
+    S7_class_desc(class_integer | class_double),
+    "<integer> or <double>"
+  )
+  expect_equal(S7_class_desc(NULL), "<NULL>")
+  expect_equal(S7_class_desc(class_missing), "<MISSING>")
+  expect_equal(S7_class_desc(class_any), "<ANY>")
+
+  # non-class object errors via as_class()
+  expect_snapshot(S7_class_desc(1L), error = TRUE)
+})
+
 # input validation -------------------------------------------------------------
 
 test_that("as_class gives informative errors", {
