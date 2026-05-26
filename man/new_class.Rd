@@ -18,11 +18,12 @@ new_class(
 new_object(.parent, ...)
 }
 \arguments{
-\item{name}{The name of the class, as a string. The result of calling
-\code{new_class()} should always be assigned to a variable with this name,
-i.e. \code{Foo <- new_class("Foo")}.
+\item{name}{The name of the class, as a string. (We recommend using
+CamelCase for S7 class names, but it is not required.)
 
-We recommend using CamelCase for S7 class names.}
+The result of calling \code{new_class()} should always be assigned to a variable
+with this name, i.e. \code{Foo <- new_class("Foo")}. This object both represents
+the class and is used to construct new instances of the class.}
 
 \item{parent}{The parent class to inherit behavior from.
 There are three options:
