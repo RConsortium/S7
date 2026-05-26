@@ -23,12 +23,12 @@ method_explain(generic, class = NULL, object = NULL)
 
 - generic:
 
-  A generic function, i.e. an [S7
-  generic](https://rconsortium.github.io/S7/reference/new_generic.md),
-  an [external
-  generic](https://rconsortium.github.io/S7/reference/new_external_generic.md),
-  an [S3 generic](https://rdrr.io/r/base/UseMethod.html), or an [S4
-  generic](https://rdrr.io/r/methods/setGeneric.html).
+  An S7 generic, i.e. the result of
+  [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md).
+  Unlike method\<-,
+  [`method()`](https://rconsortium.github.io/S7/reference/method.md)
+  only works with S7 generics; it does not look up methods registered on
+  S3 or S4 generics.
 
 - class, object:
 

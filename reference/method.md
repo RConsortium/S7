@@ -18,12 +18,10 @@ method(generic, class = NULL, object = NULL)
 
 - generic:
 
-  A generic function, i.e. an [S7
-  generic](https://rconsortium.github.io/S7/reference/new_generic.md),
-  an [external
-  generic](https://rconsortium.github.io/S7/reference/new_external_generic.md),
-  an [S3 generic](https://rdrr.io/r/base/UseMethod.html), or an [S4
-  generic](https://rdrr.io/r/methods/setGeneric.html).
+  An S7 generic, i.e. the result of
+  [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md).
+  Unlike method\<-, `method()` only works with S7 generics; it does not
+  look up methods registered on S3 or S4 generics.
 
 - class, object:
 
@@ -65,12 +63,12 @@ method(bizarro, class = class_integer)
 #> <S7_method> method(bizarro, class_integer)
 #> function (x) 
 #> rev(x)
-#> <environment: 0x55be1887a118>
+#> <environment: 0x5600054507d0>
 method(bizarro, object = 1)
 #> <S7_method> method(bizarro, class_double)
 #> function (x) 
 #> rev(x)
-#> <environment: 0x55be1887a118>
+#> <environment: 0x5600054507d0>
 method(bizarro, class = class_factor)
 #> <S7_method> method(bizarro, new_S3_class("factor"))
 #> function (x) 
@@ -78,11 +76,13 @@ method(bizarro, class = class_factor)
 #>     levels(x) <- rev(levels(x))
 #>     x
 #> }
-#> <environment: 0x55be1887a118>
+#> <environment: 0x5600054507d0>
 
 # errors if method not found
 try(method(bizarro, class = class_data.frame))
-#> Error : Can't find method for `bizarro(S3<data.frame>)`.
+#> Error in method(bizarro, class = class_data.frame) : 
+#>   Can't find method for `bizarro(S3<data.frame>)`.
 try(method(bizarro, object = "x"))
-#> Error : Can't find method for `bizarro(<character>)`.
+#> Error in method(bizarro, object = "x") : 
+#>   Can't find method for `bizarro(<character>)`.
 ```

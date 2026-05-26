@@ -316,7 +316,7 @@ Computed properties are read-only:
 
 x@length <- 20
 #> Error:
-#> ! Can't set read-only property <Range>@length
+#> ! Can't set read-only property <Range>@length.
 ```
 
 ### Dynamic properties

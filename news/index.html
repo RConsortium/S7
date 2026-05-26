@@ -54,6 +54,12 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
 <ul><li>
+<code><a href="../reference/S7_class.html">S7_class()</a></code> now returns a class specification for any R object, not just S7 objects. It returns the matching <code>class_*</code> for base types, a <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to <code><a href="../reference/method.html">method()</a></code> or other S7 dispatch helpers (<a href="https://github.com/RConsortium/S7/issues/559" class="external-link">#559</a>).</li>
+<li>
+<code>method&lt;-</code> and <code><a href="../reference/method.html">method()</a></code> now accept a length-1 list as <code>signature</code> for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (<a href="https://github.com/RConsortium/S7/issues/555" class="external-link">#555</a>).</li>
+<li>
+<code><a href="../reference/S7_class_desc.html">S7_class_desc()</a></code> is a new exported helper that formats a class specification as a short human-readable string (<a href="https://github.com/RConsortium/S7/issues/594" class="external-link">#594</a>).</li>
+<li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer materialises ALTREP parent values (e.g. <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (<a href="https://github.com/kschaubroeck" class="external-link">@kschaubroeck</a>, <a href="https://github.com/RConsortium/S7/issues/607" class="external-link">#607</a>).</li>
 <li>Internal changes to support R-devel (4.6) (<a href="https://github.com/RConsortium/S7/issues/592" class="external-link">#592</a>, <a href="https://github.com/RConsortium/S7/issues/593" class="external-link">#593</a>, <a href="https://github.com/RConsortium/S7/issues/598" class="external-link">#598</a>, <a href="https://github.com/RConsortium/S7/issues/600" class="external-link">#600</a>).</li>
 <li>

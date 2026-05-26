@@ -90,9 +90,9 @@ to avoid ambiguity.</p><ul><li><p>S7: <code>pkg::class</code> or <code>class</co
 
 
 <dl><dt id="arg-generic">generic<a class="anchor" aria-label="anchor" href="#arg-generic"></a></dt>
-<dd><p>A generic function, i.e. an <a href="new_generic.html">S7 generic</a>,
-an <a href="new_external_generic.html">external generic</a>, an <a href="https://rdrr.io/r/base/UseMethod.html" class="external-link">S3 generic</a>,
-or an <a href="https://rdrr.io/r/methods/setGeneric.html" class="external-link">S4 generic</a>.</p></dd>
+<dd><p>An S7 generic, i.e. the result of <code><a href="new_generic.html">new_generic()</a></code>. Unlike
+method&lt;-, <code><a href="method.html">method()</a></code> only works with S7 generics; it does not look up
+methods registered on S3 or S4 generics.</p></dd>
 
 
 <dt id="arg-class-object">class, object<a class="anchor" aria-label="anchor" href="#arg-class-object"></a></dt>

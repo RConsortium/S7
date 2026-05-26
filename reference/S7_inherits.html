@@ -117,7 +117,7 @@ the second argument, supporting usage like <code>inherits(x, Foo)</code>.</p>
 <span class="r-in"><span><span class="fu">S7_inherits</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">check_is_S7</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : `Foo1()` must be a &lt;Foo2&gt;, not a &lt;Foo1&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : `Foo1()` must be a &lt;Foo2&gt;, not a &lt;Foo1&gt;.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric_version.html" class="external-link">getRversion</a></span><span class="op">(</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="st">"4.3.0"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span><span class="op">)</span>, <span class="va">Foo1</span><span class="op">)</span></span></span>

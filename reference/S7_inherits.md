@@ -53,7 +53,7 @@ check_is_S7(Foo1(), Foo1)
 S7_inherits(Foo1(), Foo2)
 #> [1] FALSE
 try(check_is_S7(Foo1(), Foo2))
-#> Error : `Foo1()` must be a <Foo2>, not a <Foo1>
+#> Error : `Foo1()` must be a <Foo2>, not a <Foo1>.
 
 if (getRversion() >= "4.3.0")
   inherits(Foo1(), Foo1)

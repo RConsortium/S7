@@ -197,14 +197,19 @@ for more details.
   : Dispatch on a missing argument
 - [`class_any`](https://rconsortium.github.io/S7/reference/class_any.md)
   : Dispatch on any class
+- [`super()`](https://rconsortium.github.io/S7/reference/super.md) :
+  Force method dispatch to use a superclass
+
+## Introspection
+
 - [`method()`](https://rconsortium.github.io/S7/reference/method.md) :
   Find a method for an S7 generic
 - [`method_explain()`](https://rconsortium.github.io/S7/reference/method_explain.md)
   : Explain method dispatch
-- [`super()`](https://rconsortium.github.io/S7/reference/super.md) :
-  Force method dispatch to use a superclass
 - [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
-  : Retrieve the S7 class of an object
+  : Retrieve the class specification of an object
+- [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
+  : Format a class specification as a string
 
 ## Packages
 

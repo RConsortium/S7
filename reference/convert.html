@@ -14,10 +14,10 @@ classChild objects.
 
 convert() provides two default implementations:
 When from inherits from to, it strips any properties that from
-possesses that to does not (downcasting).
-When to is a subclass of from's class, it creates a new object of
-class to, copying over existing properties from from and initializing
-new properties of to (upcasting).
+possesses that to does not (upcasting).
+When to inherits from from, it creates a new object of class to,
+copying over existing properties from from and initializing new
+properties of to (downcasting).
 
 
 If you are converting an object solely for the purposes of accessing a method
@@ -44,10 +44,10 @@ classChild objects.
 
 convert() provides two default implementations:
 When from inherits from to, it strips any properties that from
-possesses that to does not (downcasting).
-When to is a subclass of from's class, it creates a new object of
-class to, copying over existing properties from from and initializing
-new properties of to (upcasting).
+possesses that to does not (upcasting).
+When to inherits from from, it creates a new object of class to,
+copying over existing properties from from and initializing new
+properties of to (downcasting).
 
 
 If you are converting an object solely for the purposes of accessing a method
@@ -124,10 +124,10 @@ why, imagine you have written methods to objects of various types to
 to work because those methods will return <code>classParent</code> objects, not
 <code>classChild</code> objects.</p></li>
 </ul><p><code>convert()</code> provides two default implementations:</p><ol><li><p>When <code>from</code> inherits from <code>to</code>, it strips any properties that <code>from</code>
-possesses that <code>to</code> does not (downcasting).</p></li>
-<li><p>When <code>to</code> is a subclass of <code>from</code>'s class, it creates a new object of
-class <code>to</code>, copying over existing properties from <code>from</code> and initializing
-new properties of <code>to</code> (upcasting).</p></li>
+possesses that <code>to</code> does not (upcasting).</p></li>
+<li><p>When <code>to</code> inherits from <code>from</code>, it creates a new object of class <code>to</code>,
+copying over existing properties from <code>from</code> and initializing new
+properties of <code>to</code> (downcasting).</p></li>
 </ol><p>If you are converting an object solely for the purposes of accessing a method
 on a superclass, you probably want <code><a href="super.html">super()</a></code> instead. See its docs for more
 details.</p><div class="section">
@@ -158,8 +158,9 @@ functions/generics in S3, and to <code>as()</code>/<code>setAs()</code> in S4.</
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Other arguments passed to custom <code>convert()</code> methods. For upcasting,
-these can be used to override existing properties or set new ones.</p></dd>
+<dd><p>Other arguments passed to custom <code>convert()</code> methods. For
+downcasting, these can be used to override existing properties or set new
+ones.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -173,14 +174,14 @@ is not possible.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">Foo1</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo1"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">class_integer</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">Foo2</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Foo2"</span>, <span class="va">Foo1</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>y <span class="op">=</span> <span class="va">class_double</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Downcasting: S7 provides a default implementation for coercing an object</span></span></span>
+<span class="r-in"><span><span class="co"># Upcasting: S7 provides a default implementation for coercing an object</span></span></span>
 <span class="r-in"><span><span class="co"># to one of its parent classes:</span></span></span>
 <span class="r-in"><span><span class="fu">convert</span><span class="op">(</span><span class="fu">Foo2</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span>, y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">Foo1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;Foo1&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  @ x: int 1</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Upcasting: S7 also provides a default implementation for coercing an object</span></span></span>
-<span class="r-in"><span><span class="co"># to one of its child classes:</span></span></span>
+<span class="r-in"><span><span class="co"># Downcasting: S7 also provides a default implementation for coercing an</span></span></span>
+<span class="r-in"><span><span class="co"># object to one of its child classes:</span></span></span>
 <span class="r-in"><span><span class="fu">convert</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">Foo2</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;Foo2&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  @ x: int 1</span>
@@ -196,10 +197,10 @@ is not possible.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># For all other cases, you'll need to provide your own.</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">convert</span><span class="op">(</span><span class="fu">Foo1</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span>, to <span class="op">=</span> <span class="va">class_integer</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : Can't find method for generic `convert()` with dispatch classes:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error in convert(Foo1(x = 1L), to = class_integer) : </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Can't find method with dispatch classes:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - from: &lt;Foo1&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - to  : &lt;integer&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">convert</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">Foo1</span>, <span class="va">class_integer</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">from</span>, <span class="va">to</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">from</span><span class="op">@</span><span class="va">x</span></span></span>
@@ -218,10 +219,10 @@ is not possible.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Converting to Foo2 will still error</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">convert</span><span class="op">(</span><span class="fl">1L</span>, to <span class="op">=</span> <span class="va">Foo2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : Can't find method for generic `convert()` with dispatch classes:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error in convert(1L, to = Foo2) : </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Can't find method with dispatch classes:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - from: &lt;integer&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - to  : &lt;Foo2&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span><span class="co"># This is probably not surprising because foo2 also needs some value</span></span></span>
 <span class="r-in"><span><span class="co"># for `@y`, but it definitely makes dispatch for convert() special</span></span></span>
 </code></pre></div>

@@ -18,11 +18,11 @@ one type to another. It is special in three ways:
 `convert()` provides two default implementations:
 
 1.  When `from` inherits from `to`, it strips any properties that `from`
-    possesses that `to` does not (downcasting).
+    possesses that `to` does not (upcasting).
 
-2.  When `to` is a subclass of `from`'s class, it creates a new object
-    of class `to`, copying over existing properties from `from` and
-    initializing new properties of `to` (upcasting).
+2.  When `to` inherits from `from`, it creates a new object of class
+    `to`, copying over existing properties from `from` and initializing
+    new properties of `to` (downcasting).
 
 If you are converting an object solely for the purposes of accessing a
 method on a superclass, you probably want
@@ -53,7 +53,7 @@ convert(from, to, ...)
 
 - ...:
 
-  Other arguments passed to custom `convert()` methods. For upcasting,
+  Other arguments passed to custom `convert()` methods. For downcasting,
   these can be used to override existing properties or set new ones.
 
 ## Value
@@ -67,14 +67,14 @@ possible.
 Foo1 <- new_class("Foo1", properties = list(x = class_integer))
 Foo2 <- new_class("Foo2", Foo1, properties = list(y = class_double))
 
-# Downcasting: S7 provides a default implementation for coercing an object
+# Upcasting: S7 provides a default implementation for coercing an object
 # to one of its parent classes:
 convert(Foo2(x = 1L, y = 2), to = Foo1)
 #> <Foo1>
 #>  @ x: int 1
 
-# Upcasting: S7 also provides a default implementation for coercing an object
-# to one of its child classes:
+# Downcasting: S7 also provides a default implementation for coercing an
+# object to one of its child classes:
 convert(Foo1(x = 1L), to = Foo2)
 #> <Foo2>
 #>  @ x: int 1
@@ -90,10 +90,10 @@ convert(Foo1(x = 1L), to = Foo2, x = 2L, y = 2.5)  # Override existing and set n
 
 # For all other cases, you'll need to provide your own.
 try(convert(Foo1(x = 1L), to = class_integer))
-#> Error : Can't find method for generic `convert()` with dispatch classes:
+#> Error in convert(Foo1(x = 1L), to = class_integer) : 
+#>   Can't find method with dispatch classes:
 #> - from: <Foo1>
 #> - to  : <integer>
-#> 
 
 method(convert, list(Foo1, class_integer)) <- function(from, to) {
   from@x
@@ -112,10 +112,10 @@ convert(1L, to = Foo1)
 
 # Converting to Foo2 will still error
 try(convert(1L, to = Foo2))
-#> Error : Can't find method for generic `convert()` with dispatch classes:
+#> Error in convert(1L, to = Foo2) : 
+#>   Can't find method with dispatch classes:
 #> - from: <integer>
 #> - to  : <Foo2>
-#> 
 # This is probably not surprising because foo2 also needs some value
 # for `@y`, but it definitely makes dispatch for convert() special
 ```

@@ -2,6 +2,24 @@
 
 ## S7 (development version)
 
+- [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
+  now returns a class specification for any R object, not just S7
+  objects. It returns the matching `class_*` for base types, a
+  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  wrapper for S3 objects, and the S4 class for S4 objects, so the result
+  can be passed directly to
+  [`method()`](https://rconsortium.github.io/S7/reference/method.md) or
+  other S7 dispatch helpers
+  ([\#559](https://github.com/RConsortium/S7/issues/559)).
+- `method<-` and
+  [`method()`](https://rconsortium.github.io/S7/reference/method.md) now
+  accept a length-1 list as `signature` for single-dispatch generics,
+  matching the list-of-classes form required for multi-dispatch
+  ([\#555](https://github.com/RConsortium/S7/issues/555)).
+- [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
+  is a new exported helper that formats a class specification as a short
+  human-readable string
+  ([\#594](https://github.com/RConsortium/S7/issues/594)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   no longer materialises ALTREP parent values
   (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
