@@ -356,20 +356,47 @@ prop_label <- function(object, name) {
 
 #' Property introspection
 #'
-#' - `prop_names(x)` returns the names of the properties
-#' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
+#' @description
 #'
-#' @inheritParams prop
-#' @returns `prop_names()` returns a character vector; `prop_exists()` returns
-#'   a single `TRUE` or `FALSE`.
+#' - `prop_names(x)` returns the names of the properties
+#' - `prop_exists(x, "prop")` returns `TRUE` and if only `x` has property
+#'   `prop`.
+#' - `prop_info()` returns a data frame describing the properties of an S7
+#'   object or class, with one row per property.
+#'
+#' @param object Either an S7 object (an instance) or an S7 class.
+#' @returns
+#' * `prop_names()` returns a character vector
+#' * `prop_exists()` returns a single `TRUE` or `FALSE`.
+#' * `prop_info()` returns a  data frame with one row per property and the
+#'   following columns:
+#'   * `name`: a character vector of property names.
+#'   * `default`: a list column of property defaults.
+#'   * `class`: a character description of the class.
+#'   * `getter`, `setter`, `validator`: logical vectors indicating whether
+#'     the property has a getter, setter, or validator.
 #' @export
 #' @examples
-#' Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
-#' f <- Foo()
+#' Horse <- new_class("Horse", properties = list(
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = new_property(class_numeric, default = 15),
+#'   age = new_property(
+#'     class_numeric,
+#'     validator = function(value) if (value < 0) "must be positive"
+#'   ),
+#'   now = new_property(getter = function(self) Sys.time())
+#' ))
 #'
-#' prop_names(f)
-#' prop_exists(f, "a")
-#' prop_exists(f, "c")
+#' prop_names(Horse)
+#' prop_exists(Horse, "col")
+#' prop_exists(Horse, "colour")
+#' prop_info(Horse)
+#'
+#' # All functions also work with objects, not just classes
+#' lex <- Horse(colour = "bay", height = 15, name = "Lex", age = 3)
+#' prop_names(lex)
+#' prop_exists(lex, "age")
 prop_names <- function(object) {
   check_is_S7(object)
 
@@ -403,37 +430,15 @@ prop_names <- function(object) {
 }
 
 #' @rdname prop_names
+#' @param name A string giving the property of interest.
 #' @export
 prop_exists <- function(object, name) {
   check_is_S7(object)
   name %in% prop_names(object)
 }
 
-#' Summarise properties as a data frame
-#'
-#' `prop_info()` returns a data frame describing the properties of an S7
-#' object or class, with one row per property.
-#'
-#' @param object Either an S7 object (an instance) or an S7 class.
-#' @returns A data frame with one row per property and the following columns:
-#'   * `name`: a character vector of property names.
-#'   * `default`: a list column of property defaults.
-#'   * `class`: a character description of the class.
-#'   * `getter`, `setter`, `validator`: logical vectors indicating whether
-#'     the property has a getter, setter, or validator.
+#' @rdname prop_names
 #' @export
-#' @examples
-#' Horse <- new_class("Horse", properties = list(
-#'   name = class_character,
-#'   colour = class_character,
-#'   height = new_property(class_numeric, default = 15),
-#'   age = new_property(
-#'     class_numeric,
-#'     validator = function(value) if (value < 0) "must be positive"
-#'   ),
-#'   now = new_property(getter = function(self) Sys.time())
-#' ))
-#' prop_info(Horse)
 prop_info <- function(object) {
   check_is_S7(object)
 
