@@ -2,20 +2,38 @@
 % Please edit documentation in R/class.R
 \name{S7_class}
 \alias{S7_class}
-\title{Retrieve the S7 class of an object}
+\title{Retrieve the class specification of an object}
 \usage{
 S7_class(object)
 }
 \arguments{
-\item{object}{The S7 object}
+\item{object}{Any R object.}
 }
 \value{
-An \link[=new_class]{S7 class}.
+A class specification.
 }
 \description{
-Given an S7 object, find it's class.
+\code{S7_class()} returns a class specification for any R object, in a form
+that can be passed to \code{\link[=method]{method()}} or used in any S7 dispatch context.
+}
+\details{
+\itemize{
+\item For S7 objects, returns the \link[=new_class]{S7 class}.
+\item For S4 objects, returns the S4 class representation.
+\item For S3 objects, returns a \code{\link[=new_S3_class]{new_S3_class()}} wrapping \code{class(x)}.
+\item For base types, returns the matching \verb{class_*} (e.g. \link{class_integer}
+for integer vectors, \link{class_function} for functions).
+\item For \code{NULL}, returns \code{NULL}.
+\item For missing arguments, returns \link{class_missing}.
+}
 }
 \examples{
 Foo <- new_class("Foo")
 S7_class(Foo())
+
+# Also works on non-S7 objects
+S7_class(1L)
+S7_class("x")
+S7_class(mean)
+S7_class(factor("a"))
 }

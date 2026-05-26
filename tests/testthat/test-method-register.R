@@ -162,8 +162,13 @@ describe("as_signature()", {
     expect_equal(as_signature(new_signature(10)), new_signature(10))
   })
 
-  it("forbids list for single dispatch", {
+  it("accepts a length-1 list for single dispatch (#555)", {
     foo <- new_generic("foo", "x")
+    sig <- as_signature(list(class_character), foo)
+    expect_s3_class(sig, "S7_signature")
+    expect_equal(sig, as_signature(class_character, foo))
+
+    # but a list with the wrong contents still errors
     expect_snapshot(as_signature(list(1), foo), error = TRUE)
   })
 

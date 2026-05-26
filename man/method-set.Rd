@@ -25,7 +25,8 @@ following:
 }
 
 For S7 generics that use multiple dispatch, this must be a list of any of
-the above types.
+the above types. (For convenience you can also use a list in the single
+dispatch case too.)
 
 For S3 generics, this can be any of the above types. There's one exception:
 you can only use \link{class_missing} with S3 operators that support double
