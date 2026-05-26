@@ -29,6 +29,12 @@
   is a new exported helper that formats a class specification as a short
   human-readable string
   ([\#594](https://github.com/RConsortium/S7/issues/594)).
+- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  objects now work with
+  [`inherits()`](https://rdrr.io/r/base/class.html) (and other functions
+  that use [`nameOfClass()`](https://rdrr.io/r/base/class.html)) in R
+  4.3 and later ([@lawremi](https://github.com/lawremi),
+  [\#521](https://github.com/RConsortium/S7/issues/521)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   no longer materialises ALTREP parent values
   (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
