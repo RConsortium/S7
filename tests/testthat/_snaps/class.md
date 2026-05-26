@@ -212,6 +212,16 @@
       List of 1
        $ : <text> chr "x"
 
+# S7 object / displays data.frame subclasses without error (#494)
+
+    Code
+      str(mydf(data.frame(a = 1:2, b = 1:2)))
+    Output
+      Classes 'mydf', 'S7_object' and 'data.frame':	2 obs. of  2 variables:
+      <mydf> 'data.frame':	2 obs. of  2 variables:
+       $ a: int  1 2
+       $ b: int  1 2
+
 # S7 object / displays list objects nicely
 
     Code
