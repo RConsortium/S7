@@ -29,7 +29,7 @@
 #'   inherits(Foo1(), Foo1)
 S7_inherits <- function(x, class = NULL) {
   if (!(is.null(class) || inherits(class, "S7_class"))) {
-    stop("`class` must be an <S7_class> or NULL")
+    stop("`class` must be an <S7_class> or NULL.")
   }
 
   inherits(x, "S7_object") &&
@@ -45,7 +45,7 @@ check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
   }
 
   msg <- sprintf(
-    "`%s` must be %s, not a %s",
+    "`%s` must be %s, not a %s.",
     arg,
     if (is.null(class)) "an <S7_object>" else paste0("a ", class_desc(class)),
     obj_desc(x)

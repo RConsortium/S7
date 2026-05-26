@@ -91,25 +91,25 @@ str_function <- function(object, ..., nest.lev = 0) {
 
 check_name <- function(name, arg = deparse(substitute(name))) {
   if (length(name) != 1 || !is.character(name)) {
-    msg <- sprintf("`%s` must be a single string", arg)
+    msg <- sprintf("`%s` must be a single string.", arg)
     stop(msg, call. = FALSE)
   }
   if (is.na(name) || name == "") {
-    msg <- sprintf("`%s` must not be \"\" or NA", arg)
+    msg <- sprintf("`%s` must not be \"\" or NA.", arg)
     stop(msg, call. = FALSE)
   }
 }
 
 check_function <- function(f, args, arg = deparse(substitute(f))) {
   if (!is.function(f)) {
-    msg <- sprintf("`%s` must be a function", arg)
+    msg <- sprintf("`%s` must be a function.", arg)
     stop(msg, call. = FALSE)
   }
 
   args <- as.pairlist(args)
   if (!identical(formals(f), args)) {
     msg <- sprintf(
-      "`%s` must be %s, not %s",
+      "`%s` must be %s, not %s.",
       arg,
       show_args(args),
       show_args(formals(f))
@@ -147,7 +147,7 @@ modify_list <- function(x, new_vals) {
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
-      stop("all elements in `new_vals` must be named")
+      stop("All elements in `new_vals` must be named.", call. = FALSE)
     }
     if (is.null(x)) {
       x <- list()
@@ -176,7 +176,7 @@ list2DF <- function(x = list(), nrow = 0L) {
   stopifnot(is.list(x), is.null(nrow) || nrow >= 0L)
   if (n <- length(x)) {
     if (length(nrow <- unique(lengths(x))) > 1L) {
-      stop("all variables should have the same length")
+      stop("All variables should have the same length.", call. = FALSE)
     }
   } else {
     if (is.null(nrow)) {

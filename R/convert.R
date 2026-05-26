@@ -89,11 +89,11 @@ convert <- function(from, to, ...) {
     convert_down(from, to, ...)
   } else {
     msg <- paste_c(
-      "Can't find method for generic `convert()` with dispatch classes:\n",
+      "Can't find method with dispatch classes:\n",
       c("- from: ", obj_desc(from), "\n"),
-      c("- to  : ", class_desc(to), "\n")
+      c("- to  : ", class_desc(to))
     )
-    stop(msg, call. = FALSE)
+    stop(msg)
   }
 }
 
@@ -115,7 +115,7 @@ convert_up <- function(from, to) {
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
   } else {
-    stop("Unreachable")
+    stop("Unreachable.")
   }
   from
 }
