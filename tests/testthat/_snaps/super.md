@@ -5,7 +5,7 @@
       super(foo(), class_character)
     Condition
       Error in `super()`:
-      ! <foo> doesn't inherit from <character>
+      ! <foo> doesn't inherit from <character>.
 
 # super() / displays nicely
 

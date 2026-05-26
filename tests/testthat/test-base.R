@@ -245,7 +245,7 @@ test_that("Base S3 classes can be parents", {
   })
   expect_error(
     Foo(list(x = 1:3, y = 1:4)),
-    "all variables should have the same length"
+    "All variables should have the same length."
   )
 
   # expect_no_error({
