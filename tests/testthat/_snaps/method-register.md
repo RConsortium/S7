@@ -33,7 +33,7 @@
       ! Can't convert `signature` to a valid class.
       Class specification must be one of the following, not a <double>:
        * An S7 class object
-       * The result of `new_S3_class()`
+       * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
 
@@ -46,7 +46,7 @@
       ! Can't convert `signature` to a valid class.
       Class specification must be one of the following, not a <list>:
        * An S7 class object
-       * The result of `new_S3_class()`
+       * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
 

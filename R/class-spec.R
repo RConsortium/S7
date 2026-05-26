@@ -37,7 +37,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
         obj_desc(x)
       ),
       " * An S7 class object",
-      " * The result of `new_S3_class()`",
+      " * An S3 class object (from `new_S3_class()`)",
       " * An S4 class object",
       " * A base class"
     )

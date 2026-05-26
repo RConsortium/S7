@@ -66,7 +66,7 @@
       ! Can't convert `parent` to a valid class.
       Class specification must be one of the following, not a <double>:
        * An S7 class object
-       * The result of `new_S3_class()`
+       * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
     Code
@@ -104,7 +104,7 @@
       ! Can't convert `X[[i]]` to a valid class.
       Class specification must be one of the following, not a <character>:
        * An S7 class object
-       * The result of `new_S3_class()`
+       * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
 
