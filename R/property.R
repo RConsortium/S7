@@ -165,14 +165,30 @@ prop_default <- function(prop, envir, package) {
   prop$default %||% class_construct_expr(prop$class, envir, package)
 }
 
-prop_default_desc <- function(prop) {
+prop_default_desc <- function(prop, package = NULL) {
   if (prop_is_read_only(prop)) {
-    "[read-only]"
-  } else if (!is.null(prop$default)) {
-    paste0("= ", deparse1(prop$default))
-  } else {
-    ""
+    return("[read-only]")
   }
+  if (!is.null(prop$default)) {
+    return(paste0("= ", deparse1(prop$default)))
+  }
+
+  expr <- tryCatch(
+    class_construct_expr(prop$class, package = package),
+    error = function(e) NULL
+  )
+  if (is.null(expr) || is_missing_sym(expr)) {
+    return("")
+  }
+  out <- deparse1(expr)
+  if (nchar(out) > 30) {
+    return("")
+  }
+  paste0("= ", out)
+}
+
+is_missing_sym <- function(x) {
+  is.symbol(x) && !nzchar(as.character(x))
 }
 
 #' Get/set a property

@@ -112,11 +112,11 @@
       @ properties :
        $ anything (<ANY>)
        $ null (<NULL>)
-       $ base (<integer>)
+       $ base = integer(0) (<integer>)
        $ S3 (S3<factor>)
        $ S4 (S4<class_S4>)
        $ S7 (<class_S7>)
-       $ S7_union (<integer> or <logical>)
+       $ S7_union = integer(0) (<integer> or <logical>)
 
 ---
 

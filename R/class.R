@@ -187,7 +187,7 @@ print.S7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
     prop_names <- names(props)
-    prop_defaults <- vcapply(props, prop_default_desc)
+    prop_defaults <- vcapply(props, prop_default_desc, package = x@package)
     prop_types <- vcapply(props, function(p) class_desc(p$class))
     middle <- ifelse(prop_defaults == "", "", paste0(" ", prop_defaults))
     prop_fmt <- paste0(
