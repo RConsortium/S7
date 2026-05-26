@@ -7,9 +7,11 @@
 #' the implementation of a specific method.
 #'
 #' @seealso [method_explain()] to explain why a specific method was picked.
-#' @inheritParams method<-
 #' @returns Either a function with class `S7_method` or an error if no
 #'   matching method is found.
+#' @param generic An S7 generic, i.e. the result of [new_generic()]. Unlike
+#'   [method<-], `method()` only works with S7 generics; it does not look up
+#'   methods registered on S3 or S4 generics.
 #' @param class,object Perform introspection either with a `class`
 #'   (processed with [as_class()]) or a concrete `object`. If `generic` uses
 #'   multiple dispatch then both `object` and `class` must be a list of
