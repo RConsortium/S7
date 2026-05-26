@@ -49,6 +49,12 @@
   in memory instead of O(n)
   ([@kschaubroeck](https://github.com/kschaubroeck),
   [\#607](https://github.com/RConsortium/S7/issues/607)).
+- New
+  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
+  returns a data frame summarising the properties of an S7 object or
+  class, with one row per property and columns for name, default, class,
+  getter, setter, and validator
+  ([\#551](https://github.com/RConsortium/S7/issues/551)).
 - Internal changes to support R-devel (4.6)
   ([\#592](https://github.com/RConsortium/S7/issues/592),
   [\#593](https://github.com/RConsortium/S7/issues/593),
