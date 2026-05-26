@@ -99,10 +99,11 @@ convert <- function(from, to, ...) {
 
 convert_up <- function(from, to) {
   from_class <- S7_class(from)
-  if (is.null(from_class)) {
-    from_props <- character()
+  if (is_class(from_class)) {
+    from_props <- prop_names(from)
   } else {
-    from_props <- names(from_class@properties)
+    # `from` is a base, S3, or S4 object, so it has no S7 properties
+    from_props <- character()
   }
 
   if (is_base_class(to)) {
@@ -128,22 +129,33 @@ convert_down <- function(from, to, ...) {
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
 
-  from_props <- S7_class(from)@properties
-  from_props <- Filter(Negate(prop_is_read_only), from_props)
-  from_prop_names <- names(from_props)
-
-  # If `to` constructor has no `...`, only use properties that match its args
-  to_constructor_arg_names <- names(formals(to))
-  if (!"..." %in% to_constructor_arg_names) {
-    from_prop_names <- intersect(from_prop_names, to_constructor_arg_names)
-  }
-
-  # Drop properties overridden by user-supplied arguments
+  from_class <- S7_class(from)
   user_args <- list(...)
-  from_prop_names <- setdiff(from_prop_names, names(user_args))
 
-  from_prop_values <- props(from, from_prop_names)
-  constructor_args <- c(from_prop_values, user_args)
+  if (is_class(from_class)) {
+    from_props <- from_class@properties
+    from_props <- Filter(Negate(prop_is_read_only), from_props)
+    from_prop_names <- names(from_props)
+
+    # If `to` constructor has no `...`, only use properties that match its args
+    to_constructor_arg_names <- names(formals(to))
+    if (!"..." %in% to_constructor_arg_names) {
+      from_prop_names <- intersect(from_prop_names, to_constructor_arg_names)
+    }
+
+    # Drop properties overridden by user-supplied arguments
+    from_prop_names <- setdiff(from_prop_names, names(user_args))
+
+    from_prop_values <- props(from, from_prop_names)
+    constructor_args <- c(from_prop_values, user_args)
+  } else {
+    # `from` is a base or S3 object; pass it as `.data` to the constructor
+    if (".data" %in% names(user_args)) {
+      constructor_args <- user_args
+    } else {
+      constructor_args <- c(list(.data = from), user_args)
+    }
+  }
 
   do.call(to, constructor_args)
 }
