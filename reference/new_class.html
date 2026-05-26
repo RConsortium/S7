@@ -85,10 +85,11 @@ when an object is passed to a generic.</p>
 
 
 <dl><dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>The name of the class, as a string. The result of calling
-<code>new_class()</code> should always be assigned to a variable with this name,
-i.e. <code>Foo &lt;- new_class("Foo")</code>.</p>
-<p>We recommend using CamelCase for S7 class names.</p></dd>
+<dd><p>The name of the class, as a string. (We recommend using
+CamelCase for S7 class names, but it is not required.)</p>
+<p>The result of calling <code>new_class()</code> should always be assigned to a variable
+with this name, i.e. <code>Foo &lt;- new_class("Foo")</code>. This object both represents
+the class and is used to construct new instances of the class.</p></dd>
 
 
 <dt id="arg-parent">parent<a class="anchor" aria-label="anchor" href="#arg-parent"></a></dt>

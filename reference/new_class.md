@@ -27,11 +27,13 @@ new_object(.parent, ...)
 
 - name:
 
-  The name of the class, as a string. The result of calling
-  `new_class()` should always be assigned to a variable with this name,
-  i.e. `Foo <- new_class("Foo")`.
+  The name of the class, as a string. (We recommend using CamelCase for
+  S7 class names, but it is not required.)
 
-  We recommend using CamelCase for S7 class names.
+  The result of calling `new_class()` should always be assigned to a
+  variable with this name, i.e. `Foo <- new_class("Foo")`. This object
+  both represents the class and is used to construct new instances of
+  the class.
 
 - parent:
 

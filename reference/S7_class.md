@@ -1,9 +1,25 @@
 # Retrieve the class specification of an object
 
-`S7_class()` returns a class specification for any R object, in a form
-that can be passed to
+`S7_class()` returns a [class
+specification](https://rconsortium.github.io/S7/reference/as_class.md)
+for any R object, in a form that can be passed to
 [`method()`](https://rconsortium.github.io/S7/reference/method.md) or
 used in any S7 dispatch context.
+
+- For S7 objects, the [S7
+  class](https://rconsortium.github.io/S7/reference/new_class.md).
+
+- For S3 objects, a
+  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  wrapping `class(x)`.
+
+- For S4 objects, the S4 class.
+
+- For base types, the matching `class_*` (e.g.
+  [class_integer](https://rconsortium.github.io/S7/reference/base_classes.md)).
+
+- For missing arguments, returns
+  [class_missing](https://rconsortium.github.io/S7/reference/class_missing.md).
 
 ## Usage
 
@@ -20,28 +36,6 @@ S7_class(object)
 ## Value
 
 A class specification.
-
-## Details
-
-- For S7 objects, returns the [S7
-  class](https://rconsortium.github.io/S7/reference/new_class.md).
-
-- For S4 objects, returns the S4 class representation.
-
-- For S3 objects, returns a
-  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
-  wrapping `class(x)`.
-
-- For base types, returns the matching `class_*` (e.g.
-  [class_integer](https://rconsortium.github.io/S7/reference/base_classes.md)
-  for integer vectors,
-  [class_function](https://rconsortium.github.io/S7/reference/base_classes.md)
-  for functions).
-
-- For `NULL`, returns `NULL`.
-
-- For missing arguments, returns
-  [class_missing](https://rconsortium.github.io/S7/reference/class_missing.md).
 
 ## Examples
 
