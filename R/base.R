@@ -50,6 +50,37 @@ base_default <- function(type) {
   )
 }
 
+base_class <- function(x) {
+  switch(
+    typeof(x),
+    closure = "function",
+    special = "function",
+    builtin = "function",
+    language = "call",
+    symbol = "name",
+    typeof(x)
+  )
+}
+
+base_S7_class <- function(x) {
+  switch(
+    base_class(x),
+    NULL = NULL,
+    logical = class_logical,
+    integer = class_integer,
+    double = class_double,
+    complex = class_complex,
+    character = class_character,
+    raw = class_raw,
+    list = class_list,
+    expression = class_expression,
+    name = class_name,
+    call = class_call,
+    `function` = class_function,
+    environment = class_environment,
+    stop(sprintf("No S7 class for base type <%s>.", typeof(x)), call. = FALSE)
+  )
+}
 
 is_base_class <- function(x) inherits(x, "S7_base_class")
 

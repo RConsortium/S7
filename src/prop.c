@@ -30,7 +30,7 @@ static inline
 SEXP ns_get(const char* name) {
   SEXP val = s7_get_var_in_frame(ns_S7, Rf_install(name), NULL);
   if (val == NULL)
-    Rf_error("Can't find `%s` in the S7 namespace", name);
+    Rf_error("Can't find `%s` in the S7 namespace.", name);
   return val;
 }
 
@@ -103,7 +103,7 @@ void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
 
 static __attribute__((noreturn))
 void signal_prop_error_unknown(SEXP object, SEXP name) {
-  signal_prop_error("Can't find property %s@%s", object, name);
+  signal_prop_error("Can't find property %s@%s.", object, name);
 }
 
 static __attribute__((noreturn))
@@ -196,7 +196,7 @@ SEXP pairlist_remove(SEXP list, SEXP elem) {
       }
     }
 
-  Rf_error("Tried to remove non-existent element from pairlist");
+  Rf_error("Tried to remove non-existent element from pairlist.");
   return R_NilValue;
 }
 
@@ -372,7 +372,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   SEXP getter = extract_name(property, "getter");
 
   if (getter != R_NilValue && setter == R_NilValue)
-    signal_prop_error("Can't set read-only property %s@%s", object, name);
+    signal_prop_error("Can't set read-only property %s@%s.", object, name);
 
   PROTECT_INDEX object_pi;
   // maybe use R_shallow_duplicate_attr() here instead
