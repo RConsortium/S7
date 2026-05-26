@@ -19,6 +19,10 @@ vcapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
 }
 
+paste_c <- function(...) {
+  paste(c(...), collapse = "")
+}
+
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
   if (single) {
