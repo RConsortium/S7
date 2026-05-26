@@ -1,8 +1,9 @@
 #' Register an S7 or S3 class with S4
 #'
 #' If you want to use [method<-] to register a method for an S4 generic with
-#' an S7 class or an S3 class (created by [new_S3_class()]), you need to call
-#' `S4_register()` once.
+#' an S7 class that does not extend an S4 class, or an S3 class created by
+#' [new_S3_class()], you need to call `S4_register()` once. Classes created by
+#' [new_class()] with an S4 parent are registered automatically.
 #'
 #' @param class An S7 class created with [new_class()], or an S3 class created
 #'   with [new_S3_class()].
@@ -20,11 +21,14 @@
 #'
 #' S4_generic(Foo())
 S4_register <- function(class, env = parent.frame()) {
-  if (is_class(class)) {
-    classes <- class_dispatch(class)
-  } else if (is_S3_class(class)) {
-    classes <- class$class
-  } else {
+  where <- topenv(env)
+
+  if (is_S3_class(class)) {
+    methods::setOldClass(class$class, where = where)
+    return(invisible())
+  }
+
+  if (!is_class(class)) {
     msg <- sprintf(
       "`class` must be an S7 class or an S3 class, not a %s.",
       obj_desc(class)
@@ -32,29 +36,65 @@ S4_register <- function(class, env = parent.frame()) {
     stop2(msg)
   }
 
-  methods::setOldClass(classes, where = topenv(env))
+  classes <- class_dispatch(class)
+  if (
+    "S7_object" %in% classes &&
+      !methods::isClass("S7_object", where = where)
+  ) {
+    methods::setOldClass("S7_object", where = where)
+  }
+
+  s4_slots <- S4_slots_from_properties(class@properties)
+  if (length(s4_slots) > 0 || is_S4_class(class@parent)) {
+    methods::setOldClass(
+      classes,
+      S4Class = S4_transient_class(class, env, s4_slots),
+      where = where
+    )
+  } else {
+    methods::setOldClass(classes, where = where)
+  }
   invisible()
 }
 
-S4_register_subclass <- function(name, parent, properties, package = NULL,
-                                 env = parent.frame()) {
-  slots <- vcapply(
-    Filter(prop_is_s4_slot, properties),
-    function(prop) S4_slot_class(prop$class)
+S4_transient_class <- function(
+  class,
+  env = parent.frame(),
+  slots = S4_slots_from_properties(class@properties)
+) {
+  tmp <- new.env(parent = topenv(env))
+  args <- list(
+    Class = paste0(".S7_transient_", class@name),
+    slots = slots,
+    where = tmp
   )
 
-  args <- list(
-    Class = name,
-    contains = parent@className,
-    slots = slots,
-    where = topenv(env)
-  )
-  if (!is.null(package)) {
-    args$package <- package
+  contains <- S4_transient_contains(class@parent)
+  if (length(contains) > 0) {
+    args$contains <- contains
+  }
+
+  if (!is.null(class@package)) {
+    args$package <- class@package
   }
 
   do.call(methods::setClass, args)
-  methods::getClass(name, where = topenv(env))
+  methods::getClass(args$Class, where = tmp)
+}
+
+S4_transient_contains <- function(parent) {
+  if (is_S4_class(parent)) {
+    parent@className
+  } else {
+    character()
+  }
+}
+
+S4_slots_from_properties <- function(properties) {
+  properties <- Filter(Negate(prop_is_dynamic), properties)
+  vcapply(properties, function(prop) {
+    attr(prop, "S4_slot_class", exact = TRUE) %||% S4_slot_class(prop$class)
+  })
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
@@ -106,44 +146,14 @@ S4_slot_properties <- function(class) {
 S4_slot_property <- function(class, name) {
   prop <- new_property(
     class = S4_slot_as_class(class),
-    getter = S4_slot_getter(name),
-    setter = S4_slot_setter(name),
     name = name
   )
-  attr(prop, "S4_slot") <- TRUE
+  attr(prop, "S4_slot_class") <- class
   prop
 }
 
 S4_slot_as_class <- function(class) {
   S4_to_S7_class(methods::getClass(class))
-}
-
-S4_slot_getter <- function(name) {
-  force(name)
-  function(self) {
-    methods::slot(self, name)
-  }
-}
-
-S4_slot_setter <- function(name) {
-  force(name)
-  function(self, value) {
-    methods::slot(self, name) <- value
-    self
-  }
-}
-
-mark_S4_slot_properties <- function(properties) {
-  for (name in names(properties)) {
-    if (!prop_is_dynamic(properties[[name]])) {
-      attr(properties[[name]], "S4_slot") <- TRUE
-    }
-  }
-  properties
-}
-
-prop_is_s4_slot <- function(prop) {
-  isTRUE(attr(prop, "S4_slot", exact = TRUE))
 }
 
 S4_slot_class <- function(class) {
@@ -155,7 +165,7 @@ S4_slot_class <- function(class) {
     S7_base = class_register(class),
     S7_S3 = class_register(class),
     S7 = "ANY",
-    S7_union = "ANY"
+    S7_union = if (identical(class, class_numeric)) "numeric" else "ANY"
   )
 }
 

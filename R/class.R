@@ -134,15 +134,6 @@ new_class <- function(
   new_props <- as_properties(properties)
   check_prop_names(new_props)
 
-  s4_class <- NULL
-  if (is_S4_class(parent)) {
-    new_props <- mark_S4_slot_properties(new_props)
-    s4_class <- S4_register_subclass(name, parent, new_props,
-      package = package,
-      env = parent.frame()
-    )
-  }
-
   # Combine properties from parent, overriding as needed
   parent_props <- class_properties(parent)
   check_prop_overrides(new_props, parent_props, name, parent)
@@ -154,9 +145,7 @@ new_class <- function(
       parent,
       constructor_props,
       envir = parent.frame(),
-      package = package,
-      name = name,
-      s4_class = s4_class
+      package = package
     )
   }
 
