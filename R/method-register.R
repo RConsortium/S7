@@ -296,8 +296,8 @@ S4_class <- function(x, S4_env) {
     any = "ANY",
     S7_base = base_to_S4(x$class),
     S4 = x,
-    S7 = ,
-    S7_S3 = check_registered(x),
+    S7 = S4_registered_class(x),
+    S7_S3 = S4_registered_class(x),
     S7_union = stop("Internal error: union should be flattened upstream.")
   )
 }
@@ -311,7 +311,7 @@ base_to_S4 <- function(class) {
   switch(class, double = "numeric", class)
 }
 
-check_registered <- function(x) {
+S4_registered_class <- function(x) {
   class <- tryCatch(
     methods::getClass(class_register(x)),
     error = function(err) NULL
