@@ -17,8 +17,8 @@ reference:
   contents:
   - new_property
   - prop
-  - prop_names
   - prop_info
+  - prop_names
   - props
   - S7_data
 
