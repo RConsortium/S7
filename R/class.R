@@ -7,9 +7,12 @@
 #'
 #' Learn more in `vignette("classes-objects")`
 #'
-#' @param name The name of the class, as a string. The result of calling
-#'   `new_class()` should always be assigned to a variable with this name,
-#'   i.e. `Foo <- new_class("Foo")`.
+#' @param name The name of the class, as a string. (We recommend using
+#'   CamelCase for S7 class names, but it is not required.)
+#'
+#'   The result of calling `new_class()` should always be assigned to a variable
+#'   with this name, i.e. `Foo <- new_class("Foo")`. This object both represents
+#'   the class and is used to construct new instances of the class.
 #' @param parent The parent class to inherit behavior from.
 #'   There are three options:
 #'
@@ -123,7 +126,7 @@ new_class <- function(
       abstract &&
         (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
     ) {
-      stop("Abstract classes must have abstract parents")
+      stop("Abstract classes must have abstract parents.")
     }
   }
 
@@ -173,12 +176,12 @@ S7_class_name <- function(x) {
 
 check_S7_constructor <- function(constructor) {
   if (!is.function(constructor)) {
-    stop("`constructor` must be a function", call. = FALSE)
+    stop("`constructor` must be a function.", call. = FALSE)
   }
 
   method_call <- find_call(body(constructor), quote(new_object), packageName())
   if (is.null(method_call)) {
-    stop("`constructor` must contain a call to `new_object()`", call. = FALSE)
+    stop("`constructor` must contain a call to `new_object()`.", call. = FALSE)
   }
 }
 
@@ -232,8 +235,8 @@ str.S7_class <- function(object, ..., nest.lev = 0) {
 
 #' @export
 c.S7_class <- function(...) {
-  msg <- "Can not combine S7 class objects"
-  stop(msg, call. = FALSE)
+  msg <- "Can not combine S7 class objects."
+  stop(msg)
 }
 
 can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
@@ -255,6 +258,31 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
 
 is_class <- function(x) inherits(x, "S7_class")
 
+check_parent <- function(parent, class) {
+  parent_class <- class@parent
+  if (is.null(parent_class)) {
+    stop(
+      "`.parent` must not be supplied when class has no parent.",
+      call. = FALSE
+    )
+  }
+
+  # Ignore abstract classes since you can't supply an instance
+  if (is_class(parent_class) && parent_class@abstract) {
+    return()
+  }
+
+  if (class_inherits(parent, parent_class)) {
+    return()
+  }
+  msg <- sprintf(
+    "`.parent` must be an instance of %s, not %s.",
+    class_desc(parent_class),
+    obj_desc(parent)
+  )
+  stop(msg, call. = FALSE)
+}
+
 # Object ------------------------------------------------------------------
 
 #' @param .parent,... Parent object and named properties used to construct the
@@ -264,19 +292,23 @@ is_class <- function(x) inherits(x, "S7_class")
 new_object <- function(.parent, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "S7_class")) {
-    stop("`new_object()` must be called from within a constructor")
+    stop("`new_object()` must be called from within a constructor.")
   }
   if (class@abstract) {
     msg <- sprintf(
-      "Can't construct an object from abstract class <%s>",
+      "Can't construct an object from abstract class <%s>.",
       class@name
     )
     stop(msg)
   }
 
+  if (!missing(.parent)) {
+    check_parent(.parent, class)
+  }
+
   args <- list(...)
   if ("" %in% names2(args)) {
-    stop("All arguments to `...` must be named")
+    stop("All arguments to `...` must be named.")
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
@@ -322,15 +354,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
       cat(" ")
     }
 
-    attrs <- attributes(object)
-    if (is.environment(object)) {
-      attributes(object) <- NULL
-    } else {
-      attributes(object) <- list(names = names(object), dim = dim(object))
-    }
-
-    str(object, nest.lev = nest.lev)
-    attributes(object) <- attrs
+    str(S7_data(object), nest.lev = nest.lev)
   } else {
     cat("\n")
   }
@@ -338,18 +362,39 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   str_nest(props(object), "@", ..., nest.lev = nest.lev)
 }
 
-#' Retrieve the S7 class of an object
+#' Retrieve the class specification of an object
 #'
-#' Given an S7 object, find it's class.
+#' @description
+#' `S7_class()` returns a [class specification][as_class] for any R object, in a form
+#' that can be passed to [method()] or used in any S7 dispatch context.
 #'
-#' @param object The S7 object
-#' @returns An [S7 class][new_class].
+#' * For S7 objects, the [S7 class][new_class].
+#' * For S3 objects, a [new_S3_class()] wrapping `class(x)`.
+#' * For S4 objects, the S4 class.
+#' * For base types, the matching `class_*` (e.g. [class_integer]).
+#' * For missing arguments, returns [class_missing].
+#'
+#' @param object Any R object.
+#' @returns A class specification.
 #' @export
 #' @examples
 #' Foo <- new_class("Foo")
 #' S7_class(Foo())
+#'
+#' # Also works on non-S7 objects
+#' S7_class(1L)
+#' S7_class("x")
+#' S7_class(mean)
+#' S7_class(factor("a"))
 S7_class <- function(object) {
-  attr(object, "S7_class", exact = TRUE)
+  switch(
+    obj_type(object),
+    missing = class_missing,
+    S7 = attr(object, "S7_class", exact = TRUE),
+    S4 = methods::getClass(class(object)),
+    S3 = new_S3_class(class(object)),
+    base = base_S7_class(object)
+  )
 }
 
 
@@ -368,8 +413,9 @@ check_prop_names <- function(properties, error_call = sys.call(-1L)) {
   forbidden <- intersect(forbidden, names(properties))
   if (length(forbidden)) {
     msg <- paste0(
-      "property can't be named: ",
-      paste0(forbidden, collapse = ", ")
+      "Property can't be named: ",
+      paste0(forbidden, collapse = ", "),
+      "."
     )
     stop(simpleError(msg, error_call))
   }

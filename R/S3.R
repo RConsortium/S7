@@ -90,14 +90,14 @@
 #' my_generic(Sys.Date())
 new_S3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.character(class)) {
-    stop("`class` must be a character vector", call. = FALSE)
+    stop("`class` must be a character vector.")
   }
   if (!is.null(constructor)) {
     check_S3_constructor(constructor)
   } else {
     constructor <- function(.data) {
       stop(
-        sprintf("S3 class <%s> doesn't have a constructor", class[[1]]),
+        sprintf("S3 class <%s> doesn't have a constructor.", class[[1]]),
         call. = FALSE
       )
     }
@@ -124,13 +124,19 @@ str.S7_S3_class <- function(object, ..., nest.lev = 0) {
   print(object, ..., nest.lev = nest.lev)
 }
 
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass,S7_S3_class)
+#' @exportS3Method NULL
+nameOfClass.S7_S3_class <- function(x) {
+  x[["class"]]
+}
+
 check_S3_constructor <- function(constructor) {
   arg_names <- names(formals(constructor))
   if (arg_names[[1]] != ".data") {
-    stop("First argument to `constructor` must be .data", call. = FALSE)
+    stop("First argument to `constructor` must be .data.", call. = FALSE)
   }
   if ("..." %in% arg_names) {
-    stop("`constructor` can not use `...`", call. = FALSE)
+    stop("`constructor` can not use `...`.", call. = FALSE)
   }
 }
 

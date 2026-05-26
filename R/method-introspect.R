@@ -7,9 +7,11 @@
 #' the implementation of a specific method.
 #'
 #' @seealso [method_explain()] to explain why a specific method was picked.
-#' @inheritParams method<-
 #' @returns Either a function with class `S7_method` or an error if no
 #'   matching method is found.
+#' @param generic An S7 generic, i.e. the result of [new_generic()]. Unlike
+#'   [method<-], `method()` only works with S7 generics; it does not look up
+#'   methods registered on S3 or S4 generics.
 #' @param class,object Perform introspection either with a `class`
 #'   (processed with [as_class()]) or a concrete `object`. If `generic` uses
 #'   multiple dispatch then both `object` and `class` must be a list of
@@ -48,7 +50,7 @@ method <- function(generic, class = NULL, object = NULL) {
   # argument values in the dispatch environment, which doesn't exist here
   types <- error_types(generic, class = class, object = object)
   msg <- method_lookup_error_message(generic@name, types)
-  stop(msg, call. = FALSE)
+  stop(msg)
 }
 
 #' Explain method dispatch
@@ -112,7 +114,7 @@ as_dispatch <- function(generic, class = NULL, object = NULL) {
     signature <- as_signature(class, generic)
     is_union <- vlapply(signature, is_union)
     if (any(is_union)) {
-      stop("Can't dispatch on unions; must be a concrete type")
+      stop("Can't dispatch on unions; must be a concrete type.", call. = FALSE)
     }
 
     lapply(signature, class_dispatch)
@@ -125,7 +127,7 @@ as_dispatch <- function(generic, class = NULL, object = NULL) {
     }
     lapply(object, obj_dispatch)
   } else {
-    stop("Must supply exactly one of `class` and `object`", call. = FALSE)
+    stop("Must supply exactly one of `class` and `object`.", call. = FALSE)
   }
 }
 
