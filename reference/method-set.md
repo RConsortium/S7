@@ -72,8 +72,7 @@ method(generic, signature) <- value
 
   For S3 generics, this must be a single S7 class.
 
-  For S4 generics, this must either be an S7 class, or a list that
-  includes at least one S7 class.
+  The same rules apply to S4 generics as S7 generics.
 
 - value:
 

@@ -1,7 +1,9 @@
-# Register an S7 class with S4
+# Register an S7 or S3 class with S4
 
-If you want to use method\<- to register an method for an S4 generic
-with an S7 class, you need to call `S4_register()` once.
+If you want to use method\<- to register a method for an S4 generic with
+an S7 class or an S3 class (created by
+[`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)),
+you need to call `S4_register()` once.
 
 ## Usage
 
@@ -14,7 +16,9 @@ S4_register(class, env = parent.frame())
 - class:
 
   An S7 class created with
-  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md).
+  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md),
+  or an S3 class created with
+  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md).
 
 - env:
 
