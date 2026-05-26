@@ -1,0 +1,50 @@
+When an S7 class extends an S4 class, `new_class()` automatically registers the
+new class with S4. After that, an S4 generic with a method for `Parent` will
+dispatch on a `Child` instance:
+
+```r
+setMethod("g", "Parent", function(x) ...)
+g(child) # uses Parent method if no more specific Child method exists
+```
+
+But the method receives the original S7 object, not a formal S4 instance, so
+this approach is a compatibility bridge, not full substitutability.
+
+Things that work reasonably:
+
+* `methods::is(child, "Parent")` returns `TRUE`.
+* S4 dispatch inherits through `Parent`.
+* `methods::validObject(child)` can validate known S7/S4 attributes.
+* `methods::slotNames(child)` works.
+* `methods::slot(child, "x")` works for registered slots and properties, as
+  long as they are represented by stored attributes.
+* `child@x` works through S7 property access. With the current oldClass
+  representation, the object is not S4-bit so `@` can dispatch to S7's
+  `@.S7_object` method. If S7 objects that extend S4 classes are represented
+  as S4-bit objects in the future, R's `@` primitive will need to dispatch
+  before taking the S4 slot-access path.
+* `as(child, "Parent")` can produce a real S4 `Parent` object containing the
+  parent slots.
+
+Likely brittle or incompatible with S4-method assumptions:
+
+* `isS4(child)` is `FALSE` with the current oldClass representation. This
+  avoids advertising formal S4 object invariants that S7 objects do not
+  satisfy. S4 code is still exposed to S3-compatible, non-scalar `class()`
+  vectors through the oldClass bridge.
+* `class(child)` is length greater than 1, for example
+  `c("Child", "S4/Parent", "S7_object")`. This can break S4 code that treats
+  `class()` as a scalar class name. Code that needs a scalar primary class
+  name should use `class(x)[[1L]]`, or `methods::class1(x)` once that helper
+  has been made public.
+* Methods that access slots with `methods::slot()` and `methods::slot<-()`
+  bypass the S7 property layer. This is mostly a problem when the S7 class
+  defines properties that override the slots from its parent. This is similar
+  to deriving from an S3 class whose methods use `attr()` and `attr<-()`
+  directly. Overriding S4 slots is therefore discouraged.
+
+In summary, inherited S4 methods must be written against the "registered
+oldClass with known attributes" contract, not the stricter "formal S4
+instance" contract. They should use a scalar primary-class helper where
+appropriate and avoid `slot()` and `slot<-()` when they need S7 property
+management to apply.

@@ -92,6 +92,61 @@ when an object is passed to a generic.
 
 Learn more in \code{vignette("classes-objects")}
 }
+\section{S4 compatibility}{
+
+When an S7 class extends an S4 class, \code{new_class()} automatically registers the
+new class with S4. After that, an S4 generic with a method for \code{Parent} will
+dispatch on a \code{Child} instance:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{setMethod("g", "Parent", function(x) ...)
+g(child) # uses Parent method if no more specific Child method exists
+}\if{html}{\out{</div>}}
+
+But the method receives the original S7 object, not a formal S4 instance, so
+this approach is a compatibility bridge, not full substitutability.
+
+Things that work reasonably:
+\itemize{
+\item \code{methods::is(child, "Parent")} returns \code{TRUE}.
+\item S4 dispatch inherits through \code{Parent}.
+\item \code{methods::validObject(child)} can validate known S7/S4 attributes.
+\item \code{methods::slotNames(child)} works.
+\item \code{methods::slot(child, "x")} works for registered slots and properties, as
+long as they are represented by stored attributes.
+\item \code{child@x} works through S7 property access. With the current oldClass
+representation, the object is not S4-bit so \code{@} can dispatch to S7's
+\verb{@.S7_object} method. If S7 objects that extend S4 classes are represented
+as S4-bit objects in the future, R's \code{@} primitive will need to dispatch
+before taking the S4 slot-access path.
+\item \code{as(child, "Parent")} can produce a real S4 \code{Parent} object containing the
+parent slots.
+}
+
+Likely brittle or incompatible with S4-method assumptions:
+\itemize{
+\item \code{isS4(child)} is \code{FALSE} with the current oldClass representation. This
+avoids advertising formal S4 object invariants that S7 objects do not
+satisfy. S4 code is still exposed to S3-compatible, non-scalar \code{class()}
+vectors through the oldClass bridge.
+\item \code{class(child)} is length greater than 1, for example
+\code{c("Child", "S4/Parent", "S7_object")}. This can break S4 code that treats
+\code{class()} as a scalar class name. Code that needs a scalar primary class
+name should use \code{class(x)[[1L]]}, or \code{methods::class1(x)} once that helper
+has been made public.
+\item Methods that access slots with \code{methods::slot()} and \verb{methods::slot<-()}
+bypass the S7 property layer. This is mostly a problem when the S7 class
+defines properties that override the slots from its parent. This is similar
+to deriving from an S3 class whose methods use \code{attr()} and \verb{attr<-()}
+directly. Overriding S4 slots is therefore discouraged.
+}
+
+In summary, inherited S4 methods must be written against the "registered
+oldClass with known attributes" contract, not the stricter "formal S4
+instance" contract. They should use a scalar primary-class helper where
+appropriate and avoid \code{slot()} and \verb{slot<-()} when they need S7 property
+management to apply.
+}
+
 \examples{
 # Create an class that represents a range using a numeric start and end
 Range := new_class(
