@@ -1,8 +1,10 @@
 # Get/set underlying "base" data
 
 When an S7 class inherits from an existing base type, it can be useful
-to work with the underlying object, i.e. the S7 object stripped of class
-and properties.
+to work with the underlying object, i.e. the S7 object stripped of its
+S7 class and properties. If the class inherits from an S3 class,
+`S7_data()` preserves the S3 class so the result remains a valid object
+of that type.
 
 ## Usage
 
@@ -49,4 +51,10 @@ S7_data(y) <- c("a", "b")
 y
 #> <Text> Named chr [1:2] "a" "b"
 #>  - attr(*, "names")= chr [1:2] "foo" NA
+
+# S3 classes are preserved
+MyDF <- new_class("MyDF", parent = class_data.frame)
+S7_data(MyDF(data.frame(x = 1, y = 2)))
+#>   x y
+#> 1 1 2
 ```

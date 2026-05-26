@@ -41,9 +41,19 @@
   [\#593](https://github.com/RConsortium/S7/issues/593),
   [\#598](https://github.com/RConsortium/S7/issues/598),
   [\#600](https://github.com/RConsortium/S7/issues/600)).
+- [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
+  now preserves the S3 class when the S7 class inherits from an S3
+  class, so
+  e.g. [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
+  on a data.frame subclass now returns a data.frame
+  ([\#380](https://github.com/RConsortium/S7/issues/380)).
 - `S7_error_method_not_found` now has a correct class vector without a
   duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
   [\#604](https://github.com/RConsortium/S7/issues/604))
+- [`str()`](https://rdrr.io/r/utils/str.html) on S7 objects that inherit
+  from data.frame (or other S3 classes whose underlying data has a `dim`
+  attribute incompatible with the bare base type) no longer errors
+  ([\#494](https://github.com/RConsortium/S7/issues/494)).
 
 ## S7 0.2.2
 
