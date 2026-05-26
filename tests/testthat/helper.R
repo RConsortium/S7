@@ -64,9 +64,10 @@ local_S4_class <- function(name, ..., env = parent.frame()) {
 # registered by S7 (which writes to the generic's environment's methods table).
 # Cleans up the generic and any registered methods on exit.
 local_s3_generic <- function(name, frame = parent.frame()) {
-  generic <- eval(bquote(function(x) UseMethod(.(name))))
-  environment(generic) <- globalenv()
-  assign(name, generic, envir = globalenv())
+  eval(
+    bquote(.(name) <- function(x) UseMethod(.(name))),
+    globalenv()
+  )
   defer(
     {
       rm(list = name, envir = globalenv())
@@ -79,13 +80,11 @@ local_s3_generic <- function(name, frame = parent.frame()) {
 
 unregister_s3_methods <- function(envir, generic) {
   tbl <- envir[[".__S3MethodsTable__."]]
-  if (is.null(tbl)) {
-    return(invisible())
-  }
-  methods <- ls(tbl, pattern = paste0("^", generic, "\\."))
-  if (length(methods)) {
+  if (!is.null(tbl)) {
+    methods <- ls(tbl, pattern = paste0("^", generic, "\\."))
     rm(list = methods, envir = tbl)
   }
+
   invisible()
 }
 
