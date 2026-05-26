@@ -65,57 +65,58 @@ describe("method registration", {
   })
 
   it("can register S7 method for S3 generic with base type signature", {
-    s3_gen <- function(x) UseMethod("s3_gen")
+    local_s3_generic("s3_gen")
     method(s3_gen, class_character) <- function(x) "char"
     method(s3_gen, class_integer) <- function(x) "int"
 
-    tbl <- environment(s3_gen)[[".__S3MethodsTable__."]]
-    expect_contains(ls(tbl), c("s3_gen.character", "s3_gen.integer"))
+    expect_equal(s3_gen("a"), "char")
+    expect_equal(s3_gen(1L), "int")
   })
 
   it("can register S7 method for S3 generic with S3 class signature", {
-    s3_gen <- function(x) UseMethod("s3_gen")
+    local_s3_generic("s3_gen")
     method(s3_gen, new_S3_class("foo")) <- function(x) "foo"
     method(s3_gen, class_factor) <- function(x) "factor"
 
-    tbl <- environment(s3_gen)[[".__S3MethodsTable__."]]
-    expect_contains(ls(tbl), c("s3_gen.foo", "s3_gen.factor"))
+    expect_equal(s3_gen(structure(list(), class = "foo")), "foo")
+    expect_equal(s3_gen(factor("a")), "factor")
   })
 
   it("S3 registration for a multi-class S3 class uses only the first class", {
-    s3_gen <- function(x) UseMethod("s3_gen")
+    local_s3_generic("s3_gen")
     method(s3_gen, new_S3_class(c("ordered", "factor"))) <- function(x) "ord"
 
-    tbl <- environment(s3_gen)[[".__S3MethodsTable__."]]
-    expect_setequal(ls(tbl), "s3_gen.ordered")
+    expect_equal(s3_gen(ordered("a")), "ord")
+    # plain factors don't match because only `ordered` was registered
+    expect_error(s3_gen(factor("a")), "no applicable method")
   })
 
   it("can register S7 method for S3 generic with class_any and NULL", {
-    s3_gen <- function(x) UseMethod("s3_gen")
+    local_s3_generic("s3_gen")
     method(s3_gen, class_any) <- function(x) "any"
     method(s3_gen, NULL) <- function(x) "null"
 
-    tbl <- environment(s3_gen)[[".__S3MethodsTable__."]]
-    expect_contains(ls(tbl), c("s3_gen.default", "s3_gen.NULL"))
+    expect_equal(s3_gen(1L), "any")
+    expect_equal(s3_gen(NULL), "null")
   })
 
   it("S3 method registration expands unions to one method per class", {
-    s3_gen <- function(x) UseMethod("s3_gen")
+    local_s3_generic("s3_gen")
     method(s3_gen, class_numeric) <- function(x) "num"
 
-    tbl <- environment(s3_gen)[[".__S3MethodsTable__."]]
-    expect_contains(ls(tbl), c("s3_gen.integer", "s3_gen.double"))
+    expect_equal(s3_gen(1L), "num")
+    expect_equal(s3_gen(1.5), "num")
 
     # Custom union mixing a base type and an S3 class
-    s3_gen2 <- function(x) UseMethod("s3_gen2")
+    local_s3_generic("s3_gen2")
     method(s3_gen2, class_character | new_S3_class("foo")) <- function(x) "x"
 
-    tbl2 <- environment(s3_gen2)[[".__S3MethodsTable__."]]
-    expect_contains(ls(tbl2), c("s3_gen2.character", "s3_gen2.foo"))
+    expect_equal(s3_gen2("a"), "x")
+    expect_equal(s3_gen2(structure(list(), class = "foo")), "x")
   })
 
   it("rejects class_missing on S3 generics", {
-    s3_gen <- function(x) UseMethod("s3_gen")
+    local_s3_generic("s3_gen")
     expect_snapshot(error = TRUE, {
       method(s3_gen, class_missing) <- function(x) "missing"
     })
