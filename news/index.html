@@ -54,6 +54,8 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
 <ul><li>
+<code><a href="../reference/new_class.html">new_object()</a></code> now gives an informative error when <code>.parent</code> is a class specification rather than an instance of the parent class (<a href="https://github.com/RConsortium/S7/issues/409" class="external-link">#409</a>).</li>
+<li>
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
 <li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
 <li>

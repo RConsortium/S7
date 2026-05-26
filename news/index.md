@@ -2,6 +2,10 @@
 
 ## S7 (development version)
 
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now gives an informative error when `.parent` is a class specification
+  rather than an instance of the parent class
+  ([\#409](https://github.com/RConsortium/S7/issues/409)).
 - [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
   and
   [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
