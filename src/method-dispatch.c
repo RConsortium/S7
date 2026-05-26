@@ -17,6 +17,7 @@ extern SEXP sym_name;
 
 extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
+extern SEXP missing_call;
 
 extern SEXP R_TRUE;
 extern SEXP s7_proto_object;
@@ -91,7 +92,6 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   // Allocate a list to store the arguments
   SEXP args = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
-  SEXP missing_call = PROTECT(Rf_lang2(fn_base_missing, R_NilValue));
   PROTECT_INDEX pi;
   PROTECT_WITH_INDEX(R_NilValue, &pi);
 
@@ -115,7 +115,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   }
   Rf_setAttrib(args, R_NamesSymbol, dispatch_args);
 
-  UNPROTECT(3);
+  UNPROTECT(2);
 
   return args;
 }
@@ -187,8 +187,6 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   PROTECT_INDEX arg_pi, val_pi;
   PROTECT_WITH_INDEX(R_NilValue, &arg_pi); // unnecessary, for rchk only
   PROTECT_WITH_INDEX(R_NilValue, &val_pi); // unnecessary, for rchk only
-
-  SEXP missing_call = PROTECT(Rf_lang2(fn_base_missing, R_NilValue));
 
   // For each of the arguments to the generic
   for (R_xlen_t i = 0; i < n_args; ++i) {
@@ -276,6 +274,6 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SETCAR(mcall, method_name);
 
   SEXP out = Rf_eval(mcall, envir);
-  UNPROTECT(5);
+  UNPROTECT(4);
   return out;
 }
