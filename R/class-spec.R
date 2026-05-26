@@ -20,7 +20,7 @@
 #' as_class(class_logical)
 #' as_class(new_S3_class("factor"))
 as_class <- function(x, arg = deparse(substitute(x))) {
-  error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
+  error_base <- sprintf("Can't convert `%s` to a valid class.", arg)
 
   if (is_foundation_class(x)) {
     x
@@ -31,11 +31,18 @@ as_class <- function(x, arg = deparse(substitute(x))) {
   } else if (isS4(x)) {
     S4_to_S7_class(x, error_base)
   } else {
-    msg <- sprintf(
-      "Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a %s.",
-      obj_desc(x)
+    msg <- c(
+      sprintf(
+        "Class specification must be one of the following, not a %s:",
+        obj_desc(x)
+      ),
+      " * An S7 class object",
+      " * An S3 class object (from `new_S3_class()`)",
+      " * An S4 class object",
+      " * A base class"
     )
-    stop(paste0(error_base, msg), call. = FALSE)
+
+    stop(paste0(c(error_base, msg), collapse = "\n"))
   }
 }
 
@@ -66,7 +73,7 @@ class_type <- function(x) {
   } else if (is_S4_class(x)) {
     "S4"
   } else {
-    stop("`x` is not standard S7 class", call. = FALSE)
+    stop("`x` is not a standard S7 class.", call. = FALSE)
   }
 }
 
@@ -110,7 +117,7 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
       f2 <- eval(cl, baseenv())
       if (!identical(f, f2)) {
         msg <- sprintf(
-          "`%s::%s` is not identical to the class with the same @package and @name properties",
+          "`%s::%s` is not identical to the class with the same @package and @name properties.",
           f@package,
           f@name
         )
@@ -177,7 +184,7 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
-    stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
+    stop(sprintf("Can't construct %s.", class_friendly(.x)), call. = FALSE)
   )
 }
 
@@ -245,7 +252,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    stop("Unsupported")
+    stop("Unsupported class type.", call. = FALSE)
   )
 }
 
@@ -260,7 +267,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
-    stop("Unsupported")
+    stop("Unsupported class type.", call. = FALSE)
   )
 }
 
