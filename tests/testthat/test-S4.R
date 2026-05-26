@@ -97,7 +97,51 @@ test_that("S7 classes can extend S4 classes", {
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
+  child <- methods::initialize(child, x = 3, y = "c")
+  expect_equal(prop(child, "x"), 3)
+  expect_equal(prop(child, "y"), "c")
+  expect_true(methods::validObject(child))
+
+  child <- methods::initialize(child, Child(x = 4, y = "d"), y = "e")
+  expect_equal(prop(child, "x"), 4)
+  expect_equal(prop(child, "y"), "e")
+
+  parent <- methods::new("Parent", x = 5)
+  child <- methods::initialize(child, parent, y = "f")
+  expect_equal(prop(child, "x"), 5)
+  expect_equal(prop(child, "y"), "f")
+
+  child <- methods::initialize(child, x = 6, x = 7)
+  expect_equal(prop(child, "x"), 7)
+
+  expect_error(methods::initialize(child, x = "x"), "invalid")
+  expect_error(methods::initialize(child, z = 1), "Can't find property")
+
   expect_error(Child(x = "x", y = "a"))
+})
+
+test_that("S4 initialize supports S3 data parts", {
+  on.exit(S4_remove_classes(c("ParentNum", "ChildNum")))
+  setClass("ParentNum", contains = "numeric", slots = list(y = "character"))
+
+  ChildNum <- new_class(
+    "ChildNum",
+    parent = getClass("ParentNum"),
+    properties = list(z = class_integer),
+    package = NULL
+  )
+  child <- ChildNum(y = "a", z = 1L)
+  S4_register(ChildNum)
+
+  child <- methods::initialize(child, 2.5, y = "b")
+  expect_equal(as.vector(child), 2.5)
+  expect_equal(prop(child, ".Data"), 2.5)
+  expect_equal(prop(child, "y"), "b")
+  expect_true(methods::validObject(child))
+
+  child <- methods::initialize(child, .Data = 3.5)
+  expect_equal(as.vector(child), 3.5)
+  expect_true(methods::validObject(child))
 })
 
 test_that("S4_register uses S7 properties as known S4 attributes", {
@@ -111,6 +155,29 @@ test_that("S4_register uses S7 properties as known S4 attributes", {
 
   attr(foo, "x") <- "x"
   expect_error(methods::validObject(foo), "invalid object")
+})
+
+test_that("S4 initialize uses S7 property setters", {
+  on.exit(S4_remove_classes(c("Parent2", "Child2")))
+  setClass("Parent2", slots = list(x = "numeric"))
+
+  Child2 <- new_class(
+    "Child2",
+    parent = getClass("Parent2"),
+    properties = list(
+      y = new_property(class_character, setter = function(self, value) {
+        attr(self, "setter_called") <- TRUE
+        attr(self, "y") <- value
+        self
+      })
+    ),
+    package = NULL
+  )
+  S4_register(Child2)
+
+  child <- methods::initialize(Child2(x = 1, y = "a"), y = "b")
+  expect_equal(prop(child, "y"), "b")
+  expect_true(attr(child, "setter_called"))
 })
 
 
