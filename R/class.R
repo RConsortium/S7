@@ -130,10 +130,20 @@ new_class <- function(
     }
   }
 
-  # Combine properties from parent, overriding as needed
-  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
   check_prop_names(new_props)
+
+  s4_class <- NULL
+  if (is_S4_class(parent)) {
+    new_props <- mark_S4_slot_properties(new_props)
+    s4_class <- S4_register_subclass(name, parent, new_props,
+      package = package,
+      env = parent.frame()
+    )
+  }
+
+  # Combine properties from parent, overriding as needed
+  all_props <- class_properties(parent)
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
@@ -141,7 +151,9 @@ new_class <- function(
       parent,
       all_props,
       envir = parent.frame(),
-      package = package
+      package = package,
+      name = name,
+      s4_class = s4_class
     )
   }
 
@@ -248,7 +260,9 @@ c.S7_class <- function(...) {
   stop2("Can not combine S7 class objects.")
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_S4_class(x)
+}
 
 check_can_inherit <- function(
   x,
@@ -257,7 +271,7 @@ check_can_inherit <- function(
 ) {
   if (!can_inherit(x)) {
     msg <- sprintf(
-      "`%s` must be an S7 class, S3 class, or base type, not %s.",
+      "`%s` must be an S7 class, S4 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
