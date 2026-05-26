@@ -340,18 +340,6 @@ obj_dispatch <- function(x) {
   )
 }
 
-base_class <- function(x) {
-  switch(
-    typeof(x),
-    closure = "function",
-    special = "function",
-    builtin = "function",
-    language = "call",
-    symbol = "name",
-    typeof(x)
-  )
-}
-
 # helpers -----------------------------------------------------------------
 
 # Suppress @className false positive
