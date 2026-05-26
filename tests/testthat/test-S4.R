@@ -90,7 +90,6 @@ test_that("S7 classes can extend S4 classes", {
   expect_equal(prop(child, "x"), 2)
   expect_equal(prop(child, "y"), "b")
 
-  S4_register(Child)
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
   expect_equal(methods::slotNames("Child"), c("x", "y", ".S3Class"))
@@ -131,7 +130,6 @@ test_that("S4 initialize supports S3 data parts", {
     package = NULL
   )
   child <- ChildNum(y = "a", z = 1L)
-  S4_register(ChildNum)
 
   child <- methods::initialize(child, 2.5, y = "b")
   expect_equal(as.vector(child), 2.5)
@@ -173,7 +171,6 @@ test_that("S4 initialize uses S7 property setters", {
     ),
     package = NULL
   )
-  S4_register(Child2)
 
   child <- methods::initialize(Child2(x = 1, y = "a"), y = "b")
   expect_equal(prop(child, "y"), "b")
