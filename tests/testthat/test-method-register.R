@@ -84,6 +84,37 @@ describe("method registration", {
     expect_equal(bar(S4foo()), "foo")
   })
 
+  it("can register S4 methods for base types, class_any, class_missing, and NULL", {
+    methods::setGeneric("s4_gen", function(x) standardGeneric("s4_gen"))
+    method(s4_gen, class_character) <- function(x) "char"
+    method(s4_gen, class_any) <- function(x) "any"
+    method(s4_gen, class_missing) <- function(x) "missing"
+    method(s4_gen, NULL) <- function(x) "null"
+
+    expect_equal(s4_gen("hi"), "char")
+    expect_equal(s4_gen(list()), "any")
+    expect_equal(s4_gen(), "missing")
+    expect_equal(s4_gen(NULL), "null")
+  })
+
+  it("S4 method registration expands S7 unions to one method per class", {
+    methods::setGeneric("s4_union", function(x) standardGeneric("s4_union"))
+    method(s4_union, class_integer | class_character) <- function(x) "u"
+
+    expect_equal(s4_union(1L), "u")
+    expect_equal(s4_union("a"), "u")
+  })
+
+  it("S4 method registration on class_double catches actual doubles", {
+    # class(1.5) is "numeric", not "double", so class_double must register
+    # under S4's "numeric" class to dispatch on real doubles.
+    methods::setGeneric("s4_double", function(x) standardGeneric("s4_double"))
+    method(s4_double, class_numeric) <- function(x) "num"
+
+    expect_equal(s4_double(1L), "num")
+    expect_equal(s4_double(1.5), "num")
+  })
+
   it("checks argument types", {
     foo <- new_generic("foo", "x")
     expect_snapshot(error = TRUE, {
@@ -111,8 +142,13 @@ describe("as_signature()", {
     expect_equal(as_signature(new_signature(10)), new_signature(10))
   })
 
-  it("forbids list for single dispatch", {
+  it("accepts a length-1 list for single dispatch (#555)", {
     foo <- new_generic("foo", "x")
+    sig <- as_signature(list(class_character), foo)
+    expect_s3_class(sig, "S7_signature")
+    expect_equal(sig, as_signature(class_character, foo))
+
+    # but a list with the wrong contents still errors
     expect_snapshot(as_signature(list(1), foo), error = TRUE)
   })
 
@@ -157,6 +193,13 @@ test_that("check_method complains if the functions are not compatible", {
   expect_snapshot(error = TRUE, {
     foo <- new_generic("foo", "x", function(x) S7_dispatch())
     check_method(function(x, y) {}, foo)
+  })
+})
+
+test_that("check_method rejects primitive functions", {
+  expect_snapshot(error = TRUE, {
+    foo <- new_generic("foo", "x")
+    check_method(log, foo)
   })
 })
 

@@ -1,10 +1,10 @@
 # property retrieval / retrieves the properties that exist & errors otherwise
 
-    Can't find property <foo>@x
+    Can't find property <foo>@x.
 
 ---
 
-    Can't find property <foo>@x
+    Can't find property <foo>@x.
 
 # property retrieval / reports dynamic getter errors as property calls
 
@@ -28,7 +28,7 @@
       obj@x <- 1
     Condition
       Error:
-      ! Can't set read-only property <foo>@x
+      ! Can't set read-only property <foo>@x.
 
 # prop setting / errors if the property doesn't exist or is wrong class
 
@@ -37,7 +37,7 @@
       obj@foo <- 10
     Condition
       Error:
-      ! Can't find property <foo>@foo
+      ! Can't find property <foo>@foo.
     Code
       obj@x <- "x"
     Condition
@@ -77,12 +77,12 @@
       new_property(getter = function(x) { })
     Condition
       Error:
-      ! `getter` must be function(self), not function(x)
+      ! `getter` must be function(self), not function(x).
     Code
       new_property(setter = function(x, y, z) { })
     Condition
       Error:
-      ! `setter` must be function(self, value), not function(x, y, z)
+      ! `setter` must be function(self, value), not function(x, y, z).
 
 # new_property() / validates default
 
@@ -90,7 +90,7 @@
       new_property(class_integer, default = "x")
     Condition
       Error in `new_property()`:
-      ! `default` must be an instance of <integer>, not a <character>
+      ! `default` must be an instance of <integer>, not a <character>.
 
 # new_property() / displays nicely
 
@@ -173,7 +173,7 @@
       as_properties(1)
     Condition
       Error:
-      ! `properties` must be a list
+      ! `properties` must be a list.
     Code
       as_properties(list(1))
     Condition
@@ -187,13 +187,18 @@
     Code
       as_properties(list(x = 1))
     Condition
-      Error:
-      ! Can't convert `property$x` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Error in `as_class()`:
+      ! Can't convert `property$x` to a valid class.
+      Class specification must be one of the following, not a <double>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
     Code
       as_properties(list(x = class_character, x = class_character))
     Condition
       Error:
-      ! `properties` names must be unique
+      ! `properties` names must be unique.
 
 # can validate with custom validator
 
@@ -271,4 +276,3 @@
       [tx] finished transmitting.
     Code
       expect_equal(receiver@message, "goodbye")
-

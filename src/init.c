@@ -50,6 +50,7 @@ SEXP sym_name;
 
 SEXP fn_base_quote;
 SEXP fn_base_missing;
+SEXP missing_call;
 
 SEXP ns_S7;
 
@@ -101,4 +102,5 @@ void R_init_S7(DllInfo *dll)
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
     prop_init();
     R_PreserveObject(s7_proto_object = make_s7_proto_object());
+    R_PreserveObject(missing_call = Rf_lang2(fn_base_missing, R_NilValue));
 }

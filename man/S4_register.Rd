@@ -2,12 +2,13 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
-\title{Register an S7 class with S4}
+\title{Register an S7 or S3 class with S4}
 \usage{
 S4_register(class, env = parent.frame())
 }
 \arguments{
-\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}.}
+\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or an S3 class created
+with \code{\link[=new_S3_class]{new_S3_class()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
@@ -15,8 +16,9 @@ S4_register(class, env = parent.frame())
 Nothing; the function is called for its side-effect.
 }
 \description{
-If you want to use \link{method<-} to register an method for an S4 generic with
-an S7 class, you need to call \code{S4_register()} once.
+If you want to use \link{method<-} to register a method for an S4 generic with
+an S7 class or an S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}), you need to call
+\code{S4_register()} once.
 }
 \examples{
 methods::setGeneric("S4_generic", function(x) {
