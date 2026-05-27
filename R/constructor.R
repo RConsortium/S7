@@ -21,27 +21,22 @@ new_constructor <- function(
     arg_info <- constructor_args(parent, all_props, envir, package)
     self_args <- as_names(names(arg_info$self))
 
-    if (is_S4_class(parent)) {
-      parent_expr <- quote(.S4_parent_object(.S4_parent))
-      env <- new.env(parent = envir)
-      env$.S4_parent <- parent
-      env$.S4_parent_object <- S4_parent_object
+    s4_data_part <- is_S4_class(parent) && ".Data" %in% names(parent@slots)
+    parent_call <- if (s4_data_part) {
+      bquote(
+        methods::getClass(.(as.character(parent@className)))@prototype@.Data
+      )
+    } else if (has_S7_symbols(envir, "S7_object")) {
+      quote(S7_object())
     } else {
-      parent_expr <- if (has_S7_symbols(envir, "S7_object")) {
-        quote(S7_object())
-      } else {
-        quote(S7::S7_object())
-      }
-      env <- envir
+      quote(S7::S7_object())
     }
-    new_object_call <- new_call(
+    new_object_call <-
       if (has_S7_symbols(envir, "new_object")) {
-        "new_object"
+        bquote(new_object(.(parent_call), ..(self_args)), splice = TRUE)
       } else {
-        c("S7", "new_object")
-      },
-      c(list(parent_expr), self_args)
-    )
+        bquote(S7::new_object(.(parent_call), ..(self_args)), splice = TRUE)
+      }
 
     return(new_function(
       args = arg_info$self,
@@ -52,7 +47,7 @@ new_constructor <- function(
         unname(self_args),
         new_object_call
       )),
-      env = env
+      env = envir
     ))
   }
 
@@ -172,13 +167,4 @@ has_S7_symbols <- function(env, ...) {
   imports <- getNamespaceImports(env)[["S7"]]
   symbols <- c(...) %||% getNamespaceExports("S7")
   all(symbols %in% imports)
-}
-
-S4_parent_object <- function(parent) {
-  prototype <- parent@prototype
-  if (".Data" %in% names(parent@slots)) {
-    methods::slot(prototype, ".Data")
-  } else {
-    S7_object()
-  }
 }
