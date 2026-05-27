@@ -31,3 +31,12 @@
       ! <mypkg::tree> object properties are invalid:
       - @child must be <NULL> or <mypkg::tree>, not <double>
 
+# method registration outside a package errors when unresolved
+
+    Code
+      register_method(foo, new_external_class("not_loaded_pkg", "X"), function(x) "x",
+      package = NULL)
+    Condition
+      Error:
+      ! External classes can only be used in method signatures inside a package, since deferred method registration requires `methods_register()`.
+

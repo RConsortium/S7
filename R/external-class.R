@@ -51,6 +51,7 @@ new_external_class <- function(package, name, version = NULL) {
   out <- list(
     package = package,
     name = name,
+    class_name = paste0(package, "::", name),
     version = version
   )
   class(out) <- "S7_external_class"
@@ -65,9 +66,7 @@ is_external_class <- function(x) {
 print.S7_external_class <- function(x, ...) {
   cat(
     "<S7_external_class> ",
-    x$package,
-    "::",
-    x$name,
+    x$class_name,
     if (!is.null(x$version)) paste0(" (>= ", x$version, ")"),
     "\n",
     sep = ""
@@ -90,10 +89,4 @@ resolve_external_class <- function(x) {
     return(NULL)
   }
   get(x$name, envir = ns, inherits = FALSE)
-}
-
-# Combined "pkg::name" string used to identify the class in registries
-# and S3 class vectors.
-external_class_name <- function(x) {
-  paste0(x$package, "::", x$name)
 }

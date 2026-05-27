@@ -262,7 +262,7 @@ class_desc <- function(x) {
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
-    S7_external = paste0("<", external_class_name(x), ">"),
+    S7_external = paste0("<", x$class_name, ">"),
   )
 }
 
@@ -281,14 +281,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    S7_external = {
-      resolved <- resolve_external_class(x)
-      if (is.null(resolved)) {
-        c(external_class_name(x), "S7_object")
-      } else {
-        class_dispatch(resolved)
-      }
-    },
+    S7_external = class_dispatch(resolve_external_class(x)),
     stop("Unsupported class type.", call. = FALSE)
   )
 }
@@ -304,7 +297,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
-    S7_external = external_class_name(x),
+    S7_external = x$class_name,
     stop("Unsupported class type.", call. = FALSE)
   )
 }
@@ -324,11 +317,7 @@ class_deparse <- function(x) {
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
     S7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
-    S7_external = sprintf(
-      "new_external_class(%s, %s)",
-      deparse1(x$package),
-      deparse1(x$name)
-    ),
+    S7_external = sprintf("new_external_class(%s, %s)", x$package, x$name),
   )
 }
 
@@ -346,11 +335,7 @@ class_inherits <- function(x, what) {
     # order and contiguous, but it's probably close enough for practical
     # purposes
     S7_S3 = !isS4(x) && all(what$class %in% class(x)),
-    # An external class is identified by its combined "pkg::name" — S7 stamps
-    # this name onto every instance's class vector, so we can check inheritance
-    # without resolving the class itself.
-    S7_external = inherits(x, "S7_object") &&
-      inherits(x, external_class_name(what)),
+    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
 
