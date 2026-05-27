@@ -63,10 +63,10 @@ describe("S7 classes", {
     })
   })
 
-  it("can't inherit from S4 or class unions", {
+  it("can inherit from S4 but not class unions", {
     parentS4 <- methods::setClass("parentS4", slots = c(x = "numeric"))
     expect_snapshot(error = TRUE, {
-      new_class("test", parent = parentS4)
+      new_class("test", parent = parentS4, package = NULL)
       new_class("test", parent = new_union("character"))
     })
   })
