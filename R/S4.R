@@ -322,4 +322,14 @@ S4_remove_classes <- function(classes, where = parent.frame()) {
   }
 }
 
-globalVariables(c("slots", "superClass", "virtual"))
+globalVariables(c(
+  ".Data",
+  "className",
+  "distance",
+  "package",
+  "prototype",
+  "slots",
+  "subClass",
+  "superClass",
+  "virtual"
+))
