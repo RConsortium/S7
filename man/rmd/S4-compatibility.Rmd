@@ -14,20 +14,17 @@ Things that work reasonably:
 
 * `methods::is(child, "Parent")` returns `TRUE`.
 * S4 dispatch inherits through `Parent`.
-* `methods::validObject(child)` can validate known S7/S4 attributes.
-* `methods::slotNames(child)` works.
-* `methods::slot(child, "x")` works for registered slots and properties, as
-  long as they are represented by stored attributes.
+* `methods::validObject(child)` validates the S4 parent slots through S4 and
+  recursively validates S7 properties and class validators through S7.
+* `methods::slotNames(child)` reports the S4 parent slots. S7 extension
+  properties are not registered as formal S4 slots.
+* `methods::slot(child, "x")` works for stored attributes, but bypasses the S7
+  property layer.
 * `child@x` works through S7 property access. With the current oldClass
   representation, the object is not S4-bit so `@` can dispatch to S7's
   `@.S7_object` method. If S7 objects that extend S4 classes are represented
   as S4-bit objects in the future, R's `@` primitive will need to dispatch
   before taking the S4 slot-access path.
-* `methods::initialize(child, ...)` works for reinitializing an existing S7
-  object through S4 code. This is preferable to constructing a fresh object
-  with `methods::new(class(child)[[1L]], ...)`, because S4 construction creates
-  a formal S4 object with the oldClass structure but without the S7 metadata
-  that S7 property management requires.
 * `as(child, "Parent")` can produce a real S4 `Parent` object containing the
   parent slots.
 
@@ -43,21 +40,18 @@ Likely brittle or incompatible with S4-method assumptions:
   name should use `class(x)[[1L]]`, or `methods::class1(x)` once that helper
   has been made public.
 * Methods that access slots with `methods::slot()` and `methods::slot<-()`
-  bypass the S7 property layer. This is mostly a problem when the S7 class
-  defines properties that override the slots from its parent. This is similar
-  to deriving from an S3 class whose methods use `attr()` and `attr<-()`
-  directly. Overriding S4 slots is therefore discouraged.
+  bypass the S7 property layer. This is similar to deriving from an S3 class
+  whose methods use `attr()` and `attr<-()` directly. Overriding S4 slots is
+  therefore discouraged.
 * Calls like `methods::new(class(x)[[1L]], ...)` or
   `methods::new(class1(x), ...)` construct a new S4 object from S4's class
   definition. For an S7 class registered with S4, the result can satisfy
   `inherits(object, "S7_object")` through the S4 oldClass graph while still
-  lacking the `S7_class` attribute. Such objects are not S7 instances. Code
-  that is updating an existing object should prefer `methods::initialize(x,
-  ...)`, which gives S7's S4 `initialize()` method a chance to preserve S7
-  metadata and route values through properties.
+  lacking the `S7_class` attribute. Such objects are not S7 instances, and
+  `methods::validObject()` will reject them.
 
 In summary, inherited S4 methods must be written against the "registered
-oldClass with known attributes" contract, not the stricter "formal S4
+oldClass that preserves the S4 parent" contract, not the stricter "formal S4
 instance" contract. They should use a scalar primary-class helper where
 appropriate and avoid `slot()` and `slot<-()` when they need S7 property
 management to apply.

@@ -104,20 +104,17 @@ Things that work reasonably:
 \itemize{
 \item \code{methods::is(child, "Parent")} returns \code{TRUE}.
 \item S4 dispatch inherits through \code{Parent}.
-\item \code{methods::validObject(child)} can validate known S7/S4 attributes.
-\item \code{methods::slotNames(child)} works.
-\item \code{methods::slot(child, "x")} works for registered slots and properties, as
-long as they are represented by stored attributes.
+\item \code{methods::validObject(child)} validates the S4 parent slots through S4 and
+recursively validates S7 properties and class validators through S7.
+\item \code{methods::slotNames(child)} reports the S4 parent slots. S7 extension
+properties are not registered as formal S4 slots.
+\item \code{methods::slot(child, "x")} works for stored attributes, but bypasses the S7
+property layer.
 \item \code{child@x} works through S7 property access. With the current oldClass
 representation, the object is not S4-bit so \code{@} can dispatch to S7's
 \verb{@.S7_object} method. If S7 objects that extend S4 classes are represented
 as S4-bit objects in the future, R's \code{@} primitive will need to dispatch
 before taking the S4 slot-access path.
-\item \code{methods::initialize(child, ...)} works for reinitializing an existing S7
-object through S4 code. This is preferable to constructing a fresh object
-with \code{methods::new(class(child)[[1L]], ...)}, because S4 construction creates
-a formal S4 object with the oldClass structure but without the S7 metadata
-that S7 property management requires.
 \item \code{as(child, "Parent")} can produce a real S4 \code{Parent} object containing the
 parent slots.
 }
@@ -134,21 +131,19 @@ vectors through the oldClass bridge.
 name should use \code{class(x)[[1L]]}, or \code{methods::class1(x)} once that helper
 has been made public.
 \item Methods that access slots with \code{methods::slot()} and \verb{methods::slot<-()}
-bypass the S7 property layer. This is mostly a problem when the S7 class
-defines properties that override the slots from its parent. This is similar
-to deriving from an S3 class whose methods use \code{attr()} and \verb{attr<-()}
-directly. Overriding S4 slots is therefore discouraged.
+bypass the S7 property layer. This is similar to deriving from an S3 class
+whose methods use \code{attr()} and \verb{attr<-()} directly. Overriding S4 slots is
+therefore discouraged.
 \item Calls like \code{methods::new(class(x)[[1L]], ...)} or
 \code{methods::new(class1(x), ...)} construct a new S4 object from S4's class
 definition. For an S7 class registered with S4, the result can satisfy
 \code{inherits(object, "S7_object")} through the S4 oldClass graph while still
-lacking the \code{S7_class} attribute. Such objects are not S7 instances. Code
-that is updating an existing object should prefer \code{methods::initialize(x, ...)}, which gives S7's S4 \code{initialize()} method a chance to preserve S7
-metadata and route values through properties.
+lacking the \code{S7_class} attribute. Such objects are not S7 instances, and
+\code{methods::validObject()} will reject them.
 }
 
 In summary, inherited S4 methods must be written against the "registered
-oldClass with known attributes" contract, not the stricter "formal S4
+oldClass that preserves the S4 parent" contract, not the stricter "formal S4
 instance" contract. They should use a scalar primary-class helper where
 appropriate and avoid \code{slot()} and \verb{slot<-()} when they need S7 property
 management to apply.
