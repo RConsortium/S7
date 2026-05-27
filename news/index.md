@@ -44,6 +44,22 @@
   class, with one row per property and columns for name, default, class,
   getter, setter, and validator
   ([\#551](https://github.com/RConsortium/S7/issues/551)).
+- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) and
+  `prop<-()` errors from custom getters and setters now report a
+  synthetic `<Class>@<prop>` call, making it easier to see which
+  property triggered the error
+  ([\#536](https://github.com/RConsortium/S7/issues/536),
+  [\#627](https://github.com/RConsortium/S7/issues/627),
+  [\#638](https://github.com/RConsortium/S7/issues/638)).
+- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) no
+  longer leaves an object in a broken state when a custom getter signals
+  an error ([\#520](https://github.com/RConsortium/S7/issues/520),
+  [\#640](https://github.com/RConsortium/S7/issues/640),
+  [\#638](https://github.com/RConsortium/S7/issues/638)).
+- `prop<-()` no longer fails when assigning a call or symbol to a
+  property ([\#511](https://github.com/RConsortium/S7/issues/511),
+  [\#633](https://github.com/RConsortium/S7/issues/633),
+  [\#638](https://github.com/RConsortium/S7/issues/638)).
 - [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
   now returns a class specification for any R object, not just S7
   objects. It returns the matching `class_*` for base types, a
