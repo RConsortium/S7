@@ -41,6 +41,7 @@ reference:
     for more details.
   contents:
   - methods_register
+  - new_external_class
   - new_external_generic
 
 - title: Compatibility

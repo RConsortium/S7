@@ -51,6 +51,7 @@ is_foundation_class <- function(x) {
     is_union(x) ||
     is_base_class(x) ||
     is_S3_class(x) ||
+    is_external_class(x) ||
     is_class_missing(x) ||
     is_class_any(x)
 }
@@ -70,6 +71,8 @@ class_type <- function(x) {
     "S7_union"
   } else if (is_S3_class(x)) {
     "S7_S3"
+  } else if (is_external_class(x)) {
+    "S7_external"
   } else if (is_S4_class(x)) {
     "S4"
   } else {
@@ -88,6 +91,7 @@ class_friendly <- function(x) {
     S7_base = "a base type",
     S7_union = "an S7 union",
     S7_S3 = "an S3 class",
+    S7_external = "an external S7 class",
   )
 }
 
@@ -184,11 +188,35 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
+    S7_external = class_constructor(resolve_or_error(.x)),
     stop(sprintf("Can't construct %s.", class_friendly(.x)), call. = FALSE)
   )
 }
 
+# Resolve an external_class to its concrete class, or error.
+resolve_or_error <- function(x) {
+  resolved <- resolve_external_class(x)
+  if (is.null(resolved)) {
+    msg <- sprintf(
+      "Can't resolve external class `%s::%s`: package %s is not loaded.",
+      x$package,
+      x$name,
+      x$package
+    )
+    stop(msg, call. = FALSE)
+  }
+  resolved
+}
+
 class_validate <- function(class, object) {
+  if (class_type(class) == "S7_external") {
+    resolved <- resolve_external_class(class)
+    if (is.null(resolved)) {
+      return(NULL)
+    }
+    class <- resolved
+  }
+
   validator <- switch(
     class_type(class),
     S4 = methods::validObject,
@@ -234,6 +262,7 @@ class_desc <- function(x) {
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
+    S7_external = paste0("<", external_class_name(x), ">"),
   )
 }
 
@@ -252,6 +281,14 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
+    S7_external = {
+      resolved <- resolve_external_class(x)
+      if (is.null(resolved)) {
+        c(external_class_name(x), "S7_object")
+      } else {
+        class_dispatch(resolved)
+      }
+    },
     stop("Unsupported class type.", call. = FALSE)
   )
 }
@@ -267,6 +304,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
+    S7_external = external_class_name(x),
     stop("Unsupported class type.", call. = FALSE)
   )
 }
@@ -286,6 +324,11 @@ class_deparse <- function(x) {
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
     S7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
+    S7_external = sprintf(
+      "new_external_class(%s, %s)",
+      deparse1(x$package),
+      deparse1(x$name)
+    ),
   )
 }
 
@@ -303,6 +346,11 @@ class_inherits <- function(x, what) {
     # order and contiguous, but it's probably close enough for practical
     # purposes
     S7_S3 = !isS4(x) && all(what$class %in% class(x)),
+    # An external class is identified by its combined "pkg::name" — S7 stamps
+    # this name onto every instance's class vector, so we can check inheritance
+    # without resolving the class itself.
+    S7_external = inherits(x, "S7_object") &&
+      inherits(x, external_class_name(what)),
   )
 }
 

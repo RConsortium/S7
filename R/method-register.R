@@ -73,6 +73,27 @@ register_method <- function(
     generic <- as_generic(getFromNamespace(generic$name, generic$package))
   }
 
+  # Try to resolve any external classes whose packages are loaded.
+  signature <- resolve_signature(signature)
+  has_unresolved <- any(vlapply(signature, is_external_class))
+
+  if (has_unresolved) {
+    if (is.null(package)) {
+      stop(
+        paste0(
+          "External classes can only be used in method signatures inside a ",
+          "package, since deferred method registration requires ",
+          "`methods_register()`."
+        ),
+        call. = FALSE
+      )
+    }
+    # Defer registration until all relevant packages are loaded.
+    generic_ext <- as_external_generic(generic)
+    external_methods_add(package, generic_ext, signature, method)
+    return(invisible(generic))
+  }
+
   # Register in current session
   if (is_S7_generic(generic)) {
     check_method(method, generic, name = method_name(generic, signature))
@@ -94,6 +115,18 @@ register_method <- function(
   }
 
   invisible(generic)
+}
+
+resolve_signature <- function(signature) {
+  for (i in seq_along(signature)) {
+    if (is_external_class(signature[[i]])) {
+      resolved <- resolve_external_class(signature[[i]])
+      if (!is.null(resolved)) {
+        signature[[i]] <- as_class(resolved)
+      }
+    }
+  }
+  signature
 }
 
 register_S3_method <- function(
