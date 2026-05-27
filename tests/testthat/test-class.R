@@ -60,10 +60,10 @@ test_that("S7 classes check inputs", {
   })
 })
 
-test_that("S7 classes can't inherit from S4 or class unions", {
+test_that("S7 classes can inherit from S4 but not class unions", {
   parentS4 := local_S4_class(slots = c(x = "numeric"))
   expect_snapshot(error = TRUE, {
-    new_class("test", parent = parentS4)
+    new_class("test", parent = parentS4, package = NULL)
     new_class("test", parent = new_union("character"))
   })
 })
