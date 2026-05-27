@@ -60,7 +60,7 @@ S4_validate <- function(object) {
   if (!S7_inherits(object)) {
     return(sprintf(
       "object with S4 class %s is not an S7 object",
-      dQuote(class(object)[[1L]])
+      dQuote(class(object)[1L])
     ))
   }
 
@@ -74,14 +74,13 @@ S4_validate <- function(object) {
 }
 
 S4_transient_prototype_class <- function(class, env = parent.frame()) {
-  tmp <- new.env(parent = topenv(env))
+  where <- topenv(env)
   classes <- class_dispatch(class)
-  methods::setOldClass(classes[-1], where = tmp)
 
   args <- list(
-    Class = classes[[1]],
-    contains = c(class@parent@className, classes[[2]]),
-    where = tmp
+    Class = classes[1L],
+    contains = class@parent@className,
+    where = where
   )
 
   if (!is.null(class@package)) {
@@ -89,7 +88,7 @@ S4_transient_prototype_class <- function(class, env = parent.frame()) {
   }
 
   do.call(methods::setClass, args)
-  methods::getClass(args$Class, where = tmp)
+  methods::getClass(args$Class, where = where)
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
@@ -139,28 +138,9 @@ S4_slot_properties <- function(class) {
 }
 
 S4_slot_property <- function(class, name) {
-  prop <- new_property(
-    class = S4_slot_as_class(class),
+  new_property(
+    class = S4_to_S7_class(methods::getClass(class)),
     name = name
-  )
-  attr(prop, "S4_slot_class") <- class
-  prop
-}
-
-S4_slot_as_class <- function(class) {
-  S4_to_S7_class(methods::getClass(class))
-}
-
-S4_slot_class <- function(class) {
-  switch(class_type(class),
-    NULL = "NULL",
-    missing = "ANY",
-    any = "ANY",
-    S4 = as.character(class@className),
-    S7_base = class_register(class),
-    S7_S3 = class_register(class),
-    S7 = "ANY",
-    S7_union = if (identical(class, class_numeric)) "numeric" else "ANY"
   )
 }
 

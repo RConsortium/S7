@@ -128,13 +128,13 @@ vectors through the oldClass bridge.
 \item \code{class(child)} is length greater than 1, for example
 \code{c("Child", "S4/Parent", "S7_object")}. This can break S4 code that treats
 \code{class()} as a scalar class name. Code that needs a scalar primary class
-name should use \code{class(x)[[1L]]}, or \code{methods::class1(x)} once that helper
+name should use \code{class(x)[1L]}, or \code{methods::class1(x)} once that helper
 has been made public.
 \item Methods that access slots with \code{methods::slot()} and \verb{methods::slot<-()}
 bypass the S7 property layer. This is similar to deriving from an S3 class
 whose methods use \code{attr()} and \verb{attr<-()} directly. Overriding S4 slots is
 therefore discouraged.
-\item Calls like \code{methods::new(class(x)[[1L]], ...)} or
+\item Calls like \code{methods::new(class(x)[1L], ...)} or
 \code{methods::new(class1(x), ...)} construct a new S4 object from S4's class
 definition. For an S7 class registered with S4, the result can satisfy
 \code{inherits(object, "S7_object")} through the S4 oldClass graph while still
