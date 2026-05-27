@@ -37,13 +37,6 @@ S4_register <- function(class, env = parent.frame()) {
   }
 
   classes <- class_dispatch(class)
-  if (
-    "S7_object" %in% classes &&
-      !methods::isClass("S7_object", where = where)
-  ) {
-    methods::setOldClass("S7_object", where = where)
-  }
-
   s4_slots <- S4_slots_from_properties(class@properties)
   if (length(s4_slots) > 0 || is_S4_class(class@parent)) {
     methods::setOldClass(
