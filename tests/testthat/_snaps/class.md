@@ -187,6 +187,14 @@
       ! <foo> object is invalid:
       - x must be positive
 
+# new_object() / errors if single unnamed list has unnamed elements
+
+    Code
+      foo(list(1))
+    Condition
+      Error in `new_object()`:
+      ! All elements of `..1` must be named.
+
 # new_object() / runs each parent validator exactly once
 
     Code

@@ -171,6 +171,28 @@ describe("new_object()", {
     })
   })
 
+  it("accepts a single unnamed named list of properties (#497)", {
+    foo <- new_class(
+      "foo",
+      properties = list(x = class_double, y = class_double),
+      package = NULL,
+      constructor = function(props) new_object(S7_object(), props)
+    )
+    obj <- foo(list(x = 1, y = 2))
+    expect_equal(obj@x, 1)
+    expect_equal(obj@y, 2)
+  })
+
+  it("errors if single unnamed list has unnamed elements", {
+    foo <- new_class(
+      "foo",
+      properties = list(x = class_double),
+      package = NULL,
+      constructor = function(props) new_object(S7_object(), props)
+    )
+    expect_snapshot(foo(list(1)), error = TRUE)
+  })
+
   it("runs each parent validator exactly once", {
     A <- new_class("A", validator = function(self) cat("A "))
     B <- new_class("B", parent = A, validator = function(self) cat("B "))

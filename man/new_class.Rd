@@ -74,7 +74,12 @@ See \code{validate()} for more details, examples, and how to temporarily
 suppress validation when needed.}
 
 \item{.parent, ...}{Parent object and named properties used to construct the
-object.}
+object.
+
+As a convenience, if \code{...} is a single unnamed argument that is a
+named list, the elements of the list are used as the properties. This
+makes it easy to programmatically construct an object from a list of
+property values.}
 }
 \value{
 A object constructor, a function that can be used to create objects

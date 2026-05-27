@@ -44,6 +44,12 @@ names2 <- function(x) {
   }
 }
 
+# Is `...` a single unnamed list argument? Used by functions that accept
+# either named arguments via `...` or a single list spliced in.
+is_single_list <- function(args) {
+  length(args) == 1L && !nzchar(names2(args)) && is.list(args[[1L]])
+}
+
 is_prefix <- function(x, y) {
   length(x) <= length(y) && identical(unclass(x), unclass(y)[seq_along(x)])
 }

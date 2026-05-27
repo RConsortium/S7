@@ -287,6 +287,11 @@ check_parent <- function(parent, class) {
 
 #' @param .parent,... Parent object and named properties used to construct the
 #'   object.
+#'
+#'   As a convenience, if `...` is a single unnamed argument that is a
+#'   named list, the elements of the list are used as the properties. This
+#'   makes it easy to programmatically construct an object from a list of
+#'   property values.
 #' @rdname new_class
 #' @export
 new_object <- function(.parent, ...) {
@@ -307,7 +312,12 @@ new_object <- function(.parent, ...) {
   }
 
   args <- list(...)
-  if ("" %in% names2(args)) {
+  if (is_single_list(args)) {
+    if ("" %in% names2(args[[1]])) {
+      stop("All elements of `..1` must be named.")
+    }
+    args <- args[[1L]]
+  } else if ("" %in% names2(args)) {
     stop("All arguments to `...` must be named.")
   }
 
