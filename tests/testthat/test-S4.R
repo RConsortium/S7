@@ -12,6 +12,24 @@ describe("S4_register", {
     expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
   })
 
+  it("does not treat S4 constructed instances as S7 objects", {
+    on.exit(S4_remove_classes(c("S4regParent", "S4regS7New")))
+    setClass("S4regParent", slots = list(x = "numeric"))
+    S4regS7New <- new_class(
+      "S4regS7New",
+      parent = getClass("S4regParent"),
+      properties = list(x = class_numeric),
+      package = NULL
+    )
+
+    object <- methods::new("S4regS7New")
+
+    expect_true(isS4(object))
+    expect_true(inherits(object, "S7_object"))
+    expect_false(S7_inherits(object))
+    expect_false(S7_inherits(object, S4regS7New))
+  })
+
   it("registers an S3 class so it can be used with S4 methods", {
     on.exit(S4_remove_classes(c("S4regS3a", "S4regS3b")))
     S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
