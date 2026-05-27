@@ -37,13 +37,13 @@ Likely brittle or incompatible with S4-method assumptions:
 * `class(child)` is length greater than 1, for example
   `c("Child", "S4/Parent", "S7_object")`. This can break S4 code that treats
   `class()` as a scalar class name. Code that needs a scalar primary class
-  name should use `class(x)[[1L]]`, or `methods::class1(x)` once that helper
+  name should use `class(x)[1L]`, or `methods::class1(x)` once that helper
   has been made public.
 * Methods that access slots with `methods::slot()` and `methods::slot<-()`
   bypass the S7 property layer. This is similar to deriving from an S3 class
   whose methods use `attr()` and `attr<-()` directly. Overriding S4 slots is
   therefore discouraged.
-* Calls like `methods::new(class(x)[[1L]], ...)` or
+* Calls like `methods::new(class(x)[1L], ...)` or
   `methods::new(class1(x), ...)` construct a new S4 object from S4's class
   definition. For an S7 class registered with S4, the result can satisfy
   `inherits(object, "S7_object")` through the S4 oldClass graph while still
