@@ -334,7 +334,7 @@ new_object <- function(.parent, ...) {
   # i.e. it's a non-abstract S7 class
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
-  validate(.parent, recursive = !parent_validated)
+  validate_against(.parent, parent = if (parent_validated) class@parent)
 
   .parent
 }
