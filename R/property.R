@@ -93,6 +93,7 @@ new_property <- function(
     check_function(validator, alist(value = ))
   }
 
+  # If you change this field order, update enum property_field in src/prop.c.
   out <- list(
     name = name,
     class = class,
