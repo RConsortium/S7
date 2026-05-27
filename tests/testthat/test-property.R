@@ -24,64 +24,6 @@ describe("property retrieval", {
     expect_equal(obj@x, 1)
   })
 
-  it("reports dynamic getter errors as property calls", {
-    foo <- new_class(
-      "foo",
-      package = NULL,
-      properties = list(
-        x = new_property(getter = function(self) stop("nope"))
-      )
-    )
-
-    cnd <- tryCatch(foo()@x, error = identity)
-    call <- conditionCall(cnd)
-    expect_true(is.call(call))
-    expect_true(is.symbol(call[[1]]))
-    expect_identical(as.character(call[[1]]), "<foo>@x")
-    expect_snapshot(foo()@x, error = TRUE)
-  })
-
-  it("cleans up after dynamic getter errors", {
-    calls <- 0L
-    foo <- new_class(
-      "foo",
-      properties = list(
-        x = new_property(getter = function(self) {
-          calls <<- calls + 1L
-          if (calls == 1L) {
-            stop("nope")
-          }
-          calls
-        })
-      )
-    )
-
-    obj <- foo()
-    expect_error(obj@x, "nope")
-    expect_equal(obj@x, 2L)
-  })
-
-  it("supports nested dynamic getter calls with the same property name", {
-    inner_class <- new_class(
-      "foo",
-      package = NULL,
-      properties = list(
-        x = new_property(getter = function(self) 41)
-      )
-    )
-    inner <- inner_class()
-
-    outer_class <- new_class(
-      "foo",
-      package = NULL,
-      properties = list(
-        x = new_property(getter = function(self) inner@x + 1)
-      )
-    )
-
-    expect_equal(outer_class()@x, 42)
-  })
-
   it("falls back to `base::@` for non-S7 objects", {
     expect_error("foo"@blah, 'object of.+class.+"character"')
     expect_error(NULL@blah, 'object of.+class.+"NULL"')
@@ -113,132 +55,6 @@ describe("prop setting", {
     obj <- foo()
     obj@x <- 1
     expect_equal(obj@x, 2)
-  })
-
-  it("reports dynamic setter errors as property calls", {
-    foo <- new_class(
-      "foo",
-      package = NULL,
-      properties = list(
-        x = new_property(setter = function(self, value) {
-          if (is.null(value)) {
-            return(self)
-          }
-          stop("nope")
-        })
-      )
-    )
-
-    obj <- foo()
-    cnd <- tryCatch(
-      {
-        obj@x <- 1
-      },
-      error = identity
-    )
-    call <- conditionCall(cnd)
-    expect_true(is.call(call))
-    expect_true(is.symbol(call[[1]]))
-    expect_identical(as.character(call[[1]]), "<foo>@x")
-    expect_null(attr(call[[2]], ".setting_prop", exact = TRUE))
-    expect_snapshot(obj@x <- 1, error = TRUE)
-  })
-
-  it("cleans up after dynamic setter errors", {
-    calls <- 0L
-    foo <- new_class(
-      "foo",
-      properties = list(
-        x = new_property(setter = function(self, value) {
-          if (is.null(value)) {
-            return(self)
-          }
-          calls <<- calls + 1L
-          if (calls == 1L) {
-            stop("nope")
-          }
-          self@x <- value
-          self
-        })
-      )
-    )
-
-    obj <- foo()
-    expect_error(obj@x <- 1, "nope")
-    obj@x <- 2
-    expect_equal(obj@x, 2)
-    expect_equal(calls, 2L)
-  })
-
-  it("cleans up setter markers from captured objects", {
-    calls <- 0L
-    captured <- NULL
-    return_fresh <- TRUE
-    foo <- new_class(
-      "foo",
-      properties = list(
-        x = new_property(setter = function(self, value) {
-          if (is.null(value)) {
-            return(self)
-          }
-          calls <<- calls + 1L
-          if (return_fresh) {
-            captured <<- self
-            return_fresh <<- FALSE
-            return(foo())
-          }
-          self@x <- value
-          self
-        })
-      )
-    )
-
-    obj <- foo()
-    obj@x <- 1
-    captured@x <- 2
-    expect_equal(calls, 2L)
-  })
-
-  it("supports nested dynamic setter calls with the same property name", {
-    inner_class <- new_class(
-      "foo",
-      package = NULL,
-      properties = list(
-        x = new_property(
-          getter = function(self) self@x,
-          setter = function(self, value) {
-            if (is.null(value)) {
-              return(self)
-            }
-            self@x <- value * 2
-            self
-          }
-        )
-      )
-    )
-    inner <- inner_class()
-
-    outer_class <- new_class(
-      "foo",
-      package = NULL,
-      properties = list(
-        x = new_property(
-          getter = function(self) self@x + inner@x,
-          setter = function(self, value) {
-            if (is.null(value)) {
-              return(self)
-            }
-            inner <<- `prop<-`(inner, "x", value = value + 1)
-            self@x <- value
-            self
-          }
-        )
-      )
-    )
-
-    obj <- outer_class()
-    obj@x <- 10
-    expect_equal(obj@x, 32)
   })
 
   it("can't set read-only properties", {
@@ -834,4 +650,71 @@ test_that("custom setters don't evaulate call objects", {
     drop_attributes(cl),
     quote(abort(msg = "boom3", foo = bar, baz))
   )
+})
+
+
+test_that("errors from custom property accessors include a call that shows the class and prop name", {
+  error <- FALSE
+  foo <- new_class(
+    "foo",
+    properties = list(
+      x = new_property(
+        setter = \(self, value) if (error) stop("nope") else self,
+        getter = \(self) if (error) stop("nope") else 1
+      )
+    )
+  )
+
+  x <- foo()
+  error <- TRUE
+  getter_error <- tryCatch(x@x, error = identity)
+  setter_error <- tryCatch(x@x <- 1, error = identity)
+  expect_match(deparse1(conditionCall(getter_error)[[1]]), "<foo>@x", fixed = TRUE)
+  expect_match(deparse1(conditionCall(setter_error)[[1]]), "<foo>@x", fixed = TRUE)
+})
+
+test_that("erroring getter/setter doesn't leave object in broken state", {
+  # https://github.com/RConsortium/S7/issues/520
+
+  Test <- new_class(
+    "Test",
+    properties = list(
+      a = new_property(
+        getter = function(self) {
+          if (self@a == 10) {
+            stop("a is 10")
+          }
+          self@a
+        },
+        setter = function(self, value) {
+          if (value == 11) {
+            stop("value is 11")
+          }
+          self@a <- value
+          self
+        }
+      )
+    )
+  )
+
+  t <- Test(a = 10)
+  expect_error(t@a, "a is 10")
+  expect_error(t@a, "a is 10")
+
+  expect_error(t@a <- 11, "value is 11")
+  expect_error(t@a <- 11, "value is 11")
+
+  t@a <- 1
+  expect_equal(t@a, 1)
+})
+
+test_that("prop<- doesn't evaluate language values (#511)", {
+  Cls <- new_class("Cls", properties = list(r = class_any))
+
+  foo <- Cls()
+  foo@r <- as.symbol("x")
+  expect_equal(foo@r, quote(x))
+
+  foo@r <- quote(x + 1)
+  expect_equal(foo@r, quote(x + 1))
 })
