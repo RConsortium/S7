@@ -1,12 +1,11 @@
 describe("S7_data", {
-  text <- new_class("text", class_character)
+  text := new_class(class_character)
   it("retrieves .data", {
     x <- text("hi")
     expect_equal(S7_data(x), "hi")
   })
   it("strips properties", {
-    text <- new_class(
-      "text",
+    text := new_class(
       class_character,
       properties = list(x = class_integer)
     )
@@ -24,18 +23,18 @@ describe("S7_data", {
     expect_equal(S7_data(x), "bar")
   })
   it("preserves S3 class from parent (#380)", {
-    mydf <- new_class("mydf", class_data.frame)
+    mydf := new_class(class_data.frame)
     df <- data.frame(x = 1, y = 2)
     expect_equal(S7_data(mydf(df)), df)
   })
   it("preserves S3 class from grandparent", {
-    mydf <- new_class("mydf", class_data.frame)
-    mydf2 <- new_class("mydf2", mydf)
+    mydf := new_class(class_data.frame)
+    mydf2 := new_class(mydf)
     df <- data.frame(x = 1, y = 2)
     expect_equal(S7_data(mydf2(df)), df)
   })
   it("does not add class when parent is a base type", {
-    mychar <- new_class("mychar", class_character)
+    mychar := new_class(class_character)
     expect_null(attr(S7_data(mychar("x")), "class", exact = TRUE))
   })
 })

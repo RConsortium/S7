@@ -89,7 +89,7 @@ test_that("new_method works with both hard and soft dependencies", {
   # to t0::AnS7Class() (and not inline the full class object).
   # As these tests grow, consider splitting this into a separate context like:
   #   test_that("package exported classes are not inlined in constructor formals", {...})
-  Foo <- new_class("Foo", properties = list(bar = t0::`An S7 Class`))
+  Foo := new_class(properties = list(bar = t0::`An S7 Class`))
   expect_identical(formals(Foo), as.pairlist(alist(bar = t0::`An S7 Class`())))
   expect_identical(
     formals(t2::`An S7 Class 2`),

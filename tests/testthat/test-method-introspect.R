@@ -39,8 +39,8 @@ describe("method introspection", {
 
 describe("method explanation", {
   it("shows all possible methods along with matches", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", foo1, package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(foo1, package = NULL)
 
     add <- new_generic("add", c("x", "y"))
     method(add, list(foo2, foo1)) <- function(x, y) c(2, 1)

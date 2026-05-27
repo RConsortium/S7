@@ -1,8 +1,8 @@
 describe("super()", {
   it("overrides dispatch, matching inherited behaviour", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
-    foo3 <- new_class("foo3", foo2)
+    foo1 := new_class()
+    foo2 := new_class(foo1)
+    foo3 := new_class(foo2)
 
     bar <- new_generic("bar", "x")
     method(bar, foo1) <- function(x) 1
@@ -13,8 +13,8 @@ describe("super()", {
   })
 
   it("only affects one dispatch", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 := new_class()
+    foo2 := new_class(foo1)
 
     bar1 <- new_generic("bar1", "x")
     method(bar1, foo1) <- function(x) 1
@@ -30,14 +30,14 @@ describe("super()", {
 
   it("checks to", {
     expect_snapshot(error = TRUE, {
-      foo <- new_class("foo", package = NULL)
+      foo := new_class(package = NULL)
       super(foo(), class_character)
     })
   })
 
   it("displays nicely", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", foo1, package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(foo1, package = NULL)
 
     expect_snapshot({
       f1 <- super(foo2(), foo1)

@@ -7,7 +7,7 @@ test_that("can work with classGenerators", {
 describe("S4_register", {
   it("registers an S7 class so it can be used with S4 methods", {
     on.exit(S4_remove_classes("S4regS7"))
-    S4regS7 <- new_class("S4regS7", package = NULL)
+    S4regS7 := new_class(package = NULL)
     S4_register(S4regS7)
     expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
   })
