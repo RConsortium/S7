@@ -115,6 +115,10 @@ representation, the object is not S4-bit so \code{@} can dispatch to S7's
 \verb{@.S7_object} method. If S7 objects that extend S4 classes are represented
 as S4-bit objects in the future, R's \code{@} primitive will need to dispatch
 before taking the S4 slot-access path.
+\item \code{methods::initialize(child, ...)} works for reinitializing an existing S7
+object through S4 code. This is most useful for inherited S4 methods that
+update parent slots or data parts. Values are routed through S7 property
+assignment, so S7 metadata and validation are preserved.
 \item \code{as(child, "Parent")} can produce a real S4 \code{Parent} object containing the
 parent slots.
 }
@@ -139,7 +143,9 @@ therefore discouraged.
 definition. For an S7 class registered with S4, the result can satisfy
 \code{inherits(object, "S7_object")} through the S4 oldClass graph while still
 lacking the \code{S7_class} attribute. Such objects are not S7 instances, and
-\code{methods::validObject()} will reject them.
+\code{methods::validObject()} will reject them. Code that is updating an
+existing object should prefer \code{methods::initialize(x, ...)}, which gives
+S7's S4 \code{initialize()} method a chance to preserve S7 metadata.
 }
 
 In summary, inherited S4 methods must be written against the "registered
