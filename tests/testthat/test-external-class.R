@@ -122,17 +122,13 @@ test_that("method_deps() collects the generic and external classes", {
   expect_equal(deps[[3]]$version, "1.0")
 })
 
-test_that("method_deps_available() respects loaded + version", {
+test_that("dep_available() respects loaded + version", {
   # S7 is loaded, so this dep is available
-  expect_true(method_deps_available(list(
-    new_external_generic("S7", "S7_inherits", "x")
-  )))
+  expect_true(dep_available(new_external_generic("S7", "S7_inherits", "x")))
   # version too high → not available
-  expect_false(method_deps_available(list(
+  expect_false(dep_available(
     new_external_generic("S7", "S7_inherits", "x", version = "999.0")
-  )))
+  ))
   # unloaded package → not available
-  expect_false(method_deps_available(list(
-    new_external_class("not_a_package", "X")
-  )))
+  expect_false(dep_available(new_external_class("not_a_package", "X")))
 })

@@ -74,13 +74,15 @@ print.S7_external_class <- function(x, ...) {
   invisible(x)
 }
 
+dep_available <- function(dep) {
+  isNamespaceLoaded(dep$package) &&
+    (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)
+}
+
 # Resolve to a real class if the package is loaded (and the optional version
 # constraint is met). Returns `NULL` otherwise.
 resolve_external_class <- function(x) {
-  if (!isNamespaceLoaded(x$package)) {
-    return(NULL)
-  }
-  if (!is.null(x$version) && getNamespaceVersion(x$package) < x$version) {
+  if (!dep_available(x)) {
     return(NULL)
   }
 

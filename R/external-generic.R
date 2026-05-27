@@ -117,22 +117,6 @@ method_deps <- function(generic, signature) {
   c(list(generic), signature[ext])
 }
 
-# Are all dependency packages loaded, and do they meet any optional version
-# constraints?
-method_deps_available <- function(deps) {
-  for (dep in deps) {
-    if (!isNamespaceLoaded(dep$package)) {
-      return(FALSE)
-    }
-    if (!is.null(dep$version)) {
-      if (getNamespaceVersion(dep$package) < dep$version) {
-        return(FALSE)
-      }
-    }
-  }
-  TRUE
-}
-
 registrar <- function(deps, generic, signature, method, env) {
   # Force all arguments
   deps
@@ -142,7 +126,7 @@ registrar <- function(deps, generic, signature, method, env) {
   env
 
   function(...) {
-    if (!method_deps_available(deps)) {
+    if (!all(vlapply(deps, dep_available))) {
       return(invisible())
     }
 
