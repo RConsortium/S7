@@ -37,91 +37,52 @@ S4_register <- function(class, env = parent.frame()) {
   }
 
   classes <- class_dispatch(class)
-  s4_slots <- S4_slots_from_properties(class@properties)
-  if (length(s4_slots) > 0 || is_S4_class(class@parent)) {
+  if (is_S4_class(class@parent)) {
     methods::setOldClass(
       classes,
-      S4Class = S4_transient_class(class, env, s4_slots),
+      S4Class = S4_transient_prototype_class(class, env),
       where = where
     )
   } else {
     methods::setOldClass(classes, where = where)
   }
-  methods::setMethod("initialize", classes[1], S4_initialize, where = where)
+  methods::setValidity(classes[1], S4_validate, where = where)
   invisible()
 }
 
-S4_initialize <- function(.Object, ...) {
-  args <- list(...)
-  if (length(args) == 0) {
-    return(.Object)
-  }
-
-  nms <- names2(args)
-  prop_nms <- prop_names(.Object)
-  vals <- list()
-  data_part <- NULL
-  for (arg in args[nms == ""]) {
-    arg_vals <- S4_initialize_values(arg)
-    if (".Data" %in% names(arg_vals)) {
-      data_part <- arg
-    }
-    arg_vals <- arg_vals[names(arg_vals) %in% prop_nms]
-    vals <- modify_list(vals, arg_vals)
-  }
-  named_args <- args[nms != ""]
-  vals <- modify_list(vals, named_args)
-  if (".Data" %in% names(named_args)) {
-    data_part <- vals$.Data
-  }
-
-  if (!is.null(data_part)) {
-    .Object <- S4_initialize_data_part(data_part, .Object)
-  }
-
-  props(.Object) <- vals
-  .Object
+S4_needs_registration <- function(class) {
+  parent <- attr(class, "parent", exact = TRUE)
+  is_S4_class(parent) ||
+    (is_class(parent) && S4_needs_registration(parent))
 }
 
-S4_initialize_values <- function(object) {
-  if (S7_inherits(object)) {
-    props(object)
-  } else if (isS4(object)) {
-    slots <- methods::slotNames(object)
-    stats::setNames(lapply(slots, methods::slot, object = object), slots)
-  } else {
-    attrs <- attributes(object) %||% list()
-    attrs$class <- NULL
-    if (is.object(object)) {
-      attrs$.S3Class <- class(object)
-    }
-    c(list(.Data = unclass(object)), attrs)
+S4_validate <- function(object) {
+  if (!S7_inherits(object)) {
+    return(sprintf(
+      "object with S4 class %s is not an S7 object",
+      dQuote(class(object)[[1L]])
+    ))
   }
+
+  tryCatch(
+    {
+      validate(object)
+      TRUE
+    },
+    error = function(cnd) conditionMessage(cnd)
+  )
 }
 
-S4_initialize_data_part <- function(value, object) {
-  incoming <- attributes(value) %||% list()
-  incoming$class <- NULL
-  attributes(value) <- modify_list(attributes(object), incoming)
-  value
-}
-
-S4_transient_class <- function(
-  class,
-  env = parent.frame(),
-  slots = S4_slots_from_properties(class@properties)
-) {
+S4_transient_prototype_class <- function(class, env = parent.frame()) {
   tmp <- new.env(parent = topenv(env))
+  classes <- class_dispatch(class)
+  methods::setOldClass(classes[-1], where = tmp)
+
   args <- list(
-    Class = paste0(".S7_transient_", class@name),
-    slots = slots,
+    Class = classes[[1]],
+    contains = c(class@parent@className, classes[[2]]),
     where = tmp
   )
-
-  contains <- S4_transient_contains(class@parent)
-  if (length(contains) > 0) {
-    args$contains <- contains
-  }
 
   if (!is.null(class@package)) {
     args$package <- class@package
@@ -129,21 +90,6 @@ S4_transient_class <- function(
 
   do.call(methods::setClass, args)
   methods::getClass(args$Class, where = tmp)
-}
-
-S4_transient_contains <- function(parent) {
-  if (is_S4_class(parent)) {
-    parent@className
-  } else {
-    character()
-  }
-}
-
-S4_slots_from_properties <- function(properties) {
-  properties <- Filter(Negate(prop_is_dynamic), properties)
-  vcapply(properties, function(prop) {
-    attr(prop, "S4_slot_class", exact = TRUE) %||% S4_slot_class(prop$class)
-  })
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")

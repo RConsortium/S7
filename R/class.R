@@ -160,7 +160,7 @@ new_class <- function(
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
-  if (is_S4_class(parent)) {
+  if (S4_needs_registration(object)) {
     S4_register(object, env = parent.frame())
   }
 

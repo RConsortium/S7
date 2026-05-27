@@ -28,6 +28,7 @@ describe("S4_register", {
     expect_true(inherits(object, "S7_object"))
     expect_false(S7_inherits(object))
     expect_false(S7_inherits(object, S4regS7New))
+    expect_error(methods::validObject(object), "is not an S7 object")
   })
 
   it("registers an S3 class so it can be used with S4 methods", {
@@ -110,57 +111,58 @@ test_that("S7 classes can extend S4 classes", {
 
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
-  expect_equal(methods::slotNames("Child"), c("x", "y", ".S3Class"))
+  expect_equal(as.character(methods::getClass("Child")@className), "Child")
+  expect_equal(methods::slotNames("Child"), c("x", ".S3Class"))
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
-  child <- methods::initialize(child, x = 3, y = "c")
-  expect_equal(prop(child, "x"), 3)
-  expect_equal(prop(child, "y"), "c")
-  expect_true(methods::validObject(child))
+  invalid_s7_prop <- child
+  attr(invalid_s7_prop, "y") <- 1
+  expect_error(methods::validObject(invalid_s7_prop), "@y must be <character>")
 
-  child <- methods::initialize(child, Child(x = 4, y = "d"), y = "e")
-  expect_equal(prop(child, "x"), 4)
-  expect_equal(prop(child, "y"), "e")
-
-  parent <- methods::new("Parent", x = 5)
-  child <- methods::initialize(child, parent, y = "f")
-  expect_equal(prop(child, "x"), 5)
-  expect_equal(prop(child, "y"), "f")
-
-  child <- methods::initialize(child, x = 6, x = 7)
-  expect_equal(prop(child, "x"), 7)
-
-  expect_error(methods::initialize(child, x = "x"), "invalid")
-  expect_error(methods::initialize(child, z = 1), "Can't find property")
+  invalid_s4_slot <- child
+  attr(invalid_s4_slot, "x") <- "x"
+  expect_error(methods::validObject(invalid_s4_slot), "invalid object for slot")
 
   expect_error(Child(x = "x", y = "a"))
 })
 
-test_that("S4 initialize supports S3 data parts", {
-  on.exit(S4_remove_classes(c("ParentNum", "ChildNum")))
-  setClass("ParentNum", contains = "numeric", slots = list(y = "character"))
+test_that("S4 validity recursively validates S7 descendants", {
+  on.exit(S4_remove_classes(c("ParentRecursive", "ChildRecursive", "GrandChildRecursive")))
+  setClass("ParentRecursive", slots = list(x = "numeric"))
 
-  ChildNum <- new_class(
-    "ChildNum",
-    parent = getClass("ParentNum"),
-    properties = list(z = class_integer),
+  ChildRecursive <- new_class(
+    "ChildRecursive",
+    parent = getClass("ParentRecursive"),
+    properties = list(y = class_character),
     package = NULL
   )
-  child <- ChildNum(y = "a", z = 1L)
+  GrandChildRecursive <- new_class(
+    "GrandChildRecursive",
+    parent = ChildRecursive,
+    properties = list(z = class_integer),
+    validator = function(self) if (self@z < 0L) "z must be positive",
+    package = NULL
+  )
 
-  child <- methods::initialize(child, 2.5, y = "b")
-  expect_equal(as.vector(child), 2.5)
-  expect_equal(prop(child, ".Data"), 2.5)
-  expect_equal(prop(child, "y"), "b")
-  expect_true(methods::validObject(child))
+  grandchild <- GrandChildRecursive(x = 1, y = "a", z = 1L)
+  expect_true(methods::isClass("GrandChildRecursive"))
+  expect_true(methods::extends("GrandChildRecursive", "ChildRecursive"))
+  expect_true(methods::extends("GrandChildRecursive", "ParentRecursive"))
+  expect_true(methods::validObject(grandchild))
 
-  child <- methods::initialize(child, .Data = 3.5)
-  expect_equal(as.vector(child), 3.5)
-  expect_true(methods::validObject(child))
+  invalid_parent_prop <- grandchild
+  attr(invalid_parent_prop, "y") <- 1
+  expect_error(methods::validObject(invalid_parent_prop), "@y must be <character>")
+
+  invalid_child <- valid_implicitly(grandchild, function(x) {
+    attr(x, "z") <- -1L
+    x
+  })
+  expect_error(methods::validObject(invalid_child), "z must be positive")
 })
 
-test_that("S4_register uses S7 properties as known S4 attributes", {
+test_that("S4_register uses S7 validation for old classes", {
   on.exit(S4_remove_classes("Foo"))
   Foo <- new_class("Foo", properties = list(x = class_numeric), package = NULL)
   foo <- Foo(x = 1)
@@ -168,33 +170,11 @@ test_that("S4_register uses S7 properties as known S4 attributes", {
   S4_register(Foo)
   expect_true(methods::validObject(foo))
   expect_equal(methods::slot(foo, "x"), 1)
+  expect_equal(methods::slotNames("Foo"), ".S3Class")
 
   attr(foo, "x") <- "x"
-  expect_error(methods::validObject(foo), "invalid object")
+  expect_error(methods::validObject(foo), "@x must be <integer> or <double>")
 })
-
-test_that("S4 initialize uses S7 property setters", {
-  on.exit(S4_remove_classes(c("Parent2", "Child2")))
-  setClass("Parent2", slots = list(x = "numeric"))
-
-  Child2 <- new_class(
-    "Child2",
-    parent = getClass("Parent2"),
-    properties = list(
-      y = new_property(class_character, setter = function(self, value) {
-        attr(self, "setter_called") <- TRUE
-        attr(self, "y") <- value
-        self
-      })
-    ),
-    package = NULL
-  )
-
-  child <- methods::initialize(Child2(x = 1, y = "a"), y = "b")
-  expect_equal(prop(child, "y"), "b")
-  expect_true(attr(child, "setter_called"))
-})
-
 
 describe("S4_class_dispatch", {
   it("returns name of base class", {
