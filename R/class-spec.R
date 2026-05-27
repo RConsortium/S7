@@ -316,7 +316,7 @@ class_inherits <- function(x, what) {
     missing = FALSE,
     any = TRUE,
     S4 = methods::is(x, what),
-    S7 = has_S7_class(x) && class_name_in_attr(x, S7_class_name(what)),
+    S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
