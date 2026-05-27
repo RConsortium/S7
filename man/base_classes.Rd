@@ -14,6 +14,7 @@
 \alias{class_call}
 \alias{class_function}
 \alias{class_environment}
+\alias{class_NULL}
 \alias{class_numeric}
 \alias{class_atomic}
 \alias{class_vector}
@@ -44,6 +45,8 @@ class_function
 
 class_environment
 
+class_NULL
+
 class_numeric
 
 class_atomic
@@ -59,6 +62,7 @@ S7 classes wrapping around common base types and S3 classes.
 The following S7 classes represent base types allowing them to be used
 within S7:
 \itemize{
+\item \code{class_NULL} (as an alias for \code{NULL})
 \item \code{class_logical}
 \item \code{class_integer}
 \item \code{class_double}

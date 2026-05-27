@@ -102,6 +102,7 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' The following S7 classes represent base types allowing them to be used
 #' within S7:
 #'
+#' * `class_NULL` (as an alias for `NULL`)
 #' * `class_logical`
 #' * `class_integer`
 #' * `class_double`
@@ -206,6 +207,12 @@ class_function <- new_base_class("function", "fun")
 #' @format NULL
 #' @order 1
 class_environment <- new_base_class("environment")
+
+#' @export
+#' @rdname base_classes
+#' @format NULL
+#' @order 1
+class_NULL <- NULL
 
 #' @export
 #' @rdname base_classes

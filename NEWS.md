@@ -1,6 +1,7 @@
 # S7 (development version)
 
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
+* New `class_NULL` is an alias for `NULL` that improves discoverability (#489).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
 * `method<-` now gives a clear error when assigning a primitive function (e.g. `log`) as a method (#608).

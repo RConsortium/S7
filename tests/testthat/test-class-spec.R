@@ -61,7 +61,7 @@ test_that("handles NULL", {
   expect_equal(class_register(NULL), "NULL")
   expect_equal(class_construct(NULL), NULL)
   expect_equal(class_desc(NULL), "<NULL>")
-  expect_equal(class_deparse(NULL), "NULL")
+  expect_equal(class_deparse(NULL), "class_NULL")
 
   expect_equal(obj_type(NULL), "base")
   expect_equal(obj_desc(NULL), "<NULL>")

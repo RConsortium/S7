@@ -355,6 +355,10 @@ test_that("ALTREP vectors aren't materialised (#607)", {
   expect_true(is_altrep_preserved(y@x))
 })
 
+test_that("class_NULL is an alias for NULL", {
+  expect_null(class_NULL)
+})
+
 test_that("inherits() works with S7_base_class", {
   # nameOfClass() introduced in R 4.3
   skip_if(getRversion() < "4.3")

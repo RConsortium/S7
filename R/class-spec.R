@@ -275,7 +275,7 @@ class_register <- function(x) {
 class_deparse <- function(x) {
   switch(
     class_type(x),
-    "NULL" = "NULL",
+    "NULL" = "class_NULL",
     missing = "class_missing",
     any = "class_any",
     S4 = as.character(x@className),
