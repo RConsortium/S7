@@ -314,10 +314,11 @@ find_package_with_symbol <- function(name, env, exclude = NULL) {
 }
 
 S4_remove_classes <- function(classes, where = parent.frame()) {
+  where <- topenv(where)
   for (class in classes) {
-    suppressWarnings(
-      try(methods::removeClass(class, topenv(where)), silent = TRUE)
-    )
+    if (methods::isClass(class, where = where)) {
+      methods::removeClass(class, where)
+    }
   }
 }
 
