@@ -669,8 +669,16 @@ test_that("errors from custom property accessors include a call that shows the c
   error <- TRUE
   getter_error <- tryCatch(x@x, error = identity)
   setter_error <- tryCatch(x@x <- 1, error = identity)
-  expect_match(deparse1(conditionCall(getter_error)[[1]]), "<foo>@x", fixed = TRUE)
-  expect_match(deparse1(conditionCall(setter_error)[[1]]), "<foo>@x", fixed = TRUE)
+  expect_match(
+    deparse1(conditionCall(getter_error)[[1]]),
+    "<foo>@x",
+    fixed = TRUE
+  )
+  expect_match(
+    deparse1(conditionCall(setter_error)[[1]]),
+    "<foo>@x",
+    fixed = TRUE
+  )
 })
 
 test_that("erroring getter/setter doesn't leave object in broken state", {
