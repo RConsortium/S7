@@ -155,7 +155,11 @@ test_that("S7 classes can extend S4 classes", {
 })
 
 test_that("S4 validity recursively validates S7 descendants", {
-  on.exit(S4_remove_classes(c("ParentRecursive", "ChildRecursive", "GrandChildRecursive")))
+  on.exit(S4_remove_classes(c(
+    "ParentRecursive",
+    "ChildRecursive",
+    "GrandChildRecursive"
+  )))
   setClass("ParentRecursive", slots = list(x = "numeric"))
 
   ChildRecursive <- new_class(
@@ -180,7 +184,10 @@ test_that("S4 validity recursively validates S7 descendants", {
 
   invalid_parent_prop <- grandchild
   attr(invalid_parent_prop, "y") <- 1
-  expect_error(methods::validObject(invalid_parent_prop), "@y must be <character>")
+  expect_error(
+    methods::validObject(invalid_parent_prop),
+    "@y must be <character>"
+  )
 
   invalid_child <- valid_implicitly(grandchild, function(x) {
     attr(x, "z") <- -1L
