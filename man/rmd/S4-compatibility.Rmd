@@ -23,6 +23,11 @@ Things that work reasonably:
   `@.S7_object` method. If S7 objects that extend S4 classes are represented
   as S4-bit objects in the future, R's `@` primitive will need to dispatch
   before taking the S4 slot-access path.
+* `methods::initialize(child, ...)` works for reinitializing an existing S7
+  object through S4 code. This is preferable to constructing a fresh object
+  with `methods::new(class(child)[[1L]], ...)`, because S4 construction creates
+  a formal S4 object with the oldClass structure but without the S7 metadata
+  that S7 property management requires.
 * `as(child, "Parent")` can produce a real S4 `Parent` object containing the
   parent slots.
 
@@ -42,6 +47,14 @@ Likely brittle or incompatible with S4-method assumptions:
   defines properties that override the slots from its parent. This is similar
   to deriving from an S3 class whose methods use `attr()` and `attr<-()`
   directly. Overriding S4 slots is therefore discouraged.
+* Calls like `methods::new(class(x)[[1L]], ...)` or
+  `methods::new(class1(x), ...)` construct a new S4 object from S4's class
+  definition. For an S7 class registered with S4, the result can satisfy
+  `inherits(object, "S7_object")` through the S4 oldClass graph while still
+  lacking the `S7_class` attribute. Such objects are not S7 instances. Code
+  that is updating an existing object should prefer `methods::initialize(x,
+  ...)`, which gives S7's S4 `initialize()` method a chance to preserve S7
+  metadata and route values through properties.
 
 In summary, inherited S4 methods must be written against the "registered
 oldClass with known attributes" contract, not the stricter "formal S4
