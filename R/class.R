@@ -128,7 +128,9 @@ new_class <- function(
     }
     if (
       abstract &&
-        (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
+        !((is_class(parent) &&
+          (parent@abstract || parent@name == "S7_object")) ||
+          (is_S4_class(parent) && parent@virtual))
     ) {
       stop2("Abstract classes must have abstract parents.")
     }
