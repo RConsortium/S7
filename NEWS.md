@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* `method<-` no longer embeds a copy of a generic owned by another package in your package namespace. Instead it returns a sentinel value that the new `S7_on_build()` removes from the namespace at build time; call `S7_on_build()` at the top level of `zzz.R` (see `vignette("packages")`) (#364).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
