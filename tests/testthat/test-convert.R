@@ -122,4 +122,11 @@ describe("fallback convert", {
     expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
+
+  it("errors when upcasting an environment", {
+    Parent <- new_class("Parent", class_environment, package = NULL)
+    Child <- new_class("Child", Parent, package = NULL)
+
+    expect_snapshot(convert(Child(), Parent), error = TRUE)
+  })
 })

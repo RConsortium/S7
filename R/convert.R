@@ -98,6 +98,16 @@ convert <- function(from, to, ...) {
 }
 
 convert_up <- function(from, to) {
+  if (is.environment(from)) {
+    msg <- paste_c(
+      "Can't use the default `convert()` method to upcast an environment:\n",
+      c("- from: ", obj_desc(from), "\n"),
+      c("- to  : ", class_desc(to), "\n"),
+      "See ?class_environment for details."
+    )
+    stop(msg, call. = FALSE)
+  }
+
   from_class <- S7_class(from)
   if (is.null(from_class)) {
     from_props <- character()
