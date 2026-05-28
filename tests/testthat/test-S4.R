@@ -4,6 +4,32 @@ test_that("can work with classGenerators", {
   expect_equal(S4_to_S7_class(Foo), getClass("Foo"))
 })
 
+describe("S4_register", {
+  it("registers an S7 class so it can be used with S4 methods", {
+    on.exit(S4_remove_classes("S4regS7"))
+    S4regS7 <- new_class("S4regS7", package = NULL)
+    S4_register(S4regS7)
+    expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
+  })
+
+  it("registers an S3 class so it can be used with S4 methods", {
+    on.exit(S4_remove_classes(c("S4regS3a", "S4regS3b")))
+    S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
+    # Must not extend S7_object — that was a silent bug pre-fix
+    expect_equal(
+      methods::extends("S4regS3a"),
+      c("S4regS3a", "S4regS3b", "oldClass")
+    )
+  })
+
+  it("errors on unsupported inputs", {
+    expect_snapshot(error = TRUE, {
+      S4_register(1)
+      S4_register("foo")
+    })
+  })
+})
+
 test_that("converts S4 base classes to S7 base classes", {
   expect_equal(S4_to_S7_class(getClass("NULL")), NULL)
   expect_equal(S4_to_S7_class(getClass("character")), class_character)
