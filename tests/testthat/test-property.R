@@ -651,3 +651,78 @@ test_that("custom setters don't evaulate call objects", {
     quote(abort(msg = "boom3", foo = bar, baz))
   )
 })
+
+
+test_that("errors from custom property accessors include a call that shows the class and prop name", {
+  error <- FALSE
+  foo <- new_class(
+    "foo",
+    properties = list(
+      x = new_property(
+        setter = \(self, value) if (error) stop("nope") else self,
+        getter = \(self) if (error) stop("nope") else 1
+      )
+    )
+  )
+
+  x <- foo()
+  error <- TRUE
+  getter_error <- tryCatch(x@x, error = identity)
+  setter_error <- tryCatch(x@x <- 1, error = identity)
+  expect_match(
+    deparse1(conditionCall(getter_error)[[1]]),
+    "<foo>@x",
+    fixed = TRUE
+  )
+  expect_match(
+    deparse1(conditionCall(setter_error)[[1]]),
+    "<foo>@x",
+    fixed = TRUE
+  )
+})
+
+test_that("erroring getter/setter doesn't leave object in broken state", {
+  # https://github.com/RConsortium/S7/issues/520
+
+  Test <- new_class(
+    "Test",
+    properties = list(
+      a = new_property(
+        getter = function(self) {
+          if (self@a == 10) {
+            stop("a is 10")
+          }
+          self@a
+        },
+        setter = function(self, value) {
+          if (value == 11) {
+            stop("value is 11")
+          }
+          self@a <- value
+          self
+        }
+      )
+    )
+  )
+
+  t <- Test(a = 10)
+  expect_error(t@a, "a is 10")
+  expect_error(t@a, "a is 10")
+
+  expect_error(t@a <- 11, "value is 11")
+  expect_error(t@a <- 11, "value is 11")
+
+  t@a <- 1
+  expect_equal(t@a, 1)
+})
+
+test_that("prop<- doesn't evaluate language values (#511)", {
+  Cls <- new_class("Cls", properties = list(r = class_any))
+
+  foo <- Cls()
+  foo@r <- as.symbol("x")
+  expect_equal(foo@r, quote(x))
+
+  foo@r <- quote(x + 1)
+  expect_equal(foo@r, quote(x + 1))
+})

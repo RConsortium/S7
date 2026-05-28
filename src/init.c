@@ -10,6 +10,7 @@ extern SEXP S7_class_(SEXP, SEXP);
 extern SEXP S7_object_(void);
 extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
+extern void prop_init(void);
 
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
@@ -99,6 +100,7 @@ void R_init_S7(DllInfo *dll)
     ns_S7 = R_FindNamespace(Rf_mkString("S7"));
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
+    prop_init();
     R_PreserveObject(s7_proto_object = make_s7_proto_object());
     R_PreserveObject(missing_call = Rf_lang2(fn_base_missing, R_NilValue));
 }
