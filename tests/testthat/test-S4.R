@@ -137,19 +137,6 @@ test_that("S4 initialize supports S3 data parts", {
   expect_true(methods::validObject(child))
 })
 
-test_that("S4_register uses S7 properties as known S4 attributes", {
-  on.exit(S4_remove_classes("Foo"))
-  Foo <- new_class("Foo", properties = list(x = class_numeric), package = NULL)
-  foo <- Foo(x = 1)
-
-  S4_register(Foo)
-  expect_true(methods::validObject(foo))
-  expect_equal(methods::slot(foo, "x"), 1)
-
-  attr(foo, "x") <- "x"
-  expect_error(methods::validObject(foo), "invalid object")
-})
-
 test_that("S4 initialize uses S7 property setters", {
   on.exit(S4_remove_classes(c("Parent2", "Child2")))
   setClass("Parent2", slots = list(x = "numeric"))
@@ -263,6 +250,45 @@ test_that("S4_class_dispatch captures implicit package name", {
   env$.packageName <- "mypkg"
   Foo1 := local_S4_class(where = env)
   expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
+})
+
+test_that("S7 class extending S4 class with multiple parents works", {
+  on.exit(S4_remove_classes(c(
+    "MultiParent1",
+    "MultiParent2",
+    "MultiChild",
+    "S7MultiChild",
+    "S7MultiChild2"
+  )))
+
+  setClass("MultiParent1", slots = list(x = "numeric"))
+  setClass("MultiParent2", slots = list(y = "numeric"))
+  setClass("MultiChild", contains = c("MultiParent1", "MultiParent2"))
+
+  S7MultiChild <- new_class(
+    "S7MultiChild",
+    parent = getClass("MultiChild"),
+    properties = list(z = class_numeric),
+    package = NULL
+  )
+
+  S7MultiChild2 <- new_class(
+    "S7MultiChild2",
+    parent = S7MultiChild,
+    properties = list(w = class_numeric),
+    package = NULL
+  )
+
+  obj <- S7MultiChild2(x = 1, y = 2, z = 3, w = 4)
+  expect_true(S7_inherits(obj, S7MultiChild2))
+  expect_true(S7_inherits(obj, S7MultiChild))
+  expect_equal(prop(obj, "x"), 1)
+  expect_equal(prop(obj, "y"), 2)
+  expect_equal(prop(obj, "z"), 3)
+  expect_equal(prop(obj, "w"), 4)
+
+  expect_true(methods::is(obj, "MultiParent1"))
+  expect_true(methods::is(obj, "MultiParent2"))
 })
 
 test_that("S4_package_name resolves S4 package name correctly in all cases", {
