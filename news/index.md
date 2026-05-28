@@ -91,6 +91,10 @@
   e.g. [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
   on a data.frame subclass now returns a data.frame
   ([\#380](https://github.com/RConsortium/S7/issues/380)).
+- `S7_data<-()` now preserves attributes (like `names` or `dim`) from
+  the replacement data instead of carrying over the originals, so
+  resizing the underlying data works correctly
+  ([\#478](https://github.com/RConsortium/S7/issues/478)).
 - [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
   and
   [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)

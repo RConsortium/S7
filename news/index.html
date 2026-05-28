@@ -86,6 +86,8 @@
 <li>
 <code><a href="../reference/S7_data.html">S7_data()</a></code> now preserves the S3 class when the S7 class inherits from an S3 class, so e.g. <code><a href="../reference/S7_data.html">S7_data()</a></code> on a data.frame subclass now returns a data.frame (<a href="https://github.com/RConsortium/S7/issues/380" class="external-link">#380</a>).</li>
 <li>
+<code>S7_data&lt;-()</code> now preserves attributes (like <code>names</code> or <code>dim</code>) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (<a href="https://github.com/RConsortium/S7/issues/478" class="external-link">#478</a>).</li>
+<li>
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
 <li>
 <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a <code>dim</code> attribute incompatible with the bare base type) no longer errors (<a href="https://github.com/RConsortium/S7/issues/494" class="external-link">#494</a>).</li>

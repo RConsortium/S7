@@ -49,8 +49,7 @@ S7_data(y)
 
 S7_data(y) <- c("a", "b")
 y
-#> <Text> Named chr [1:2] "a" "b"
-#>  - attr(*, "names")= chr [1:2] "foo" NA
+#> <Text> chr [1:2] "a" "b"
 
 # S3 classes are preserved
 MyDF <- new_class("MyDF", parent = class_data.frame)
