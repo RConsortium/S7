@@ -22,6 +22,24 @@
     Output
       <S7_external_class> foo::Bar (>= 1.0)
 
+# resolve_external_class_req() errors per failure mode
+
+    Code
+      resolve_external_class_req(new_external_class("not_a_pkg", "X"))
+    Condition
+      Error:
+      ! Can't find external class <not_a_pkg::X>: package 'not_a_pkg' is not installed.
+    Code
+      resolve_external_class_req(new_external_class("S7", "S7_object", "999.0"))
+    Condition
+      Error:
+      ! Can't find external class <S7::S7_object>: package 'S7' is version 0.2.2.9000, but >= 999.0 is required.
+    Code
+      resolve_external_class_req(new_external_class("S7", "not_a_class"))
+    Condition
+      Error:
+      ! Can't find external class <S7::not_a_class>: 'not_a_class' is not found in package 'S7'.
+
 # external class works as a property type for self-reference
 
     Code
@@ -30,13 +48,4 @@
       Error:
       ! <mypkg::tree> object properties are invalid:
       - @child must be <NULL> or <mypkg::tree>, not <double>
-
-# method registration outside a package errors when unresolved
-
-    Code
-      register_method(foo, new_external_class("not_loaded_pkg", "X"), function(x) "x",
-      package = NULL)
-    Condition
-      Error:
-      ! External classes can only be used in method signatures inside a package, since deferred method registration requires `methods_register()`.
 

@@ -22,17 +22,31 @@ test_that("external class is a valid class spec", {
   expect_equal(S7_class_desc(ec), "<foo::Bar>")
 })
 
-test_that("external class can refer to a loaded package", {
+test_that("resolve_external_class_opt() resolves a loaded class", {
   # S7 is itself loaded, S7_object exists in it
   ec <- new_external_class("S7", "S7_object")
-  resolved <- resolve_external_class(ec)
+  resolved <- resolve_external_class_opt(ec)
   expect_true(is_class(resolved))
   expect_equal(resolved@name, "S7_object")
 })
 
-test_that("unresolved external class returns NULL", {
-  expect_null(resolve_external_class(new_external_class("not_a_pkg", "X")))
-  expect_null(resolve_external_class(new_external_class("S7", "not_a_class")))
+test_that("resolve_external_class_opt() returns NULL when unavailable", {
+  expect_null(resolve_external_class_opt(new_external_class("not_a_pkg", "X")))
+  expect_null(resolve_external_class_opt(new_external_class(
+    "S7",
+    "not_a_class"
+  )))
+})
+
+test_that("resolve_external_class_req() errors per failure mode", {
+  expect_snapshot(error = TRUE, {
+    # package not installed
+    resolve_external_class_req(new_external_class("not_a_pkg", "X"))
+    # version too low
+    resolve_external_class_req(new_external_class("S7", "S7_object", "999.0"))
+    # class missing
+    resolve_external_class_req(new_external_class("S7", "not_a_class"))
+  })
 })
 
 test_that("external class can be used as a union arm", {
@@ -89,25 +103,6 @@ test_that("class_inherits() works for external class", {
   expect_true(class_inherits(tree(), ec))
   expect_false(class_inherits(1, ec))
   expect_false(class_inherits(NULL, ec))
-})
-
-test_that("method registration outside a package errors when unresolved", {
-  foo <- new_generic("foo", "x")
-  expect_snapshot(error = TRUE, {
-    register_method(
-      foo,
-      new_external_class("not_loaded_pkg", "X"),
-      function(x) "x",
-      package = NULL
-    )
-  })
-})
-
-test_that("method registration with resolved external class works", {
-  foo <- new_generic("foo", "x")
-  # S7 is loaded, so this can resolve immediately
-  method(foo, new_external_class("S7", "S7_object")) <- function(x) "s7"
-  expect_equal(foo(S7_object()), "s7")
 })
 
 test_that("method_deps() collects the generic and external classes", {

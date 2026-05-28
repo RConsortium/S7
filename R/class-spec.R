@@ -188,41 +188,19 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
-    S7_external = class_constructor(resolve_or_error(.x)),
+    S7_external = class_constructor(resolve_external_class_req(.x)),
     stop(sprintf("Can't construct %s.", class_friendly(.x)), call. = FALSE)
   )
 }
 
-# Resolve an external_class to its concrete class, or error.
-resolve_or_error <- function(x) {
-  resolved <- resolve_external_class(x)
-  if (is.null(resolved)) {
-    msg <- sprintf(
-      "Can't resolve external class `%s::%s`: package %s is not loaded.",
-      x$package,
-      x$name,
-      x$package
-    )
-    stop(msg, call. = FALSE)
-  }
-  resolved
-}
-
 class_validate <- function(class, object) {
-  if (class_type(class) == "S7_external") {
-    resolved <- resolve_external_class(class)
-    if (is.null(resolved)) {
-      return(NULL)
-    }
-    class <- resolved
-  }
-
   validator <- switch(
     class_type(class),
     S4 = methods::validObject,
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
+    S7_external = class_validate(resolve_external_class_req(class), object),
     NULL
   )
 
@@ -281,7 +259,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    S7_external = class_dispatch(resolve_external_class(x)),
+    S7_external = class_dispatch(resolve_external_class_opt(x)),
     stop("Unsupported class type.", call. = FALSE)
   )
 }

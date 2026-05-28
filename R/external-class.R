@@ -79,9 +79,9 @@ dep_available <- function(dep) {
     (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)
 }
 
-# Resolve to a real class if the package is loaded (and the optional version
+# Resolve to the real class if the package is loaded (and the optional version
 # constraint is met). Returns `NULL` otherwise.
-resolve_external_class <- function(x) {
+resolve_external_class_opt <- function(x) {
   if (!dep_available(x)) {
     return(NULL)
   }
@@ -89,6 +89,49 @@ resolve_external_class <- function(x) {
   ns <- asNamespace(x$package)
   if (!exists(x$name, envir = ns, inherits = FALSE)) {
     return(NULL)
+  }
+  get(x$name, envir = ns, inherits = FALSE)
+}
+
+# Resolve to the real class, loading the package if needed, erroring with a
+# specific message for each failure mode.
+resolve_external_class_req <- function(x) {
+  prefix <- sprintf("Can't find external class <%s>", x$class_name)
+  if (!requireNamespace(x$package, quietly = TRUE)) {
+    stop(
+      sprintf(
+        "%s: package '%s' is not installed.",
+        prefix,
+        x$package
+      ),
+      call. = FALSE
+    )
+  }
+
+  if (!is.null(x$version) && getNamespaceVersion(x$package) < x$version) {
+    stop(
+      sprintf(
+        "%s: package '%s' is version %s, but >= %s is required.",
+        prefix,
+        x$package,
+        getNamespaceVersion(x$package),
+        x$version
+      ),
+      call. = FALSE
+    )
+  }
+
+  ns <- asNamespace(x$package)
+  if (!exists(x$name, envir = ns, inherits = FALSE)) {
+    stop(
+      sprintf(
+        "%s: '%s' is not found in package '%s'.",
+        prefix,
+        x$name,
+        x$package
+      ),
+      call. = FALSE
+    )
   }
   get(x$name, envir = ns, inherits = FALSE)
 }
