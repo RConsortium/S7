@@ -192,14 +192,14 @@ print.S7_class <- function(x, ...) {
     prop_names <- names(props)
     prop_defaults <- vcapply(props, prop_default_desc, package = x@package)
     prop_types <- vcapply(props, function(p) class_desc(p$class))
-    middle <- ifelse(prop_defaults == "", "", paste0(" ", prop_defaults))
+    suffix <- ifelse(prop_defaults == "", "", paste0(" ", prop_defaults))
     prop_fmt <- paste0(
       " $ ",
       prop_names,
-      middle,
-      " (",
+      ": ",
       prop_types,
-      ")\n",
+      suffix,
+      "\n",
       collapse = ""
     )
   } else {
