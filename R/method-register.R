@@ -39,7 +39,7 @@
 #'
 #'   The same rules apply to S4 generics as S7 generics.
 #' @param value A function that implements the generic specification for the
-#'   given `signature`.
+#'   given `signature`, or `NULL` to unregister an existing method.
 #' @returns The `generic`, invisibly.
 #' @export
 #' @examples
@@ -54,8 +54,15 @@
 #'
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
+#'
+#' # Unregister a method by assigning `NULL`
+#' method(bizarro, class_numeric) <- NULL
 `method<-` <- function(generic, signature, value) {
-  register_method(generic, signature, value, env = parent.frame())
+  if (is.null(value)) {
+    unregister_method(generic, signature, env = parent.frame())
+  } else {
+    register_method(generic, signature, value, env = parent.frame())
+  }
   invisible(generic)
 }
 
@@ -96,6 +103,38 @@ register_method <- function(
   invisible(generic)
 }
 
+unregister_method <- function(
+  generic,
+  signature,
+  env = parent.frame(),
+  package = packageName(env)
+) {
+  generic <- as_generic(generic)
+  signature <- as_signature(signature, generic)
+
+  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+    generic <- as_generic(getFromNamespace(generic$name, generic$package))
+  }
+
+  # Unregister in current session
+  if (is_S7_generic(generic)) {
+    unregister_S7_method(generic, signature)
+  } else if (is_S3_generic(generic)) {
+    stop("Can't unregister methods for S3 generics", call. = FALSE)
+  } else if (is_S4_generic(generic)) {
+    stop("Can't unregister methods for S4 generics", call. = FALSE)
+  }
+
+  # If we're inside a package, also remove from the deferred external
+  # methods table so the method isn't re-registered on package load.
+  if (!is.null(package) && !is_local_generic(generic, package)) {
+    generic <- as_external_generic(generic)
+    external_methods_remove(package, generic, signature)
+  }
+
+  invisible(generic)
+}
+
 register_S3_method <- function(
   generic,
   signature,
@@ -131,6 +170,14 @@ register_S7_method <- function(generic, signature, method) {
     generic_add_method(generic, signature, method)
   }
 
+  invisible()
+}
+
+unregister_S7_method <- function(generic, signature) {
+  signatures <- flatten_signature(signature)
+  for (signature in signatures) {
+    generic_remove_method(generic, signature)
+  }
   invisible()
 }
 
@@ -288,6 +335,7 @@ register_S4_method <- function(
   S4_signature <- lapply(signature, S4_class, S4_env = S4_env)
   methods::setMethod(generic, S4_signature, method, where = S4_env)
 }
+
 S4_class <- function(x, S4_env) {
   switch(
     class_type(x),
