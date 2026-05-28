@@ -150,11 +150,7 @@ convert_down <- function(from, to, ...) {
     constructor_args <- c(from_prop_values, user_args)
   } else {
     # `from` is a base or S3 object; pass it as `.data` to the constructor
-    if (".data" %in% names(user_args)) {
-      constructor_args <- user_args
-    } else {
-      constructor_args <- c(list(.data = from), user_args)
-    }
+    constructor_args <- c(list(.data = from), user_args)
   }
 
   do.call(to, constructor_args)
