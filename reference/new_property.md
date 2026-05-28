@@ -63,10 +63,18 @@ new_property(
 - default:
 
   When an object is created and the property is not supplied, what
-  should it default to? If `NULL`, it defaults to the "empty" instance
-  of `class`. This can also be a quoted call, which then becomes a
-  standard function promise in the default constructor, evaluated at the
-  time the object is constructed.
+  should it default to?
+
+  If `NULL`, it defaults to the "empty" instance of `class`. For base
+  vector types, this will be a zero length vector, e.g.
+  [`character()`](https://rdrr.io/r/base/character.html) for
+  [`class_character()`](https://rconsortium.github.io/S7/reference/base_classes.md).
+  For S7 classes, this will be a call to the constructor
+
+  This can also be a
+  [`quote()`](https://rdrr.io/r/base/substitute.html)d call, which then
+  becomes a standard function promise in the default constructor,
+  evaluated when the object is constructed.
 
 - name:
 
@@ -103,9 +111,9 @@ Clock <- new_class("Clock", properties = list(
 ))
 my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
-#> [1] "2026-05-27 19:44:12 UTC"
+#> [1] "2026-05-28 12:36:55 UTC"
 my_clock@now
-#> [1] "2026-05-27 19:44:13 UTC"
+#> [1] "2026-05-28 12:36:56 UTC"
 # This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 #> Error : Can't set read-only property <Clock>@now.
