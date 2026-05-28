@@ -11,42 +11,49 @@ new_external_class(package, name, version = NULL)
 
 \item{name}{Name of the class, as a string.}
 
-\item{version}{An optional version that \code{package} must meet for any
-deferred method registration to fire.}
+\item{version}{An optional version the package must meet for the method to
+be registered.}
 }
 \value{
-An S7 external class, i.e. a list with class \code{S7_external_class}.
+An S7 external class, i.e. a list with S3 class \code{S7_external_class}.
 }
 \description{
 An external class is a lightweight placeholder for an S7 class defined in
-another package (or in your own package, but not yet defined). It carries
-only the package and class name, and is resolved to the real S7 class
-when needed.
+another package (or in your own package and needed before it's fully
+defined). It carries only the package and class name, and is resolved to
+the real S7 class when needed.
 
 External classes are useful in two situations:
 \itemize{
 \item To register a method for a generic in your package, dispatching on a class
-from a soft dependency: \code{method(my_generic, new_external_class("pkg", "SomeClass")) <- ...}. The method will be registered when \code{pkg} is loaded
+from a soft dependency. The method will be registered when \code{pkg} is loaded
 (using the same machinery as \code{\link[=new_external_generic]{new_external_generic()}}).
-\item To refer to a class that hasn't been defined yet, such as a self-referential
-or mutually recursive class. For example, you can create a nested class
-with \code{new_class("tree", properties = list(child = NULL | new_external_class("mypkg", "tree")))}.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{SomeClass <- new_external_class("pkg", "SomeClass")
+method(my_generic, SomeClass) <- ...
+}\if{html}{\out{</div>}}
+\item To refer to a class that hasn't been defined yet, such as a
+self-referential or mutually recursive class.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{tree_stub <- new_external_class("mypkg", "tree")
+new_class("tree", properties = list(child = NULL | tree_stub))
+}\if{html}{\out{</div>}}
 }
 
 Make sure to call \code{\link[=methods_register]{methods_register()}} in your package's \code{.onLoad()} so that
 deferred method registrations fire when the relevant package is loaded.
 }
 \examples{
-# Referring to a class in another package without taking a hard dependency:
+# Refer to a class in another package without taking a hard dependency:
 Tibble <- new_external_class("tibble", "tbl_df")
 Tibble
 
 # Self-referential class: the `child` property can be another `tree`,
 # or `NULL` to terminate the chain.
-tree <- new_class("tree",
+tree_stub <- new_external_class("mypkg", "tree")
+tree <- new_class(
+  name = "tree",
   package = "mypkg",
-  properties = list(
-    child = NULL | new_external_class("mypkg", "tree")
-  )
+  properties = list(child = NULL | tree_stub)
 )
 }
