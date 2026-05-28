@@ -162,8 +162,8 @@ new_class <- function(
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
-  if (S4_needs_registration(object)) {
-    S4_register(object, env = parent.frame())
+  if (S7_extends_S4(object)) {
+    S4_register_subclass(object, env = parent.frame())
   }
 
   global_variables(names(all_props))
