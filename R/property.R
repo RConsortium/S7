@@ -180,22 +180,46 @@ prop_default_desc <- function(prop, package = NULL) {
     return(paste0("= ", deparse1(prop$default)))
   }
 
-  expr <- tryCatch(
-    class_construct_expr(prop$class, package = package),
-    error = function(e) NULL
-  )
-  if (is.null(expr) || is_missing_sym(expr)) {
+  desc <- class_default_desc(prop$class, package)
+  if (is.null(desc)) {
     return("")
   }
-  out <- deparse1(expr)
-  if (nchar(out) > 30) {
-    return("")
-  }
-  paste0("= ", out)
+  paste0("= ", desc)
 }
 
-is_missing_sym <- function(x) {
-  is.symbol(x) && !nzchar(as.character(x))
+# A clean, displayable string for a property's implicit default, or `NULL` if
+# the class has no meaningful default (e.g. `class_any`, `class_missing`).
+class_default_desc <- function(class, package = NULL) {
+  type <- class_type(class)
+  if (type == "NULL") {
+    return("NULL")
+  }
+  if (type == "S7_union") {
+    return(class_default_desc(class$classes[[1]], package))
+  }
+
+  expr <- switch(
+    type,
+    S7_base = tryCatch(
+      class_construct_expr(class, package = package),
+      error = function(e) NULL
+    ),
+    S7 = if (is.null(class@package)) {
+      call(class@name)
+    } else {
+      tryCatch(
+        class_construct_expr(class, package = package),
+        error = function(e) call(class@name)
+      )
+    },
+    S4 = call(class@className),
+    S7_S3 = call(class$class[[1]]),
+    NULL
+  )
+  if (is.null(expr)) {
+    return(NULL)
+  }
+  deparse1(expr)
 }
 
 #' Get/set a property

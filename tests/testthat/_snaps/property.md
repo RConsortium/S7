@@ -6,22 +6,6 @@
 
     Can't find property <foo>@x.
 
-# property retrieval / reports dynamic getter errors as property calls
-
-    Code
-      foo()@x
-    Condition
-      Error in `<foo>@x`:
-      ! nope
-
-# prop setting / reports dynamic setter errors as property calls
-
-    Code
-      obj@x <- 1
-    Condition
-      Error in `<foo>@x`:
-      ! nope
-
 # prop setting / can't set read-only properties
 
     Code
@@ -126,13 +110,13 @@
       @ constructor: function(anything, null, base, S3, S4, S7, S7_union) {...}
       @ validator  : <NULL>
       @ properties :
-       $ anything (<ANY>)
-       $ null (<NULL>)
-       $ base = integer(0) (<integer>)
-       $ S3 (S3<factor>)
-       $ S4 (S4<class_S4>)
-       $ S7 (<class_S7>)
-       $ S7_union = integer(0) (<integer> or <logical>)
+       $ anything: <ANY>
+       $ null: <NULL> = NULL
+       $ base: <integer> = integer(0)
+       $ S3: S3<factor> = factor()
+       $ S4: S4<class_S4> = class_S4()
+       $ S7: <class_S7> = class_S7()
+       $ S7_union: <integer> or <logical> = integer(0)
 
 ---
 
@@ -276,3 +260,4 @@
       [tx] finished transmitting.
     Code
       expect_equal(receiver@message, "goodbye")
+
