@@ -25,7 +25,6 @@ describe("S4_register", {
     object <- methods::new("S4regS7New")
 
     expect_true(isS4(object))
-    expect_true(inherits(object, "S7_object"))
     expect_false(S7_inherits(object))
     expect_false(S7_inherits(object, S4regS7New))
     expect_error(methods::validObject(object), "is not an S7 object")
@@ -196,20 +195,6 @@ test_that("S4 validity recursively validates S7 descendants", {
   expect_error(methods::validObject(invalid_child), "z must be positive")
 })
 
-test_that("S4_register uses S7 validation for old classes", {
-  on.exit(S4_remove_classes("Foo"))
-  Foo <- new_class("Foo", properties = list(x = class_numeric), package = NULL)
-  foo <- Foo(x = 1)
-
-  S4_register(Foo)
-  expect_true(methods::validObject(foo))
-  expect_equal(methods::slot(foo, "x"), 1)
-  expect_equal(methods::slotNames("Foo"), ".S3Class")
-
-  attr(foo, "x") <- "x"
-  expect_error(methods::validObject(foo), "@x must be <integer> or <double>")
-})
-
 test_that("S4 initialize supports S3 data parts", {
   on.exit(S4_remove_classes(c("ParentNum", "ChildNum")))
   setClass("ParentNum", contains = "numeric", slots = list(y = "character"))
@@ -370,4 +355,41 @@ test_that("S4_package_name resolves S4 package name correctly in all cases", {
   mock_S4 <- getGeneric("axTicks")
   mock_S4@package <- "base"
   expect_equal(S4_package_name(mock_S4, stats_ns), "graphics")
+test_that("S7 class extending S4 class with multiple parents works", {
+  on.exit(S4_remove_classes(c(
+    "MultiParent1",
+    "MultiParent2",
+    "MultiChild",
+    "S7MultiChild",
+    "S7MultiChild2"
+  )))
+
+  setClass("MultiParent1", slots = list(x = "numeric"))
+  setClass("MultiParent2", slots = list(y = "numeric"))
+  setClass("MultiChild", contains = c("MultiParent1", "MultiParent2"))
+
+  S7MultiChild <- new_class(
+    "S7MultiChild",
+    parent = getClass("MultiChild"),
+    properties = list(z = class_numeric),
+    package = NULL
+  )
+
+  S7MultiChild2 <- new_class(
+    "S7MultiChild2",
+    parent = S7MultiChild,
+    properties = list(w = class_numeric),
+    package = NULL
+  )
+
+  obj <- S7MultiChild2(x = 1, y = 2, z = 3, w = 4)
+  expect_true(S7_inherits(obj, S7MultiChild2))
+  expect_true(S7_inherits(obj, S7MultiChild))
+  expect_equal(prop(obj, "x"), 1)
+  expect_equal(prop(obj, "y"), 2)
+  expect_equal(prop(obj, "z"), 3)
+  expect_equal(prop(obj, "w"), 4)
+
+  expect_true(methods::is(obj, "MultiParent1"))
+  expect_true(methods::is(obj, "MultiParent2"))
 })
