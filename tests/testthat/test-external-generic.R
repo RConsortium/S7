@@ -18,6 +18,25 @@ test_that("can get and append methods", {
   )
 })
 
+test_that("can remove methods", {
+  external_methods_reset("S7")
+  on.exit(external_methods_reset("S7"), add = TRUE)
+
+  bar <- new_external_generic("foo", "bar", "x")
+  baz <- new_external_generic("foo", "baz", "x")
+  external_methods_add("S7", bar, list("A"), function() "a")
+  external_methods_add("S7", baz, list("B"), function() "b")
+  expect_length(S7_methods_table("S7"), 2)
+
+  external_methods_remove("S7", bar, list("A"))
+  expect_length(S7_methods_table("S7"), 1)
+  expect_equal(S7_methods_table("S7")[[1]]$generic, baz)
+
+  # No-op when entry doesn't exist
+  external_methods_remove("S7", bar, list("A"))
+  expect_length(S7_methods_table("S7"), 1)
+})
+
 test_that("displays nicely", {
   bar <- new_external_generic("foo", "bar", "x")
   on.exit(external_methods_reset("S7"), add = TRUE)

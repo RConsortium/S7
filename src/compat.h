@@ -25,4 +25,13 @@ SEXP s7_get_var_in_frame(SEXP env, SEXP sym, SEXP ifnotfound) {
 #define getClosureFormals FORMALS
 #endif
 
+static inline
+void s7_clear_var_in_frame(SEXP env, SEXP sym) {
+#if (R_VERSION >= R_Version(4, 0, 0))
+  R_removeVarFromFrame(sym, env);
+#else
+  Rf_defineVar(sym, R_UnboundValue, env);
+#endif
+}
+
 #endif

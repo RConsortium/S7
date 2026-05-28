@@ -32,14 +32,14 @@
 #'   * A special type like [class_missing] or [class_any].
 #'
 #'   For S7 generics that use multiple dispatch, this must be a list of any of
-#'   the above types.
+#'   the above types. (For convenience you can also use a list in the single
+#'   dispatch case too.)
 #'
 #'   For S3 generics, this must be a single S7 class.
 #'
-#'   For S4 generics, this must either be an S7 class, or a list that includes
-#'   at least one S7 class.
+#'   The same rules apply to S4 generics as S7 generics.
 #' @param value A function that implements the generic specification for the
-#'   given `signature`.
+#'   given `signature`, or `NULL` to unregister an existing method.
 #' @returns The `generic`, invisibly.
 #' @export
 #' @examples
@@ -54,8 +54,15 @@
 #'
 #' # Using a generic calls the methods automatically
 #' bizarro(head(mtcars))
+#'
+#' # Unregister a method by assigning `NULL`
+#' method(bizarro, class_numeric) <- NULL
 `method<-` <- function(generic, signature, value) {
-  register_method(generic, signature, value, env = parent.frame())
+  if (is.null(value)) {
+    unregister_method(generic, signature, env = parent.frame())
+  } else {
+    register_method(generic, signature, value, env = parent.frame())
+  }
   invisible(generic)
 }
 
@@ -80,7 +87,10 @@ register_method <- function(
   } else if (is_S3_generic(generic)) {
     register_S3_method(generic, signature, method, env)
   } else if (is_S4_generic(generic)) {
-    register_S4_method(generic, signature, method, env)
+    signatures <- flatten_signature(signature)
+    for (signature in signatures) {
+      register_S4_method(generic, signature, method, env)
+    }
   }
 
   # if we're inside a package, we also need to be able register methods
@@ -88,6 +98,38 @@ register_method <- function(
   if (!is.null(package) && !is_local_generic(generic, package)) {
     generic <- as_external_generic(generic)
     external_methods_add(package, generic, signature, method)
+  }
+
+  invisible(generic)
+}
+
+unregister_method <- function(
+  generic,
+  signature,
+  env = parent.frame(),
+  package = packageName(env)
+) {
+  generic <- as_generic(generic)
+  signature <- as_signature(signature, generic)
+
+  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+    generic <- as_generic(getFromNamespace(generic$name, generic$package))
+  }
+
+  # Unregister in current session
+  if (is_S7_generic(generic)) {
+    unregister_S7_method(generic, signature)
+  } else if (is_S3_generic(generic)) {
+    stop("Can't unregister methods for S3 generics", call. = FALSE)
+  } else if (is_S4_generic(generic)) {
+    stop("Can't unregister methods for S4 generics", call. = FALSE)
+  }
+
+  # If we're inside a package, also remove from the deferred external
+  # methods table so the method isn't re-registered on package load.
+  if (!is.null(package) && !is_local_generic(generic, package)) {
+    generic <- as_external_generic(generic)
+    external_methods_remove(package, generic, signature)
   }
 
   invisible(generic)
@@ -131,6 +173,14 @@ register_S7_method <- function(generic, signature, method) {
   invisible()
 }
 
+unregister_S7_method <- function(generic, signature) {
+  signatures <- flatten_signature(signature)
+  for (signature in signatures) {
+    generic_remove_method(generic, signature)
+  }
+  invisible()
+}
+
 flatten_signature <- function(signature) {
   # Unpack unions
   sig_is_union <- vlapply(signature, is_union)
@@ -153,6 +203,11 @@ as_signature <- function(signature, generic) {
 
   n <- generic_n_dispatch(generic)
   if (n == 1) {
+    # Accept a bare list of length 1 too, for symmetry with multi-dispatch
+    # generics where a list is required (#555).
+    if (is.list(signature) && !is.object(signature) && length(signature) == 1) {
+      signature <- signature[[1]]
+    }
     new_signature(list(as_class(signature, arg = "signature")))
   } else {
     check_signature_list(signature, n)
@@ -169,12 +224,12 @@ as_signature <- function(signature, generic) {
 check_signature_list <- function(x, n, arg = "signature") {
   if (!is.list(x) || is.object(x)) {
     stop(
-      sprintf("`%s` must be a list for multidispatch generics", arg),
+      sprintf("`%s` must be a list for multidispatch generics.", arg),
       call. = FALSE
     )
   }
   if (length(x) != n) {
-    stop(sprintf("`%s` must be length %i", arg, n), call. = FALSE)
+    stop(sprintf("`%s` must be length %i.", arg, n), call. = FALSE)
   }
 }
 
@@ -188,8 +243,8 @@ check_method <- function(
   generic,
   name = paste0(generic@name, "(???)")
 ) {
-  if (!is.function(method)) {
-    stop(sprintf("%s must be a function", name), call. = FALSE)
+  if (!is.function(method) || is.primitive(method)) {
+    stop(sprintf("%s must be a function.", name), call. = FALSE)
   }
 
   generic_formals <- formals(args(generic))
@@ -221,7 +276,7 @@ check_method <- function(
     identical(method_args[1:n_dispatch], generic@dispatch_args)
   if (!has_dispatch) {
     msg <- sprintf(
-      "%s() dispatches on %s, but %s has arguments %s",
+      "%s() dispatches on %s, but %s has arguments %s.",
       generic@name,
       arg_names(generic@dispatch_args),
       name,
@@ -237,7 +292,7 @@ check_method <- function(
   )
   if (any(!empty_dispatch)) {
     msg <- sprintf(
-      "In %s, dispatch arguments (%s) must not have default values",
+      "In %s, dispatch arguments (%s) must not have default values.",
       name,
       arg_names(generic@dispatch_args)
     )
@@ -280,27 +335,43 @@ register_S4_method <- function(
   S4_signature <- lapply(signature, S4_class, S4_env = S4_env)
   methods::setMethod(generic, S4_signature, method, where = S4_env)
 }
+
 S4_class <- function(x, S4_env) {
-  if (is_base_class(x)) {
-    x@name
-  } else if (is_S4_class(x)) {
-    x
-  } else if (is_class(x) || is_S3_class(x)) {
-    class <- tryCatch(
-      methods::getClass(class_register(x)),
-      error = function(err) NULL
+  switch(
+    class_type(x),
+    `NULL` = "NULL",
+    missing = "missing",
+    any = "ANY",
+    S7_base = base_to_S4(x$class),
+    S4 = x,
+    S7 = S4_registered_class(x),
+    S7_S3 = S4_registered_class(x),
+    S7_union = stop("Internal error: union should be flattened upstream.")
+  )
+}
+
+# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
+# not "double", so registering under "double" silently misses real doubles.
+# Mapping to "numeric" catches doubles but also matches integers too. There's
+# no clean S4 way to say "doubles only" and this seems likely to be what
+# people want.
+base_to_S4 <- function(class) {
+  switch(class, double = "numeric", class)
+}
+
+S4_registered_class <- function(x) {
+  class <- tryCatch(
+    methods::getClass(class_register(x)),
+    error = function(err) NULL
+  )
+  if (is.null(class)) {
+    msg <- sprintf(
+      "Class has not been registered with S4; please call S4_register(%s).",
+      class_deparse(x)
     )
-    if (is.null(class)) {
-      msg <- sprintf(
-        "Class has not been registered with S4; please call S4_register(%s)",
-        class_deparse(x)
-      )
-      stop(msg, call. = FALSE)
-    }
-    class
-  } else {
-    stop("Unsupported")
+    stop(msg, call. = FALSE)
   }
+  class
 }
 
 #' @export

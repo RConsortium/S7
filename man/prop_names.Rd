@@ -3,33 +3,63 @@
 \name{prop_names}
 \alias{prop_names}
 \alias{prop_exists}
+\alias{prop_info}
 \title{Property introspection}
 \usage{
 prop_names(object)
 
 prop_exists(object, name)
+
+prop_info(object)
 }
 \arguments{
-\item{object}{An object from a S7 class}
+\item{object}{Either an S7 object (an instance) or an S7 class.}
 
-\item{name}{The name of the parameter as a character. Partial matching
-is not performed.}
+\item{name}{A string giving the property of interest.}
 }
 \value{
-\code{prop_names()} returns a character vector; \code{prop_exists()} returns
-a single \code{TRUE} or \code{FALSE}.
+\itemize{
+\item \code{prop_names()} returns a character vector
+\item \code{prop_exists()} returns a single \code{TRUE} or \code{FALSE}.
+\item \code{prop_info()} returns a  data frame with one row per property and the
+following columns:
+\itemize{
+\item \code{name}: a character vector of property names.
+\item \code{default}: a list column of property defaults.
+\item \code{class}: a character description of the class.
+\item \code{getter}, \code{setter}, \code{validator}: logical vectors indicating whether
+the property has a getter, setter, or validator.
+}
+}
 }
 \description{
 \itemize{
 \item \code{prop_names(x)} returns the names of the properties
-\item \code{prop_exists(x, "prop")} returns \code{TRUE} iif \code{x} has property \code{prop}.
+\item \code{prop_exists(x, "prop")} returns \code{TRUE} and if only \code{x} has property
+\code{prop}.
+\item \code{prop_info()} returns a data frame describing the properties of an S7
+object or class, with one row per property.
 }
 }
 \examples{
-Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
-f <- Foo()
+Horse <- new_class("Horse", properties = list(
+  name = class_character,
+  colour = class_character,
+  height = new_property(class_numeric, default = 15),
+  age = new_property(
+    class_numeric,
+    validator = function(value) if (value < 0) "must be positive"
+  ),
+  now = new_property(getter = function(self) Sys.time())
+))
 
-prop_names(f)
-prop_exists(f, "a")
-prop_exists(f, "c")
+prop_names(Horse)
+prop_exists(Horse, "col")
+prop_exists(Horse, "colour")
+prop_info(Horse)
+
+# All functions also work with objects, not just classes
+lex <- Horse(colour = "bay", height = 15, name = "Lex", age = 3)
+prop_names(lex)
+prop_exists(lex, "age")
 }

@@ -3,17 +3,19 @@
 \name{S7_inherits}
 \alias{S7_inherits}
 \alias{check_is_S7}
-\title{Does this object inherit from an S7 class?}
+\title{Does this object inherit from a class?}
 \usage{
 S7_inherits(x, class = NULL)
 
 check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
 }
 \arguments{
-\item{x}{An object}
+\item{x}{An object.}
 
-\item{class}{An S7 class or \code{NULL}. If \code{NULL}, tests whether \code{x} is an
-S7 object without testing for a specific class.}
+\item{class}{A class specification (anything accepted by \code{\link[=as_class]{as_class()}}:
+an S7 class, S7 union, S3 class, S4 class, base type wrapper like
+\link{class_integer}, or \link{class_any}/\link{class_missing}). If \code{NULL}, only tests
+whether \code{x} is an S7 object, without testing for a specific class.}
 
 \item{arg}{Argument name used in error message.}
 }
@@ -44,6 +46,12 @@ check_is_S7(Foo1(), Foo1)
 S7_inherits(Foo1(), Foo2)
 try(check_is_S7(Foo1(), Foo2))
 
-if (getRversion() >= "4.3.0")
+# Also works with other class specifications
+S7_inherits(1L, class_integer)
+S7_inherits(data.frame(), new_S3_class("data.frame"))
+S7_inherits(1L, class_integer | class_character)
+
+if (getRversion() >= "4.3.0") {
   inherits(Foo1(), Foo1)
+}
 }

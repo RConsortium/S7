@@ -3,8 +3,8 @@
     Code
       convert(obj, to = class_double)
     Condition
-      Error:
-      ! Can't find method for generic `convert()` with dispatch classes:
+      Error in `convert()`:
+      ! Can't find method with dispatch classes:
       - from: <converttest>
       - to  : <double>
 

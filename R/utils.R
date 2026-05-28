@@ -19,6 +19,10 @@ vcapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
 }
 
+paste_c <- function(...) {
+  paste(c(...), collapse = "")
+}
+
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
   if (single) {
@@ -87,18 +91,18 @@ str_function <- function(object, ..., nest.lev = 0) {
 
 check_name <- function(name, arg = deparse(substitute(name))) {
   if (length(name) != 1 || !is.character(name)) {
-    msg <- sprintf("`%s` must be a single string", arg)
+    msg <- sprintf("`%s` must be a single string.", arg)
     stop(msg, call. = FALSE)
   }
   if (is.na(name) || name == "") {
-    msg <- sprintf("`%s` must not be \"\" or NA", arg)
+    msg <- sprintf("`%s` must not be \"\" or NA.", arg)
     stop(msg, call. = FALSE)
   }
 }
 
 check_function <- function(f, args, arg = deparse(substitute(f))) {
   if (!is.function(f)) {
-    msg <- sprintf("`%s` must be a function", arg)
+    msg <- sprintf("`%s` must be a function.", arg)
     stop(msg, call. = FALSE)
   }
 
@@ -120,7 +124,7 @@ check_function <- function(f, args, arg = deparse(substitute(f))) {
 
   expected <- oxford_or(vapply(candidates, show_args, character(1)))
   msg <- sprintf(
-    "`%s` must be %s, not %s",
+    "`%s` must be %s, not %s.",
     arg,
     expected,
     show_args(formals(f))
@@ -157,7 +161,7 @@ modify_list <- function(x, new_vals) {
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
-      stop("all elements in `new_vals` must be named")
+      stop("All elements in `new_vals` must be named.", call. = FALSE)
     }
     if (is.null(x)) {
       x <- list()
@@ -186,7 +190,7 @@ list2DF <- function(x = list(), nrow = 0L) {
   stopifnot(is.list(x), is.null(nrow) || nrow >= 0L)
   if (n <- length(x)) {
     if (length(nrow <- unique(lengths(x))) > 1L) {
-      stop("all variables should have the same length")
+      stop("All variables should have the same length.", call. = FALSE)
     }
   } else {
     if (is.null(nrow)) {
