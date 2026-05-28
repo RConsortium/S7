@@ -67,11 +67,11 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   check_is_S7(object)
 
   parent <- if (!recursive) S7_class(object)@parent
-  validate_against(object, parent = parent, properties = properties)
+  validate_from(object, parent = parent, properties = properties)
 }
 
 # validates `object` assuming `parent` (if supplied) has been validated
-validate_against <- function(object, parent = NULL, properties = TRUE) {
+validate_from <- function(object, parent = NULL, properties = TRUE) {
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))
   }
