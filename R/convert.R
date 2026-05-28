@@ -126,32 +126,31 @@ is_down_cast <- function(x, class) {
 }
 
 convert_down <- function(from, to, ...) {
+  from_class <- S7_class(from)
+
+  if (!is_class(from_class)) {
+    # `from` is a base or S3 object; pass it as `.data` to the constructor
+    return(to(.data = from, ...))
+  }
+
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
+  from_props <- from_class@properties
+  from_props <- Filter(Negate(prop_is_read_only), from_props)
+  from_prop_names <- names(from_props)
 
-  from_class <- S7_class(from)
-  user_args <- list(...)
-
-  if (is_class(from_class)) {
-    from_props <- from_class@properties
-    from_props <- Filter(Negate(prop_is_read_only), from_props)
-    from_prop_names <- names(from_props)
-
-    # If `to` constructor has no `...`, only use properties that match its args
-    to_constructor_arg_names <- names(formals(to))
-    if (!"..." %in% to_constructor_arg_names) {
-      from_prop_names <- intersect(from_prop_names, to_constructor_arg_names)
-    }
-
-    # Drop properties overridden by user-supplied arguments
-    from_prop_names <- setdiff(from_prop_names, names(user_args))
-
-    from_prop_values <- props(from, from_prop_names)
-    constructor_args <- c(from_prop_values, user_args)
-  } else {
-    # `from` is a base or S3 object; pass it as `.data` to the constructor
-    constructor_args <- c(list(.data = from), user_args)
+  # If `to` constructor has no `...`, only use properties that match its args
+  to_constructor_arg_names <- names(formals(to))
+  if (!"..." %in% to_constructor_arg_names) {
+    from_prop_names <- intersect(from_prop_names, to_constructor_arg_names)
   }
+
+  # Drop properties overridden by user-supplied arguments
+  user_args <- list(...)
+  from_prop_names <- setdiff(from_prop_names, names(user_args))
+
+  from_prop_values <- props(from, from_prop_names)
+  constructor_args <- c(from_prop_values, user_args)
 
   do.call(to, constructor_args)
 }
