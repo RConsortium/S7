@@ -148,6 +148,46 @@ S4_class_name <- function(x) {
   }
 }
 
+S4_package_name <- function(f, env) {
+  if (methods::getPackageName(topenv(env)) == f@package) {
+    ## current ns might not be loaded yet, catch here
+    return(f@package)
+  }
+
+  name <- as.vector(f@generic)
+  generic_in_its_package <- methods::isGeneric(
+    name,
+    where = asNamespace(f@package)
+  )
+  if (generic_in_its_package) {
+    return(f@package)
+  }
+
+  # generic was defined for a function from a different package, like base
+  find_package_with_symbol(name, env, exclude = f@package) %||%
+    stop(
+      "Failed to find originating package for S4 generic '",
+      name,
+      "' in namespace imports.",
+      call. = FALSE
+    )
+}
+
+find_package_with_symbol <- function(name, env, exclude = NULL) {
+  imports <- getNamespaceImports(topenv(env))
+  pkgs <- setdiff(names(imports), exclude)
+  Find(
+    function(pkg) {
+      if (isTRUE(imports[[pkg]])) {
+        name %in% getNamespaceExports(pkg)
+      } else {
+        name %in% imports[[pkg]]
+      }
+    },
+    pkgs
+  )
+}
+
 S4_remove_classes <- function(classes, where = parent.frame()) {
   for (class in classes) {
     suppressWarnings(methods::removeClass(class, topenv(where)))
