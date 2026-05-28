@@ -135,6 +135,7 @@ convert_down <- function(from, to, ...) {
 
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
+
   from_props <- from_class@properties
   from_props <- Filter(Negate(prop_is_read_only), from_props)
   from_prop_names <- names(from_props)
