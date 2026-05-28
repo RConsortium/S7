@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* `new_external_class()` creates a delayed reference to an S7 class in another package (or your own package, but not yet defined). It is useful for registering methods on classes from suggested packages (#573) and for creating self-referential or mutually recursive classes (#250).
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).

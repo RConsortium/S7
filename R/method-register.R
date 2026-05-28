@@ -73,6 +73,14 @@ register_method <- function(
     generic <- as_generic(getFromNamespace(generic$name, generic$package))
   }
 
+  # Delay all external classes until onLoad
+  is_external <- any(vlapply(signature, is_external_class))
+  if (is_external) {
+    generic_ext <- as_external_generic(generic)
+    external_methods_add(package, generic_ext, signature, method)
+    return(invisible(generic))
+  }
+
   # Register in current session
   if (is_S7_generic(generic)) {
     check_method(method, generic, name = method_name(generic, signature))
