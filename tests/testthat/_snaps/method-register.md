@@ -16,7 +16,7 @@
 
 # method registration / can register S7 method for S4 generic
 
-    Class has not been registered with S4; please call S4_register(S4foo)
+    Class has not been registered with S4; please call S4_register(S4foo).
 
 # method registration / checks argument types
 
@@ -25,12 +25,17 @@
       method(x, class_character) <- (function(x) ...)
     Condition
       Error:
-      ! `generic` must be a function, not a <double>
+      ! `generic` must be a function, not a <double>.
     Code
       method(foo, 1) <- (function(x) ...)
     Condition
-      Error:
-      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Error in `as_class()`:
+      ! Can't convert `signature` to a valid class.
+      Class specification must be one of the following, not a <double>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
 
 # method unregistration / removes S7 method via NULL assignment
 
@@ -74,13 +79,18 @@
       Error:
       ! Can't unregister methods for S4 generics
 
-# as_signature() / forbids list for single dispatch
+# as_signature() / accepts a length-1 list for single dispatch (#555)
 
     Code
       as_signature(list(1), foo)
     Condition
-      Error:
-      ! Can't convert `signature` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <list>.
+      Error in `as_class()`:
+      ! Can't convert `signature` to a valid class.
+      Class specification must be one of the following, not a <double>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
 
 # as_signature() / requires a list of the correct length for multiple dispatch
 
@@ -88,12 +98,12 @@
       as_signature(class_character, foo)
     Condition
       Error:
-      ! `signature` must be a list for multidispatch generics
+      ! `signature` must be a list for multidispatch generics.
     Code
       as_signature(list(class_character), foo)
     Condition
       Error:
-      ! `signature` must be length 2
+      ! `signature` must be length 2.
 
 # check_method complains if the functions are not compatible
 
@@ -102,17 +112,17 @@
       check_method(1, foo)
     Condition
       Error:
-      ! foo(???) must be a function
+      ! foo(???) must be a function.
     Code
       check_method(function(y) { }, foo)
     Condition
       Error:
-      ! foo() dispatches on `x`, but foo(???) has arguments `y`
+      ! foo() dispatches on `x`, but foo(???) has arguments `y`.
     Code
       check_method(function(x = "foo") { }, foo)
     Condition
       Error:
-      ! In foo(???), dispatch arguments (`x`) must not have default values
+      ! In foo(???), dispatch arguments (`x`) must not have default values.
     Code
       check_method(function(x, y, ...) { }, foo)
 
@@ -126,6 +136,15 @@
       ! foo() generic lacks `...` so method formals must match generic formals exactly.
       - generic formals: foo(x)
       - method formals:  foo(x, y)
+
+# check_method rejects primitive functions
+
+    Code
+      foo <- new_generic("foo", "x")
+      check_method(log, foo)
+    Condition
+      Error:
+      ! foo(???) must be a function.
 
 # check_method warn if default arguments don't match
 

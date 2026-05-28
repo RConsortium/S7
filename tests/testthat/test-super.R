@@ -32,7 +32,34 @@ describe("super()", {
     expect_snapshot(error = TRUE, {
       foo <- new_class("foo", package = NULL)
       super(foo(), class_character)
+      super(foo(), class_numeric)
+      super(foo(), NULL)
     })
+  })
+
+  it("works with S3 objects", {
+    my_int <- structure(10L, class = c("MyInt", "integer"))
+
+    gen <- new_generic("gen", "x")
+    method(gen, new_S3_class("MyInt")) <- function(x) "MyInt"
+    method(gen, class_integer) <- function(x) "integer"
+
+    expect_equal(gen(my_int), "MyInt")
+    expect_equal(gen(super(my_int, to = class_integer)), "integer")
+  })
+
+  it("works with S4 objects", {
+    methods::setClass("Foo1", representation(x = "numeric"))
+    methods::setClass("Foo2", contains = "Foo1")
+    on.exit(S4_remove_classes(c("Foo1", "Foo2")))
+    obj <- methods::new("Foo2", x = 5)
+
+    gen <- new_generic("gen", "x")
+    method(gen, methods::getClass("Foo1")) <- function(x) "parent"
+    method(gen, methods::getClass("Foo2")) <- function(x) "child"
+
+    expect_equal(gen(obj), "child")
+    expect_equal(gen(super(obj, to = methods::getClass("Foo1"))), "parent")
   })
 
   it("displays nicely", {

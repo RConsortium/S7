@@ -35,10 +35,16 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to? If `NULL`, it defaults to the "empty" instance
-#'   of `class`. This can also be a quoted call, which then becomes a standard
-#'   function promise in the default constructor, evaluated at the time the
-#'   object is constructed.
+#'   what should it default to?
+#'
+#'   If `NULL`, it defaults to the "empty" instance of `class`. For base
+#'   vector types, this will be a zero length vector, e.g. `character()` for
+#'   `class_character()`. For S7 classes, this will be a call to the
+#'   constructor
+#'
+#'   This can also be a `quote()`d call, which then becomes a standard function
+#'   promise in the default constructor, evaluated when the object is
+#'   constructed.
 #' @param name Property name, primarily used for error messages. Generally
 #'   don't need to set this here, as it's more convenient to supply as
 #'   the element name when defining a list of properties. If both `name`
@@ -93,6 +99,7 @@ new_property <- function(
     check_function(validator, alist(value = ))
   }
 
+  # If you change this field order, update enum property_field in src/prop.c.
   out <- list(
     name = name,
     class = class,
@@ -119,11 +126,11 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   if (is.symbol(default)) {
     if (identical(default, quote(...))) {
       # The meaning of a `...` prop default needs discussion
-      stop(simpleError("`default` cannot be `...`", error_call))
+      stop(simpleError("`default` cannot be `...`.", error_call))
     }
     if (identical(default, quote(expr = ))) {
       # The meaning of a missing prop default needs discussion
-      stop(simpleError("`default` cannot be missing", error_call))
+      stop(simpleError("`default` cannot be missing.", error_call))
     }
 
     # other symbols are treated as promises
@@ -135,7 +142,7 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   }
 
   msg <- sprintf(
-    "`default` must be an instance of %s, not a %s",
+    "`default` must be an instance of %s, not a %s.",
     class_desc(class),
     obj_desc(default)
   )
@@ -197,37 +204,8 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-propr <- function(object, name) {
-  # reference implementation of `prop()` implemented in R
-  check_is_S7(object)
-
-  if (!prop_exists(object, name)) {
-    stop(prop_error_unknown(object, name), call. = FALSE)
-  } else {
-    prop_val(object, name)
-  }
-}
-
 signal_prop_error_unknown <- function(object, name) {
   stop(prop_error_unknown(object, name), call. = FALSE)
-}
-
-# Internal helper that assumes the property exists
-prop_val <- function(object, name) {
-  val <- attr(object, name, exact = TRUE)
-  if (is.null(val)) {
-    prop <- prop_obj(object, name)
-    if (!is.null(prop$getter)) {
-      val <- prop$getter(object)
-    }
-  }
-  val
-}
-
-# Get underlying property object from class
-prop_obj <- function(object, name) {
-  class <- S7_class(object)
-  attr(class, "properties")[[name]]
 }
 
 #' @rdname prop
@@ -237,51 +215,6 @@ prop_obj <- function(object, name) {
 `prop<-` <- function(object, name, check = TRUE, value) {
   .Call(prop_set_, object, name, check, value)
 }
-
-`propr<-` <- local({
-  # reference implementation of `prop<-()` implemented in R
-  # This flag is used to avoid infinite loops if you are assigning a property from a setter function
-  setter_property <- NULL
-
-  function(object, name, check = TRUE, value) {
-    check_is_S7(object)
-
-    prop <- prop_obj(object, name)
-    if (is.null(prop)) {
-      stop(prop_error_unknown(object, name), call. = FALSE)
-    }
-
-    if (!is.null(prop$getter) && is.null(prop$setter)) {
-      msg <- sprintf(
-        "Can't set read-only property %s@%s",
-        obj_desc(object),
-        name
-      )
-      stop(msg, call. = FALSE)
-    }
-
-    if (!is.null(prop$setter) && !identical(setter_property, name)) {
-      setter_property <<- name
-      on.exit(setter_property <<- NULL, add = TRUE)
-      object <- prop$setter(object, value)
-    } else {
-      if (isTRUE(check)) {
-        error <- prop_validate(prop, value, object)
-        if (!is.null(error)) {
-          stop(error, call. = FALSE)
-        }
-      }
-
-      attr(object, name) <- value
-    }
-
-    if (isTRUE(check) && is.null(setter_property)) {
-      validate(object, properties = FALSE)
-    }
-
-    invisible(object)
-  }
-})
 
 # called from src/prop.c
 signal_prop_error <- function(fmt, object, name) {
@@ -296,7 +229,7 @@ signal_error <- function(msg) {
 
 
 prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s", obj_desc(object), prop_name)
+  sprintf("Can't find property %s@%s.", obj_desc(object), prop_name)
 }
 
 
@@ -356,20 +289,47 @@ prop_label <- function(object, name) {
 
 #' Property introspection
 #'
-#' - `prop_names(x)` returns the names of the properties
-#' - `prop_exists(x, "prop")` returns `TRUE` iif `x` has property `prop`.
+#' @description
 #'
-#' @inheritParams prop
-#' @returns `prop_names()` returns a character vector; `prop_exists()` returns
-#'   a single `TRUE` or `FALSE`.
+#' - `prop_names(x)` returns the names of the properties
+#' - `prop_exists(x, "prop")` returns `TRUE` and if only `x` has property
+#'   `prop`.
+#' - `prop_info()` returns a data frame describing the properties of an S7
+#'   object or class, with one row per property.
+#'
+#' @param object Either an S7 object (an instance) or an S7 class.
+#' @returns
+#' * `prop_names()` returns a character vector
+#' * `prop_exists()` returns a single `TRUE` or `FALSE`.
+#' * `prop_info()` returns a  data frame with one row per property and the
+#'   following columns:
+#'   * `name`: a character vector of property names.
+#'   * `default`: a list column of property defaults.
+#'   * `class`: a character description of the class.
+#'   * `getter`, `setter`, `validator`: logical vectors indicating whether
+#'     the property has a getter, setter, or validator.
 #' @export
 #' @examples
-#' Foo <- new_class("Foo", properties = list(a = class_character, b = class_integer))
-#' f <- Foo()
+#' Horse <- new_class("Horse", properties = list(
+#'   name = class_character,
+#'   colour = class_character,
+#'   height = new_property(class_numeric, default = 15),
+#'   age = new_property(
+#'     class_numeric,
+#'     validator = function(value) if (value < 0) "must be positive"
+#'   ),
+#'   now = new_property(getter = function(self) Sys.time())
+#' ))
 #'
-#' prop_names(f)
-#' prop_exists(f, "a")
-#' prop_exists(f, "c")
+#' prop_names(Horse)
+#' prop_exists(Horse, "col")
+#' prop_exists(Horse, "colour")
+#' prop_info(Horse)
+#'
+#' # All functions also work with objects, not just classes
+#' lex <- Horse(colour = "bay", height = 15, name = "Lex", age = 3)
+#' prop_names(lex)
+#' prop_exists(lex, "age")
 prop_names <- function(object) {
   check_is_S7(object)
 
@@ -403,10 +363,33 @@ prop_names <- function(object) {
 }
 
 #' @rdname prop_names
+#' @param name A string giving the property of interest.
 #' @export
 prop_exists <- function(object, name) {
   check_is_S7(object)
   name %in% prop_names(object)
+}
+
+#' @rdname prop_names
+#' @export
+prop_info <- function(object) {
+  check_is_S7(object)
+
+  if (inherits(object, "S7_class")) {
+    props <- attr(object, "properties", exact = TRUE)
+  } else {
+    props <- attr(S7_class(object), "properties", exact = TRUE)
+  }
+
+  data.frame(
+    name = vcapply(props, function(p) p$name),
+    default = I(unname(lapply(props, function(p) p$default))),
+    class = vcapply(props, function(p) class_desc(p$class)),
+    getter = vlapply(props, function(p) !is.null(p$getter)),
+    setter = vlapply(props, function(p) !is.null(p$setter)),
+    validator = vlapply(props, function(p) !is.null(p$validator)),
+    row.names = NULL
+  )
 }
 
 #' Get/set multiple properties
@@ -479,14 +462,14 @@ as_properties <- function(x) {
   }
 
   if (!is.list(x)) {
-    stop("`properties` must be a list", call. = FALSE)
+    stop("`properties` must be a list.", call. = FALSE)
   }
 
   out <- Map(as_property, x, names2(x), seq_along(x))
   names(out) <- vapply(out, function(x) x$name, FUN.VALUE = character(1))
 
   if (anyDuplicated(names(out))) {
-    stop("`properties` names must be unique", call. = FALSE)
+    stop("`properties` names must be unique.", call. = FALSE)
   }
 
   out

@@ -1,4 +1,5 @@
 #include "compat.h"
+#include <string.h>
 
 extern SEXP sym_S7_class;
 
@@ -12,11 +13,13 @@ extern SEXP sym_validator;
 
 extern SEXP ns_S7;
 
-extern SEXP sym_dot_should_validate;
 extern SEXP sym_dot_getting_prop;
 extern SEXP sym_dot_setting_prop;
 
 extern SEXP fn_base_quote;
+
+extern SEXP R_TRUE;
+extern SEXP R_FALSE;
 
 static inline
 SEXP eval_here(SEXP lang) {
@@ -30,53 +33,8 @@ static inline
 SEXP ns_get(const char* name) {
   SEXP val = s7_get_var_in_frame(ns_S7, Rf_install(name), NULL);
   if (val == NULL)
-    Rf_error("Can't find `%s` in the S7 namespace", name);
+    Rf_error("Can't find `%s` in the S7 namespace.", name);
   return val;
-}
-
-static inline
-SEXP do_call1(SEXP fn, SEXP arg) {
-  SEXP call, answer;
-  switch (TYPEOF(arg)) {
-  case LANGSXP:
-  case SYMSXP:
-    arg = PROTECT(Rf_lang2(fn_base_quote, arg));
-    call = PROTECT(Rf_lang2(fn, arg));
-    answer = Rf_eval(call, ns_S7);
-    UNPROTECT(2);
-    return answer;
-  default:
-    call = PROTECT(Rf_lang2(fn, arg));
-    answer = Rf_eval(call, ns_S7);
-    UNPROTECT(1);
-    return answer;
-  }
-}
-
-static inline SEXP do_call2(SEXP fn, SEXP arg1, SEXP arg2) {
-  int n_protected = 0;
-  // Protect the arguments from evaluation if they are SYMSXP or LANGSXP
-  switch (TYPEOF(arg1)) {
-  case LANGSXP:
-  case SYMSXP:
-    arg1 = PROTECT(Rf_lang2(fn_base_quote, arg1));
-    ++n_protected;
-  }
-
-  switch (TYPEOF(arg2)) {
-  case LANGSXP:
-  case SYMSXP:
-    arg2 = PROTECT(Rf_lang2(fn_base_quote, arg2));
-    ++n_protected;
-  }
-
-  SEXP call = PROTECT(Rf_lang3(fn, arg1, arg2));
-  ++n_protected;
-
-  SEXP result = Rf_eval(call, ns_S7);
-
-  UNPROTECT(n_protected);
-  return result;
 }
 
 static __attribute__((noreturn))
@@ -97,13 +55,15 @@ void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
   if (signal_prop_error == NULL)
     signal_prop_error = ns_get("signal_prop_error");
 
-  eval_here(Rf_lang4(signal_prop_error, Rf_mkString(fmt), object, name));
+  SEXP fmt_string = PROTECT(Rf_mkString(fmt));
+  eval_here(Rf_lang4(signal_prop_error, fmt_string, object, name));
+  UNPROTECT(1);
   while(1);
 }
 
 static __attribute__((noreturn))
 void signal_prop_error_unknown(SEXP object, SEXP name) {
-  signal_prop_error("Can't find property %s@%s", object, name);
+  signal_prop_error("Can't find property %s@%s.", object, name);
 }
 
 static __attribute__((noreturn))
@@ -122,12 +82,14 @@ void signal_error(SEXP errmsg) {
 }
 
 static inline
-int name_idx(SEXP list, const char* name) {
+int name_idx(SEXP list, SEXP name_rchar) {
   SEXP names = Rf_getAttrib(list, R_NamesSymbol);
+  const char* name = CHAR(name_rchar);
 
   if (TYPEOF(names) == STRSXP) {
     for (int i = 0, n = Rf_length(names); i < n; i++) {
-      if (strcmp(CHAR(STRING_ELT(names, i)), name) == 0)
+      SEXP elt = STRING_ELT(names, i);
+      if (elt == name_rchar || strcmp(CHAR(elt), name) == 0)
         return i;
     }
   }
@@ -135,8 +97,8 @@ int name_idx(SEXP list, const char* name) {
 }
 
 static inline
-SEXP extract_name(SEXP list, const char* name) {
-  int i = name_idx(list, name);
+SEXP extract_name(SEXP list, SEXP name_rchar) {
+  int i = name_idx(list, name_rchar);
   return i == -1 ? R_NilValue : VECTOR_ELT(list, i);
 }
 
@@ -182,22 +144,11 @@ Rboolean pairlist_contains(SEXP list, SEXP elem) {
 }
 
 static inline
-SEXP pairlist_remove(SEXP list, SEXP elem) {
-  SEXP c0 = NULL, head = list;
-  for (SEXP c = list; c != R_NilValue; c0 = c, c = CDR(c))
-    if (CAR(c) == elem)
-    {
-      if (c0 == NULL)
-        return CDR(c);
-      else
-      {
-        SETCDR(c0, CDR(c));
-        return head;
-      }
-    }
-
-  Rf_error("Tried to remove non-existent element from pairlist");
-  return R_NilValue;
+void accessor_no_recurse_push(SEXP object, SEXP marker_sym, SEXP name_sym,
+                              SEXP no_recurse_pairlist) {
+  SEXP new_pairlist = PROTECT(Rf_cons(name_sym, no_recurse_pairlist));
+  Rf_setAttrib(object, marker_sym, new_pairlist);
+  UNPROTECT(1);
 }
 
 static inline
@@ -205,43 +156,198 @@ Rboolean setter_callable_no_recurse(SEXP setter, SEXP object, SEXP name_sym,
                                     Rboolean* should_validate_obj) {
   // Check if we should call `setter` and if so, prepare `setter` for calling.
 
-    SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_setting_prop);
-    if (TYPEOF(no_recurse_list) == LISTSXP) {
-      // if there is a 'no_recurse' list, then this is not the top-most prop<-
-      // call for this object, i.e, we're currently evaluating a `prop<-` call
-      // called from within a custom property setter. We should only call
-      // validate(object) once from the top-most prop<- call, after the last
-      // custom setter() has returned.
-      *should_validate_obj = FALSE;
-      if (pairlist_contains(no_recurse_list, name_sym))
-        return FALSE;
-    }
+  SEXP marker_sym = sym_dot_setting_prop;
+  SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
+  if (TYPEOF(no_recurse_pairlist) == LISTSXP) {
+    // if there is a 'no_recurse' list, then this is not the top-most prop<-
+    // call for this object, i.e, we're currently evaluating a `prop<-` call
+    // called from within a custom property setter. We should only call
+    // validate(object) once from the top-most prop<- call, after the last
+    // custom setter() has returned.
+    *should_validate_obj = FALSE;
+    if (pairlist_contains(no_recurse_pairlist, name_sym))
+      return FALSE;
+  }
 
-    if (TYPEOF(setter) != CLOSXP)
-      return FALSE; // setter not callable
+  if (TYPEOF(setter) != CLOSXP)
+    return FALSE; // setter not callable
 
-    Rf_setAttrib(object, sym_dot_setting_prop,
-                 Rf_cons(name_sym, no_recurse_list));
-    return TRUE; // object is now now marked non-recursive for this property setter, safe to call
-
-  // optimization opportunity: combine the actions of getAttrib()/setAttrib()
-  // into one loop, so we can avoid iterating over ATTRIB(object) twice.
+  accessor_no_recurse_push(
+      object, marker_sym, name_sym,
+      no_recurse_pairlist);
+  return TRUE; // object is now now marked non-recursive for this property setter, safe to call
 }
 
 static inline
-void accessor_no_recurse_clear(SEXP object, SEXP name_sym, SEXP no_recurse_list_sym) {
-  SEXP list = Rf_getAttrib(object, no_recurse_list_sym);
-  list = pairlist_remove(list, name_sym);
-  Rf_setAttrib(object, no_recurse_list_sym, list);
+void accessor_no_recurse_clear_if_present(SEXP object, SEXP name_sym,
+                                          SEXP marker_sym) {
+  SEXP list = Rf_getAttrib(object, marker_sym);
+  if (TYPEOF(list) != LISTSXP)
+    return;
 
-  // optimization opportunity: same as setter_callable_no_recurse
+  SEXP prev = R_NilValue;
+  for (SEXP node = list; node != R_NilValue; prev = node, node = CDR(node)) {
+    if (CAR(node) != name_sym)
+      continue;
+
+    SEXP rest = CDR(node);
+    if (prev == R_NilValue)
+      Rf_setAttrib(object, marker_sym, rest);
+    else
+      SETCDR(prev, rest);
+
+    return;
+  }
 }
 
-#define getter_no_recurse_clear(...) \
-    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_getting_prop)
+static SEXP prop_call_env = NULL;
 
-#define setter_no_recurse_clear(...) \
-    accessor_no_recurse_clear(__VA_ARGS__, sym_dot_setting_prop)
+void prop_init(void) {
+  if (prop_call_env != NULL)
+    Rf_error("Internal error: property call environment is already initialized");
+
+  SEXP call = PROTECT(Rf_lang3(Rf_install("new.env"), R_FALSE, ns_S7));
+  prop_call_env = Rf_eval(call, R_BaseEnv);
+  R_PreserveObject(prop_call_env);
+  UNPROTECT(1);
+}
+
+static SEXP prop_call_symbol(SEXP S7_class, SEXP name) {
+  SEXP class_name = Rf_getAttrib(S7_class, sym_name);
+  if (TYPEOF(class_name) != STRSXP || Rf_length(class_name) != 1)
+    Rf_error("Internal error: S7 class name must be a string");
+
+  SEXP class_name_rchar = STRING_ELT(class_name, 0);
+  SEXP name_rchar = STRING_ELT(name, 0);
+  const char* class_name_char = CHAR(class_name_rchar);
+  const char* name_char = CHAR(name_rchar);
+
+  int class_name_len = LENGTH(class_name_rchar);
+  int name_len = LENGTH(name_rchar);
+  int call_name_len = class_name_len + name_len + 3;
+  char* call_name = R_alloc(call_name_len + 1, sizeof(char));
+
+  call_name[0] = '<';
+  memcpy(call_name + 1, class_name_char, class_name_len);
+  call_name[class_name_len + 1] = '>';
+  call_name[class_name_len + 2] = '@';
+  memcpy(call_name + class_name_len + 3, name_char, name_len + 1);
+
+  SEXP call_name_rchar = PROTECT(
+      Rf_mkCharLenCE(call_name, call_name_len, CE_NATIVE));
+  SEXP call_sym = Rf_installTrChar(call_name_rchar);
+  UNPROTECT(1);
+
+  return call_sym;
+}
+
+struct prop_call_data {
+  SEXP call;
+  SEXP fn_sym;
+  SEXP object;
+  SEXP property_sym;
+  SEXP marker_sym;
+};
+
+static SEXP prop_call_eval(void* data) {
+  struct prop_call_data* call_data = (struct prop_call_data*) data;
+  return Rf_eval(call_data->call, prop_call_env);
+}
+
+static void prop_call_cleanup(void* data, Rboolean jump) {
+  struct prop_call_data* call_data = (struct prop_call_data*) data;
+
+  s7_clear_var_in_frame(prop_call_env, call_data->fn_sym);
+  if (jump)
+    accessor_no_recurse_clear_if_present(
+        call_data->object, call_data->property_sym, call_data->marker_sym);
+}
+
+static inline
+SEXP protect_quote_if_needed(SEXP object, int* n_protected) {
+  switch (TYPEOF(object)) {
+  case LANGSXP:
+  case SYMSXP:
+    ++*n_protected;
+    return PROTECT(Rf_lang2(fn_base_quote, object));
+  default:
+    return object;
+  }
+}
+
+static inline
+SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
+                    SEXP name_sym) {
+  int n_protected = 0;
+  SEXP fn_sym = prop_call_symbol(S7_class, name);
+
+  Rf_defineVar(fn_sym, getter, prop_call_env);
+
+  struct prop_call_data call_data = {
+    R_NilValue,  // call
+    fn_sym,      // fn_sym
+    object,      // object
+    name_sym,    // property_sym
+    sym_dot_getting_prop  // marker_sym
+  };
+
+  object = protect_quote_if_needed(object, &n_protected);
+
+  SEXP call = PROTECT(Rf_lang2(fn_sym, object));
+  ++n_protected;
+  call_data.call = call;
+
+  SEXP result = R_UnwindProtect(
+      prop_call_eval, &call_data,
+      prop_call_cleanup, &call_data,
+      NULL);
+  // Error cleanup happens in prop_call_cleanup().
+  accessor_no_recurse_clear_if_present(
+      call_data.object, call_data.property_sym, call_data.marker_sym);
+
+  UNPROTECT(n_protected);
+  return result;
+}
+
+static inline
+SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
+                    SEXP name_sym, SEXP value) {
+  int n_protected = 0;
+  SEXP fn_sym = prop_call_symbol(S7_class, name);
+
+  Rf_defineVar(fn_sym, setter, prop_call_env);
+
+  struct prop_call_data call_data = {
+    R_NilValue,  // call
+    fn_sym,      // fn_sym
+    object,      // object
+    name_sym,    // property_sym
+    sym_dot_setting_prop  // marker_sym
+  };
+
+  object = protect_quote_if_needed(object, &n_protected);
+  value = protect_quote_if_needed(value, &n_protected);
+
+  SEXP call = PROTECT(Rf_lang3(fn_sym, object, value));
+  ++n_protected;
+  call_data.call = call;
+
+  SEXP result = R_UnwindProtect(
+      prop_call_eval, &call_data,
+      prop_call_cleanup, &call_data,
+      NULL);
+  // User code can capture the marked entry object, and a successful setter can
+  // return a shallow duplicate carrying the marker.
+  // Error cleanup happens in prop_call_cleanup().
+  accessor_no_recurse_clear_if_present(
+      call_data.object, call_data.property_sym, call_data.marker_sym);
+  if (result != call_data.object)
+    accessor_no_recurse_clear_if_present(
+      result, call_data.property_sym, call_data.marker_sym);
+
+  UNPROTECT(n_protected);
+  return result;
+}
 
 static inline
 void prop_validate(SEXP property, SEXP value, SEXP object) {
@@ -260,62 +366,63 @@ void obj_validate(SEXP object) {
   if (validate == NULL)
     validate = ns_get("validate");
 
-  switch (TYPEOF(object)) {
-  case LANGSXP:
-  case SYMSXP: {
-    // Wrap the call or symbol in quote(), so it doesn't evaluate in Rf_eval()
-    object = PROTECT(Rf_lang2(fn_base_quote, object));
-    eval_here(Rf_lang4(validate, object,
-                       /* recursive = */ Rf_ScalarLogical(TRUE),
-                       /* properties = */ Rf_ScalarLogical(FALSE)));
-    UNPROTECT(1); // object
-    return;
-  }
-
-  default:
-    eval_here(Rf_lang4(
-        validate, object,
-        /* recursive = */ Rf_ScalarLogical(TRUE),
-        /* properties = */ Rf_ScalarLogical(FALSE)));
-  }
+  int n_protected = 0;
+  // Wrap the call or symbol in quote(), so it doesn't evaluate in Rf_eval().
+  object = protect_quote_if_needed(object, &n_protected);
+  eval_here(Rf_lang4(
+      validate, object,
+      /* recursive = */ R_TRUE,
+      /* properties = */ R_FALSE));
+  UNPROTECT(n_protected);
 }
 
 static inline
 Rboolean getter_callable_no_recurse(SEXP getter, SEXP object, SEXP name_sym) {
   // Check if we should call getter and if so, prepare object for calling the getter.
 
-  SEXP no_recurse_list = Rf_getAttrib(object, sym_dot_getting_prop);
-  if (TYPEOF(no_recurse_list) == LISTSXP &&
-      pairlist_contains(no_recurse_list, name_sym))
+  SEXP marker_sym = sym_dot_getting_prop;
+  SEXP no_recurse_pairlist = Rf_getAttrib(object, marker_sym);
+  if (TYPEOF(no_recurse_pairlist) == LISTSXP &&
+      pairlist_contains(no_recurse_pairlist, name_sym))
     return FALSE;
 
-  Rf_setAttrib(object, sym_dot_getting_prop,
-               Rf_cons(name_sym, no_recurse_list));
+  accessor_no_recurse_push(
+      object, marker_sym, name_sym,
+      no_recurse_pairlist);
   return TRUE; // object is now now marked non-recursive for this property accessor, safe to call
-
-  // optimization opportunity: combine the actions of getAttrib()/setAttrib()
-  // into one loop, so we can avoid iterating over ATTRIB(object) twice.
 }
 
+enum property_field {
+  PROPERTY_NAME = 0,
+  PROPERTY_CLASS = 1,
+  PROPERTY_GETTER = 2,
+  PROPERTY_SETTER = 3,
+  PROPERTY_VALIDATOR = 4,
+  PROPERTY_DEFAULT = 5
+};
+
+static inline
+SEXP property_get_field(SEXP property, enum property_field field) {
+  return property == R_NilValue ? R_NilValue : VECTOR_ELT(property, field);
+}
 
 SEXP prop_(SEXP object, SEXP name) {
   check_is_S7(object);
 
   SEXP name_rchar = STRING_ELT(name, 0);
-  const char* name_char = CHAR(name_rchar);
   SEXP name_sym = Rf_installTrChar(name_rchar);
 
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
 
   // try getter() if appropriate
-  SEXP property = extract_name(properties, name_char);
-  SEXP getter = extract_name(property, "getter");
+  SEXP property = extract_name(properties, name_rchar);
+  SEXP getter = property_get_field(property, PROPERTY_GETTER);
   if (TYPEOF(getter) == CLOSXP &&
       getter_callable_no_recurse(getter, object, name_sym)) {
 
-    SEXP value = PROTECT(do_call1(getter, object));
-    getter_no_recurse_clear(object, name_sym);
+    SEXP value = PROTECT(
+        do_getter_call(getter, S7_class, name, object, name_sym));
     UNPROTECT(1); // value
     return value;
   }
@@ -327,7 +434,7 @@ SEXP prop_(SEXP object, SEXP name) {
   // a prop with a value of NULL, and a prop value that is unset/missing.
   // // fall back to fetching the default property value from the object class
   // if (value == R_NilValue)
-  //   value = extract_name(property, "default");
+  //   value = property_get_field(property, PROPERTY_DEFAULT);
 
   // validate that we're accessing a valid property
   if (property != R_NilValue)
@@ -354,7 +461,6 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   check_is_S7(object);
 
   SEXP name_rchar = STRING_ELT(name, 0);
-  const char *name_char = CHAR(name_rchar);
   SEXP name_sym = Rf_installTrChar(name_rchar);
 
   Rboolean check = Rf_asLogical(check_sexp);
@@ -363,16 +469,16 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
-  SEXP property = extract_name(properties, name_char);
+  SEXP property = extract_name(properties, name_rchar);
 
   if (property == R_NilValue)
     signal_prop_error_unknown(object, name);
 
-  SEXP setter = extract_name(property, "setter");
-  SEXP getter = extract_name(property, "getter");
+  SEXP setter = property_get_field(property, PROPERTY_SETTER);
+  SEXP getter = property_get_field(property, PROPERTY_GETTER);
 
   if (getter != R_NilValue && setter == R_NilValue)
-    signal_prop_error("Can't set read-only property %s@%s", object, name);
+    signal_prop_error("Can't set read-only property %s@%s.", object, name);
 
   PROTECT_INDEX object_pi;
   // maybe use R_shallow_duplicate_attr() here instead
@@ -382,8 +488,15 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter()
-    REPROTECT(object = do_call2(setter, object, value), object_pi);
-    setter_no_recurse_clear(object, name_sym);
+    REPROTECT(
+        object = do_setter_call(
+            setter,
+            S7_class,
+            name,
+            object,
+            name_sym,
+            value),
+        object_pi);
   } else {
     // don't use setter()
     if (should_validate_prop)

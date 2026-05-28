@@ -3,7 +3,25 @@
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
-* `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604)
+* Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
+* `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
+* `method<-` now gives a clear error when assigning a primitive function (e.g. `log`) as a method (#608).
+* `method<-` and `method()` now accept a length-1 list as `signature` for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (#555).
+* `new_object()` now gives an informative error when `.parent` is a class specification rather than an instance of the parent class (#409).
+* `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
+* Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
+* `super()` now works with S3 and S4 objects, not just S7 objects (#500).
+* `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
+* `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
+* New `prop_info()` returns a data frame summarising the properties of an S7 object or class, with one row per property and columns for name, default, class, getter, setter, and validator (#551).
+* `prop()` and `prop<-()` errors from custom getters and setters now report a synthetic `<Class>@<prop>` call, making it easier to see which property triggered the error (#536, #627, #638).
+* `prop()` no longer leaves an object in a broken state when a custom getter signals an error (#520, #640, #638).
+* `prop<-()` no longer fails when assigning a call or symbol to a property (#511, #633, #638).
+* `S7_class()` now returns a class specification for any R object, not just S7 objects. It returns the matching `class_*` for base types, a `new_S3_class()` wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to `method()` or other S7 dispatch helpers (#559).
+* `S7_class_desc()` is a new exported helper that formats a class specification as a short human-readable string (#594).
+* `S7_data()` now preserves the S3 class when the S7 class inherits from an S3 class, so e.g. `S7_data()` on a data.frame subclass now returns a data.frame (#380).
+* `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
+* `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 
 # S7 0.2.2
 
