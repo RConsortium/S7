@@ -113,7 +113,9 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_name`
 #' * `class_call`
 #' * `class_function`
-#' * `class_environment`
+#'
+#' See also [class_environment] which is documented separately due to the
+#' complexities introduced by their reference semantics.
 #'
 #' We also include three union types to model numerics, atomics, and vectors
 #' respectively:
@@ -201,10 +203,36 @@ class_call <- new_base_class("call")
 #' @order 1
 class_function <- new_base_class("function", "fun")
 
+#' Use an environment as the base type of an S7 class
+#'
+#' @description
+#' \ifelse{html}{
+#' {\figure{lifecycle-experimental.svg}{options: alt='\[Experimental\]'}}}{\strong{\[Experimental\]
+#' }}
+#'
+#' `class_environment` is the [base][base_classes] wrapper for environments.
+#' Unlike all other R objects, environments have reference semantics, i.e. they
+#' are modified in place. It's not clear what all the implications are for S7,
+#' so we are marking this as experimental, and currently subject to the
+#' following caveats:
+#'
+#' * [S7_data()] and `S7_data<-()` error, because swapping the underlying data
+#'   would destroy the existing attributes.
+#'
+#' * The default [convert()] method errors when upcasting to an environment
+#'   because stripping the subclass's properties would mutate `from` in place.
+#'
 #' @export
-#' @rdname base_classes
-#' @format NULL
-#' @order 1
+#' @examples
+#' Counter <- new_class("Counter", class_environment)
+#' counter <- Counter()
+#' counter$n <- 0L
+#'
+#' # Reference semantics: `copy` and `counter` are the same object, so
+#' # mutating one is visible through the other.
+#' copy <- counter
+#' copy$n <- 10L
+#' counter$n
 class_environment <- new_base_class("environment")
 
 #' @export

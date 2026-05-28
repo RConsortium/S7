@@ -13,7 +13,6 @@
 \alias{class_name}
 \alias{class_call}
 \alias{class_function}
-\alias{class_environment}
 \alias{class_numeric}
 \alias{class_atomic}
 \alias{class_vector}
@@ -42,8 +41,6 @@ class_call
 
 class_function
 
-class_environment
-
 class_numeric
 
 class_atomic
@@ -70,8 +67,10 @@ within S7:
 \item \code{class_name}
 \item \code{class_call}
 \item \code{class_function}
-\item \code{class_environment}
 }
+
+See also \link{class_environment} which is documented separately due to the
+complexities introduced by their reference semantics.
 
 We also include three union types to model numerics, atomics, and vectors
 respectively:
