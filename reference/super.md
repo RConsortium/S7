@@ -65,13 +65,14 @@ super(from, to)
 
 - from:
 
-  An S7 object to cast.
+  An object to cast. Usually an S7 object, but `super()` also works with
+  S3 and S4 objects, as long as their dispatch chain includes `to`.
 
 - to:
 
-  An S7 class specification, passed to
+  A class specification, passed to
   [`as_class()`](https://rconsortium.github.io/S7/reference/as_class.md).
-  Must be a superclass of `object`.
+  Must be a superclass of `from`.
 
 ## Value
 

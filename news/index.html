@@ -64,6 +64,11 @@
 <li>
 <code><a href="../reference/new_class.html">new_object()</a></code> now gives an informative error when <code>.parent</code> is a class specification rather than an instance of the parent class (<a href="https://github.com/RConsortium/S7/issues/409" class="external-link">#409</a>).</li>
 <li>
+<code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
+<li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
+<li>
+<code><a href="../reference/super.html">super()</a></code> now works with S3 and S4 objects, not just S7 objects (<a href="https://github.com/RConsortium/S7/issues/500" class="external-link">#500</a>).</li>
+<li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer materialises ALTREP parent values (e.g. <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (<a href="https://github.com/kschaubroeck" class="external-link">@kschaubroeck</a>, <a href="https://github.com/RConsortium/S7/issues/607" class="external-link">#607</a>).</li>
 <li>
 <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> objects now work with <code><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits()</a></code> (and other functions that use <code><a href="https://rdrr.io/r/base/class.html" class="external-link">nameOfClass()</a></code>) in R 4.3 and later (<a href="https://github.com/lawremi" class="external-link">@lawremi</a>, <a href="https://github.com/RConsortium/S7/issues/521" class="external-link">#521</a>).</li>

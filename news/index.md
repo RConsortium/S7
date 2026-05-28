@@ -25,6 +25,18 @@
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
+- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  and
+  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  now accept any class specification (S7 class, S7 union, S3 class, S4
+  class, or base type wrapper like `class_integer`), not just S7 classes
+  ([\#556](https://github.com/RConsortium/S7/issues/556)).
+- Method dispatch on `class_missing` now correctly handles missing
+  arguments forwarded through a wrapper functions
+  ([\#595](https://github.com/RConsortium/S7/issues/595)).
+- [`super()`](https://rconsortium.github.io/S7/reference/super.md) now
+  works with S3 and S4 objects, not just S7 objects
+  ([\#500](https://github.com/RConsortium/S7/issues/500)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   no longer materialises ALTREP parent values
   (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing

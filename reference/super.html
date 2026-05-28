@@ -213,12 +213,14 @@ the underlying base object:</p>
 
 
 <dl><dt id="arg-from">from<a class="anchor" aria-label="anchor" href="#arg-from"></a></dt>
-<dd><p>An S7 object to cast.</p></dd>
+<dd><p>An object to cast. Usually an S7 object, but <code>super()</code> also
+works with S3 and S4 objects, as long as their dispatch chain includes
+<code>to</code>.</p></dd>
 
 
 <dt id="arg-to">to<a class="anchor" aria-label="anchor" href="#arg-to"></a></dt>
-<dd><p>An S7 class specification, passed to <code><a href="as_class.html">as_class()</a></code>. Must be a
-superclass of <code>object</code>.</p></dd>
+<dd><p>A class specification, passed to <code><a href="as_class.html">as_class()</a></code>. Must be a
+superclass of <code>from</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
