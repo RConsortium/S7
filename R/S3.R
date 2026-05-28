@@ -124,6 +124,12 @@ str.S7_S3_class <- function(object, ..., nest.lev = 0) {
   print(object, ..., nest.lev = nest.lev)
 }
 
+#' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass,S7_S3_class)
+#' @exportS3Method NULL
+nameOfClass.S7_S3_class <- function(x) {
+  x[["class"]]
+}
+
 check_S3_constructor <- function(constructor) {
   arg_names <- names(formals(constructor))
   if (arg_names[[1]] != ".data") {
