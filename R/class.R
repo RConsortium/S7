@@ -250,10 +250,6 @@ check_can_inherit <- function(x, arg = deparse(substitute(x))) {
     )
     stop(msg, call. = FALSE)
   }
-
-  if (is_base_class(x) && x$class == "environment") {
-    stop("Can't inherit from an environment.", call. = FALSE)
-  }
 }
 
 is_class <- function(x) inherits(x, "S7_class")
@@ -349,7 +345,10 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
-  if (!is_S7_type(object)) {
+  if (is.environment(object)) {
+    # Can't use S7_data() with environments
+    cat(" ", format.default(object), "\n", sep = "")
+  } else if (!is_S7_type(object)) {
     if (!typeof(object) %in% c("numeric", "integer", "character", "double")) {
       cat(" ")
     }

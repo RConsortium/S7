@@ -98,6 +98,8 @@ convert <- function(from, to, ...) {
 }
 
 convert_up <- function(from, to) {
+  check_not_environment(from, "convert()")
+
   from_class <- S7_class(from)
   if (is.null(from_class)) {
     from_props <- character()
