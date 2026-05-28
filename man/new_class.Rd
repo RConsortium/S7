@@ -76,10 +76,9 @@ suppress validation when needed.}
 \item{.parent, ...}{Parent object and named properties used to construct the
 object.
 
-As a convenience, if \code{...} is a single unnamed argument that is a
-named list, the elements of the list are used as the properties. This
-makes it easy to programmatically construct an object from a list of
-property values.}
+As a convenience, if \code{...} is a single unnamed list, then the elements of
+that list are used as the properties. This makes it easy to
+programmatically construct an object from a list of property values.}
 }
 \value{
 A object constructor, a function that can be used to create objects

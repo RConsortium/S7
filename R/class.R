@@ -288,10 +288,9 @@ check_parent <- function(parent, class) {
 #' @param .parent,... Parent object and named properties used to construct the
 #'   object.
 #'
-#'   As a convenience, if `...` is a single unnamed argument that is a
-#'   named list, the elements of the list are used as the properties. This
-#'   makes it easy to programmatically construct an object from a list of
-#'   property values.
+#'   As a convenience, if `...` is a single unnamed list, then the elements of
+#'   that list are used as the properties. This makes it easy to
+#'   programmatically construct an object from a list of property values.
 #' @rdname new_class
 #' @export
 new_object <- function(.parent, ...) {
