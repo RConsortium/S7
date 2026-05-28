@@ -101,6 +101,7 @@ methods_register <- function() {
   for (x in tbl) {
     deps <- method_deps(x$generic, x$signature)
     register <- registrar(deps, x$generic, x$signature, x$method, ns)
+
     register()
     for (pkg in unique(vcapply(deps, \(dep) dep$package))) {
       setHook(packageEvent(pkg, "onLoad"), register)
@@ -130,21 +131,30 @@ registrar <- function(deps, generic, signature, method, env) {
       return(invisible())
     }
 
-    ns <- asNamespace(generic$package)
-    if (!exists(generic$name, envir = ns, inherits = FALSE)) {
-      msg <- sprintf(
-        "[S7] Failed to find generic %s() in package %s",
-        generic$name,
-        generic$package
-      )
-      warning(msg, call. = FALSE)
+    generic_fun <- resolve_generic(generic)
+    if (is.null(generic_fun)) {
       return(invisible())
     }
 
-    generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
     signature <- resolve_signature(signature)
     register_method(generic_fun, signature, method, env, package = NULL)
   }
+}
+
+resolve_generic <- function(generic) {
+  ns <- asNamespace(generic$package)
+  if (!exists(generic$name, envir = ns, inherits = FALSE)) {
+    warning(
+      sprintf(
+        "[S7] Failed to find generic %s() in package %s",
+        generic$name,
+        generic$package
+      ),
+      call. = FALSE
+    )
+    return(NULL)
+  }
+  get(generic$name, envir = ns, inherits = FALSE)
 }
 
 external_methods_reset <- function(package) {

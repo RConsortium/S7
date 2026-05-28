@@ -85,6 +85,15 @@ dep_available <- function(dep) {
     (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)
 }
 
+resolve_signature <- function(signature) {
+  for (i in seq_along(signature)) {
+    if (is_external_class(signature[[i]])) {
+      signature[[i]] <- resolve_external_class_req(signature[[i]])
+    }
+  }
+  signature
+}
+
 # Resolve to the real class if the package is loaded (and the optional version
 # constraint is met). Returns `NULL` otherwise.
 resolve_external_class_opt <- function(x) {

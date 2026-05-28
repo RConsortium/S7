@@ -74,8 +74,8 @@ register_method <- function(
   }
 
   # Delay all external classes until onLoad
-  has_unresolved <- any(vlapply(signature, is_external_class))
-  if (has_unresolved) {
+  is_external <- any(vlapply(signature, is_external_class))
+  if (is_external) {
     generic_ext <- as_external_generic(generic)
     external_methods_add(package, generic_ext, signature, method)
     return(invisible(generic))
@@ -102,18 +102,6 @@ register_method <- function(
   }
 
   invisible(generic)
-}
-
-resolve_signature <- function(signature) {
-  for (i in seq_along(signature)) {
-    if (is_external_class(signature[[i]])) {
-      resolved <- resolve_external_class_opt(signature[[i]])
-      if (!is.null(resolved)) {
-        signature[[i]] <- as_class(resolved)
-      }
-    }
-  }
-  signature
 }
 
 register_S3_method <- function(
