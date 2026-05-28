@@ -51,13 +51,14 @@ base_parent <- function(class) {
   check_is_S7(object)
   check_not_environment(object, "S7_data<-")
 
-  attrs <- attributes(object)
-  object <- value
-  attributes(object) <- attrs
-  if (isTRUE(check)) {
-    validate(object)
+  s7_attrs <- c(prop_names(object), "class", "S7_class")
+  for (name in s7_attrs) {
+    attr(value, name) <- attr(object, name, exact = TRUE)
   }
-  return(invisible(object))
+  if (isTRUE(check)) {
+    validate(value)
+  }
+  return(invisible(value))
 }
 
 check_not_environment <- function(object, fn) {
