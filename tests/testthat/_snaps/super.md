@@ -6,6 +6,16 @@
     Condition
       Error in `super()`:
       ! <foo> doesn't inherit from <character>.
+    Code
+      super(foo(), class_numeric)
+    Condition
+      Error:
+      ! `to` must be an S7, S3, S4, or base class, not an S7 union.
+    Code
+      super(foo(), NULL)
+    Condition
+      Error:
+      ! `to` must be an S7, S3, S4, or base class, not NULL.
 
 # super() / displays nicely
 
