@@ -3,12 +3,12 @@
     Code
       new_external_class(1, "x")
     Condition
-      Error:
+      Error in `new_external_class()`:
       ! `package` must be a string.
     Code
       new_external_class("pkg", 1)
     Condition
-      Error:
+      Error in `new_external_class()`:
       ! `name` must be a string.
 
 # print method works
