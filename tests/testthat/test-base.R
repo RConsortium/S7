@@ -31,70 +31,70 @@ test_that("Base classes can be a parent class", {
     Foo()
     Foo(TRUE)
   })
-  expect_error(Foo(1), "must be <logical> not <double>")
+  expect_error(Foo(1), "must be an instance of <logical>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_integer)
     Foo()
     Foo(1L)
   })
-  expect_error(Foo(1), "must be <integer> not <double>")
+  expect_error(Foo(1), "must be an instance of <integer>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_double)
     Foo()
     Foo(1)
   })
-  expect_error(Foo(1L), "must be <double> not <integer>")
+  expect_error(Foo(1L), "must be an instance of <double>, not <integer>")
 
   expect_no_error({
     Foo := new_class(class_complex)
     Foo()
     Foo(1 + 1i)
   })
-  expect_error(Foo(1), "must be <complex> not <double>")
+  expect_error(Foo(1), "must be an instance of <complex>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_character)
     Foo()
     Foo("a")
   })
-  expect_error(Foo(1), "must be <character> not <double>")
+  expect_error(Foo(1), "must be an instance of <character>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_raw)
     Foo()
     Foo(charToRaw("a"))
   })
-  expect_error(Foo(1), "must be <raw> not <double>")
+  expect_error(Foo(1), "must be an instance of <raw>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_list)
     Foo()
     Foo(list())
   })
-  expect_error(Foo(1), "must be <list> not <double>")
+  expect_error(Foo(1), "must be an instance of <list>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_expression)
     Foo()
     Foo(expression(1))
   })
-  expect_error(Foo(1), "must be <expression> not <double>")
+  expect_error(Foo(1), "must be an instance of <expression>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_call)
     Foo()
     Foo(quote(a()))
   })
-  expect_error(Foo(1), "must be <call> not <double>")
+  expect_error(Foo(1), "must be an instance of <call>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_function)
     Foo()
     Foo(identity)
   })
-  expect_error(Foo(1), "must be <function> not <double>")
+  expect_error(Foo(1), "must be an instance of <function>, not <double>")
 
   # union types cannot be a parent:
   #
@@ -245,7 +245,7 @@ test_that("Base S3 classes can be parents", {
   })
   expect_error(
     Foo(list(x = 1:3, y = 1:4)),
-    "all variables should have the same length"
+    "All variables should have the same length."
   )
 
   # expect_no_error({

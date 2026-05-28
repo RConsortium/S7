@@ -7,10 +7,12 @@
 super(from, to)
 }
 \arguments{
-\item{from}{An S7 object to cast.}
+\item{from}{An object to cast. Usually an S7 object, but \code{super()} also
+works with S3 and S4 objects, as long as their dispatch chain includes
+\code{to}.}
 
-\item{to}{An S7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
-superclass of \code{object}.}
+\item{to}{A class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
+superclass of \code{from}.}
 }
 \value{
 An \code{S7_super} object which should always be passed

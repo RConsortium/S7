@@ -42,7 +42,7 @@ is_S7_type <- function(x) {
       deparse1(substitute(x)),
       name
     )
-    stop(msg, call. = FALSE)
+    stop(msg)
   }
 }
 #' @export
@@ -55,7 +55,7 @@ is_S7_type <- function(x) {
       name,
       deparse1(substitute(value))
     )
-    stop(msg, call. = FALSE)
+    stop(msg)
   }
 }
 
@@ -89,7 +89,7 @@ check_subsettable <- function(x, allow_env = FALSE) {
     if (allow_env) "environment"
   )
   if (!typeof(x) %in% allowed_types) {
-    stop("S7 objects are not subsettable.")
+    stop("S7 objects are not subsettable.", call. = FALSE)
   }
   invisible(TRUE)
 }
