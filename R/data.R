@@ -61,20 +61,6 @@ base_parent <- function(class) {
   return(invisible(value))
 }
 
-check_not_environment <- function(object, fn) {
-  if (!is.environment(object)) {
-    return(invisible())
-  }
-  stop(
-    sprintf(
-      "Can't call `%s` on an environment because attribute changes are made in place.",
-      fn
-    ),
-    call. = FALSE
-  )
-}
-
-
 zap_attr <- function(x, names) {
   for (name in names) {
     attr(x, name) <- NULL

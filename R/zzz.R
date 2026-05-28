@@ -140,6 +140,7 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 .onLoad <- function(...) {
   activate_backward_compatiblility()
 
+  on_load_define_environment()
   on_load_define_S7_generic()
   on_load_define_S7_method()
   on_load_make_convert_generic()
