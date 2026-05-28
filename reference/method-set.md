@@ -77,7 +77,7 @@ method(generic, signature) <- value
 - value:
 
   A function that implements the generic specification for the given
-  `signature`.
+  `signature`, or `NULL` to unregister an existing method.
 
 ## Value
 
@@ -104,4 +104,7 @@ bizarro(head(mtcars))
 #> Hornet 4 Drive       1    4  1  1 18.61 2.320 3.85  93  108   4 22.8
 #> Hornet Sportabout    4    4  1  0 17.02 2.875 3.90 110  160   6 21.0
 #> Valiant              4    4  1  0 16.46 2.620 3.90 110  160   6 21.0
+
+# Unregister a method by assigning `NULL`
+method(bizarro, class_numeric) <- NULL
 ```

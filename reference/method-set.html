@@ -122,7 +122,7 @@ dispatch case too.)</p>
 
 <dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
 <dd><p>A function that implements the generic specification for the
-given <code>signature</code>.</p></dd>
+given <code>signature</code>, or <code>NULL</code> to unregister an existing method.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -150,6 +150,9 @@ given <code>signature</code>.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Hornet 4 Drive       1    4  1  1 18.61 2.320 3.85  93  108   4 22.8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Hornet Sportabout    4    4  1  0 17.02 2.875 3.90 110  160   6 21.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Valiant              4    4  1  0 16.46 2.620 3.90 110  160   6 21.0</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Unregister a method by assigning `NULL`</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">bizarro</span>, <span class="va">class_numeric</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
