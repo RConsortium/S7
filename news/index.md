@@ -31,6 +31,16 @@
   accept a length-1 list as `signature` for single-dispatch generics,
   matching the list-of-classes form required for multi-dispatch
   ([\#555](https://github.com/RConsortium/S7/issues/555)).
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  experimentally allows `class_environment` as a parent again, so you
+  can build S7 objects that share R’s reference semantics for
+  environments. This support is provisional: because environments are
+  mutated in place, some operations behave differently than for
+  value-typed S7 objects, and the API may change.
+  [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
+  and `S7_data<-()` error on environment-based objects, since they would
+  otherwise destroy the object’s S7 attributes in place
+  ([\#590](https://github.com/RConsortium/S7/issues/590)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class

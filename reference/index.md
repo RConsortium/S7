@@ -91,12 +91,14 @@ for more details.
   [`class_name`](https://rconsortium.github.io/S7/reference/base_classes.md)
   [`class_call`](https://rconsortium.github.io/S7/reference/base_classes.md)
   [`class_function`](https://rconsortium.github.io/S7/reference/base_classes.md)
-  [`class_environment`](https://rconsortium.github.io/S7/reference/base_classes.md)
   [`class_numeric`](https://rconsortium.github.io/S7/reference/base_classes.md)
   [`class_atomic`](https://rconsortium.github.io/S7/reference/base_classes.md)
   [`class_vector`](https://rconsortium.github.io/S7/reference/base_classes.md)
   [`class_language`](https://rconsortium.github.io/S7/reference/base_classes.md)
   : S7 wrappers for base types
+- [`class_environment`](https://rconsortium.github.io/S7/reference/class_environment.md)
+  **\[experimental\]** : Use an environment as the base type of an S7
+  class
 - [`class_factor`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
   [`class_Date`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)
   [`class_POSIXct`](https://rconsortium.github.io/S7/reference/base_s3_classes.md)

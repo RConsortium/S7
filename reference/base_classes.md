@@ -25,7 +25,10 @@ within S7:
 
 - `class_function`
 
-- `class_environment` (can only be used for properties)
+See also
+[class_environment](https://rconsortium.github.io/S7/reference/class_environment.md)
+which is documented separately due to the complexities introduced by
+their reference semantics.
 
 We also include three union types to model numerics, atomics, and
 vectors respectively:
@@ -64,8 +67,6 @@ class_name
 class_call
 
 class_function
-
-class_environment
 
 class_numeric
 

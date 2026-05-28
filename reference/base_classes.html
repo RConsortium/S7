@@ -12,9 +12,10 @@ class_expression
 class_name
 class_call
 class_function
-class_environment (can only be used for properties)
 
 
+See also class_environment which is documented separately due to the
+complexities introduced by their reference semantics.
 We also include three union types to model numerics, atomics, and vectors
 respectively:
 class_numeric is a union of class_integer and class_double.
@@ -37,9 +38,10 @@ class_expression
 class_name
 class_call
 class_function
-class_environment (can only be used for properties)
 
 
+See also class_environment which is documented separately due to the
+complexities introduced by their reference semantics.
 We also include three union types to model numerics, atomics, and vectors
 respectively:
 class_numeric is a union of class_integer and class_double.
@@ -115,8 +117,9 @@ within S7:</p><ul><li><p><code>class_logical</code></p></li>
 <li><p><code>class_name</code></p></li>
 <li><p><code>class_call</code></p></li>
 <li><p><code>class_function</code></p></li>
-<li><p><code>class_environment</code> (can only be used for properties)</p></li>
-</ul><p>We also include three union types to model numerics, atomics, and vectors
+</ul><p>See also <a href="class_environment.html">class_environment</a> which is documented separately due to the
+complexities introduced by their reference semantics.</p>
+<p>We also include three union types to model numerics, atomics, and vectors
 respectively:</p><ul><li><p><code>class_numeric</code> is a union of <code>class_integer</code> and <code>class_double</code>.</p></li>
 <li><p><code>class_atomic</code> is a union of <code>class_logical</code>, <code>class_numeric</code>,
 <code>class_complex</code>, <code>class_character</code>, and <code>class_raw</code>.</p></li>
@@ -148,8 +151,6 @@ respectively:</p><ul><li><p><code>class_numeric</code> is a union of <code>class
 <span><span class="va">class_call</span></span>
 <span></span>
 <span><span class="va">class_function</span></span>
-<span></span>
-<span><span class="va">class_environment</span></span>
 <span></span>
 <span><span class="va">class_numeric</span></span>
 <span></span>

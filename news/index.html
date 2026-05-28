@@ -66,6 +66,8 @@
 <li>
 <code>method&lt;-</code> and <code><a href="../reference/method.html">method()</a></code> now accept a length-1 list as <code>signature</code> for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (<a href="https://github.com/RConsortium/S7/issues/555" class="external-link">#555</a>).</li>
 <li>
+<code><a href="../reference/new_class.html">new_class()</a></code> experimentally allows <code>class_environment</code> as a parent again, so you can build S7 objects that share R’s reference semantics for environments. This support is provisional: because environments are mutated in place, some operations behave differently than for value-typed S7 objects, and the API may change. <code><a href="../reference/S7_data.html">S7_data()</a></code> and <code>S7_data&lt;-()</code> error on environment-based objects, since they would otherwise destroy the object’s S7 attributes in place (<a href="https://github.com/RConsortium/S7/issues/590" class="external-link">#590</a>).</li>
+<li>
 <code><a href="../reference/new_class.html">new_object()</a></code> now gives an informative error when <code>.parent</code> is a class specification rather than an instance of the parent class (<a href="https://github.com/RConsortium/S7/issues/409" class="external-link">#409</a>).</li>
 <li>
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
