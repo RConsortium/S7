@@ -43,19 +43,24 @@ S7_extends_S4 <- function(class) {
 
 S4_register_subclass <- function(class, env) {
   where <- topenv(env)
+  subclasses <- S4_subclasses(class)
+  if (length(subclasses) > 1L) {
+    methods::setOldClass(subclasses, where = where)
+    return()
+  }
   methods::setOldClass(
-    S4_subclasses(class),
+    subclasses,
     S4Class = S4_transient_prototype_class(class, where),
     where = where
   )
-  methods::setValidity(class@name, S4_validate, where = where)
-  methods::setMethod("initialize", class@name, S4_initialize, where = where)
+  methods::setValidity(subclasses[1L], S4_validate, where = where)
+  methods::setMethod("initialize", subclasses[1L], S4_initialize, where = where)
 }
 
 S4_subclasses <- function(class) {
   subclasses <- character()
   while (is_class(class)) {
-    subclasses <- c(subclasses, attr(class, "name", exact = TRUE))
+    subclasses <- c(subclasses, S7_class_name(class))
     class <- attr(class, "parent", exact = TRUE)
     if (is_S4_class(class)) {
       return(subclasses)
@@ -141,15 +146,11 @@ S4_transient_prototype_class <- function(class, env = parent.frame()) {
   classes <- class_dispatch(class)
 
   parent_class <- attr(class, "parent", exact = TRUE)
-  parent_name <- if (is_S4_class(parent_class)) {
-    parent_class@className
-  } else {
-    attr(parent_class, "name", exact = TRUE)
-  }
+  stopifnot(is_S4_class(parent_class))
 
   args <- list(
     Class = classes[1L],
-    contains = parent_name,
+    contains = parent_class@className,
     where = where
   )
 
