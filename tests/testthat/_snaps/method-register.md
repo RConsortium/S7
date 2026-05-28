@@ -37,6 +37,48 @@
        * An S4 class object
        * A base class
 
+# method unregistration / removes S7 method via NULL assignment
+
+    Code
+      foo("x")
+    Condition
+      Error:
+      ! Can't find method for `foo(<character>)`.
+
+# method unregistration / removes method with multi-dispatch signature
+
+    Code
+      foo(A(), B())
+    Condition
+      Error:
+      ! Can't find method for generic `foo(x, y)`:
+      - x: <S7::A>
+      - y: <S7::B>
+
+# method unregistration / errors when unregistering from an S3 generic
+
+    Code
+      method(sum, foo) <- NULL
+    Condition
+      Error:
+      ! Can't unregister methods for S3 generics
+
+---
+
+    Code
+      method(base_sum, foo) <- NULL
+    Condition
+      Error:
+      ! Can't unregister methods for S3 generics
+
+# method unregistration / errors when unregistering from an S4 generic
+
+    Code
+      method(removeS4, S4foo) <- NULL
+    Condition
+      Error:
+      ! Can't unregister methods for S4 generics
+
 # as_signature() / accepts a length-1 list for single dispatch (#555)
 
     Code
