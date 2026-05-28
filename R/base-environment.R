@@ -6,10 +6,11 @@
 #' }}
 #'
 #' `class_environment` is the [base][base_classes] wrapper for environments.
-#' Unlike all other R objects, environments have reference semantics, i.e. they
-#' are modified in place. It's not clear what all the implications are for S7,
-#' so we are marking this as experimental, and currently subject to the
-#' following caveats:
+#' Unlike all other R objects, environments have reference semantics, i.e., they
+#' are modified in place. It's not clear what all the implications of this are
+#' for S7, so we are marking the use of `class_environment` as experimental.
+#'
+#' Its use is subject to the following caveats:
 #'
 #' * [S7_data()] and `S7_data<-()` error, because swapping the underlying data
 #'   would destroy the existing attributes.
