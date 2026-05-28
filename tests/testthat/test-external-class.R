@@ -57,50 +57,50 @@ test_that("external class can be used as a union arm", {
 })
 
 test_that("external class works as a property type for self-reference", {
-  tree <- new_class(
-    "tree",
+  Tree <- new_class(
+    "Tree",
     package = "mypkg",
     properties = list(
       label = class_character,
-      child = NULL | new_external_class("mypkg", "tree")
+      child = NULL | new_external_class("mypkg", "Tree")
     )
   )
 
-  t1 <- tree(label = "leaf")
-  expect_null(t1@child)
+  leaf <- Tree(label = "leaf")
+  expect_null(leaf@child)
 
-  t2 <- tree(label = "root", child = t1)
-  expect_equal(t2@child@label, "leaf")
+  root <- Tree(label = "root", child = leaf)
+  expect_equal(root@child@label, "leaf")
 
   # type checking still rejects wrong types
-  expect_snapshot(error = TRUE, tree(label = "bad", child = 1))
+  expect_snapshot(error = TRUE, Tree(label = "bad", child = 1))
 })
 
 test_that("external class works for mutually recursive classes", {
-  class_one <- new_class(
-    "class_one",
+  ClassOne <- new_class(
+    "ClassOne",
     package = "mypkg",
-    properties = list(x = NULL | new_external_class("mypkg", "class_two"))
+    properties = list(x = NULL | new_external_class("mypkg", "ClassTwo"))
   )
-  class_two <- new_class(
-    "class_two",
+  ClassTwo <- new_class(
+    "ClassTwo",
     package = "mypkg",
-    properties = list(y = NULL | new_external_class("mypkg", "class_one"))
+    properties = list(y = NULL | new_external_class("mypkg", "ClassOne"))
   )
 
-  obj <- class_one(x = class_two(y = class_one()))
-  expect_s3_class(obj@x, "mypkg::class_two")
-  expect_s3_class(obj@x@y, "mypkg::class_one")
+  obj <- ClassOne(x = ClassTwo(y = ClassOne()))
+  expect_s3_class(obj@x, "mypkg::ClassTwo")
+  expect_s3_class(obj@x@y, "mypkg::ClassOne")
 })
 
 test_that("class_inherits() works for external class", {
-  tree <- new_class(
-    "tree",
+  Tree <- new_class(
+    "Tree",
     package = "mypkg",
-    properties = list(child = NULL | new_external_class("mypkg", "tree"))
+    properties = list(child = NULL | new_external_class("mypkg", "Tree"))
   )
-  ec <- new_external_class("mypkg", "tree")
-  expect_true(class_inherits(tree(), ec))
+  ec <- new_external_class("mypkg", "Tree")
+  expect_true(class_inherits(Tree(), ec))
   expect_false(class_inherits(1, ec))
   expect_false(class_inherits(NULL, ec))
 })

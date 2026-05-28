@@ -141,10 +141,6 @@ test_that("new_method works with both hard and soft dependencies", {
   # Soft-dependency on a CLASS: t2's own generic with a t1 class signature.
   expect_equal(t2::own_generic(t1::`Another S7 Class`()), "from t1 class")
 
-  # Self-referential class works.
-  outer <- t2::nested(label = "outer", child = t2::nested(label = "inner"))
-  expect_equal(outer@child@label, "inner")
-
   ## Check again in a fresh session, with everything installed
   expect_no_error(callr::r(function() {
     library(t2)

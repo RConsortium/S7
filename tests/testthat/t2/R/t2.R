@@ -40,17 +40,6 @@ own_generic <- S7::new_generic("own_generic", "x")
 S7::method(own_generic, S7::new_external_class("t1", "Another S7 Class")) <-
   function(x) "from t1 class"
 
-# A self-referential class (forward reference via new_external_class).
-#' @export
-nested <- S7::new_class(
-  "nested",
-  package = "t2",
-  properties = list(
-    label = S7::class_character,
-    child = NULL | S7::new_external_class("t2", "nested")
-  )
-)
-
 
 .onLoad <- function(libname, pkgname) {
   S7::methods_register()

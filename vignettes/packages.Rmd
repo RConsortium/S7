@@ -45,30 +45,6 @@ If you export a class (i.e. its constructor), you must also set the `package` ar
 
 NB: if your package creates a hierarchy of classes, subclasses must be defined _after_ the parent classes. That means if you define the classes in separate files, you will need to use the `DESCRIPTION` Collate field (or the equivalent roxygen2 `@include` tag) to ensure the files are loaded in the correct order.
 
-### Self-referential and mutually recursive classes
-
-A class can't refer to itself directly in its own property definitions, because the class object doesn't exist yet:
-
-```{r, eval = FALSE}
-tree <- new_class("tree", properties = list(child = tree))
-#> Error in as_properties(properties): object 'tree' not found
-```
-
-Use `new_external_class()` to refer to the class by name instead. The name is resolved when the property is accessed, by which time the class is fully defined:
-
-```{r}
-tree <- new_class("tree",
-  package = "mypkg",
-  properties = list(
-    label = class_character,
-    child = NULL | new_external_class("mypkg", "tree")
-  )
-)
-tree(label = "outer", child = tree(label = "inner"))
-```
-
-The same approach works for mutually recursive classes (`A` references `B` and `B` references `A`), and for classes defined in different files where the file load order would otherwise force a forward reference.
-
 ## Generics
 
 You should document generics like regular functions (since they are!).

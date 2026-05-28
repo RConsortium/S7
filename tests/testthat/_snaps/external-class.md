@@ -43,9 +43,9 @@
 # external class works as a property type for self-reference
 
     Code
-      tree(label = "bad", child = 1)
+      Tree(label = "bad", child = 1)
     Condition
       Error:
-      ! <mypkg::tree> object properties are invalid:
-      - @child must be <NULL> or <mypkg::tree>, not <double>
+      ! <mypkg::Tree> object properties are invalid:
+      - @child must be <NULL> or <mypkg::Tree>, not <double>
 
