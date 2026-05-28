@@ -12,7 +12,7 @@ describe("property retrieval", {
     expect_snapshot_error(prop(obj, "x"))
     expect_snapshot_error(obj@x)
   })
-  it("evalutes dynamic properties", {
+  it("evaluates dynamic properties", {
     foo <- new_class(
       "foo",
       properties = list(
@@ -444,7 +444,7 @@ test_that("can validate with custom validator", {
   })
 })
 
-test_that("prop<- won't infinitly recurse on a custom setter", {
+test_that("prop<- won't infinitely recurse on a custom setter", {
   chattily_sync_ab <- function(self, value) {
     cat("Starting syncup with value:", value, "\n")
     a_value <- paste0("a_", value)
@@ -569,7 +569,7 @@ test_that("custom setters can call custom getters", {
 })
 
 
-test_that("custom getters don't evaulate call objects", {
+test_that("custom getters don't evaluate call objects", {
   QuotedCall := new_class(
     class_call,
     properties = list(
@@ -593,7 +593,7 @@ test_that("custom getters don't evaulate call objects", {
 })
 
 
-test_that("custom setters don't evaulate call objects", {
+test_that("custom setters don't evaluate call objects", {
   Call := new_class(
     class_call,
     properties = list(
