@@ -35,10 +35,16 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to? If `NULL`, it defaults to the "empty" instance
-#'   of `class`. This can also be a quoted call, which then becomes a standard
-#'   function promise in the default constructor, evaluated at the time the
-#'   object is constructed.
+#'   what should it default to?
+#'
+#'   If `NULL`, it defaults to the "empty" instance of `class`. For base
+#'   vector types, this will be a zero length vector, e.g. `character()` for
+#'   `class_character()`. For S7 classes, this will be a call to the
+#'   constructor
+#'
+#'   This can also be a `quote()`d call, which then becomes a standard function
+#'   promise in the default constructor, evaluated when the object is
+#'   constructed.
 #' @param name Property name, primarily used for error messages. Generally
 #'   don't need to set this here, as it's more convenient to supply as
 #'   the element name when defining a list of properties. If both `name`
@@ -93,6 +99,7 @@ new_property <- function(
     check_function(validator, alist(value = ))
   }
 
+  # If you change this field order, update enum property_field in src/prop.c.
   out <- list(
     name = name,
     class = class,
