@@ -132,6 +132,11 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     from <- zap_attr(from, setdiff(from_props, names(to@properties)))
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
+  } else if (is_S4_class(to)) {
+    to_slots <- methods::slotNames(to)
+    from <- zap_attr(from, c(setdiff(from_props, to_slots), "S7_class"))
+    class(from) <- structure(to@className, package = to@package)
+    from <- asS4(from)
   } else {
     stop2("Unreachable.")
   }
