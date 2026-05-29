@@ -17,7 +17,7 @@ describe("single dispatch", {
   })
 
   it("works for S7 objects", {
-    text <- new_class("text", class_character)
+    text := new_class(class_character)
     method(foo, text) <- function(x) "S7"
 
     expect_equal(foo(text("bar")), "S7")
@@ -47,8 +47,8 @@ describe("single dispatch", {
 
 describe("multiple dispatch", {
   it("works", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 := new_class()
+    foo2 := new_class(foo1)
 
     bar <- new_generic("bar", c("x", "y"))
     method(bar, list(foo1, foo1)) <- function(x, y) c(1, 1)
@@ -158,7 +158,7 @@ test_that("can dispatch on base 'union' types", {
 test_that("single dispatch fails with informative messages", {
   fail <- new_generic("fail", "x")
 
-  foo <- new_class("foo", package = NULL)
+  foo := new_class(package = NULL)
   Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
@@ -175,7 +175,7 @@ test_that("single dispatch fails with informative messages", {
 test_that("multiple dispatch fails with informative messages", {
   fail <- new_generic("fail", c("x", "y"))
 
-  foo <- new_class("foo")
+  foo := new_class()
   Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 

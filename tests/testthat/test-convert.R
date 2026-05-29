@@ -1,6 +1,6 @@
 test_that("can register convert methods", {
   local_methods(convert)
-  converttest <- new_class("converttest", package = NULL)
+  converttest := new_class(package = NULL)
   method(convert, list(converttest, class_character)) <- function(
     from,
     to,
@@ -22,8 +22,8 @@ test_that("can register convert methods", {
 
 test_that("doesn't convert to subclass", {
   local_methods(convert)
-  converttest1 <- new_class("converttest1")
-  converttest2 <- new_class("converttest2", converttest1)
+  converttest1 := new_class()
+  converttest2 := new_class(converttest1)
 
   method(convert, list(class_integer, converttest1)) <- function(
     from,
@@ -39,8 +39,8 @@ describe("fallback convert", {
   local_methods(convert)
 
   it("can convert to own class", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", foo1, package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(foo1, package = NULL)
 
     obj <- convert(foo2(), to = foo2)
     expect_equal(class(obj), c("foo2", "foo1", "S7_object"))
@@ -48,13 +48,11 @@ describe("fallback convert", {
   })
 
   it("can convert to super class", {
-    foo1 <- new_class(
-      "foo1",
+    foo1 := new_class(
       properties = list(x = class_double),
       package = NULL
     )
-    foo2 <- new_class(
-      "foo2",
+    foo2 := new_class(
       foo1,
       properties = list(y = class_double),
       package = NULL
@@ -68,8 +66,8 @@ describe("fallback convert", {
   })
 
   it("can convert to subclass", {
-    Foo <- new_class("Foo", properties = list(x = class_numeric))
-    Bar <- new_class("Bar", Foo, properties = list(y = class_numeric))
+    Foo := new_class(properties = list(x = class_numeric))
+    Bar := new_class(Foo, properties = list(y = class_numeric))
 
     foo <- Foo(x = 1)
 
@@ -95,13 +93,12 @@ describe("fallback convert", {
     expect_equal(bar@y, 2)
 
     # Error on converting to unrelated class
-    Unrelated <- new_class("Unrelated", properties = list(z = class_character))
+    Unrelated := new_class(properties = list(z = class_character))
     expect_error(convert(foo, Unrelated), "Can't find method")
   })
 
   it("can convert to S3 class", {
-    factor2 <- new_class(
-      "factor2",
+    factor2 := new_class(
       class_factor,
       properties = list(x = class_double)
     )
@@ -112,8 +109,7 @@ describe("fallback convert", {
   })
 
   it("can convert to base type", {
-    character2 <- new_class(
-      "character2",
+    character2 := new_class(
       parent = class_character,
       properties = list(x = class_double)
     )

@@ -28,7 +28,7 @@ describe("method registration", {
   })
 
   it("can register method for external generic", {
-    bar <- new_class("bar")
+    bar := new_class()
     base_sum <- new_external_generic("base", "sum", "x")
 
     method(base_sum, bar) <- function(x, ...) "bar"
@@ -52,8 +52,8 @@ describe("method registration", {
   })
 
   it("can register S7 method for S3 Ops generic", {
-    foo <- new_class("foo")
-    bar <- new_class("bar")
+    foo := new_class()
+    bar := new_class()
 
     method(`+`, list(foo, bar)) <- function(e1, e2) "foobar"
     expect_equal(foo() + bar(), "foobar")
@@ -65,7 +65,7 @@ describe("method registration", {
   })
 
   it("S3 registration requires a S7 class", {
-    foo <- new_class("foo")
+    foo := new_class()
     expect_snapshot(error = TRUE, {
       method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
     })
@@ -73,7 +73,7 @@ describe("method registration", {
 
   it("can register S7 method for S4 generic", {
     methods::setGeneric("bar", function(x) standardGeneric("bar"))
-    S4foo <- new_class("S4foo", package = NULL)
+    S4foo := new_class(package = NULL)
 
     expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
 

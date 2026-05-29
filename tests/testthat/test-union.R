@@ -1,7 +1,7 @@
 test_that("has useful print method", {
   expect_snapshot({
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(package = NULL)
     new_union(foo1, foo2)
   })
 })
@@ -43,7 +43,7 @@ test_that("can construct from S3 and S4 classes", {
 })
 
 test_that("can construct with |", {
-  foo <- new_class("foo")
+  foo := new_class()
   Foo1 <- setClass("Foo1", slots = list("x" = "numeric"))
   Foo2 <- setClass("Foo2", slots = list("x" = "numeric"))
   Foo3 <- setClassUnion("Foo3", c("Foo1", "Foo2"))
