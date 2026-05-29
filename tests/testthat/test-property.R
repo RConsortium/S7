@@ -202,6 +202,21 @@ describe("props<-", {
     expect_equal(obj2@x, 2)
   })
 
+  it("set_props() accepts a single unnamed list (#497)", {
+    foo <- new_class(
+      "foo",
+      properties = list(x = class_double, y = class_double)
+    )
+    obj <- set_props(foo(1, 2), list(x = 3, y = 4))
+    expect_equal(obj@x, 3)
+    expect_equal(obj@y, 4)
+  })
+
+  it("set_props() errors if single unnamed list has unnamed elements (#497)", {
+    foo <- new_class("foo", properties = list(x = class_double))
+    expect_snapshot(set_props(foo(1), list(2)), error = TRUE)
+  })
+
   it("set_props() skip validation with `.check = FALSE`", {
     foo <- new_class(
       "foo",

@@ -6,22 +6,6 @@
 
     Can't find property <foo>@x.
 
-# property retrieval / reports dynamic getter errors as property calls
-
-    Code
-      foo()@x
-    Condition
-      Error in `<foo>@x`:
-      ! nope
-
-# prop setting / reports dynamic setter errors as property calls
-
-    Code
-      obj@x <- 1
-    Condition
-      Error in `<foo>@x`:
-      ! nope
-
 # prop setting / can't set read-only properties
 
     Code
@@ -61,6 +45,14 @@
       Error:
       ! <S7::foo> object is invalid:
       - bad
+
+# props<- / set_props() errors if single unnamed list has unnamed elements (#497)
+
+    Code
+      set_props(foo(1), list(2))
+    Condition
+      Error in `set_props()`:
+      ! All elements of `..1` must be named.
 
 # props<- / set_props() skip validation with `.check = FALSE`
 
@@ -276,3 +268,4 @@
       [tx] finished transmitting.
     Code
       expect_equal(receiver@message, "goodbye")
+

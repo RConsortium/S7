@@ -310,15 +310,7 @@ new_object <- function(.parent, ...) {
     check_parent(.parent, class)
   }
 
-  args <- list(...)
-  if (is_single_list(args)) {
-    if ("" %in% names2(args[[1]])) {
-      stop("All elements of `..1` must be named.")
-    }
-    args <- args[[1L]]
-  } else if ("" %in% names2(args)) {
-    stop("All arguments to `...` must be named.")
-  }
+  args <- splice_dots(...)
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
 

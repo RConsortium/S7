@@ -37,7 +37,9 @@
 #' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods. For
 #'   downcasting, these can be used to override existing properties or set new
-#'   ones.
+#'   ones. As a convenience, you can supply a single unnamed list instead of
+#'   individual name-value pairs, which makes it easy to override properties
+#'   programmatically.
 #' @return Either `from` coerced to class `to`, or an error if the coercion
 #'   is not possible.
 #' @export
@@ -86,7 +88,7 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    convert_down(from, to, ...)
+    convert_down(from, to, splice_dots(..., error_call = quote(convert())))
   } else {
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
@@ -124,7 +126,7 @@ is_down_cast <- function(x, class) {
   inherits(x, setdiff(class_dispatch(class), "S7_object"))
 }
 
-convert_down <- function(from, to, ...) {
+convert_down <- function(from, to, user_args = list()) {
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
 
@@ -139,7 +141,6 @@ convert_down <- function(from, to, ...) {
   }
 
   # Drop properties overridden by user-supplied arguments
-  user_args <- list(...)
   from_prop_names <- setdiff(from_prop_names, names(user_args))
 
   from_prop_values <- props(from, from_prop_names)

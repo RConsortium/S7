@@ -449,10 +449,12 @@ props <- function(object, names = prop_names(object)) {
 }
 
 #' @export
-#' @param ... Name-value pairs given property to modify and new value.
+#' @param ... Name-value pairs given property to modify and new value. As a
+#'   convenience, you can supply a single unnamed list instead of individual
+#'   name-value pairs, which makes it easy to set properties programmatically.
 #' @rdname props
 set_props <- function(object, ..., .check = TRUE) {
-  props(object, check = .check) <- list(...)
+  props(object, check = .check) <- splice_dots(...)
   object
 }
 

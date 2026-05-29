@@ -24,7 +24,9 @@ before returning.}
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
 
-\item{...}{Name-value pairs given property to modify and new value.}
+\item{...}{Name-value pairs given property to modify and new value. As a
+convenience, you can supply a single unnamed list instead of individual
+name-value pairs, which makes it easy to set properties programmatically.}
 }
 \value{
 A named list of property values.
