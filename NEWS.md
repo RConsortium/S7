@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).

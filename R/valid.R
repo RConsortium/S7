@@ -67,11 +67,21 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   check_is_S7(object)
 
   parent <- if (!recursive) S7_class(object)@parent
-  validate_from(object, parent = parent, properties = properties)
+  validate_from(
+    object,
+    parent = parent,
+    properties = properties,
+    call = sys.call()
+  )
 }
 
 # validates `object` assuming `parent` (if supplied) has been validated
-validate_from <- function(object, parent = NULL, properties = TRUE) {
+validate_from <- function(
+  object,
+  parent = NULL,
+  properties = TRUE,
+  call = sys.call(-1L)
+) {
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))
   }
@@ -89,11 +99,7 @@ validate_from <- function(object, parent = NULL, properties = TRUE) {
         obj_desc(object),
         bullets
       )
-      stop(errorCondition(
-        msg,
-        call = NULL,
-        class = "S7_error_validation_failed"
-      ))
+      stop2(msg, call = call, class = "S7_error_validation_failed")
     }
   }
 
@@ -104,11 +110,14 @@ validate_from <- function(object, parent = NULL, properties = TRUE) {
     if (is.null(error)) {} else if (is.character(error)) {
       append(errors) <- error
     } else {
-      stop(sprintf(
-        "%s validator must return NULL or a character, not <%s>.",
-        obj_desc(class),
-        typeof(error)
-      ))
+      stop2(
+        sprintf(
+          "%s validator must return NULL or a character, not <%s>.",
+          obj_desc(class),
+          typeof(error)
+        ),
+        call = call
+      )
     }
     if (!is_class(class) || identical(class@parent, parent)) {
       break
@@ -120,7 +129,7 @@ validate_from <- function(object, parent = NULL, properties = TRUE) {
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
     msg <- sprintf("%s object is invalid:\n%s", obj_desc(object), bullets)
-    stop(errorCondition(msg, call = NULL, class = "S7_error_validation_failed"))
+    stop2(msg, call = call, class = "S7_error_validation_failed")
   }
 
   invisible(object)

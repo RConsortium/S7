@@ -93,12 +93,12 @@ convert <- function(from, to, ...) {
       c("- from: ", obj_desc(from), "\n"),
       c("- to  : ", class_desc(to))
     )
-    stop(msg)
+    stop2(msg)
   }
 }
 
-convert_up <- function(from, to) {
-  check_not_environment(from, "convert()")
+convert_up <- function(from, to, call = sys.call(-1L)) {
+  check_not_environment(from, "convert()", call = call)
 
   from_class <- S7_class(from)
   if (is_class(from_class)) {
@@ -118,7 +118,7 @@ convert_up <- function(from, to) {
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
   } else {
-    stop("Unreachable.")
+    stop2("Unreachable.")
   }
   from
 }

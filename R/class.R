@@ -126,7 +126,7 @@ new_class <- function(
       abstract &&
         (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
     ) {
-      stop("Abstract classes must have abstract parents.")
+      stop2("Abstract classes must have abstract parents.")
     }
   }
 
@@ -174,14 +174,14 @@ S7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
 }
 
-check_S7_constructor <- function(constructor) {
+check_S7_constructor <- function(constructor, call = sys.call(-1L)) {
   if (!is.function(constructor)) {
-    stop("`constructor` must be a function.", call. = FALSE)
+    stop2("`constructor` must be a function.", call = call)
   }
 
   method_call <- find_call(body(constructor), quote(new_object), packageName())
   if (is.null(method_call)) {
-    stop("`constructor` must contain a call to `new_object()`.", call. = FALSE)
+    stop2("`constructor` must contain a call to `new_object()`.", call = call)
   }
 }
 
@@ -235,31 +235,34 @@ str.S7_class <- function(object, ..., nest.lev = 0) {
 
 #' @export
 c.S7_class <- function(...) {
-  msg <- "Can not combine S7 class objects."
-  stop(msg)
+  stop2("Can not combine S7 class objects.")
 }
 
 can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
 
-check_can_inherit <- function(x, arg = deparse(substitute(x))) {
+check_can_inherit <- function(
+  x,
+  arg = deparse(substitute(x)),
+  call = sys.call(-1L)
+) {
   if (!can_inherit(x)) {
     msg <- sprintf(
       "`%s` must be an S7 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
-    stop(msg, call. = FALSE)
+    stop2(msg, call = call)
   }
 }
 
 is_class <- function(x) inherits(x, "S7_class")
 
-check_parent <- function(parent, class) {
+check_parent <- function(parent, class, call = sys.call(-1L)) {
   parent_class <- class@parent
   if (is.null(parent_class)) {
-    stop(
+    stop2(
       "`.parent` must not be supplied when class has no parent.",
-      call. = FALSE
+      call = call
     )
   }
 
@@ -276,7 +279,7 @@ check_parent <- function(parent, class) {
     class_desc(parent_class),
     obj_desc(parent)
   )
-  stop(msg, call. = FALSE)
+  stop2(msg, call = call)
 }
 
 # Object ------------------------------------------------------------------
@@ -288,14 +291,14 @@ check_parent <- function(parent, class) {
 new_object <- function(.parent, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "S7_class")) {
-    stop("`new_object()` must be called from within a constructor.")
+    stop2("`new_object()` must be called from within a constructor.")
   }
   if (class@abstract) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
     )
-    stop(msg)
+    stop2(msg)
   }
 
   if (!missing(.parent)) {
@@ -304,7 +307,7 @@ new_object <- function(.parent, ...) {
 
   args <- list(...)
   if ("" %in% names2(args)) {
-    stop("All arguments to `...` must be named.")
+    stop2("All arguments to `...` must be named.")
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
@@ -330,7 +333,12 @@ new_object <- function(.parent, ...) {
   # i.e. it's a non-abstract S7 class
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
-  validate_from(.parent, parent = if (parent_validated) class@parent)
+  validate_from(
+    .parent,
+    parent = if (parent_validated) class@parent,
+    # Attribute validation failures to the constructor call, not new_object()
+    call = sys.call(-1L)
+  )
 
   .parent
 }
@@ -397,7 +405,7 @@ S7_class <- function(object) {
 }
 
 
-check_prop_names <- function(properties, error_call = sys.call(-1L)) {
+check_prop_names <- function(properties, call = sys.call(-1L)) {
   # these attributes have special C handlers in base R
   forbidden <- c(
     "names",
@@ -416,6 +424,6 @@ check_prop_names <- function(properties, error_call = sys.call(-1L)) {
       paste0(forbidden, collapse = ", "),
       "."
     )
-    stop(simpleError(msg, error_call))
+    stop2(msg, call = call)
   }
 }

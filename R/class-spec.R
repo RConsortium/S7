@@ -12,7 +12,7 @@
 #'   * A base class, like [class_logical], [class_integer], or [class_double].
 #'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
-#' @keywords internal
+#' @keywords interna
 #' @export
 #' @return A standardised class: either `NULL`, an S7 class, an S7 union,
 #'   as [new_S3_class], or a S4 class.
@@ -29,9 +29,10 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     # so it can't be wrapped in new_base_class
     x
   } else if (isS4(x)) {
-    S4_to_S7_class(x, error_base)
+    S4_to_S7_class(x, error_base, call = sys.call(-1L))
   } else {
     msg <- c(
+      error_base,
       sprintf(
         "Class specification must be one of the following, not a %s:",
         obj_desc(x)
@@ -42,7 +43,7 @@ as_class <- function(x, arg = deparse(substitute(x))) {
       " * A base class"
     )
 
-    stop(paste0(c(error_base, msg), collapse = "\n"))
+    stop2(msg)
   }
 }
 
@@ -73,7 +74,7 @@ class_type <- function(x) {
   } else if (is_S4_class(x)) {
     "S4"
   } else {
-    stop("`x` is not a standard S7 class.", call. = FALSE)
+    stop2("`x` is not a standard S7 class.", call = NULL)
   }
 }
 
@@ -121,7 +122,7 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
           f@package,
           f@name
         )
-        stop(msg, call. = FALSE)
+        stop2(msg, call = NULL)
       }
       return(as.call(list(cl)))
     }
@@ -184,7 +185,7 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
-    stop(sprintf("Can't construct %s.", class_friendly(.x)), call. = FALSE)
+    stop2(sprintf("Can't construct %s.", class_friendly(.x)), call = NULL)
   )
 }
 
@@ -252,7 +253,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    stop("Unsupported class type.", call. = FALSE)
+    stop2("Unsupported class type.", call = NULL)
   )
 }
 
@@ -267,7 +268,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
-    stop("Unsupported class type.", call. = FALSE)
+    stop2("Unsupported class type.", call = NULL)
   )
 }
 

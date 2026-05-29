@@ -106,7 +106,7 @@ super <- function(from, to) {
       "`to` must be an S7, S3, S4, or base class, not %s.",
       class_friendly(to)
     )
-    stop(msg, call. = FALSE)
+    stop2(msg)
   }
   if (!class_inherits(from, to)) {
     msg <- sprintf(
@@ -114,7 +114,7 @@ super <- function(from, to) {
       obj_desc(from),
       class_desc(to)
     )
-    stop(msg)
+    stop2(msg)
   }
 
   # Must not change order of these fields as C code indexes by position

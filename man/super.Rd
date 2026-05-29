@@ -44,18 +44,17 @@ understand and reason about.
 Note that you can't use \code{super()} in methods for an S3 generic.
 For example, imagine that you have made a subclass of "integer":
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{MyInt <- new_class("MyInt", parent = class_integer, package = NULL)
+\if{html}{\out{<div class="sourceCode {r}">}}\preformatted{MyInt <- new_class("MyInt", parent = class_integer, package = NULL)
 }\if{html}{\out{</div>}}
 
 Now you go to write a custom print method:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{method(print, MyInt) <- function(x, ...) \{
+\if{html}{\out{<div class="sourceCode {r}">}}\preformatted{method(print, MyInt) <- function(x, ...) \{
    cat("<MyInt>")
    print(super(x, to = class_integer))
 \}
 
 MyInt(10L)
-#> <MyInt>super(<MyInt>, <integer>)
 }\if{html}{\out{</div>}}
 
 This doesn't work because \code{print()} isn't an S7 generic so doesn't
@@ -64,13 +63,12 @@ While you could resolve this problem with \code{\link[=NextMethod]{NextMethod()}
 implemented on top of S3), we instead recommend using \code{\link[=S7_data]{S7_data()}} to extract
 the underlying base object:
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{method(print, MyInt) <- function(x, ...) \{
+\if{html}{\out{<div class="sourceCode {r}">}}\preformatted{method(print, MyInt) <- function(x, ...) \{
    cat("<MyInt>")
    print(S7_data(x))
 \}
 
 MyInt(10L)
-#> <MyInt>[1] 10
 }\if{html}{\out{</div>}}
 }
 }

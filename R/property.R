@@ -123,7 +123,7 @@ new_property <- function(
   out
 }
 
-check_prop_default <- function(default, class, error_call = sys.call(-1)) {
+check_prop_default <- function(default, class, call = sys.call(-1L)) {
   if (is.null(default)) {
     return() # always valid.
   }
@@ -136,11 +136,11 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   if (is.symbol(default)) {
     if (identical(default, quote(...))) {
       # The meaning of a `...` prop default needs discussion
-      stop(simpleError("`default` cannot be `...`.", error_call))
+      stop2("`default` cannot be `...`.", call = call)
     }
     if (identical(default, quote(expr = ))) {
       # The meaning of a missing prop default needs discussion
-      stop(simpleError("`default` cannot be missing.", error_call))
+      stop2("`default` cannot be missing.", call = call)
     }
 
     # other symbols are treated as promises
@@ -157,11 +157,7 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
     obj_desc(default)
   )
 
-  stop(simpleError(msg, error_call))
-}
-
-stop.parent <- function(..., call = sys.call(-2)) {
-  stop(simpleError(.makeMessage(...), call))
+  stop2(msg, call = call)
 }
 
 is_property <- function(x) inherits(x, "S7_property")
@@ -215,7 +211,7 @@ prop <- function(object, name) {
 }
 
 signal_prop_error_unknown <- function(object, name) {
-  stop(prop_error_unknown(object, name), call. = FALSE)
+  stop2(prop_error_unknown(object, name), call = NULL)
 }
 
 #' @rdname prop
@@ -229,12 +225,12 @@ signal_prop_error_unknown <- function(object, name) {
 # called from src/prop.c
 signal_prop_error <- function(fmt, object, name) {
   msg <- sprintf(fmt, obj_desc(object), name)
-  stop(msg, call. = FALSE)
+  stop2(msg, call = NULL)
 }
 
 # called from src/prop.c
 signal_error <- function(msg) {
-  stop(msg, call. = FALSE)
+  stop2(msg, call = NULL)
 }
 
 
@@ -271,11 +267,14 @@ prop_validate <- function(prop, value, object = NULL) {
     }
   }
 
-  stop(sprintf(
-    "%s validator must return NULL or a character, not <%s>.",
-    prop_label(object, prop$name),
-    typeof(val)
-  ))
+  stop2(
+    sprintf(
+      "%s validator must return NULL or a character, not <%s>.",
+      prop_label(object, prop$name),
+      typeof(val)
+    ),
+    call = NULL
+  )
 }
 
 prop_label <- function(object, name) {
@@ -466,31 +465,36 @@ set_props <- function(object, ..., .check = TRUE) {
   object
 }
 
-as_properties <- function(x) {
+as_properties <- function(x, call = sys.call(-1L)) {
   if (length(x) == 0) {
     return(list())
   }
 
   if (!is.list(x)) {
-    stop("`properties` must be a list.", call. = FALSE)
+    stop2("`properties` must be a list.", call = call)
   }
 
-  out <- Map(as_property, x, names2(x), seq_along(x))
+  out <- Map(
+    function(x, name, i) as_property(x, name, i, call = call),
+    x,
+    names2(x),
+    seq_along(x)
+  )
   names(out) <- vapply(out, function(x) x$name, FUN.VALUE = character(1))
 
   if (anyDuplicated(names(out))) {
-    stop("`properties` names must be unique.", call. = FALSE)
+    stop2("`properties` names must be unique.", call = call)
   }
 
   out
 }
 
-as_property <- function(x, name, i) {
+as_property <- function(x, name, i, call = sys.call(-1L)) {
   if (is_property(x)) {
     if (name == "") {
       if (is.null(x$name)) {
         msg <- sprintf("`properties[[%i]]` must have a name or be named.", i)
-        stop(msg, call. = FALSE)
+        stop2(msg, call = call)
       }
     } else {
       x$name <- name
@@ -499,7 +503,7 @@ as_property <- function(x, name, i) {
   } else {
     if (name == "") {
       msg <- sprintf("`properties[[%i]]` must be named.", i)
-      stop(msg, call. = FALSE)
+      stop2(msg, call = call)
     }
 
     class <- as_class(x, arg = paste0("property$", name))
