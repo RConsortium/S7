@@ -21,7 +21,7 @@
 #'   or an [S4 generic][methods::setGeneric].
 #' @param signature A method signature.
 #'
-#'   For S7 generics that use single dispatch, this must be one of the
+#'   For single single dispatch generics, this must be one of the
 #'   following:
 #'
 #'   * An S7 class (created by [new_class()]).
@@ -30,16 +30,10 @@
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type like [class_logical], [class_integer], or [class_numeric].
 #'   * A special type like [class_missing] or [class_any].
+#'   * A length-1 list containing any of the above.
 #'
-#'   For S7 generics that use multiple dispatch, this must be a list of any of
-#'   the above types. (For convenience you can also use a list in the single
-#'   dispatch case too.)
-#'
-#'   For S3 generics, this can be any of the above types. There's one exception:
-#'   you can only use [class_missing] with S3 operators that support double
-#'   dispatch (e.g. `+` and `-`).
-#'
-#'   The same rules apply to S4 generics as S7 generics.
+#'   For generics that use multiple dispatch, this must be a list of any of
+#'   the above types.
 #' @param value A function that implements the generic specification for the
 #'   given `signature`, or `NULL` to unregister an existing method.
 #' @returns The `generic`, invisibly.
