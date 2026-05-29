@@ -28,6 +28,43 @@ quick_test <- function() {
   identical(Sys.getenv("R_TESTTHAT_QUICK", "false"), "true")
 }
 
+# Like quick_install(), but compiles C code (so it works for S7 itself).
+quick_install_dev <- function(src, lib, quiet = TRUE) {
+  install.packages(
+    src,
+    lib = lib,
+    repos = NULL,
+    type = "source",
+    quiet = quiet,
+    INSTALL_opts = paste(
+      "--no-docs",
+      "--no-help",
+      "--no-html",
+      "--no-byte-compile",
+      "--no-multiarch"
+    )
+  )
+}
+
+# Ensure an S7 that exports S7_on_build() is available in `lib` for building
+# test packages. Under R CMD check the S7 being checked is already current;
+# under devtools the loaded S7 is a source tree we can install. Skips the
+# calling test if neither is available.
+ensure_s7_with_hook <- function(lib, old_libpaths = .libPaths()) {
+  ns_file <- file.path(find.package("S7", lib.loc = old_libpaths), "NAMESPACE")
+  if (any(grepl("S7_on_build", readLines(ns_file), fixed = TRUE))) {
+    return(invisible())
+  }
+
+  s7_path <- find.package("S7")
+  if (file.exists(file.path(s7_path, "R", "method-register.R"))) {
+    quick_install_dev(s7_path, lib)
+  } else {
+    testthat::skip("Installed S7 does not export S7_on_build()")
+  }
+  invisible()
+}
+
 quick_test_disable <- function() {
   Sys.setenv("R_TESTTHAT_QUICK" = "false")
 }
@@ -58,6 +95,33 @@ local_S4_class <- function(name, ..., env = parent.frame()) {
   out <- methods::setClass(name, contains = "character")
   defer(S4_remove_classes(name, env), env)
   out
+}
+
+# Create a temporary library, prepend it to .libPaths(), and restore the
+# library paths and delete the temporary library when `frame` exits. Returns
+# the path to the temporary library.
+local_libpath <- function(frame = parent.frame()) {
+  lib <- tempfile()
+  dir.create(lib)
+  defer(unlink(lib, recursive = TRUE), frame = frame)
+
+  old <- .libPaths()
+  .libPaths(c(lib, old))
+  defer(.libPaths(old), frame = frame)
+  lib
+}
+
+# Install the package at `path` into `lib`, attach it, and detach (and unload)
+# it when `frame` exits. The package name is taken from `basename(path)`.
+local_install_and_attach <- function(path, lib, frame = parent.frame()) {
+  quick_install(path, lib)
+  package <- basename(path)
+  library(package, character.only = TRUE)
+  defer(
+    try(detach(paste0("package:", package), unload = TRUE), silent = TRUE),
+    frame = frame
+  )
+  invisible(package)
 }
 
 # Lightweight equivalent of withr::defer()
