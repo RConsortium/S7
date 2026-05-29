@@ -41,6 +41,14 @@ S7_extends_S4 <- function(class) {
   length(S4_subclasses(class)) > 0L
 }
 
+inherits_S4 <- function(x) {
+  isS4(x) ||
+    {
+      klass <- S7_class(x)
+      !is.null(klass) && S7_extends_S4(klass)
+    }
+}
+
 S4_register_subclass <- function(class, env) {
   where <- topenv(env)
   subclasses <- S4_subclasses(class)
