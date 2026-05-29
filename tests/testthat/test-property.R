@@ -163,6 +163,28 @@ describe("prop setting", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
   })
+
+  it("setter can receive the property name (#552)", {
+    property_colour <- new_property(
+      class = class_character,
+      setter = function(self, name, value) {
+        prop(self, name) <- as.character(value)
+        self
+      }
+    )
+    Rectangle <- new_class(
+      "Rectangle",
+      properties = list(colour = property_colour, fill = property_colour),
+      package = NULL
+    )
+
+    r <- Rectangle(colour = "red", fill = 99L)
+    expect_equal(r@colour, "red")
+    expect_equal(r@fill, "99")
+
+    r@colour <- 42L
+    expect_equal(r@colour, "42")
+  })
 })
 
 describe("props<-", {
@@ -271,6 +293,59 @@ test_that("properties can be NULL", {
   expect_equal(x@x, NULL)
   expect_equal(prop_names(x), "x")
   expect_equal(props(x), list(x = NULL))
+})
+
+describe("prop_info()", {
+  it("returns a data frame describing each property", {
+    foo <- new_class(
+      "foo",
+      properties = list(
+        a = class_character,
+        b = new_property(class_numeric, default = 1),
+        c = new_property(getter = function(self) 1),
+        d = new_property(class_numeric, setter = function(self, value) self),
+        e = new_property(
+          class_numeric,
+          validator = function(value) NULL
+        )
+      )
+    )
+
+    info <- prop_info(foo)
+    expect_s3_class(info, "data.frame")
+    expect_equal(.row_names_info(info), -5L) # numeric row names
+    expect_equal(info$name, c("a", "b", "c", "d", "e"))
+    expect_equal(
+      info$class,
+      c(
+        "<character>",
+        "<integer> or <double>",
+        "<ANY>",
+        "<integer> or <double>",
+        "<integer> or <double>"
+      )
+    )
+    expect_equal(unname(info$default), I(list(NULL, 1, NULL, NULL, NULL)))
+    expect_equal(info$getter, c(FALSE, FALSE, TRUE, FALSE, FALSE))
+    expect_equal(info$setter, c(FALSE, FALSE, FALSE, TRUE, FALSE))
+    expect_equal(info$validator, c(FALSE, FALSE, FALSE, FALSE, TRUE))
+  })
+
+  it("works on instances", {
+    foo <- new_class("foo", properties = list(x = class_numeric))
+    expect_equal(prop_info(foo(1)), prop_info(foo))
+  })
+
+  it("returns a zero-row data frame when there are no properties", {
+    foo <- new_class("foo")
+    info <- prop_info(foo)
+    expect_s3_class(info, "data.frame")
+    expect_equal(nrow(info), 0)
+    expect_named(
+      info,
+      c("name", "default", "class", "getter", "setter", "validator")
+    )
+  })
 })
 
 describe("new_property()", {
@@ -597,4 +672,79 @@ test_that("custom setters don't evaulate call objects", {
     drop_attributes(cl),
     quote(abort(msg = "boom3", foo = bar, baz))
   )
+})
+
+
+test_that("errors from custom property accessors include a call that shows the class and prop name", {
+  error <- FALSE
+  foo <- new_class(
+    "foo",
+    properties = list(
+      x = new_property(
+        setter = \(self, value) if (error) stop("nope") else self,
+        getter = \(self) if (error) stop("nope") else 1
+      )
+    )
+  )
+
+  x <- foo()
+  error <- TRUE
+  getter_error <- tryCatch(x@x, error = identity)
+  setter_error <- tryCatch(x@x <- 1, error = identity)
+  expect_match(
+    deparse1(conditionCall(getter_error)[[1]]),
+    "<foo>@x",
+    fixed = TRUE
+  )
+  expect_match(
+    deparse1(conditionCall(setter_error)[[1]]),
+    "<foo>@x",
+    fixed = TRUE
+  )
+})
+
+test_that("erroring getter/setter doesn't leave object in broken state", {
+  # https://github.com/RConsortium/S7/issues/520
+
+  Test <- new_class(
+    "Test",
+    properties = list(
+      a = new_property(
+        getter = function(self) {
+          if (self@a == 10) {
+            stop("a is 10")
+          }
+          self@a
+        },
+        setter = function(self, value) {
+          if (value == 11) {
+            stop("value is 11")
+          }
+          self@a <- value
+          self
+        }
+      )
+    )
+  )
+
+  t <- Test(a = 10)
+  expect_error(t@a, "a is 10")
+  expect_error(t@a, "a is 10")
+
+  expect_error(t@a <- 11, "value is 11")
+  expect_error(t@a <- 11, "value is 11")
+
+  t@a <- 1
+  expect_equal(t@a, 1)
+})
+
+test_that("prop<- doesn't evaluate language values (#511)", {
+  Cls <- new_class("Cls", properties = list(r = class_any))
+
+  foo <- Cls()
+  foo@r <- as.symbol("x")
+  expect_equal(foo@r, quote(x))
+
+  foo@r <- quote(x + 1)
+  expect_equal(foo@r, quote(x + 1))
 })

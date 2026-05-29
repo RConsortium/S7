@@ -1,0 +1,24 @@
+# check_function() accepts a matching single signature
+
+    Code
+      check_function(1, alist(x = ), arg = "f")
+    Condition
+      Error:
+      ! `f` must be a function.
+
+---
+
+    Code
+      check_function(function(y) { }, alist(x = ), arg = "f")
+    Condition
+      Error:
+      ! `f` must be function(x), not function(y).
+
+# check_function() accepts any of several candidate signatures
+
+    Code
+      check_function(function(x, y, z) { }, sigs, arg = "setter")
+    Condition
+      Error:
+      ! `setter` must be function(self, value) or function(self, name, value), not function(x, y, z).
+

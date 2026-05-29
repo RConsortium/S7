@@ -103,9 +103,8 @@ methods_register <- function() {
 
     if (isNamespaceLoaded(x$generic$package)) {
       register()
-    } else {
-      setHook(packageEvent(x$generic$package, "onLoad"), register)
     }
+    setHook(packageEvent(x$generic$package, "onLoad"), register)
   }
 
   invisible()
@@ -153,6 +152,19 @@ external_methods_add <- function(package, generic, signature, method) {
   )
 
   S7_methods_table(package) <- tbl
+  invisible()
+}
+
+external_methods_remove <- function(package, generic, signature) {
+  tbl <- S7_methods_table(package)
+  if (length(tbl) == 0) {
+    return(invisible())
+  }
+
+  keep <- !vlapply(tbl, function(x) {
+    identical(x$generic, generic) && identical(x$signature, signature)
+  })
+  S7_methods_table(package) <- tbl[keep]
   invisible()
 }
 

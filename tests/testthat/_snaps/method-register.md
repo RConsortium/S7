@@ -24,7 +24,7 @@
       x <- 10
       method(x, class_character) <- (function(x) ...)
     Condition
-      Error:
+      Error in `method<-`:
       ! `generic` must be a function, not a <double>.
     Code
       method(foo, 1) <- (function(x) ...)
@@ -36,6 +36,48 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+
+# method unregistration / removes S7 method via NULL assignment
+
+    Code
+      foo("x")
+    Condition
+      Error:
+      ! Can't find method for `foo(<character>)`.
+
+# method unregistration / removes method with multi-dispatch signature
+
+    Code
+      foo(A(), B())
+    Condition
+      Error:
+      ! Can't find method for generic `foo(x, y)`:
+      - x: <S7::A>
+      - y: <S7::B>
+
+# method unregistration / errors when unregistering from an S3 generic
+
+    Code
+      method(sum, foo) <- NULL
+    Condition
+      Error in `method<-`:
+      ! Can't unregister methods for S3 generics
+
+---
+
+    Code
+      method(base_sum, foo) <- NULL
+    Condition
+      Error in `method<-`:
+      ! Can't unregister methods for S3 generics
+
+# method unregistration / errors when unregistering from an S4 generic
+
+    Code
+      method(removeS4, S4foo) <- NULL
+    Condition
+      Error in `method<-`:
+      ! Can't unregister methods for S4 generics
 
 # as_signature() / accepts a length-1 list for single dispatch (#555)
 
@@ -94,6 +136,15 @@
       ! foo() generic lacks `...` so method formals must match generic formals exactly.
       - generic formals: foo(x)
       - method formals:  foo(x, y)
+
+# check_method rejects primitive functions
+
+    Code
+      foo <- new_generic("foo", "x")
+      check_method(log, foo)
+    Condition
+      Error:
+      ! foo(???) must be a function.
 
 # check_method warn if default arguments don't match
 

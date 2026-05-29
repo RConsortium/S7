@@ -23,6 +23,14 @@ paste_c <- function(...) {
   paste(c(...), collapse = "")
 }
 
+stop2 <- function(message, call = sys.call(-1L), class = NULL) {
+  stop(errorCondition(
+    message = paste(message, collapse = "\n"),
+    call = call,
+    class = class
+  ))
+}
+
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
   if (single) {
@@ -89,33 +97,56 @@ str_function <- function(object, ..., nest.lev = 0) {
   str(object, ..., nest.lev = nest.lev)
 }
 
-check_name <- function(name, arg = deparse(substitute(name))) {
+check_name <- function(
+  name,
+  arg = deparse(substitute(name)),
+  call = sys.call(-1L)
+) {
   if (length(name) != 1 || !is.character(name)) {
     msg <- sprintf("`%s` must be a single string.", arg)
-    stop(msg, call. = FALSE)
+    stop2(msg, call = call)
   }
   if (is.na(name) || name == "") {
     msg <- sprintf("`%s` must not be \"\" or NA.", arg)
-    stop(msg, call. = FALSE)
+    stop2(msg, call = call)
   }
 }
 
-check_function <- function(f, args, arg = deparse(substitute(f))) {
+check_function <- function(
+  f,
+  args,
+  arg = deparse(substitute(f)),
+  call = sys.call(-1L)
+) {
   if (!is.function(f)) {
     msg <- sprintf("`%s` must be a function.", arg)
-    stop(msg, call. = FALSE)
+    stop2(msg, call = call)
   }
 
-  args <- as.pairlist(args)
-  if (!identical(formals(f), args)) {
-    msg <- sprintf(
-      "`%s` must be %s, not %s.",
-      arg,
-      show_args(args),
-      show_args(formals(f))
-    )
-    stop(msg, call. = FALSE)
+  # `args` is either a single formals list (e.g. alist(self = , value = ))
+  # or an unnamed list of such formals lists. Distinguish via names: a
+  # single signature has named entries (one per arg); a list of signatures
+  # is unnamed.
+  if (length(args) == 0 || any(nzchar(names2(args)))) {
+    candidates <- list(as.pairlist(args))
+  } else {
+    candidates <- lapply(args, as.pairlist)
   }
+
+  for (cand in candidates) {
+    if (identical(formals(f), cand)) {
+      return(invisible())
+    }
+  }
+
+  expected <- oxford_or(vapply(candidates, show_args, character(1)))
+  msg <- sprintf(
+    "`%s` must be %s, not %s.",
+    arg,
+    expected,
+    show_args(formals(f))
+  )
+  stop2(msg, call = call)
 }
 
 show_function <- function(x, constructor = FALSE) {
@@ -147,7 +178,7 @@ modify_list <- function(x, new_vals) {
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
-      stop("All elements in `new_vals` must be named.", call. = FALSE)
+      stop2("All elements in `new_vals` must be named.")
     }
     if (is.null(x)) {
       x <- list()
@@ -176,7 +207,7 @@ list2DF <- function(x = list(), nrow = 0L) {
   stopifnot(is.list(x), is.null(nrow) || nrow >= 0L)
   if (n <- length(x)) {
     if (length(nrow <- unique(lengths(x))) > 1L) {
-      stop("All variables should have the same length.", call. = FALSE)
+      stop2("All variables should have the same length.")
     }
   } else {
     if (is.null(nrow)) {

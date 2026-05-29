@@ -93,16 +93,19 @@ convert <- function(from, to, ...) {
       c("- from: ", obj_desc(from), "\n"),
       c("- to  : ", class_desc(to))
     )
-    stop(msg)
+    stop2(msg)
   }
 }
 
-convert_up <- function(from, to) {
+convert_up <- function(from, to, call = sys.call(-1L)) {
+  check_not_environment(from, "convert()", call = call)
+
   from_class <- S7_class(from)
-  if (is.null(from_class)) {
-    from_props <- character()
+  if (is_class(from_class)) {
+    from_props <- prop_names(from)
   } else {
-    from_props <- names(from_class@properties)
+    # `from` is a base, S3, or S4 object, so it has no S7 properties
+    from_props <- character()
   }
 
   if (is_base_class(to)) {
@@ -115,7 +118,7 @@ convert_up <- function(from, to) {
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
   } else {
-    stop("Unreachable.")
+    stop2("Unreachable.")
   }
   from
 }
@@ -125,10 +128,17 @@ is_down_cast <- function(x, class) {
 }
 
 convert_down <- function(from, to, ...) {
+  from_class <- S7_class(from)
+
+  if (!is_class(from_class)) {
+    # `from` is a base or S3 object; pass it as `.data` to the constructor
+    return(to(.data = from, ...))
+  }
+
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
 
-  from_props <- S7_class(from)@properties
+  from_props <- from_class@properties
   from_props <- Filter(Negate(prop_is_read_only), from_props)
   from_prop_names <- names(from_props)
 

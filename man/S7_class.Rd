@@ -13,17 +13,13 @@ S7_class(object)
 A class specification.
 }
 \description{
-\code{S7_class()} returns a class specification for any R object, in a form
+\code{S7_class()} returns a \link[=as_class]{class specification} for any R object, in a form
 that can be passed to \code{\link[=method]{method()}} or used in any S7 dispatch context.
-}
-\details{
 \itemize{
-\item For S7 objects, returns the \link[=new_class]{S7 class}.
-\item For S4 objects, returns the S4 class representation.
-\item For S3 objects, returns a \code{\link[=new_S3_class]{new_S3_class()}} wrapping \code{class(x)}.
-\item For base types, returns the matching \verb{class_*} (e.g. \link{class_integer}
-for integer vectors, \link{class_function} for functions).
-\item For \code{NULL}, returns \code{NULL}.
+\item For S7 objects, the \link[=new_class]{S7 class}.
+\item For S3 objects, a \code{\link[=new_S3_class]{new_S3_class()}} wrapping \code{class(x)}.
+\item For S4 objects, the S4 class.
+\item For base types, the matching \verb{class_*} (e.g. \link{class_integer}).
 \item For missing arguments, returns \link{class_missing}.
 }
 }

@@ -57,7 +57,7 @@
     Code
       new_class(1)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `name` must be a single string.
     Code
       new_class("foo", 1)
@@ -72,22 +72,22 @@
     Code
       new_class("foo", package = 1)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `package` must be a single string.
     Code
       new_class("foo", constructor = 1)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `constructor` must be a function.
     Code
       new_class("foo", constructor = function() { })
     Condition
-      Error:
+      Error in `new_class()`:
       ! `constructor` must contain a call to `new_object()`.
     Code
       new_class("foo", validator = function() { })
     Condition
-      Error:
+      Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
 # S7 classes / can't inherit from S4 or class unions
@@ -95,26 +95,18 @@
     Code
       new_class("test", parent = parentS4)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
     Code
       new_class("test", parent = new_union("character"))
     Condition
-      Error in `FUN()`:
-      ! Can't convert `X[[i]]` to a valid class.
+      Error in `as_class()`:
+      ! Can't convert `..1` to a valid class.
       Class specification must be one of the following, not a <character>:
        * An S7 class object
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
-
-# S7 classes / can't inherit from an environment
-
-    Code
-      new_class("test", parent = class_environment)
-    Condition
-      Error:
-      ! Can't inherit from an environment.
 
 # abstract classes / can't be instantiated
 
@@ -139,7 +131,7 @@
     Code
       foo2(x = 2)
     Condition
-      Error:
+      Error in `foo2()`:
       ! <foo2> object is invalid:
       - @x has bad value
 
@@ -151,18 +143,39 @@
       Error in `new_object()`:
       ! `new_object()` must be called from within a constructor.
 
+# new_object() / errors if `.parent` doesn't inherit from the parent class (#409)
+
+    Code
+      Foo()
+    Condition
+      Error in `new_object()`:
+      ! `.parent` must be an instance of <Bar>, not S3<S7_base_class>.
+    Code
+      Baz()
+    Condition
+      Error in `new_object()`:
+      ! `.parent` must be an instance of <integer>, not <character>.
+
+# new_object() / errors if `.parent` is supplied but class has no parent
+
+    Code
+      NoParent()
+    Condition
+      Error in `new_object()`:
+      ! `.parent` must not be supplied when class has no parent.
+
 # new_object() / validates object
 
     Code
       foo("x")
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object properties are invalid:
       - @x must be <double>, not <character>
     Code
       foo(-1)
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object is invalid:
       - x must be positive
 
@@ -211,6 +224,16 @@
     Output
       List of 1
        $ : <text> chr "x"
+
+# S7 object / displays data.frame subclasses without error (#494)
+
+    Code
+      str(mydf(data.frame(a = 1:2, b = 1:2)))
+    Output
+      Classes 'mydf', 'S7_object' and 'data.frame':	2 obs. of  2 variables:
+      <mydf> 'data.frame':	2 obs. of  2 variables:
+       $ a: int  1 2
+       $ b: int  1 2
 
 # S7 object / displays list objects nicely
 
