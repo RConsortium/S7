@@ -39,6 +39,14 @@
   accept a length-1 list as `signature` for single-dispatch generics,
   matching the list-of-classes form required for multi-dispatch
   ([\#555](https://github.com/RConsortium/S7/issues/555)).
+- `method<-` can now register methods on S3 generics with base types
+  (e.g. `class_character`), S3 classes
+  ([`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md),
+  `class_factor`, etc.), S7 unions (expanded to one registration per
+  class), `class_any` (registered as the `default` method), and `NULL`
+  (registered as the `NULL` method). `class_missing` is explicitly
+  rejected since S3 dispatches on a single, always-present argument
+  ([\#455](https://github.com/RConsortium/S7/issues/455)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   experimentally allows `class_environment` as a parent again, so you
   can build S7 objects that share R’s reference semantics for

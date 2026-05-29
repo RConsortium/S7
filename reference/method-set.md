@@ -70,7 +70,10 @@ method(generic, signature) <- value
   of the above types. (For convenience you can also use a list in the
   single dispatch case too.)
 
-  For S3 generics, this must be a single S7 class.
+  For S3 generics, this can be any of the above types. There's one
+  exception: you can only use
+  [class_missing](https://rconsortium.github.io/S7/reference/class_missing.md)
+  with S3 operators that support double dispatch (e.g. `+` and `-`).
 
   The same rules apply to S4 generics as S7 generics.
 
