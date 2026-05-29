@@ -127,6 +127,25 @@ describe("fallback convert", {
     expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
+
+  it("can convert to S4 class using methods::as", {
+    on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
+    setClass("ParentS4", slots = list(x = "numeric"))
+
+    ChildS7 <- new_class(
+      "ChildS7",
+      parent = getClass("ParentS4"),
+      properties = list(y = class_character),
+      package = NULL
+    )
+
+    child <- ChildS7(x = 10, y = "a")
+    parent <- convert(child, to = getClass("ParentS4"))
+
+    expect_true(isS4(parent))
+    expect_equal(class(parent)[[1]], "ParentS4")
+    expect_equal(methods::slot(parent, "x"), 10)
+  })
 })
 
 test_that("convert() falls back to as.*() for base type targets (#472)", {
