@@ -122,6 +122,45 @@ describe("fallback convert", {
     expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
+
+  it("can convert base type to S7 subclass (#537)", {
+    my_logical <- new_class(
+      "my_logical",
+      parent = class_logical,
+      package = NULL
+    )
+    expect_equal(convert(TRUE, my_logical), my_logical(TRUE))
+
+    my_logical2 <- new_class(
+      "my_logical2",
+      parent = class_logical,
+      properties = list(x = class_integer),
+      package = NULL
+    )
+    expect_equal(
+      convert(TRUE, my_logical2, x = 42L),
+      my_logical2(TRUE, x = 42L)
+    )
+  })
+
+  it("can convert S3 object to S7 subclass", {
+    my_factor <- new_class("my_factor", parent = class_factor, package = NULL)
+    obj <- convert(factor(c("a", "b", "a")), my_factor)
+    expect_equal(obj, my_factor(c(1L, 2L, 1L), levels = c("a", "b")))
+  })
+
+  it("can convert base type to base class (#537)", {
+    obj <- convert(TRUE, class_logical)
+    expect_equal(obj, TRUE)
+  })
+
+  it("can convert S3 object to its S3 class and underlying base class", {
+    obj <- convert(factor("a"), class_factor)
+    expect_equal(obj, structure(1L, levels = "a", class = "factor"))
+
+    obj <- convert(factor("a"), class_integer)
+    expect_equal(obj, structure(1L, levels = "a"))
+  })
 })
 
 test_that("convert() falls back to as.*() for base type targets (#472)", {
