@@ -328,7 +328,14 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
   object = protect_quote_if_needed(object, &n_protected);
   value = protect_quote_if_needed(value, &n_protected);
 
-  SEXP call = PROTECT(Rf_lang3(fn_sym, object, value));
+  // Support both function(self, value) and function(self, name, value)
+  // signatures. `name` is a string, so it self-evaluates and needs no quoting.
+  SEXP call;
+  if (Rf_length(getClosureFormals(setter)) >= 3) {
+    call = PROTECT(Rf_lang4(fn_sym, object, name, value));
+  } else {
+    call = PROTECT(Rf_lang3(fn_sym, object, value));
+  }
   ++n_protected;
   call_data.call = call;
 

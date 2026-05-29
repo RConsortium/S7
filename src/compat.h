@@ -15,12 +15,14 @@ static inline
 SEXP s7_get_var_in_frame(SEXP env, SEXP sym, SEXP ifnotfound) {
   return R_getVarEx(sym, env, FALSE, ifnotfound);
 }
+#define getClosureFormals R_ClosureFormals
 #else
 static inline
 SEXP s7_get_var_in_frame(SEXP env, SEXP sym, SEXP ifnotfound) {
   SEXP val = Rf_findVarInFrame(env, sym);
   return val == R_UnboundValue ? ifnotfound : val;
 }
+#define getClosureFormals FORMALS
 #endif
 
 static inline

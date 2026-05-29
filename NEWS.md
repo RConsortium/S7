@@ -13,6 +13,7 @@
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
+* `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
 * New `prop_info()` returns a data frame summarising the properties of an S7 object or class, with one row per property and columns for name, default, class, getter, setter, and validator (#551).
 * `prop()` and `prop<-()` errors from custom getters and setters now report a synthetic `<Class>@<prop>` call, making it easier to see which property triggered the error (#536, #627, #638).
