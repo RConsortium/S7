@@ -128,16 +128,30 @@ check_function <- function(f, args, arg = deparse(substitute(f))) {
     stop(msg, call. = FALSE)
   }
 
-  args <- as.pairlist(args)
-  if (!identical(formals(f), args)) {
-    msg <- sprintf(
-      "`%s` must be %s, not %s.",
-      arg,
-      show_args(args),
-      show_args(formals(f))
-    )
-    stop(msg, call. = FALSE)
+  # `args` is either a single formals list (e.g. alist(self = , value = ))
+  # or an unnamed list of such formals lists. Distinguish via names: a
+  # single signature has named entries (one per arg); a list of signatures
+  # is unnamed.
+  if (length(args) == 0 || any(nzchar(names2(args)))) {
+    candidates <- list(as.pairlist(args))
+  } else {
+    candidates <- lapply(args, as.pairlist)
   }
+
+  for (cand in candidates) {
+    if (identical(formals(f), cand)) {
+      return(invisible())
+    }
+  }
+
+  expected <- oxford_or(vapply(candidates, show_args, character(1)))
+  msg <- sprintf(
+    "`%s` must be %s, not %s.",
+    arg,
+    expected,
+    show_args(formals(f))
+  )
+  stop(msg, call. = FALSE)
 }
 
 show_function <- function(x, constructor = FALSE) {

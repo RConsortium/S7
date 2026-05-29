@@ -66,6 +66,12 @@
 validate <- function(object, recursive = TRUE, properties = TRUE) {
   check_is_S7(object)
 
+  parent <- if (!recursive) S7_class(object)@parent
+  validate_from(object, parent = parent, properties = properties)
+}
+
+# validates `object` assuming `parent` (if supplied) has been validated
+validate_from <- function(object, parent = NULL, properties = TRUE) {
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))
   }
@@ -75,7 +81,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   # First, check property types - if these are incorrect, the validator
   # is likely to return spurious errors
   if (properties) {
-    errors <- validate_properties(object, class)
+    errors <- validate_properties(object, class, parent_class = parent)
     if (length(errors) > 0) {
       bullets <- paste0("- ", errors, collapse = "\n")
       msg <- sprintf(
@@ -91,7 +97,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
     }
   }
 
-  # Next, recursively validate the object
+  # Next, walk up the class hierarchy and run validators, stopping at `parent`
   errors <- character()
   repeat {
     error <- class_validate(class, object)
@@ -104,7 +110,7 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
         typeof(error)
       ))
     }
-    if (!is_class(class) || !recursive) {
+    if (!is_class(class) || identical(class@parent, parent)) {
       break
     }
     class <- class@parent
@@ -120,12 +126,17 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   invisible(object)
 }
 
-validate_properties <- function(object, class) {
+validate_properties <- function(object, class, parent_class = NULL) {
   errors <- character()
+  parent_props <- if (is_class(parent_class)) parent_class@properties
 
   for (prop_obj in class@properties) {
     # Don't validate dynamic properties
     if (!is.null(prop_obj$getter)) {
+      next
+    }
+    # Skip properties inherited unchanged from an already-validated parent
+    if (identical(parent_props[[prop_obj$name]], prop_obj)) {
       next
     }
 

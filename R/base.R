@@ -113,7 +113,9 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_name`
 #' * `class_call`
 #' * `class_function`
-#' * `class_environment` (can only be used for properties)
+#'
+#' See also [class_environment] which is documented separately due to the
+#' complexities introduced by their reference semantics.
 #'
 #' We also include three union types to model numerics, atomics, and vectors
 #' respectively:
@@ -200,12 +202,6 @@ class_call <- new_base_class("call")
 #' @format NULL
 #' @order 1
 class_function <- new_base_class("function", "fun")
-
-#' @export
-#' @rdname base_classes
-#' @format NULL
-#' @order 1
-class_environment <- new_base_class("environment")
 
 #' @export
 #' @rdname base_classes

@@ -108,14 +108,6 @@
        * An S4 class object
        * A base class
 
-# S7 classes / can't inherit from an environment
-
-    Code
-      new_class("test", parent = class_environment)
-    Condition
-      Error:
-      ! Can't inherit from an environment.
-
 # abstract classes / can't be instantiated
 
     Code
