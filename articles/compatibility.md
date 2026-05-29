@@ -44,16 +44,45 @@ classes, and S3 dispatch will operate on them normally.
 
 ``` r
 
-Foo <- new_class("Foo")
+Foo <- new_class("Foo", package = "Bar")
 class(Foo())
-#> [1] "Foo"       "S7_object"
+#> [1] "Bar::Foo"  "S7_object"
 
-mean.Foo <- function(x, ...) {
+`mean.Bar::Foo` <- function(x, ...) {
   "mean of foo"
 }
 
 mean(Foo())
 #> [1] "mean of foo"
+```
+
+Note that when defining classes in a package, the S3 class name will be
+`{package}::{class}`, and that means you’ll need to use `` ` `` to
+define S3 methods.
+
+### Generics
+
+If you convert an S3 generic to an S7 generic and want existing S3
+methods (typically in other packages) to continue to work, add a
+`class_any` method that calls
+[`UseMethod()`](https://rdrr.io/r/base/UseMethod.html):
+
+``` r
+
+foo <- new_generic("foo", "x")
+
+# Default method dispatches to S3
+method(foo, class_any) <- function(x, ...) {
+  UseMethod("foo")
+}
+```
+
+And then if you need a genuine default method, use S3:
+
+``` r
+
+# Define the "true" default method
+foo.default <- function(x) paste0(x, " + 10")
 ```
 
 ### Classes
