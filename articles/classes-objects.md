@@ -64,11 +64,11 @@ property is modified:
 ``` r
 
 x <- Range(1, 2:3)
-#> Error:
+#> Error in `Range()`:
 #> ! <Range> object properties are invalid:
 #> - @end must be <double>, not <integer>
 x <- Range(10, 1)
-#> Error:
+#> Error in `Range()`:
 #> ! <Range> object is invalid:
 #> - @end (1) must be greater than or equal to @start (10)
 
@@ -89,7 +89,7 @@ and balances of `@`:
 x <- Range(1, 2)
 attr(x, "start") <- 3
 validate(x)
-#> Error:
+#> Error in `validate()`:
 #> ! <Range> object is invalid:
 #> - @end (2) must be greater than or equal to @start (3)
 ```
@@ -201,12 +201,12 @@ Range <- new_class("Range",
 )
 
 Range(start = c(1.5, 3.5))
-#> Error:
+#> Error in `Range()`:
 #> ! <Range> object properties are invalid:
 #> - @start must be length 1
 #> - @end must be length 1
 Range(end = c(1.5, 3.5))
-#> Error:
+#> Error in `Range()`:
 #> ! <Range> object properties are invalid:
 #> - @start must be length 1
 #> - @end must be length 1
@@ -438,11 +438,11 @@ Person <- new_class("Person", properties = list(
 ))
 
 try(Person())
-#> Error : <Person> object properties are invalid:
+#> Error in Person() : <Person> object properties are invalid:
 #> - @name must be a non-empty string
 
 try(Person(1)) # class_character$validator() is also checked.
-#> Error : <Person> object properties are invalid:
+#> Error in Person(1) : <Person> object properties are invalid:
 #> - @name must be <character>, not <double>
 
 Person("Alice")

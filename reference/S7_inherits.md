@@ -9,7 +9,12 @@
 ``` r
 S7_inherits(x, class = NULL)
 
-check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
+check_is_S7(
+  x,
+  class = NULL,
+  arg = deparse(substitute(x)),
+  call = sys.call(-1L)
+)
 ```
 
 ## Arguments
@@ -32,6 +37,11 @@ check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
 - arg:
 
   Argument name used in error message.
+
+- call:
+
+  The call to report in the error message. Defaults to the calling
+  function.
 
 ## Value
 
@@ -59,7 +69,8 @@ check_is_S7(Foo1(), Foo1)
 S7_inherits(Foo1(), Foo2)
 #> [1] FALSE
 try(check_is_S7(Foo1(), Foo2))
-#> Error : `Foo1()` must be a <Foo2>, not a <Foo1>.
+#> Error in try(check_is_S7(Foo1(), Foo2)) : 
+#>   `Foo1()` must be a <Foo2>, not a <Foo1>.
 
 # Also works with other class specifications
 S7_inherits(1L, class_integer)

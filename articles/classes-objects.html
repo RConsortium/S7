@@ -139,11 +139,11 @@ interactions between properties.</p>
 property is modified:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `Range()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @end must be &lt;double&gt;, not &lt;integer&gt;</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">10</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `Range()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end (1) must be greater than or equal to @start (10)</span></span>
 <span></span>
@@ -159,7 +159,7 @@ low-level R function to bypass the usual checks and balances of
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">Range</span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"start"</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
 <span><span class="fu"><a href="../reference/validate.html">validate</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `validate()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object is invalid:</span></span>
 <span><span class="co">#&gt; - @end (2) must be greater than or equal to @start (3)</span></span></code></pre></div>
 </div>
@@ -255,12 +255,12 @@ could implement those at the property level:</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">Range</span><span class="op">(</span>start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `Range()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @start must be length 1</span></span>
 <span><span class="co">#&gt; - @end must be length 1</span></span>
 <span><span class="fu">Range</span><span class="op">(</span>end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">3.5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;"> in `Range()`:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> &lt;Range&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @start must be length 1</span></span>
 <span><span class="co">#&gt; - @end must be length 1</span></span></code></pre></div>
@@ -471,11 +471,11 @@ deprecate a property:</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">Person</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error : &lt;Person&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; Error in Person() : &lt;Person&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @name must be a non-empty string</span></span>
 <span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">Person</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="co"># class_character$validator() is also checked.</span></span>
-<span><span class="co">#&gt; Error : &lt;Person&gt; object properties are invalid:</span></span>
+<span><span class="co">#&gt; Error in Person(1) : &lt;Person&gt; object properties are invalid:</span></span>
 <span><span class="co">#&gt; - @name must be &lt;character&gt;, not &lt;double&gt;</span></span>
 <span></span>
 <span><span class="fu">Person</span><span class="op">(</span><span class="st">"Alice"</span><span class="op">)</span></span>

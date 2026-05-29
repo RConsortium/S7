@@ -2,6 +2,9 @@
 
 ## S7 (development version)
 
+- Errors thrown by S7 now report the function where they occurred,
+  making it easier to track down the source of a problem
+  ([\#646](https://github.com/RConsortium/S7/issues/646)).
 - `method<-` now accepts `NULL` to unregister an existing method,
   e.g. `method(foo, class_character) <- NULL`
   ([\#613](https://github.com/RConsortium/S7/issues/613)).

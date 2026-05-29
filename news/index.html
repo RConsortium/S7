@@ -53,7 +53,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li>
+<ul><li>Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (<a href="https://github.com/RConsortium/S7/issues/646" class="external-link">#646</a>).</li>
+<li>
 <code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer materialises ALTREP parent values (e.g. <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (<a href="https://github.com/kschaubroeck" class="external-link">@kschaubroeck</a>, <a href="https://github.com/RConsortium/S7/issues/607" class="external-link">#607</a>).</li>

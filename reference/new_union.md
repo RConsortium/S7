@@ -54,7 +54,7 @@ Foo(x = letters[1:5])
 #> <Foo>
 #>  @ x: chr [1:5] "a" "b" "c" "d" "e"
 try(Foo(1:3))
-#> Error : <Foo> object properties are invalid:
+#> Error in Foo(1:3) : <Foo> object properties are invalid:
 #> - @x must be <logical> or <character>, not <integer>
 
 bar <- new_generic("bar", "x")

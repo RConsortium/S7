@@ -138,7 +138,8 @@ r@end
 
 # S7 automatically ensures that properties are of the declared types:
 try(Range(start = "hello", end = 20))
-#> Error : <Range> object properties are invalid:
+#> Error in Range(start = "hello", end = 20) : 
+#>   <Range> object properties are invalid:
 #> - @start must be <integer> or <double>, not <character>
 
 # But we might also want to use a validator to ensure that start and end
@@ -159,14 +160,15 @@ Range <- new_class("Range",
   }
 )
 try(Range(start = c(10, 15), end = 20))
-#> Error : <Range> object is invalid:
+#> Error in Range(start = c(10, 15), end = 20) : <Range> object is invalid:
 #> - @start must be a single number
 try(Range(start = 20, end = 10))
-#> Error : <Range> object is invalid:
+#> Error in Range(start = 20, end = 10) : <Range> object is invalid:
 #> - @end must be great than or equal to @start
 
 r <- Range(start = 10, end = 20)
 try(r@start <- 25)
-#> Error : <Range> object is invalid:
+#> Error in (function (object, recursive = TRUE, properties = TRUE)  : 
+#>   <Range> object is invalid:
 #> - @end must be great than or equal to @start
 ```

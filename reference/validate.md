@@ -63,13 +63,14 @@ Range <- new_class("Range",
 )
 # You can't construct an invalid object:
 try(Range(1, 1))
-#> Error : <Range> object is invalid:
+#> Error in Range(1, 1) : <Range> object is invalid:
 #> - start must be smaller than end
 
 # And you can't create an invalid object with @<-
 r <- Range(1, 2)
 try(r@end <- 1)
-#> Error : <Range> object is invalid:
+#> Error in (function (object, recursive = TRUE, properties = TRUE)  : 
+#>   <Range> object is invalid:
 #> - start must be smaller than end
 
 # But what if you want to move a range to the right?
@@ -80,7 +81,8 @@ rightwards <- function(r, x) {
 }
 # This function doesn't work because it creates a temporarily invalid state
 try(rightwards(r, 10))
-#> Error : <Range> object is invalid:
+#> Error in (function (object, recursive = TRUE, properties = TRUE)  : 
+#>   <Range> object is invalid:
 #> - start must be smaller than end
 
 # This is the perfect use case for valid_eventually():
