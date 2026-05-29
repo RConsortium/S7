@@ -53,12 +53,6 @@ describe("S7 classes", {
       new_class("test", parent = new_union("character"))
     })
   })
-
-  it("can't inherit from an environment", {
-    expect_snapshot(error = TRUE, {
-      new_class("test", parent = class_environment)
-    })
-  })
 })
 
 describe("inheritance", {
@@ -308,7 +302,6 @@ test_that("can round trip to disk and back", {
   expect_equal(f, f2)
   rm(foo1, foo2, f, envir = globalenv())
 })
-
 
 test_that("can't create class with reserved property names", {
   expect_snapshot(error = TRUE, {

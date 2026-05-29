@@ -6,22 +6,6 @@
 
     Can't find property <foo>@x.
 
-# property retrieval / reports dynamic getter errors as property calls
-
-    Code
-      foo()@x
-    Condition
-      Error in `<foo>@x`:
-      ! nope
-
-# prop setting / reports dynamic setter errors as property calls
-
-    Code
-      obj@x <- 1
-    Condition
-      Error in `<foo>@x`:
-      ! nope
-
 # prop setting / can't set read-only properties
 
     Code
@@ -82,7 +66,7 @@
       new_property(setter = function(x, y, z) { })
     Condition
       Error:
-      ! `setter` must be function(self, value), not function(x, y, z).
+      ! `setter` must be function(self, value) or function(self, name, value), not function(x, y, z).
 
 # new_property() / validates default
 
@@ -276,3 +260,4 @@
       [tx] finished transmitting.
     Code
       expect_equal(receiver@message, "goodbye")
+

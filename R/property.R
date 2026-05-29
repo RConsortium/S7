@@ -21,8 +21,12 @@
 #'   an object of the correct `class`; it will not be validated automatically.
 #'
 #'   If a property has a getter but doesn't have a setter, it is read only.
-#' @param setter An optional function used to set the value. The function
-#'   should take `self` and `value` and return a modified object.
+#' @param setter An optional function used to set the value.
+#'   There are two supported forms:
+#'
+#'   * `function(self, value)` is supplied the object and the value.
+#'   * `function(self, name, value)` also gets the property name being set,
+#'      which makes it easy to reuse the same property for multiple properties.
 #' @param validator A function taking a single argument, `value`, the value
 #'   to validate.
 #'
@@ -93,7 +97,13 @@ new_property <- function(
     check_function(getter, alist(self = ))
   }
   if (!is.null(setter)) {
-    check_function(setter, alist(self = , value = ))
+    check_function(
+      setter,
+      list(
+        alist(self = , value = ),
+        alist(self = , name = , value = )
+      )
+    )
   }
   if (!is.null(validator)) {
     check_function(validator, alist(value = ))
