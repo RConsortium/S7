@@ -3,17 +3,21 @@ new_base_class <- function(name, constructor_name = name) {
 
   constructor <- new_function(
     args = list(.data = base_default(name)),
-    body = quote(.data),
-    env = baseenv()
+    body = quote(.data)
   )
 
-  validator <- function(object) {
-    if (base_class(object) != name) {
-      sprintf("Underlying data must be <%s> not <%s>", name, base_class(object))
-    }
-  }
-
-  validator <- utils::removeSource(validator)
+  validator <- new_function(
+    args = alist(object = ),
+    body = bquote(
+      if (base_class(object) != .(name)) {
+        sprintf(
+          "Underlying data must be <%s> not <%s>",
+          .(name),
+          base_class(object)
+        )
+      }
+    )
+  )
 
   out <- list(
     class = name,
