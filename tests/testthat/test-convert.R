@@ -146,6 +146,30 @@ describe("fallback convert", {
     expect_equal(class(parent)[[1]], "ParentS4")
     expect_equal(methods::slot(parent, "x"), 10)
   })
+
+  it("can convert an S4-derived S7 object to an S4 object via methods::as", {
+    on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
+    setClass("ParentS4", slots = list(x = "numeric"))
+    setClass("UnrelatedS4", slots = list(z = "character"))
+
+    ChildS7 <- new_class(
+      "ChildS7",
+      parent = getClass("ParentS4"),
+      properties = list(y = class_character),
+      package = NULL
+    )
+
+    setAs("ChildS7", "UnrelatedS4", function(from) {
+      new("UnrelatedS4", z = as.character(methods::slot(from, "x")))
+    })
+
+    child <- ChildS7(x = 42, y = "a")
+    res <- convert(child, to = getClass("UnrelatedS4"))
+
+    expect_true(isS4(res))
+    expect_equal(class(res)[[1]], "UnrelatedS4")
+    expect_equal(methods::slot(res, "z"), "42")
+  })
 })
 
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
