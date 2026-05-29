@@ -355,6 +355,8 @@ test_that("S4_package_name resolves S4 package name correctly in all cases", {
   mock_S4 <- getGeneric("axTicks")
   mock_S4@package <- "base"
   expect_equal(S4_package_name(mock_S4, stats_ns), "graphics")
+})
+
 test_that("S7 class extending S4 class with multiple parents works", {
   on.exit(S4_remove_classes(c(
     "MultiParent1",
