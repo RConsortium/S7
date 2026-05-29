@@ -64,6 +64,19 @@ describe("method registration", {
     }
   })
 
+  it("can register S7 method for S3 generic defined in a local environment", {
+    s3_gen <- local(function(x) UseMethod("s3_gen"))
+    defer(unregister_s3_methods(topenv(environment(s3_gen)), "s3_gen"))
+
+    local({
+      method(s3_gen, class_character) <- function(x) "char"
+      method(s3_gen, class_integer) <- function(x) "int"
+    })
+
+    expect_equal(s3_gen("a"), "char")
+    expect_equal(s3_gen(1L), "int")
+  })
+
   it("can register S7 method for S3 generic with base type signature", {
     local_s3_generic("s3_gen")
     method(s3_gen, class_character) <- function(x) "char"
