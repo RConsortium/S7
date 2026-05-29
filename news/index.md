@@ -69,6 +69,11 @@
   in memory instead of O(n)
   ([@kschaubroeck](https://github.com/kschaubroeck),
   [\#607](https://github.com/RConsortium/S7/issues/607)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  no longer re-runs property validators for properties inherited
+  unchanged from an already-validated parent class, so constructing an
+  instance of a deeply nested class hierarchy validates each property
+  exactly once ([\#539](https://github.com/RConsortium/S7/issues/539)).
 - [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
   now accepts a `setter` that takes `self`, `name`, and `value` making
   it easy to reuse the same definition for multiple properties
