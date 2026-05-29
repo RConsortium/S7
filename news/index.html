@@ -58,7 +58,6 @@
 <code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer materialises ALTREP parent values (e.g. <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (<a href="https://github.com/kschaubroeck" class="external-link">@kschaubroeck</a>, <a href="https://github.com/RConsortium/S7/issues/607" class="external-link">#607</a>).</li>
-<li>Internal changes to support R-devel (4.6) (<a href="https://github.com/RConsortium/S7/issues/592" class="external-link">#592</a>, <a href="https://github.com/RConsortium/S7/issues/593" class="external-link">#593</a>, <a href="https://github.com/RConsortium/S7/issues/598" class="external-link">#598</a>, <a href="https://github.com/RConsortium/S7/issues/600" class="external-link">#600</a>).</li>
 <li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
 <li>
 <code>S7_error_method_not_found</code> now has a correct class vector without a duplicate <code>"error"</code> entry (<a href="https://github.com/jjjermiah" class="external-link">@jjjermiah</a>, <a href="https://github.com/RConsortium/S7/issues/604" class="external-link">#604</a>).</li>
@@ -106,11 +105,12 @@
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
 <li>
 <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a <code>dim</code> attribute incompatible with the bare base type) no longer errors (<a href="https://github.com/RConsortium/S7/issues/494" class="external-link">#494</a>).</li>
+<li>
+<code><a href="../reference/validate.html">validate()</a></code> now signals validation errors with class <code>S7_error_validation_failed</code>, so they can be caught with <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch()</a></code> (<a href="https://github.com/RConsortium/S7/issues/602" class="external-link">#602</a>, <a href="https://github.com/RConsortium/S7/issues/605" class="external-link">#605</a>).</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.2" id="s7-022">S7 0.2.2<a class="anchor" aria-label="anchor" href="#s7-022"></a></h2><p class="text-muted">CRAN release: 2026-04-22</p>
-<ul><li>
-<code><a href="../reference/validate.html">validate()</a></code> now signals validation errors with class <code>S7_error_validation_failed</code>, so they can be caught with <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch()</a></code> (<a href="https://github.com/RConsortium/S7/issues/602" class="external-link">#602</a>, <a href="https://github.com/RConsortium/S7/issues/605" class="external-link">#605</a>).</li>
+<ul><li>Internal changes to support R-devel (4.6) (<a href="https://github.com/RConsortium/S7/issues/592" class="external-link">#592</a>, <a href="https://github.com/RConsortium/S7/issues/593" class="external-link">#593</a>, <a href="https://github.com/RConsortium/S7/issues/598" class="external-link">#598</a>, <a href="https://github.com/RConsortium/S7/issues/600" class="external-link">#600</a>).</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="s7-021">S7 0.2.1<a class="anchor" aria-label="anchor" href="#s7-021"></a></h2><p class="text-muted">CRAN release: 2025-11-14</p>
