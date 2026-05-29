@@ -87,7 +87,8 @@ convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
-  dispatch <- list(obj_dispatch(from), class_register(to))
+  to_name <- class_register(to)
+  dispatch <- list(obj_dispatch(from), to_name)
   convert <- .Call(method_, convert, dispatch, environment(), FALSE)
 
   if (!is.null(convert)) {
@@ -98,6 +99,8 @@ convert <- function(from, to, ...) {
     convert_down(from, to, ...)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
+  } else if (methods::canCoerce(from, to_name)) {
+    methods::as(from, to_name, ...)
   } else {
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
