@@ -155,6 +155,30 @@ test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 ob
   expect_equal(methods::slot(parent, "x"), 10)
 })
 
+test_that("fallback convert can use explicit S4 coercion via methods::as", {
+  on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
+  setClass("ParentS4", slots = list(x = "numeric"))
+  setClass("UnrelatedS4", slots = list(z = "character"))
+
+  ChildS7 <- new_class(
+    "ChildS7",
+    parent = getClass("ParentS4"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  setAs("ChildS7", "UnrelatedS4", function(from) {
+    new("UnrelatedS4", z = as.character(methods::slot(from, "x")))
+  })
+
+  child <- ChildS7(x = 42, y = "a")
+  res <- convert(child, to = getClass("UnrelatedS4"))
+
+  expect_true(isS4(res))
+  expect_equal(class(res)[1L], "UnrelatedS4")
+  expect_equal(methods::slot(res, "z"), "42")
+})
+
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
   Base := new_class(package = NULL)
   A := new_class(
