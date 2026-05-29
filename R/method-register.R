@@ -152,61 +152,6 @@ unregister_method <- function(
   invisible(generic)
 }
 
-register_S3_method <- function(
-  generic,
-  signature,
-  method,
-  envir = parent.frame(),
-  call = sys.call(-1L)
-) {
-  sig <- signature[[1]]
-
-  class <- switch(
-    class_type(sig),
-    `NULL` = "NULL",
-    missing = stop2(
-      "`class_missing` not supported for non-operator S3 generics.",
-      call = NULL
-    ),
-    any = "default",
-    S7_base = sig$class,
-    S7 = S7_class_name(sig),
-    S7_union = stop2("Unreachable", call = NULL),
-    S7_S3 = sig$class[[1]],
-    S4 = sig@className
-  )
-
-  if (is_local_s3_generic(generic)) {
-    register_local_s3_method(generic, class, method)
-  } else {
-    # Register external generics in their own namespace
-    external_generic <- get0(generic$name, envir = envir)
-    if (is_external_generic(external_generic)) {
-      envir <- asNamespace(external_generic$package)
-    }
-    registerS3method(generic$name, class, method, envir)
-  }
-}
-
-# `registerS3method()` registers into the S3 methods table of
-# `environment(generic)`, but `UseMethod()` dispatches using the table of
-# `topenv(environment(generic))`. These are the same for package and global
-# generics, but differ for a generic defined in a local environment.
-is_local_s3_generic <- function(generic) {
-  env <- environment(generic$generic)
-  !is.null(env) && !identical(env, topenv(env))
-}
-register_local_s3_method <- function(generic, class, method) {
-  dispatch_env <- topenv(environment(generic$generic))
-  table <- dispatch_env[[".__S3MethodsTable__."]]
-  if (is.null(table)) {
-    table <- new.env(parent = baseenv())
-    dispatch_env[[".__S3MethodsTable__."]] <- table
-  }
-  assign(paste(generic$name, class, sep = "."), method, envir = table)
-  invisible(method)
-}
-
 register_S7_method <- function(generic, signature, method) {
   # Flatten out unions to individual signatures
   signatures <- flatten_signature(signature)
@@ -375,59 +320,6 @@ check_method <- function(
   }
 
   invisible(TRUE)
-}
-
-register_S4_method <- function(
-  generic,
-  signature,
-  method,
-  env = parent.frame(),
-  call = sys.call(-1L)
-) {
-  S4_env <- topenv(env)
-  S4_signature <- lapply(signature, S4_class, S4_env = S4_env, call = call)
-  methods::setMethod(generic, S4_signature, method, where = S4_env)
-}
-
-S4_class <- function(x, S4_env, call = sys.call(-1L)) {
-  switch(
-    class_type(x),
-    `NULL` = "NULL",
-    missing = "missing",
-    any = "ANY",
-    S7_base = base_to_S4(x$class),
-    S4 = x,
-    S7 = S4_registered_class(x, call = call),
-    S7_S3 = S4_registered_class(x, call = call),
-    S7_union = stop2(
-      "Internal error: union should be flattened upstream.",
-      call = NULL
-    )
-  )
-}
-
-# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
-# not "double", so registering under "double" silently misses real doubles.
-# Mapping to "numeric" catches doubles but also matches integers too. There's
-# no clean S4 way to say "doubles only" and this seems likely to be what
-# people want.
-base_to_S4 <- function(class) {
-  switch(class, double = "numeric", class)
-}
-
-S4_registered_class <- function(x, call = sys.call(-1L)) {
-  class <- tryCatch(
-    methods::getClass(class_register(x)),
-    error = function(err) NULL
-  )
-  if (is.null(class)) {
-    msg <- sprintf(
-      "Class has not been registered with S4; please call S4_register(%s).",
-      class_deparse(x)
-    )
-    stop2(msg, call = call)
-  }
-  class
 }
 
 #' @export
