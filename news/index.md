@@ -23,6 +23,11 @@
 - `S7_error_method_not_found` now has a correct class vector without a
   duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
   [\#604](https://github.com/RConsortium/S7/issues/604)).
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  no longer errors when `from` is a base or S3 object and `to` is an S7
+  class that inherits from `from`’s class. The base/S3 value is now
+  passed as `.data` to the `to` constructor
+  ([\#537](https://github.com/RConsortium/S7/issues/537)).
 - `method<-` now gives a clear error when assigning a primitive function
   (e.g. `log`) as a method
   ([\#608](https://github.com/RConsortium/S7/issues/608)).
