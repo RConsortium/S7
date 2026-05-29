@@ -3,22 +3,22 @@
     Code
       new_generic(1)
     Condition
-      Error:
+      Error in `new_generic()`:
       ! `name` must be a single string.
     Code
       new_generic("")
     Condition
-      Error:
+      Error in `new_generic()`:
       ! `name` must not be "" or NA.
     Code
       new_generic("foo", 1)
     Condition
-      Error:
+      Error in `new_generic()`:
       ! `dispatch_args` must be a character vector.
     Code
       new_generic("foo", "x", function(x) { })
     Condition
-      Error:
+      Error in `new_generic()`:
       ! `fun` must contain a call to `S7_dispatch()`.
 
 # check_dispatch_args() produces informative errors

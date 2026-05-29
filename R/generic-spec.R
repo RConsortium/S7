@@ -5,18 +5,18 @@ is_generic <- function(x) {
     is_S4_generic(x)
 }
 
-as_generic <- function(x) {
+as_generic <- function(x, call = sys.call(-1L)) {
   if (is_generic(x)) {
     x
   } else if (is.function(x)) {
-    as_S3_generic(x)
+    as_S3_generic(x, call = call)
   } else {
     msg <- sprintf("`generic` must be a function, not a %s.", obj_desc(x))
-    stop(msg, call. = FALSE)
+    stop2(msg, call = call)
   }
 }
 
-as_S3_generic <- function(x) {
+as_S3_generic <- function(x, call = sys.call(-1L)) {
   use_method <- find_call(body(x), quote(UseMethod))
   if (!is.null(use_method)) {
     return(S3_generic(x, as.character(use_method[[2]])))
@@ -31,10 +31,12 @@ as_S3_generic <- function(x) {
     }
   }
 
-  stop(
-    "`generic` is a function, but not an S3 generic function:\n",
-    deparse_trunc(x, 100),
-    call. = FALSE
+  stop2(
+    c(
+      "`generic` is a function, but not an S3 generic function:",
+      deparse_trunc(x, 100)
+    ),
+    call = call
   )
 }
 
@@ -77,7 +79,7 @@ generic_n_dispatch <- function(x) {
   } else if (is_S4_generic(x)) {
     length(x@signature)
   } else {
-    stop(sprintf("Invalid input %s.", obj_desc(x)), call. = FALSE)
+    stop2(sprintf("Invalid input %s.", obj_desc(x)), call = NULL)
   }
 }
 

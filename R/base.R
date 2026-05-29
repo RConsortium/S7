@@ -78,7 +78,7 @@ base_S7_class <- function(x) {
     call = class_call,
     `function` = class_function,
     environment = class_environment,
-    stop(sprintf("No S7 class for base type <%s>.", typeof(x)), call. = FALSE)
+    stop2(sprintf("No S7 class for base type <%s>.", typeof(x)), call = NULL)
   )
 }
 
