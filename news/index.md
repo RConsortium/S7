@@ -64,6 +64,10 @@
   in memory instead of O(n)
   ([@kschaubroeck](https://github.com/kschaubroeck),
   [\#607](https://github.com/RConsortium/S7/issues/607)).
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  now accepts a `setter` that takes `self`, `name`, and `value` making
+  it easy to reuse the same definition for multiple properties
+  ([\#552](https://github.com/RConsortium/S7/issues/552)).
 - [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
   objects now work with
   [`inherits()`](https://rdrr.io/r/base/class.html) (and other functions
