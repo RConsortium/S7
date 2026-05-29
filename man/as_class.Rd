@@ -32,4 +32,4 @@ formal S4 classes.
 as_class(class_logical)
 as_class(new_S3_class("factor"))
 }
-\keyword{interna}
+\keyword{internal}
