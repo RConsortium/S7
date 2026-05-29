@@ -6,13 +6,13 @@
     Message
       Overwriting method foo(<character>)
 
-# method registration / S3 registration requires a S7 class
+# method registration / rejects class_missing on S3 generics
 
     Code
-      method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
+      method(s3_gen, class_missing) <- (function(x) "missing")
     Condition
-      Error in `method<-`:
-      ! When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
+      Error:
+      ! `class_missing` not supported for non-operator S3 generics.
 
 # method registration / can register S7 method for S4 generic
 
