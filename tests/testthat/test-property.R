@@ -202,6 +202,12 @@ describe("props<-", {
     expect_equal(obj2@x, 2)
   })
 
+  it("set_props() can set a property named `object` (#423)", {
+    foo <- new_class("foo", properties = list(object = class_double))
+    obj <- set_props(foo(1), object = 2)
+    expect_equal(obj@object, 2)
+  })
+
   it("set_props() accepts a single unnamed list (#497)", {
     foo <- new_class(
       "foo",

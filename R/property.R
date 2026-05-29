@@ -49,6 +49,8 @@
 #'   don't need to set this here, as it's more convenient to supply as
 #'   the element name when defining a list of properties. If both `name`
 #'   and a list-name are supplied, the list-name will be used.
+#'
+#'   Avoid names starting with `_`; they are reserved for internal use.
 #' @returns An S7 property, i.e. a list with class `S7_property`.
 #' @export
 #' @examples
@@ -449,13 +451,15 @@ props <- function(object, names = prop_names(object)) {
 }
 
 #' @export
+#' @param _object The object to modify. It has an unusual name to avoid clashing
+#'   with property names supplied in `...`; see [new_property()] for details.
 #' @param ... Name-value pairs given property to modify and new value. As a
 #'   convenience, you can supply a single unnamed list instead of individual
 #'   name-value pairs, which makes it easy to set properties programmatically.
 #' @rdname props
-set_props <- function(object, ..., .check = TRUE) {
-  props(object, check = .check) <- splice_dots(...)
-  object
+set_props <- function(`_object`, ..., .check = TRUE) {
+  props(`_object`, check = .check) <- splice_dots(...)
+  `_object`
 }
 
 as_properties <- function(x) {

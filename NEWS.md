@@ -22,6 +22,7 @@
 * `S7_data()` now preserves the S3 class when the S7 class inherits from an S3 class, so e.g. `S7_data()` on a data.frame subclass now returns a data.frame (#380).
 * `S7_data<-()` now preserves attributes (like `names` or `dim`) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (#478).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
+* `set_props()` and `new_object()` now name their first arguments `_object` and `_parent`, so a property with any name (e.g. `object`) can be passed through `...` without clashing with the argument. Property names starting with `_` are now reserved for this sort of internal use (#423).
 * `set_props()` accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (#497).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 

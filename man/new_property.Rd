@@ -54,7 +54,9 @@ constructed.}
 \item{name}{Property name, primarily used for error messages. Generally
 don't need to set this here, as it's more convenient to supply as
 the element name when defining a list of properties. If both \code{name}
-and a list-name are supplied, the list-name will be used.}
+and a list-name are supplied, the list-name will be used.
+
+Avoid names starting with \verb{_}; they are reserved for internal use.}
 }
 \value{
 An S7 property, i.e. a list with class \code{S7_property}.

@@ -15,7 +15,7 @@ new_class(
   validator = NULL
 )
 
-new_object(.parent, ...)
+new_object(`_parent`, ...)
 }
 \arguments{
 \item{name}{The name of the class, as a string. (We recommend using
@@ -73,8 +73,11 @@ problem, using \verb{@prop_name} to describe where the problem lies.
 See \code{validate()} for more details, examples, and how to temporarily
 suppress validation when needed.}
 
-\item{.parent, ...}{Parent object and named properties used to construct the
+\item{_parent, ...}{Parent object and named properties used to construct the
 object.
+
+\verb{_parent} has an unusual name to avoid clashing with property names
+supplied in \code{...}; see \code{\link[=new_property]{new_property()}} for details.
 
 As a convenience, if \code{...} is a single unnamed list, then the elements of
 that list are used as the properties. This makes it easy to
