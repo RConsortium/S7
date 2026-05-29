@@ -1,8 +1,8 @@
-# S4 method registration / can register S7 method for S4 generic
+# can register S7 method for S4 generic
 
     Class has not been registered with S4; please call S4_register(S4foo).
 
-# S4 method unregistration / errors when unregistering from an S4 generic
+# errors when unregistering from an S4 generic
 
     Code
       method(removeS4, S4foo) <- NULL

@@ -1,4 +1,4 @@
-# S3 method registration / rejects class_missing on S3 generics
+# rejects class_missing on S3 generics
 
     Code
       method(s3_gen, class_missing) <- (function(x) "missing")
@@ -6,7 +6,7 @@
       Error:
       ! `class_missing` not supported for non-operator S3 generics.
 
-# S3 method unregistration / errors when unregistering from an S3 generic
+# errors when unregistering from an S3 generic
 
     Code
       method(sum, foo) <- NULL
