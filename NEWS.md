@@ -5,9 +5,11 @@
 * Internal changes to support R-devel (4.6) (#592, #593, #598, #600).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
+* `convert()` accepts a single unnamed list of property overrides when downcasting, as a shortcut for individual name-value pairs (#497).
 * `convert()` no longer errors when `from` is a base or S3 object and `to` is an S7 class that inherits from `from`'s class. The base/S3 value is now passed as `.data` to the `to` constructor (#537).
 * `method<-` now gives a clear error when assigning a primitive function (e.g. `log`) as a method (#608).
 * `method<-` and `method()` now accept a length-1 list as `signature` for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (#555).
+* `new_object()` accepts a single unnamed named list as a shortcut for splicing property values, making it easier to programmatically construct an object from a list of properties (#497).
 * `new_class()` experimentally allows `class_environment` as a parent again, so you can build S7 objects that share R's reference semantics for environments. This support is provisional: because environments are mutated in place, some operations behave differently than for value-typed S7 objects, and the API may change. `S7_data()` and `S7_data<-()` error on environment-based objects, since they would otherwise destroy the object's S7 attributes in place (#590).
 * `new_object()` now gives an informative error when `.parent` is a class specification rather than an instance of the parent class (#409).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
@@ -26,6 +28,8 @@
 * `S7_data()` now preserves the S3 class when the S7 class inherits from an S3 class, so e.g. `S7_data()` on a data.frame subclass now returns a data.frame (#380).
 * `S7_data<-()` now preserves attributes (like `names` or `dim`) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (#478).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
+* `set_props()` and `new_object()` now name their first arguments `_object` and `_parent`, so a property with any name (e.g. `object`) can be passed through `...` without clashing with the argument. Property names starting with `_` are now reserved for this sort of internal use (#423).
+* `set_props()` accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (#497).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 
 # S7 0.2.2

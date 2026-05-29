@@ -108,9 +108,9 @@ describe("new_object()", {
     expect_snapshot(new_object(), error = TRUE)
   })
 
-  it("errors if `.parent` doesn't inherit from the parent class (#409)", {
+  it("errors if `_parent` doesn't inherit from the parent class (#409)", {
     Bar <- new_class("Bar", package = NULL)
-    # `.parent` should be `Bar()`, not the class spec `Bar`
+    # `_parent` should be `Bar()`, not the class spec `Bar`
     Foo <- new_class(
       "Foo",
       parent = Bar,
@@ -141,7 +141,7 @@ describe("new_object()", {
     expect_no_error(Concrete(x = 1L))
   })
 
-  it("errors if `.parent` is supplied but class has no parent", {
+  it("errors if `_parent` is supplied but class has no parent", {
     NoParent <- new_class(
       "NoParent",
       package = NULL,
@@ -149,6 +149,17 @@ describe("new_object()", {
       constructor = function() new_object(42L)
     )
     expect_snapshot(NoParent(), error = TRUE)
+  })
+
+  it("can set a property named `.parent` (#423)", {
+    foo <- new_class(
+      "foo",
+      properties = list(.parent = class_double),
+      package = NULL,
+      constructor = function(.parent) new_object(S7_object(), .parent = .parent)
+    )
+    obj <- foo(.parent = 1)
+    expect_equal(obj@.parent, 1)
   })
 
   it("validates object", {
@@ -163,6 +174,28 @@ describe("new_object()", {
       foo("x")
       foo(-1)
     })
+  })
+
+  it("accepts a single unnamed named list of properties (#497)", {
+    foo <- new_class(
+      "foo",
+      properties = list(x = class_double, y = class_double),
+      package = NULL,
+      constructor = function(props) new_object(S7_object(), props)
+    )
+    obj <- foo(list(x = 1, y = 2))
+    expect_equal(obj@x, 1)
+    expect_equal(obj@y, 2)
+  })
+
+  it("errors if single unnamed list has unnamed elements", {
+    foo <- new_class(
+      "foo",
+      properties = list(x = class_double),
+      package = NULL,
+      constructor = function(props) new_object(S7_object(), props)
+    )
+    expect_snapshot(foo(list(1)), error = TRUE)
   })
 
   it("runs each parent validator exactly once", {

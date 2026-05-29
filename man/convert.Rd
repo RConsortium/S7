@@ -13,7 +13,9 @@ convert(from, to, ...)
 
 \item{...}{Other arguments passed to custom \code{convert()} methods. For
 downcasting, these can be used to override existing properties or set new
-ones.}
+ones. As a convenience, you can supply a single unnamed list instead of
+individual name-value pairs, which makes it easy to override properties
+programmatically.}
 }
 \value{
 Either \code{from} coerced to class \code{to}, or an error if the coercion
