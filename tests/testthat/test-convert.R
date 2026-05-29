@@ -136,7 +136,7 @@ test_that("fallback convert can convert to base type", {
   expect_equal(attr(obj, "x"), NULL)
 })
 
-test_that("fallback convert can convert to S4 class using methods::as", {
+test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 object", {
   on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
   setClass("ParentS4", slots = list(x = "numeric"))
 
