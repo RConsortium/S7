@@ -128,6 +128,8 @@ convert <- function(from, to, ...) {
     convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
+  } else if (methods::canCoerce(from, class_register(to))) {
+    methods::as(from, class_register(to), ...)
   } else {
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
