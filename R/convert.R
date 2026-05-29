@@ -128,9 +128,11 @@ convert <- function(from, to, ...) {
     convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
-  } else if (methods::canCoerce(from, class_register(to))) {
-    methods::as(from, class_register(to), ...)
   } else {
+    s4_to_name <- if (is_S4_class(to)) to@className else class_register(to)
+    if (methods::canCoerce(from, s4_to_name)) {
+      return(methods::as(from, s4_to_name, ...))
+    }
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
       c("- from: ", obj_desc(from), "\n"),
