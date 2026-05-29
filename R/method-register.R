@@ -87,22 +87,18 @@ register_method <- function(
   }
 
   # Register in current session
+  signatures <- flatten_signature(signature)
   if (is_S7_generic(generic)) {
-    check_method(
-      method,
-      generic,
-      name = method_name(generic, signature),
-      call = call
-    )
-    register_S7_method(generic, signature, method)
+    for (sig in signatures) {
+      register_S7_method(generic, sig, method, call = call)
+    }
   } else if (is_S3_generic(generic)) {
-    for (sig in flatten_signature(signature)) {
+    for (sig in signatures) {
       register_S3_method(generic, sig, method, env, call = call)
     }
   } else if (is_S4_generic(generic)) {
-    signatures <- flatten_signature(signature)
-    for (signature in signatures) {
-      register_S4_method(generic, signature, method, env, call = call)
+    for (sig in signatures) {
+      register_S4_method(generic, sig, method, env, call = call)
     }
   }
 
@@ -152,15 +148,20 @@ unregister_method <- function(
   invisible(generic)
 }
 
-register_S7_method <- function(generic, signature, method) {
-  # Flatten out unions to individual signatures
-  signatures <- flatten_signature(signature)
-
-  # Register each method
-  for (signature in signatures) {
-    method <- S7_method(method, generic = generic, signature = signature)
-    generic_add_method(generic, signature, method)
-  }
+register_S7_method <- function(
+  generic,
+  signature,
+  method,
+  call = sys.call(-1L)
+) {
+  check_method(
+    method,
+    generic,
+    name = method_name(generic, signature),
+    call = call
+  )
+  method <- S7_method(method, generic = generic, signature = signature)
+  generic_add_method(generic, signature, method)
 
   invisible()
 }
