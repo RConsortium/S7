@@ -147,6 +147,6 @@ test_that("base type fallback sits below user methods and inheritance", {
   method(convert, list(Txt, class_character)) <- NULL
   obj <- convert(Txt("hi"), class_character)
   expect_false(S7_inherits(obj))
-  expect_equal(attr(obj, "n"), NULL)
+  expect_null(attributes(obj))
   expect_identical(obj, "hi")
 })
