@@ -34,6 +34,11 @@ to work because those methods will return \code{classParent} objects, not
 \code{classChild} objects.
 }
 
+When \code{from} is already an instance of \code{to}, \code{convert()} returns it
+unchanged. When \code{from} inherits from \code{to} but is a more specific class,
+only methods registered on classes more specific than \code{to} are considered,
+so an inherited downcasting method is never used in place of an upcast.
+
 \code{convert()} provides three default implementations:
 \enumerate{
 \item When \code{from} inherits from \code{to}, it strips any properties that \code{from}
