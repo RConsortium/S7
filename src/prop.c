@@ -37,6 +37,18 @@ SEXP ns_get(const char* name) {
   return val;
 }
 
+static inline
+SEXP protect_quote_if_needed(SEXP object, int* n_protected) {
+  switch (TYPEOF(object)) {
+  case LANGSXP:
+  case SYMSXP:
+    ++*n_protected;
+    return PROTECT(Rf_lang2(fn_base_quote, object));
+  default:
+    return object;
+  }
+}
+
 static __attribute__((noreturn))
 void signal_is_not_S7(SEXP object) {
   static SEXP check_is_S7 = NULL;
@@ -50,35 +62,24 @@ void signal_is_not_S7(SEXP object) {
 
 
 static __attribute__((noreturn))
-void signal_prop_error(const char* fmt, SEXP object, SEXP name) {
+void signal_prop_error(const char* msg, SEXP object, SEXP name) {
   static SEXP signal_prop_error = NULL;
   if (signal_prop_error == NULL)
     signal_prop_error = ns_get("signal_prop_error");
 
-  SEXP fmt_string = PROTECT(Rf_mkString(fmt));
-  eval_here(Rf_lang4(signal_prop_error, fmt_string, object, name));
-  UNPROTECT(1);
+  int n_protected = 0;
+  SEXP msg_string = PROTECT(Rf_mkString(msg));
+  n_protected++;
+  // Quote the object so it doesn't evaluate in Rf_eval()
+  object = protect_quote_if_needed(object, &n_protected);
+  eval_here(Rf_lang4(signal_prop_error, msg_string, object, name));
+  UNPROTECT(n_protected);
   while(1);
 }
 
 static __attribute__((noreturn))
 void signal_prop_error_unknown(SEXP object, SEXP name) {
-  signal_prop_error("Can't find property %s@%s.", object, name);
-}
-
-static __attribute__((noreturn))
-void signal_error(SEXP errmsg) {
-  PROTECT(errmsg);
-  if(TYPEOF(errmsg) == STRSXP && Rf_length(errmsg) == 1)
-    Rf_errorcall(R_NilValue, "%s", CHAR(STRING_ELT(errmsg, 0)));
-
-  // fallback to calling base::stop(errmsg)
-  static SEXP signal_error = NULL;
-  if (signal_error == NULL)
-    signal_error = ns_get("signal_error");
-
-  eval_here(Rf_lang2(signal_error, errmsg));
-  while(1);
+  signal_prop_error("Can't find property.", object, name);
 }
 
 static inline
@@ -264,18 +265,6 @@ static void prop_call_cleanup(void* data, Rboolean jump) {
 }
 
 static inline
-SEXP protect_quote_if_needed(SEXP object, int* n_protected) {
-  switch (TYPEOF(object)) {
-  case LANGSXP:
-  case SYMSXP:
-    ++*n_protected;
-    return PROTECT(Rf_lang2(fn_base_quote, object));
-  default:
-    return object;
-  }
-}
-
-static inline
 SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
                     SEXP name_sym) {
   int n_protected = 0;
@@ -357,14 +346,17 @@ SEXP do_setter_call(SEXP setter, SEXP S7_class, SEXP name, SEXP object,
 }
 
 static inline
-void prop_validate(SEXP property, SEXP value, SEXP object) {
+void prop_validate(SEXP property, SEXP value, SEXP object, SEXP name) {
 
   static SEXP prop_validate = NULL;
   if (prop_validate == NULL)
     prop_validate = ns_get("prop_validate");
 
   SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value, object));
-  if (errmsg != R_NilValue) signal_error(errmsg);
+  if (errmsg != R_NilValue) {
+    PROTECT(errmsg);
+    signal_prop_error(CHAR(STRING_ELT(errmsg, 0)), object, name);
+  }
 }
 
 static inline
@@ -463,6 +455,22 @@ SEXP prop_(SEXP object, SEXP name) {
 }
 
 
+static __attribute__((noreturn))
+void signal_setter_error(SEXP value, SEXP object, SEXP name) {
+  static SEXP signal_setter_error = NULL;
+  if (signal_setter_error == NULL)
+    signal_setter_error = ns_get("signal_setter_error");
+
+  int n_protected = 0;
+  // Quote so they don't evaluate in Rf_eval(): `value` is the setter's
+  // (non-S7) return value, `object` the instance passed to the setter.
+  value = protect_quote_if_needed(value, &n_protected);
+  object = protect_quote_if_needed(object, &n_protected);
+  eval_here(Rf_lang4(signal_setter_error, value, object, name));
+  UNPROTECT(n_protected);
+  while(1);
+}
+
 SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
 
   check_is_S7(object);
@@ -485,7 +493,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   SEXP getter = property_get_field(property, PROPERTY_GETTER);
 
   if (getter != R_NilValue && setter == R_NilValue)
-    signal_prop_error("Can't set read-only property %s@%s.", object, name);
+    signal_prop_error("Can't set read-only property.", object, name);
 
   PROTECT_INDEX object_pi;
   // maybe use R_shallow_duplicate_attr() here instead
@@ -494,7 +502,9 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   PROTECT_WITH_INDEX(object, &object_pi);
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
-    // use setter()
+    // use setter(). Keep the instance passed to the setter for error
+    // reporting, since `object` is reassigned to its return value below.
+    SEXP self = PROTECT(object);
     REPROTECT(
         object = do_setter_call(
             setter,
@@ -504,10 +514,13 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
             name_sym,
             value),
         object_pi);
+    if (!is_s7_object(object))
+      signal_setter_error(object, self, name);
+    UNPROTECT(1); // self
   } else {
     // don't use setter()
     if (should_validate_prop)
-      prop_validate(property, value, object);
+      prop_validate(property, value, object, name);
     Rf_setAttrib(object, name_sym, value);
   }
 

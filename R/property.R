@@ -210,10 +210,6 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-signal_prop_error_unknown <- function(object, name) {
-  stop2(prop_error_unknown(object, name), call = NULL)
-}
-
 #' @rdname prop
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
@@ -222,22 +218,22 @@ signal_prop_error_unknown <- function(object, name) {
   .Call(prop_set_, object, name, check, value)
 }
 
-# called from src/prop.c
-signal_prop_error <- function(fmt, object, name) {
-  msg <- sprintf(fmt, obj_desc(object), name)
-  stop2(msg, call = NULL)
+# called from src/prop.c. Handles both fixed messages (e.g. read-only,
+# unknown property) and validation messages. The offending property is
+# reported via the `call`, so `msg` doesn't need to name it.
+signal_prop_error <- function(msg, object, name) {
+  stop2(msg, call = prop_call(object, name))
 }
 
-# called from src/prop.c
-signal_error <- function(msg) {
-  stop2(msg, call = NULL)
+signal_setter_error <- function(value, object, name) {
+  stop2(
+    sprintf(
+      "Custom setter must return an <S7_object>, not %s.",
+      obj_desc(value)
+    ),
+    call = prop_call(object, name)
+  )
 }
-
-
-prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s.", obj_desc(object), prop_name)
-}
-
 
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
@@ -279,6 +275,9 @@ prop_validate <- function(prop, value, object = NULL) {
 
 prop_label <- function(object, name) {
   sprintf("%s@%s", if (!is.null(object)) obj_desc(object) else "", name)
+}
+prop_call <- function(object, name) {
+  call(prop_label(object, name))
 }
 
 # Note: we need to explicitly refer to base with "base::`@`" in the
