@@ -15,7 +15,7 @@ one type to another. It is special in three ways:
   `classParent` to work because those methods will return `classParent`
   objects, not `classChild` objects.
 
-`convert()` provides two default implementations:
+`convert()` provides three default implementations:
 
 1.  When `from` inherits from `to`, it strips any properties that `from`
     possesses that `to` does not (upcasting).
@@ -23,6 +23,17 @@ one type to another. It is special in three ways:
 2.  When `to` inherits from `from`, it creates a new object of class
     `to`, copying over existing properties from `from` and initializing
     new properties of `to` (downcasting).
+
+3.  When `to` is a base type (e.g.
+    [class_integer](https://rconsortium.github.io/S7/reference/base_classes.md)
+    or
+    [class_character](https://rconsortium.github.io/S7/reference/base_classes.md))
+    and neither of the above apply, it calls the corresponding `as.*()`
+    function (e.g. [`as.integer()`](https://rdrr.io/r/base/integer.html)
+    or [`as.character()`](https://rdrr.io/r/base/character.html)). This
+    mirrors the convention that `as.*()` coercion sits below
+    `convert()`, so you can rely on it as a fallback but still override
+    it with a more specific method.
 
 If you are converting an object solely for the purposes of accessing a
 method on a superclass, you probably want
@@ -88,12 +99,16 @@ convert(Foo1(x = 1L), to = Foo2, x = 2L, y = 2.5)  # Override existing and set n
 #>  @ x: int 2
 #>  @ y: num 2.5
 
+# Converting to a base type falls back to the corresponding `as.*()`:
+convert(1.5, to = class_character)
+#> [1] "1.5"
+convert(c("1", "2"), to = class_integer)
+#> [1] 1 2
+
 # For all other cases, you'll need to provide your own.
 try(convert(Foo1(x = 1L), to = class_integer))
-#> Error in convert(Foo1(x = 1L), to = class_integer) : 
-#>   Can't find method with dispatch classes:
-#> - from: <Foo1>
-#> - to  : <integer>
+#> Error in as.integer(from, ...) : 
+#>   cannot coerce type 'object' to vector of type 'integer'
 
 method(convert, list(Foo1, class_integer)) <- function(from, to) {
   from@x

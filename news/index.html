@@ -62,6 +62,8 @@
 <li>
 <code>S7_error_method_not_found</code> now has a correct class vector without a duplicate <code>"error"</code> entry (<a href="https://github.com/jjjermiah" class="external-link">@jjjermiah</a>, <a href="https://github.com/RConsortium/S7/issues/604" class="external-link">#604</a>).</li>
 <li>
+<code><a href="../reference/convert.html">convert()</a></code> now falls back to the corresponding <code>as.*()</code> function (e.g. <code><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character()</a></code>) when converting to a base type like <code>class_character</code> and no method or inheritance-based default applies, so <code>convert(1, class_character)</code> works out of the box (<a href="https://github.com/RConsortium/S7/issues/472" class="external-link">#472</a>).</li>
+<li>
 <code><a href="../reference/convert.html">convert()</a></code> no longer errors when <code>from</code> is a base or S3 object and <code>to</code> is an S7 class that inherits from <code>from</code>’s class. The base/S3 value is now passed as <code>.data</code> to the <code>to</code> constructor (<a href="https://github.com/RConsortium/S7/issues/537" class="external-link">#537</a>).</li>
 <li>
 <code>method&lt;-</code> now gives a clear error when assigning a primitive function (e.g. <code>log</code>) as a method (<a href="https://github.com/RConsortium/S7/issues/608" class="external-link">#608</a>).</li>

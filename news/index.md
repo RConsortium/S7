@@ -22,6 +22,13 @@
   duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
   [\#604](https://github.com/RConsortium/S7/issues/604)).
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  now falls back to the corresponding `as.*()` function
+  (e.g. [`as.character()`](https://rdrr.io/r/base/character.html)) when
+  converting to a base type like `class_character` and no method or
+  inheritance-based default applies, so `convert(1, class_character)`
+  works out of the box
+  ([\#472](https://github.com/RConsortium/S7/issues/472)).
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
   no longer errors when `from` is a base or S3 object and `to` is an S7
   class that inherits from `from`’s class. The base/S3 value is now
   passed as `.data` to the `to` constructor
