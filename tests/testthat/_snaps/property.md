@@ -81,7 +81,7 @@
     Code
       print(x)
     Output
-      <S7_property> 
+      <S7_property>
        $ name     : chr "foo"
        $ class    : <S7_base_class>: <integer>
        $ getter   : NULL
@@ -92,7 +92,7 @@
       str(list(x))
     Output
       List of 1
-       $ : <S7_property> 
+       $ : <S7_property>
         ..$ name     : chr "foo"
         ..$ class    : <S7_base_class>: <integer>
         ..$ getter   : NULL
@@ -110,12 +110,12 @@
       @ constructor: function(anything, null, base, S3, S4, S7, S7_union) {...}
       @ validator  : <NULL>
       @ properties :
-       $ anything: <ANY>                 
-       $ null    : <NULL>                
-       $ base    : <integer>             
-       $ S3      : S3<factor>            
-       $ S4      : S4<class_S4>          
-       $ S7      : <class_S7>            
+       $ anything: <ANY>
+       $ null    : <NULL>
+       $ base    : <integer>
+       $ S3      : S3<factor>
+       $ S4      : S4<class_S4>
+       $ S7      : <class_S7>
        $ S7_union: <integer> or <logical>
 
 ---
@@ -199,30 +199,30 @@
       ! <foo> object properties are invalid:
       - @x must be length 1
 
-# prop<- won't infinitly recurse on a custom setter
+# prop<- won't infinitely recurse on a custom setter
 
     Code
       obj <- foo()
     Output
-      Starting syncup with value: 
+      Starting syncup with value:
       setting @a <- "a_"
       setting @b <- "b_"
-      Starting syncup with value: b_ 
+      Starting syncup with value: b_
       setting @a <- "a_b_"
       setting @b <- "b_b_"
-      Starting syncup with value: 
+      Starting syncup with value:
       setting @a <- "a_"
-      Starting syncup with value: a_ 
+      Starting syncup with value: a_
       setting @a <- "a_a_"
       setting @b <- "b_a_"
       setting @b <- "b_"
     Code
       obj@a <- "val"
     Output
-      Starting syncup with value: val 
+      Starting syncup with value: val
       setting @a <- "a_val"
       setting @b <- "b_val"
-      Starting syncup with value: b_val 
+      Starting syncup with value: b_val
       setting @a <- "a_b_val"
       setting @b <- "b_b_val"
 
@@ -231,21 +231,21 @@
     Code
       receiver <- Receiver()
     Output
-      [rx] receiving:  
+      [rx] receiving:
       [rx] finished receiving.
     Code
       transmitter <- Transmitter()
     Output
-      [tx] sending:  
-      [rx] receiving:  
+      [tx] sending:
+      [rx] receiving:
       [rx] finished receiving.
       [tx] saving last sent message.
       [tx] finished transmitting.
     Code
       transmitter@message <- "hello"
     Output
-      [tx] sending:  hello 
-      [rx] receiving:  hello 
+      [tx] sending:  hello
+      [rx] receiving:  hello
       [rx] finished receiving.
       [tx] saving last sent message.
       [tx] finished transmitting.
@@ -253,8 +253,8 @@
       expect_equal(receiver@message, "hello")
       transmitter@message <- "goodbye"
     Output
-      [tx] sending:  goodbye 
-      [rx] receiving:  goodbye 
+      [tx] sending:  goodbye
+      [rx] receiving:  goodbye
       [rx] finished receiving.
       [tx] saving last sent message.
       [tx] finished transmitting.
