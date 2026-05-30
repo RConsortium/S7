@@ -37,8 +37,16 @@ S4_register <- function(class, env = parent.frame()) {
   invisible()
 }
 
+S4_ancestor <- function(class) {
+  parent_class <- attr(class, "parent", exact = TRUE)
+  while (is_class(parent_class)) {
+    parent_class <- attr(parent_class, "parent", exact = TRUE)
+  }
+  if (is_S4_class(parent_class)) parent_class
+}
+
 S7_extends_S4 <- function(class) {
-  length(S4_subclasses(class)) > 0L
+  !is.null(S4_ancestor(class))
 }
 
 inherits_S4 <- function(x) {
@@ -54,15 +62,30 @@ S4_register_subclass <- function(class, env) {
   subclasses <- S4_subclasses(class)
   if (length(subclasses) > 1L) {
     methods::setOldClass(subclasses, where = where)
-    return()
+  } else {
+    methods::setOldClass(
+      subclasses,
+      S4Class = S4_transient_prototype_class(class, where),
+      where = where
+    )
+    methods::setValidity(subclasses[1L], S4_validate, where = where)
+    methods::setMethod(
+      "initialize",
+      subclasses[1L],
+      S4_initialize,
+      where = where
+    )
   }
-  methods::setOldClass(
-    subclasses,
-    S4Class = S4_transient_prototype_class(class, where),
+
+  parent_class <- S4_ancestor(class)
+  methods::setAs(
+    from = subclasses[1L],
+    to = parent_class@className,
+    def = function(from) convert(from, parent_class),
     where = where
   )
-  methods::setValidity(subclasses[1L], S4_validate, where = where)
-  methods::setMethod("initialize", subclasses[1L], S4_initialize, where = where)
+
+  invisible()
 }
 
 S4_subclasses <- function(class) {

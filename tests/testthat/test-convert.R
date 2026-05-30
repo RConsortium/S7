@@ -170,6 +170,34 @@ describe("fallback convert", {
     expect_equal(class(res)[[1]], "UnrelatedS4")
     expect_equal(methods::slot(res, "z"), "42")
   })
+
+  it("can convert S7 -> S7 -> S4 via S4 coercion delegation", {
+    on.exit(S4_remove_classes(c("GrandparentS4", "ParentS7", "ChildS7")))
+    setClass("GrandparentS4", slots = list(x = "numeric"))
+
+    ParentS7 <- new_class(
+      "ParentS7",
+      parent = getClass("GrandparentS4"),
+      properties = list(y = class_character),
+      package = NULL
+    )
+
+    ChildS7 <- new_class(
+      "ChildS7",
+      parent = ParentS7,
+      properties = list(z = class_logical),
+      package = NULL
+    )
+
+    child <- ChildS7(x = 100, y = "a", z = TRUE)
+    expect_true(methods::validObject(child))
+
+    # Try S4 coercion to GrandparentS4
+    gp <- methods::as(child, "GrandparentS4")
+    expect_true(isS4(gp))
+    expect_equal(class(gp)[[1]], "GrandparentS4")
+    expect_equal(methods::slot(gp, "x"), 100)
+  })
 })
 
 test_that("convert() falls back to as.*() for base type targets (#472)", {
