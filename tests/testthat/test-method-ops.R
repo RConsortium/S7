@@ -42,6 +42,49 @@ test_that("Ops generics dispatch to S3 methods", {
   expect_equal(foo_S3 + foo(), "S3-S7")
 })
 
+test_that("Ops dispatch to S7 when an S3 object meets a non-S7 object (#544)", {
+  local_methods(base_ops[["+"]])
+  local_base_s3_table()
+
+  class_foo <- new_S3_class("foo")
+  foo <- structure(list(), class = "foo")
+  bar <- new_class("bar")
+
+  method(`+`, list(class_foo, class_any)) <- function(e1, e2) "foo-any"
+  expect_equal(foo + 10, "foo-any")
+  expect_equal(foo + bar(), "foo-any")
+
+  method(`+`, list(class_any, class_foo)) <- function(e1, e2) "any-foo"
+  expect_equal(10 + foo, "any-foo")
+})
+
+test_that("Ops bridges preserve a class's existing base methods (#544)", {
+  local_methods(base_ops[["+"]])
+  local_base_s3_table()
+  foo <- new_class("foo")
+
+  method(`+`, list(class_factor, foo)) <- function(e1, e2) "factor-foo"
+
+  # `Ops.factor` still handles factor-factor and factor-base operations
+  expect_snapshot(factor("a") + 1)
+  expect_equal(factor("a") + foo(), "factor-foo")
+})
+
+test_that("Ops bridges preserve a class's existing user methods (#544)", {
+  local_methods(base_ops[["+"]])
+  local_base_s3_table()
+  foo <- new_class("foo")
+
+  bar <- structure(1L, class = "bar")
+  assign("+.bar", function(e1, e2) "user-bar", envir = globalenv())
+  defer(rm("+.bar", envir = globalenv()))
+
+  method(`+`, list(new_S3_class("bar"), foo)) <- function(e1, e2) "bar-foo"
+
+  expect_equal(bar + 1, "user-bar")
+  expect_equal(bar + foo(), "bar-foo")
+})
+
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
   local_methods(base_ops[["+"]])
   fooS4 <- local_S4_class("foo", contains = "character")
