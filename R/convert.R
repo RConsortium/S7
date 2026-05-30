@@ -135,7 +135,7 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
 }
 
 is_down_cast <- function(x, class) {
-  inherits(x, setdiff(class_dispatch(class), "S7_object"))
+  all(obj_dispatch(x) %in% class_dispatch(class))
 }
 
 convert_down <- function(from, to, ...) {

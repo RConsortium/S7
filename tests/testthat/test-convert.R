@@ -129,6 +129,32 @@ describe("fallback convert", {
   })
 })
 
+test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
+  Base <- new_class("Base", package = NULL)
+  A <- new_class(
+    "A",
+    Base,
+    package = NULL,
+    properties = list(x = class_numeric)
+  )
+  B <- new_class("B", Base, package = NULL)
+  B_child <- new_class("B_child", B, package = NULL)
+
+  # `to` is a descendant of `from`'s class
+  expect_equal(is_down_cast(Base(), A), TRUE)
+  expect_equal(is_down_cast(B(), B_child), TRUE)
+
+  # base/S3 `from` to an S7 class that extends it
+  my_logical <- new_class("my_logical", class_logical, package = NULL)
+  my_factor <- new_class("my_factor", class_factor, package = NULL)
+  expect_equal(is_down_cast(TRUE, my_logical), TRUE)
+  expect_equal(is_down_cast(factor("a"), my_factor), TRUE)
+
+  # Siblings share an ancestor but neither descends from the other
+  expect_equal(is_down_cast(B(), A), FALSE)
+  expect_equal(is_down_cast(B_child(), A), FALSE)
+})
+
 test_that("convert() falls back to as.*() for base type targets (#472)", {
   expect_identical(convert(1.5, class_character), "1.5")
   expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))
