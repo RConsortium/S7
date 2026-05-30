@@ -42,6 +42,20 @@ SEXP sym_getter;
 SEXP sym_dot_should_validate;
 SEXP sym_dot_getting_prop;
 SEXP sym_dot_setting_prop;
+
+// `comment` lacks a predefined R_*Symbol, unlike the other special names.
+SEXP sym_comment;
+
+// Storage symbols for properties whose names have special C-level handlers in
+// base R (names, dim, ...). See prop_storage_sym() in prop.c.
+SEXP sym_u_names;
+SEXP sym_u_dim;
+SEXP sym_u_dimnames;
+SEXP sym_u_class;
+SEXP sym_u_tsp;
+SEXP sym_u_comment;
+SEXP sym_u_row_names;
+
 SEXP sym_obj_dispatch;
 SEXP sym_dispatch_args;
 SEXP sym_methods;
@@ -88,6 +102,16 @@ void R_init_S7(DllInfo *dll)
     sym_dot_should_validate = Rf_install(".should_validate");
     sym_dot_getting_prop = Rf_install(".getting_prop");
     sym_dot_setting_prop = Rf_install(".setting_prop");
+
+    sym_comment = Rf_install("comment");
+
+    sym_u_names = Rf_install("_names");
+    sym_u_dim = Rf_install("_dim");
+    sym_u_dimnames = Rf_install("_dimnames");
+    sym_u_class = Rf_install("_class");
+    sym_u_tsp = Rf_install("_tsp");
+    sym_u_comment = Rf_install("_comment");
+    sym_u_row_names = Rf_install("_row.names");
     sym_obj_dispatch = Rf_install("obj_dispatch");
     sym_dispatch_args = Rf_install("dispatch_args");
     sym_methods = Rf_install("methods");

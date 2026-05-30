@@ -511,6 +511,25 @@ as_property <- function(x, name, i, call = sys.call(-1L)) {
   }
 }
 
+# These attributes have special C-level handlers in base R
+special_prop_names <- c(
+  "names",
+  "dim",
+  "dimnames",
+  "class",
+  "tsp",
+  "comment",
+  "row.names"
+)
+
+# Map property names to the attribute names used to store them on an object.
+# The common case (no special names) skips the rename entirely.
+prop_storage_name <- function(names) {
+  special <- names %in% special_prop_names
+  names[special] <- paste0("_", names[special])
+  names
+}
+
 prop_is_read_only <- function(prop) {
   is.function(prop$getter) && !is.function(prop$setter)
 }

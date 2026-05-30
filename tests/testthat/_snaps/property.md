@@ -55,6 +55,15 @@
       ! <S7::foo> object is invalid:
       - bad
 
+# special-named property validators fire (#579)
+
+    Code
+      foo(names = c("a", "b"))
+    Condition
+      Error in `foo()`:
+      ! <S7::foo> object properties are invalid:
+      - @names too long
+
 # new_property() / validates getter and settor
 
     Code

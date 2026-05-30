@@ -16,6 +16,16 @@ extern SEXP ns_S7;
 extern SEXP sym_dot_getting_prop;
 extern SEXP sym_dot_setting_prop;
 
+extern SEXP sym_comment;
+
+extern SEXP sym_u_names;
+extern SEXP sym_u_dim;
+extern SEXP sym_u_dimnames;
+extern SEXP sym_u_class;
+extern SEXP sym_u_tsp;
+extern SEXP sym_u_comment;
+extern SEXP sym_u_row_names;
+
 extern SEXP fn_base_quote;
 
 extern SEXP R_TRUE;
@@ -100,6 +110,20 @@ static inline
 SEXP extract_name(SEXP list, SEXP name_rchar) {
   int i = name_idx(list, name_rchar);
   return i == -1 ? R_NilValue : VECTOR_ELT(list, i);
+}
+
+static inline
+SEXP prop_storage_sym(SEXP name_sym) {
+  // Handle properties that would otherwise clash with base R attributes
+  // Keep in sync with `special_prop_names` in R/property.R.
+  if (name_sym == R_NamesSymbol)    return sym_u_names;
+  if (name_sym == R_DimSymbol)      return sym_u_dim;
+  if (name_sym == R_DimNamesSymbol) return sym_u_dimnames;
+  if (name_sym == R_ClassSymbol)    return sym_u_class;
+  if (name_sym == R_TspSymbol)      return sym_u_tsp;
+  if (name_sym == sym_comment)      return sym_u_comment;
+  if (name_sym == R_RowNamesSymbol) return sym_u_row_names;
+  return name_sym;
 }
 
 
@@ -435,7 +459,7 @@ SEXP prop_(SEXP object, SEXP name) {
   }
 
   // try to resolve property from the object attributes
-  SEXP value = Rf_getAttrib(object, name_sym);
+  SEXP value = Rf_getAttrib(object, prop_storage_sym(name_sym));
 
   // This is commented out because we currently have no way to distinguish between
   // a prop with a value of NULL, and a prop value that is unset/missing.
@@ -508,7 +532,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     // don't use setter()
     if (should_validate_prop)
       prop_validate(property, value, object);
-    Rf_setAttrib(object, name_sym, value);
+    Rf_setAttrib(object, prop_storage_sym(name_sym), value);
   }
 
   if (should_validate_obj)

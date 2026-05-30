@@ -303,14 +303,15 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
-test_that("can't create class with reserved property names", {
+test_that("can't create class with `...` property name", {
   expect_snapshot(error = TRUE, {
-    new_class("foo", properties = list(names = class_character))
-    new_class("foo", properties = list(dim = NULL | class_integer))
-    new_class(
-      "foo",
-      properties = list(dim = NULL | class_integer, dimnames = class_list)
-    )
+    new_class("foo", properties = list(... = class_character))
+  })
+})
+
+test_that("property names can't start with `_` (#579)", {
+  expect_snapshot(error = TRUE, {
+    new_class("foo", properties = list(`_x` = class_character))
   })
 })
 
