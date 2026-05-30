@@ -54,6 +54,21 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
+# S7 installs S3 bridges for base operators (e.g. `+.foo`) into base's S3
+# methods table. Snapshot and restore it so bridges from one test don't leak.
+local_base_s3_table <- function(frame = parent.frame()) {
+  tbl <- asNamespace("base")[[".__S3MethodsTable__."]]
+  old <- as.list(tbl, all.names = TRUE)
+  defer(
+    {
+      rm(list = ls(tbl, all.names = TRUE), envir = tbl)
+      list2env(old, envir = tbl)
+    },
+    frame = frame
+  )
+  invisible()
+}
+
 local_S4_class <- function(name, ..., env = parent.frame()) {
   out <- methods::setClass(name, contains = "character")
   defer(S4_remove_classes(name, env), env)
