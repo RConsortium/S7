@@ -16,6 +16,11 @@
 #'   to work because those methods will return `classParent` objects, not
 #'   `classChild` objects.
 #'
+#' When `from` is already an instance of `to`, `convert()` returns it
+#' unchanged. When `from` inherits from `to` but is a more specific class,
+#' only methods registered on classes more specific than `to` are considered,
+#' so an inherited downcasting method is never used in place of an upcast.
+#'
 #' `convert()` provides three default implementations:
 #'
 #' 1. When `from` inherits from `to`, it strips any properties that `from`
@@ -87,7 +92,11 @@ convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
-  dispatch <- list(obj_dispatch(from), class_register(to))
+  dispatch <- convert_dispatch(from, to)
+  if (is.null(dispatch)) {
+    # `from` is already an instance of `to`, so conversion is idempotent.
+    return(from)
+  }
   convert <- .Call(method_, convert, dispatch, environment(), FALSE)
 
   if (!is.null(convert)) {
@@ -106,6 +115,29 @@ convert <- function(from, to, ...) {
     )
     stop2(msg)
   }
+}
+
+# Compute the double-dispatch classes for `convert()`. When `from` already
+# inherits from `to`, only classes more specific than `to` are considered:
+# methods registered on `to` or its parents would downcast, potentially
+# overwriting data, when all that's wanted is an upcast (#429). Returns `NULL`
+# when `from` is already an instance of `to` signalling that conversion is
+# idempotent.
+convert_dispatch <- function(from, to) {
+  from_dispatch <- obj_dispatch(from)
+  to_class <- class_register(to)
+
+  for (i in seq_along(from_dispatch)) {
+    if (from_dispatch[[i]] == to_class) {
+      if (i == 1L) {
+        return(NULL)
+      }
+      from_dispatch <- from_dispatch[seq_len(i - 1L)]
+      break
+    }
+  }
+
+  list(from_dispatch, to_class)
 }
 
 convert_up <- function(from, to, call = sys.call(-1L)) {

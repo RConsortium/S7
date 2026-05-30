@@ -7,6 +7,7 @@
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
 * `convert()` now falls back to the corresponding `as.*()` function (e.g. `as.character()`) when converting to a base type like `class_character` and no method or inheritance-based default applies, so `convert(1, class_character)` works out of the box (#472).
 * `convert()` no longer errors when `from` is a base or S3 object and `to` is an S7 class that inherits from `from`'s class. The base/S3 value is now passed as `.data` to the `to` constructor (#537).
+* `convert()` is now idempotent when `from` is already an instance of `to`, returning it unchanged. When `from` inherits from `to` but is more specific, dispatch is now restricted to classes more specific than `to`, so an inherited downcasting method can no longer be selected in place of an upcast (#429).
 * `method<-` now gives a clear error when assigning a primitive function (e.g. `log`) as a method (#608).
 * `method<-` and `method()` now accept a length-1 list as `signature` for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (#555).
 * `method<-` can now register methods on S3 generics with base types (e.g. `class_character`), S3 classes (`new_S3_class()`, `class_factor`, etc.), S7 unions (expanded to one registration per class), `class_any` (registered as the `default` method), and `NULL` (registered as the `NULL` method). `class_missing` is explicitly rejected since S3 dispatches on a single, always-present argument (#455).
