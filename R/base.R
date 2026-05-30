@@ -84,6 +84,27 @@ base_S7_class <- function(x) {
 
 is_base_class <- function(x) inherits(x, "S7_base_class")
 
+# Default coercion to a base type via the corresponding `as.*()`. `convert()`
+# uses this as a last resort, so a base type target works without a registered
+# method, but only after any user method and the inheritance-based defaults.
+base_coerce <- function(from, to, ...) {
+  switch(
+    to$class,
+    logical = as.logical(from, ...),
+    integer = as.integer(from, ...),
+    double = as.double(from, ...),
+    complex = as.complex(from, ...),
+    character = as.character(from, ...),
+    raw = as.raw(from, ...),
+    list = as.list(from, ...),
+    expression = as.expression(from, ...),
+    name = as.name(from, ...),
+    call = as.call(from, ...),
+    `function` = as.function(from, ...),
+    environment = as.environment(from, ...)
+  )
+}
+
 #' @export
 print.S7_base_class <- function(x, ...) {
   cat("<S7_base_class>: ", class_desc(x), "\n", sep = "")
