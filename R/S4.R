@@ -34,7 +34,7 @@ S4_register <- function(class, env = parent.frame()) {
   }
 
   methods::setOldClass(classes, where = topenv(env))
-  invisible()
+  invisible(classes[1L])
 }
 
 S7_extends_S4 <- function(class) {
