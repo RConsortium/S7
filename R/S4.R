@@ -1,4 +1,4 @@
-#' Register an S7 or S3 class with S4
+#' Register an S7, S3, or union class with S4
 #'
 #' If you want to use [method<-] to register a method for an S4 generic with
 #' an S7 class that does not extend an S4 class, or an S3 class created by
@@ -47,6 +47,73 @@ S4_register_union <- function(class, env) {
     where = env
   )
   name
+}
+
+S4_class <- function(x, S4_env, call = sys.call(-1L)) {
+  switch(
+    class_type(x),
+    `NULL` = "NULL",
+    missing = "missing",
+    any = "ANY",
+    S7_base = base_to_S4(x$class),
+    S4 = as.character(x@className),
+    S7 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_S3 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_union = S4_union_class(x, S4_env)
+  )
+}
+
+S4_union_class <- function(x, S4_env) {
+  if (identical(x, class_numeric)) {
+    return("numeric")
+  }
+
+  name <- S4_union_name(x, S4_env)
+  if (methods::isClass(name, where = S4_env)) {
+    return(name)
+  }
+
+  msg <- sprintf(
+    "Class union has not been registered with S4; please call S4_register(%s).",
+    class_deparse(x)
+  )
+  stop(msg, call. = FALSE)
+}
+
+S4_union_name <- function(x, S4_env) {
+  paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
+}
+
+# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
+# not "double", so registering under "double" silently misses real doubles.
+# Mapping to "numeric" catches doubles but also matches integers too. There's
+# no clean S4 way to say "doubles only" and this seems likely to be what
+# people want.
+base_to_S4 <- function(class) {
+  switch(class, double = "numeric", class)
+}
+
+S4_registered_class <- function(
+  x,
+  S4_env,
+  call = sys.call(-1L)
+) {
+  class <- tryCatch(
+    methods::getClass(class_register(x), where = S4_env),
+    error = function(err) NULL
+  )
+  if (is.null(class)) {
+    msg <- sprintf(
+      "Class has not been registered with S4; please call S4_register(%s).",
+      class_deparse(x)
+    )
+    stop2(msg, call = call)
+  }
+  class
 }
 
 S4_ancestor <- function(class) {
