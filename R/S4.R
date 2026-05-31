@@ -4,11 +4,17 @@
 #' an S7 class that does not extend an S4 class, or an S3 class created by
 #' [new_S3_class()], you need to call `S4_register()` once. Classes created by
 #' [new_class()] with an S4 parent are registered automatically.
+#' Use `S4_register_contains()` when you want an S4 class to extend an S7 class
+#' with `contains=`. This registers the S7 class as an old class with known
+#' attributes so that S7 properties are represented as S4 slots.
 #'
-#' @param class An S7 class created with [new_class()], or an S3 class created
-#'   with [new_S3_class()].
+#' @param class An S7 class created with [new_class()], or, for
+#'   `S4_register()` only, an S3 class created with [new_S3_class()] or an S7
+#'   union created with [new_union()].
 #' @param env Expert use only. Environment where S4 class will be registered.
-#' @returns Nothing; the function is called for its side-effect.
+#' @returns
+#' Both functions are called for their side effects and invisibly return the
+#' registered S4 class name.
 #' @export
 #' @examples
 #' methods::setGeneric("S4_generic", function(x) {
@@ -20,6 +26,10 @@
 #' method(S4_generic, Foo) <- function(x) "Hello"
 #'
 #' S4_generic(Foo())
+#'
+#' S4Foo <- new_class("S4Foo", properties = list(x = class_numeric), package = "S7")
+#' S4Foo_S4 <- S4_register_contains(S4Foo)
+#' methods::setClass("S4Child", contains = S4Foo_S4)
 S4_register <- function(class, env = parent.frame()) {
   if (is_class(class)) {
     classes <- class_dispatch(class)
@@ -165,6 +175,54 @@ S4_register_subclass <- function(class, env) {
   )
 
   invisible()
+}
+
+#' @rdname S4_register
+#' @export
+S4_register_contains <- function(class, env = parent.frame()) {
+  if (!is_class(class)) {
+    msg <- sprintf("`class` must be an S7 class, not a %s.", obj_desc(class))
+    stop(msg, call. = FALSE)
+  }
+
+  where <- topenv(env)
+  classes <- class_dispatch(class)
+  if (!methods::isClass(classes[1L], where = where)) {
+    S4_register(class, where)
+  }
+  class_name <- S4_register_with_props(class, where)
+  invisible(class_name)
+}
+
+S4_register_with_props <- function(class, env) {
+  where <- topenv(env)
+  class_name <- S4_register_contains_name(class)
+
+  args <- list(
+    Class = class_name,
+    slots = lapply(class@properties, S4_property_class, S4_env = where),
+    contains = S4_class(class, where),
+    where = where
+  )
+
+  do.call(methods::setClass, args)
+  class_name
+}
+
+S4_register_contains_name <- function(class) {
+  paste0(S7_class_name(class), "::S4Slots")
+}
+
+S4_property_class <- function(prop, S4_env) {
+  if (prop_is_dynamic(prop) || prop_has_setter(prop)) {
+    msg <- sprintf(
+      "Can't register property %s as an S4 slot because it has a custom %s.",
+      prop$name,
+      if (prop_is_dynamic(prop)) "getter" else "setter"
+    )
+    stop(msg, call. = FALSE)
+  }
+  S4_class(prop$class, S4_env)
 }
 
 S4_subclasses <- function(class) {
