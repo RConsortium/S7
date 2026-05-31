@@ -35,4 +35,6 @@ the base packages:
 \item \code{class_POSIXct}, \code{class_POSIXlt} and \code{class_POSIXt} for date-times.
 \item \code{class_formula} for formulas.
 }
+
+Matrices and arrays are documented separately in \link{base_arrays}.
 }

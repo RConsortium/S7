@@ -1,6 +1,7 @@
 # S7 (development version)
 
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
+* `class_array` and `class_matrix` are new unions that, together with the element-typed `class_double_matrix`, `class_integer_array`, etc. (one per base vector type), let you subclass matrices and arrays, e.g. `new_class("my_matrix", class_double_matrix)`. Like `class_numeric`, `class_array` and `class_matrix` can be used in `method()` and `new_property()` but not as a `parent`, so you must pick an element type when subclassing (#401).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
@@ -17,6 +18,7 @@
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * `new_object()` no longer re-runs property validators for properties inherited unchanged from an already-validated parent class, so constructing an instance of a deeply nested class hierarchy validates each property exactly once (#539).
+* `new_property()` now runs the property class's own validator when checking a value, not just the structural class check, so a property typed with a class like `class_double_matrix` enforces constraints (such as element type) that aren't visible in `class()` (#401).
 * `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
 * New `prop_info()` returns a data frame summarising the properties of an S7 object or class, with one row per property and columns for name, default, class, getter, setter, and validator (#551).

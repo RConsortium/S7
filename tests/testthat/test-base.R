@@ -248,25 +248,19 @@ test_that("Base S3 classes can be parents", {
     "All variables should have the same length."
   )
 
-  # expect_no_error({
-  #   Foo := new_class(class_matrix)
-  #   Foo(1:4, nrow = 2)
-  #   Foo(NA)
-  #   Foo(matrix(1:4, nrow = 2))
-  # })
+  expect_no_error({
+    Foo := new_class(class_integer_matrix)
+    Foo(1:4, nrow = 2)
+    Foo(matrix(1:4, nrow = 2))
+  })
 
-  # expect_no_error({
-  #   Foo := new_class(class_array)
-  #
-  #   Foo(array(1:4, dim = c(2, 2)))
-  #   Foo(1:4, dim = c(2, 2))
-  #
-  #   Foo(array(1:24, dim = c(2, 3, 4)))
-  #   Foo(1:24, dim = c(2, 3, 4))
-  #
-  #   Foo(array(1))
-  #   Foo(1)
-  # })
+  expect_no_error({
+    Foo := new_class(class_double_array)
+    Foo(array(1, dim = c(2, 2)))
+    Foo(as.double(1:4), dim = c(2, 2))
+    Foo(as.double(1:24), dim = c(2, 3, 4))
+    Foo(1)
+  })
 
   expect_no_error({
     Foo := new_class(class_formula)
@@ -290,17 +284,19 @@ test_that("Base S3 classes can be properties", {
   })
   expect_error(Foo(x = 1), "@x must be S3<data.frame>, not <double>")
 
-  # expect_no_error({
-  #   Foo := new_class(properties = list(x = class_matrix))
-  #   Foo(x = matrix())
-  # })
-  # expect_error(Foo(x = 1), "@x must be S3<matrix>, not <double>")
+  expect_no_error({
+    Foo := new_class(properties = list(x = class_double_matrix))
+    Foo(x = matrix(double()))
+    Foo(x = matrix(as.double(1:4), 2))
+  })
+  expect_error(Foo(x = 1), "@x must be S3<double matrix>, not <double>")
 
-  # expect_no_error({
-  #   Foo := new_class(properties = list(x = class_array))
-  #   Foo(x = array())
-  # })
-  # expect_error(Foo(x = 1), "@x must be S3<array>, not <double>")
+  expect_no_error({
+    Foo := new_class(properties = list(x = class_integer_array))
+    Foo(x = array(integer()))
+    Foo(x = array(1:24, c(2, 3, 4)))
+  })
+  expect_error(Foo(x = 1), "@x must be S3<integer array>, not <double>")
 
   expect_no_error({
     Foo := new_class(properties = list(x = class_formula))
@@ -334,6 +330,43 @@ test_that("Base S3 classes can be properties", {
   expect_error(Foo(x = 1), "@x must be S3<POSIXt>, not <double>")
 })
 
+test_that("matrix/array constructors enforce element type", {
+  Mat <- new_class("Mat", parent = class_double_matrix)
+  m <- Mat(as.double(1:4), nrow = 2)
+  expect_identical(dim(m), c(2L, 2L))
+  expect_identical(typeof(m), "double")
+  expect_snapshot(error = TRUE, Mat(1:4, nrow = 2))
+
+  Arr <- new_class("Arr", parent = class_integer_array)
+  a <- Arr(1:24, dim = c(2, 3, 4))
+  expect_identical(dim(a), c(2L, 3L, 4L))
+  expect_identical(typeof(a), "integer")
+})
+
+test_that("class_matrix and class_array can't be a parent", {
+  expect_snapshot(error = TRUE, {
+    new_class("Foo", parent = class_matrix)
+    new_class("Foo", parent = class_array)
+  })
+})
+
+test_that("element-typed properties enforce element type", {
+  Foo <- new_class("Foo", properties = list(x = class_double_matrix))
+  expect_snapshot(error = TRUE, Foo(x = matrix(1:4, 2)))
+})
+
+test_that("can dispatch on class_matrix and class_array", {
+  area <- new_generic("area", "x")
+  method(area, class_matrix) <- function(x) "matrix"
+  method(area, class_array) <- function(x) "array"
+
+  Mat <- new_class("Mat", parent = class_double_matrix)
+  Arr <- new_class("Arr", parent = class_integer_array)
+
+  # A matrix is also an array, so the more specific matrix method wins
+  expect_equal(area(Mat(as.double(1:4), 2)), "matrix")
+  expect_equal(area(Arr(1:24, c(2, 3, 4))), "array")
+})
 
 test_that("ALTREP vectors aren't materialised (#607)", {
   skip_on_cran()
