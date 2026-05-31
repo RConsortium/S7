@@ -25,9 +25,11 @@ S4_register <- function(class, env = parent.frame()) {
     classes <- class_dispatch(class)
   } else if (is_S3_class(class)) {
     classes <- class$class
+  } else if (is_union(class)) {
+    return(invisible(S4_register_union(class, topenv(env))))
   } else {
     msg <- sprintf(
-      "`class` must be an S7 class or an S3 class, not a %s.",
+      "`class` must be an S7 class, S3 class, or S7 union, not a %s.",
       obj_desc(class)
     )
     stop2(msg)
@@ -35,6 +37,16 @@ S4_register <- function(class, env = parent.frame()) {
 
   methods::setOldClass(classes, where = topenv(env))
   invisible(classes[1L])
+}
+
+S4_register_union <- function(class, env) {
+  name <- S4_union_name(class, env)
+  methods::setClassUnion(
+    name,
+    vcapply(class$classes, S4_class, S4_env = env),
+    where = env
+  )
+  name
 }
 
 S7_extends_S4 <- function(class) {
