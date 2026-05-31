@@ -250,6 +250,14 @@ prop_validate <- function(prop, value, object = NULL) {
     ))
   }
 
+  # `class_inherits()` is purely structural, so also run the class's own
+  # validator. This enforces constraints that aren't visible in `class()`,
+  # such as the element type of a `class_double_matrix`.
+  class_error <- class_validate(prop$class, value)
+  if (is.character(class_error) && length(class_error)) {
+    return(paste0(prop_label(object, prop$name), " ", class_error))
+  }
+
   if (is.null(validator <- prop$validator)) {
     return(NULL)
   }

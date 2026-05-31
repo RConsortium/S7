@@ -184,9 +184,9 @@ validate_POSIXct <- function(self) {
     return("Underlying data must be numeric")
   }
 
-  tz <- attr(self, "tz")
-  if (!is.character(tz) || length(tz) != 1) {
-    return("attr(, 'tz') must be a single string")
+  tz <- attr(self, "tzone", exact = TRUE)
+  if (!is.null(tz) && (!is.character(tz) || length(tz) != 1)) {
+    return("attr(, 'tzone') must be NULL or a single string")
   }
 }
 
@@ -218,56 +218,6 @@ validate_data.frame <- function(self) {
   }
 }
 
-valid_dimnames <- function(self) {
-  dn <- dimnames(self)
-  if (is.null(dn)) {
-    TRUE
-  } else if (!is.list(dn) || length(dn) != length(dim(self))) {
-    FALSE
-  } else {
-    for (i in seq_along(dimnames(self))) {
-      if (is.null(dn[[i]])) {
-        next
-      }
-      if (!is.character(dn[[i]]) || length(dn[[i]]) != dim(self)[[i]]) {
-        return(FALSE)
-      }
-    }
-  }
-  TRUE
-}
-
-validate_matrix <- function(self) {
-  if (!is.matrix(self)) {
-    # is.matrix() methods should only return TRUE if valid
-    "is.matrix(self) is FALSE"
-  } else if (
-    !is.integer(dim(self)) || length(dim(self)) != 2L || !all(dim(self) >= 0L)
-  ) {
-    "dim(self) must be a non-negative integer vector of length 2"
-  } else if (!valid_dimnames(self)) {
-    "dimnames(self) must be NULL or a length 2 list of either NULL or a character vector of length equal to its corresponding dimension"
-  }
-}
-
-validate_array <- function(self) {
-  if (is.array(self)) {
-    # is.array() methods should only return TRUE if valid
-    return(invisible(NULL))
-  }
-  if (
-    !is.integer(dim(self)) || length(dim(self)) == 0L || !all(dim(self) >= 0L)
-  ) {
-    return("dim(self) must be a non-empty non-negative integer vector")
-  }
-  if (!valid_dimnames(self)) {
-    return(
-      "dimnames(self) must be NULL or a list of either NULL or a character vector of length equal to its corresponding dimension"
-    )
-  }
-  "is.array(self) is FALSE"
-}
-
 validate_formula <- function(self) {
   if (is.null(environment(self))) {
     return("environment(self) must be non-NULL")
@@ -295,10 +245,9 @@ validate_formula <- function(self) {
 #' * `class_Date` for dates.
 #' * `class_factor` for factors.
 #' * `class_POSIXct`, `class_POSIXlt` and `class_POSIXt` for date-times.
-# * `class_matrix` for matrices.
-# * `class_array` for arrays.
 #' * `class_formula` for formulas.
-
+#'
+#' Matrices and arrays are documented separately in [base_arrays].
 #'
 #' @export
 #' @name base_s3_classes
@@ -371,47 +320,6 @@ class_data.frame <- new_S3_class(
     }
   },
   validator = validate_data.frame
-)
-
-#  @export
-#  @rdname base_s3_classes
-#  @format NULL
-#  @order 3
-class_matrix <- new_S3_class(
-  "matrix",
-  constructor = function(
-    .data = logical(),
-    nrow = NULL,
-    ncol = NULL,
-    byrow = FALSE,
-    dimnames = NULL
-  ) {
-    nrow <- nrow %||% NROW(.data)
-    if (is.null(ncol)) {
-      ncol <- NCOL(.data)
-      if (length(.data) != (nrow * ncol)) {
-        ncol <- length(.data) %/% nrow
-      }
-    }
-    matrix(.data, nrow, ncol, byrow, dimnames)
-  },
-  validator = validate_matrix
-)
-
-#  @export
-#  @rdname base_s3_classes
-#  @format NULL
-#  @order 3
-class_array <- new_S3_class(
-  "array",
-  constructor = function(
-    .data = logical(),
-    dim = base::dim(.data) %||% length(.data),
-    dimnames = base::dimnames(.data)
-  ) {
-    array(.data, dim, dimnames)
-  },
-  validator = validate_array
 )
 
 #' @export

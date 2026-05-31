@@ -234,7 +234,7 @@ class_desc <- function(x) {
     S7 = paste0("<", S7_class_name(x), ">"),
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
-    S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
+    S7_S3 = x$desc %||% paste0("S3<", paste0(x$class, collapse = "/"), ">"),
   )
 }
 

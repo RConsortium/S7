@@ -240,7 +240,15 @@ flatten_signature <- function(signature) {
   colnames(comb) <- NULL
 
   rows <- lapply(1:nrow(comb), function(i) comb[i, ])
-  lapply(rows, function(row) Map("[[", signature, row))
+  signatures <- lapply(rows, function(row) Map("[[", signature, row))
+
+  # Drop signatures that resolve to the same registration key. This happens
+  # when a union has members that share a dispatch token, e.g. the element
+  # types of `class_matrix` all register as "matrix".
+  keys <- vcapply(signatures, function(sig) {
+    paste0(vcapply(sig, class_register), collapse = "\r")
+  })
+  signatures[!duplicated(keys)]
 }
 
 as_signature <- function(signature, generic, call = sys.call(-1L)) {
