@@ -49,6 +49,45 @@ S4_register_union <- function(class, env) {
   name
 }
 
+S4_class <- function(x, S4_env, call = sys.call(-1L)) {
+  switch(
+    class_type(x),
+    `NULL` = "NULL",
+    missing = "missing",
+    any = "ANY",
+    S7_base = base_to_S4(x$class),
+    S4 = as.character(x@className),
+    S7 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_S3 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_union = S4_union_class(x, S4_env)
+  )
+}
+
+S4_union_class <- function(x, S4_env) {
+  if (identical(x, class_numeric)) {
+    return("numeric")
+  }
+
+  name <- S4_union_name(x, S4_env)
+  if (methods::isClass(name, where = S4_env)) {
+    return(name)
+  }
+
+  msg <- sprintf(
+    "Class union has not been registered with S4; please call S4_register(%s).",
+    class_deparse(x)
+  )
+  stop(msg, call. = FALSE)
+}
+
+S4_union_name <- function(x, S4_env) {
+  paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
+}
+
 S4_ancestor <- function(class) {
   parent_class <- attr(class, "parent", exact = TRUE)
   while (is_class(parent_class)) {
