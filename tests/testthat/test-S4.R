@@ -6,17 +6,173 @@ test_that("can work with classGenerators", {
 test_that("S4_register registers an S7 class so it can be used with S4 methods", {
   on.exit(S4_remove_classes("S4regS7"))
   S4regS7 := new_class(package = NULL)
-  S4_register(S4regS7)
+  S4regS7_S4 <- S4_register(S4regS7)
+  expect_equal(S4regS7_S4, "S4regS7")
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
 test_that("S4_register registers an S3 class so it can be used with S4 methods", {
   on.exit(S4_remove_classes(c("S4regS3a", "S4regS3b")))
-  S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
+  S4regS3_S4 <- S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
+  expect_equal(S4regS3_S4, "S4regS3a")
   # Must not extend S7_object — that was a silent bug pre-fix
   expect_equal(
     methods::extends("S4regS3a"),
     c("S4regS3a", "S4regS3b", "oldClass")
+  )
+})
+
+test_that("S4_register registers an S7 union so it can be used with S4 methods", {
+  on.exit({
+    if (methods::isGeneric("S4regUnionGeneric")) {
+      methods::removeGeneric("S4regUnionGeneric")
+    }
+    S4_remove_classes(c(
+      "S4regUnionFoo",
+      "S4regUnionFoo_OR_character"
+    ))
+  })
+
+  S4regUnionFoo <- new_class("S4regUnionFoo", package = NULL)
+  S4_register(S4regUnionFoo)
+  S4regUnion <- S4regUnionFoo | class_character
+  S4regUnion_S4 <- S4_register(S4regUnion)
+  expect_equal(S4regUnion_S4, "S4regUnionFoo_OR_character")
+
+  methods::setGeneric(
+    "S4regUnionGeneric",
+    function(x) standardGeneric("S4regUnionGeneric")
+  )
+  method(S4regUnionGeneric, S4regUnion) <- function(x) "union"
+
+  expect_equal(S4regUnionGeneric(S4regUnionFoo()), "union")
+  expect_equal(S4regUnionGeneric("x"), "union")
+})
+
+test_that("S4_register_contains registers S7 properties as slots for S4 subclasses", {
+  on.exit({
+    if (methods::isGeneric("S4regContainsGeneric")) {
+      methods::removeGeneric("S4regContainsGeneric")
+    }
+    S4_remove_classes(c(
+      "S4regContainsS4Child",
+      "S7::S4regContains",
+      "S7::S4regContainsChild",
+      "S7::S4regContainsChild::S4Slots"
+    ))
+  })
+
+  S4regContains <- new_class(
+    "S4regContains",
+    properties = list(x = class_numeric),
+    package = "S7"
+  )
+  S4regContainsChild <- new_class(
+    "S4regContainsChild",
+    parent = S4regContains,
+    properties = list(y = class_character),
+    package = "S7"
+  )
+
+  S4regContainsChild_old <- S4_register(S4regContainsChild)
+  S4regContainsChild_S4 <- S4_register_contains(S4regContainsChild)
+  expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild::S4Slots")
+  expect_equal(
+    methods::slotNames(S4regContainsChild_S4),
+    c("x", "y", ".S3Class")
+  )
+  expect_contains(
+    methods::extends(S4regContainsChild_S4),
+    S4regContainsChild_old
+  )
+
+  methods::setClass(
+    "S4regContainsS4Child",
+    contains = S4regContainsChild_S4,
+    slots = list(z = "logical")
+  )
+  object <- methods::new(
+    "S4regContainsS4Child",
+    x = 1,
+    y = "a",
+    z = TRUE
+  )
+
+  expect_equal(methods::slot(object, "x"), 1)
+  expect_equal(methods::slot(object, "y"), "a")
+  expect_equal(methods::slot(object, "z"), TRUE)
+
+  methods::setGeneric(
+    "S4regContainsGeneric",
+    function(x) standardGeneric("S4regContainsGeneric")
+  )
+  method(S4regContainsGeneric, S4regContainsChild) <- function(x) {
+    methods::slot(x, "x")
+  }
+  expect_equal(S4regContainsGeneric(object), 1)
+})
+
+test_that("S4_register_contains rejects properties that can not be represented as slots", {
+  on.exit(S4_remove_classes(c(
+    "S7::S4regContainsDynamic",
+    "S7::S4regContainsSetter",
+    "S7::S4regContainsDynamic::S4Slots",
+    "S7::S4regContainsSetter::S4Slots"
+  )))
+
+  S4regContainsDynamic <- new_class(
+    "S4regContainsDynamic",
+    properties = list(
+      x = new_property(class_numeric, getter = function(self) 1)
+    ),
+    package = "S7"
+  )
+  expect_error(
+    S4_register_contains(S4regContainsDynamic),
+    "custom getter"
+  )
+
+  S4regContainsSetter <- new_class(
+    "S4regContainsSetter",
+    properties = list(
+      x = new_property(
+        class_numeric,
+        setter = function(self, value) {
+          attr(self, "x") <- value
+          self
+        }
+      )
+    ),
+    package = "S7"
+  )
+  expect_error(
+    S4_register_contains(S4regContainsSetter),
+    "custom setter"
+  )
+})
+
+test_that("S4_register_contains uses registered S7 unions as S4 slots", {
+  on.exit(S4_remove_classes(c(
+    "S7::S4regContainsUnion",
+    "S7::S4regContainsUnion::S4Slots",
+    "integer_OR_numeric_OR_character"
+  )))
+
+  S4regContainsUnion <- new_class(
+    "S4regContainsUnion",
+    properties = list(x = class_numeric | class_character),
+    package = "S7"
+  )
+  expect_error(
+    S4_register_contains(S4regContainsUnion),
+    "not been registered"
+  )
+
+  S4_register(class_numeric | class_character)
+  S4regContainsUnion_S4 <- S4_register_contains(S4regContainsUnion)
+  expect_equal(
+    as.character(methods::getClass(S4regContainsUnion_S4)@slots$x),
+    "integer_OR_numeric_OR_character"
   )
 })
 
