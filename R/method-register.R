@@ -396,14 +396,36 @@ S4_class <- function(x, S4_env, call = sys.call(-1L)) {
     missing = "missing",
     any = "ANY",
     S7_base = base_to_S4(x$class),
-    S4 = x,
-    S7 = S4_registered_class(x, S4_env, call = call),
-    S7_S3 = S4_registered_class(x, S4_env, call = call),
-    S7_union = stop2(
-      "Internal error: union should be flattened upstream.",
-      call = NULL
-    )
+    S4 = as.character(x@className),
+    S7 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_S3 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_union = S4_union_class(x, S4_env)
   )
+}
+
+S4_union_class <- function(x, S4_env) {
+  if (identical(x, class_numeric)) {
+    return("numeric")
+  }
+
+  name <- S4_union_name(x, S4_env)
+  if (methods::isClass(name, where = S4_env)) {
+    return(name)
+  }
+
+  msg <- sprintf(
+    "Class union has not been registered with S4; please call S4_register(%s).",
+    class_deparse(x)
+  )
+  stop(msg, call. = FALSE)
+}
+
+S4_union_name <- function(x, S4_env) {
+  paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
 }
 
 # S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",

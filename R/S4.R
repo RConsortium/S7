@@ -1,4 +1,4 @@
-#' Register an S7 or S3 class with S4
+#' Register an S7, S3, or union class with S4
 #'
 #' If you want to use [method<-] to register a method for an S4 generic with
 #' an S7 class that does not extend an S4 class, or an S3 class created by
