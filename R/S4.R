@@ -65,7 +65,7 @@ S4_register_subclass <- function(class, env) {
   } else {
     methods::setOldClass(
       subclasses,
-      S4Class = S4_transient_prototype_class(class, where),
+      S4Class = S4_register_prototype_class(class, where),
       where = where
     )
     methods::setValidity(subclasses[1L], S4_validate, where = where)
@@ -172,7 +172,7 @@ S4_initialize_data_part <- function(value, object) {
   value
 }
 
-S4_transient_prototype_class <- function(class, env = parent.frame()) {
+S4_register_prototype_class <- function(class, env = parent.frame()) {
   where <- topenv(env)
   classes <- class_dispatch(class)
 
@@ -191,7 +191,7 @@ S4_transient_prototype_class <- function(class, env = parent.frame()) {
   }
 
   do.call(methods::setClass, args)
-  methods::getClass(args$Class, where = where)
+  args$Class
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
