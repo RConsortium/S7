@@ -206,6 +206,28 @@ test_that("converts S4 unions to S7 unions", {
   )
 })
 
+test_that("S4 slot properties preserve S4 class unions", {
+  on.exit(S4_remove_classes(c(
+    "S4regUnionSlot",
+    "S4regUnionSlotParent"
+  )))
+
+  setClassUnion("S4regUnionSlot", c("character", "NULL"))
+  setClass("S4regUnionSlotParent", slots = list(u = "S4regUnionSlot"))
+
+  S4regUnionSlotChild <- new_class(
+    "S4regUnionSlotChild",
+    parent = getClass("S4regUnionSlotParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  expect_equal(
+    S4regUnionSlotChild@properties$u$class,
+    getClass("S4regUnionSlot")
+  )
+})
+
 test_that("converts S4 representation of S3 classes to S7 representation", {
   expect_equal(
     S4_to_S7_class(getClass("Date")),
