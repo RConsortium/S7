@@ -495,28 +495,20 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (getter != R_NilValue && setter == R_NilValue)
     signal_prop_error("Can't set read-only property.", object, name);
 
-  PROTECT_INDEX object_pi;
+  int n_protected = 0;
   // maybe use R_shallow_duplicate_attr() here instead
   // once it becomes API or S7 becomes part of R
-  object = Rf_shallow_duplicate(object);
-  PROTECT_WITH_INDEX(object, &object_pi);
+  object = PROTECT(Rf_shallow_duplicate(object));
+  n_protected++;
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
     // use setter(). Keep the instance passed to the setter for error
     // reporting, since `object` is reassigned to its return value below.
-    SEXP self = PROTECT(object);
-    REPROTECT(
-        object = do_setter_call(
-            setter,
-            S7_class,
-            name,
-            object,
-            name_sym,
-            value),
-        object_pi);
+    SEXP self = object;
+    object = PROTECT(do_setter_call(setter, S7_class, name, object, name_sym, value));
+    n_protected++;
     if (!is_s7_object(object))
       signal_setter_error(object, self, name);
-    UNPROTECT(1); // self
   } else {
     // don't use setter()
     if (should_validate_prop)
@@ -527,6 +519,6 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   if (should_validate_obj)
     obj_validate(object);
 
-  UNPROTECT(1);
+  UNPROTECT(n_protected);
   return object;
 }
