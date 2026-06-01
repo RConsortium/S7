@@ -416,7 +416,7 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   # `...` can't be a property name because it's special syntax: it can be
   # neither an attribute nor a constructor argument.
   if ("..." %in% nms) {
-    stop2('Properties can\'t be named "...".', call = call)
+    stop2('Properties must not be named "...".', call = call)
   }
 
   # Names with special C handlers in base R (names, class, ...) are stored under
