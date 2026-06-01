@@ -514,12 +514,10 @@ as_property <- function(x, name, i, call = sys.call(-1L)) {
   }
 }
 
-# Map property names to the attribute names used to store them
 prop_storage_rename <- function(names) {
   .Call(prop_storage_rename_, names)
 }
 
-# Names of the attributes used to store an object's properties.
 prop_storage_names <- function(object) {
   prop_storage_rename(prop_names(object))
 }
