@@ -113,25 +113,20 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
 
   from_class <- S7_class(from)
   if (is_class(from_class)) {
-    from_props <- prop_names(from)
+    from_props <- prop_storage_names(from)
   } else {
     # `from` is a base, S3, or S4 object, so it has no S7 properties
     from_props <- character()
   }
 
   if (is_base_class(to)) {
-    from <- zap_attr(
-      from,
-      c(prop_storage_rename(from_props), "S7_class", "class")
-    )
+    from <- zap_attr(from, c(from_props, "S7_class", "class"))
   } else if (is_S3_class(to)) {
-    from <- zap_attr(from, c(prop_storage_rename(from_props), "S7_class"))
+    from <- zap_attr(from, c(from_props, "S7_class"))
     class(from) <- to$class
   } else if (is_class(to)) {
-    from <- zap_attr(
-      from,
-      prop_storage_rename(setdiff(from_props, names(to@properties)))
-    )
+    to_props <- prop_storage_rename(names(to@properties))
+    from <- zap_attr(from, setdiff(from_props, to_props))
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
   } else {

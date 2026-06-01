@@ -519,6 +519,11 @@ prop_storage_rename <- function(names) {
   .Call(prop_storage_rename_, names)
 }
 
+# Names of the attributes used to store an object's properties.
+prop_storage_names <- function(object) {
+  prop_storage_rename(prop_names(object))
+}
+
 prop_is_read_only <- function(prop) {
   is.function(prop$getter) && !is.function(prop$setter)
 }
