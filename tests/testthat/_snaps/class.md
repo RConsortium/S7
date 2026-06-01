@@ -264,7 +264,7 @@
       new_class("foo", properties = list(... = class_character))
     Condition
       Error in `new_class()`:
-      ! Properties must not be named "...".
+      ! Properties can't be named "...".
 
 # property names can't start with `_` (#579)
 

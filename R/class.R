@@ -408,15 +408,11 @@ S7_class <- function(object) {
 
 
 check_prop_names <- function(properties, call = sys.call(-1L)) {
-  nms <- names(properties)
-  if (is.null(nms)) {
-    return(invisible())
-  }
+  nms <- names2(properties)
 
-  # `...` can't be a property name because it's special syntax: it can be
-  # neither an attribute nor a constructor argument.
+  # `...` can't be a property name because it's special syntax
   if ("..." %in% nms) {
-    stop2('Properties must not be named "...".', call = call)
+    stop2("Properties can't be named \"...\".", call = call)
   }
 
   # Names with special C handlers in base R (names, class, ...) are stored under
@@ -425,7 +421,7 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   reserved <- startsWith(nms, "_")
   if (any(reserved)) {
     msg <- sprintf(
-      'Properties can\'t start with "_": %s.',
+      "Properties can't start with \"_\": %s.",
       paste0('"', nms[reserved], '"', collapse = ", ")
     )
     stop2(msg, call = call)
