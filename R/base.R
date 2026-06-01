@@ -50,8 +50,60 @@ base_default <- function(type) {
   )
 }
 
+base_class <- function(x) {
+  switch(
+    typeof(x),
+    closure = "function",
+    special = "function",
+    builtin = "function",
+    language = "call",
+    symbol = "name",
+    typeof(x)
+  )
+}
+
+base_S7_class <- function(x) {
+  switch(
+    base_class(x),
+    NULL = NULL,
+    logical = class_logical,
+    integer = class_integer,
+    double = class_double,
+    complex = class_complex,
+    character = class_character,
+    raw = class_raw,
+    list = class_list,
+    expression = class_expression,
+    name = class_name,
+    call = class_call,
+    `function` = class_function,
+    environment = class_environment,
+    stop2(sprintf("No S7 class for base type <%s>.", typeof(x)), call = NULL)
+  )
+}
 
 is_base_class <- function(x) inherits(x, "S7_base_class")
+
+# Default coercion to a base type via the corresponding `as.*()`. `convert()`
+# uses this as a last resort, so a base type target works without a registered
+# method, but only after any user method and the inheritance-based defaults.
+base_coerce <- function(from, to, ...) {
+  switch(
+    to$class,
+    logical = as.logical(from, ...),
+    integer = as.integer(from, ...),
+    double = as.double(from, ...),
+    complex = as.complex(from, ...),
+    character = as.character(from, ...),
+    raw = as.raw(from, ...),
+    list = as.list(from, ...),
+    expression = as.expression(from, ...),
+    name = as.name(from, ...),
+    call = as.call(from, ...),
+    `function` = as.function(from, ...),
+    environment = as.environment(from, ...)
+  )
+}
 
 #' @export
 print.S7_base_class <- function(x, ...) {
@@ -82,7 +134,9 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_name`
 #' * `class_call`
 #' * `class_function`
-#' * `class_environment` (can only be used for properties)
+#'
+#' See also [class_environment] which is documented separately due to the
+#' complexities introduced by their reference semantics.
 #'
 #' We also include three union types to model numerics, atomics, and vectors
 #' respectively:
@@ -169,12 +223,6 @@ class_call <- new_base_class("call")
 #' @format NULL
 #' @order 1
 class_function <- new_base_class("function", "fun")
-
-#' @export
-#' @rdname base_classes
-#' @format NULL
-#' @order 1
-class_environment <- new_base_class("environment")
 
 #' @export
 #' @rdname base_classes

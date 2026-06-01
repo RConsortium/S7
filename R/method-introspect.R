@@ -7,9 +7,11 @@
 #' the implementation of a specific method.
 #'
 #' @seealso [method_explain()] to explain why a specific method was picked.
-#' @inheritParams method<-
 #' @returns Either a function with class `S7_method` or an error if no
 #'   matching method is found.
+#' @param generic An S7 generic, i.e. the result of [new_generic()]. Unlike
+#'   [method<-], `method()` only works with S7 generics; it does not look up
+#'   methods registered on S3 or S4 generics.
 #' @param class,object Perform introspection either with a `class`
 #'   (processed with [as_class()]) or a concrete `object`. If `generic` uses
 #'   multiple dispatch then both `object` and `class` must be a list of
@@ -48,7 +50,7 @@ method <- function(generic, class = NULL, object = NULL) {
   # argument values in the dispatch environment, which doesn't exist here
   types <- error_types(generic, class = class, object = object)
   msg <- method_lookup_error_message(generic@name, types)
-  stop(msg, call. = FALSE)
+  stop2(msg)
 }
 
 #' Explain method dispatch
@@ -107,12 +109,17 @@ method_explain <- function(generic, class = NULL, object = NULL) {
 }
 
 
-as_dispatch <- function(generic, class = NULL, object = NULL) {
+as_dispatch <- function(
+  generic,
+  class = NULL,
+  object = NULL,
+  call = sys.call(-1L)
+) {
   if (!is.null(class) && is.null(object)) {
-    signature <- as_signature(class, generic)
+    signature <- as_signature(class, generic, call = call)
     is_union <- vlapply(signature, is_union)
     if (any(is_union)) {
-      stop("Can't dispatch on unions; must be a concrete type")
+      stop2("Can't dispatch on unions; must be a concrete type.", call = call)
     }
 
     lapply(signature, class_dispatch)
@@ -121,11 +128,11 @@ as_dispatch <- function(generic, class = NULL, object = NULL) {
     if (n == 1) {
       object <- list(object)
     } else {
-      check_signature_list(object, n = n, arg = "object")
+      check_signature_list(object, n = n, arg = "object", call = call)
     }
     lapply(object, obj_dispatch)
   } else {
-    stop("Must supply exactly one of `class` and `object`", call. = FALSE)
+    stop2("Must supply exactly one of `class` and `object`.", call = call)
   }
 }
 

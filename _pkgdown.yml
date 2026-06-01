@@ -27,13 +27,15 @@ reference:
   - class_missing
   - class_any
   - super
-
+ 
 - title: Introspection
+  contents:
   - method
   - method_explain
   - S7_class
   - S7_classes
   - S7_methods
+  - S7_class_desc
 
 - title: Packages
   desc: >
@@ -49,6 +51,7 @@ reference:
     classes, and base types. See `vignette("compatibility")` for more details.
   contents:
   - base_classes
+  - class_environment
   - base_s3_classes
   - new_S3_class
   - S4_register

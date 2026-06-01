@@ -20,7 +20,7 @@
 #' as_class(class_logical)
 #' as_class(new_S3_class("factor"))
 as_class <- function(x, arg = deparse(substitute(x))) {
-  error_base <- sprintf("Can't convert `%s` to a valid class. ", arg)
+  error_base <- sprintf("Can't convert `%s` to a valid class.", arg)
 
   if (is_foundation_class(x)) {
     x
@@ -29,13 +29,21 @@ as_class <- function(x, arg = deparse(substitute(x))) {
     # so it can't be wrapped in new_base_class
     x
   } else if (isS4(x)) {
-    S4_to_S7_class(x, error_base)
+    S4_to_S7_class(x, error_base, call = sys.call(-1L))
   } else {
-    msg <- sprintf(
-      "Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a %s.",
-      obj_desc(x)
+    msg <- c(
+      error_base,
+      sprintf(
+        "Class specification must be one of the following, not a %s:",
+        obj_desc(x)
+      ),
+      " * An S7 class object",
+      " * An S3 class object (from `new_S3_class()`)",
+      " * An S4 class object",
+      " * A base class"
     )
-    stop(paste0(error_base, msg), call. = FALSE)
+
+    stop2(msg)
   }
 }
 
@@ -66,7 +74,7 @@ class_type <- function(x) {
   } else if (is_S4_class(x)) {
     "S4"
   } else {
-    stop("`x` is not standard S7 class", call. = FALSE)
+    stop2("`x` is not a standard S7 class.", call = NULL)
   }
 }
 
@@ -110,11 +118,11 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
       f2 <- eval(cl, baseenv())
       if (!identical(f, f2)) {
         msg <- sprintf(
-          "`%s::%s` is not identical to the class with the same @package and @name properties",
+          "`%s::%s` is not identical to the class with the same @package and @name properties.",
           f@package,
           f@name
         )
-        stop(msg, call. = FALSE)
+        stop2(msg, call = NULL)
       }
       return(as.call(list(cl)))
     }
@@ -177,7 +185,7 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
-    stop(sprintf("Can't construct %s", class_friendly(.x)), call. = FALSE)
+    stop2(sprintf("Can't construct %s.", class_friendly(.x)), call = NULL)
   )
 }
 
@@ -196,6 +204,24 @@ class_validate <- function(class, object) {
   } else {
     validator(object)
   }
+}
+
+#' Format a class specification as a string
+#'
+#' `S7_class_desc()` turns any [class specification][as_class] into a short,
+#' human-readable, string, suitable for use in user-facing messages.
+#'
+#' @param class A [class specification][as_class].
+#' @returns A string.
+#' @export
+#' @examples
+#' S7_class_desc(class_integer)
+#' S7_class_desc(new_S3_class("data.frame"))
+#' S7_class_desc(class_integer | class_double)
+#' S7_class_desc(NULL)
+S7_class_desc <- function(class) {
+  class <- as_class(class)
+  class_desc(class)
 }
 
 class_desc <- function(x) {
@@ -227,7 +253,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    stop("Unsupported")
+    stop2("Unsupported class type.", call = NULL)
   )
 }
 
@@ -242,7 +268,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
-    stop("Unsupported")
+    stop2("Unsupported class type.", call = NULL)
   )
 }
 
@@ -312,18 +338,6 @@ obj_dispatch <- function(x) {
     S3 = class(x),
     S4 = S4_class_dispatch(methods::getClass(class(x))),
     S7 = class(x) # = class_dispatch(S7_class(x))
-  )
-}
-
-base_class <- function(x) {
-  switch(
-    typeof(x),
-    closure = "function",
-    special = "function",
-    builtin = "function",
-    language = "call",
-    symbol = "name",
-    typeof(x)
   )
 }
 

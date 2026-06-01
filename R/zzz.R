@@ -42,7 +42,7 @@ is_S7_type <- function(x) {
       deparse1(substitute(x)),
       name
     )
-    stop(msg, call. = FALSE)
+    stop2(msg)
   }
 }
 #' @export
@@ -55,7 +55,7 @@ is_S7_type <- function(x) {
       name,
       deparse1(substitute(value))
     )
-    stop(msg, call. = FALSE)
+    stop2(msg)
   }
 }
 
@@ -81,7 +81,7 @@ is_S7_type <- function(x) {
   NextMethod()
 }
 
-check_subsettable <- function(x, allow_env = FALSE) {
+check_subsettable <- function(x, allow_env = FALSE, call = sys.call(-1L)) {
   allowed_types <- c(
     "list",
     "language",
@@ -89,7 +89,7 @@ check_subsettable <- function(x, allow_env = FALSE) {
     if (allow_env) "environment"
   )
   if (!typeof(x) %in% allowed_types) {
-    stop("S7 objects are not subsettable.")
+    stop2("S7 objects are not subsettable.", call = call)
   }
   invisible(TRUE)
 }
@@ -140,6 +140,7 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 .onLoad <- function(...) {
   activate_backward_compatiblility()
 
+  on_load_define_environment()
   on_load_define_S7_generic()
   on_load_define_S7_method()
   on_load_make_convert_generic()

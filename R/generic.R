@@ -82,30 +82,37 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
   S7_generic(fun, name = name, dispatch_args = dispatch_args)
 }
 
-check_dispatch_args <- function(dispatch_args, fun = NULL) {
+check_dispatch_args <- function(
+  dispatch_args,
+  fun = NULL,
+  call = sys.call(-1L)
+) {
   if (!is.character(dispatch_args)) {
-    stop("`dispatch_args` must be a character vector", call. = FALSE)
+    stop2("`dispatch_args` must be a character vector.", call = call)
   }
   if (length(dispatch_args) == 0) {
-    stop("`dispatch_args` must have at least one component", call. = FALSE)
+    stop2("`dispatch_args` must have at least one component.", call = call)
   }
   if (anyDuplicated(dispatch_args)) {
-    stop("`dispatch_args` must be unique", call. = FALSE)
+    stop2("`dispatch_args` must be unique.", call = call)
   }
   if (any(is.na(dispatch_args) | dispatch_args == "")) {
-    stop("`dispatch_args` must not be missing or the empty string")
+    stop2(
+      "`dispatch_args` must not be missing or the empty string.",
+      call = call
+    )
   }
   if ("..." %in% dispatch_args) {
-    stop("Can't dispatch on `...`", call. = FALSE)
+    stop2("Can't dispatch on `...`.", call = call)
   }
 
   if (!is.null(fun)) {
     arg_names <- names(formals(fun))
 
     if (!is_prefix(dispatch_args, arg_names)) {
-      stop(
-        "`dispatch_args` must be a prefix of the generic arguments",
-        call. = FALSE
+      stop2(
+        "`dispatch_args` must be a prefix of the generic arguments.",
+        call = call
       )
     }
   }
@@ -132,14 +139,14 @@ print.S7_generic <- function(x, ...) {
   invisible(x)
 }
 
-check_generic <- function(fun) {
+check_generic <- function(fun, call = sys.call(-1L)) {
   if (!is.function(fun)) {
-    stop("`fun` must be a function", call. = FALSE)
+    stop2("`fun` must be a function.", call = call)
   }
 
   dispatch_call <- find_call(body(fun), quote(S7_dispatch), packageName())
   if (is.null(dispatch_call)) {
-    stop("`fun` must contain a call to `S7_dispatch()`", call. = FALSE)
+    stop2("`fun` must contain a call to `S7_dispatch()`.", call = call)
   }
 }
 
@@ -224,4 +231,23 @@ generic_add_method <- function(generic, signature, method) {
       p_tbl[[class_name]] <- method
     }
   }
+}
+
+generic_remove_method <- function(generic, signature) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, class_register)
+
+  for (i in seq_along(chr_signature)) {
+    class_name <- chr_signature[[i]]
+    if (i != length(chr_signature)) {
+      tbl <- p_tbl[[class_name]]
+      if (is.null(tbl)) {
+        return(invisible())
+      }
+      p_tbl <- tbl
+    } else if (exists(class_name, envir = p_tbl, inherits = FALSE)) {
+      rm(list = class_name, envir = p_tbl)
+    }
+  }
+  invisible()
 }

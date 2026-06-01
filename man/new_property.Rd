@@ -24,8 +24,13 @@ an object of the correct \code{class}; it will not be validated automatically.
 
 If a property has a getter but doesn't have a setter, it is read only.}
 
-\item{setter}{An optional function used to set the value. The function
-should take \code{self} and \code{value} and return a modified object.}
+\item{setter}{An optional function used to set the value.
+There are two supported forms:
+\itemize{
+\item \verb{function(self, value)} is supplied the object and the value.
+\item \verb{function(self, name, value)} also gets the property name being set,
+which makes it easy to reuse the same property for multiple properties.
+}}
 
 \item{validator}{A function taking a single argument, \code{value}, the value
 to validate.
@@ -40,10 +45,16 @@ The validator will be called after the \code{class} has been verified, so
 your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
-what should it default to? If \code{NULL}, it defaults to the "empty" instance
-of \code{class}. This can also be a quoted call, which then becomes a standard
-function promise in the default constructor, evaluated at the time the
-object is constructed.}
+what should it default to?
+
+If \code{NULL}, it defaults to the "empty" instance of \code{class}. For base
+vector types, this will be a zero length vector, e.g. \code{character()} for
+\code{class_character()}. For S7 classes, this will be a call to the
+constructor
+
+This can also be a \code{quote()}d call, which then becomes a standard function
+promise in the default constructor, evaluated when the object is
+constructed.}
 
 \item{name}{Property name, primarily used for error messages. Generally
 don't need to set this here, as it's more convenient to supply as

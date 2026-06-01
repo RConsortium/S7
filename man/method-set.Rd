@@ -25,15 +25,17 @@ following:
 }
 
 For S7 generics that use multiple dispatch, this must be a list of any of
-the above types.
+the above types. (For convenience you can also use a list in the single
+dispatch case too.)
 
-For S3 generics, this must be a single S7 class.
+For S3 generics, this can be any of the above types. There's one exception:
+you can only use \link{class_missing} with S3 operators that support double
+dispatch (e.g. \code{+} and \code{-}).
 
-For S4 generics, this must either be an S7 class, or a list that includes
-at least one S7 class.}
+The same rules apply to S4 generics as S7 generics.}
 
 \item{value}{A function that implements the generic specification for the
-given \code{signature}.}
+given \code{signature}, or \code{NULL} to unregister an existing method.}
 }
 \value{
 The \code{generic}, invisibly.
@@ -66,4 +68,7 @@ method(bizarro, new_S3_class("data.frame")) <- function(x) {
 
 # Using a generic calls the methods automatically
 bizarro(head(mtcars))
+
+# Unregister a method by assigning `NULL`
+method(bizarro, class_numeric) <- NULL
 }

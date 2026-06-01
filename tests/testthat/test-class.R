@@ -32,6 +32,23 @@ describe("S7 classes", {
     expect_snapshot(foo)
   })
 
+  it("shows property defaults and read-only annotations", {
+    Address <- new_class("Address", package = "S7")
+    Person <- new_class(
+      "Person",
+      properties = list(
+        implicit_default = new_property(class_character),
+        implicit_complex = new_property(class_Date),
+        implicit_S7 = new_property(Address),
+        default_value = new_property(class_character, default = ""),
+        default_expr = new_property(class_Date, default = quote(Sys.Date())),
+        read_only = new_property(getter = \(self) Sys.Date() - self@birthdate)
+      ),
+      package = "S7"
+    )
+    expect_snapshot(Person)
+  })
+
   it("checks inputs", {
     expect_snapshot(error = TRUE, {
       new_class(1)
@@ -51,12 +68,6 @@ describe("S7 classes", {
     expect_snapshot(error = TRUE, {
       new_class("test", parent = parentS4)
       new_class("test", parent = new_union("character"))
-    })
-  })
-
-  it("can't inherit from an environment", {
-    expect_snapshot(error = TRUE, {
-      new_class("test", parent = class_environment)
     })
   })
 })
@@ -114,6 +125,49 @@ describe("new_object()", {
     expect_snapshot(new_object(), error = TRUE)
   })
 
+  it("errors if `.parent` doesn't inherit from the parent class (#409)", {
+    Bar <- new_class("Bar", package = NULL)
+    # `.parent` should be `Bar()`, not the class spec `Bar`
+    Foo <- new_class(
+      "Foo",
+      parent = Bar,
+      package = NULL,
+      constructor = function() new_object(class_integer)
+    )
+    # wrong-type instance
+    Baz <- new_class(
+      "Baz",
+      parent = class_integer,
+      package = NULL,
+      constructor = function() new_object("hello")
+    )
+    expect_snapshot(error = TRUE, {
+      Foo()
+      Baz()
+    })
+  })
+
+  it("allows S7_object placeholder for abstract parents", {
+    Abstract <- new_class(
+      "Abstract",
+      package = NULL,
+      properties = list(x = class_integer),
+      abstract = TRUE
+    )
+    Concrete <- new_class("Concrete", parent = Abstract, package = NULL)
+    expect_no_error(Concrete(x = 1L))
+  })
+
+  it("errors if `.parent` is supplied but class has no parent", {
+    NoParent <- new_class(
+      "NoParent",
+      package = NULL,
+      parent = NULL,
+      constructor = function() new_object(42L)
+    )
+    expect_snapshot(NoParent(), error = TRUE)
+  })
+
   it("validates object", {
     foo <- new_class(
       "foo",
@@ -167,6 +221,11 @@ describe("S7 object", {
       text("x")
       str(list(text("x")))
     })
+  })
+
+  it("displays data.frame subclasses without error (#494)", {
+    mydf <- new_class("mydf", class_data.frame, package = NULL)
+    expect_snapshot(str(mydf(data.frame(a = 1:2, b = 1:2))))
   })
 
   it("displays list objects nicely", {
@@ -261,7 +320,6 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
-
 test_that("can't create class with reserved property names", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(names = class_character))
@@ -271,4 +329,21 @@ test_that("can't create class with reserved property names", {
       properties = list(dim = NULL | class_integer, dimnames = class_list)
     )
   })
+})
+
+test_that("S7_class() returns a usable spec for any object (#559)", {
+  # base types
+  expect_equal(S7_class(1L), class_integer)
+  expect_equal(S7_class(NULL), NULL)
+
+  # S3
+  expect_equal(S7_class(factor("a")), new_S3_class("factor"))
+  expect_equal(S7_class(Sys.time()), new_S3_class(c("POSIXct", "POSIXt")))
+
+  # NULL and missing
+  expect_equal(S7_class(quote(expr = )), class_missing)
+})
+
+test_that("S7_class() gives informative error if no S7 spec available", {
+  expect_snapshot(error = TRUE, S7_class(pairlist(x = 1)))
 })

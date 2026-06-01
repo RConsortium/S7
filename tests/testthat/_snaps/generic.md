@@ -3,23 +3,23 @@
     Code
       new_generic(1)
     Condition
-      Error:
-      ! `name` must be a single string
+      Error in `new_generic()`:
+      ! `name` must be a single string.
     Code
       new_generic("")
     Condition
-      Error:
-      ! `name` must not be "" or NA
+      Error in `new_generic()`:
+      ! `name` must not be "" or NA.
     Code
       new_generic("foo", 1)
     Condition
-      Error:
-      ! `dispatch_args` must be a character vector
+      Error in `new_generic()`:
+      ! `dispatch_args` must be a character vector.
     Code
       new_generic("foo", "x", function(x) { })
     Condition
-      Error:
-      ! `fun` must contain a call to `S7_dispatch()`
+      Error in `new_generic()`:
+      ! `fun` must contain a call to `S7_dispatch()`.
 
 # check_dispatch_args() produces informative errors
 
@@ -27,37 +27,37 @@
       check_dispatch_args(1)
     Condition
       Error:
-      ! `dispatch_args` must be a character vector
+      ! `dispatch_args` must be a character vector.
     Code
       check_dispatch_args(character())
     Condition
       Error:
-      ! `dispatch_args` must have at least one component
+      ! `dispatch_args` must have at least one component.
     Code
       check_dispatch_args("")
     Condition
-      Error in `check_dispatch_args()`:
-      ! `dispatch_args` must not be missing or the empty string
+      Error:
+      ! `dispatch_args` must not be missing or the empty string.
     Code
       check_dispatch_args(NA_character_)
     Condition
-      Error in `check_dispatch_args()`:
-      ! `dispatch_args` must not be missing or the empty string
+      Error:
+      ! `dispatch_args` must not be missing or the empty string.
     Code
       check_dispatch_args(c("x", "x"))
     Condition
       Error:
-      ! `dispatch_args` must be unique
+      ! `dispatch_args` must be unique.
     Code
       check_dispatch_args("...")
     Condition
       Error:
-      ! Can't dispatch on `...`
+      ! Can't dispatch on `...`.
     Code
       check_dispatch_args("y", function(x, ..., y) { })
     Condition
       Error:
-      ! `dispatch_args` must be a prefix of the generic arguments
+      ! `dispatch_args` must be a prefix of the generic arguments.
 
 # S7_generic printing
 
@@ -88,10 +88,10 @@
       check_generic("x")
     Condition
       Error:
-      ! `fun` must be a function
+      ! `fun` must be a function.
     Code
       check_generic(function() { })
     Condition
       Error:
-      ! `fun` must contain a call to `S7_dispatch()`
+      ! `fun` must contain a call to `S7_dispatch()`.
 

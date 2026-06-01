@@ -11,8 +11,9 @@ convert(from, to, ...)
 
 \item{to}{An S7 class specification, passed to \code{\link[=as_class]{as_class()}}.}
 
-\item{...}{Other arguments passed to custom \code{convert()} methods. For upcasting,
-these can be used to override existing properties or set new ones.}
+\item{...}{Other arguments passed to custom \code{convert()} methods. For
+downcasting, these can be used to override existing properties or set new
+ones.}
 }
 \value{
 Either \code{from} coerced to class \code{to}, or an error if the coercion
@@ -33,13 +34,18 @@ to work because those methods will return \code{classParent} objects, not
 \code{classChild} objects.
 }
 
-\code{convert()} provides two default implementations:
+\code{convert()} provides three default implementations:
 \enumerate{
 \item When \code{from} inherits from \code{to}, it strips any properties that \code{from}
-possesses that \code{to} does not (downcasting).
-\item When \code{to} is a subclass of \code{from}'s class, it creates a new object of
-class \code{to}, copying over existing properties from \code{from} and initializing
-new properties of \code{to} (upcasting).
+possesses that \code{to} does not (upcasting).
+\item When \code{to} inherits from \code{from}, it creates a new object of class \code{to},
+copying over existing properties from \code{from} and initializing new
+properties of \code{to} (downcasting).
+\item When \code{to} is a base type (e.g. \link{class_integer} or \link{class_character}) and
+neither of the above apply, it calls the corresponding \verb{as.*()} function
+(e.g. \code{as.integer()} or \code{as.character()}). This mirrors the convention
+that \verb{as.*()} coercion sits below \code{convert()}, so you can rely on it as a
+fallback but still override it with a more specific method.
 }
 
 If you are converting an object solely for the purposes of accessing a method
@@ -55,15 +61,19 @@ functions/generics in S3, and to \code{as()}/\code{setAs()} in S4.
 Foo1 <- new_class("Foo1", properties = list(x = class_integer))
 Foo2 <- new_class("Foo2", Foo1, properties = list(y = class_double))
 
-# Downcasting: S7 provides a default implementation for coercing an object
+# Upcasting: S7 provides a default implementation for coercing an object
 # to one of its parent classes:
 convert(Foo2(x = 1L, y = 2), to = Foo1)
 
-# Upcasting: S7 also provides a default implementation for coercing an object
-# to one of its child classes:
+# Downcasting: S7 also provides a default implementation for coercing an
+# object to one of its child classes:
 convert(Foo1(x = 1L), to = Foo2)
 convert(Foo1(x = 1L), to = Foo2, y = 2.5)  # Set new property
 convert(Foo1(x = 1L), to = Foo2, x = 2L, y = 2.5)  # Override existing and set new
+
+# Converting to a base type falls back to the corresponding `as.*()`:
+convert(1.5, to = class_character)
+convert(c("1", "2"), to = class_integer)
 
 # For all other cases, you'll need to provide your own.
 try(convert(Foo1(x = 1L), to = class_integer))
