@@ -311,9 +311,6 @@ new_object <- function(.parent, ...) {
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
-
-  # Properties with special names (e.g. `names`) are stored under a
-  # "_"-prefixed attribute; see prop_storage_name().
   self_attrs <- args[!has_setter]
   names(self_attrs) <- prop_storage_name(names(self_attrs))
 

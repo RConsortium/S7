@@ -512,6 +512,7 @@ as_property <- function(x, name, i, call = sys.call(-1L)) {
 }
 
 # These attributes have special C-level handlers in base R
+# Keep in sync with prop_storage_sym
 special_prop_names <- c(
   "names",
   "dim",
