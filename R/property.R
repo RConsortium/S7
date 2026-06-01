@@ -15,6 +15,9 @@
 #'
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
+#'
+#'   If you want to make a property optional, create a union with `NULL`,
+#'   e.g. `class_integer | NULL`.
 #' @param getter An optional function used to get the value. The function
 #'   should take `self` as its sole argument and return the value. If you
 #'   supply a `getter`, you are responsible for ensuring that it returns

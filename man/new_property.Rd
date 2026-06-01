@@ -15,7 +15,10 @@ new_property(
 }
 \arguments{
 \item{class}{Class that the property must be an instance of.
-See \code{\link[=as_class]{as_class()}} for details.}
+See \code{\link[=as_class]{as_class()}} for details.
+
+If you want to make a property optional, create a union with \code{NULL},
+e.g. \code{class_integer | NULL}.}
 
 \item{getter}{An optional function used to get the value. The function
 should take \code{self} as its sole argument and return the value. If you

@@ -135,6 +135,8 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_call`
 #' * `class_function`
 #'
+#' For method registration and properties, you can use `NULL` directly.
+#'
 #' See also [class_environment] which is documented separately due to the
 #' complexities introduced by their reference semantics.
 #'

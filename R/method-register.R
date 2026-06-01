@@ -26,7 +26,7 @@
 #'
 #'   * An S7 class (created by [new_class()]).
 #'   * An S7 union (created by [new_union()]).
-#'   * An S3 class (created by [new_S3_class()]).
+#'   * An S3 class (created by [new_S3_class()]) or `NULL`.
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base type like [class_logical], [class_integer], or [class_numeric].
 #'   * A special type like [class_missing] or [class_any].
