@@ -77,6 +77,30 @@ S4_class <- function(x, S4_env, call = sys.call(-1L)) {
   )
 }
 
+# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
+# not "double", so registering under "double" silently misses real doubles.
+# Mapping to "numeric" catches doubles but also matches integers too. There's
+# no clean S4 way to say "doubles only" and this seems likely to be what
+# people want.
+base_to_S4 <- function(class) {
+  switch(class, double = "numeric", class)
+}
+
+S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
+  class <- tryCatch(
+    methods::getClass(class_register(x), where = S4_env),
+    error = function(err) NULL
+  )
+  if (is.null(class)) {
+    msg <- sprintf(
+      "Class has not been registered with S4; please call S4_register(%s).",
+      class_deparse(x)
+    )
+    stop2(msg, call = call)
+  }
+  class
+}
+
 S4_union_class <- function(x, S4_env) {
   if (identical(x, class_numeric)) {
     return("numeric")
