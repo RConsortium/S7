@@ -54,15 +54,13 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
 <ul><li>Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (<a href="https://github.com/RConsortium/S7/issues/646" class="external-link">#646</a>).</li>
-<li>
-<code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
-<li>
-<code>S7_error_method_not_found</code> now has a correct class vector without a duplicate <code>"error"</code> entry (<a href="https://github.com/jjjermiah" class="external-link">@jjjermiah</a>, <a href="https://github.com/RConsortium/S7/issues/604" class="external-link">#604</a>).</li>
 <li>
 <code><a href="../reference/convert.html">convert()</a></code> now falls back to the corresponding <code>as.*()</code> function (e.g. <code><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character()</a></code>) when converting to a base type like <code>class_character</code> and no method or inheritance-based default applies, so <code>convert(1, class_character)</code> works out of the box (<a href="https://github.com/RConsortium/S7/issues/472" class="external-link">#472</a>).</li>
 <li>
 <code><a href="../reference/convert.html">convert()</a></code> no longer errors when <code>from</code> is a base or S3 object and <code>to</code> is an S7 class that inherits from <code>from</code>’s class. The base/S3 value is now passed as <code>.data</code> to the <code>to</code> constructor (<a href="https://github.com/RConsortium/S7/issues/537" class="external-link">#537</a>).</li>
+<li>
+<code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>
 <code>method&lt;-</code> now gives a clear error when assigning a primitive function (e.g. <code>log</code>) as a method (<a href="https://github.com/RConsortium/S7/issues/608" class="external-link">#608</a>).</li>
 <li>
@@ -74,11 +72,6 @@
 <li>
 <code><a href="../reference/new_class.html">new_object()</a></code> now gives an informative error when <code>.parent</code> is a class specification rather than an instance of the parent class (<a href="https://github.com/RConsortium/S7/issues/409" class="external-link">#409</a>).</li>
 <li>
-<code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
-<li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
-<li>
-<code><a href="../reference/super.html">super()</a></code> now works with S3 and S4 objects, not just S7 objects (<a href="https://github.com/RConsortium/S7/issues/500" class="external-link">#500</a>).</li>
-<li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer materialises ALTREP parent values (e.g. <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (<a href="https://github.com/kschaubroeck" class="external-link">@kschaubroeck</a>, <a href="https://github.com/RConsortium/S7/issues/607" class="external-link">#607</a>).</li>
 <li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer re-runs property validators for properties inherited unchanged from an already-validated parent class, so constructing an instance of a deeply nested class hierarchy validates each property exactly once (<a href="https://github.com/RConsortium/S7/issues/539" class="external-link">#539</a>).</li>
@@ -86,7 +79,6 @@
 <code><a href="../reference/new_property.html">new_property()</a></code> now accepts a <code>setter</code> that takes <code>self</code>, <code>name</code>, and <code>value</code> making it easy to reuse the same definition for multiple properties (<a href="https://github.com/RConsortium/S7/issues/552" class="external-link">#552</a>).</li>
 <li>
 <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> objects now work with <code><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits()</a></code> (and other functions that use <code><a href="https://rdrr.io/r/base/class.html" class="external-link">nameOfClass()</a></code>) in R 4.3 and later (<a href="https://github.com/lawremi" class="external-link">@lawremi</a>, <a href="https://github.com/RConsortium/S7/issues/521" class="external-link">#521</a>).</li>
-<li>New <code><a href="../reference/prop_names.html">prop_info()</a></code> returns a data frame summarising the properties of an S7 object or class, with one row per property and columns for name, default, class, getter, setter, and validator (<a href="https://github.com/RConsortium/S7/issues/551" class="external-link">#551</a>).</li>
 <li>
 <code>print(&lt;S7_class&gt;)</code> now shows property defaults inline (<code>= "value"</code>) and annotates read-only properties (<code>[read-only]</code>) (<a href="https://github.com/RConsortium/S7/issues/439" class="external-link">#439</a>).</li>
 <li>
@@ -95,6 +87,7 @@
 <code><a href="../reference/prop.html">prop()</a></code> no longer leaves an object in a broken state when a custom getter signals an error (<a href="https://github.com/RConsortium/S7/issues/520" class="external-link">#520</a>, <a href="https://github.com/RConsortium/S7/issues/640" class="external-link">#640</a>, <a href="https://github.com/RConsortium/S7/issues/638" class="external-link">#638</a>).</li>
 <li>
 <code>prop&lt;-()</code> no longer fails when assigning a call or symbol to a property (<a href="https://github.com/RConsortium/S7/issues/511" class="external-link">#511</a>, <a href="https://github.com/RConsortium/S7/issues/633" class="external-link">#633</a>, <a href="https://github.com/RConsortium/S7/issues/638" class="external-link">#638</a>).</li>
+<li>New <code><a href="../reference/prop_names.html">prop_info()</a></code> returns a data frame summarising the properties of an S7 object or class, with one row per property and columns for name, default, class, getter, setter, and validator (<a href="https://github.com/RConsortium/S7/issues/551" class="external-link">#551</a>).</li>
 <li>
 <code><a href="../reference/S7_class.html">S7_class()</a></code> now returns a class specification for any R object, not just S7 objects. It returns the matching <code>class_*</code> for base types, a <code><a href="../reference/new_S3_class.html">new_S3_class()</a></code> wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to <code><a href="../reference/method.html">method()</a></code> or other S7 dispatch helpers (<a href="https://github.com/RConsortium/S7/issues/559" class="external-link">#559</a>).</li>
 <li>
@@ -104,9 +97,13 @@
 <li>
 <code>S7_data&lt;-()</code> now preserves attributes (like <code>names</code> or <code>dim</code>) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (<a href="https://github.com/RConsortium/S7/issues/478" class="external-link">#478</a>).</li>
 <li>
+<code>S7_error_method_not_found</code> now has a correct class vector without a duplicate <code>"error"</code> entry (<a href="https://github.com/jjjermiah" class="external-link">@jjjermiah</a>, <a href="https://github.com/RConsortium/S7/issues/604" class="external-link">#604</a>).</li>
+<li>
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
 <li>
 <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a <code>dim</code> attribute incompatible with the bare base type) no longer errors (<a href="https://github.com/RConsortium/S7/issues/494" class="external-link">#494</a>).</li>
+<li>
+<code><a href="../reference/super.html">super()</a></code> now works with S3 and S4 objects, not just S7 objects (<a href="https://github.com/RConsortium/S7/issues/500" class="external-link">#500</a>).</li>
 <li>
 <code><a href="../reference/validate.html">validate()</a></code> now signals validation errors with class <code>S7_error_validation_failed</code>, so they can be caught with <code><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch()</a></code> (<a href="https://github.com/RConsortium/S7/issues/602" class="external-link">#602</a>, <a href="https://github.com/RConsortium/S7/issues/605" class="external-link">#605</a>).</li>
 </ul></div>

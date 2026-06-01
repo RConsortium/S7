@@ -5,15 +5,9 @@
 - Errors thrown by S7 now report the function where they occurred,
   making it easier to track down the source of a problem
   ([\#646](https://github.com/RConsortium/S7/issues/646)).
-- `method<-` now accepts `NULL` to unregister an existing method,
-  e.g. `method(foo, class_character) <- NULL`
-  ([\#613](https://github.com/RConsortium/S7/issues/613)).
 - Method dispatch on `class_missing` now correctly handles missing
   arguments forwarded through a wrapper functions
   ([\#595](https://github.com/RConsortium/S7/issues/595)).
-- `S7_error_method_not_found` now has a correct class vector without a
-  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
-  [\#604](https://github.com/RConsortium/S7/issues/604)).
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
   now falls back to the corresponding `as.*()` function
   (e.g. [`as.character()`](https://rdrr.io/r/base/character.html)) when
@@ -26,6 +20,9 @@
   class that inherits from `from`’s class. The base/S3 value is now
   passed as `.data` to the `to` constructor
   ([\#537](https://github.com/RConsortium/S7/issues/537)).
+- `method<-` now accepts `NULL` to unregister an existing method,
+  e.g. `method(foo, class_character) <- NULL`
+  ([\#613](https://github.com/RConsortium/S7/issues/613)).
 - `method<-` now gives a clear error when assigning a primitive function
   (e.g. `log`) as a method
   ([\#608](https://github.com/RConsortium/S7/issues/608)).
@@ -56,18 +53,6 @@
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
-- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  and
-  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  now accept any class specification (S7 class, S7 union, S3 class, S4
-  class, or base type wrapper like `class_integer`), not just S7 classes
-  ([\#556](https://github.com/RConsortium/S7/issues/556)).
-- Method dispatch on `class_missing` now correctly handles missing
-  arguments forwarded through a wrapper functions
-  ([\#595](https://github.com/RConsortium/S7/issues/595)).
-- [`super()`](https://rconsortium.github.io/S7/reference/super.md) now
-  works with S3 and S4 objects, not just S7 objects
-  ([\#500](https://github.com/RConsortium/S7/issues/500)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   no longer materialises ALTREP parent values
   (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
@@ -90,12 +75,6 @@
   that use [`nameOfClass()`](https://rdrr.io/r/base/class.html)) in R
   4.3 and later ([@lawremi](https://github.com/lawremi),
   [\#521](https://github.com/RConsortium/S7/issues/521)).
-- New
-  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
-  returns a data frame summarising the properties of an S7 object or
-  class, with one row per property and columns for name, default, class,
-  getter, setter, and validator
-  ([\#551](https://github.com/RConsortium/S7/issues/551)).
 - `print(<S7_class>)` now shows property defaults inline (`= "value"`)
   and annotates read-only properties (`[read-only]`)
   ([\#439](https://github.com/RConsortium/S7/issues/439)).
@@ -115,6 +94,12 @@
   property ([\#511](https://github.com/RConsortium/S7/issues/511),
   [\#633](https://github.com/RConsortium/S7/issues/633),
   [\#638](https://github.com/RConsortium/S7/issues/638)).
+- New
+  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
+  returns a data frame summarising the properties of an S7 object or
+  class, with one row per property and columns for name, default, class,
+  getter, setter, and validator
+  ([\#551](https://github.com/RConsortium/S7/issues/551)).
 - [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
   now returns a class specification for any R object, not just S7
   objects. It returns the matching `class_*` for base types, a
@@ -138,6 +123,9 @@
   the replacement data instead of carrying over the originals, so
   resizing the underlying data works correctly
   ([\#478](https://github.com/RConsortium/S7/issues/478)).
+- `S7_error_method_not_found` now has a correct class vector without a
+  duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
+  [\#604](https://github.com/RConsortium/S7/issues/604)).
 - [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
   and
   [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
@@ -148,6 +136,9 @@
   from data.frame (or other S3 classes whose underlying data has a `dim`
   attribute incompatible with the bare base type) no longer errors
   ([\#494](https://github.com/RConsortium/S7/issues/494)).
+- [`super()`](https://rconsortium.github.io/S7/reference/super.md) now
+  works with S3 and S4 objects, not just S7 objects
+  ([\#500](https://github.com/RConsortium/S7/issues/500)).
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
   now signals validation errors with class `S7_error_validation_failed`,
   so they can be caught with
