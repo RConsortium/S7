@@ -28,42 +28,6 @@ quick_test <- function() {
   identical(Sys.getenv("R_TESTTHAT_QUICK", "false"), "true")
 }
 
-# Like quick_install(), but compiles C code (so it works for S7 itself).
-quick_install_dev <- function(src, lib, quiet = TRUE) {
-  install.packages(
-    src,
-    lib = lib,
-    repos = NULL,
-    type = "source",
-    quiet = quiet,
-    INSTALL_opts = paste(
-      "--no-docs",
-      "--no-help",
-      "--no-html",
-      "--no-byte-compile",
-      "--no-multiarch"
-    )
-  )
-}
-
-# Ensure an S7 that exports S7_on_build() is available in `lib` for building
-# test packages. Under R CMD check the S7 being checked is already current;
-# under devtools the loaded S7 is a source tree we can install. Skips the
-# calling test if neither is available.
-ensure_s7_with_hook <- function(lib, old_libpaths = .libPaths()) {
-  ns_file <- file.path(find.package("S7", lib.loc = old_libpaths), "NAMESPACE")
-  if (any(grepl("S7_on_build", readLines(ns_file), fixed = TRUE))) {
-    return(invisible())
-  }
-
-  s7_path <- find.package("S7")
-  if (file.exists(file.path(s7_path, "R", "method-register.R"))) {
-    quick_install_dev(s7_path, lib)
-  } else {
-    testthat::skip("Installed S7 does not export S7_on_build()")
-  }
-  invisible()
-}
 
 quick_test_disable <- function() {
   Sys.setenv("R_TESTTHAT_QUICK" = "false")

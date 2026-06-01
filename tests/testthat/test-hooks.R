@@ -20,11 +20,9 @@ describe("S7_on_build()", {
   it("strips foreign S3 and S4 generics from a real package (#364)", {
     skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
     skip_if(quick_test())
+    # if this fails interactively, ensure you have dev S7 installed
 
     tmp_lib <- local_libpath()
-
-    # t4 calls S7::S7_on_build(), so it must be built against an S7 that has it
-    ensure_s7_with_hook(tmp_lib)
 
     # t3 defines an S3 generic and an S4 generic; t4 registers S7 methods for
     # both, so building t4 would otherwise embed copies of t3's generics.
