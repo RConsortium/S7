@@ -206,15 +206,25 @@ S4_register_contains <- function(class, env = parent.frame()) {
 S4_register_with_props <- function(class, env) {
   where <- topenv(env)
   class_name <- S4_register_contains_name(class)
+  contains <- S4_class(class, where)
+  properties <- class@properties
+  properties <- properties[setdiff(
+    names(properties),
+    S4_slot_names(contains, where)
+  )]
 
   methods::setClass(
     Class = class_name,
-    slots = lapply(class@properties, S4_property_class, S4_env = where),
-    contains = S4_class(class, where),
+    slots = lapply(properties, S4_property_class, S4_env = where),
+    contains = contains,
     where = where
   )
 
   class_name
+}
+
+S4_slot_names <- function(class, S4_env) {
+  names(methods::getClass(class, where = S4_env)@slots)
 }
 
 S4_register_contains_name <- function(class) {
