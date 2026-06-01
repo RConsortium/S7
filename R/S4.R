@@ -111,6 +111,11 @@ S4_union_class <- function(x, S4_env) {
     return(name)
   }
 
+  name <- S4_find_union(x, S4_env)
+  if (!is.null(name)) {
+    return(name)
+  }
+
   msg <- sprintf(
     "Class union has not been registered with S4; please call S4_register(%s).",
     class_deparse(x)
@@ -120,6 +125,42 @@ S4_union_class <- function(x, S4_env) {
 
 S4_union_name <- function(x, S4_env) {
   paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
+}
+
+S4_find_union <- function(x, S4_env) {
+  members <- vcapply(x$classes, S4_class, S4_env = S4_env)
+  supers <- lapply(members, S4_direct_superclasses, S4_env = S4_env)
+  candidates <- base::Reduce(base::intersect, supers)
+  matches <- base::Filter(
+    function(candidate) S4_union_matches(candidate, members, S4_env),
+    candidates
+  )
+  if (length(matches) == 0) {
+    return(NULL)
+  }
+
+  matches[1L]
+}
+
+S4_direct_superclasses <- function(class, S4_env) {
+  class <- methods::getClass(class, where = S4_env)
+  contains <- class@contains
+  contains <- base::Filter(function(x) x@distance == 1, contains)
+  names(contains)
+}
+
+S4_union_matches <- function(class, members, S4_env) {
+  class <- methods::getClass(class, where = S4_env)
+  if (!methods::isClassUnion(class)) {
+    return(FALSE)
+  }
+
+  setequal(S4_union_members(class), members)
+}
+
+S4_union_members <- function(class) {
+  subclasses <- base::Filter(function(x) x@distance == 1, class@subclasses)
+  vcapply(subclasses, function(x) as.character(x@subClass))
 }
 
 S4_ancestor <- function(class) {
@@ -377,13 +418,10 @@ S4_slot_properties <- function(class) {
 }
 
 S4_slot_property <- function(class, name) {
-  class <- methods::getClass(class)
-  prop <- new_property(class, name = name)
-  # simplifies case of S4 class extending S7 class that extends an S4 class
-  if (methods::is(class, "ClassUnionRepresentation")) {
-    prop$class <- class
-  }
-  prop
+  new_property(
+    class = S4_to_S7_class(methods::getClass(class)),
+    name = name
+  )
 }
 
 S4_basic_classes <- function() {
