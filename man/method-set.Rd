@@ -38,7 +38,12 @@ The same rules apply to S4 generics as S7 generics.}
 given \code{signature}, or \code{NULL} to unregister an existing method.}
 }
 \value{
-The \code{generic}, invisibly.
+Usually \code{generic}, invisibly.
+
+When registering a method for a generic that lives in another package
+(an external, S3, or S4 generic), returns a sentinel object instead, to
+avoid embedding a copy of that generic in your package. See
+\code{vignette("packages")} for details.
 }
 \description{
 A generic defines the interface of a function. Once you have created a

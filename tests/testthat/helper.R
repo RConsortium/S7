@@ -28,6 +28,7 @@ quick_test <- function() {
   identical(Sys.getenv("R_TESTTHAT_QUICK", "false"), "true")
 }
 
+
 quick_test_disable <- function() {
   Sys.setenv("R_TESTTHAT_QUICK" = "false")
 }
@@ -58,6 +59,33 @@ local_S4_class <- function(name, ..., env = parent.frame()) {
   out <- methods::setClass(name, contains = "character")
   defer(S4_remove_classes(name, env), env)
   out
+}
+
+# Create a temporary library, prepend it to .libPaths(), and restore the
+# library paths and delete the temporary library when `frame` exits. Returns
+# the path to the temporary library.
+local_libpath <- function(frame = parent.frame()) {
+  lib <- tempfile()
+  dir.create(lib)
+  defer(unlink(lib, recursive = TRUE), frame = frame)
+
+  old <- .libPaths()
+  .libPaths(c(lib, old))
+  defer(.libPaths(old), frame = frame)
+  lib
+}
+
+# Install the package at `path` into `lib`, attach it, and detach (and unload)
+# it when `frame` exits. The package name is taken from `basename(path)`.
+local_install_and_attach <- function(path, lib, frame = parent.frame()) {
+  quick_install(path, lib)
+  package <- basename(path)
+  library(package, character.only = TRUE)
+  defer(
+    try(detach(paste0("package:", package), unload = TRUE), silent = TRUE),
+    frame = frame
+  )
+  invisible(package)
 }
 
 # Create an S3 generic in globalenv() so that `UseMethod()` can find methods
