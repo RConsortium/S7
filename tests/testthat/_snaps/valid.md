@@ -5,14 +5,14 @@
       attr(obj, "x") <- -1
       validate(obj)
     Condition
-      Error:
+      Error in `validate()`:
       ! <klass> object is invalid:
       - x must be positive
     Code
       attr(obj, "x") <- "y"
       validate(obj)
     Condition
-      Error:
+      Error in `validate()`:
       ! <klass> object properties are invalid:
       - @x must be <double>, not <character>
 
@@ -23,7 +23,7 @@
       attr(obj, "x") <- -1
       validate(obj)
     Condition
-      Error:
+      Error in `validate()`:
       ! <klass2> object is invalid:
       - x must be positive
     Code
@@ -31,7 +31,7 @@
       attr(obj, "z") <- "y"
       validate(obj)
     Condition
-      Error:
+      Error in `validate()`:
       ! <klass2> object properties are invalid:
       - @x must be <double>, not <character>
       - @z must be <double>, not <character>
@@ -41,7 +41,7 @@
     Code
       validate(x)
     Condition
-      Error:
+      Error in `validate()`:
       ! <Double> object is invalid:
       - Underlying data must be <double> not <character>
 

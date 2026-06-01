@@ -9,6 +9,8 @@
 #'   [class_integer], or [class_any]/[class_missing]). If `NULL`, only tests
 #'   whether `x` is an S7 object, without testing for a specific class.
 #' @param arg Argument name used in error message.
+#' @param call The call to report in the error message. Defaults to the
+#'   calling function.
 #' @returns
 #' * `S7_inherits()` returns a single `TRUE` or `FALSE`.
 #' * `check_is_S7()` returns nothing; it's called for its side-effects.
@@ -47,7 +49,12 @@ S7_inherits <- function(x, class = NULL) {
 #' @export
 #' @rdname S7_inherits
 # called from src/prop.c
-check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
+check_is_S7 <- function(
+  x,
+  class = NULL,
+  arg = deparse(substitute(x)),
+  call = sys.call(-1L)
+) {
   class <- as_class(class)
   if (S7_inherits(x, class)) {
     return(invisible())
@@ -59,5 +66,5 @@ check_is_S7 <- function(x, class = NULL, arg = deparse(substitute(x))) {
     if (is.null(class)) "an <S7_object>" else paste0("a ", class_desc(class)),
     obj_desc(x)
   )
-  stop(msg, call. = FALSE)
+  stop2(msg, call = call)
 }

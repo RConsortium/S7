@@ -7,7 +7,12 @@
 \usage{
 S7_inherits(x, class = NULL)
 
-check_is_S7(x, class = NULL, arg = deparse(substitute(x)))
+check_is_S7(
+  x,
+  class = NULL,
+  arg = deparse(substitute(x)),
+  call = sys.call(-1L)
+)
 }
 \arguments{
 \item{x}{An object.}
@@ -18,6 +23,9 @@ an S7 class, S7 union, S3 class, S4 class, base type wrapper like
 whether \code{x} is an S7 object, without testing for a specific class.}
 
 \item{arg}{Argument name used in error message.}
+
+\item{call}{The call to report in the error message. Defaults to the
+calling function.}
 }
 \value{
 \itemize{

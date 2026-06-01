@@ -42,7 +42,7 @@
     Code
       validate(obj)
     Condition
-      Error:
+      Error in `validate()`:
       ! <S7::foo> object is invalid:
       - bad
 
@@ -51,7 +51,7 @@
     Code
       validate(obj2)
     Condition
-      Error:
+      Error in `validate()`:
       ! <S7::foo> object is invalid:
       - bad
 
@@ -60,13 +60,13 @@
     Code
       new_property(getter = function(x) { })
     Condition
-      Error:
+      Error in `new_property()`:
       ! `getter` must be function(self), not function(x).
     Code
       new_property(setter = function(x, y, z) { })
     Condition
-      Error:
-      ! `setter` must be function(self, value), not function(x, y, z).
+      Error in `new_property()`:
+      ! `setter` must be function(self, value) or function(self, name, value), not function(x, y, z).
 
 # new_property() / validates default
 
@@ -195,7 +195,7 @@
     Code
       foo(x = 1:2)
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object properties are invalid:
       - @x must be length 1
 

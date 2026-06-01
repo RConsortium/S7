@@ -50,7 +50,7 @@ method <- function(generic, class = NULL, object = NULL) {
   # argument values in the dispatch environment, which doesn't exist here
   types <- error_types(generic, class = class, object = object)
   msg <- method_lookup_error_message(generic@name, types)
-  stop(msg)
+  stop2(msg)
 }
 
 #' Explain method dispatch
@@ -109,12 +109,17 @@ method_explain <- function(generic, class = NULL, object = NULL) {
 }
 
 
-as_dispatch <- function(generic, class = NULL, object = NULL) {
+as_dispatch <- function(
+  generic,
+  class = NULL,
+  object = NULL,
+  call = sys.call(-1L)
+) {
   if (!is.null(class) && is.null(object)) {
-    signature <- as_signature(class, generic)
+    signature <- as_signature(class, generic, call = call)
     is_union <- vlapply(signature, is_union)
     if (any(is_union)) {
-      stop("Can't dispatch on unions; must be a concrete type.", call. = FALSE)
+      stop2("Can't dispatch on unions; must be a concrete type.", call = call)
     }
 
     lapply(signature, class_dispatch)
@@ -123,11 +128,11 @@ as_dispatch <- function(generic, class = NULL, object = NULL) {
     if (n == 1) {
       object <- list(object)
     } else {
-      check_signature_list(object, n = n, arg = "object")
+      check_signature_list(object, n = n, arg = "object", call = call)
     }
     lapply(object, obj_dispatch)
   } else {
-    stop("Must supply exactly one of `class` and `object`.", call. = FALSE)
+    stop2("Must supply exactly one of `class` and `object`.", call = call)
   }
 }
 

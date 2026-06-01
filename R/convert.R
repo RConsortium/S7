@@ -16,13 +16,18 @@
 #'   to work because those methods will return `classParent` objects, not
 #'   `classChild` objects.
 #'
-#' `convert()` provides two default implementations:
+#' `convert()` provides three default implementations:
 #'
 #' 1. When `from` inherits from `to`, it strips any properties that `from`
 #'    possesses that `to` does not (upcasting).
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
+#' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
+#'    neither of the above apply, it calls the corresponding `as.*()` function
+#'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
+#'    that `as.*()` coercion sits below `convert()`, so you can rely on it as a
+#'    fallback but still override it with a more specific method.
 #'
 #' If you are converting an object solely for the purposes of accessing a method
 #' on a superclass, you probably want [super()] instead. See its docs for more
@@ -54,6 +59,10 @@
 #' convert(Foo1(x = 1L), to = Foo2)
 #' convert(Foo1(x = 1L), to = Foo2, y = 2.5)  # Set new property
 #' convert(Foo1(x = 1L), to = Foo2, x = 2L, y = 2.5)  # Override existing and set new
+#'
+#' # Converting to a base type falls back to the corresponding `as.*()`:
+#' convert(1.5, to = class_character)
+#' convert(c("1", "2"), to = class_integer)
 #'
 #' # For all other cases, you'll need to provide your own.
 #' try(convert(Foo1(x = 1L), to = class_integer))
@@ -87,22 +96,27 @@ convert <- function(from, to, ...) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
     convert_down(from, to, ...)
+  } else if (is_base_class(to)) {
+    base_coerce(from, to, ...)
   } else {
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
       c("- from: ", obj_desc(from), "\n"),
       c("- to  : ", class_desc(to))
     )
-    stop(msg)
+    stop2(msg)
   }
 }
 
-convert_up <- function(from, to) {
+convert_up <- function(from, to, call = sys.call(-1L)) {
+  check_not_environment(from, "convert()", call = call)
+
   from_class <- S7_class(from)
-  if (is.null(from_class)) {
-    from_props <- character()
+  if (is_class(from_class)) {
+    from_props <- prop_names(from)
   } else {
-    from_props <- names(from_class@properties)
+    # `from` is a base, S3, or S4 object, so it has no S7 properties
+    from_props <- character()
   }
 
   if (is_base_class(to)) {
@@ -115,7 +129,7 @@ convert_up <- function(from, to) {
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
   } else {
-    stop("Unreachable.")
+    stop2("Unreachable.")
   }
   from
 }
@@ -125,10 +139,17 @@ is_down_cast <- function(x, class) {
 }
 
 convert_down <- function(from, to, ...) {
+  from_class <- S7_class(from)
+
+  if (!is_class(from_class)) {
+    # `from` is a base or S3 object; pass it as `.data` to the constructor
+    return(to(.data = from, ...))
+  }
+
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
 
-  from_props <- S7_class(from)@properties
+  from_props <- from_class@properties
   from_props <- Filter(Negate(prop_is_read_only), from_props)
   from_prop_names <- names(from_props)
 

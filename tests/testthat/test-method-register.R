@@ -64,10 +64,74 @@ describe("method registration", {
     }
   })
 
-  it("S3 registration requires a S7 class", {
-    foo <- new_class("foo")
+  it("can register S7 method for S3 generic defined in a local environment", {
+    s3_gen <- local(function(x) UseMethod("s3_gen"))
+    defer(unregister_s3_methods(topenv(environment(s3_gen)), "s3_gen"))
+
+    local({
+      method(s3_gen, class_character) <- function(x) "char"
+      method(s3_gen, class_integer) <- function(x) "int"
+    })
+
+    expect_equal(s3_gen("a"), "char")
+    expect_equal(s3_gen(1L), "int")
+  })
+
+  it("can register S7 method for S3 generic with base type signature", {
+    local_s3_generic("s3_gen")
+    method(s3_gen, class_character) <- function(x) "char"
+    method(s3_gen, class_integer) <- function(x) "int"
+
+    expect_equal(s3_gen("a"), "char")
+    expect_equal(s3_gen(1L), "int")
+  })
+
+  it("can register S7 method for S3 generic with S3 class signature", {
+    local_s3_generic("s3_gen")
+    method(s3_gen, new_S3_class("foo")) <- function(x) "foo"
+    method(s3_gen, class_factor) <- function(x) "factor"
+
+    expect_equal(s3_gen(structure(list(), class = "foo")), "foo")
+    expect_equal(s3_gen(factor("a")), "factor")
+  })
+
+  it("S3 registration for a multi-class S3 class uses only the first class", {
+    local_s3_generic("s3_gen")
+    method(s3_gen, new_S3_class(c("ordered", "factor"))) <- function(x) "ord"
+
+    expect_equal(s3_gen(ordered("a")), "ord")
+    # plain factors don't match because only `ordered` was registered
+    expect_error(s3_gen(factor("a")), "no applicable method")
+  })
+
+  it("can register S7 method for S3 generic with class_any and NULL", {
+    local_s3_generic("s3_gen")
+    method(s3_gen, class_any) <- function(x) "any"
+    method(s3_gen, NULL) <- function(x) "null"
+
+    expect_equal(s3_gen(1L), "any")
+    expect_equal(s3_gen(NULL), "null")
+  })
+
+  it("S3 method registration expands unions to one method per class", {
+    local_s3_generic("s3_gen")
+    method(s3_gen, class_numeric) <- function(x) "num"
+
+    expect_equal(s3_gen(1L), "num")
+    expect_equal(s3_gen(1.5), "num")
+
+    # Custom union mixing a base type and an S3 class
+    local_s3_generic("s3_gen2")
+    method(s3_gen2, class_character | new_S3_class("foo")) <- function(x) "x"
+
+    expect_equal(s3_gen2("a"), "x")
+    expect_equal(s3_gen2(structure(list(), class = "foo")), "x")
+  })
+
+  it("rejects class_missing on S3 generics", {
+    local_s3_generic("s3_gen")
     expect_snapshot(error = TRUE, {
-      method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
+      method(s3_gen, class_missing) <- function(x) "missing"
     })
   })
 
@@ -122,6 +186,67 @@ describe("method registration", {
       method(x, class_character) <- function(x) ...
       method(foo, 1) <- function(x) ...
     })
+  })
+})
+
+describe("method unregistration", {
+  it("removes S7 method via NULL assignment", {
+    foo <- new_generic("foo", "x")
+    method(foo, class_character) <- function(x) "c"
+    method(foo, class_integer) <- function(x) "i"
+    expect_length(methods(foo), 2)
+
+    method(foo, class_character) <- NULL
+    expect_length(methods(foo), 1)
+    expect_equal(foo(1L), "i")
+    expect_snapshot(foo("x"), error = TRUE)
+  })
+
+  it("removes each method in a union signature", {
+    foo <- new_generic("foo", "x")
+    method(foo, class_numeric) <- function(x) "n"
+    expect_length(methods(foo), 2)
+
+    method(foo, class_numeric) <- NULL
+    expect_length(methods(foo), 0)
+  })
+
+  it("removes method with multi-dispatch signature", {
+    foo <- new_generic("foo", c("x", "y"))
+    A <- new_class("A")
+    B <- new_class("B")
+    method(foo, list(A, B)) <- function(x, y) "AB"
+    expect_equal(foo(A(), B()), "AB")
+
+    method(foo, list(A, B)) <- NULL
+    expect_snapshot(foo(A(), B()), error = TRUE)
+  })
+
+  it("is a silent no-op when the method doesn't exist", {
+    foo <- new_generic("foo", "x")
+    expect_silent(method(foo, class_character) <- NULL)
+    expect_length(methods(foo), 0)
+  })
+
+  it("errors when unregistering from an S3 generic", {
+    foo <- new_class("foo")
+    method(sum, foo) <- function(x, ...) "foo"
+    expect_snapshot(method(sum, foo) <- NULL, error = TRUE)
+
+    # External generics that resolve to S3 generics also error
+    base_sum <- new_external_generic("base", "sum", "x")
+    expect_snapshot(method(base_sum, foo) <- NULL, error = TRUE)
+  })
+
+  it("errors when unregistering from an S4 generic", {
+    methods::setGeneric("removeS4", function(x) standardGeneric("removeS4"))
+    on.exit(suppressMessages(methods::removeGeneric("removeS4")), add = TRUE)
+    S4foo <- new_class("S4foo", package = NULL)
+    S4_register(S4foo)
+    on.exit(S4_remove_classes("S4foo"), add = TRUE)
+
+    method(removeS4, S4foo) <- function(x) "foo"
+    expect_snapshot(method(removeS4, S4foo) <- NULL, error = TRUE)
   })
 })
 

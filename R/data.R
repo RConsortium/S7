@@ -26,6 +26,7 @@
 #' S7_data(MyDF(data.frame(x = 1, y = 2)))
 S7_data <- function(object) {
   check_is_S7(object)
+  check_not_environment(object, "S7_data()")
 
   out <- zap_attr(object, c(prop_names(object), "class", "S7_class"))
 
@@ -47,15 +48,18 @@ base_parent <- function(class) {
 #' @export
 #' @rdname S7_data
 `S7_data<-` <- function(object, check = TRUE, value) {
-  attrs <- attributes(object)
-  object <- value
-  attributes(object) <- attrs
-  if (isTRUE(check)) {
-    validate(object)
-  }
-  return(invisible(object))
-}
+  check_is_S7(object)
+  check_not_environment(object, "S7_data<-")
 
+  s7_attrs <- c(prop_names(object), "class", "S7_class")
+  for (name in s7_attrs) {
+    attr(value, name) <- attr(object, name, exact = TRUE)
+  }
+  if (isTRUE(check)) {
+    validate(value)
+  }
+  return(invisible(value))
+}
 
 zap_attr <- function(x, names) {
   for (name in names) {
