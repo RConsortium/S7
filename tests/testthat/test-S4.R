@@ -176,6 +176,51 @@ test_that("S4_register_contains uses registered S7 unions as S4 slots", {
   )
 })
 
+test_that("S4_register_contains uses matching S4 unions as S4 slots", {
+  env <- topenv(environment())
+  on.exit(S4_remove_classes(
+    c(
+      "S4regContainsExistingUnion::S4Slots",
+      "S4regContainsExistingUnion",
+      "S4regExistingUnion",
+      "S4regUnionMember2",
+      "S4regUnionMember1"
+    ),
+    env
+  ))
+
+  setClass("S4regUnionMember1", where = env)
+  setClass("S4regUnionMember2", where = env)
+  setClassUnion(
+    "S4regExistingUnion",
+    c("S4regUnionMember1", "S4regUnionMember2"),
+    where = env
+  )
+
+  S4regContainsExistingUnion <- new_class(
+    "S4regContainsExistingUnion",
+    properties = list(
+      x = getClass("S4regUnionMember1", where = env) |
+        getClass("S4regUnionMember2", where = env)
+    ),
+    package = NULL
+  )
+
+  S4regContainsExistingUnion_S4 <- S4_register_contains(
+    S4regContainsExistingUnion,
+    env
+  )
+  expect_equal(
+    as.character(
+      methods::getClass(
+        S4regContainsExistingUnion_S4,
+        where = env
+      )@slots$x
+    ),
+    "S4regExistingUnion"
+  )
+})
+
 test_that("S4_register errors on unsupported inputs", {
   expect_snapshot(error = TRUE, {
     S4_register(1)
@@ -206,25 +251,34 @@ test_that("converts S4 unions to S7 unions", {
   )
 })
 
-test_that("S4 slot properties preserve S4 class unions", {
-  on.exit(S4_remove_classes(c(
-    "S4regUnionSlot",
-    "S4regUnionSlotParent"
-  )))
+test_that("S4 slot properties convert S4 class unions to S7 unions", {
+  env <- topenv(environment())
+  on.exit(S4_remove_classes(
+    c(
+      "S4regUnionSlotChild",
+      "S4regUnionSlotParent",
+      "S4regUnionSlot"
+    ),
+    env
+  ))
 
-  setClassUnion("S4regUnionSlot", c("character", "NULL"))
-  setClass("S4regUnionSlotParent", slots = list(u = "S4regUnionSlot"))
+  setClassUnion("S4regUnionSlot", c("character", "NULL"), where = env)
+  setClass(
+    "S4regUnionSlotParent",
+    slots = list(u = "S4regUnionSlot"),
+    where = env
+  )
 
   S4regUnionSlotChild <- new_class(
     "S4regUnionSlotChild",
-    parent = getClass("S4regUnionSlotParent"),
+    parent = getClass("S4regUnionSlotParent", where = env),
     properties = list(y = class_character),
     package = NULL
   )
 
   expect_equal(
     S4regUnionSlotChild@properties$u$class,
-    getClass("S4regUnionSlot")
+    new_union(NULL, class_character)
   )
 })
 
