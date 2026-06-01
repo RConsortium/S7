@@ -183,14 +183,13 @@ S4_register_with_props <- function(class, env) {
   where <- topenv(env)
   class_name <- S4_register_contains_name(class)
 
-  args <- list(
+  methods::setClass(
     Class = class_name,
     slots = lapply(class@properties, S4_property_class, S4_env = where),
     contains = S4_class(class, where),
     where = where
   )
 
-  do.call(methods::setClass, args)
   class_name
 }
 
@@ -301,19 +300,13 @@ S4_register_prototype_class <- function(class, env = parent.frame()) {
   parent_class <- attr(class, "parent", exact = TRUE)
   stopifnot(is_S4_class(parent_class))
 
-  args <- list(
+  methods::setClass(
     Class = classes[1L],
     contains = parent_class@className,
     where = where
   )
 
-  pkg <- attr(class, "package", exact = TRUE)
-  if (!is.null(pkg)) {
-    args$package <- pkg
-  }
-
-  do.call(methods::setClass, args)
-  args$Class
+  classes[1L]
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
