@@ -117,7 +117,7 @@
       @ constructor: function(x) {...}
       @ validator  : <NULL>
       @ properties :
-       $ x: <integer> or <double>
+       $ x: <integer> or <double> = integer(0)
     Code
       new_class("test", parent = new_union("character"))
     Condition
