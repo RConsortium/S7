@@ -8,8 +8,8 @@
       @ constructor: function(x, y) {...}
       @ validator  : <NULL>
       @ properties :
-       $ x: <integer>
-       $ y: <integer>
+       $ x: <integer> = integer(0)
+       $ y: <integer> = integer(0)
     Code
       str(foo2)
     Output
@@ -52,12 +52,29 @@
       @ validator  : <NULL>
       @ properties :
 
+# S7 classes / shows property defaults and read-only annotations
+
+    Code
+      Person
+    Output
+      <S7::Person> class
+      @ parent     : <S7_object>
+      @ constructor: function(implicit_default, implicit_complex, implicit_S7, default_value, default_expr) {...}
+      @ validator  : <NULL>
+      @ properties :
+       $ implicit_default: <character> = character(0)
+       $ implicit_complex: S3<Date>
+       $ implicit_S7: <S7::Address> = Address()
+       $ default_value: <character> = ""
+       $ default_expr: S3<Date> = Sys.Date()
+       $ read_only: <ANY> [read-only]
+
 # S7 classes / checks inputs
 
     Code
       new_class(1)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `name` must be a single string.
     Code
       new_class("foo", 1)
@@ -72,22 +89,22 @@
     Code
       new_class("foo", package = 1)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `package` must be a single string.
     Code
       new_class("foo", constructor = 1)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `constructor` must be a function.
     Code
       new_class("foo", constructor = function() { })
     Condition
-      Error:
+      Error in `new_class()`:
       ! `constructor` must contain a call to `new_object()`.
     Code
       new_class("foo", validator = function() { })
     Condition
-      Error:
+      Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
 # S7 classes / can't inherit from S4 or class unions
@@ -95,13 +112,13 @@
     Code
       new_class("test", parent = parentS4)
     Condition
-      Error:
+      Error in `new_class()`:
       ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
     Code
       new_class("test", parent = new_union("character"))
     Condition
-      Error in `FUN()`:
-      ! Can't convert `X[[i]]` to a valid class.
+      Error in `as_class()`:
+      ! Can't convert `..1` to a valid class.
       Class specification must be one of the following, not a <character>:
        * An S7 class object
        * An S3 class object (from `new_S3_class()`)
@@ -131,7 +148,7 @@
     Code
       foo2(x = 2)
     Condition
-      Error:
+      Error in `foo2()`:
       ! <foo2> object is invalid:
       - @x has bad value
 
@@ -148,12 +165,12 @@
     Code
       Foo()
     Condition
-      Error:
+      Error in `new_object()`:
       ! `.parent` must be an instance of <Bar>, not S3<S7_base_class>.
     Code
       Baz()
     Condition
-      Error:
+      Error in `new_object()`:
       ! `.parent` must be an instance of <integer>, not <character>.
 
 # new_object() / errors if `.parent` is supplied but class has no parent
@@ -161,7 +178,7 @@
     Code
       NoParent()
     Condition
-      Error:
+      Error in `new_object()`:
       ! `.parent` must not be supplied when class has no parent.
 
 # new_object() / validates object
@@ -169,13 +186,13 @@
     Code
       foo("x")
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object properties are invalid:
       - @x must be <double>, not <character>
     Code
       foo(-1)
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object is invalid:
       - x must be positive
 

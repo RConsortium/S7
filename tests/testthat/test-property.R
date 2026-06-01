@@ -163,6 +163,28 @@ describe("prop setting", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
   })
+
+  it("setter can receive the property name (#552)", {
+    property_colour <- new_property(
+      class = class_character,
+      setter = function(self, name, value) {
+        prop(self, name) <- as.character(value)
+        self
+      }
+    )
+    Rectangle <- new_class(
+      "Rectangle",
+      properties = list(colour = property_colour, fill = property_colour),
+      package = NULL
+    )
+
+    r <- Rectangle(colour = "red", fill = 99L)
+    expect_equal(r@colour, "red")
+    expect_equal(r@fill, "99")
+
+    r@colour <- 42L
+    expect_equal(r@colour, "42")
+  })
 })
 
 describe("props<-", {
