@@ -53,6 +53,9 @@
 #'   don't need to set this here, as it's more convenient to supply as
 #'   the element name when defining a list of properties. If both `name`
 #'   and a list-name are supplied, the list-name will be used.
+#'
+#'   Names must not start with `_`; these properties are reserved for internal
+#'   S7 usage.
 #' @returns An S7 property, i.e. a list with class `S7_property`.
 #' @export
 #' @examples
@@ -538,6 +541,14 @@ as_property <- function(x, name, i, call = sys.call(-1L)) {
     class <- as_class(x, arg = paste0("property$", name))
     new_property(x, name = name)
   }
+}
+
+prop_storage_rename <- function(names) {
+  .Call(prop_storage_rename_, names)
+}
+
+prop_storage_names <- function(object) {
+  prop_storage_rename(prop_names(object))
 }
 
 prop_is_read_only <- function(prop) {
