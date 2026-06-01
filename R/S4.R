@@ -367,10 +367,13 @@ S4_slot_properties <- function(class) {
 }
 
 S4_slot_property <- function(class, name) {
-  new_property(
-    class = S4_to_S7_class(methods::getClass(class)),
-    name = name
-  )
+  class <- methods::getClass(class)
+  prop <- new_property(class, name = name)
+  # simplifies case of S4 class extending S7 class that extends an S4 class
+  if (methods::is(class, "ClassUnionRepresentation")) {
+    prop$class <- class
+  }
+  prop
 }
 
 S4_basic_classes <- function() {
