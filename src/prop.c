@@ -502,8 +502,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   n_protected++;
 
   if (setter_callable_no_recurse(setter, object, name_sym, &should_validate_obj)) {
-    // use setter(). Keep the instance passed to the setter for error
-    // reporting, since `object` is reassigned to its return value below.
+    // use setter()
     SEXP self = object;
     object = PROTECT(do_setter_call(setter, S7_class, name, object, name_sym, value));
     n_protected++;
