@@ -113,7 +113,7 @@
        $ anything: <ANY>
        $ null: <NULL> = NULL
        $ base: <integer> = integer(0)
-       $ S3: S3<factor> = factor()
+       $ S3: S3<factor>
        $ S4: S4<class_S4> = class_S4()
        $ S7: <class_S7> = class_S7()
        $ S7_union: <integer> or <logical> = integer(0)

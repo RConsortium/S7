@@ -197,35 +197,16 @@ prop_default_desc <- function(prop, package = NULL) {
 # the class has no meaningful default (e.g. `class_any`, `class_missing`).
 class_default_desc <- function(class, package = NULL) {
   type <- class_type(class)
-  if (type == "NULL") {
-    return("NULL")
-  }
-  if (type == "S7_union") {
-    return(class_default_desc(class$classes[[1]], package))
-  }
 
   expr <- switch(
     type,
-    S7_base = tryCatch(
-      class_construct_expr(class, package = package),
-      error = function(e) NULL
-    ),
-    S7 = if (is.null(class@package)) {
-      call(class@name)
-    } else {
-      tryCatch(
-        class_construct_expr(class, package = package),
-        error = function(e) call(class@name)
-      )
-    },
-    S4 = call(class@className),
-    S7_S3 = call(class$class[[1]]),
+    NULL = "NULL",
+    S7_base = deparse1(class_construct_expr(class, package = package)),
+    S7 = deparse1(call(class@name)),
+    S7_union = class_default_desc(class$classes[[1]], package),
+    S4 = deparse1(call(class@className)),
     NULL
   )
-  if (is.null(expr)) {
-    return(NULL)
-  }
-  deparse1(expr)
 }
 
 #' Get/set a property

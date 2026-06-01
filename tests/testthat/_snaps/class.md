@@ -63,7 +63,7 @@
       @ validator  : <NULL>
       @ properties :
        $ implicit_default: <character> = character(0)
-       $ implicit_complex: S3<Date> = Date()
+       $ implicit_complex: S3<Date>
        $ implicit_S7: <S7::Address> = Address()
        $ default_value: <character> = ""
        $ default_expr: S3<Date> = Sys.Date()
