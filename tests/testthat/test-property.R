@@ -466,6 +466,33 @@ test_that("can validate with custom validator", {
   })
 })
 
+test_that("property validation runs the class's own validator", {
+  Foo <- new_class("Foo", package = NULL, properties = list(x = class_factor))
+
+  # A malformed factor passes the structural check (its class is "factor")
+  # but fails the factor validator because it has too few levels.
+  bad <- structure(1:3, levels = "a", class = "factor")
+  expect_snapshot(Foo(x = bad), error = TRUE)
+})
+
+test_that("property validation runs an S4 class's validity method", {
+  PosNum <- methods::setClass(
+    "PosNum",
+    slots = c(n = "numeric"),
+    validity = function(object) {
+      if (object@n <= 0) "n must be positive" else TRUE
+    }
+  )
+  on.exit(S4_remove_classes("PosNum"))
+  Foo <- new_class("Foo", package = NULL, properties = list(x = PosNum))
+
+  # An S4 object that passes the structural check but fails its own validity
+  # method is rejected
+  bad <- PosNum(n = 1)
+  bad@n <- -5
+  expect_snapshot(Foo(x = bad), error = TRUE)
+})
+
 test_that("prop<- won't infinitly recurse on a custom setter", {
   chattily_sync_ab <- function(self, value) {
     cat("Starting syncup with value:", value, "\n")
