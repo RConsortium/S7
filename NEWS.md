@@ -1,7 +1,7 @@
 # S7 (development version)
 
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
-* `class_POSIXct` no longer rejects a date-time that lacks a `tzone` attribute (e.g. the result of `Sys.time()`), which represents the local time zone (#401).
+* `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
