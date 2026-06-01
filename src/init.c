@@ -10,6 +10,7 @@ extern SEXP S7_class_(SEXP, SEXP);
 extern SEXP S7_object_(void);
 extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
+extern SEXP prop_storage_rename_(SEXP);
 extern void prop_init(void);
 
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
@@ -19,6 +20,7 @@ static const R_CallMethodDef CallEntries[] = {
     CALLDEF(S7_object_, 0),
     CALLDEF(prop_, 2),
     CALLDEF(prop_set_, 4),
+    CALLDEF(prop_storage_rename_, 1),
     {NULL, NULL, 0}
 };
 

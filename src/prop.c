@@ -114,8 +114,7 @@ SEXP extract_name(SEXP list, SEXP name_rchar) {
 
 static inline
 SEXP prop_storage_sym(SEXP name_sym) {
-  // Handle properties that would otherwise clash with base R attributes
-  // Keep in sync with `special_prop_names` in R/property.R.
+  // Handle properties that would otherwise clash with base R attributes.
   if (name_sym == R_NamesSymbol)    return sym_u_names;
   if (name_sym == R_DimSymbol)      return sym_u_dim;
   if (name_sym == R_DimNamesSymbol) return sym_u_dimnames;
@@ -124,6 +123,27 @@ SEXP prop_storage_sym(SEXP name_sym) {
   if (name_sym == sym_comment)      return sym_u_comment;
   if (name_sym == R_RowNamesSymbol) return sym_u_row_names;
   return name_sym;
+}
+
+SEXP prop_storage_rename_(SEXP names) {
+  if (names == R_NilValue)
+    return names;
+  if (TYPEOF(names) != STRSXP)
+    Rf_error("`names` must be a character vector.");
+
+  R_xlen_t n = Rf_xlength(names);
+  SEXP out = PROTECT(Rf_allocVector(STRSXP, n));
+  for (R_xlen_t i = 0; i < n; i++) {
+    SEXP name_rchar = STRING_ELT(names, i);
+    if (name_rchar == NA_STRING) {
+      SET_STRING_ELT(out, i, name_rchar);
+    } else {
+      SEXP storage_sym = prop_storage_sym(Rf_installTrChar(name_rchar));
+      SET_STRING_ELT(out, i, PRINTNAME(storage_sym));
+    }
+  }
+  UNPROTECT(1);
+  return out;
 }
 
 
