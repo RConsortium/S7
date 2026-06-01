@@ -117,7 +117,11 @@ attached_generics <- function() {
 }
 
 attached_envs <- function() {
-  lapply(search(), as.environment)
+  envs <- search()
+  pkgs <- envs[grepl("^package:", envs)]
+  pkgs <- setdiff(pkgs, "package:base")
+
+  c(lapply(pkgs, as.environment), globalenv())
 }
 
 find_objects <- function(env, predicate) {
