@@ -178,6 +178,35 @@ prop_default <- function(prop, envir, package) {
   prop$default %||% class_construct_expr(prop$class, envir, package)
 }
 
+prop_default_desc <- function(prop, package = NULL) {
+  if (prop_is_read_only(prop)) {
+    return("[read-only]")
+  }
+
+  if (!is.null(prop$default)) {
+    paste0("= ", deparse1(prop$default))
+  } else {
+    desc <- class_default_desc(prop$class, package)
+    if (is.null(desc)) "" else paste0("= ", desc)
+  }
+}
+
+# A clean, displayable string for a property's implicit default, or `NULL` if
+# the class has no meaningful default (e.g. `class_any`, `class_missing`).
+class_default_desc <- function(class, package = NULL) {
+  type <- class_type(class)
+
+  expr <- switch(
+    type,
+    NULL = "NULL",
+    S7_base = deparse1(class_construct_expr(class, package = package)),
+    S7 = deparse1(call(class@name)),
+    S7_union = class_default_desc(class$classes[[1]], package),
+    S4 = deparse1(call(class@className)),
+    NULL
+  )
+}
+
 #' Get/set a property
 #'
 #' - `prop(x, "name")` / `prop@name` get the value of the a property,
