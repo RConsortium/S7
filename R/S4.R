@@ -213,7 +213,7 @@ S4_subclasses <- function(class) {
   subclasses <- character()
   while (is_class(class)) {
     subclasses <- c(subclasses, S7_class_name(class))
-    class <- attr(class, "parent", exact = TRUE)
+    class <- class@parent
     if (is_S4_class(class)) {
       return(subclasses)
     }
@@ -297,7 +297,7 @@ S4_register_prototype_class <- function(class, env = parent.frame()) {
   where <- topenv(env)
   classes <- class_dispatch(class)
 
-  parent_class <- attr(class, "parent", exact = TRUE)
+  parent_class <- class@parent
   stopifnot(is_S4_class(parent_class))
 
   methods::setClass(
