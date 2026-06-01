@@ -88,10 +88,9 @@ generic_method_rows <- function(generic, target = NULL) {
 
   data.frame(
     generic = rep(generic@name, length(ms)),
-    signature = vcapply(
-      ms,
-      \(m) paste0(vcapply(m@signature, class_desc), collapse = ", ")
-    ),
+    signature = vcapply(ms, function(m) {
+      paste0(vcapply(m@signature, class_desc), collapse = ", ")
+    }),
     method = vcapply(ms, \(m) method_signature(generic, m@signature))
   )
 }
