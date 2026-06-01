@@ -184,9 +184,9 @@ validate_POSIXct <- function(self) {
     return("Underlying data must be numeric")
   }
 
-  tz <- attr(self, "tz")
-  if (!is.character(tz) || length(tz) != 1) {
-    return("attr(, 'tz') must be a single string")
+  tz <- attr(self, "tzone", exact = TRUE)
+  if (!is.null(tz) && (!is.character(tz) || length(tz) != 1)) {
+    return("attr(, 'tzone') must be NULL or a single string")
   }
 }
 
