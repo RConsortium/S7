@@ -106,12 +106,9 @@ empty_methods_df <- function() {
 
 # All S7 generics reachable from attached packages and the global env.
 attached_generics <- function() {
-  envs <- attached_envs()
   out <- list()
-  for (env in envs) {
-    for (name in S7_generics(env)) {
-      out[[length(out) + 1L]] <- get0(name, envir = env, inherits = FALSE)
-    }
+  for (env in attached_envs()) {
+    out <- c(out, unname(find_matches(env, is_S7_generic)))
   }
   out
 }
@@ -125,6 +122,11 @@ attached_envs <- function() {
 }
 
 find_objects <- function(env, predicate) {
+  names(find_matches(env, predicate))
+}
+
+# Named list of objects in `env` satisfying `predicate`.
+find_matches <- function(env, predicate) {
   if (isNamespace(env)) {
     # Not attached; use exported values
     names <- getNamespaceExports(env)
@@ -133,5 +135,6 @@ find_objects <- function(env, predicate) {
     names <- ls(envir = env)
   }
 
-  Filter(\(name) predicate(get(name, envir = env, inherits = FALSE)), names)
+  objs <- mget(names, envir = env, inherits = FALSE)
+  Filter(predicate, objs)
 }
