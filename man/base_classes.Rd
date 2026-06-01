@@ -69,6 +69,8 @@ within S7:
 \item \code{class_function}
 }
 
+For method registration and properties, you can use \code{NULL} directly.
+
 See also \link{class_environment} which is documented separately due to the
 complexities introduced by their reference semantics.
 
