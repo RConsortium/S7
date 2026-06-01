@@ -11,9 +11,9 @@
 #'   packages, but there's no harm in always including it and it ensures you
 #'   won't forget later.
 #'
-#' * Call `S7_on_build()` at the top level (i.e. *not* inside `.onLoad()`).
-#'   This avoids embedding copies of external, S3, and S4 generics in your
-#'   package when you use `method<-`.
+#' * Call `S7_on_build()` at the top level (i.e. *not* inside `.onLoad()`)
+#'   after all method registration is complete. This avoids embedding copies
+#'   of external generics in your package when you use `method<-`.
 #'
 #' See `vignette("packages")` for more details.
 #'

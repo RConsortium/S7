@@ -22,9 +22,9 @@ other packages are registered as needed when your package is loaded. This
 is only strictly necessary if you register methods for generics in other
 packages, but there's no harm in always including it and it ensures you
 won't forget later.
-\item Call \code{S7_on_build()} at the top level (i.e. \emph{not} inside \code{.onLoad()}).
-This avoids embedding copies of external, S3, and S4 generics in your
-package when you use \verb{method<-}.
+\item Call \code{S7_on_build()} at the top level (i.e. \emph{not} inside \code{.onLoad()})
+after all method registration is complete. This avoids embedding copies
+of external generics in your package when you use \verb{method<-}.
 }
 
 See \code{vignette("packages")} for more details.
