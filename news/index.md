@@ -8,13 +8,6 @@
 - `method<-` now accepts `NULL` to unregister an existing method,
   e.g. `method(foo, class_character) <- NULL`
   ([\#613](https://github.com/RConsortium/S7/issues/613)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  no longer materialises ALTREP parent values
-  (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
-  an S7 object that wraps a large compact integer sequence is now O(1)
-  in memory instead of O(n)
-  ([@kschaubroeck](https://github.com/kschaubroeck),
-  [\#607](https://github.com/RConsortium/S7/issues/607)).
 - Method dispatch on `class_missing` now correctly handles missing
   arguments forwarded through a wrapper functions
   ([\#595](https://github.com/RConsortium/S7/issues/595)).
@@ -103,6 +96,9 @@
   class, with one row per property and columns for name, default, class,
   getter, setter, and validator
   ([\#551](https://github.com/RConsortium/S7/issues/551)).
+- `print(<S7_class>)` now shows property defaults inline (`= "value"`)
+  and annotates read-only properties (`[read-only]`)
+  ([\#439](https://github.com/RConsortium/S7/issues/439)).
 - [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) and
   `prop<-()` errors from custom getters and setters now report a
   synthetic `<Class>@<prop>` call, making it easier to see which

@@ -120,8 +120,8 @@ properties: a character <code>name</code> and a numeric
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
 <span><span class="co">#&gt; @ properties :</span></span>
-<span><span class="co">#&gt;  $ name: &lt;character&gt;          </span></span>
-<span><span class="co">#&gt;  $ age : &lt;integer&gt; or &lt;double&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ name: &lt;character&gt; = character(0)</span></span>
+<span><span class="co">#&gt;  $ age: &lt;integer&gt; or &lt;double&gt; = integer(0)</span></span></code></pre></div>
 <p>S7 provides a number of built-in definitions that allow you to refer
 to existing base types that are not S7 classes. You can recognize these
 definitions because they all start with <code>class_</code>.</p>
@@ -156,8 +156,8 @@ supplied in <code><a href="../reference/new_class.html">new_class()</a></code>:<
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
 <span><span class="co">#&gt; @ properties :</span></span>
-<span><span class="co">#&gt;  $ name: &lt;character&gt;          </span></span>
-<span><span class="co">#&gt;  $ age : &lt;integer&gt; or &lt;double&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ name: &lt;character&gt; = character(0)</span></span>
+<span><span class="co">#&gt;  $ age: &lt;integer&gt; or &lt;double&gt; = integer(0)</span></span></code></pre></div>
 <p>S7 objects also have an S3 <code><a href="https://rdrr.io/r/base/class.html" class="external-link">class()</a></code>. This is used for
 compatibility with existing S3 generics and you can learn more about it
 in <code><a href="../articles/compatibility.html">vignette("compatibility")</a></code>.</p>
@@ -244,16 +244,16 @@ duplicated specification. We first define the parent class:</p>
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
 <span><span class="co">#&gt; @ properties :</span></span>
-<span><span class="co">#&gt;  $ name: &lt;character&gt;          </span></span>
-<span><span class="co">#&gt;  $ age : &lt;integer&gt; or &lt;double&gt;</span></span>
+<span><span class="co">#&gt;  $ name: &lt;character&gt; = character(0)</span></span>
+<span><span class="co">#&gt;  $ age: &lt;integer&gt; or &lt;double&gt; = integer(0)</span></span>
 <span><span class="va">Dog</span></span>
 <span><span class="co">#&gt; &lt;Dog&gt; class</span></span>
 <span><span class="co">#&gt; @ parent     : &lt;Pet&gt;</span></span>
 <span><span class="co">#&gt; @ constructor: function(name, age) {...}</span></span>
 <span><span class="co">#&gt; @ validator  : &lt;NULL&gt;</span></span>
 <span><span class="co">#&gt; @ properties :</span></span>
-<span><span class="co">#&gt;  $ name: &lt;character&gt;          </span></span>
-<span><span class="co">#&gt;  $ age : &lt;integer&gt; or &lt;double&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ name: &lt;character&gt; = character(0)</span></span>
+<span><span class="co">#&gt;  $ age: &lt;integer&gt; or &lt;double&gt; = integer(0)</span></span></code></pre></div>
 <p>Because we have created new classes, we need to recreate the existing
 <code>lola</code> and <code>fluffy</code> objects:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -313,7 +313,7 @@ of one of those methods:</p>
 <span><span class="co">#&gt; {</span></span>
 <span><span class="co">#&gt;     paste0(x@name, " is ", x@age, " years old")</span></span>
 <span><span class="co">#&gt; }</span></span>
-<span><span class="co">#&gt; &lt;bytecode: 0x558e0a0a5108&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;bytecode: 0x55a1cee094a0&gt;</span></span></code></pre></div>
 <p>Learn more about method dispatch in
 <code><a href="../articles/generics-methods.html">vignette("generics-methods")</a></code>.</p>
 </div>
