@@ -135,7 +135,7 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
 }
 
 is_down_cast <- function(x, class) {
-  all(obj_dispatch(x) %in% class_dispatch(class))
+  class_dispatch_extends(obj_dispatch(x), class_dispatch(class))
 }
 
 convert_down <- function(from, to, ...) {

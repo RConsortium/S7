@@ -155,6 +155,20 @@ test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
   expect_equal(is_down_cast(B_child(), A), FALSE)
 })
 
+test_that("is_down_cast() requires `from`'s classes to be contiguous and ordered", {
+  # All of `from`'s classes are in `to`, but not contiguously
+  gappy <- structure(list(), class = c("a", "b"))
+  expect_equal(is_down_cast(gappy, new_S3_class(c("a", "x", "b"))), FALSE)
+
+  # All of `from`'s classes are in `to`, but in the wrong order
+  reversed <- structure(list(), class = c("b", "a"))
+  expect_equal(is_down_cast(reversed, new_S3_class(c("a", "b"))), FALSE)
+
+  # A genuine contiguous, ordered run succeeds
+  ok <- structure(list(), class = c("b", "a"))
+  expect_equal(is_down_cast(ok, new_S3_class(c("c", "b", "a"))), TRUE)
+})
+
 test_that("convert() falls back to as.*() for base type targets (#472)", {
   expect_identical(convert(1.5, class_character), "1.5")
   expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))
