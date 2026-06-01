@@ -218,13 +218,10 @@ prop <- function(object, name) {
   .Call(prop_set_, object, name, check, value)
 }
 
-# called from src/prop.c. Handles both fixed messages (e.g. read-only,
-# unknown property) and validation messages. The offending property is
-# reported via the `call`, so `msg` doesn't need to name it.
+# called from src/prop.c
 signal_prop_error <- function(msg, object, name) {
   stop2(msg, call = prop_call(object, name))
 }
-
 signal_setter_error <- function(value, object, name) {
   stop2(
     sprintf(
