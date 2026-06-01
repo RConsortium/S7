@@ -181,10 +181,7 @@ globalVariables(c(
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
 S7_class_name <- function(x) {
-  paste(
-    c(attr(x, "package", exact = TRUE), attr(x, "name", exact = TRUE)),
-    collapse = "::"
-  )
+  paste(c(x@package, x@name), collapse = "::")
 }
 
 check_S7_constructor <- function(constructor, call = sys.call(-1L)) {
