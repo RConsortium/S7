@@ -79,7 +79,7 @@ void signal_prop_error(const char* msg, SEXP object, SEXP name) {
 
 static __attribute__((noreturn))
 void signal_prop_error_unknown(SEXP object, SEXP name) {
-  signal_prop_error("Can't find property.", object, name);
+  signal_prop_error("Property not found.", object, name);
 }
 
 static inline

@@ -4,12 +4,12 @@
       prop(obj, "x")
     Condition
       Error in `<foo>@x`:
-      ! Can't find property.
+      ! Property not found.
     Code
       obj@x
     Condition
       Error in `<foo>@x`:
-      ! Can't find property.
+      ! Property not found.
 
 # prop setting / can't set read-only properties
 
@@ -26,7 +26,7 @@
       obj@foo <- 10
     Condition
       Error in `<foo>@foo`:
-      ! Can't find property.
+      ! Property not found.
     Code
       obj@x <- "x"
     Condition
