@@ -22,3 +22,4 @@
 ^[.]?air[.]toml$
 ^\.claude$
 ^\.git-blame-ignore-revs$
+^\.lintr\.R$

@@ -107,13 +107,17 @@
       Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
-# S7 classes / can't inherit from S4 or class unions
+# S7 classes / can inherit from S4 but not class unions
 
     Code
-      new_class("test", parent = parentS4)
-    Condition
-      Error in `new_class()`:
-      ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
+      new_class("test", parent = parentS4, package = NULL)
+    Output
+      <test> class
+      @ parent     : S4<parentS4>
+      @ constructor: function(x) {...}
+      @ validator  : <NULL>
+      @ properties :
+       $ x: <integer> or <double> = integer(0)
     Code
       new_class("test", parent = new_union("character"))
     Condition
@@ -300,4 +304,3 @@
     Condition
       Error:
       ! No S7 class for base type <pairlist>.
-

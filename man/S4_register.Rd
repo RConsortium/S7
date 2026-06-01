@@ -2,23 +2,32 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
-\title{Register an S7 or S3 class with S4}
+\alias{S4_register_contains}
+\title{Register an S7, S3, or union class with S4}
 \usage{
 S4_register(class, env = parent.frame())
+
+S4_register_contains(class, env = parent.frame())
 }
 \arguments{
-\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or an S3 class created
-with \code{\link[=new_S3_class]{new_S3_class()}}.}
+\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or, for
+\code{S4_register()} only, an S3 class created with \code{\link[=new_S3_class]{new_S3_class()}} or an S7
+union created with \code{\link[=new_union]{new_union()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
 \value{
-Nothing; the function is called for its side-effect.
+Both functions are called for their side effects and invisibly return the
+registered S4 class name.
 }
 \description{
 If you want to use \link{method<-} to register a method for an S4 generic with
-an S7 class or an S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}), you need to call
-\code{S4_register()} once.
+an S7 class that does not extend an S4 class, or an S3 class created by
+\code{\link[=new_S3_class]{new_S3_class()}}, you need to call \code{S4_register()} once. Classes created by
+\code{\link[=new_class]{new_class()}} with an S4 parent are registered automatically.
+Use \code{S4_register_contains()} when you want an S4 class to extend an S7 class
+with \verb{contains=}. This registers the S7 class as an old class with known
+attributes so that S7 properties are represented as S4 slots.
 }
 \examples{
 methods::setGeneric("S4_generic", function(x) {
@@ -30,4 +39,8 @@ S4_register(Foo)
 method(S4_generic, Foo) <- function(x) "Hello"
 
 S4_generic(Foo())
+
+S4Foo <- new_class("S4Foo", properties = list(x = class_numeric), package = "S7")
+S4Foo_S4 <- S4_register_contains(S4Foo)
+methods::setClass("S4Child", contains = S4Foo_S4)
 }

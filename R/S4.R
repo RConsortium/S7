@@ -1,13 +1,20 @@
-#' Register an S7 or S3 class with S4
+#' Register an S7, S3, or union class with S4
 #'
 #' If you want to use [method<-] to register a method for an S4 generic with
-#' an S7 class or an S3 class (created by [new_S3_class()]), you need to call
-#' `S4_register()` once.
+#' an S7 class that does not extend an S4 class, or an S3 class created by
+#' [new_S3_class()], you need to call `S4_register()` once. Classes created by
+#' [new_class()] with an S4 parent are registered automatically.
+#' Use `S4_register_contains()` when you want an S4 class to extend an S7 class
+#' with `contains=`. This registers the S7 class as an old class with known
+#' attributes so that S7 properties are represented as S4 slots.
 #'
-#' @param class An S7 class created with [new_class()], or an S3 class created
-#'   with [new_S3_class()].
+#' @param class An S7 class created with [new_class()], or, for
+#'   `S4_register()` only, an S3 class created with [new_S3_class()] or an S7
+#'   union created with [new_union()].
 #' @param env Expert use only. Environment where S4 class will be registered.
-#' @returns Nothing; the function is called for its side-effect.
+#' @returns
+#' Both functions are called for their side effects and invisibly return the
+#' registered S4 class name.
 #' @export
 #' @examples
 #' methods::setGeneric("S4_generic", function(x) {
@@ -19,21 +26,349 @@
 #' method(S4_generic, Foo) <- function(x) "Hello"
 #'
 #' S4_generic(Foo())
+#'
+#' S4Foo <- new_class("S4Foo", properties = list(x = class_numeric), package = "S7")
+#' S4Foo_S4 <- S4_register_contains(S4Foo)
+#' methods::setClass("S4Child", contains = S4Foo_S4)
 S4_register <- function(class, env = parent.frame()) {
   if (is_class(class)) {
     classes <- class_dispatch(class)
   } else if (is_S3_class(class)) {
     classes <- class$class
+  } else if (is_union(class)) {
+    return(invisible(S4_register_union(class, topenv(env))))
   } else {
     msg <- sprintf(
-      "`class` must be an S7 class or an S3 class, not a %s.",
+      "`class` must be an S7 class, S3 class, or S7 union, not a %s.",
       obj_desc(class)
     )
     stop2(msg)
   }
 
   methods::setOldClass(classes, where = topenv(env))
+  invisible(classes[1L])
+}
+
+S4_register_union <- function(class, env) {
+  name <- S4_union_name(class, env)
+  methods::setClassUnion(
+    name,
+    vcapply(class$classes, S4_class, S4_env = env),
+    where = env
+  )
+  name
+}
+
+S4_class <- function(x, S4_env, call = sys.call(-1L)) {
+  switch(
+    class_type(x),
+    `NULL` = "NULL",
+    missing = "missing",
+    any = "ANY",
+    S7_base = base_to_S4(x$class),
+    S4 = as.character(x@className),
+    S7 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_S3 = as.character(
+      S4_registered_class(x, S4_env, call = call)@className
+    ),
+    S7_union = S4_union_class(x, S4_env)
+  )
+}
+
+# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
+# not "double", so registering under "double" silently misses real doubles.
+# Mapping to "numeric" catches doubles but also matches integers too. There's
+# no clean S4 way to say "doubles only" and this seems likely to be what
+# people want.
+base_to_S4 <- function(class) {
+  switch(class, double = "numeric", class)
+}
+
+S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
+  class <- tryCatch(
+    methods::getClass(class_register(x), where = S4_env),
+    error = function(err) NULL
+  )
+  if (is.null(class)) {
+    msg <- sprintf(
+      "Class has not been registered with S4; please call S4_register(%s).",
+      class_deparse(x)
+    )
+    stop2(msg, call = call)
+  }
+  class
+}
+
+S4_union_class <- function(x, S4_env) {
+  if (identical(x, class_numeric)) {
+    return("numeric")
+  }
+
+  name <- S4_union_name(x, S4_env)
+  if (methods::isClass(name, where = S4_env)) {
+    return(name)
+  }
+
+  name <- S4_find_union(x, S4_env)
+  if (!is.null(name)) {
+    return(name)
+  }
+
+  msg <- sprintf(
+    "Class union has not been registered with S4; please call S4_register(%s).",
+    class_deparse(x)
+  )
+  stop(msg, call. = FALSE)
+}
+
+S4_union_name <- function(x, S4_env) {
+  paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
+}
+
+S4_find_union <- function(x, S4_env) {
+  members <- vcapply(x$classes, S4_class, S4_env = S4_env)
+  supers <- lapply(members, S4_direct_superclasses, S4_env = S4_env)
+  candidates <- base::Reduce(base::intersect, supers)
+  matches <- base::Filter(
+    function(candidate) S4_union_matches(candidate, members, S4_env),
+    candidates
+  )
+  if (length(matches) == 0) {
+    return(NULL)
+  }
+
+  matches[1L]
+}
+
+S4_direct_superclasses <- function(class, S4_env) {
+  class <- methods::getClass(class, where = S4_env)
+  contains <- class@contains
+  contains <- base::Filter(function(x) x@distance == 1, contains)
+  names(contains)
+}
+
+S4_union_matches <- function(class, members, S4_env) {
+  class <- methods::getClass(class, where = S4_env)
+  if (!methods::isClassUnion(class)) {
+    return(FALSE)
+  }
+
+  setequal(S4_union_members(class), members)
+}
+
+S4_union_members <- function(class) {
+  subclasses <- base::Filter(function(x) x@distance == 1, class@subclasses)
+  vcapply(subclasses, function(x) as.character(x@subClass))
+}
+
+S4_ancestor <- function(class) {
+  parent_class <- attr(class, "parent", exact = TRUE)
+  while (is_class(parent_class)) {
+    parent_class <- attr(parent_class, "parent", exact = TRUE)
+  }
+  if (is_S4_class(parent_class)) parent_class
+}
+
+S7_extends_S4 <- function(class) {
+  !is.null(S4_ancestor(class))
+}
+
+inherits_S4 <- function(x) {
+  isS4(x) ||
+    {
+      klass <- S7_class(x)
+      !is.null(klass) && S7_extends_S4(klass)
+    }
+}
+
+S4_register_subclass <- function(class, env) {
+  where <- topenv(env)
+  subclasses <- S4_subclasses(class)
+  if (length(subclasses) > 1L) {
+    methods::setOldClass(subclasses, where = where)
+  } else {
+    methods::setOldClass(
+      subclasses,
+      S4Class = S4_register_prototype_class(class, where),
+      where = where
+    )
+    methods::setValidity(subclasses[1L], S4_validate, where = where)
+    methods::setMethod(
+      "initialize",
+      subclasses[1L],
+      S4_initialize,
+      where = where
+    )
+  }
+
+  parent_class <- S4_ancestor(class)
+  methods::setAs(
+    from = subclasses[1L],
+    to = parent_class@className,
+    def = function(from) convert(from, parent_class),
+    where = where
+  )
+
   invisible()
+}
+
+#' @rdname S4_register
+#' @export
+S4_register_contains <- function(class, env = parent.frame()) {
+  if (!is_class(class)) {
+    msg <- sprintf("`class` must be an S7 class, not a %s.", obj_desc(class))
+    stop(msg, call. = FALSE)
+  }
+
+  where <- topenv(env)
+  classes <- class_dispatch(class)
+  if (!methods::isClass(classes[1L], where = where)) {
+    S4_register(class, where)
+  }
+  class_name <- S4_register_with_props(class, where)
+  invisible(class_name)
+}
+
+S4_register_with_props <- function(class, env) {
+  where <- topenv(env)
+  class_name <- S4_register_contains_name(class)
+  contains <- S4_class(class, where)
+  properties <- class@properties
+  properties <- properties[setdiff(
+    names(properties),
+    S4_slot_names(contains, where)
+  )]
+
+  methods::setClass(
+    Class = class_name,
+    slots = lapply(properties, S4_property_class, S4_env = where),
+    contains = contains,
+    where = where
+  )
+
+  class_name
+}
+
+S4_slot_names <- function(class, S4_env) {
+  names(methods::getClass(class, where = S4_env)@slots)
+}
+
+S4_register_contains_name <- function(class) {
+  paste0(S7_class_name(class), "::S4Slots")
+}
+
+S4_property_class <- function(prop, S4_env) {
+  if (prop_is_dynamic(prop) || prop_has_setter(prop)) {
+    msg <- sprintf(
+      "Can't register property %s as an S4 slot because it has a custom %s.",
+      prop$name,
+      if (prop_is_dynamic(prop)) "getter" else "setter"
+    )
+    stop(msg, call. = FALSE)
+  }
+  S4_class(prop$class, S4_env)
+}
+
+S4_subclasses <- function(class) {
+  subclasses <- character()
+  while (is_class(class)) {
+    subclasses <- c(subclasses, S7_class_name(class))
+    class <- class@parent
+    if (is_S4_class(class)) {
+      return(subclasses)
+    }
+  }
+  character()
+}
+
+S4_validate <- function(object) {
+  if (!S7_inherits(object)) {
+    return(sprintf(
+      "object with S4 class %s is not an S7 object",
+      dQuote(class(object)[1L])
+    ))
+  }
+
+  tryCatch(
+    {
+      validate(object)
+      TRUE
+    },
+    error = function(cnd) conditionMessage(cnd)
+  )
+}
+
+S4_initialize <- function(.Object, ...) {
+  args <- list(...)
+  if (length(args) == 0) {
+    return(.Object)
+  }
+
+  nms <- names2(args)
+  prop_nms <- prop_names(.Object)
+  vals <- list()
+  data_part <- NULL
+  for (arg in args[nms == ""]) {
+    arg_vals <- S4_initialize_values(arg)
+    if (".Data" %in% names(arg_vals)) {
+      data_part <- arg
+    }
+    arg_vals <- arg_vals[names(arg_vals) %in% prop_nms]
+    vals <- modify_list(vals, arg_vals)
+  }
+  named_args <- args[nms != ""]
+  vals <- modify_list(vals, named_args)
+  if (".Data" %in% names(named_args)) {
+    data_part <- vals$.Data
+  }
+
+  if (!is.null(data_part)) {
+    .Object <- S4_initialize_data_part(data_part, .Object)
+  }
+
+  props(.Object) <- vals
+  .Object
+}
+
+S4_initialize_values <- function(object) {
+  if (S7_inherits(object)) {
+    props(object)
+  } else if (isS4(object)) {
+    slots <- methods::slotNames(object)
+    stats::setNames(lapply(slots, methods::slot, object = object), slots)
+  } else {
+    attrs <- attributes(object) %||% list()
+    attrs$class <- NULL
+    if (is.object(object)) {
+      attrs$.S3Class <- class(object)
+    }
+    c(list(.Data = unclass(object)), attrs)
+  }
+}
+
+S4_initialize_data_part <- function(value, object) {
+  incoming <- attributes(value) %||% list()
+  incoming$class <- NULL
+  attributes(value) <- modify_list(attributes(object), incoming)
+  value
+}
+
+S4_register_prototype_class <- function(class, env = parent.frame()) {
+  where <- topenv(env)
+  classes <- class_dispatch(class)
+
+  parent_class <- class@parent
+  stopifnot(is_S4_class(parent_class))
+
+  methods::setClass(
+    Class = classes[1L],
+    contains = parent_class@className,
+    where = where
+  )
+
+  classes[1L]
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
@@ -74,6 +409,19 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
     )
     stop2(paste0(error_base, msg), call = call)
   }
+}
+
+S4_slot_properties <- function(class) {
+  properties <- Map(S4_slot_property, class@slots, names(class@slots))
+  names(properties) <- names(class@slots)
+  properties
+}
+
+S4_slot_property <- function(class, name) {
+  new_property(
+    class = S4_to_S7_class(methods::getClass(class)),
+    name = name
+  )
 }
 
 S4_basic_classes <- function() {
@@ -149,10 +497,63 @@ S4_class_name <- function(x) {
   }
 }
 
+S4_package_name <- function(f, env) {
+  if (methods::getPackageName(topenv(env)) == f@package) {
+    ## current ns might not be loaded yet, catch here
+    return(f@package)
+  }
+
+  name <- as.vector(f@generic)
+  generic_in_its_package <- methods::isGeneric(
+    name,
+    where = asNamespace(f@package)
+  )
+  if (generic_in_its_package) {
+    return(f@package)
+  }
+
+  # generic was defined for a function from a different package, like base
+  find_package_with_symbol(name, env, exclude = f@package) %||%
+    stop(
+      "Failed to find originating package for S4 generic '",
+      name,
+      "' in namespace imports.",
+      call. = FALSE
+    )
+}
+
+find_package_with_symbol <- function(name, env, exclude = NULL) {
+  imports <- getNamespaceImports(topenv(env))
+  pkgs <- setdiff(names(imports), exclude)
+  Find(
+    function(pkg) {
+      if (isTRUE(imports[[pkg]])) {
+        name %in% getNamespaceExports(pkg)
+      } else {
+        name %in% imports[[pkg]]
+      }
+    },
+    pkgs
+  )
+}
+
 S4_remove_classes <- function(classes, where = parent.frame()) {
+  where <- topenv(where)
   for (class in classes) {
-    suppressWarnings(methods::removeClass(class, topenv(where)))
+    if (methods::isClass(class, where = where)) {
+      methods::removeClass(class, where)
+    }
   }
 }
 
-globalVariables(c("superClass", "virtual"))
+globalVariables(c(
+  ".Data",
+  "className",
+  "distance",
+  "package",
+  "prototype",
+  "slots",
+  "subClass",
+  "superClass",
+  "virtual"
+))

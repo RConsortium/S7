@@ -54,6 +54,9 @@
 #'   belong to each instance of the class. Each element of the list can
 #'   either be a type specification (processed by [as_class()]) or a
 #'   full property specification created [new_property()].
+#' @section S4 compatibility:
+#' ```{r child = "man/rmd/S4-compatibility.Rmd"}
+#' ```
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
@@ -124,16 +127,19 @@ new_class <- function(
     }
     if (
       abstract &&
-        (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
+        !((is_class(parent) &&
+          (parent@abstract || parent@name == "S7_object")) ||
+          (is_S4_class(parent) && parent@virtual))
     ) {
       stop2("Abstract classes must have abstract parents.")
     }
   }
 
-  # Combine properties from parent, overriding as needed
-  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
   check_prop_names(new_props)
+
+  # Combine properties from parent, overriding as needed
+  all_props <- class_properties(parent)
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
@@ -155,6 +161,10 @@ new_class <- function(
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
+
+  if (S7_extends_S4(object)) {
+    S4_register_subclass(object, env = parent.frame())
+  }
 
   global_variables(names(all_props))
   object
@@ -248,7 +258,9 @@ c.S7_class <- function(...) {
   stop2("Can not combine S7 class objects.")
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_S4_class(x)
+}
 
 check_can_inherit <- function(
   x,
@@ -257,7 +269,7 @@ check_can_inherit <- function(
 ) {
   if (!can_inherit(x)) {
     msg <- sprintf(
-      "`%s` must be an S7 class, S3 class, or base type, not %s.",
+      "`%s` must be an S7 class, S4 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
@@ -278,6 +290,13 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 
   # Ignore abstract classes since you can't supply an instance
   if (is_class(parent_class) && parent_class@abstract) {
+    return()
+  }
+
+  # S4 parent compatibility is checked after new_object() installs the S7
+  # class attributes, at which point methods::validObject() can see the
+  # registered oldClass structure.
+  if (is_S4_class(parent_class)) {
     return()
   }
 
