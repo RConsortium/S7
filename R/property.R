@@ -182,15 +182,13 @@ prop_default_desc <- function(prop, package = NULL) {
   if (prop_is_read_only(prop)) {
     return("[read-only]")
   }
-  if (!is.null(prop$default)) {
-    return(paste0("= ", deparse1(prop$default)))
-  }
 
-  desc <- class_default_desc(prop$class, package)
-  if (is.null(desc)) {
-    return("")
+  if (!is.null(prop$default)) {
+    paste0("= ", deparse1(prop$default))
+  } else {
+    desc <- class_default_desc(prop$class, package)
+    if (is.null(desc)) "" else paste0("= ", desc)
   }
-  paste0("= ", desc)
 }
 
 # A clean, displayable string for a property's implicit default, or `NULL` if
