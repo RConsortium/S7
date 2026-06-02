@@ -39,8 +39,7 @@ method(generic, signature) <- value
 
   A method signature.
 
-  For S7 generics that use single dispatch, this must be one of the
-  following:
+  For single-dispatch generics, this must be one of the following:
 
   - An S7 class (created by
     [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)).
@@ -66,16 +65,10 @@ method(generic, signature) <- value
     or
     [class_any](https://rconsortium.github.io/S7/reference/class_any.md).
 
-  For S7 generics that use multiple dispatch, this must be a list of any
-  of the above types. (For convenience you can also use a list in the
-  single dispatch case too.)
+  - A length-1 list containing any of the above.
 
-  For S3 generics, this can be any of the above types. There's one
-  exception: you can only use
-  [class_missing](https://rconsortium.github.io/S7/reference/class_missing.md)
-  with S3 operators that support double dispatch (e.g. `+` and `-`).
-
-  The same rules apply to S4 generics as S7 generics.
+  For generics that use multiple dispatch, this must be a list of any of
+  the above types.
 
 - value:
 

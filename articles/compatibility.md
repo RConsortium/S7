@@ -25,13 +25,8 @@ There are two main differences between an S7 object and an S3 object:
 
 All up, this means most usage of S7 with S3 will just work.
 
-- S7 can register methods for:
-
-  - S7 class and S3 generic
-  - S3 class and S7 generic
-
+- S7 can register methods for S3 generics and S3 classes
 - S7 classes can extend S3 classes
-
 - S3 classes can extend S7 classes
 
 ### Methods
@@ -173,9 +168,7 @@ they can be dynamic.
 
 - S7 classes can not extend S4 classes
 - S4 classes can extend S3 classes
-- S7 can register methods for:
-  - S7 class and S4 generic
-  - S4 class and S7 generic
+- S7 can register methods for S4 generics and S4 classes
 
 ### Unions
 
