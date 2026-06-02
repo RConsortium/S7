@@ -126,6 +126,32 @@ test_that("S4_register_contains registers S7 properties as slots for S4 subclass
   expect_equal(prop(object, "x"), 1)
   expect_equal(prop(object, "y"), "a")
   expect_true(methods::validObject(object))
+  expect_equal(S7_class(object), S4regContainsChild)
+  expect_match(obj_desc(object), "^S4<")
+
+  expect_equal(
+    S4_to_S7_class(getClass("S4regContainsS4Child")),
+    getClass("S4regContainsS4Child")
+  )
+  expect_contains(
+    obj_dispatch(object),
+    c(
+      S4_class_name(getClass("S4regContainsS4Child")),
+      S4regContainsChild_old
+    )
+  )
+
+  S4regContainsDispatch <- new_generic("S4regContainsDispatch", "x")
+  method(S4regContainsDispatch, S4regContainsChild) <- function(x) {
+    "S7"
+  }
+  method(
+    S4regContainsDispatch,
+    getClass("S4regContainsS4Child")
+  ) <- function(x) {
+    "S4"
+  }
+  expect_equal(S4regContainsDispatch(object), "S4")
 
   invalid <- object
   methods::slot(invalid, "y") <- "bad"
