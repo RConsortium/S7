@@ -3,13 +3,13 @@
     Code
       S7_data(e)
     Condition
-      Error:
+      Error in `S7_data()`:
       ! Can't call `S7_data()` on an environment.
       See ?class_environment for details.
     Code
       S7_data(e) <- new.env()
     Condition
-      Error:
+      Error in `S7_data<-`:
       ! Can't call `S7_data<-` on an environment.
       See ?class_environment for details.
 
@@ -31,7 +31,7 @@
     Code
       convert(Child(), Parent)
     Condition
-      Error:
+      Error in `convert()`:
       ! Can't call `convert()` on an environment.
       See ?class_environment for details.
 

@@ -60,6 +60,34 @@ local_S4_class <- function(name, ..., env = parent.frame()) {
   out
 }
 
+# Create an S3 generic in globalenv() so that `UseMethod()` can find methods
+# registered by S7 (which writes to the generic's environment's methods table).
+# Cleans up the generic and any registered methods on exit.
+local_s3_generic <- function(name, frame = parent.frame()) {
+  eval(
+    bquote(.(name) <- function(x) UseMethod(.(name))),
+    globalenv()
+  )
+  defer(
+    {
+      rm(list = name, envir = globalenv())
+      unregister_s3_methods(globalenv(), name)
+    },
+    frame = frame
+  )
+  invisible()
+}
+
+unregister_s3_methods <- function(envir, generic) {
+  tbl <- envir[[".__S3MethodsTable__."]]
+  if (!is.null(tbl)) {
+    methods <- ls(tbl, pattern = paste0("^", generic, "\\."))
+    rm(list = methods, envir = tbl)
+  }
+
+  invisible()
+}
+
 # Lightweight equivalent of withr::defer()
 defer <- function(expr, frame = parent.frame(), after = FALSE) {
   thunk <- as.call(list(function() expr))

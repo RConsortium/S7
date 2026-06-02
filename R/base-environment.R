@@ -31,7 +31,7 @@
 #' counter$n
 class_environment <- NULL
 
-check_not_environment <- function(object, fn) {
+check_not_environment <- function(object, fn, call = sys.call(-1L)) {
   if (!is.environment(object)) {
     return(invisible())
   }
@@ -40,7 +40,7 @@ check_not_environment <- function(object, fn) {
     sprintf("Can't call `%s` on an environment.\n", fn),
     "See ?class_environment for details."
   )
-  stop(msg, call. = FALSE)
+  stop2(msg, call = call)
 }
 
 # Define onload to avoid dependencies between files

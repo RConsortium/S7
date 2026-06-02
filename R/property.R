@@ -123,7 +123,7 @@ new_property <- function(
   out
 }
 
-check_prop_default <- function(default, class, error_call = sys.call(-1)) {
+check_prop_default <- function(default, class, call = sys.call(-1L)) {
   if (is.null(default)) {
     return() # always valid.
   }
@@ -136,11 +136,11 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
   if (is.symbol(default)) {
     if (identical(default, quote(...))) {
       # The meaning of a `...` prop default needs discussion
-      stop(simpleError("`default` cannot be `...`.", error_call))
+      stop2("`default` cannot be `...`.", call = call)
     }
     if (identical(default, quote(expr = ))) {
       # The meaning of a missing prop default needs discussion
-      stop(simpleError("`default` cannot be missing.", error_call))
+      stop2("`default` cannot be missing.", call = call)
     }
 
     # other symbols are treated as promises
@@ -157,11 +157,7 @@ check_prop_default <- function(default, class, error_call = sys.call(-1)) {
     obj_desc(default)
   )
 
-  stop(simpleError(msg, error_call))
-}
-
-stop.parent <- function(..., call = sys.call(-2)) {
-  stop(simpleError(.makeMessage(...), call))
+  stop2(msg, call = call)
 }
 
 is_property <- function(x) inherits(x, "S7_property")
@@ -180,6 +176,35 @@ str.S7_property <- function(object, ..., nest.lev = 0) {
 
 prop_default <- function(prop, envir, package) {
   prop$default %||% class_construct_expr(prop$class, envir, package)
+}
+
+prop_default_desc <- function(prop, package = NULL) {
+  if (prop_is_read_only(prop)) {
+    return("[read-only]")
+  }
+
+  if (!is.null(prop$default)) {
+    paste0("= ", deparse1(prop$default))
+  } else {
+    desc <- class_default_desc(prop$class, package)
+    if (is.null(desc)) "" else paste0("= ", desc)
+  }
+}
+
+# A clean, displayable string for a property's implicit default, or `NULL` if
+# the class has no meaningful default (e.g. `class_any`, `class_missing`).
+class_default_desc <- function(class, package = NULL) {
+  type <- class_type(class)
+
+  expr <- switch(
+    type,
+    NULL = "NULL",
+    S7_base = deparse1(class_construct_expr(class, package = package)),
+    S7 = deparse1(call(class@name)),
+    S7_union = class_default_desc(class$classes[[1]], package),
+    S4 = deparse1(call(class@className)),
+    NULL
+  )
 }
 
 #' Get/set a property
@@ -214,10 +239,6 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-signal_prop_error_unknown <- function(object, name) {
-  stop(prop_error_unknown(object, name), call. = FALSE)
-}
-
 #' @rdname prop
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
@@ -227,21 +248,18 @@ signal_prop_error_unknown <- function(object, name) {
 }
 
 # called from src/prop.c
-signal_prop_error <- function(fmt, object, name) {
-  msg <- sprintf(fmt, obj_desc(object), name)
-  stop(msg, call. = FALSE)
+signal_prop_error <- function(msg, object, name) {
+  stop2(msg, call = prop_call(object, name))
 }
-
-# called from src/prop.c
-signal_error <- function(msg) {
-  stop(msg, call. = FALSE)
+signal_setter_error <- function(value, object, name) {
+  stop2(
+    sprintf(
+      "Custom setter must return an <S7_object>, not %s.",
+      obj_desc(value)
+    ),
+    call = prop_call(object, name)
+  )
 }
-
-
-prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s.", obj_desc(object), prop_name)
-}
-
 
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
@@ -271,15 +289,21 @@ prop_validate <- function(prop, value, object = NULL) {
     }
   }
 
-  stop(sprintf(
-    "%s validator must return NULL or a character, not <%s>.",
-    prop_label(object, prop$name),
-    typeof(val)
-  ))
+  stop2(
+    sprintf(
+      "%s validator must return NULL or a character, not <%s>.",
+      prop_label(object, prop$name),
+      typeof(val)
+    ),
+    call = NULL
+  )
 }
 
 prop_label <- function(object, name) {
   sprintf("%s@%s", if (!is.null(object)) obj_desc(object) else "", name)
+}
+prop_call <- function(object, name) {
+  call(prop_label(object, name))
 }
 
 # Note: we need to explicitly refer to base with "base::`@`" in the
@@ -466,31 +490,36 @@ set_props <- function(object, ..., .check = TRUE) {
   object
 }
 
-as_properties <- function(x) {
+as_properties <- function(x, call = sys.call(-1L)) {
   if (length(x) == 0) {
     return(list())
   }
 
   if (!is.list(x)) {
-    stop("`properties` must be a list.", call. = FALSE)
+    stop2("`properties` must be a list.", call = call)
   }
 
-  out <- Map(as_property, x, names2(x), seq_along(x))
+  out <- Map(
+    function(x, name, i) as_property(x, name, i, call = call),
+    x,
+    names2(x),
+    seq_along(x)
+  )
   names(out) <- vapply(out, function(x) x$name, FUN.VALUE = character(1))
 
   if (anyDuplicated(names(out))) {
-    stop("`properties` names must be unique.", call. = FALSE)
+    stop2("`properties` names must be unique.", call = call)
   }
 
   out
 }
 
-as_property <- function(x, name, i) {
+as_property <- function(x, name, i, call = sys.call(-1L)) {
   if (is_property(x)) {
     if (name == "") {
       if (is.null(x$name)) {
         msg <- sprintf("`properties[[%i]]` must have a name or be named.", i)
-        stop(msg, call. = FALSE)
+        stop2(msg, call = call)
       }
     } else {
       x$name <- name
@@ -499,7 +528,7 @@ as_property <- function(x, name, i) {
   } else {
     if (name == "") {
       msg <- sprintf("`properties[[%i]]` must be named.", i)
-      stop(msg, call. = FALSE)
+      stop2(msg, call = call)
     }
 
     class <- as_class(x, arg = paste0("property$", name))
