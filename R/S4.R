@@ -186,11 +186,12 @@ inherits_S4 <- function(x) {
 S4_register_subclass <- function(class, env) {
   where <- topenv(env)
   subclasses <- S4_subclasses(class)
+  old_classes <- c(subclasses, "S7_object")
   if (length(subclasses) > 1L) {
-    methods::setOldClass(subclasses, where = where)
+    methods::setOldClass(old_classes, where = where)
   } else {
     methods::setOldClass(
-      subclasses,
+      old_classes,
       S4Class = S4_register_prototype_class(class, where),
       where = where
     )
@@ -244,7 +245,8 @@ S4_register_with_props <- function(class, env) {
   methods::setClass(
     Class = class_name,
     slots = lapply(properties, S4_property_class, S4_env = where),
-    contains = contains,
+    contains = c(contains, "S7_object::S4Slots"),
+    prototype = methods::prototype(S7_class = class),
     where = where
   )
 

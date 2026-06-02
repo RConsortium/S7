@@ -13,7 +13,7 @@ describe("S4_register", {
     expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
   })
 
-  it("does not treat S4 constructed instances as S7 objects", {
+  it("registers S4 constructed instances as S7_object old-class descendants", {
     on.exit(S4_remove_classes(c("S4regParent", "S4regS7New")))
     setClass("S4regParent", slots = list(x = "numeric"))
     S4regS7New <- new_class(
@@ -26,9 +26,8 @@ describe("S4_register", {
     object <- methods::new("S4regS7New")
 
     expect_true(isS4(object))
-    expect_false(S7_inherits(object))
-    expect_false(S7_inherits(object, S4regS7New))
-    expect_error(methods::validObject(object), "is not an S7 object")
+    expect_true(methods::is(object, "S7_object"))
+    expect_false("S7_class" %in% methods::slotNames(object))
   })
 
   it("registers an S3 class so it can be used with S4 methods", {
@@ -99,7 +98,7 @@ describe("S4_register", {
     expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild::S4Slots")
     expect_equal(
       methods::slotNames(S4regContainsChild_S4),
-      c("x", "y", ".S3Class")
+      c("x", "y", ".S3Class", "S7_class")
     )
     expect_contains(
       methods::extends(S4regContainsChild_S4),
@@ -121,6 +120,10 @@ describe("S4_register", {
     expect_equal(methods::slot(object, "x"), 1)
     expect_equal(methods::slot(object, "y"), "a")
     expect_equal(methods::slot(object, "z"), TRUE)
+    expect_equal(methods::slot(object, "S7_class"), S4regContainsChild)
+    expect_equal(prop_names(object), c("x", "y"))
+    expect_equal(prop(object, "x"), 1)
+    expect_equal(prop(object, "y"), "a")
 
     methods::setGeneric(
       "S4regContainsGeneric",
