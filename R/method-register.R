@@ -21,7 +21,7 @@
 #'   or an [S4 generic][methods::setGeneric].
 #' @param signature A method signature.
 #'
-#'   For single single dispatch generics, this must be one of the
+#'   For single-dispatch generics, this must be one of the
 #'   following:
 #'
 #'   * An S7 class (created by [new_class()]).
