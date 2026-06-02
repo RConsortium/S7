@@ -323,6 +323,7 @@ test_that("can round trip to disk and back", {
 test_that("can't create class with reserved property names", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(names = class_character))
+    new_class("foo", properties = list(S7_class = class_any))
     new_class("foo", properties = list(dim = NULL | class_integer))
     new_class(
       "foo",

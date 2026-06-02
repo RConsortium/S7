@@ -436,4 +436,14 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
     )
     stop2(msg, call = call)
   }
+
+  reserved <- intersect("S7_class", names(properties))
+  if (length(reserved)) {
+    msg <- paste0(
+      "Property can't use S7 reserved name: ",
+      paste0(reserved, collapse = ", "),
+      "."
+    )
+    stop2(msg, call = call)
+  }
 }
