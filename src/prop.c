@@ -196,6 +196,20 @@ void check_is_S7(SEXP object) {
   signal_is_not_S7(object);
 }
 
+static inline
+Rboolean has_s4_slot(SEXP object, SEXP name_sym) {
+  return Rf_isS4(object) && R_has_slot(object, name_sym);
+}
+
+static inline
+SEXP prop_set_storage(SEXP object, SEXP name_sym, SEXP value) {
+  if (has_s4_slot(object, name_sym))
+    return R_do_slot_assign(object, name_sym, value);
+
+  Rf_setAttrib(object, name_sym, value);
+  return object;
+}
+
 
 static inline
 Rboolean pairlist_contains(SEXP list, SEXP elem) {
@@ -573,7 +587,8 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     // don't use setter()
     if (should_validate_prop)
       prop_validate(property, value, object, name);
-    Rf_setAttrib(object, prop_storage_sym(name_sym), value);
+    object = PROTECT(prop_set_storage(object, prop_storage_sym(name_sym), value));
+    n_protected++;
   }
 
   if (should_validate_obj)
