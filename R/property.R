@@ -178,6 +178,35 @@ prop_default <- function(prop, envir, package) {
   prop$default %||% class_construct_expr(prop$class, envir, package)
 }
 
+prop_default_desc <- function(prop, package = NULL) {
+  if (prop_is_read_only(prop)) {
+    return("[read-only]")
+  }
+
+  if (!is.null(prop$default)) {
+    paste0("= ", deparse1(prop$default))
+  } else {
+    desc <- class_default_desc(prop$class, package)
+    if (is.null(desc)) "" else paste0("= ", desc)
+  }
+}
+
+# A clean, displayable string for a property's implicit default, or `NULL` if
+# the class has no meaningful default (e.g. `class_any`, `class_missing`).
+class_default_desc <- function(class, package = NULL) {
+  type <- class_type(class)
+
+  expr <- switch(
+    type,
+    NULL = "NULL",
+    S7_base = deparse1(class_construct_expr(class, package = package)),
+    S7 = deparse1(call(class@name)),
+    S7_union = class_default_desc(class$classes[[1]], package),
+    S4 = deparse1(call(class@className)),
+    NULL
+  )
+}
+
 #' Get/set a property
 #'
 #' - `prop(x, "name")` / `prop@name` get the value of the a property,
@@ -210,10 +239,6 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-signal_prop_error_unknown <- function(object, name) {
-  stop2(prop_error_unknown(object, name), call = NULL)
-}
-
 #' @rdname prop
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
@@ -223,21 +248,18 @@ signal_prop_error_unknown <- function(object, name) {
 }
 
 # called from src/prop.c
-signal_prop_error <- function(fmt, object, name) {
-  msg <- sprintf(fmt, obj_desc(object), name)
-  stop2(msg, call = NULL)
+signal_prop_error <- function(msg, object, name) {
+  stop2(msg, call = prop_call(object, name))
 }
-
-# called from src/prop.c
-signal_error <- function(msg) {
-  stop2(msg, call = NULL)
+signal_setter_error <- function(value, object, name) {
+  stop2(
+    sprintf(
+      "Custom setter must return an <S7_object>, not %s.",
+      obj_desc(value)
+    ),
+    call = prop_call(object, name)
+  )
 }
-
-
-prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s.", obj_desc(object), prop_name)
-}
-
 
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
@@ -279,6 +301,9 @@ prop_validate <- function(prop, value, object = NULL) {
 
 prop_label <- function(object, name) {
   sprintf("%s@%s", if (!is.null(object)) obj_desc(object) else "", name)
+}
+prop_call <- function(object, name) {
+  call(prop_label(object, name))
 }
 
 # Note: we need to explicitly refer to base with "base::`@`" in the

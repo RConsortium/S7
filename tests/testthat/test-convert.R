@@ -17,7 +17,12 @@ test_that("can register convert methods", {
   expect_equal(convert(obj, to = class_integer), "i")
 
   # Errors if none found
-  expect_snapshot(convert(obj, to = class_double), error = TRUE)
+  expect_snapshot(
+    convert(obj, to = class_double),
+    error = TRUE,
+    # for < 4.4.0
+    transform = \(x) gsub("'S4'", "'object'", x)
+  )
 })
 
 test_that("doesn't convert to subclass", {
@@ -122,43 +127,31 @@ describe("fallback convert", {
     expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
+})
 
-  it("can convert base type to S7 subclass (#537)", {
-    my_logical <- new_class(
-      "my_logical",
-      parent = class_logical,
-      package = NULL
-    )
-    expect_equal(convert(TRUE, my_logical), my_logical(TRUE))
+test_that("convert() falls back to as.*() for base type targets (#472)", {
+  expect_identical(convert(1.5, class_character), "1.5")
+  expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))
+  expect_identical(convert(0:1, class_logical), c(FALSE, TRUE))
+  expect_identical(convert(1:2, class_double), c(1, 2))
+  expect_identical(convert(c("a", "b"), class_list), list("a", "b"))
+  expect_identical(convert("x", class_name), as.name("x"))
+})
 
-    my_logical2 <- new_class(
-      "my_logical2",
-      parent = class_logical,
-      properties = list(x = class_integer),
-      package = NULL
-    )
-    expect_equal(
-      convert(TRUE, my_logical2, x = 42L),
-      my_logical2(TRUE, x = 42L)
-    )
-  })
+test_that("base type fallback sits below user methods and inheritance", {
+  local_methods(convert)
 
-  it("can convert S3 object to S7 subclass", {
-    my_factor <- new_class("my_factor", parent = class_factor, package = NULL)
-    obj <- convert(factor(c("a", "b", "a")), my_factor)
-    expect_equal(obj, my_factor(c(1L, 2L, 1L), levels = c("a", "b")))
-  })
+  # A registered method wins over the as.*() fallback
+  Txt <- new_class("Txt", class_character, package = NULL)
+  method(convert, list(Txt, class_character)) <- function(from, to, ...) {
+    "custom"
+  }
+  expect_equal(convert(Txt("hi"), class_character), "custom")
 
-  it("can convert base type to base class (#537)", {
-    obj <- convert(TRUE, class_logical)
-    expect_equal(obj, TRUE)
-  })
-
-  it("can convert S3 object to its S3 class and underlying base class", {
-    obj <- convert(factor("a"), class_factor)
-    expect_equal(obj, structure(1L, levels = "a", class = "factor"))
-
-    obj <- convert(factor("a"), class_integer)
-    expect_equal(obj, structure(1L, levels = "a"))
-  })
+  # Upcasting to a base type strips the S7 wrapper rather than calling as.*()
+  method(convert, list(Txt, class_character)) <- NULL
+  obj <- convert(Txt("hi"), class_character)
+  expect_false(S7_inherits(obj))
+  expect_null(attributes(obj))
+  expect_identical(obj, "hi")
 })
