@@ -177,16 +177,14 @@ S4_package_name <- function(f, env) {
 find_package_with_symbol <- function(name, env, exclude = NULL) {
   imports <- getNamespaceImports(topenv(env))
   pkgs <- setdiff(names(imports), exclude)
-  Find(
-    function(pkg) {
-      if (isTRUE(imports[[pkg]])) {
-        name %in% getNamespaceExports(pkg)
-      } else {
+  for (pkg in pkgs) {
+    if (
+      (isTRUE(imports[[pkg]]) && name %in% getNamespaceExports(pkg)) ||
         name %in% imports[[pkg]]
-      }
-    },
-    pkgs
-  )
+    ) {
+      return(pkg)
+    }
+  }
 }
 
 S4_remove_classes <- function(classes, where = parent.frame()) {
