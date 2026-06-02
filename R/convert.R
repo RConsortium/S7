@@ -118,8 +118,7 @@ convert <- function(from, to, ...) {
 
   dispatch <- convert_dispatch(from, to)
   if (is.null(dispatch)) {
-    # `from` is already an instance of `to`, so conversion is idempotent.
-    return(from)
+    return(from) # `from` is already an instance of `to`
   }
   convert <- .Call(method_, convert, dispatch, environment(), FALSE)
   has_method <- !is.null(convert)
@@ -142,12 +141,7 @@ convert <- function(from, to, ...) {
   }
 }
 
-# Compute the double-dispatch classes for `convert()`. When `from` already
-# inherits from `to`, only classes more specific than `to` are considered:
-# methods registered on `to` or its parents would downcast, potentially
-# overwriting data, when all that's wanted is an upcast (#429). Returns `NULL`
-# when `from` is already an instance of `to` signalling that conversion is
-# idempotent.
+# Ensure we never downcast when requesting an upcast (#429)
 convert_dispatch <- function(from, to) {
   from_dispatch <- obj_dispatch(from)
   to_class <- class_register(to)
