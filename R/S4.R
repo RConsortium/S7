@@ -51,7 +51,7 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
     ))
   }
 
-  if (methods::is(x, "ClassUnionRepresentation")) {
+  if (methods::isClassUnion(x)) {
     subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
     subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
     do.call("new_union", subclasses)
