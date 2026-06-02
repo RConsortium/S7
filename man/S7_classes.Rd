@@ -3,7 +3,7 @@
 \name{S7_classes}
 \alias{S7_classes}
 \alias{S7_generics}
-\title{List S7 classes and generics in an environment}
+\title{Find S7 classes and generics in an environment}
 \usage{
 S7_classes(env = parent.frame())
 

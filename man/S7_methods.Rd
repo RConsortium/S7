@@ -7,17 +7,19 @@
 S7_methods(generic = NULL, class = NULL)
 }
 \arguments{
-\item{generic}{An S7 generic. Mutually exclusive with \code{class}.}
+\item{generic}{An S7 generic.}
 
 \item{class}{A class specification (anything accepted by \code{\link[=as_class]{as_class()}}).
 When supplied, every S7 generic in every attached package is searched
-for methods with this class in their signature. Mutually exclusive with
-\code{generic}.}
+for methods with this class in their signature.}
 }
 \value{
 A data frame with one row per matching method and columns:
 \itemize{
 \item \code{generic}: the generic's name.
+\item \code{package}: the package the generic is defined in, or \code{NA} for generics
+found in the global environment (or when \code{generic} is supplied
+directly).
 \item \code{signature}: human-readable description of the dispatch signature.
 \item \code{method}: a string giving the \code{method()} call that retrieves the
 method.

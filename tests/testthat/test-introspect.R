@@ -27,7 +27,7 @@ test_that("S7_methods(generic) lists registered methods", {
 
   res <- S7_methods(generic = gen)
   expect_s3_class(res, "data.frame")
-  expect_named(res, c("generic", "signature", "method"))
+  expect_named(res, c("generic", "package", "signature", "method"))
   expect_equal(res$generic, c("gen", "gen"))
   expect_setequal(res$signature, c("<Foo>", "<Bar>"))
   expect_setequal(res$method, c("method(gen, Foo)", "method(gen, Bar)"))
@@ -49,7 +49,7 @@ test_that("S7_methods(generic) returns empty df when no methods", {
   res <- S7_methods(generic = gen)
   expect_s3_class(res, "data.frame")
   expect_equal(nrow(res), 0)
-  expect_named(res, c("generic", "signature", "method"))
+  expect_named(res, c("generic", "package", "signature", "method"))
 })
 
 test_that("S7_methods(class) scans attached generics", {
@@ -70,12 +70,23 @@ test_that("S7_methods(class) scans attached generics", {
   res <- S7_methods(class = Foo)
   expect_true("S7_introspect_g1_xyzzy" %in% res$generic)
   expect_false("S7_introspect_g2_xyzzy" %in% res$generic)
+  expect_equal(
+    res$package[res$generic == "S7_introspect_g1_xyzzy"],
+    NA_character_
+  )
+})
+
+test_that("S7_methods() reports the generic's package", {
+  Foo <- new_class("Foo", package = NULL)
+  gen <- new_generic("gen", "x")
+  method(gen, Foo) <- function(x) "foo"
+
+  res <- S7_methods(generic = gen)
+  expect_equal(res$package, NA_character_)
 })
 
 test_that("S7_methods() validates inputs", {
   expect_snapshot(error = TRUE, {
-    S7_methods()
-    S7_methods(generic = new_generic("g", "x"), class = class_integer)
     S7_methods(generic = "not a generic")
   })
 })
