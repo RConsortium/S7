@@ -62,8 +62,11 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
         return(basic_classes[[x@className]])
       }
     }
-    if (methods::extends(x, "oldClass")) {
-      new_S3_class(as.character(x@className))
+    if (
+      methods::extends(x, "oldClass") &&
+        x@className %in% attr(x@prototype, ".S3Class")
+    ) {
+      new_S3_class(methods::extends(x))
     } else {
       x
     }
