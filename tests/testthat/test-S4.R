@@ -88,6 +88,9 @@ test_that("S4_register_contains registers S7 properties as slots for S4 subclass
     "S4regContainsChild",
     parent = S4regContains,
     properties = list(y = class_character),
+    validator = function(self) {
+      if (identical(self@y, "bad")) "bad y"
+    },
     package = "S7"
   )
 
@@ -122,6 +125,11 @@ test_that("S4_register_contains registers S7 properties as slots for S4 subclass
   expect_equal(prop_names(object), c("x", "y"))
   expect_equal(prop(object, "x"), 1)
   expect_equal(prop(object, "y"), "a")
+  expect_true(methods::validObject(object))
+
+  invalid <- object
+  methods::slot(invalid, "y") <- "bad"
+  expect_error(methods::validObject(invalid), "bad y")
 
   methods::setGeneric(
     "S4regContainsGeneric",
@@ -131,6 +139,74 @@ test_that("S4_register_contains registers S7 properties as slots for S4 subclass
     methods::slot(x, "x")
   }
   expect_equal(S4regContainsGeneric(object), 1)
+})
+
+test_that("S4_register_contains constructs S4 subclasses of S7 classes that extend S4 classes", {
+  on.exit(S4_remove_classes(c(
+    "S4regNewParent",
+    "S4regNewMiddle",
+    "S4regNewChild",
+    "S4regNewChild::S4Slots",
+    "S4regNewGrandChild"
+  )))
+  setClass(
+    "S4regNewParent",
+    slots = list(assays = "list", rowData = "character")
+  )
+
+  S4regNewMiddle <- new_class(
+    "S4regNewMiddle",
+    parent = getClass("S4regNewParent"),
+    properties = list(metadata = class_character),
+    validator = function(self) {
+      if (identical(self@metadata, "bad")) "bad metadata"
+    },
+    package = NULL
+  )
+  S4regNewChild <- new_class(
+    "S4regNewChild",
+    parent = S4regNewMiddle,
+    properties = list(status = class_character),
+    validator = function(self) {
+      if (identical(self@status, "bad")) "bad status"
+    },
+    package = NULL
+  )
+  S4regNewChild_S4 <- S4_register_contains(S4regNewChild)
+  setClass(
+    "S4regNewGrandChild",
+    contains = S4regNewChild_S4
+  )
+
+  object <- methods::new("S4regNewGrandChild")
+
+  expect_true(isS4(object))
+  expect_true(methods::is(object, "S7_object"))
+  expect_true(methods::is(object, "S4regNewParent"))
+  expect_true(methods::is(object, S4regNewChild_S4))
+  expect_true(S7_inherits(object, S4regNewChild))
+  expect_equal(methods::slot(object, "S7_class"), S4regNewChild)
+  expect_equal(methods::slot(object, "assays"), list())
+  expect_equal(methods::slot(object, "rowData"), character())
+  expect_equal(methods::slot(object, "metadata"), character())
+  expect_equal(methods::slot(object, "status"), character())
+  expect_equal(
+    prop_names(object),
+    c("assays", "rowData", "metadata", "status")
+  )
+  expect_equal(prop(object, "assays"), list())
+  expect_equal(prop(object, "rowData"), character())
+  expect_equal(prop(object, "metadata"), character())
+  expect_equal(prop(object, "status"), character())
+  expect_true(methods::validObject(object))
+
+  invalid <- object
+  methods::slot(invalid, "metadata") <- "bad"
+  expect_error(methods::validObject(invalid), "bad metadata")
+
+  invalid <- object
+  methods::slot(invalid, "status") <- "bad"
+  expect_error(methods::validObject(invalid), "bad status")
 })
 
 test_that("S4_register_contains rejects properties that can not be represented as slots", {
@@ -362,7 +438,7 @@ test_that("S7 classes can extend S4 classes", {
   expect_equal(prop(child, "x"), 7)
 
   expect_error(methods::initialize(child, x = "x"), "invalid")
-  expect_error(methods::initialize(child, z = 1), "Can't find property")
+  expect_error(methods::initialize(child, z = 1), "Property not found")
 
   expect_error(Child(x = "x", y = "a"))
 })
