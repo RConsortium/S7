@@ -45,7 +45,7 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
   # Convert generator function to class
   if (methods::is(x, "classGeneratorFunction")) {
     return(S4_to_S7_class(
-      methods::getClass(as.character(x@className)),
+      methods::getClass(x@className),
       error_base,
       call = call
     ))
