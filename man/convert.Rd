@@ -21,7 +21,7 @@ is not possible.
 }
 \description{
 \code{convert(from, to)} is a built-in generic for converting an object from
-one type to another. It is special in three ways:
+one type to another. It is special in four ways:
 \itemize{
 \item It uses double-dispatch, because conversion depends on both \code{from} and
 \code{to}.
@@ -32,6 +32,12 @@ why, imagine you have written methods to objects of various types to
 \code{classParent}, you can't expect the methods written for \code{classParent}
 to work because those methods will return \code{classParent} objects, not
 \code{classChild} objects.
+\item \code{from} uses ordinary inheritance, so a method registered on a parent class
+is also used for its children, with two exceptions. If \code{from} is already an
+instance of \code{to}, it's returned unchanged and no dispatch is needed.
+When upcasting (i.e. \code{to} is an ancestor of \code{from}), \code{convert()} will
+never dispatch to a method registered on \code{to} or one of its ancestors,
+because such a method would downcast.
 }
 
 \code{convert()} provides three default implementations:
@@ -83,8 +89,8 @@ method(convert, list(Foo1, class_integer)) <- function(from, to) {
 }
 convert(Foo1(x = 1L), to = class_integer)
 
-# Note that conversion does not respect inheritance so if we define a
-# convert method for integer to foo1
+# Conversion does not respect inheritance for `to`, so if we define a
+# convert method for integer to Foo1
 method(convert, list(class_integer, Foo1)) <- function(from, to) {
   Foo1(x = from)
 }
@@ -92,6 +98,28 @@ convert(1L, to = Foo1)
 
 # Converting to Foo2 will still error
 try(convert(1L, to = Foo2))
-# This is probably not surprising because foo2 also needs some value
+# This is probably not surprising because Foo2 also needs some value
 # for `@y`, but it definitely makes dispatch for convert() special
+
+# Conversely, `convert()` *does* use inheritance for `from`, so a method
+# registered on a parent class is also used for its children. This holds
+# even when upcasting, where it overrides the default property stripping:
+Bar1 <- new_class("Bar1", properties = list(label = class_character))
+Bar2 <- new_class("Bar2", Bar1)
+Bar3 <- new_class("Bar3", Bar2)
+method(convert, list(Bar2, Bar1)) <- function(from, to, ...) {
+  Bar1(label = "from a Bar2 or one of its children")
+}
+convert(Bar2(), to = Bar1)
+convert(Bar3(), to = Bar1) # Bar3 inherits Bar2, so the Bar2 method is used
+
+# This `from`-inheritance is limited to classes more specific than `to`. A
+# method whose `from` is a *parent* of `to` would downcast, so it is skipped.
+# For example, this method downcasts a Foo1 to a Foo2:
+Foo3 <- new_class("Foo3", Foo2, properties = list(z = class_double))
+method(convert, list(Foo1, Foo2)) <- function(from, to, ...) Foo2(y = -1)
+
+# Upcasting a Foo3 to a Foo2 ignores that inherited downcasting method,
+# keeping `x` and `y` and dropping `z`, rather than resetting `y` to -1:
+convert(Foo3(x = 1L, y = 2, z = 3), to = Foo2)
 }
