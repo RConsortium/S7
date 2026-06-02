@@ -79,11 +79,11 @@
   and annotates read-only properties (`[read-only]`)
   ([\#439](https://github.com/RConsortium/S7/issues/439)).
 - [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) and
-  `prop<-()` errors from custom getters and setters now report a
-  synthetic `<Class>@<prop>` call, making it easier to see which
-  property triggered the error
-  ([\#536](https://github.com/RConsortium/S7/issues/536),
-  [\#627](https://github.com/RConsortium/S7/issues/627),
+  `prop<-()` errors from getters and setters (including custom) now
+  report a synthetic `<Class>@<prop>` call, making it easier to see
+  which property triggered the error
+  ([\#416](https://github.com/RConsortium/S7/issues/416),
+  [\#536](https://github.com/RConsortium/S7/issues/536),
   [\#638](https://github.com/RConsortium/S7/issues/638)).
 - [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) no
   longer leaves an object in a broken state when a custom getter signals

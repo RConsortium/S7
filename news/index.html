@@ -82,7 +82,7 @@
 <li>
 <code>print(&lt;S7_class&gt;)</code> now shows property defaults inline (<code>= "value"</code>) and annotates read-only properties (<code>[read-only]</code>) (<a href="https://github.com/RConsortium/S7/issues/439" class="external-link">#439</a>).</li>
 <li>
-<code><a href="../reference/prop.html">prop()</a></code> and <code>prop&lt;-()</code> errors from custom getters and setters now report a synthetic <code>&lt;Class&gt;@&lt;prop&gt;</code> call, making it easier to see which property triggered the error (<a href="https://github.com/RConsortium/S7/issues/536" class="external-link">#536</a>, <a href="https://github.com/RConsortium/S7/issues/627" class="external-link">#627</a>, <a href="https://github.com/RConsortium/S7/issues/638" class="external-link">#638</a>).</li>
+<code><a href="../reference/prop.html">prop()</a></code> and <code>prop&lt;-()</code> errors from getters and setters (including custom) now report a synthetic <code>&lt;Class&gt;@&lt;prop&gt;</code> call, making it easier to see which property triggered the error (<a href="https://github.com/RConsortium/S7/issues/416" class="external-link">#416</a>, <a href="https://github.com/RConsortium/S7/issues/536" class="external-link">#536</a>, <a href="https://github.com/RConsortium/S7/issues/638" class="external-link">#638</a>).</li>
 <li>
 <code><a href="../reference/prop.html">prop()</a></code> no longer leaves an object in a broken state when a custom getter signals an error (<a href="https://github.com/RConsortium/S7/issues/520" class="external-link">#520</a>, <a href="https://github.com/RConsortium/S7/issues/640" class="external-link">#640</a>, <a href="https://github.com/RConsortium/S7/issues/638" class="external-link">#638</a>).</li>
 <li>
