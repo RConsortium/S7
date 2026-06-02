@@ -2,7 +2,7 @@
 #'
 #' @description
 #' `convert(from, to)` is a built-in generic for converting an object from
-#' one type to another. It is special in three ways:
+#' one type to another. It is special in four ways:
 #'
 #' * It uses double-dispatch, because conversion depends on both `from` and
 #'   `to`.
@@ -16,10 +16,12 @@
 #'   to work because those methods will return `classParent` objects, not
 #'   `classChild` objects.
 #'
-#' When `from` is already an instance of `to`, `convert()` returns it
-#' unchanged. When `from` inherits from `to` but is a more specific class,
-#' only methods registered on classes more specific than `to` are considered,
-#' so an inherited downcasting method is never used in place of an upcast.
+#' * `from` uses ordinary inheritance, so a method registered on a parent class
+#'   is also used for its children, with two exceptions. If `from` is already an
+#'   instance of `to`, it's returned unchanged and no dispatch is needed.
+#'   When upcasting (i.e. `to` is an ancestor of `from`), `convert()` will
+#'   never dispatch to a method registered on `to` or one of its ancestors,
+#'   because such a method would downcast.
 #'
 #' `convert()` provides three default implementations:
 #'
@@ -77,8 +79,8 @@
 #' }
 #' convert(Foo1(x = 1L), to = class_integer)
 #'
-#' # Note that conversion does not respect inheritance so if we define a
-#' # convert method for integer to foo1
+#' # Conversion does not respect inheritance for `to`, so if we define a
+#' # convert method for integer to Foo1
 #' method(convert, list(class_integer, Foo1)) <- function(from, to) {
 #'   Foo1(x = from)
 #' }
@@ -86,8 +88,30 @@
 #'
 #' # Converting to Foo2 will still error
 #' try(convert(1L, to = Foo2))
-#' # This is probably not surprising because foo2 also needs some value
+#' # This is probably not surprising because Foo2 also needs some value
 #' # for `@y`, but it definitely makes dispatch for convert() special
+#'
+#' # Conversely, `convert()` *does* use inheritance for `from`, so a method
+#' # registered on a parent class is also used for its children. This holds
+#' # even when upcasting, where it overrides the default property stripping:
+#' Bar1 <- new_class("Bar1", properties = list(label = class_character))
+#' Bar2 <- new_class("Bar2", Bar1)
+#' Bar3 <- new_class("Bar3", Bar2)
+#' method(convert, list(Bar2, Bar1)) <- function(from, to, ...) {
+#'   Bar1(label = "from a Bar2 or one of its children")
+#' }
+#' convert(Bar2(), to = Bar1)
+#' convert(Bar3(), to = Bar1) # Bar3 inherits Bar2, so the Bar2 method is used
+#'
+#' # This `from`-inheritance is limited to classes more specific than `to`. A
+#' # method whose `from` is a *parent* of `to` would downcast, so it is skipped.
+#' # For example, this method downcasts a Foo1 to a Foo2:
+#' Foo3 <- new_class("Foo3", Foo2, properties = list(z = class_double))
+#' method(convert, list(Foo1, Foo2)) <- function(from, to, ...) Foo2(y = -1)
+#'
+#' # Upcasting a Foo3 to a Foo2 ignores that inherited downcasting method,
+#' # keeping `x` and `y` and dropping `z`, rather than resetting `y` to -1:
+#' convert(Foo3(x = 1L, y = 2, z = 3), to = Foo2)
 convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
@@ -98,8 +122,9 @@ convert <- function(from, to, ...) {
     return(from)
   }
   convert <- .Call(method_, convert, dispatch, environment(), FALSE)
+  has_method <- !is.null(convert)
 
-  if (!is.null(convert)) {
+  if (has_method) {
     convert(from, to, ...)
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
