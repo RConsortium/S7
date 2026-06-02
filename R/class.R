@@ -427,7 +427,11 @@ S7_class <- function(object) {
     obj_type(object),
     missing = class_missing,
     S7 = .Call(S7_class_, object),
-    S4 = methods::getClass(class(object)),
+    S4 = if (has_S7_class(object)) {
+      .Call(S7_class_, object)
+    } else {
+      methods::getClass(class(object))
+    },
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
   )
