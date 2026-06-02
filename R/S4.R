@@ -155,7 +155,7 @@ S4_package_name <- function(f, env) {
     return(f@package)
   }
 
-  name <- as.vector(f@generic)
+  name <- as.character(f@generic)
   generic_in_its_package <- methods::isGeneric(
     name,
     where = asNamespace(f@package)
