@@ -196,7 +196,7 @@ S4_register_subclass <- function(class, env) {
     S4Class = S4_register_prototype_class(class, where),
     where = where
   )
-  methods::setValidity(subclasses[1L], S4_validate, where = where)
+  methods::setValidity(subclasses[1L], S4_validate_old_class, where = where)
   methods::setMethod("initialize", subclasses[1L], S4_initialize, where = where)
 }
 
@@ -234,6 +234,7 @@ S4_register_with_props <- function(class, env) {
     prototype = methods::prototype(S7_class = class),
     where = where
   )
+  methods::setValidity(class_name, S4_validate_shim, where = where)
 
   class_name
 }
@@ -270,7 +271,21 @@ S4_subclasses <- function(class) {
   character()
 }
 
-S4_validate <- function(object) {
+S4_validate_old_class <- function(object) {
+  if (isS4(object)) {
+    # covered by S4_validate_shim()
+    return(TRUE)
+  }
+
+  S4_validate_from(object)
+}
+
+S4_validate_shim <- function(object) {
+  parent <- S4_ancestor(S7_class(object)) %||% S7_object
+  S4_validate_from(object, parent = parent)
+}
+
+S4_validate_from <- function(object, parent = NULL) {
   if (!S7_inherits(object)) {
     return(sprintf(
       "object with S4 class %s is not an S7 object",
@@ -280,7 +295,7 @@ S4_validate <- function(object) {
 
   tryCatch(
     {
-      validate(object)
+      validate_from(object, parent = parent)
       TRUE
     },
     error = function(cnd) conditionMessage(cnd)
