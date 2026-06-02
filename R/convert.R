@@ -116,15 +116,9 @@ convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
-  dispatch <- convert_dispatch(from, to)
-  if (is.null(dispatch)) {
-    return(from) # `from` is already an instance of `to`
-  }
-  convert <- .Call(method_, convert, dispatch, environment(), FALSE)
-  has_method <- !is.null(convert)
-
-  if (has_method) {
-    convert(from, to, ...)
+  method <- convert_method(from, to)
+  if (!is.null(method)) {
+    method(from, to, ...)
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
@@ -141,22 +135,24 @@ convert <- function(from, to, ...) {
   }
 }
 
-# Ensure we never downcast when requesting an upcast (#429)
-convert_dispatch <- function(from, to) {
+# Resolve the `convert()` method for converting `from` to `to`, or `NULL` if
+# there's no registered method (so `convert()` falls back to its defaults).
+# See convert docs for the motivation for this design.
+convert_method <- function(from, to) {
   from_dispatch <- obj_dispatch(from)
   to_class <- class_register(to)
 
   for (i in seq_along(from_dispatch)) {
     if (from_dispatch[[i]] == to_class) {
       if (i == 1L) {
-        return(NULL)
+        return(function(from, to, ...) from)
       }
       from_dispatch <- from_dispatch[seq_len(i - 1L)]
       break
     }
   }
 
-  list(from_dispatch, to_class)
+  .Call(method_, convert, list(from_dispatch, to_class), environment(), FALSE)
 }
 
 convert_up <- function(from, to, call = sys.call(-1L)) {
