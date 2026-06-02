@@ -150,7 +150,7 @@ S4_class_name <- function(x) {
 }
 
 S4_package_name <- function(f, env) {
-  if (methods::getPackageName(topenv(env)) == f@package) {
+  if (methods::getPackageName(topenv(env), create = FALSE) == f@package) {
     ## current ns might not be loaded yet, catch here
     return(f@package)
   }
