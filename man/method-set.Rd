@@ -13,7 +13,7 @@ or an \link[methods:setGeneric]{S4 generic}.}
 
 \item{signature}{A method signature.
 
-For single single dispatch generics, this must be one of the
+For single-dispatch generics, this must be one of the
 following:
 \itemize{
 \item An S7 class (created by \code{\link[=new_class]{new_class()}}).
