@@ -26,6 +26,13 @@
 - `method<-` now accepts `NULL` to unregister an existing method,
   e.g. `method(foo, class_character) <- NULL`
   ([\#613](https://github.com/RConsortium/S7/issues/613)).
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  is now idempotent when `from` is already an instance of `to`,
+  returning it unchanged. When `from` inherits from `to` but is more
+  specific, dispatch is now restricted to classes more specific than
+  `to`, so an inherited downcasting method can no longer be selected in
+  place of an upcast
+  ([\#429](https://github.com/RConsortium/S7/issues/429)).
 - `method<-` now gives a clear error when assigning a primitive function
   (e.g. `log`) as a method
   ([\#608](https://github.com/RConsortium/S7/issues/608)).

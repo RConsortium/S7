@@ -63,6 +63,8 @@
 <li>
 <code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>
+<code><a href="../reference/convert.html">convert()</a></code> is now idempotent when <code>from</code> is already an instance of <code>to</code>, returning it unchanged. When <code>from</code> inherits from <code>to</code> but is more specific, dispatch is now restricted to classes more specific than <code>to</code>, so an inherited downcasting method can no longer be selected in place of an upcast (<a href="https://github.com/RConsortium/S7/issues/429" class="external-link">#429</a>).</li>
+<li>
 <code>method&lt;-</code> now gives a clear error when assigning a primitive function (e.g. <code>log</code>) as a method (<a href="https://github.com/RConsortium/S7/issues/608" class="external-link">#608</a>).</li>
 <li>
 <code>method&lt;-</code> and <code><a href="../reference/method.html">method()</a></code> now accept a length-1 list as <code>signature</code> for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (<a href="https://github.com/RConsortium/S7/issues/555" class="external-link">#555</a>).</li>
