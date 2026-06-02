@@ -167,9 +167,9 @@ S4_package_name <- function(f, env) {
   # generic was defined for a function from a different package, like base
   find_package_with_symbol(name, env, exclude = f@package) %||%
     stop(
-      "Failed to find originating package for S4 generic '",
-      name,
-      "' in namespace imports.",
+      sprintf(
+        "Failed to find originating package for S4 generic '%s' in imports."
+      ),
       call. = FALSE
     )
 }
