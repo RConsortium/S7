@@ -189,9 +189,19 @@ check_S7_constructor <- function(constructor, call = sys.call(-1L)) {
 print.S7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
-    prop_names <- format(names(props))
-    prop_types <- format(vcapply(props, function(x) class_desc(x$class)))
-    prop_fmt <- paste0(" $ ", prop_names, ": ", prop_types, "\n", collapse = "")
+    prop_names <- names(props)
+    prop_defaults <- vcapply(props, prop_default_desc, package = x@package)
+    prop_types <- vcapply(props, function(p) class_desc(p$class))
+    suffix <- ifelse(prop_defaults == "", "", paste0(" ", prop_defaults))
+    prop_fmt <- paste0(
+      " $ ",
+      prop_names,
+      ": ",
+      prop_types,
+      suffix,
+      "\n",
+      collapse = ""
+    )
   } else {
     prop_fmt <- ""
   }
