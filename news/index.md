@@ -5,6 +5,9 @@
 - Errors thrown by S7 now report the function where they occurred,
   making it easier to track down the source of a problem
   ([\#646](https://github.com/RConsortium/S7/issues/646)).
+- Base type wrappers like `class_integer` now define their constructor
+  and validator in the S7 namespace.
+  ([\#553](https://github.com/RConsortium/S7/issues/553)).
 - Method dispatch on `class_missing` now correctly handles missing
   arguments forwarded through a wrapper functions
   ([\#595](https://github.com/RConsortium/S7/issues/595)).
