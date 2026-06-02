@@ -320,10 +320,10 @@ class_inherits <- function(x, what) {
 obj_type <- function(x) {
   if (identical(x, quote(expr = ))) {
     "missing"
-  } else if (has_S7_class(x)) {
-    "S7"
   } else if (isS4(x)) {
     "S4"
+  } else if (has_S7_class(x)) {
+    "S7"
   } else if (is.object(x)) {
     "S3"
   } else {
