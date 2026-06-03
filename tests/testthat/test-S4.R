@@ -124,6 +124,21 @@ describe("S4_class_dispatch", {
     )
   })
 
+  it("dispatches through the full S3 old-class hierarchy", {
+    on.exit(S4_remove_classes(c("S4OldS3Child", "S4OldS3a", "S4OldS3b")))
+
+    setOldClass(c("S4OldS3a", "S4OldS3b"))
+    setClass("S4OldS3Child", contains = "S4OldS3a")
+
+    generic <- new_generic("S4OldS3Generic", "x")
+    method(generic, new_S3_class("S4OldS3b")) <- function(x) "S3 parent"
+
+    object <- methods::new("S4OldS3Child")
+
+    expect_contains(obj_dispatch(object), "S4OldS3b")
+    expect_equal(generic(object), "S3 parent")
+  })
+
   it("ignores unions", {
     on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
 
