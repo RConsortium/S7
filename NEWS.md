@@ -3,6 +3,7 @@
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
+* `convert()` no longer automatically converts between sibling classes (classes that merely share a common ancestor); the default downcast now applies only when `to` is genuinely a descendant of `from`'s class (#509).
 * `convert()` now falls back to the corresponding `as.*()` function (e.g. `as.character()`) when converting to a base type like `class_character` and no method or inheritance-based default applies, so `convert(1, class_character)` works out of the box (#472).
 * `convert()` no longer errors when `from` is a base or S3 object and `to` is an S7 class that inherits from `from`'s class. The base/S3 value is now passed as `.data` to the `to` constructor (#537).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
