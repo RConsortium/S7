@@ -12,6 +12,11 @@
   arguments forwarded through a wrapper functions
   ([\#595](https://github.com/RConsortium/S7/issues/595)).
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  no longer automatically converts between sibling classes (classes that
+  merely share a common ancestor); the default downcast now applies only
+  when `to` is genuinely a descendant of `from`’s class
+  ([\#509](https://github.com/RConsortium/S7/issues/509)).
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
   now falls back to the corresponding `as.*()` function
   (e.g. [`as.character()`](https://rdrr.io/r/base/character.html)) when
   converting to a base type like `class_character` and no method or
