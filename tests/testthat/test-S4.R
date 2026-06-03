@@ -262,7 +262,7 @@ test_that("S4_register_contains treats S4 NULL slot sentinels as NULL-valued S7 
   expect_no_error(methods::new("S4regNullableChild", x = NULL))
 
   object_with_value <- methods::new("S4regNullableChild", x = "a")
-  prop(object_with_value, "x", check = FALSE) <- NULL
+  prop(object_with_value, "x") <- NULL
   expect_equal(methods::slot(object_with_value, "x"), NULL)
   expect_equal(prop(object_with_value, "x"), NULL)
 
