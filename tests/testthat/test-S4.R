@@ -237,6 +237,38 @@ describe("S4_register", {
     expect_error(methods::validObject(invalid), "bad status")
   })
 
+  it("uses S7 property defaults as S4 shim prototypes", {
+    on.exit(S4_remove_classes(c(
+      "S4regPrototype",
+      "S4regPrototype::S4Slots",
+      "S4regPrototypeChild",
+      "NULL_OR_character"
+    )))
+
+    S4_register(NULL | class_character)
+    S4regPrototype <- new_class(
+      "S4regPrototype",
+      properties = list(
+        x = new_property(class_numeric, default = quote(1)),
+        y = new_property(class_character, default = quote("a")),
+        z = new_property(NULL | class_character, default = NULL)
+      ),
+      package = NULL
+    )
+    S4regPrototype_S4 <- S4_register_contains(S4regPrototype)
+    methods::setClass("S4regPrototypeChild", contains = S4regPrototype_S4)
+
+    object <- methods::new("S4regPrototypeChild")
+
+    expect_equal(methods::slot(object, "x"), 1)
+    expect_equal(methods::slot(object, "y"), "a")
+    expect_equal(methods::slot(object, "z"), NULL)
+    expect_equal(prop(object, "x"), 1)
+    expect_equal(prop(object, "y"), "a")
+    expect_equal(prop(object, "z"), NULL)
+    expect_true(methods::validObject(object))
+  })
+
   it("treats S4 NULL slot sentinels as NULL-valued S7 properties", {
     on.exit(S4_remove_classes(c(
       "S4regNullable",
