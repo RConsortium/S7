@@ -292,15 +292,14 @@ S4_validate_old_class <- function(object) {
     return(TRUE)
   }
 
-  S4_validate_from(object)
+  S4_validate(object)
 }
 
 S4_validate_shim <- function(object) {
-  parent <- S4_ancestor(S7_class(object)) %||% S7_object
-  S4_validate_from(object, parent = parent)
+  S4_validate(object)
 }
 
-S4_validate_from <- function(object, parent = NULL) {
+S4_validate <- function(object) {
   if (!S7_inherits(object)) {
     return(sprintf(
       "object with S4 class %s is not an S7 object",
@@ -310,7 +309,7 @@ S4_validate_from <- function(object, parent = NULL) {
 
   tryCatch(
     {
-      validate_from(object, parent = parent)
+      validate(object)
       TRUE
     },
     error = function(cnd) conditionMessage(cnd)

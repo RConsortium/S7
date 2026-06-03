@@ -264,7 +264,7 @@ describe("S4_register", {
     expect_no_error(methods::new("S4regNullableChild", x = NULL))
 
     object_with_value <- methods::new("S4regNullableChild", x = "a")
-    prop(object_with_value, "x", check = FALSE) <- NULL
+    prop(object_with_value, "x") <- NULL
     expect_equal(methods::slot(object_with_value, "x"), NULL)
     expect_equal(prop(object_with_value, "x"), NULL)
 
