@@ -62,10 +62,7 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
         return(basic_classes[[x@className]])
       }
     }
-    if (
-      methods::extends(x, "oldClass") &&
-        x@className %in% attr(x@prototype, ".S3Class")
-    ) {
+    if (is_oldClass(x)) {
       new_S3_class(methods::extends(x))
     } else {
       x
@@ -132,7 +129,8 @@ S4_class_dispatch <- function(x) {
 }
 
 is_oldClass <- function(x) {
-  x@virtual && methods::extends(x, "oldClass") && x@className != "oldClass"
+  methods::extends(x, "oldClass") &&
+    x@className %in% attr(x@prototype, ".S3Class")
 }
 
 S4_class_name <- function(x) {
