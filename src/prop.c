@@ -151,15 +151,23 @@ void check_is_S7(SEXP object) {
 }
 
 static inline
-Rboolean has_s4_slot(SEXP object, SEXP name_sym) {
-  return Rf_isS4(object) && R_has_slot(object, name_sym);
+SEXP pseudo_null(void) {
+  static SEXP pseudo_NULL = NULL;
+  if (pseudo_NULL == NULL)
+    pseudo_NULL = Rf_install("\001NULL\001");
+  return pseudo_NULL;
+}
+
+static inline
+SEXP prop_get_storage(SEXP object, SEXP name_sym) {
+  SEXP value = Rf_getAttrib(object, name_sym);
+  return value == pseudo_null() ? R_NilValue : value;
 }
 
 static inline
 SEXP prop_set_storage(SEXP object, SEXP name_sym, SEXP value) {
-  if (has_s4_slot(object, name_sym))
-    return R_do_slot_assign(object, name_sym, value);
-
+  if (value == R_NilValue)
+    value = pseudo_null();
   Rf_setAttrib(object, name_sym, value);
   return object;
 }
@@ -456,7 +464,7 @@ SEXP prop_(SEXP object, SEXP name) {
   }
 
   // try to resolve property from the object attributes
-  SEXP value = Rf_getAttrib(object, name_sym);
+  SEXP value = prop_get_storage(object, name_sym);
 
   // This is commented out because we currently have no way to distinguish between
   // a prop with a value of NULL, and a prop value that is unset/missing.
