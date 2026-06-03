@@ -73,15 +73,6 @@
 #' your_pizza <- Pizza()
 #' your_pizza@slices
 #' your_pizza@special
-#'   slices = new_property(class_numeric, default = 10)
-#' ))
-#' my_pizza <- Pizza(slices = 6)
-#' my_pizza@slices
-#' my_pizza@slices <- 5
-#' my_pizza@slices
-#'
-#' your_pizza <- Pizza()
-#' your_pizza@slices
 #'
 #' # Dynamic properties can compute on demand
 #' Clock <- new_class("Clock", properties = list(
