@@ -129,6 +129,38 @@ describe("fallback convert", {
   })
 })
 
+test_that("convert() is idempotent when `from` is an instance of `to` (#429)", {
+  local_methods(convert)
+  Foo <- new_class("Foo", package = NULL, properties = list(x = class_numeric))
+
+  # A registered method must not override the idempotent behaviour
+  method(convert, list(Foo, Foo)) <- function(from, to, ...) Foo(x = -1)
+
+  foo <- Foo(x = 1)
+  expect_identical(convert(foo, Foo), foo)
+})
+
+test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
+  local_methods(convert)
+  A <- new_class("A", package = NULL, properties = list(x = class_numeric))
+  B <- new_class("B", A, package = NULL, properties = list(y = class_numeric))
+  C <- new_class("C", B, package = NULL, properties = list(z = class_numeric))
+
+  # A method to downcast a superclass `A` to `B`
+  method(convert, list(A, B)) <- function(from, to, ...) B(y = -1)
+
+  # Converting a `C` (which is already a `B`) to `B` should upcast, dropping
+  # `z`, rather than dispatch to the inherited `A` -> `B` downcasting method.
+  b <- convert(C(x = 1, y = 2, z = 3), to = B)
+  expect_equal(S7_class(b), B)
+  expect_equal(b@x, 1)
+  expect_equal(b@y, 2)
+
+  # A more specific upcasting method is still used
+  method(convert, list(C, B)) <- function(from, to, ...) B(y = 99)
+  expect_equal(convert(C(x = 1, y = 2, z = 3), to = B)@y, 99)
+})
+
 test_that("convert() falls back to as.*() for base type targets (#472)", {
   expect_identical(convert(1.5, class_character), "1.5")
   expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))

@@ -133,9 +133,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   # (mostly for nicer printing and introspection.)
 
   # can't unwrap if the closure is potentially important
-  # (this can probably be relaxed to allow additional environments)
   fe <- environment(f)
-  if (!identical(fe, baseenv())) {
+  if (!identical(fe, baseenv()) && !identical(fe, asNamespace("S7"))) {
     return(as.call(list(f)))
   }
 

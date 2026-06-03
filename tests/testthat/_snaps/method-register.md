@@ -6,18 +6,6 @@
     Message
       Overwriting method foo(<character>)
 
-# method registration / rejects class_missing on S3 generics
-
-    Code
-      method(s3_gen, class_missing) <- (function(x) "missing")
-    Condition
-      Error:
-      ! `class_missing` not supported for non-operator S3 generics.
-
-# method registration / can register S7 method for S4 generic
-
-    Class has not been registered with S4; please call S4_register(S4foo).
-
 # method registration / checks argument types
 
     Code
@@ -54,30 +42,6 @@
       ! Can't find method for generic `foo(x, y)`:
       - x: <S7::A>
       - y: <S7::B>
-
-# method unregistration / errors when unregistering from an S3 generic
-
-    Code
-      method(sum, foo) <- NULL
-    Condition
-      Error in `method<-`:
-      ! Can't unregister methods for S3 generics
-
----
-
-    Code
-      method(base_sum, foo) <- NULL
-    Condition
-      Error in `method<-`:
-      ! Can't unregister methods for S3 generics
-
-# method unregistration / errors when unregistering from an S4 generic
-
-    Code
-      method(removeS4, S4foo) <- NULL
-    Condition
-      Error in `method<-`:
-      ! Can't unregister methods for S4 generics
 
 # as_signature() / accepts a length-1 list for single dispatch (#555)
 
