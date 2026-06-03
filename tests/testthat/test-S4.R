@@ -180,3 +180,15 @@ test_that("S4_package_name resolves S4 package name correctly in all cases", {
   mock_S4@package <- "base"
   expect_equal(S4_package_name(mock_S4, stats_ns), "graphics")
 })
+
+test_that("S4_package_name errors if originating package can't be found", {
+  stats_ns <- asNamespace("stats")
+
+  methods::setGeneric("nonexistent_generic", function(x) {
+    standardGeneric("nonexistent_generic")
+  })
+  on.exit(methods::removeGeneric("nonexistent_generic"))
+  mock_S4 <- getGeneric("nonexistent_generic")
+  mock_S4@package <- "base"
+  expect_snapshot(S4_package_name(mock_S4, stats_ns), error = TRUE)
+})
