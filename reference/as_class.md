@@ -35,6 +35,8 @@ as_class(x, arg = deparse(substitute(x)))
     or
     [class_double](https://rconsortium.github.io/S7/reference/base_classes.md).
 
+  - `NULL`.
+
   - A "special", either
     [class_missing](https://rconsortium.github.io/S7/reference/class_missing.md)
     or

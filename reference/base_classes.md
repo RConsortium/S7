@@ -25,6 +25,8 @@ within S7:
 
 - `class_function`
 
+For method registration and properties, you can use `NULL` directly.
+
 See also
 [class_environment](https://rconsortium.github.io/S7/reference/class_environment.md)
 which is documented separately due to the complexities introduced by

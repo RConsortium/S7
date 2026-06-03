@@ -48,7 +48,8 @@ method(generic, signature) <- value
     [`new_union()`](https://rconsortium.github.io/S7/reference/new_union.md)).
 
   - An S3 class (created by
-    [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)).
+    [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md))
+    or `NULL`.
 
   - An S4 class (created by
     [`methods::getClass()`](https://rdrr.io/r/methods/getClass.html) or

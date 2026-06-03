@@ -98,7 +98,9 @@ for more examples.</p>
 
 <dl><dt id="arg-class">class<a class="anchor" aria-label="anchor" href="#arg-class"></a></dt>
 <dd><p>Class that the property must be an instance of.
-See <code><a href="as_class.html">as_class()</a></code> for details.</p></dd>
+See <code><a href="as_class.html">as_class()</a></code> for details.</p>
+<p>If you want to make a property optional, create a union with <code>NULL</code>,
+e.g. <code>class_integer | NULL</code>.</p></dd>
 
 
 <dt id="arg-getter">getter<a class="anchor" aria-label="anchor" href="#arg-getter"></a></dt>
@@ -157,11 +159,14 @@ and a list-name are supplied, the list-name will be used.</p></dd>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Simple properties store data inside an object</span></span></span>
 <span class="r-in"><span><span class="va">Pizza</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Pizza"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  slices <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span><span class="va">class_numeric</span>, default <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  slices <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span><span class="va">class_numeric</span>, default <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  special <span class="op">=</span> <span class="fu">new_property</span><span class="op">(</span><span class="cn">NULL</span> <span class="op">|</span> <span class="va">class_character</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">my_pizza</span> <span class="op">&lt;-</span> <span class="fu">Pizza</span><span class="op">(</span>slices <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">my_pizza</span> <span class="op">&lt;-</span> <span class="fu">Pizza</span><span class="op">(</span>slices <span class="op">=</span> <span class="fl">6</span>, special <span class="op">=</span> <span class="st">"mushrooms"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 6</span>
+<span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">special</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "mushrooms"</span>
 <span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span> <span class="op">&lt;-</span> <span class="fl">5</span></span></span>
 <span class="r-in"><span><span class="va">my_pizza</span><span class="op">@</span><span class="va">slices</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5</span>
@@ -169,6 +174,8 @@ and a list-name are supplied, the list-name will be used.</p></dd>
 <span class="r-in"><span><span class="va">your_pizza</span> <span class="op">&lt;-</span> <span class="fu">Pizza</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">your_pizza</span><span class="op">@</span><span class="va">slices</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 10</span>
+<span class="r-in"><span><span class="va">your_pizza</span><span class="op">@</span><span class="va">special</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> NULL</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Dynamic properties can compute on demand</span></span></span>
 <span class="r-in"><span><span class="va">Clock</span> <span class="op">&lt;-</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Clock"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
@@ -176,9 +183,9 @@ and a list-name are supplied, the list-name will be used.</p></dd>
 <span class="r-in"><span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_clock</span> <span class="op">&lt;-</span> <span class="fu">Clock</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span>; <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-06-03 14:28:15 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-06-03 15:37:48 UTC"</span>
 <span class="r-in"><span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-06-03 14:28:16 UTC"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "2026-06-03 15:37:49 UTC"</span>
 <span class="r-in"><span><span class="co"># This property is read only, because there is a 'getter' but not a 'setter'</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="va">my_clock</span><span class="op">@</span><span class="va">now</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Error in `&lt;Clock&gt;@now`() : Can't set read-only property.</span>
