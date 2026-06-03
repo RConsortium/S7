@@ -235,6 +235,43 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
   expect_error(methods::validObject(invalid), "bad status")
 })
 
+test_that("S4_register_contains treats S4 NULL slot sentinels as NULL-valued S7 properties", {
+  on.exit(S4_remove_classes(c(
+    "S4regNullable",
+    "S4regNullable::S4Slots",
+    "S4regNullableChild",
+    "NULL_OR_character"
+  )))
+
+  S4_register(NULL | class_character)
+  S4regNullable <- new_class(
+    "S4regNullable",
+    properties = list(
+      x = new_property(NULL | class_character, default = NULL)
+    ),
+    package = NULL
+  )
+  S4regNullable_S4 <- S4_register_contains(S4regNullable)
+  methods::setClass("S4regNullableChild", contains = S4regNullable_S4)
+
+  object <- methods::new("S4regNullableChild")
+
+  expect_equal(methods::slot(object, "x"), NULL)
+  expect_equal(prop(object, "x"), NULL)
+  expect_true(methods::validObject(object))
+  expect_no_error(methods::new("S4regNullableChild", x = NULL))
+
+  object_with_value <- methods::new("S4regNullableChild", x = "a")
+  prop(object_with_value, "x", check = FALSE) <- NULL
+  expect_equal(methods::slot(object_with_value, "x"), NULL)
+  expect_equal(prop(object_with_value, "x"), NULL)
+
+  plain <- S4regNullable(x = "a")
+  prop(plain, "x") <- NULL
+  expect_equal(prop(plain, "x"), NULL)
+  expect_identical(attr(plain, "x", exact = TRUE), as.name("\001NULL\001"))
+})
+
 test_that("S4_register_contains rejects properties that can not be represented as slots", {
   on.exit(S4_remove_classes(c(
     "S7::S4regContainsDynamic",
