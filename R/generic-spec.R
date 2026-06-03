@@ -137,3 +137,14 @@ group_generics <- function() {
   }
   out
 }
+
+ops_group <- function(generic) {
+  group <- group_generics()
+  if (generic %in% group$Ops) {
+    "Ops"
+  } else if (generic %in% group$matrixOps) {
+    "matrixOps"
+  } else {
+    NULL
+  }
+}
