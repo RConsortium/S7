@@ -121,6 +121,20 @@ test_that("S4_class_dispatch ignores unions", {
   expect_equal(S4_class_dispatch("Foo2"), "S4/S7::Foo2")
 })
 
+test_that("S4_class_dispatch dispatches through the full S3 old-class hierarchy", {
+  setOldClass(c("S4OldS3a", "S4OldS3b"))
+  defer(S4_remove_classes(c("S4OldS3Child", "S4OldS3a", "S4OldS3b")))
+  setClass("S4OldS3Child", contains = "S4OldS3a")
+
+  generic <- new_generic("S4OldS3Generic", "x")
+  method(generic, new_S3_class("S4OldS3b")) <- function(x) "S3 parent"
+
+  object <- methods::new("S4OldS3Child")
+
+  expect_contains(obj_dispatch(object), "S4OldS3b")
+  expect_equal(generic(object), "S3 parent")
+})
+
 test_that("S4_class_dispatch includes virtual classes", {
   Foo1 := local_S4_class()
   Foo2 := local_S4_class(contains = "Foo1")
