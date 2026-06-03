@@ -50,6 +50,6 @@
     Code
       foo(x = 123)
     Condition
-      Error:
+      Error in `<foo>@x`:
       ! <foo>@x must be <double>, not <character>
 

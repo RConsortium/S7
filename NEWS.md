@@ -1,14 +1,16 @@
 # S7 (development version)
 
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
+* Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
 * `convert()` no longer automatically converts between sibling classes (classes that merely share a common ancestor); the default downcast now applies only when `to` is genuinely a descendant of `from`'s class (#509).
 * `convert()` now falls back to the corresponding `as.*()` function (e.g. `as.character()`) when converting to a base type like `class_character` and no method or inheritance-based default applies, so `convert(1, class_character)` works out of the box (#472).
 * `convert()` no longer errors when `from` is a base or S3 object and `to` is an S7 class that inherits from `from`'s class. The base/S3 value is now passed as `.data` to the `to` constructor (#537).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
+* `convert()` is now idempotent when `from` is already an instance of `to`, returning it unchanged. When `from` inherits from `to` but is more specific, dispatch is now restricted to classes more specific than `to`, so an inherited downcasting method can no longer be selected in place of an upcast (#429).
 * `method<-` now gives a clear error when assigning a primitive function (e.g. `log`) as a method (#608).
 * `method<-` and `method()` now accept a length-1 list as `signature` for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (#555).
-* `method<-` can now register methods on S3 generics with base types (e.g. `class_character`), S3 classes (`new_S3_class()`, `class_factor`, etc.), S7 unions (expanded to one registration per class), `class_any` (registered as the `default` method), and `NULL` (registered as the `NULL` method). `class_missing` is explicitly rejected since S3 dispatches on a single, always-present argument (#455).
+* `method<-` can now register methods on S3 and S4 generics with base types (e.g. `class_character`), S3 classes (`new_S3_class()`, `class_factor`, etc.), S7 unions (expanded to one registration per class), `class_any` (registered as the `default` method), and `NULL` (registered as the `NULL` method) (#455).
 * `new_class()` experimentally allows `class_environment` as a parent again, so you can build S7 objects that share R's reference semantics for environments. This support is provisional: because environments are mutated in place, some operations behave differently than for value-typed S7 objects, and the API may change. `S7_data()` and `S7_data<-()` error on environment-based objects, since they would otherwise destroy the object's S7 attributes in place (#590).
 * `new_object()` now gives an informative error when `.parent` is a class specification rather than an instance of the parent class (#409).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
@@ -16,7 +18,7 @@
 * `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
 * `print(<S7_class>)` now shows property defaults inline (`= "value"`) and annotates read-only properties (`[read-only]`) (#439).
-* `prop()` and `prop<-()` errors from custom getters and setters now report a synthetic `<Class>@<prop>` call, making it easier to see which property triggered the error (#536, #627, #638).
+* `prop()` and `prop<-()` errors from getters and setters (including custom) now report a synthetic `<Class>@<prop>` call, making it easier to see which property triggered the error (#416, #536, #638).
 * `prop()` no longer leaves an object in a broken state when a custom getter signals an error (#520, #640, #638).
 * `prop<-()` no longer fails when assigning a call or symbol to a property (#511, #633, #638).
 * New `prop_info()` returns a data frame summarising the properties of an S7 object or class, with one row per property and columns for name, default, class, getter, setter, and validator (#551).

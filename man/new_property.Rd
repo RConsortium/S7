@@ -15,7 +15,10 @@ new_property(
 }
 \arguments{
 \item{class}{Class that the property must be an instance of.
-See \code{\link[=as_class]{as_class()}} for details.}
+See \code{\link[=as_class]{as_class()}} for details.
+
+If you want to make a property optional, create a union with \code{NULL},
+e.g. \code{class_integer | NULL}.}
 
 \item{getter}{An optional function used to get the value. The function
 should take \code{self} as its sole argument and return the value. If you
@@ -80,15 +83,18 @@ for more examples.
 \examples{
 # Simple properties store data inside an object
 Pizza <- new_class("Pizza", properties = list(
-  slices = new_property(class_numeric, default = 10)
+  slices = new_property(class_numeric, default = 10),
+  special = new_property(NULL | class_character)
 ))
-my_pizza <- Pizza(slices = 6)
+my_pizza <- Pizza(slices = 6, special = "mushrooms")
 my_pizza@slices
+my_pizza@special
 my_pizza@slices <- 5
 my_pizza@slices
 
 your_pizza <- Pizza()
 your_pizza@slices
+your_pizza@special
 
 # Dynamic properties can compute on demand
 Clock <- new_class("Clock", properties = list(

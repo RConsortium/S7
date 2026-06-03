@@ -10,6 +10,7 @@
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base class, like [class_logical], [class_integer], or [class_double].
+#'   * `NULL`.
 #'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
 #' @keywords internal
@@ -133,9 +134,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   # (mostly for nicer printing and introspection.)
 
   # can't unwrap if the closure is potentially important
-  # (this can probably be relaxed to allow additional environments)
   fe <- environment(f)
-  if (!identical(fe, baseenv())) {
+  if (!identical(fe, baseenv()) && !identical(fe, asNamespace("S7"))) {
     return(as.call(list(f)))
   }
 
