@@ -105,6 +105,13 @@
       Error:
       ! `signature` must be length 2.
 
+# S7_signature has format and print methods
+
+    Code
+      print(sig)
+    Output
+      <integer>, <character>
+
 # check_method complains if the functions are not compatible
 
     Code

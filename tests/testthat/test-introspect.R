@@ -27,10 +27,32 @@ test_that("S7_methods(generic) lists registered methods", {
 
   res <- S7_methods(generic = gen)
   expect_s3_class(res, "data.frame")
-  expect_named(res, c("generic", "package", "signature", "method"))
+  expect_named(res, c("generic", "package", "signature"))
   expect_equal(res$generic, c("gen", "gen"))
-  expect_setequal(res$signature, c("<Foo>", "<Bar>"))
-  expect_setequal(res$method, c("method(gen, Foo)", "method(gen, Bar)"))
+  expect_setequal(vcapply(res$signature, format), c("<Foo>", "<Bar>"))
+})
+
+test_that("S7_methods() prints the signature column readably", {
+  Foo <- new_class("Foo", package = NULL)
+  Bar <- new_class("Bar", package = NULL)
+  gen <- new_generic("gen", "x")
+  method(gen, Foo) <- function(x) "foo"
+  method(gen, Bar) <- function(x) "bar"
+
+  expect_snapshot(print(S7_methods(generic = gen)))
+})
+
+test_that("S7_signature_list formats per element", {
+  foo <- new_generic("foo", c("x", "y"))
+  sigs <- new_signature_list(list(
+    as_signature(list(class_integer, class_character), foo),
+    as_signature(list(class_double, class_logical), foo)
+  ))
+
+  expect_equal(
+    format(sigs),
+    c("<integer>, <character>", "<double>, <logical>")
+  )
 })
 
 test_that("S7_methods(generic) handles multi-dispatch", {
@@ -40,8 +62,7 @@ test_that("S7_methods(generic) handles multi-dispatch", {
   method(gen, list(Foo, Bar)) <- function(x, y) "fb"
 
   res <- S7_methods(generic = gen)
-  expect_equal(res$signature, "<Foo>, <Bar>")
-  expect_equal(res$method, "method(gen, list(Foo, Bar))")
+  expect_equal(vcapply(res$signature, format), "<Foo>, <Bar>")
 })
 
 test_that("S7_methods(generic) returns empty df when no methods", {
@@ -49,7 +70,7 @@ test_that("S7_methods(generic) returns empty df when no methods", {
   res <- S7_methods(generic = gen)
   expect_s3_class(res, "data.frame")
   expect_equal(nrow(res), 0)
-  expect_named(res, c("generic", "package", "signature", "method"))
+  expect_named(res, c("generic", "package", "signature"))
 })
 
 test_that("S7_methods(class) scans attached generics", {
@@ -89,17 +110,6 @@ test_that("S7_methods() validates inputs", {
   expect_snapshot(error = TRUE, {
     S7_methods(generic = "not a generic")
   })
-})
-
-test_that("the `method` column round-trips via eval(parse(...))", {
-  Foo <- new_class("Foo", package = NULL)
-  gen <- new_generic("gen", "x")
-  method(gen, Foo) <- function(x) "foo result"
-
-  res <- S7_methods(generic = gen)
-  m <- eval(parse(text = res$method[1]))
-  expect_s3_class(m, "S7_method")
-  expect_equal(m(Foo()), "foo result")
 })
 
 test_that("find_objects() returns matching names", {

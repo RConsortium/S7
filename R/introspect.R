@@ -38,9 +38,8 @@ S7_generics <- function(env = parent.frame()) {
 #'   * `package`: the package the generic is defined in, or `NA` for generics
 #'     found in the global environment (or when `generic` is supplied
 #'     directly).
-#'   * `signature`: human-readable description of the dispatch signature.
-#'   * `method`: a string giving the `method()` call that retrieves the
-#'     method.
+#'   * `signature`: a list column of `S7_signature` objects describing the
+#'     dispatch signature. `format()` them for a human-readable description.
 #' @export
 #' @examples
 #' Foo <- new_class("Foo", package = NULL)
@@ -70,31 +69,42 @@ S7_methods <- function(generic = NULL, class = NULL) {
   rows <- lapply(generics, function(g) {
     generic_method_rows(g$generic, g$package, target)
   })
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  out$signature <- new_signature_list(out$signature)
+  out
 }
 
-# Per-generic helper: turn the generic's registered methods into a data
-# frame, optionally filtering to those whose signature contains `target`.
-generic_method_rows <- function(
-  generic,
-  package = NA_character_,
-  target = NULL
-) {
+generic_method_rows <- function(generic, package, class) {
   ms <- methods(generic)
-  if (!is.null(target)) {
-    ms <- Filter(x = ms, function(m) {
-      any(vcapply(m@signature, class_register) == target)
-    })
+  if (!is.null(class)) {
+    has_class <- function(m) any(vcapply(m@signature, class_register) == class)
+    ms <- Filter(has_class, ms)
   }
 
   data.frame(
     generic = rep(generic@name, length(ms)),
     package = rep(package, length(ms)),
-    signature = vcapply(ms, function(m) {
-      paste0(vcapply(m@signature, class_desc), collapse = ", ")
-    }),
-    method = vcapply(ms, \(m) method_signature(generic, m@signature))
+    signature = I(lapply(ms, \(m) new_signature(m@signature)))
   )
+}
+
+# A list column of S7_signatures, used by S7_methods(). Needs its own class
+# so that print.data.frame() formats it per-element: data frames format whole
+# columns, so the scalar format.S7_signature() method is never reached.
+new_signature_list <- function(x) {
+  class(x) <- "S7_signature_list"
+  x
+}
+
+#' @export
+format.S7_signature_list <- function(x, ...) {
+  vcapply(unclass(x), format)
+}
+
+#' @export
+print.S7_signature_list <- function(x, ...) {
+  print(format(x), quote = FALSE)
+  invisible(x)
 }
 
 # All S7 generics reachable from attached packages and the global env,

@@ -20,9 +20,8 @@ A data frame with one row per matching method and columns:
 \item \code{package}: the package the generic is defined in, or \code{NA} for generics
 found in the global environment (or when \code{generic} is supplied
 directly).
-\item \code{signature}: human-readable description of the dispatch signature.
-\item \code{method}: a string giving the \code{method()} call that retrieves the
-method.
+\item \code{signature}: a list column of \code{S7_signature} objects describing the
+dispatch signature. \code{format()} them for a human-readable description.
 }
 }
 \description{
