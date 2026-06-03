@@ -230,8 +230,8 @@ S4_register_with_props <- function(class, env) {
   methods::setClass(
     Class = class_name,
     slots = lapply(properties, S4_property_class, S4_env = where),
-    contains = c(contains, "S7_object::S4Slots"),
-    prototype = methods::prototype(S7_class = class),
+    contains = c(contains, "S7_object::S4Slots", "VIRTUAL"),
+    prototype = S4_properties_prototype(properties, class, where, TRUE),
     where = where
   )
   methods::setValidity(class_name, S4_validate_shim, where = where)
@@ -257,6 +257,43 @@ S4_property_class <- function(prop, S4_env) {
     stop(msg, call. = FALSE)
   }
   S4_class(prop$class, S4_env)
+}
+
+S4_properties_prototype <- function(
+  properties,
+  class,
+  env,
+  include_S7_class = FALSE
+) {
+  args <- list()
+  for (name in names(properties)) {
+    value <- S4_property_prototype(properties[[name]], env, class@package)
+    if (length(value) != 0L) {
+      args[[name]] <- value[[1L]]
+    }
+  }
+  if (include_S7_class) {
+    args$S7_class <- class
+  }
+  do.call(methods::prototype, args)
+}
+
+S4_property_prototype <- function(prop, env, package) {
+  tryCatch(
+    {
+      value <- prop_default(prop, env, package)
+      if (is.call(value) || is.symbol(value)) {
+        value <- eval(value, env)
+      }
+      list(value)
+    },
+    error = function(cnd) {
+      if (!is.null(prop$default)) {
+        stop(cnd)
+      }
+      list()
+    }
+  )
 }
 
 S4_subclasses <- function(class) {
