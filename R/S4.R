@@ -165,17 +165,10 @@ S4_package_name <- function(f, env) {
   }
 
   # generic was defined for a function from a different package, like base
-  find_package_with_symbol(name, env, exclude = f@package) %||%
-    stop2(
-      sprintf(
-        "Failed to find originating package for S4 generic '%s' in imports.",
-        f@package
-      ),
-      call = NULL
-    )
+  find_package_with_symbol(name, env, f@generic, exclude = f@package)
 }
 
-find_package_with_symbol <- function(name, env, exclude = NULL) {
+find_package_with_symbol <- function(name, env, generic, exclude = NULL) {
   imports <- getNamespaceImports(topenv(env))
   pkgs <- setdiff(names(imports), exclude)
   for (pkg in pkgs) {
@@ -186,6 +179,14 @@ find_package_with_symbol <- function(name, env, exclude = NULL) {
       return(pkg)
     }
   }
+
+  stop2(
+    sprintf(
+      "Failed to find originating package for S4 generic '%s' in imports.",
+      generic
+    ),
+    call = NULL
+  )
 }
 
 S4_remove_classes <- function(classes, where = parent.frame()) {
