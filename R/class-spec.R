@@ -10,6 +10,7 @@
 #'   * An S3 class (created by [new_S3_class()]).
 #'   * An S4 class (created by [methods::getClass()] or [methods::new()]).
 #'   * A base class, like [class_logical], [class_integer], or [class_double].
+#'   * `NULL`.
 #'   * A "special", either [class_missing] or [class_any].
 #' @param arg Argument name used when generating errors.
 #' @keywords internal
@@ -133,9 +134,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   # (mostly for nicer printing and introspection.)
 
   # can't unwrap if the closure is potentially important
-  # (this can probably be relaxed to allow additional environments)
   fe <- environment(f)
-  if (!identical(fe, baseenv())) {
+  if (!identical(fe, baseenv()) && !identical(fe, asNamespace("S7"))) {
     return(as.call(list(f)))
   }
 
@@ -303,10 +303,7 @@ class_inherits <- function(x, what) {
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
-    # This is slightly too crude as we really want them to be in the same
-    # order and contiguous, but it's probably close enough for practical
-    # purposes
-    S7_S3 = !isS4(x) && all(what$class %in% class(x)),
+    S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
   )
 }
 
@@ -345,6 +342,21 @@ obj_dispatch <- function(x) {
 }
 
 # helpers -----------------------------------------------------------------
+
+# Does `child`'s dispatch extend `parent`'s? Subclassing only ever prepends
+# more specific classes, so `parent`'s classes must form the tail of `child`'s.
+# S7 wrappers of base/S3 types append "S7_object", which we ignore.
+class_dispatch_extends <- function(parent, child) {
+  parent <- drop_S7_object(parent)
+  child <- drop_S7_object(child)
+  n <- length(parent)
+  length(child) >= n && identical(child[length(child) - n + seq_len(n)], parent)
+}
+
+drop_S7_object <- function(x) {
+  n <- length(x)
+  if (n > 0 && x[[n]] == "S7_object") x[-n] else x
+}
 
 # Suppress @className false positive
 globalVariables("className")

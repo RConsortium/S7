@@ -9,8 +9,10 @@ describe("property retrieval", {
     expect_equal(prop(obj, "xyz"), 1)
     expect_equal(obj@xyz, 1)
 
-    expect_snapshot_error(prop(obj, "x"))
-    expect_snapshot_error(obj@x)
+    expect_snapshot(error = TRUE, {
+      prop(obj, "x")
+      obj@x
+    })
   })
   it("evalutes dynamic properties", {
     foo <- new_class(
@@ -162,6 +164,22 @@ describe("prop setting", {
   it("falls back to `base::@` for non-S7 objects", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
+  })
+
+  it("gives informative error if setter doesn't return an S7 object (#416)", {
+    foo <- new_class(
+      "foo",
+      package = NULL,
+      properties = list(
+        x = new_property(
+          class = class_integer,
+          setter = function(self, value) {
+            self@x <- as.integer(value)
+          }
+        )
+      )
+    )
+    expect_snapshot(foo(x = 1.1), error = TRUE)
   })
 
   it("setter can receive the property name (#552)", {
