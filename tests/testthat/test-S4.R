@@ -270,6 +270,56 @@ describe("S4_register", {
     expect_error(methods::validObject(invalid), "bad status")
   })
 
+  it("registers abstract S7 classes as virtual S4 classes", {
+    on.exit({
+      try(methods::removeMethod("dim", "S4regAbstractConcrete"), silent = TRUE)
+      S4_remove_classes(c(
+        "S4regAbstractParent",
+        "S4regAbstract",
+        "S4regAbstractConcrete",
+        "S4regAbstractConcrete::S4Slots",
+        "S4regAbstractShim"
+      ))
+    })
+
+    setClass("S4regAbstractParent", contains = "VIRTUAL")
+    methods::setValidity("S4regAbstractParent", function(object) {
+      if (!identical(dim(object), c(1L, 2L))) {
+        "dim() did not dispatch to the concrete S7 class"
+      } else {
+        TRUE
+      }
+    })
+
+    S4regAbstract <- new_class(
+      "S4regAbstract",
+      parent = getClass("S4regAbstractParent"),
+      abstract = TRUE,
+      package = NULL
+    )
+    S4regAbstractConcrete <- new_class(
+      "S4regAbstractConcrete",
+      parent = S4regAbstract,
+      properties = list(x = class_integer),
+      package = NULL
+    )
+    method(dim, S4regAbstractConcrete) <- function(x) {
+      c(methods::slot(x, "x"), 2L)
+    }
+    S4regAbstractConcrete_S4 <- S4_register_contains(S4regAbstractConcrete)
+    setClass("S4regAbstractShim", contains = S4regAbstractConcrete_S4)
+
+    object <- methods::new("S4regAbstractShim", x = 1L)
+    concrete_prototype <- methods::getClass("S4regAbstractConcrete")@prototype
+
+    expect_true(methods::isVirtualClass("S4regAbstract"))
+    expect_false(methods::extends("S4regAbstract", "oldClass"))
+    expect_false(methods::extends("S4regAbstract", "S7_object"))
+    expect_false("S4regAbstract" %in% attr(concrete_prototype, ".S3Class"))
+    expect_equal(dim(object), c(1L, 2L))
+    expect_true(methods::validObject(object))
+  })
+
   it("uses S7 property defaults as S4 shim prototypes", {
     on.exit(S4_remove_classes(c(
       "S4regPrototype",

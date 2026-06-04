@@ -32,6 +32,9 @@
 #' methods::setClass("S4Child", contains = S4Foo_S4)
 S4_register <- function(class, env = parent.frame()) {
   if (is_class(class)) {
+    if (class@abstract) {
+      return(invisible(S4_register_abstract_class(class, topenv(env))))
+    }
     classes <- class_dispatch(class)
   } else if (is_S3_class(class)) {
     classes <- class$class
@@ -185,7 +188,12 @@ inherits_S4 <- function(x) {
 
 S4_register_subclass <- function(class, env) {
   where <- topenv(env)
-  subclasses <- S4_subclasses(class)
+  if (class@abstract) {
+    S4_register_abstract_class(class, where)
+    return(invisible())
+  }
+
+  subclasses <- S4_old_classes(class)
   old_classes <- c(subclasses, "S7_object")
   methods::setOldClass(
     old_classes,
@@ -242,7 +250,7 @@ S4_register_with_props <- function(class, env) {
   )
   S4_set_S3_class_prototype(
     class_name,
-    c(S4_subclasses(class), "S7_object"),
+    c(S4_old_classes(class), "S7_object"),
     where
   )
   methods::setValidity(class_name, S4_validate_shim, where = where)
@@ -314,9 +322,12 @@ S4_property_prototype <- function(prop, env, package) {
   )
 }
 
-S4_subclasses <- function(class) {
+S4_old_classes <- function(class) {
   subclasses <- character()
   while (is_class(class)) {
+    if (class@abstract) {
+      return(subclasses)
+    }
     subclasses <- c(subclasses, S7_class_name(class))
     class <- class@parent
     if (is_S4_class(class)) {
@@ -324,6 +335,41 @@ S4_subclasses <- function(class) {
     }
   }
   character()
+}
+
+S4_register_abstract_class <- function(class, env = parent.frame()) {
+  where <- topenv(env)
+  class_name <- S7_class_name(class)
+  parent_class_name <- S4_abstract_parent_class(class, where)
+  properties <- class@properties
+  if (!is.null(parent_class_name)) {
+    properties <- properties[setdiff(
+      names(properties),
+      S4_slot_names(parent_class_name, where)
+    )]
+  }
+
+  methods::setClass(
+    Class = class_name,
+    slots = lapply(properties, S4_property_class, S4_env = where),
+    contains = c(parent_class_name, "VIRTUAL"),
+    where = where
+  )
+
+  class_name
+}
+
+S4_abstract_parent_class <- function(class, env) {
+  parent_class <- class@parent
+  if (is_class(parent_class)) {
+    if (parent_class@abstract) {
+      return(S4_class(parent_class, env))
+    }
+  } else if (is_S4_class(parent_class)) {
+    return(S4_class(parent_class, env))
+  }
+
+  NULL
 }
 
 S4_validate_old_class <- function(object) {
