@@ -54,6 +54,8 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
 <ul><li>Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (<a href="https://github.com/RConsortium/S7/issues/646" class="external-link">#646</a>).</li>
+<li>
+<code>class_POSIXct</code> uses the <code>tzone</code> attribute (not <code>tz</code>), and allows it to be absent (<a href="https://github.com/RConsortium/S7/issues/401" class="external-link">#401</a>).</li>
 <li>Base type wrappers like <code>class_integer</code> now define their constructor and validator in the S7 namespace. (<a href="https://github.com/RConsortium/S7/issues/553" class="external-link">#553</a>).</li>
 <li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
 <li>
@@ -80,6 +82,8 @@
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer materialises ALTREP parent values (e.g. <code><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len()</a></code>), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (<a href="https://github.com/kschaubroeck" class="external-link">@kschaubroeck</a>, <a href="https://github.com/RConsortium/S7/issues/607" class="external-link">#607</a>).</li>
 <li>
 <code><a href="../reference/new_class.html">new_object()</a></code> no longer re-runs property validators for properties inherited unchanged from an already-validated parent class, so constructing an instance of a deeply nested class hierarchy validates each property exactly once (<a href="https://github.com/RConsortium/S7/issues/539" class="external-link">#539</a>).</li>
+<li>
+<code><a href="../reference/new_property.html">new_property()</a></code> now runs the property class’s own validator when checking a value, not just the structural class check, so a property restricted to an S3 class (e.g. <code>class_factor</code>) now enforces constraints that aren’t visible in <code><a href="https://rdrr.io/r/base/class.html" class="external-link">class()</a></code> (<a href="https://github.com/RConsortium/S7/issues/401" class="external-link">#401</a>).</li>
 <li>
 <code><a href="../reference/new_property.html">new_property()</a></code> now accepts a <code>setter</code> that takes <code>self</code>, <code>name</code>, and <code>value</code> making it easy to reuse the same definition for multiple properties (<a href="https://github.com/RConsortium/S7/issues/552" class="external-link">#552</a>).</li>
 <li>

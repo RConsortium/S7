@@ -63,12 +63,12 @@ method(bizarro, class = class_integer)
 #> <S7_method> method(bizarro, class_integer)
 #> function (x) 
 #> rev(x)
-#> <environment: 0x55fb1909eeb8>
+#> <environment: 0x559f44a14d18>
 method(bizarro, object = 1)
 #> <S7_method> method(bizarro, class_double)
 #> function (x) 
 #> rev(x)
-#> <environment: 0x55fb1909eeb8>
+#> <environment: 0x559f44a14d18>
 method(bizarro, class = class_factor)
 #> <S7_method> method(bizarro, new_S3_class("factor"))
 #> function (x) 
@@ -76,7 +76,7 @@ method(bizarro, class = class_factor)
 #>     levels(x) <- rev(levels(x))
 #>     x
 #> }
-#> <environment: 0x55fb1909eeb8>
+#> <environment: 0x559f44a14d18>
 
 # errors if method not found
 try(method(bizarro, class = class_data.frame))

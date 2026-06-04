@@ -5,6 +5,8 @@
 - Errors thrown by S7 now report the function where they occurred,
   making it easier to track down the source of a problem
   ([\#646](https://github.com/RConsortium/S7/issues/646)).
+- `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it
+  to be absent ([\#401](https://github.com/RConsortium/S7/issues/401)).
 - Base type wrappers like `class_integer` now define their constructor
   and validator in the S7 namespace.
   ([\#553](https://github.com/RConsortium/S7/issues/553)).
@@ -79,6 +81,12 @@
   unchanged from an already-validated parent class, so constructing an
   instance of a deeply nested class hierarchy validates each property
   exactly once ([\#539](https://github.com/RConsortium/S7/issues/539)).
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  now runs the property class’s own validator when checking a value, not
+  just the structural class check, so a property restricted to an S3
+  class (e.g. `class_factor`) now enforces constraints that aren’t
+  visible in [`class()`](https://rdrr.io/r/base/class.html)
+  ([\#401](https://github.com/RConsortium/S7/issues/401)).
 - [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
   now accepts a `setter` that takes `self`, `name`, and `value` making
   it easy to reuse the same definition for multiple properties
