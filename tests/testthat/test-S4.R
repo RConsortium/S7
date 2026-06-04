@@ -183,12 +183,8 @@ describe("S4_register", {
       slots = list(assays = "list", rowData = "character")
     )
     methods::setValidity("S4regNewParent", function(object) {
-      value <- tryCatch(
-        methods::slot(object, "metadata"),
-        error = function(cnd) NULL
-      )
-      if (is.null(value)) {
-        "metadata slot was stripped during parent coercion"
+      if (!identical(methods::slot(object, "assays"), list())) {
+        "assays slot was stripped during parent coercion"
       } else {
         TRUE
       }
@@ -215,7 +211,7 @@ describe("S4_register", {
     S4regNewChild_S4 <- S4_register_contains(S4regNewChild)
     expect_equal(
       methods::slotNames("S4regNewChild"),
-      c("assays", "rowData", ".S3Class")
+      c("status", "metadata", "assays", "rowData", ".S3Class")
     )
     expect_contains(
       methods::slotNames(S4regNewChild_S4),
@@ -241,6 +237,9 @@ describe("S4_register", {
     expect_equal(methods::slot(object, "status"), character())
     object_shim <- methods::as(object, S4regNewChild_S4)
     object_old <- methods::as(object_shim, "S4regNewChild")
+    expect_equal(methods::slot(object_old, "metadata"), character())
+    expect_equal(methods::slot(object_old, "status"), character())
+    object_old <- methods::as(object, "S4regNewChild")
     expect_equal(methods::slot(object_old, "metadata"), character())
     expect_equal(methods::slot(object_old, "status"), character())
     expect_equal(
@@ -551,13 +550,13 @@ test_that("S7 classes can extend S4 classes", {
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
   expect_equal(as.character(methods::getClass("Child")@className), "Child")
-  expect_equal(methods::slotNames("Child"), c("x", ".S3Class"))
+  expect_equal(methods::slotNames("Child"), c("y", "x", ".S3Class"))
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
   invalid_s7_prop <- child
   attr(invalid_s7_prop, "y") <- 1
-  expect_error(methods::validObject(invalid_s7_prop), "@y must be <character>")
+  expect_error(methods::validObject(invalid_s7_prop), "invalid object for slot")
 
   invalid_s4_slot <- child
   attr(invalid_s4_slot, "x") <- "x"
@@ -661,27 +660,25 @@ test_that("S4 initialize supports S3 data parts", {
   expect_true(methods::validObject(child))
 })
 
-test_that("S4 initialize uses S7 property setters", {
+test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
   on.exit(S4_remove_classes(c("Parent2", "Child2")))
   setClass("Parent2", slots = list(x = "numeric"))
 
-  Child2 <- new_class(
-    "Child2",
-    parent = getClass("Parent2"),
-    properties = list(
-      y = new_property(class_character, setter = function(self, value) {
-        attr(self, "setter_called") <- TRUE
-        attr(self, "y") <- value
-        self
-      })
+  expect_error(
+    new_class(
+      "Child2",
+      parent = getClass("Parent2"),
+      properties = list(
+        y = new_property(class_character, setter = function(self, value) {
+          attr(self, "setter_called") <- TRUE
+          attr(self, "y") <- value
+          self
+        })
+      ),
+      package = NULL
     ),
-    package = NULL
+    "custom setter"
   )
-
-  child <- methods::initialize(Child2(x = 1, y = "a"), y = "b")
-  expect_equal(prop(child, "y"), "b")
-  expect_true(attr(child, "setter_called"))
-  expect_true(S7_inherits(child, Child2))
 })
 
 describe("S4_class_dispatch", {
