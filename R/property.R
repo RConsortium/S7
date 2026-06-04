@@ -278,6 +278,11 @@ prop_validate <- function(prop, value, object = NULL) {
     ))
   }
 
+  class_error <- class_validate(prop$class, value)
+  if (length(class_error) > 0) {
+    return(paste0(prop_label(object, prop$name), ": ", class_error))
+  }
+
   if (is.null(validator <- prop$validator)) {
     return(NULL)
   }

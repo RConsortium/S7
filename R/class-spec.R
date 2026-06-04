@@ -192,7 +192,10 @@ class_constructor <- function(.x) {
 class_validate <- function(class, object) {
   validator <- switch(
     class_type(class),
-    S4 = methods::validObject,
+    S4 = function(object) {
+      check <- methods::validObject(object, test = TRUE)
+      if (isTRUE(check)) NULL else check
+    },
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
