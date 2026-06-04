@@ -158,6 +158,11 @@ convert_method <- function(from, to) {
 convert_up <- function(from, to, call = sys.call(-1L)) {
   check_not_environment(from, "convert()", call = call)
 
+  if (is_class(to) && to@abstract) {
+    msg <- sprintf("Can't convert to abstract class <%s>.", to@name)
+    stop2(msg, call = call)
+  }
+
   from_class <- S7_class(from)
   if (is_class(from_class)) {
     from_props <- prop_names(from)
