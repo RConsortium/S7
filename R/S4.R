@@ -187,17 +187,24 @@ S4_register_subclass <- function(class, env) {
   where <- topenv(env)
   subclasses <- S4_subclasses(class)
   old_classes <- c(subclasses, "S7_object")
-  if (length(subclasses) > 1L) {
-    methods::setOldClass(old_classes, where = where)
-    return()
-  }
   methods::setOldClass(
     old_classes,
     S4Class = S4_register_prototype_class(class, where),
     where = where
   )
-  methods::setValidity(subclasses[1L], S4_validate_old_class, where = where)
-  methods::setMethod("initialize", subclasses[1L], S4_initialize, where = where)
+  S4_set_S3_class_prototype(subclasses[1L], old_classes, where)
+
+  if (length(subclasses) == 1L) {
+    methods::setValidity(subclasses[1L], S4_validate_old_class, where = where)
+    methods::setMethod(
+      "initialize",
+      subclasses[1L],
+      S4_initialize,
+      where = where
+    )
+  }
+
+  invisible()
 }
 
 #' @rdname S4_register
@@ -226,7 +233,6 @@ S4_register_with_props <- function(class, env) {
     names(properties),
     S4_slot_names(contains, where)
   )]
-
   methods::setClass(
     Class = class_name,
     slots = lapply(properties, S4_property_class, S4_env = where),
@@ -234,9 +240,21 @@ S4_register_with_props <- function(class, env) {
     prototype = S4_properties_prototype(properties, class, where, TRUE),
     where = where
   )
+  S4_set_S3_class_prototype(
+    class_name,
+    c(S4_subclasses(class), "S7_object"),
+    where
+  )
   methods::setValidity(class_name, S4_validate_shim, where = where)
 
   class_name
+}
+
+S4_set_S3_class_prototype <- function(class, S3_class, env) {
+  class_def <- methods::getClass(class, where = env)
+  attr(class_def@prototype, ".S3Class") <- S3_class
+  methods:::assignClassDef(class, class_def, env)
+  invisible(class)
 }
 
 S4_slot_names <- function(class, S4_env) {
@@ -398,11 +416,17 @@ S4_register_prototype_class <- function(class, env = parent.frame()) {
   classes <- class_dispatch(class)
 
   parent_class <- class@parent
-  stopifnot(is_S4_class(parent_class))
+  parent_class_name <- S4_class(parent_class, where)
+  properties <- class@properties
+  properties <- properties[setdiff(
+    names(properties),
+    S4_slot_names(parent_class_name, where)
+  )]
 
   methods::setClass(
     Class = classes[1L],
-    contains = c(parent_class@className, "VIRTUAL"),
+    slots = lapply(properties, S4_property_class, S4_env = where),
+    contains = c(parent_class_name, "VIRTUAL"),
     where = where
   )
 

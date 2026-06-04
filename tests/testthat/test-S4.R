@@ -180,6 +180,13 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
     "S4regNewParent",
     slots = list(assays = "list", rowData = "character")
   )
+  methods::setValidity("S4regNewParent", function(object) {
+    if (!identical(methods::slot(object, "assays"), list())) {
+      "assays slot was stripped during parent coercion"
+    } else {
+      TRUE
+    }
+  })
 
   S4regNewMiddle <- new_class(
     "S4regNewMiddle",
@@ -200,6 +207,14 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
     package = NULL
   )
   S4regNewChild_S4 <- S4_register_contains(S4regNewChild)
+  expect_equal(
+    methods::slotNames("S4regNewChild"),
+    c("status", "metadata", "assays", "rowData", ".S3Class")
+  )
+  expect_contains(
+    methods::slotNames(S4regNewChild_S4),
+    c("status", "metadata", "S7_class")
+  )
   setClass(
     "S4regNewGrandChild",
     contains = S4regNewChild_S4
@@ -234,6 +249,10 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
   invalid <- object
   methods::slot(invalid, "status") <- "bad"
   expect_error(methods::validObject(invalid), "bad status")
+
+  object_old <- methods::as(object, "S4regNewChild")
+  expect_equal(methods::slot(object_old, "metadata"), character())
+  expect_equal(methods::slot(object_old, "status"), character())
 })
 
 test_that("S4_register_contains uses S7 property defaults as S4 shim prototypes", {
@@ -512,7 +531,7 @@ test_that("S7 classes can extend S4 classes", {
 
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
-  expect_equal(methods::slotNames("Child"), c("x", "y", ".S3Class"))
+  expect_equal(methods::slotNames("Child"), c("y", "x", ".S3Class"))
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
@@ -562,26 +581,25 @@ test_that("S4 initialize supports S3 data parts", {
   expect_true(methods::validObject(child))
 })
 
-test_that("S4 initialize uses S7 property setters", {
+test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
   on.exit(S4_remove_classes(c("Parent2", "Child2")))
   setClass("Parent2", slots = list(x = "numeric"))
 
-  Child2 <- new_class(
-    "Child2",
-    parent = getClass("Parent2"),
-    properties = list(
-      y = new_property(class_character, setter = function(self, value) {
-        attr(self, "setter_called") <- TRUE
-        attr(self, "y") <- value
-        self
-      })
+  expect_error(
+    new_class(
+      "Child2",
+      parent = getClass("Parent2"),
+      properties = list(
+        y = new_property(class_character, setter = function(self, value) {
+          attr(self, "setter_called") <- TRUE
+          attr(self, "y") <- value
+          self
+        })
+      ),
+      package = NULL
     ),
-    package = NULL
+    "custom setter"
   )
-
-  child <- methods::initialize(Child2(x = 1, y = "a"), y = "b")
-  expect_equal(prop(child, "y"), "b")
-  expect_true(attr(child, "setter_called"))
 })
 
 
