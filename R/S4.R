@@ -208,11 +208,21 @@ S4_register_subclass <- function(class, env) {
   methods::setAs(
     from = subclasses[1L],
     to = parent_class@className,
-    def = function(from) convert(from, parent_class),
+    def = S7_subclass_as_parent(parent_class),
     where = where
   )
 
   invisible()
+}
+
+S7_subclass_as_parent <- function(parent_class) {
+  function(from) {
+    if (methods::isVirtualClass(parent_class)) {
+      return(from)
+    }
+    class(from) <- parent_class@className
+    asS4(from)
+  }
 }
 
 #' @rdname S4_register
@@ -250,8 +260,20 @@ S4_register_with_props <- function(class, env) {
     where = where
   )
   methods::setValidity(class_name, S4_validate_shim, where = where)
+  methods::setAs(
+    from = class_name,
+    to = contains,
+    def = S4_slot_class_as_parent,
+    where = where
+  )
 
   class_name
+}
+
+S4_slot_class_as_parent <- function(from) {
+  from <- asS3(from, complete = FALSE)
+  class(from) <- class_dispatch(S7_class(from))
+  from
 }
 
 S4_slot_names <- function(class, S4_env) {

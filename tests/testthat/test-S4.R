@@ -182,6 +182,17 @@ describe("S4_register", {
       "S4regNewParent",
       slots = list(assays = "list", rowData = "character")
     )
+    methods::setValidity("S4regNewParent", function(object) {
+      value <- tryCatch(
+        methods::slot(object, "metadata"),
+        error = function(cnd) NULL
+      )
+      if (is.null(value)) {
+        "metadata slot was stripped during parent coercion"
+      } else {
+        TRUE
+      }
+    })
 
     S4regNewMiddle <- new_class(
       "S4regNewMiddle",
@@ -202,6 +213,15 @@ describe("S4_register", {
       package = NULL
     )
     S4regNewChild_S4 <- S4_register_contains(S4regNewChild)
+    expect_equal(
+      methods::slotNames("S4regNewChild"),
+      c("assays", "rowData", ".S3Class")
+    )
+    expect_contains(
+      methods::slotNames(S4regNewChild_S4),
+      c("assays", "rowData", "metadata", "status", "S7_class")
+    )
+
     setClass(
       "S4regNewGrandChild",
       contains = S4regNewChild_S4
@@ -219,6 +239,10 @@ describe("S4_register", {
     expect_equal(methods::slot(object, "rowData"), character())
     expect_equal(methods::slot(object, "metadata"), character())
     expect_equal(methods::slot(object, "status"), character())
+    object_shim <- methods::as(object, S4regNewChild_S4)
+    object_old <- methods::as(object_shim, "S4regNewChild")
+    expect_equal(methods::slot(object_old, "metadata"), character())
+    expect_equal(methods::slot(object_old, "status"), character())
     expect_equal(
       prop_names(object),
       c("assays", "rowData", "metadata", "status")
@@ -227,6 +251,15 @@ describe("S4_register", {
     expect_equal(prop(object, "rowData"), character())
     expect_equal(prop(object, "metadata"), character())
     expect_equal(prop(object, "status"), character())
+    expect_true(methods::validObject(object))
+
+    object <- methods::new(
+      "S4regNewGrandChild",
+      metadata = "m",
+      status = "s"
+    )
+    expect_equal(methods::slot(object, "metadata"), "m")
+    expect_equal(methods::slot(object, "status"), "s")
     expect_true(methods::validObject(object))
 
     invalid <- object
