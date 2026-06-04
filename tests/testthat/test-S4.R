@@ -26,7 +26,7 @@ test_that("S4_register registers S4 old classes as virtual S7_object descendants
     "trying to generate an object from a virtual class"
   )
   expect_true(methods::extends("S4regS7New", "S7_object"))
-  expect_false("S7_class" %in% methods::slotNames("S4regS7New"))
+  expect_true("S7_class" %in% methods::slotNames("S4regS7New"))
 })
 
 test_that("S4_register registers an S3 class so it can be used with S4 methods", {
@@ -209,11 +209,11 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
   S4regNewChild_S4 <- S4_register_contains(S4regNewChild)
   expect_equal(
     methods::slotNames("S4regNewChild"),
-    c("status", "metadata", "assays", "rowData", ".S3Class")
+    c("status", "metadata", "S7_class", "assays", "rowData", ".S3Class")
   )
   expect_contains(
     methods::slotNames(S4regNewChild_S4),
-    c("status", "metadata", "S7_class")
+    c("assays", "rowData", "metadata", "status", "S7_class")
   )
   setClass(
     "S4regNewGrandChild",
@@ -232,6 +232,13 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
   expect_equal(methods::slot(object, "rowData"), character())
   expect_equal(methods::slot(object, "metadata"), character())
   expect_equal(methods::slot(object, "status"), character())
+  object_shim <- methods::as(object, S4regNewChild_S4)
+  object_old <- methods::as(object_shim, "S4regNewChild")
+  expect_equal(methods::slot(object_old, "metadata"), character())
+  expect_equal(methods::slot(object_old, "status"), character())
+  object_old <- methods::as(object, "S4regNewChild")
+  expect_equal(methods::slot(object_old, "metadata"), character())
+  expect_equal(methods::slot(object_old, "status"), character())
   expect_equal(
     prop_names(object),
     c("assays", "rowData", "metadata", "status")
@@ -242,6 +249,15 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
   expect_equal(prop(object, "status"), character())
   expect_true(methods::validObject(object))
 
+  object <- methods::new(
+    "S4regNewGrandChild",
+    metadata = "m",
+    status = "s"
+  )
+  expect_equal(methods::slot(object, "metadata"), "m")
+  expect_equal(methods::slot(object, "status"), "s")
+  expect_true(methods::validObject(object))
+
   invalid <- object
   methods::slot(invalid, "metadata") <- "bad"
   expect_error(methods::validObject(invalid), "bad metadata")
@@ -249,10 +265,6 @@ test_that("S4_register_contains constructs S4 subclasses of S7 classes that exte
   invalid <- object
   methods::slot(invalid, "status") <- "bad"
   expect_error(methods::validObject(invalid), "bad status")
-
-  object_old <- methods::as(object, "S4regNewChild")
-  expect_equal(methods::slot(object_old, "metadata"), character())
-  expect_equal(methods::slot(object_old, "status"), character())
 })
 
 test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
@@ -581,7 +593,8 @@ test_that("S7 classes can extend S4 classes", {
 
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
-  expect_equal(methods::slotNames("Child"), c("y", "x", ".S3Class"))
+  expect_equal(as.character(methods::getClass("Child")@className), "Child")
+  expect_equal(methods::slotNames("Child"), c("y", "S7_class", "x", ".S3Class"))
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
