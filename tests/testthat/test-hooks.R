@@ -25,7 +25,8 @@ describe("S7_on_build()", {
     tmp_lib <- local_libpath()
 
     # t3 defines an S3 generic and an S4 generic; t4 registers S7 methods for
-    # both, so building t4 would otherwise embed copies of t3's generics.
+    # both (plus the base generic `$`), so building t4 would otherwise embed
+    # copies of those generics.
     local_install_and_attach(test_path("t3"), tmp_lib)
     local_install_and_attach(test_path("t4"), tmp_lib)
 
@@ -38,5 +39,6 @@ describe("S7_on_build()", {
     ns <- asNamespace("t4")
     expect_false(exists("t3_s3", envir = ns, inherits = FALSE))
     expect_false(exists("t3_s4", envir = ns, inherits = FALSE))
+    expect_false(exists("$", envir = ns, inherits = FALSE))
   })
 })

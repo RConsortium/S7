@@ -9,6 +9,9 @@ S7::method(t3_s3, t4_class) <- function(x) "s3-dispatch"
 S7::S4_register(t4_class)
 S7::method(t3_s4, t4_class) <- function(x) "s4-dispatch"
 
+# Register an S7 method for a base generic (defined in base R).
+S7::method(`$`, t4_class) <- function(x, name) "base-dispatch"
+
 .onLoad <- function(libname, pkgname) {
   S7::methods_register()
 }
