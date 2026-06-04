@@ -417,7 +417,7 @@ S4_register_prototype_class <- function(class, env = parent.frame()) {
 
   methods::setClass(
     Class = classes[1L],
-    contains = parent_class@className,
+    contains = c(parent_class@className, "VIRTUAL"),
     where = where
   )
 
