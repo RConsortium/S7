@@ -28,7 +28,7 @@ describe("S4_register", {
       "trying to generate an object from a virtual class"
     )
     expect_true(methods::extends("S4regS7New", "S7_object"))
-    expect_false("S7_class" %in% methods::slotNames("S4regS7New"))
+    expect_true("S7_class" %in% methods::slotNames("S4regS7New"))
   })
 
   it("registers an S3 class so it can be used with S4 methods", {
@@ -211,7 +211,7 @@ describe("S4_register", {
     S4regNewChild_S4 <- S4_register_contains(S4regNewChild)
     expect_equal(
       methods::slotNames("S4regNewChild"),
-      c("status", "metadata", "assays", "rowData", ".S3Class")
+      c("status", "metadata", "S7_class", "assays", "rowData", ".S3Class")
     )
     expect_contains(
       methods::slotNames(S4regNewChild_S4),
@@ -303,9 +303,7 @@ describe("S4_register", {
       properties = list(x = class_integer),
       package = NULL
     )
-    method(dim, S4regAbstractConcrete) <- function(x) {
-      c(methods::slot(x, "x"), 2L)
-    }
+    method(dim, S4regAbstractConcrete) <- function(x) c(x@x, 2L)
     S4regAbstractConcrete_S4 <- S4_register_contains(S4regAbstractConcrete)
     setClass("S4regAbstractShim", contains = S4regAbstractConcrete_S4)
 
@@ -600,7 +598,7 @@ test_that("S7 classes can extend S4 classes", {
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
   expect_equal(as.character(methods::getClass("Child")@className), "Child")
-  expect_equal(methods::slotNames("Child"), c("y", "x", ".S3Class"))
+  expect_equal(methods::slotNames("Child"), c("y", "S7_class", "x", ".S3Class"))
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 

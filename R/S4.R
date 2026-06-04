@@ -463,16 +463,22 @@ S4_register_prototype_class <- function(class, env = parent.frame()) {
 
   parent_class <- class@parent
   parent_class_name <- S4_class(parent_class, where)
+  parent_slot_names <- S4_slot_names(parent_class_name, where)
   properties <- class@properties
   properties <- properties[setdiff(
     names(properties),
-    S4_slot_names(parent_class_name, where)
+    parent_slot_names
   )]
+  slots <- lapply(properties, S4_property_class, S4_env = where)
+  if (!"S7_class" %in% parent_slot_names) {
+    slots$S7_class <- "S7_class"
+  }
 
   methods::setClass(
     Class = classes[1L],
-    slots = lapply(properties, S4_property_class, S4_env = where),
+    slots = slots,
     contains = c(parent_class_name, "VIRTUAL"),
+    prototype = S4_properties_prototype(properties, class, where, TRUE),
     where = where
   )
 
