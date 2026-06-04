@@ -11,7 +11,7 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
-test_that("S4_register registers S4 constructed instances as S7_object old-class descendants", {
+test_that("S4_register registers S4 old classes as virtual S7_object descendants", {
   on.exit(S4_remove_classes(c("S4regParent", "S4regS7New")))
   setClass("S4regParent", slots = list(x = "numeric"))
   S4regS7New <- new_class(
@@ -21,11 +21,12 @@ test_that("S4_register registers S4 constructed instances as S7_object old-class
     package = NULL
   )
 
-  object <- methods::new("S4regS7New")
-
-  expect_true(isS4(object))
-  expect_true(methods::is(object, "S7_object"))
-  expect_false("S7_class" %in% methods::slotNames(object))
+  expect_error(
+    methods::new("S4regS7New"),
+    "trying to generate an object from a virtual class"
+  )
+  expect_true(methods::extends("S4regS7New", "S7_object"))
+  expect_false("S7_class" %in% methods::slotNames("S4regS7New"))
 })
 
 test_that("S4_register registers an S3 class so it can be used with S4 methods", {
