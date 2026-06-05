@@ -672,6 +672,31 @@ test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
   expect_equal(prop(child, "y"), "d")
 })
 
+test_that("@<- sets S4-only slots on subclasses of S7 classes", {
+  on.exit(S4_remove_classes(c("ParentForAt", "ChildForAt", "S4ChildForAt")))
+  setClass("ParentForAt", slots = list(x = "numeric"))
+
+  ChildForAt <- new_class(
+    "ChildForAt",
+    parent = getClass("ParentForAt"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  setClass(
+    "S4ChildForAt",
+    slots = list(z = "character"),
+    contains = "ChildForAt"
+  )
+
+  child <- methods::new("S4ChildForAt", ChildForAt(x = 1, y = "a"), z = "b")
+  child@z <- "c"
+  child@y <- "d"
+
+  expect_equal(methods::slot(child, "z"), "c")
+  expect_equal(prop(child, "y"), "d")
+})
+
 test_that("S4 validity recursively validates S7 descendants", {
   on.exit(S4_remove_classes(c(
     "ParentRecursive",

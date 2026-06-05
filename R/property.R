@@ -329,7 +329,15 @@ prop_call <- function(object, name) {
 `@.S7_object` <- prop
 
 #' @rawNamespace S3method("@<-",S7_object)
-`@<-.S7_object` <- `prop<-`
+`@<-.S7_object` <- function(object, name, value) {
+  if (isS4(object) && !name %in% names(slot(object, "S7_class")@properties)) {
+    methods::slot(object, name) <- value
+    return(object)
+  }
+
+  prop(object, name) <- value
+  object
+}
 
 
 #' Property introspection
