@@ -231,10 +231,18 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
   }
 
   n <- generic_n_dispatch(generic)
+
+  if (is_multi_arg_signature(signature)) {
+    S4_signature <- S3_generic_S4_signature(generic)
+    if (length(signature) == length(S4_signature)) {
+      n <- length(S4_signature)
+    }
+  }
+
   if (n == 1) {
     # Accept a bare list of length 1 too, for symmetry with multi-dispatch
     # generics where a list is required (#555).
-    if (is.list(signature) && !is.object(signature) && length(signature) == 1) {
+    if (is_multi_arg_signature(signature) && length(signature) == 1) {
       signature <- signature[[1]]
     }
     new_signature(list(as_class(signature, arg = "signature")))
@@ -248,6 +256,10 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
     }
     new_signature(signature)
   }
+}
+
+is_multi_arg_signature <- function(signature) {
+  is.list(signature) && !is.object(signature)
 }
 
 check_signature_list <- function(

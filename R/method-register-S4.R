@@ -26,3 +26,16 @@ class_has_S4_ancestor <- function(class) {
     FALSE
   )
 }
+
+S3_generic_S4_signature <- function(generic) {
+  if (!is_S3_generic(generic) || !is_internal_generic(generic$name)) {
+    return(NULL)
+  }
+
+  generic <- methods::getGeneric(generic$name)
+  if (is.null(generic) || !is_S4_generic(generic)) {
+    return(NULL)
+  }
+
+  generic@signature
+}
