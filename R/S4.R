@@ -421,6 +421,12 @@ S4_initialize <- function(.Object, ...) {
     vals <- modify_list(vals, arg_vals)
   }
   named_args <- args[nms != ""]
+  s4_vals <- list()
+  if (isS4(.Object)) {
+    s4_slot_nms <- setdiff(methods::slotNames(.Object), prop_nms)
+    s4_vals <- named_args[names(named_args) %in% s4_slot_nms]
+    named_args <- named_args[!names(named_args) %in% s4_slot_nms]
+  }
   vals <- modify_list(vals, named_args)
   if (".Data" %in% names(named_args)) {
     data_part <- vals$.Data
@@ -431,6 +437,9 @@ S4_initialize <- function(.Object, ...) {
   }
 
   props(.Object) <- vals
+  for (name in names(s4_vals)) {
+    methods::slot(.Object, name) <- s4_vals[[name]]
+  }
   .Object
 }
 
