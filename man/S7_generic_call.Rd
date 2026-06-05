@@ -5,9 +5,13 @@
 \alias{S7_user_frame}
 \title{Access the generic call and user frame from within a method}
 \usage{
-S7_generic_call()
+S7_generic_call(match = FALSE)
 
 S7_user_frame()
+}
+\arguments{
+\item{match}{Set to \code{TRUE} to process with \code{\link[=match.call]{match.call()}} and name all
+arguments.}
 }
 \value{
 \code{S7_generic_call()} returns a call; \code{S7_user_frame()} returns an

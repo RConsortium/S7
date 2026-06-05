@@ -32,6 +32,12 @@ test_that("S7_generic_call() is the originating call to the generic", {
   expect_equal(foo(Number(1)), quote(foo(Number(1))))
 })
 
+test_that("S7_generic_call(match = TRUE) names the arguments", {
+  foo <- new_generic("foo", "x")
+  method(foo, class_double) <- function(x) S7_generic_call(match = TRUE)
+  expect_equal(foo(1), quote(foo(x = 1)))
+})
+
 test_that("a different nested generic stops the walk (nearest generic)", {
   inner <- new_generic("inner", "x")
   outer <- new_generic("outer", "x")

@@ -16,6 +16,8 @@
 #' generic to a superclass with [super()], reporting the outermost user-facing
 #' call and its caller.
 #'
+#' @param match Set to `TRUE` to process with [match.call()] and name all
+#'   arguments.
 #' @returns `S7_generic_call()` returns a call; `S7_user_frame()` returns an
 #'   environment. Both error if called outside of a method.
 #' @seealso [S7_dispatch()] for how methods are called, and [super()] for
@@ -48,9 +50,13 @@
 #' df <- data.frame(x = 1:3, y = c(2, 5, 8))
 #' # `x` and `y` come from the data frame; `threshold` from this frame
 #' keep_rows(df, x + y > threshold)
-S7_generic_call <- function() {
+S7_generic_call <- function(match = FALSE) {
   idx <- generic_call_frame()
-  sys.call(idx)
+  call <- sys.call(idx)
+  if (isTRUE(match)) {
+    call <- match.call(sys.function(idx), call, envir = sys.frame(idx))
+  }
+  call
 }
 
 #' @rdname S7_generic_call
