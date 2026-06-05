@@ -87,6 +87,49 @@ test_that("internal generics register S4 methods for S4-backed S7 classes", {
   expect_equal(dim(object), c(1L, 2L))
 })
 
+test_that("internal replacement generics can register full S4 signatures", {
+  on.exit({
+    try(
+      methods::removeMethod(
+        "dimnames<-",
+        c("S4regDimnamesChild", "list")
+      ),
+      silent = TRUE
+    )
+    S4_remove_classes(c(
+      "S4regDimnamesParent",
+      "S4regDimnamesChild",
+      "S4regDimnamesChild::S4Slots",
+      "S4regDimnamesShim"
+    ))
+  })
+
+  setClass("S4regDimnamesParent", contains = "VIRTUAL")
+  S4regDimnamesChild <- new_class(
+    "S4regDimnamesChild",
+    parent = getClass("S4regDimnamesParent"),
+    properties = list(x = class_list),
+    package = NULL
+  )
+  method(`dimnames<-`, list(S4regDimnamesChild, class_list)) <-
+    function(x, value) {
+      x@x <- value
+      x
+    }
+  S4regDimnamesChild_S4 <- S4_register_contains(S4regDimnamesChild)
+  setClass("S4regDimnamesShim", contains = S4regDimnamesChild_S4)
+
+  object <- methods::new("S4regDimnamesShim", x = list(NULL, NULL))
+  value <- list("r", "c")
+  dimnames(object) <- value
+
+  expect_equal(methods::slot(object, "x"), value)
+  expect_true(methods::hasMethod(
+    "dimnames<-",
+    c("S4regDimnamesChild", "list")
+  ))
+})
+
 test_that("S3 registration for a multi-class S3 class uses only the first class", {
   local_s3_generic("s3_gen")
   method(s3_gen, new_S3_class(c("ordered", "factor"))) <- function(x) "ord"
