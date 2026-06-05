@@ -10,7 +10,7 @@ register_S4_method <- function(
   methods::setMethod(generic, S4_signature, method, where = S4_env)
 }
 
-should_register_S4_method_for_internal_generic <- function(generic, signature) {
+should_register_S4_method <- function(generic, signature) {
   is_internal_generic(generic$name) && signature_has_S4_ancestor(signature)
 }
 
