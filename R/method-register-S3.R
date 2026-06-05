@@ -33,7 +33,7 @@ register_S3_method <- function(
     registerS3method(generic$name, class, method, envir)
   }
 
-  if (should_register_S4_method_for_internal_generic(generic, signature)) {
+  if (should_register_S4_method(generic, signature)) {
     register_S4_method(generic$name, signature, method, envir, call = call)
   }
 }
