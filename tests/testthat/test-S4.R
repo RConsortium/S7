@@ -621,6 +621,38 @@ test_that("S7 classes can extend S4 classes", {
   expect_error(Child(x = "x", y = "a"))
 })
 
+test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
+  on.exit(S4_remove_classes(c("ParentForSlots", "ChildForSlots", "S4ChildForSlots")))
+  setClass("ParentForSlots", slots = list(x = "numeric"))
+
+  ChildForSlots <- new_class(
+    "ChildForSlots",
+    parent = getClass("ParentForSlots"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  setClass(
+    "S4ChildForSlots",
+    slots = list(z = "character"),
+    contains = "ChildForSlots"
+  )
+
+  parent <- ChildForSlots(x = 1, y = "a")
+  child <- methods::new("S4ChildForSlots", parent, z = "b")
+
+  expect_true(isS4(child))
+  expect_true(S7_inherits(child, ChildForSlots))
+  expect_equal(prop(child, "x"), 1)
+  expect_equal(prop(child, "y"), "a")
+  expect_equal(methods::slot(child, "z"), "b")
+
+  child@z <- "c"
+  child@y <- "d"
+  expect_equal(methods::slot(child, "z"), "c")
+  expect_equal(prop(child, "y"), "d")
+})
+
 test_that("S4 initialize supports S3 data parts", {
   on.exit(S4_remove_classes(c("ParentNum", "ChildNum")))
   setClass("ParentNum", contains = "numeric", slots = list(y = "character"))
