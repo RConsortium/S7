@@ -243,8 +243,11 @@ S4_register_with_props <- function(class, env) {
   )]
   methods::setClass(
     Class = class_name,
-    slots = lapply(properties, S4_property_class, S4_env = where),
-    contains = c(contains, "S7_object::S4Slots"),
+    slots = c(
+      lapply(properties, S4_property_class, S4_env = where),
+      S7_class = "S7_class"
+    ),
+    contains = c(contains),
     prototype = S4_properties_prototype(properties, class, where, TRUE),
     where = where
   )

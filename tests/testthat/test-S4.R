@@ -102,7 +102,7 @@ describe("S4_register", {
     expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild::S4Slots")
     expect_equal(
       methods::slotNames(S4regContainsChild_S4),
-      c("x", "y", ".S3Class", "S7_class")
+      c("x", "y", "S7_class", ".S3Class")
     )
     expect_contains(
       methods::extends(S4regContainsChild_S4),
@@ -299,12 +299,11 @@ describe("S4_register", {
     S4regShimParent_S4 <- S4_register_contains(S4regShimParent)
     S4regShimChild_S4 <- S4_register_contains(S4regShimChild)
     setClass("S4regShimParent", contains = S4regShimParent_S4)
-    setClass("S4regShimChild", contains = S4regShimChild_S4)
-    setIs("S4regShimChild", "S4regShimParent")
-    expect_warning(
-      setClass("S4regShimGrandChild", contains = "S4regShimChild"),
-      "inconsistent superclass structure"
+    setClass(
+      "S4regShimChild",
+      contains = c(S4regShimChild_S4, "S4regShimParent")
     )
+    setClass("S4regShimGrandChild", contains = "S4regShimChild")
 
     object <- methods::new("S4regShimGrandChild", root = 1, x = 2, y = "a")
     parent_shim <- methods::as(object, S4regShimParent_S4)
@@ -685,7 +684,11 @@ test_that("S7 classes can extend S4 classes", {
 })
 
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
-  on.exit(S4_remove_classes(c("ParentForSlots", "ChildForSlots", "S4ChildForSlots")))
+  on.exit(S4_remove_classes(c(
+    "ParentForSlots",
+    "ChildForSlots",
+    "S4ChildForSlots"
+  )))
   setClass("ParentForSlots", slots = list(x = "numeric"))
 
   ChildForSlots <- new_class(
