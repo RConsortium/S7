@@ -23,13 +23,6 @@ S7_object <- new_class(
 )
 methods::setOldClass("S7_object")
 methods::setOldClass(c("S7_class", "S7_object"))
-methods::setClass(
-  "S7_object::S4Slots",
-  slots = list(S7_class = "S7_class"),
-  contains = "S7_object",
-  prototype = methods::prototype(S7_class = S7_object),
-  where = topenv()
-)
 
 .S7_type <- NULL
 # Defined onLoad because it depends on R version
