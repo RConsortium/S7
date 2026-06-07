@@ -14,6 +14,10 @@
   arguments forwarded through a wrapper functions
   ([\#595](https://github.com/RConsortium/S7/issues/595)).
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  now errors when upcasting to an abstract class, rather than producing
+  an instance of that abstract class
+  ([\#680](https://github.com/RConsortium/S7/issues/680)).
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
   no longer automatically converts between sibling classes (classes that
   merely share a common ancestor); the default downcast now applies only
   when `to` is genuinely a descendant of `from`’s class
