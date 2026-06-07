@@ -122,6 +122,11 @@
   class, with one row per property and columns for name, default, class,
   getter, setter, and validator
   ([\#551](https://github.com/RConsortium/S7/issues/551)).
+- [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+  now gives a clear error when called from a function that is not an S7
+  generic, e.g. `unclass(generic)()`, instead of failing with a
+  confusing message
+  ([\#684](https://github.com/RConsortium/S7/issues/684)).
 - [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
   now returns a class specification for any R object, not just S7
   objects. It returns the matching `class_*` for base types, a
