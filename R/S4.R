@@ -4,9 +4,10 @@
 #' an S7 class that does not extend an S4 class, or an S3 class created by
 #' [new_S3_class()], you need to call `S4_register()` once. Classes created by
 #' [new_class()] with an S4 parent are registered automatically.
-#' Use `S4_register_contains()` when you want an S4 class to extend an S7 class
-#' with `contains=`. This registers the S7 class as an old class with known
-#' attributes so that S7 properties are represented as S4 slots.
+#'
+#' @section Details:
+#' ```{r child = "man/rmd/S4-registration.Rmd"}
+#' ```
 #'
 #' @param class An S7 class created with [new_class()], or, for
 #'   `S4_register()` only, an S3 class created with [new_S3_class()] or an S7

@@ -14,9 +14,10 @@
 #'   with this name, i.e. `Foo <- new_class("Foo")`. This object both represents
 #'   the class and is used to construct new instances of the class.
 #' @param parent The parent class to inherit behavior from.
-#'   There are three options:
+#'   There are four options:
 #'
 #'   * An S7 class, like [S7_object].
+#'   * An S4 class, like the result of [methods::getClass()].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
 #' @param package Package name. This is automatically resolved if the class is
