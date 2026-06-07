@@ -270,6 +270,50 @@ describe("S4_register", {
     expect_error(methods::validObject(invalid), "bad status")
   })
 
+  it("validates only matching S7 classes for S4 shim upcasts", {
+    on.exit(S4_remove_classes(c(
+      "S4regShimRoot",
+      "S4regShimParent",
+      "S4regShimChild",
+      "S4regShimGrandChild",
+      "S7::S4regShimParent",
+      "S7::S4regShimChild",
+      "S7::S4regShimParent::S4Slots",
+      "S7::S4regShimChild::S4Slots"
+    )))
+
+    setClass("S4regShimRoot", slots = list(root = "numeric"))
+    S4regShimParent <- new_class(
+      "S4regShimParent",
+      parent = getClass("S4regShimRoot"),
+      properties = list(x = class_numeric),
+      package = "S7"
+    )
+    S4regShimChild <- new_class(
+      "S4regShimChild",
+      parent = S4regShimParent,
+      properties = list(y = class_character),
+      package = "S7"
+    )
+
+    S4regShimParent_S4 <- S4_register_contains(S4regShimParent)
+    S4regShimChild_S4 <- S4_register_contains(S4regShimChild)
+    setClass("S4regShimParent", contains = S4regShimParent_S4)
+    setClass("S4regShimChild", contains = S4regShimChild_S4)
+    setIs("S4regShimChild", "S4regShimParent")
+    expect_warning(
+      setClass("S4regShimGrandChild", contains = "S4regShimChild"),
+      "inconsistent superclass structure"
+    )
+
+    object <- methods::new("S4regShimGrandChild", root = 1, x = 2, y = "a")
+    parent_shim <- methods::as(object, S4regShimParent_S4)
+
+    expect_false("y" %in% methods::slotNames(parent_shim))
+    expect_equal(S7_class(parent_shim), S4regShimChild)
+    expect_true(methods::validObject(object))
+  })
+
   it("registers abstract S7 classes as virtual S4 classes", {
     on.exit({
       try(methods::removeMethod("dim", "S4regAbstractConcrete"), silent = TRUE)

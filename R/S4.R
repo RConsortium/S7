@@ -382,7 +382,24 @@ S4_validate_old_class <- function(object) {
 }
 
 S4_validate_shim <- function(object) {
-  S4_validate(object)
+  shim_class <- sub("::S4Slots$", "", class(object)[1L])
+  class <- S7_class(object)
+
+  if (identical(S7_class_name(class), shim_class)) {
+    return(S4_validate(object))
+  }
+  while (is_class(class@parent)) {
+    class <- class@parent
+    if (identical(S7_class_name(class), shim_class)) {
+      return(TRUE)
+    }
+  }
+
+  sprintf(
+    "object with S7 class %s does not match S4 shim class %s",
+    dQuote(S7_class_name(S7_class(object))),
+    dQuote(paste0(shim_class, "::S4Slots"))
+  )
 }
 
 S4_validate <- function(object) {
