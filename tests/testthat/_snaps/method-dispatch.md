@@ -49,6 +49,14 @@
       - x: <logical>
       - y: <logical>
 
+# dispatch fails cleanly when generic is not an S7 generic
+
+    Code
+      f()
+    Condition
+      Error in `S7_dispatch()`:
+      ! Must be called from within an S7 generic.
+
 # errors from dispatched methods have reasonable tracebacks
 
     Code
