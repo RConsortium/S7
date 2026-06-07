@@ -201,6 +201,12 @@ test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
   expect_equal(convert(C(x = 1, y = 2, z = 3), to = B)@y, 99)
 })
 
+test_that("convert() errors when upcasting to an abstract class (#680)", {
+  Foo <- new_class("Foo", abstract = TRUE, package = NULL)
+  Bar <- new_class("Bar", Foo, package = NULL)
+  expect_snapshot(convert(Bar(), Foo), error = TRUE)
+})
+
 test_that("convert() falls back to as.*() for base type targets (#472)", {
   expect_identical(convert(1.5, class_character), "1.5")
   expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))
