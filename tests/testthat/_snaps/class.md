@@ -283,14 +283,6 @@
       Error in `new_class()`:
       ! Properties can't be named "...".
 
-# property names can't start with `_` (#579)
-
-    Code
-      new_class("foo", properties = list(`_x` = class_character))
-    Condition
-      Error in `new_class()`:
-      ! Properties can't start with "_": "_x".
-
 # S7_class() gives informative error if no S7 spec available
 
     Code

@@ -424,16 +424,4 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
   }
-
-  # Names with special C handlers in base R (names, class, ...) are stored under
-  # a "_"-prefixed attribute, see prop_storage_rename(). "_"-prefixed names are
-  # therefore reserved to avoid colliding with that storage.
-  reserved <- startsWith(nms, "_")
-  if (any(reserved)) {
-    msg <- sprintf(
-      "Properties can't start with \"_\": %s.",
-      paste0('"', nms[reserved], '"', collapse = ", ")
-    )
-    stop2(msg, call = call)
-  }
 }

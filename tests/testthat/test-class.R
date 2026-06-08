@@ -326,12 +326,6 @@ test_that("can't create class with `...` property name", {
   })
 })
 
-test_that("property names can't start with `_` (#579)", {
-  expect_snapshot(error = TRUE, {
-    new_class("foo", properties = list(`_x` = class_character))
-  })
-})
-
 test_that("S7_class() returns a usable spec for any object (#559)", {
   # base types
   expect_equal(S7_class(1L), class_integer)

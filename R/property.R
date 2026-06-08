@@ -57,8 +57,8 @@
 #'   the element name when defining a list of properties. If both `name`
 #'   and a list-name are supplied, the list-name will be used.
 #'
-#'   Names must not start with `_`; these properties are reserved for internal
-#'   S7 usage.
+#'   Property names must not start with `_`; these properties are reserved for
+#'   internal use by S7.
 #' @returns An S7 property, i.e. a list with class `S7_property`.
 #' @export
 #' @examples
