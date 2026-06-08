@@ -106,6 +106,13 @@ local_s3_generic <- function(name, frame = parent.frame()) {
   invisible()
 }
 
+# Define an S3 method in globalenv() and remove it again on exit.
+local_s3_method <- function(name, fun, frame = parent.frame()) {
+  assign(name, fun, envir = globalenv())
+  defer(rm(list = name, envir = globalenv()), frame = frame)
+  invisible()
+}
+
 unregister_s3_methods <- function(envir, generic) {
   tbl <- envir[[".__S3MethodsTable__."]]
   if (!is.null(tbl)) {

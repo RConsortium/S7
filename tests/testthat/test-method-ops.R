@@ -22,6 +22,7 @@ test_that("Ops generics dispatch to S7 methods for S7 classes", {
 test_that("Ops generics dispatch to S3 methods", {
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
+  defer(unregister_s3_methods(baseenv(), "Ops"))
 
   foo <- new_class("foo")
   method(`+`, list(class_factor, foo)) <- function(e1, e2) "factor-foo"
@@ -32,14 +33,46 @@ test_that("Ops generics dispatch to S3 methods", {
 
   # Even if custom method exists
   foo_S3 <- structure(list(), class = "foo_S3")
-  assign("+.foo_S3", function(e1, e2) stop("Failure!"), envir = globalenv())
-  defer(rm("+.foo_S3", envir = globalenv()))
+  local_s3_method("+.foo_S3", function(e1, e2) stop("Failure!"))
 
   method(`+`, list(new_S3_class("foo_S3"), foo)) <- function(e1, e2) "S3-S7"
   method(`+`, list(foo, new_S3_class("foo_S3"))) <- function(e1, e2) "S7-S3"
 
   expect_equal(foo() + foo_S3, "S7-S3")
   expect_equal(foo_S3 + foo(), "S3-S7")
+})
+
+test_that("operator methods on S3/S4 classes work when neither operand is S7", {
+  local_methods(base_ops[["+"]])
+
+  class_foo <- new_S3_class("foo")
+  foo <- structure(list(), class = "foo")
+  method(`+`, list(class_foo, class_any)) <- function(e1, e2) "foo+any"
+  expect_equal(foo + 10, "foo+any")
+
+  fooS4 <- local_S4_class("fooS4")
+  method(`+`, list(fooS4, class_any)) <- function(e1, e2) "fooS4+any"
+  expect_equal(fooS4("x") + 10, "fooS4+any")
+
+  # An unregistered operator still falls back to the base behaviour
+  expect_error(foo * 10, regexp = "non-numeric argument")
+})
+
+test_that("operator bridge does not clobber an existing group method", {
+  skip_if(getRversion() < "4.3")
+  local_methods(base_ops[["+"]])
+  defer(unregister_s3_methods(baseenv(), "Ops"))
+
+  local_s3_method("Ops.myS3", function(e1, e2) "myS3-ops")
+  method(`+`, list(new_S3_class("myS3"), class_any)) <- function(e1, e2) "!"
+
+  # + method used for S7 classes
+  x <- structure(list(), class = "myS3")
+  foo <- new_class("foo")
+  expect_equal(x + foo(), "!")
+
+  # but `Ops.myS3` used for base/S3 classes
+  expect_equal(x + 10, "myS3-ops")
 })
 
 test_that("Ops generics dispatch to S7 methods for S4 classes", {

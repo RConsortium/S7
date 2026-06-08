@@ -91,6 +91,7 @@ register_method <- function(
     for (sig in signatures) {
       register_S7_method(generic, sig, method, call = call)
     }
+    register_ops_bridge(generic, signatures, env)
   } else if (is_S3_generic(generic)) {
     for (sig in signatures) {
       register_S3_method(generic, sig, method, env, call = call)
