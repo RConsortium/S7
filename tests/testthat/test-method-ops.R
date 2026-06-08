@@ -59,6 +59,7 @@ test_that("operator methods on S3/S4 classes work when neither operand is S7", {
 })
 
 test_that("operator bridge does not clobber an existing group method", {
+  skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
   defer(unregister_s3_methods(baseenv(), "Ops"))
 
