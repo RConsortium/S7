@@ -18,21 +18,37 @@ First, add `S7` to the `Imports` field of your `DESCRIPTION`. We then
 recommend importing all S7 functions into your package `NAMESPACE` with
 `import(S7)`, or, if you’re using roxygen2, `@import S7`.
 
-Next, create a `.onLoad()` in `zzz.R` that calls
-[`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md):
+Next, create a `zzz.R` with a `.onLoad()` that calls
+[`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+and a top-level call to
+[`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md):
 
 ``` r
 
 .onLoad <- function(...) {
   S7::methods_register()
 }
+
+S7::S7_on_build()
 ```
 
-This is S7’s way of registering methods, rather than using export
-directives in your `NAMESPACE` like S3 and S4 do. This is only strictly
-necessary if you are registering methods for generics in other packages,
-but there’s no harm in adding it and it ensures that you won’t forget
-later.
+[`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+is S7’s way of registering methods, rather than using export directives
+in your `NAMESPACE` like S3 and S4 do. This is only strictly necessary
+if you are registering methods for generics in other packages, but
+there’s no harm in adding it and it ensures that you won’t forget later.
+
+[`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+cleans up after `method<-`. Because `method<-` is a replacement
+function, `method(generic, class) <- fun` is evaluated as
+`generic <- method<-(generic, class, fun)`, which would otherwise leave
+a copy of `generic` in your namespace. When `generic` belongs to another
+package, `method<-` returns a sentinel value instead of the generic, and
+[`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+removes these sentinels from your namespace when the package is built.
+It must be called at the top level of `zzz.R` (i.e. *not* inside
+`.onLoad()`), after all your methods have been registered; since `zzz.R`
+is loaded last, this is usually automatic.
 
 ## Classes
 

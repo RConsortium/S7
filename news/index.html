@@ -67,6 +67,8 @@
 <li>
 <code><a href="../reference/convert.html">convert()</a></code> no longer errors when <code>from</code> is a base or S3 object and <code>to</code> is an S7 class that inherits from <code>from</code>’s class. The base/S3 value is now passed as <code>.data</code> to the <code>to</code> constructor (<a href="https://github.com/RConsortium/S7/issues/537" class="external-link">#537</a>).</li>
 <li>
+<code>method&lt;-</code> no longer embeds a copy of a generic owned by another package in your package namespace. Instead it returns a sentinel value that the new <code><a href="../reference/methods_register.html">S7_on_build()</a></code> removes from the namespace at build time; call <code><a href="../reference/methods_register.html">S7_on_build()</a></code> at the top level of <code>zzz.R</code> (see <code><a href="../articles/packages.html">vignette("packages")</a></code>) (<a href="https://github.com/RConsortium/S7/issues/364" class="external-link">#364</a>).</li>
+<li>
 <code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>
 <code><a href="../reference/convert.html">convert()</a></code> is now idempotent when <code>from</code> is already an instance of <code>to</code>, returning it unchanged. When <code>from</code> inherits from <code>to</code> but is more specific, dispatch is now restricted to classes more specific than <code>to</code>, so an inherited downcasting method can no longer be selected in place of an upcast (<a href="https://github.com/RConsortium/S7/issues/429" class="external-link">#429</a>).</li>

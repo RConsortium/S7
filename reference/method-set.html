@@ -125,7 +125,11 @@ given <code>signature</code>, or <code>NULL</code> to unregister an existing met
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The <code>generic</code>, invisibly.</p>
+    <p>Usually <code>generic</code>, invisibly.</p>
+<p>When registering a method for a generic that lives in another package
+(an external, S3, or S4 generic), returns a sentinel object instead, to
+avoid embedding a copy of that generic in your package. See
+<code><a href="../articles/packages.html">vignette("packages")</a></code> for details.</p>
     </div>
 
     <div class="section level2">

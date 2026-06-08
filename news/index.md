@@ -34,6 +34,15 @@
   class that inherits from `from`’s class. The base/S3 value is now
   passed as `.data` to the `to` constructor
   ([\#537](https://github.com/RConsortium/S7/issues/537)).
+- `method<-` no longer embeds a copy of a generic owned by another
+  package in your package namespace. Instead it returns a sentinel value
+  that the new
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+  removes from the namespace at build time; call
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+  at the top level of `zzz.R` (see
+  [`vignette("packages")`](https://rconsortium.github.io/S7/articles/packages.md))
+  ([\#364](https://github.com/RConsortium/S7/issues/364)).
 - `method<-` now accepts `NULL` to unregister an existing method,
   e.g. `method(foo, class_character) <- NULL`
   ([\#613](https://github.com/RConsortium/S7/issues/613)).
