@@ -313,6 +313,60 @@ test_that("properties can be NULL", {
   expect_equal(props(x), list(x = NULL))
 })
 
+test_that("properties can use names with special base R handlers (#579)", {
+  foo <- new_class(
+    "foo",
+    properties = list(
+      names = class_character,
+      dim = class_integer,
+      dimnames = class_list,
+      class = class_character,
+      comment = class_character,
+      row.names = class_character,
+      x = class_numeric
+    )
+  )
+  obj <- foo(
+    names = c("a", "b"),
+    dim = 2L,
+    dimnames = list("a"),
+    class = "z",
+    comment = "hi",
+    row.names = "r",
+    x = 1
+  )
+
+  expect_equal(obj@names, c("a", "b"))
+  expect_equal(obj@dim, 2L)
+  expect_equal(obj@class, "z")
+  expect_equal(obj@comment, "hi")
+
+  # special-named props don't clobber the underlying dispatch class
+  expect_equal(class(obj), class_dispatch(foo))
+
+  # props are stored under "_"-prefixed attributes
+  expect_equal(attr(obj, "_names"), c("a", "b"))
+  expect_null(attr(obj, "names", exact = TRUE))
+
+  # getting and setting via prop() works too
+  expect_equal(prop(obj, "names"), c("a", "b"))
+  prop(obj, "names") <- "c"
+  expect_equal(obj@names, "c")
+})
+
+test_that("special-named property is independent of base attribute (#579)", {
+  foo <- new_class(
+    "foo",
+    parent = class_double,
+    properties = list(names = class_character)
+  )
+  obj <- foo(c(a = 1, b = 2), names = "label")
+
+  expect_equal(obj@names, "label")
+  expect_equal(names(obj), c("a", "b"))
+  expect_equal(names(S7_data(obj)), c("a", "b"))
+})
+
 describe("prop_info()", {
   it("returns a data frame describing each property", {
     foo <- new_class(
