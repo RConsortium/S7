@@ -28,7 +28,7 @@ S7_data <- function(object) {
   check_is_S7(object)
   check_not_environment(object, "S7_data()")
 
-  out <- zap_attr(object, c(prop_storage_names(object), "class", "S7_class"))
+  out <- zap_attr(object, c(prop_storage_names(object), "class", "_S7_class"))
 
   base <- base_parent(S7_class(object))
   if (is_S3_class(base)) {
@@ -51,7 +51,7 @@ base_parent <- function(class) {
   check_is_S7(object)
   check_not_environment(object, "S7_data<-")
 
-  s7_attrs <- c(prop_storage_names(object), "class", "S7_class")
+  s7_attrs <- c(prop_storage_names(object), "class", "_S7_class")
   for (name in s7_attrs) {
     attr(value, name) <- attr(object, name, exact = TRUE)
   }

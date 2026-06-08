@@ -92,7 +92,7 @@ void R_init_S7(DllInfo *dll)
     R_useDynamicSymbols(dll, FALSE);
 
     sym_ANY = Rf_install("ANY");
-    sym_S7_class = Rf_install("S7_class");
+    sym_S7_class = Rf_install("_S7_class");
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
     sym_package = Rf_install("package");
