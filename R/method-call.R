@@ -81,8 +81,10 @@ generic_call_frame <- function(call = sys.call(-1L)) {
     stop2("Must be called from within a method.", call = call)
   }
 
-  # Walk past super() re-dispatches: i.e. a generic whose caller is itself a
-  # method dispatched by the *same* generic
+  # Walk past super() re-dispatches: i.e. a generic that was dispatched with a
+  # super() object and whose caller is itself a method dispatched by the *same*
+  # generic. The super() object check distinguishes a genuine re-dispatch from
+  # an ordinary nested call to the same generic, which has the same frame shape.
   repeat {
     caller <- parents[frame]
     if (caller == 0L) {
@@ -92,7 +94,8 @@ generic_call_frame <- function(call = sys.call(-1L)) {
     is_super <- caller_generic != 0L &&
       inherits(sys.function(caller_generic), "S7_generic") &&
       identical(sys.function(caller_generic), sys.function(frame)) &&
-      !identical(sys.function(caller), S7_dispatch)
+      !identical(sys.function(caller), S7_dispatch) &&
+      is_super_dispatch(frame)
     if (is_super) {
       frame <- caller_generic
     } else {
@@ -101,4 +104,9 @@ generic_call_frame <- function(call = sys.call(-1L)) {
   }
 
   frame
+}
+
+# Look for a call to super() somewhere in the generic call
+is_super_dispatch <- function(i) {
+  !is.null(find_call(sys.call(i), quote(super), ns = "S7"))
 }
