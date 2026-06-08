@@ -7,7 +7,7 @@ test_that("can construct objects that extend S3 classes", {
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
   expect_equal(class(x), c("ordered2", "factor", "S7_object"))
   expect_equal(prop_names(x), character())
-  expect_error(x@levels, "Can't find property")
+  expect_error(x@levels, "Property not found")
 })
 
 test_that("subclasses inherit validator", {
@@ -67,9 +67,10 @@ test_that("catches invalid dates", {
 
 test_that("catches invalid POSIXct", {
   expect_snapshot({
-    validate_POSIXct(structure("x", tz = "UTC"))
-    validate_POSIXct(structure(1, tz = 1))
+    validate_POSIXct(structure("x", tzone = "UTC"))
+    validate_POSIXct(structure(1, tzone = 1))
   })
+  expect_null(validate_POSIXct(Sys.time()))
 })
 
 test_that("catches invalid data.frame", {

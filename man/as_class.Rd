@@ -14,6 +14,7 @@ as_class(x, arg = deparse(substitute(x)))
 \item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base class, like \link{class_logical}, \link{class_integer}, or \link{class_double}.
+\item \code{NULL}.
 \item A "special", either \link{class_missing} or \link{class_any}.
 }}
 

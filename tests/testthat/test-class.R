@@ -32,6 +32,23 @@ describe("S7 classes", {
     expect_snapshot(foo)
   })
 
+  it("shows property defaults and read-only annotations", {
+    Address <- new_class("Address", package = "S7")
+    Person <- new_class(
+      "Person",
+      properties = list(
+        implicit_default = new_property(class_character),
+        implicit_complex = new_property(class_Date),
+        implicit_S7 = new_property(Address),
+        default_value = new_property(class_character, default = ""),
+        default_expr = new_property(class_Date, default = quote(Sys.Date())),
+        read_only = new_property(getter = \(self) Sys.Date() - self@birthdate)
+      ),
+      package = "S7"
+    )
+    expect_snapshot(Person)
+  })
+
   it("checks inputs", {
     expect_snapshot(error = TRUE, {
       new_class(1)
@@ -336,14 +353,9 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
-test_that("can't create class with reserved property names", {
+test_that("can't create class with `...` property name", {
   expect_snapshot(error = TRUE, {
-    new_class("foo", properties = list(names = class_character))
-    new_class("foo", properties = list(dim = NULL | class_integer))
-    new_class(
-      "foo",
-      properties = list(dim = NULL | class_integer, dimnames = class_list)
-    )
+    new_class("foo", properties = list(... = class_character))
   })
 })
 

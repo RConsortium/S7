@@ -3,17 +3,21 @@ new_base_class <- function(name, constructor_name = name) {
 
   constructor <- new_function(
     args = list(.data = base_default(name)),
-    body = quote(.data),
-    env = baseenv()
+    body = quote(.data)
   )
 
-  validator <- function(object) {
-    if (base_class(object) != name) {
-      sprintf("Underlying data must be <%s> not <%s>", name, base_class(object))
-    }
-  }
-
-  validator <- utils::removeSource(validator)
+  validator <- new_function(
+    args = alist(object = ),
+    body = bquote(
+      if (base_class(object) != .(name)) {
+        sprintf(
+          "Underlying data must be <%s> not <%s>",
+          .(name),
+          base_class(object)
+        )
+      }
+    )
+  )
 
   out <- list(
     class = name,
@@ -78,11 +82,32 @@ base_S7_class <- function(x) {
     call = class_call,
     `function` = class_function,
     environment = class_environment,
-    stop(sprintf("No S7 class for base type <%s>.", typeof(x)), call. = FALSE)
+    stop2(sprintf("No S7 class for base type <%s>.", typeof(x)), call = NULL)
   )
 }
 
 is_base_class <- function(x) inherits(x, "S7_base_class")
+
+# Default coercion to a base type via the corresponding `as.*()`. `convert()`
+# uses this as a last resort, so a base type target works without a registered
+# method, but only after any user method and the inheritance-based defaults.
+base_coerce <- function(from, to, ...) {
+  switch(
+    to$class,
+    logical = as.logical(from, ...),
+    integer = as.integer(from, ...),
+    double = as.double(from, ...),
+    complex = as.complex(from, ...),
+    character = as.character(from, ...),
+    raw = as.raw(from, ...),
+    list = as.list(from, ...),
+    expression = as.expression(from, ...),
+    name = as.name(from, ...),
+    call = as.call(from, ...),
+    `function` = as.function(from, ...),
+    environment = as.environment(from, ...)
+  )
+}
 
 #' @export
 print.S7_base_class <- function(x, ...) {
@@ -113,6 +138,8 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_name`
 #' * `class_call`
 #' * `class_function`
+#'
+#' For method registration and properties, you can use `NULL` directly.
 #'
 #' See also [class_environment] which is documented separately due to the
 #' complexities introduced by their reference semantics.

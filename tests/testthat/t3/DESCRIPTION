@@ -1,0 +1,10 @@
+Package: t3
+Title: Test Provider Package With S3 and S4 Generics
+Version: 0.0.0.9000
+Authors@R:
+    person("Jim", "Hester", , "james.f.hester@gmail.com", role = c("aut", "cre"))
+Description: Defines an S3 generic and an S4 generic for other packages to
+    register S7 methods against.
+Imports: methods
+License: MIT + file LICENSE
+Encoding: UTF-8
