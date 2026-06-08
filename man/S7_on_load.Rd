@@ -30,8 +30,8 @@ after all method registration is complete. This avoids embedding copies
 of external generics in your package when you use \verb{method<-}.
 }
 
-\code{methods_register()} is the old name for \code{S7_on_load()}; it is retained for
-backward compatibility but new code should use \code{S7_on_load()}.
+\code{S7_on_load()} was previously known as \code{methods_register()}. This function is
+retained for backward compatibility but new code should use \code{S7_on_load()}.
 
 See \code{vignette("packages")} for more details.
 }

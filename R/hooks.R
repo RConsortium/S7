@@ -15,8 +15,8 @@
 #'   after all method registration is complete. This avoids embedding copies
 #'   of external generics in your package when you use `method<-`.
 #'
-#' `methods_register()` is the old name for `S7_on_load()`; it is retained for
-#' backward compatibility but new code should use `S7_on_load()`.
+#' `S7_on_load()` was previously known as `methods_register()`. This function is
+#' retained for backward compatibility but new code should use `S7_on_load()`.
 #'
 #' See `vignette("packages")` for more details.
 #'
