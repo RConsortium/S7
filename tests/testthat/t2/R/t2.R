@@ -35,5 +35,5 @@ S7::method(another_s3_generic, an_s7_class) <- function(x) "foo"
 
 
 .onLoad <- function(libname, pkgname) {
-  S7::methods_register()
+  S7::S7_on_load()
 }
