@@ -73,8 +73,8 @@ register_ops_bridge <- function(generic, signatures, env) {
   invisible()
 }
 
-has_s3_method <- function(group, class, env) {
-  !is.null(utils::getS3method(group, class, envir = env, optional = TRUE))
+has_s3_method <- function(generic, class, env) {
+  !is.null(utils::getS3method(generic, class, envir = env, optional = TRUE))
 }
 
 ops_bridge_class <- function(x) {
