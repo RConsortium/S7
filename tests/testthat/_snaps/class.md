@@ -283,6 +283,11 @@
       Error in `new_class()`:
       ! Property can't be named: names.
     Code
+      new_class("foo", properties = list(S7_class = class_any))
+    Condition
+      Error in `new_class()`:
+      ! Property can't use S7 reserved name: S7_class.
+    Code
       new_class("foo", properties = list(dim = NULL | class_integer))
     Condition
       Error in `new_class()`:
