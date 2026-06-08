@@ -40,9 +40,9 @@
 - `method<-` no longer embeds a copy of a generic owned by another
   package in your package namespace. Instead it returns a sentinel value
   that the new
-  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   removes from the namespace at build time; call
-  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   at the top level of `zzz.R` (see
   [`vignette("packages")`](https://rconsortium.github.io/S7/articles/packages.md))
   ([\#364](https://github.com/RConsortium/S7/issues/364)).
@@ -180,6 +180,14 @@
   now accept any class specification (S7 class, S7 union, S3 class, S4
   class, or base type wrapper like `class_integer`), not just S7 classes
   ([\#556](https://github.com/RConsortium/S7/issues/556)).
+- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  is the new name for
+  [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
+  giving it a nicer symmetry with
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md);
+  [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  remains available for backward compatibility
+  ([\#615](https://github.com/RConsortium/S7/issues/615)).
 - [`str()`](https://rdrr.io/r/utils/str.html) on S7 objects that inherit
   from data.frame (or other S3 classes whose underlying data has a `dim`
   attribute incompatible with the bare base type) no longer errors
@@ -372,7 +380,7 @@ CRAN release: 2023-08-24
 - [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
   is only needed when you want a soft dependency on another package.
 
-- [`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+- [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   now also registers S3 and S4 methods
   ([\#306](https://github.com/RConsortium/S7/issues/306)).
 

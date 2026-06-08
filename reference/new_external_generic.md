@@ -10,7 +10,7 @@ dependency, and sometimes you want a soft dependency, only registering
 the method if the package is already installed. `new_external_generic()`
 allows you to provide the minimal needed information about a generic so
 that methods can be registered at run time, as needed, using
-[`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md).
+[`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md).
 
 Note that in tests, you'll need to explicitly call the generic from the
 external package with `pkg::generic()`.

@@ -69,7 +69,7 @@
 <li>
 <code>method&lt;-</code> now works for double-dispatch operators (e.g. <code>+</code>, <code>==</code>, <code>%*%</code>) with plain S3 or S4 classes, even when neither operand is an S7 object (<a href="https://github.com/RConsortium/S7/issues/544" class="external-link">#544</a>).</li>
 <li>
-<code>method&lt;-</code> no longer embeds a copy of a generic owned by another package in your package namespace. Instead it returns a sentinel value that the new <code><a href="../reference/methods_register.html">S7_on_build()</a></code> removes from the namespace at build time; call <code><a href="../reference/methods_register.html">S7_on_build()</a></code> at the top level of <code>zzz.R</code> (see <code><a href="../articles/packages.html">vignette("packages")</a></code>) (<a href="https://github.com/RConsortium/S7/issues/364" class="external-link">#364</a>).</li>
+<code>method&lt;-</code> no longer embeds a copy of a generic owned by another package in your package namespace. Instead it returns a sentinel value that the new <code><a href="../reference/S7_on_load.html">S7_on_build()</a></code> removes from the namespace at build time; call <code><a href="../reference/S7_on_load.html">S7_on_build()</a></code> at the top level of <code>zzz.R</code> (see <code><a href="../articles/packages.html">vignette("packages")</a></code>) (<a href="https://github.com/RConsortium/S7/issues/364" class="external-link">#364</a>).</li>
 <li>
 <code>method&lt;-</code> now accepts <code>NULL</code> to unregister an existing method, e.g. <code>method(foo, class_character) &lt;- NULL</code> (<a href="https://github.com/RConsortium/S7/issues/613" class="external-link">#613</a>).</li>
 <li>
@@ -119,6 +119,8 @@
 <code>S7_error_method_not_found</code> now has a correct class vector without a duplicate <code>"error"</code> entry (<a href="https://github.com/jjjermiah" class="external-link">@jjjermiah</a>, <a href="https://github.com/RConsortium/S7/issues/604" class="external-link">#604</a>).</li>
 <li>
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
+<li>
+<code><a href="../reference/S7_on_load.html">S7_on_load()</a></code> is the new name for <code><a href="../reference/S7_on_load.html">methods_register()</a></code>, giving it a nicer symmetry with <code><a href="../reference/S7_on_load.html">S7_on_build()</a></code>; <code><a href="../reference/S7_on_load.html">methods_register()</a></code> remains available for backward compatibility (<a href="https://github.com/RConsortium/S7/issues/615" class="external-link">#615</a>).</li>
 <li>
 <code><a href="https://rdrr.io/r/utils/str.html" class="external-link">str()</a></code> on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a <code>dim</code> attribute incompatible with the bare base type) no longer errors (<a href="https://github.com/RConsortium/S7/issues/494" class="external-link">#494</a>).</li>
 <li>
@@ -180,7 +182,7 @@
 <div class="section level3">
 <h3 id="may-july-0-1-0">May-July 2023<a class="anchor" aria-label="anchor" href="#may-july-0-1-0"></a></h3>
 <ul><li><p><code><a href="../reference/new_external_generic.html">new_external_generic()</a></code> is only needed when you want a soft dependency on another package.</p></li>
-<li><p><code><a href="../reference/methods_register.html">methods_register()</a></code> now also registers S3 and S4 methods (<a href="https://github.com/RConsortium/S7/issues/306" class="external-link">#306</a>).</p></li>
+<li><p><code><a href="../reference/S7_on_load.html">methods_register()</a></code> now also registers S3 and S4 methods (<a href="https://github.com/RConsortium/S7/issues/306" class="external-link">#306</a>).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="jan-may-0-1-0">Jan-May 2023<a class="anchor" aria-label="anchor" href="#jan-may-0-1-0"></a></h3>

@@ -97,27 +97,27 @@ you have questions that this vignette doesn’t answer.</p>
 into your package <code>NAMESPACE</code> with <code>import(S7)</code>,
 or, if you’re using roxygen2, <code>@import S7</code>.</p>
 <p>Next, create a <code>zzz.R</code> with a <code>.onLoad()</code> that
-calls <code><a href="../reference/methods_register.html">methods_register()</a></code> and a top-level call to
-<code><a href="../reference/methods_register.html">S7_on_build()</a></code>:</p>
+calls <code><a href="../reference/S7_on_load.html">S7_on_load()</a></code> and a top-level call to
+<code><a href="../reference/S7_on_load.html">S7_on_build()</a></code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">.onLoad</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="../reference/methods_register.html">methods_register</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="../reference/S7_on_load.html">S7_on_load</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="../reference/methods_register.html">S7_on_build</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/methods_register.html">methods_register()</a></code> is S7’s way of registering methods,
-rather than using export directives in your <code>NAMESPACE</code> like
-S3 and S4 do. This is only strictly necessary if you are registering
-methods for generics in other packages, but there’s no harm in adding it
-and it ensures that you won’t forget later.</p>
-<p><code><a href="../reference/methods_register.html">S7_on_build()</a></code> cleans up after <code>method&lt;-</code>.
+<span><span class="fu">S7</span><span class="fu">::</span><span class="fu"><a href="../reference/S7_on_load.html">S7_on_build</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/S7_on_load.html">S7_on_load()</a></code> is S7’s way of registering methods, rather
+than using export directives in your <code>NAMESPACE</code> like S3 and
+S4 do. This is only strictly necessary if you are registering methods
+for generics in other packages, but there’s no harm in adding it and it
+ensures that you won’t forget later.</p>
+<p><code><a href="../reference/S7_on_load.html">S7_on_build()</a></code> cleans up after <code>method&lt;-</code>.
 Because <code>method&lt;-</code> is a replacement function,
 <code>method(generic, class) &lt;- fun</code> is evaluated as
 <code>generic &lt;- method&lt;-(generic, class, fun)</code>, which would
 otherwise leave a copy of <code>generic</code> in your namespace. When
 <code>generic</code> belongs to another package,
 <code>method&lt;-</code> returns a sentinel value instead of the
-generic, and <code><a href="../reference/methods_register.html">S7_on_build()</a></code> removes these sentinels from
+generic, and <code><a href="../reference/S7_on_load.html">S7_on_build()</a></code> removes these sentinels from
 your namespace when the package is built. It must be called at the top
 level of <code>zzz.R</code> (i.e. <em>not</em> inside
 <code>.onLoad()</code>), after all your methods have been registered;

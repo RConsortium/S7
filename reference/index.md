@@ -68,8 +68,9 @@ Functions needed when using S7 within a package. See
 [`vignette("packages")`](https://rconsortium.github.io/S7/articles/packages.md)
 for more details.
 
-- [`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
-  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   : Package hooks for S7 methods
 - [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
   : Generics in other packages

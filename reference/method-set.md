@@ -14,7 +14,7 @@ generics. But this is not a general method registration function: at
 least one of `generic` and `signature` needs to be from S7.
 
 Note that if you are writing a package, you must call
-[`methods_register()`](https://rconsortium.github.io/S7/reference/methods_register.md)
+[`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
 in your `.onLoad`. This ensures that all methods are dynamically
 registered when needed.
 
