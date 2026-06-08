@@ -54,7 +54,7 @@ test_that("operator methods on S3/S4 classes work when neither operand is S7", {
   # Primitive `+` dispatches into S7 even though `foo` is not an S7 object
   expect_equal(foo + 10, "foo+any")
   # An unregistered operator falls back to the base behaviour
-  expect_snapshot(foo * 10, error = TRUE)
+  expect_error(foo * 10, regexp = "non-numeric argument")
 
   fooS4 <- local_S4_class("fooS4")
   method(`+`, list(fooS4, class_any)) <- function(e1, e2) "fooS4+any"
