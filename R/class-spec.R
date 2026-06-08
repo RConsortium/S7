@@ -192,7 +192,10 @@ class_constructor <- function(.x) {
 class_validate <- function(class, object) {
   validator <- switch(
     class_type(class),
-    S4 = methods::validObject,
+    S4 = function(object) {
+      check <- methods::validObject(object, test = TRUE)
+      if (isTRUE(check)) NULL else check
+    },
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
@@ -300,10 +303,7 @@ class_inherits <- function(x, what) {
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
-    # This is slightly too crude as we really want them to be in the same
-    # order and contiguous, but it's probably close enough for practical
-    # purposes
-    S7_S3 = !isS4(x) && all(what$class %in% class(x)),
+    S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
   )
 }
 
@@ -342,6 +342,21 @@ obj_dispatch <- function(x) {
 }
 
 # helpers -----------------------------------------------------------------
+
+# Does `child`'s dispatch extend `parent`'s? Subclassing only ever prepends
+# more specific classes, so `parent`'s classes must form the tail of `child`'s.
+# S7 wrappers of base/S3 types append "S7_object", which we ignore.
+class_dispatch_extends <- function(parent, child) {
+  parent <- drop_S7_object(parent)
+  child <- drop_S7_object(child)
+  n <- length(parent)
+  length(child) >= n && identical(child[length(child) - n + seq_len(n)], parent)
+}
+
+drop_S7_object <- function(x) {
+  n <- length(x)
+  if (n > 0 && x[[n]] == "S7_object") x[-n] else x
+}
 
 # Suppress @className false positive
 globalVariables("className")

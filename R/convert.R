@@ -172,6 +172,11 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     from <- zap_attr(from, c(from_props, "S7_class"))
     class(from) <- to$class
   } else if (is_class(to)) {
+    if (to@abstract) {
+      msg <- sprintf("Can't convert to abstract class <%s>.", to@name)
+      stop2(msg, call = call)
+    }
+
     from <- zap_attr(from, setdiff(from_props, names(to@properties)))
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
@@ -182,7 +187,7 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
 }
 
 is_down_cast <- function(x, class) {
-  inherits(x, setdiff(class_dispatch(class), "S7_object"))
+  class_dispatch_extends(obj_dispatch(x), class_dispatch(class))
 }
 
 convert_down <- function(from, to, ...) {

@@ -212,6 +212,24 @@
       ! <foo> object properties are invalid:
       - @x must be length 1
 
+# property validation runs the class's own validator
+
+    Code
+      Foo(x = bad)
+    Condition
+      Error in `Foo()`:
+      ! <Foo> object properties are invalid:
+      - @x: Not enough 'levels' for underlying data
+
+# property validation runs an S4 class's validity method
+
+    Code
+      Foo(x = bad)
+    Condition
+      Error in `Foo()`:
+      ! <Foo> object properties are invalid:
+      - @x: n must be positive
+
 # prop<- won't infinitly recurse on a custom setter
 
     Code
