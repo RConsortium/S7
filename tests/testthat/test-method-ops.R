@@ -33,8 +33,7 @@ test_that("Ops generics dispatch to S3 methods", {
 
   # Even if custom method exists
   foo_S3 <- structure(list(), class = "foo_S3")
-  assign("+.foo_S3", function(e1, e2) stop("Failure!"), envir = globalenv())
-  defer(rm("+.foo_S3", envir = globalenv()))
+  local_s3_method("+.foo_S3", function(e1, e2) stop("Failure!"))
 
   method(`+`, list(new_S3_class("foo_S3"), foo)) <- function(e1, e2) "S3-S7"
   method(`+`, list(foo, new_S3_class("foo_S3"))) <- function(e1, e2) "S7-S3"
@@ -45,7 +44,6 @@ test_that("Ops generics dispatch to S3 methods", {
 
 test_that("operator methods on S3/S4 classes work when neither operand is S7", {
   local_methods(base_ops[["+"]], base_ops[["*"]])
-  defer(unregister_s3_methods(baseenv(), "Ops"))
 
   class_foo <- new_S3_class("foo")
   foo <- structure(list(), class = "foo")
@@ -65,12 +63,13 @@ test_that("operator bridge does not clobber an existing group method", {
   local_methods(base_ops[["+"]])
   defer(unregister_s3_methods(baseenv(), "Ops"))
 
-  method(`+`, list(new_S3_class("factor"), class_any)) <- function(e1, e2) "!"
+  local_s3_method("Ops.myS3", function(e1, e2) "myS3-ops")
+  x <- structure(list(), class = "myS3")
 
-  # base `Ops.factor` is left intact for non-S7 operands
-  f1 <- factor("a", levels = c("a", "b"))
-  f2 <- factor("b", levels = c("a", "b"))
-  expect_equal(f1 == f2, FALSE)
+  method(`+`, list(new_S3_class("myS3"), class_any)) <- function(e1, e2) "!"
+
+  # existing `Ops.myS3` is left intact for non-S7 operands
+  expect_equal(x == x, "myS3-ops")
 })
 
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
