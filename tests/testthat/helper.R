@@ -28,6 +28,7 @@ quick_test <- function() {
   identical(Sys.getenv("R_TESTTHAT_QUICK", "false"), "true")
 }
 
+
 quick_test_disable <- function() {
   Sys.setenv("R_TESTTHAT_QUICK" = "false")
 }
@@ -60,6 +61,33 @@ local_S4_class <- function(name, ..., env = parent.frame()) {
   out
 }
 
+# Create a temporary library, prepend it to .libPaths(), and restore the
+# library paths and delete the temporary library when `frame` exits. Returns
+# the path to the temporary library.
+local_libpath <- function(frame = parent.frame()) {
+  lib <- tempfile()
+  dir.create(lib)
+  defer(unlink(lib, recursive = TRUE), frame = frame)
+
+  old <- .libPaths()
+  .libPaths(c(lib, old))
+  defer(.libPaths(old), frame = frame)
+  lib
+}
+
+# Install the package at `path` into `lib`, attach it, and detach (and unload)
+# it when `frame` exits. The package name is taken from `basename(path)`.
+local_install_and_attach <- function(path, lib, frame = parent.frame()) {
+  quick_install(path, lib)
+  package <- basename(path)
+  library(package, character.only = TRUE)
+  defer(
+    try(detach(paste0("package:", package), unload = TRUE), silent = TRUE),
+    frame = frame
+  )
+  invisible(package)
+}
+
 # Create an S3 generic in globalenv() so that `UseMethod()` can find methods
 # registered by S7 (which writes to the generic's environment's methods table).
 # Cleans up the generic and any registered methods on exit.
@@ -75,6 +103,13 @@ local_s3_generic <- function(name, frame = parent.frame()) {
     },
     frame = frame
   )
+  invisible()
+}
+
+# Define an S3 method in globalenv() and remove it again on exit.
+local_s3_method <- function(name, fun, frame = parent.frame()) {
+  assign(name, fun, envir = globalenv())
+  defer(rm(list = name, envir = globalenv()), frame = frame)
   invisible()
 }
 

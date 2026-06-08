@@ -9,8 +9,10 @@ describe("property retrieval", {
     expect_equal(prop(obj, "xyz"), 1)
     expect_equal(obj@xyz, 1)
 
-    expect_snapshot_error(prop(obj, "x"))
-    expect_snapshot_error(obj@x)
+    expect_snapshot(error = TRUE, {
+      prop(obj, "x")
+      obj@x
+    })
   })
   it("evalutes dynamic properties", {
     foo <- new_class(
@@ -162,6 +164,22 @@ describe("prop setting", {
   it("falls back to `base::@` for non-S7 objects", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
+  })
+
+  it("gives informative error if setter doesn't return an S7 object (#416)", {
+    foo <- new_class(
+      "foo",
+      package = NULL,
+      properties = list(
+        x = new_property(
+          class = class_integer,
+          setter = function(self, value) {
+            self@x <- as.integer(value)
+          }
+        )
+      )
+    )
+    expect_snapshot(foo(x = 1.1), error = TRUE)
   })
 
   it("setter can receive the property name (#552)", {
@@ -518,6 +536,33 @@ test_that("can validate with custom validator", {
 
     foo(x = 1:2)
   })
+})
+
+test_that("property validation runs the class's own validator", {
+  Foo <- new_class("Foo", package = NULL, properties = list(x = class_factor))
+
+  # A malformed factor passes the structural check (its class is "factor")
+  # but fails the factor validator because it has too few levels.
+  bad <- structure(1:3, levels = "a", class = "factor")
+  expect_snapshot(Foo(x = bad), error = TRUE)
+})
+
+test_that("property validation runs an S4 class's validity method", {
+  PosNum <- methods::setClass(
+    "PosNum",
+    slots = c(n = "numeric"),
+    validity = function(object) {
+      if (object@n <= 0) "n must be positive" else TRUE
+    }
+  )
+  on.exit(S4_remove_classes("PosNum"))
+  Foo <- new_class("Foo", package = NULL, properties = list(x = PosNum))
+
+  # An S4 object that passes the structural check but fails its own validity
+  # method is rejected
+  bad <- PosNum(n = 1)
+  bad@n <- -5
+  expect_snapshot(Foo(x = bad), error = TRUE)
 })
 
 test_that("prop<- won't infinitly recurse on a custom setter", {

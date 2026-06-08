@@ -13,32 +13,31 @@ or an \link[methods:setGeneric]{S4 generic}.}
 
 \item{signature}{A method signature.
 
-For S7 generics that use single dispatch, this must be one of the
+For single-dispatch generics, this must be one of the
 following:
 \itemize{
 \item An S7 class (created by \code{\link[=new_class]{new_class()}}).
 \item An S7 union (created by \code{\link[=new_union]{new_union()}}).
-\item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}).
+\item An S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}) or \code{NULL}.
 \item An S4 class (created by \code{\link[methods:getClass]{methods::getClass()}} or \code{\link[methods:new]{methods::new()}}).
 \item A base type like \link{class_logical}, \link{class_integer}, or \link{class_numeric}.
 \item A special type like \link{class_missing} or \link{class_any}.
+\item A length-1 list containing any of the above.
 }
 
-For S7 generics that use multiple dispatch, this must be a list of any of
-the above types. (For convenience you can also use a list in the single
-dispatch case too.)
-
-For S3 generics, this can be any of the above types. There's one exception:
-you can only use \link{class_missing} with S3 operators that support double
-dispatch (e.g. \code{+} and \code{-}).
-
-The same rules apply to S4 generics as S7 generics.}
+For generics that use multiple dispatch, this must be a list of any of
+the above types.}
 
 \item{value}{A function that implements the generic specification for the
 given \code{signature}, or \code{NULL} to unregister an existing method.}
 }
 \value{
-The \code{generic}, invisibly.
+Usually \code{generic}, invisibly.
+
+When registering a method for a generic that lives in another package
+(an external, S3, or S4 generic), returns a sentinel object instead, to
+avoid embedding a copy of that generic in your package. See
+\code{vignette("packages")} for details.
 }
 \description{
 A generic defines the interface of a function. Once you have created a

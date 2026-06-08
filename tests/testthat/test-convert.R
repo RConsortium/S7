@@ -129,6 +129,84 @@ describe("fallback convert", {
   })
 })
 
+test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
+  Base <- new_class("Base", package = NULL)
+  A <- new_class(
+    "A",
+    Base,
+    package = NULL,
+    properties = list(x = class_numeric)
+  )
+  B <- new_class("B", Base, package = NULL)
+  B_child <- new_class("B_child", B, package = NULL)
+
+  # `to` is a descendant of `from`'s class
+  expect_equal(is_down_cast(Base(), A), TRUE)
+  expect_equal(is_down_cast(B(), B_child), TRUE)
+
+  # base/S3 `from` to an S7 class that extends it
+  my_logical <- new_class("my_logical", class_logical, package = NULL)
+  my_factor <- new_class("my_factor", class_factor, package = NULL)
+  expect_equal(is_down_cast(TRUE, my_logical), TRUE)
+  expect_equal(is_down_cast(factor("a"), my_factor), TRUE)
+
+  # Siblings share an ancestor but neither descends from the other
+  expect_equal(is_down_cast(B(), A), FALSE)
+  expect_equal(is_down_cast(B_child(), A), FALSE)
+})
+
+test_that("is_down_cast() requires `from`'s classes to be contiguous and ordered", {
+  # All of `from`'s classes are in `to`, but not contiguously
+  gappy <- structure(list(), class = c("a", "b"))
+  expect_equal(is_down_cast(gappy, new_S3_class(c("a", "x", "b"))), FALSE)
+
+  # All of `from`'s classes are in `to`, but in the wrong order
+  reversed <- structure(list(), class = c("b", "a"))
+  expect_equal(is_down_cast(reversed, new_S3_class(c("a", "b"))), FALSE)
+
+  # A genuine contiguous, ordered run succeeds
+  ok <- structure(list(), class = c("b", "a"))
+  expect_equal(is_down_cast(ok, new_S3_class(c("c", "b", "a"))), TRUE)
+})
+
+test_that("convert() is idempotent when `from` is an instance of `to` (#429)", {
+  local_methods(convert)
+  Foo <- new_class("Foo", package = NULL, properties = list(x = class_numeric))
+
+  # A registered method must not override the idempotent behaviour
+  method(convert, list(Foo, Foo)) <- function(from, to, ...) Foo(x = -1)
+
+  foo <- Foo(x = 1)
+  expect_identical(convert(foo, Foo), foo)
+})
+
+test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
+  local_methods(convert)
+  A <- new_class("A", package = NULL, properties = list(x = class_numeric))
+  B <- new_class("B", A, package = NULL, properties = list(y = class_numeric))
+  C <- new_class("C", B, package = NULL, properties = list(z = class_numeric))
+
+  # A method to downcast a superclass `A` to `B`
+  method(convert, list(A, B)) <- function(from, to, ...) B(y = -1)
+
+  # Converting a `C` (which is already a `B`) to `B` should upcast, dropping
+  # `z`, rather than dispatch to the inherited `A` -> `B` downcasting method.
+  b <- convert(C(x = 1, y = 2, z = 3), to = B)
+  expect_equal(S7_class(b), B)
+  expect_equal(b@x, 1)
+  expect_equal(b@y, 2)
+
+  # A more specific upcasting method is still used
+  method(convert, list(C, B)) <- function(from, to, ...) B(y = 99)
+  expect_equal(convert(C(x = 1, y = 2, z = 3), to = B)@y, 99)
+})
+
+test_that("convert() errors when upcasting to an abstract class (#680)", {
+  Foo <- new_class("Foo", abstract = TRUE, package = NULL)
+  Bar <- new_class("Bar", Foo, package = NULL)
+  expect_snapshot(convert(Bar(), Foo), error = TRUE)
+})
+
 test_that("convert() falls back to as.*() for base type targets (#472)", {
   expect_identical(convert(1.5, class_character), "1.5")
   expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))

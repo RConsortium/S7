@@ -8,6 +8,11 @@ test_that("validation uses typeof", {
   expect_equal(class_function$validator(mean), NULL)
 })
 
+test_that("constructor and validator live in the S7 namespace (#553)", {
+  expect_identical(environment(class_integer$constructor), asNamespace("S7"))
+  expect_identical(environment(class_integer$validator), asNamespace("S7"))
+})
+
 test_that("base class display as expected", {
   expect_snapshot({
     class_integer
