@@ -3,7 +3,7 @@
 #' @description
 #' When using S7 in a package, add two hooks to your `zzz.R`:
 #'
-#' * Call `methods_register()` from `.onLoad()`. This is S7's way of
+#' * Call `S7_on_load()` from `.onLoad()`. This is S7's way of
 #'   registering methods, rather than using `NAMESPACE` directives like S3 and
 #'   S4 do. It ensures that methods for generics (S3, S4, and S7) defined in
 #'   other packages are registered as needed when your package is loaded. This
@@ -15,6 +15,9 @@
 #'   after all method registration is complete. This avoids embedding copies
 #'   of external generics in your package when you use `method<-`.
 #'
+#' `S7_on_load()` was previously known as `methods_register()`. This function is
+#' retained for backward compatibility but new code should use `S7_on_load()`.
+#'
 #' See `vignette("packages")` for more details.
 #'
 #' @importFrom utils getFromNamespace packageName
@@ -22,14 +25,24 @@
 #' @examples
 #' # In zzz.R:
 #' .onLoad <- function(...) {
-#'   S7::methods_register()
+#'   S7::S7_on_load()
 #' }
 #' S7::S7_on_build()
 #' @export
+S7_on_load <- function() {
+  S7_on_load_(parent.frame())
+}
+
+#' @export
+#' @rdname S7_on_load
 methods_register <- function() {
-  package <- packageName(parent.frame())
-  ns <- topenv(parent.frame())
-  # TODO?: check/enforce that methods_register() is being called from .onLoad()
+  S7_on_load_(parent.frame())
+}
+
+S7_on_load_ <- function(env) {
+  package <- packageName(env)
+  ns <- topenv(env)
+  # TODO?: check/enforce that S7_on_load() is being called from .onLoad()
 
   tbl <- S7_methods_table(package)
 
@@ -46,7 +59,7 @@ methods_register <- function() {
 }
 
 #' @export
-#' @rdname methods_register
+#' @rdname S7_on_load
 S7_on_build <- function() {
   strip_generic_sentinels(topenv(parent.frame()))
 }

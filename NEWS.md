@@ -36,6 +36,7 @@
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
 * `S7_generic_call()` and `S7_user_frame()` are new helpers that give a method stable access to the originating call to the generic and the caller's frame, even in the presence of `super()` (#596).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
+* `S7_on_load()` is the new name for `methods_register()`, giving it a nicer symmetry with `S7_on_build()`; `methods_register()` remains available for backward compatibility (#615).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
 * `validate()` now signals validation errors with class `S7_error_validation_failed`, so they can be caught with `tryCatch()` (#602, #605).
