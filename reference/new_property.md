@@ -92,6 +92,9 @@ new_property(
   name when defining a list of properties. If both `name` and a
   list-name are supplied, the list-name will be used.
 
+  Property names must not start with `_`; these properties are reserved
+  for internal use by S7.
+
 ## Value
 
 An S7 property, i.e. a list with class `S7_property`.
@@ -125,9 +128,9 @@ Clock <- new_class("Clock", properties = list(
 ))
 my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
-#> [1] "2026-06-08 18:38:09 UTC"
+#> [1] "2026-06-08 19:03:41 UTC"
 my_clock@now
-#> [1] "2026-06-08 18:38:10 UTC"
+#> [1] "2026-06-08 19:03:42 UTC"
 # This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 #> Error in `<Clock>@now`() : Can't set read-only property.

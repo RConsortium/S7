@@ -72,6 +72,11 @@
   (registered as the `NULL` method)
   ([\#455](https://github.com/RConsortium/S7/issues/455)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now allows properties named `names`, `dim`, `dimnames`, `class`,
+  `comment`, `tsp`, and `row.names`. But property names beginning with
+  `_` are now reserved for internal use
+  ([\#579](https://github.com/RConsortium/S7/issues/579)).
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   experimentally allows `class_environment` as a parent again, so you
   can build S7 objects that share R’s reference semantics for
   environments. This support is provisional: because environments are
