@@ -51,7 +51,7 @@ S7 classes on S3 or S4 generics, and S3 or S4 classes on S7 generics.
 But this is not a general method registration function: at least one of
 \code{generic} and \code{signature} needs to be from S7.
 
-Note that if you are writing a package, you must call \code{\link[=methods_register]{methods_register()}}
+Note that if you are writing a package, you must call \code{\link[=S7_on_load]{S7_on_load()}}
 in your \code{.onLoad}. This ensures that all methods are dynamically registered
 when needed.
 }
