@@ -34,6 +34,9 @@
   class that inherits from `from`’s class. The base/S3 value is now
   passed as `.data` to the `to` constructor
   ([\#537](https://github.com/RConsortium/S7/issues/537)).
+- `method<-` now works for double-dispatch operators (e.g. `+`, `==`,
+  `%*%`) with plain S3 or S4 classes, even when neither operand is an S7
+  object ([\#544](https://github.com/RConsortium/S7/issues/544)).
 - `method<-` no longer embeds a copy of a generic owned by another
   package in your package namespace. Instead it returns a sentinel value
   that the new

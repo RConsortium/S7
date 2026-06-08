@@ -125,9 +125,9 @@ Clock <- new_class("Clock", properties = list(
 ))
 my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
-#> [1] "2026-06-08 15:23:35 UTC"
+#> [1] "2026-06-08 18:38:09 UTC"
 my_clock@now
-#> [1] "2026-06-08 15:23:36 UTC"
+#> [1] "2026-06-08 18:38:10 UTC"
 # This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 #> Error in `<Clock>@now`() : Can't set read-only property.
