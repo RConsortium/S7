@@ -64,12 +64,15 @@ test_that("operator bridge does not clobber an existing group method", {
   defer(unregister_s3_methods(baseenv(), "Ops"))
 
   local_s3_method("Ops.myS3", function(e1, e2) "myS3-ops")
-  x <- structure(list(), class = "myS3")
-
   method(`+`, list(new_S3_class("myS3"), class_any)) <- function(e1, e2) "!"
 
-  # existing `Ops.myS3` is left intact for non-S7 operands
-  expect_equal(x == x, "myS3-ops")
+  # + method used for S7 classes
+  x <- structure(list(), class = "myS3")
+  foo <- new_class("foo")
+  expect_equal(x + foo(), "!")
+
+  # but `Ops.myS3` used for base/S3 classes
+  expect_equal(x + 10, "myS3-ops")
 })
 
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
