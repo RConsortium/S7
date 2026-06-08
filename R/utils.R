@@ -61,15 +61,15 @@ is_single_list <- function(args) {
 # Collect `...` into a named list. As a convenience, a single unnamed list is
 # spliced in so its elements become the values, making it easy to supply
 # values programmatically. All values must be named.
-splice_dots <- function(..., error_call = sys.call(-1)) {
+collect_dots <- function(..., error_call = sys.call(-1)) {
   args <- list(...)
   if (is_single_list(args)) {
     args <- args[[1L]]
     if ("" %in% names2(args)) {
-      stop(simpleError("All elements of `..1` must be named.", error_call))
+      stop2("All elements of `..1` must be named.", call = error_call)
     }
   } else if ("" %in% names2(args)) {
-    stop(simpleError("All arguments to `...` must be named.", error_call))
+    stop2("All arguments to `...` must be named.", call = error_call)
   }
   args
 }

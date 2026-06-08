@@ -124,7 +124,7 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    dots <- splice_dots(...)
+    dots <- collect_dots(...)
     convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)

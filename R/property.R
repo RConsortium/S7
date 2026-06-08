@@ -504,7 +504,7 @@ props <- function(object, names = prop_names(object)) {
 #'   name-value pairs, which makes it easy to set properties programmatically.
 #' @rdname props
 set_props <- function(`_object`, ..., .check = TRUE) {
-  props(`_object`, check = .check) <- splice_dots(...)
+  props(`_object`, check = .check) <- collect_dots(...)
   `_object`
 }
 

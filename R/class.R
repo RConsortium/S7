@@ -322,7 +322,7 @@ new_object <- function(`_parent`, ...) {
     check_parent(`_parent`, class)
   }
 
-  args <- splice_dots(...)
+  args <- collect_dots(...)
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
   self_attrs <- args[!has_setter]
