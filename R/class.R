@@ -321,13 +321,15 @@ new_object <- function(.parent, ...) {
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
+  self_attrs <- args[!has_setter]
+  names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
   # We must awkwardly operate on `.parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
     list(class = class_dispatch(class), S7_class = class),
-    args[!has_setter],
+    self_attrs,
     attributes(.parent)
   )
   attrs <- attrs[!duplicated(names(attrs))]
@@ -416,24 +418,10 @@ S7_class <- function(object) {
 
 
 check_prop_names <- function(properties, call = sys.call(-1L)) {
-  # these attributes have special C handlers in base R
-  forbidden <- c(
-    "names",
-    "dim",
-    "dimnames",
-    "class",
-    "tsp",
-    "comment",
-    "row.names",
-    "..."
-  )
-  forbidden <- intersect(forbidden, names(properties))
-  if (length(forbidden)) {
-    msg <- paste0(
-      "Property can't be named: ",
-      paste0(forbidden, collapse = ", "),
-      "."
-    )
-    stop2(msg, call = call)
+  nms <- names2(properties)
+
+  # `...` can't be a property name because it's special syntax
+  if ("..." %in% nms) {
+    stop2("Properties can't be named \"...\".", call = call)
   }
 }
