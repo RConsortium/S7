@@ -7,8 +7,8 @@ test_that("can register S7 method for S3 generic", {
   method(sum, foo2) <- function(x, ...) "foo"
   expect_equal(sum(foo2()), "foo")
 
-  # and doesn't modify generic
-  expect_equal(sum, base::sum)
+  # and wraps the base generic with a sentinel
+  expect_equal(sum, generic_sentinel(sum))
 })
 
 test_that("can register S7 method for S3 Ops generic", {

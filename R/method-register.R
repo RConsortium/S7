@@ -36,7 +36,12 @@
 #'   the above types.
 #' @param value A function that implements the generic specification for the
 #'   given `signature`, or `NULL` to unregister an existing method.
-#' @returns The `generic`, invisibly.
+#' @returns Usually `generic`, invisibly.
+#'
+#'   When registering a method for a generic that lives in another package
+#'   (an external, S3, or S4 generic), returns a sentinel object instead, to
+#'   avoid embedding a copy of that generic in your package. See
+#'   `vignette("packages")` for details.
 #' @export
 #' @examples
 #' # Create a generic
@@ -59,7 +64,6 @@
   } else {
     register_method(generic, signature, value, env = parent.frame())
   }
-  invisible(generic)
 }
 
 register_method <- function(
@@ -70,6 +74,7 @@ register_method <- function(
   package = packageName(env),
   call = sys.call(-1L)
 ) {
+  original <- generic
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
 
@@ -99,11 +104,12 @@ register_method <- function(
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    generic <- as_external_generic(generic, env)
-    external_methods_add(package, generic, signature, method)
+    external <- as_external_generic(generic, env)
+    external_methods_add(package, external, signature, method)
+    return(generic_sentinel(external))
   }
 
-  invisible(generic)
+  invisible(original)
 }
 
 unregister_method <- function(
@@ -113,6 +119,7 @@ unregister_method <- function(
   package = packageName(env),
   call = sys.call(-1L)
 ) {
+  original <- generic
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
 
@@ -135,11 +142,12 @@ unregister_method <- function(
   # If we're inside a package, also remove from the deferred external
   # methods table so the method isn't re-registered on package load.
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    generic <- as_external_generic(generic)
-    external_methods_remove(package, generic, signature)
+    external <- as_external_generic(generic)
+    external_methods_remove(package, external, signature)
+    return(generic_sentinel(external))
   }
 
-  invisible(generic)
+  invisible(original)
 }
 
 register_S7_method <- function(

@@ -56,7 +56,9 @@ is_local_generic <- function(generic, package) {
     return(FALSE)
   }
 
-  generic_pkg <- package_name(generic)
+  # unwrap S3 generics
+  f <- if (is_S3_generic(generic)) generic$generic else generic
+  generic_pkg <- package_name(f)
   is.null(generic_pkg) || generic_pkg == package
 }
 

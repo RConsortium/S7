@@ -76,41 +76,6 @@ is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
 }
 
-#' Register methods in a package
-#'
-#' When using S7 in a package you should always call `methods_register()` when
-#' your package is loaded. This ensures that methods are registered as needed
-#' when you implement methods for generics (S3, S4, and S7) in other packages.
-#' (This is not strictly necessary if you only register methods for generics
-#' in your package, but it's better to include it and not need it than forget
-#' to include it and hit weird errors.)
-#'
-#' @importFrom utils getFromNamespace packageName
-#' @export
-#' @returns Nothing; called for its side-effects.
-#' @examples
-#' .onLoad <- function(...) {
-#'   S7::methods_register()
-#' }
-methods_register <- function() {
-  package <- packageName(parent.frame())
-  ns <- topenv(parent.frame())
-  # TODO?: check/enforce that methods_register() is being called from .onLoad()
-
-  tbl <- S7_methods_table(package)
-
-  for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method, ns)
-
-    if (isNamespaceLoaded(x$generic$package)) {
-      register()
-    }
-    setHook(packageEvent(x$generic$package, "onLoad"), register)
-  }
-
-  invisible()
-}
-
 registrar <- function(generic, signature, method, env) {
   # Force all arguments
   generic
