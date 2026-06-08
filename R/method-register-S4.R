@@ -10,47 +10,32 @@ register_S4_method <- function(
   methods::setMethod(generic, S4_signature, method, where = S4_env)
 }
 
-S4_class <- function(x, S4_env, call = sys.call(-1L)) {
+should_register_S4_method <- function(generic, signature) {
+  is_internal_generic(generic$name) && signature_has_S4_ancestor(signature)
+}
+
+signature_has_S4_ancestor <- function(signature) {
+  any(vlapply(signature, class_has_S4_ancestor))
+}
+
+class_has_S4_ancestor <- function(class) {
   switch(
-    class_type(x),
-    `NULL` = "NULL",
-    missing = "missing",
-    any = "ANY",
-    S7_base = base_to_S4(x$class),
-    S4 = x,
-    S7 = S4_registered_class(x, S4_env = S4_env, call = call),
-    S7_S3 = S4_registered_class(x, S4_env = S4_env, call = call),
-    S7_union = stop2(
-      "Internal error: union should be flattened upstream.",
-      call = NULL
-    )
+    class_type(class),
+    S4 = TRUE,
+    S7 = S7_extends_S4(class),
+    FALSE
   )
 }
 
-# S4 dispatch uses `class()` to find a method, but `class(1.5)` is "numeric",
-# not "double", so registering under "double" silently misses real doubles.
-# Mapping to "numeric" catches doubles but also matches integers too. There's
-# no clean S4 way to say "doubles only" and this seems likely to be what
-# people want.
-base_to_S4 <- function(class) {
-  switch(class, double = "numeric", class)
-}
-
-S4_registered_class <- function(
-  x,
-  S4_env,
-  call = sys.call(-1L)
-) {
-  class <- tryCatch(
-    methods::getClass(class_register(x), where = S4_env),
-    error = function(err) NULL
-  )
-  if (is.null(class)) {
-    msg <- sprintf(
-      "Class has not been registered with S4; please call S4_register(%s).",
-      class_deparse(x)
-    )
-    stop2(msg, call = call)
+S3_generic_S4_signature <- function(generic) {
+  if (!is_S3_generic(generic) || !is_internal_generic(generic$name)) {
+    return(NULL)
   }
-  class
+
+  generic <- methods::getGeneric(generic$name)
+  if (is.null(generic) || !is_S4_generic(generic)) {
+    return(NULL)
+  }
+
+  generic@signature
 }

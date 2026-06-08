@@ -79,6 +79,15 @@ class_type <- function(x) {
   }
 }
 
+class_properties <- function(x) {
+  switch(
+    class_type(x),
+    S7 = attr(x, "properties", exact = TRUE) %||% list(),
+    S4 = S4_slot_properties(x),
+    list()
+  )
+}
+
 class_friendly <- function(x) {
   switch(
     class_type(x),
@@ -192,9 +201,11 @@ class_constructor <- function(.x) {
 class_validate <- function(class, object) {
   validator <- switch(
     class_type(class),
-    S4 = function(object) {
-      check <- methods::validObject(object, test = TRUE)
-      if (isTRUE(check)) NULL else check
+    S4 = if (isS4(object)) {
+      function(object) {
+        check <- methods::validObject(object, test = TRUE)
+        if (isTRUE(check)) NULL else check
+      }
     },
     S7 = class@validator,
     S7_base = class$validator,
@@ -253,7 +264,11 @@ class_dispatch <- function(x) {
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(S7_class_name(x), class_dispatch(x@parent)),
+    S7 = c(
+      S7_class_name(x),
+      class_dispatch(x@parent),
+      if (is_S4_class(x@parent)) "S7_object"
+    ),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     stop2("Unsupported class type.", call = NULL)
@@ -299,8 +314,8 @@ class_inherits <- function(x, what) {
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
-    S4 = isS4(x) && methods::is(x, what),
-    S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
+    S4 = methods::is(x, what),
+    S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
@@ -310,10 +325,10 @@ class_inherits <- function(x, what) {
 obj_type <- function(x) {
   if (identical(x, quote(expr = ))) {
     "missing"
-  } else if (inherits(x, "S7_object")) {
-    "S7"
   } else if (isS4(x)) {
     "S4"
+  } else if (has_S7_class(x)) {
+    "S7"
   } else if (is.object(x)) {
     "S3"
   } else {

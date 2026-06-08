@@ -127,6 +127,77 @@ describe("fallback convert", {
     expect_false(S7_inherits(obj))
     expect_equal(attr(obj, "x"), NULL)
   })
+
+  it("can convert_up() an S4-derived S7 object to an S4 object ", {
+    on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
+    setClass("ParentS4", slots = list(x = "numeric"))
+
+    ChildS7 <- new_class(
+      "ChildS7",
+      parent = getClass("ParentS4"),
+      properties = list(y = class_character),
+      package = NULL
+    )
+
+    child <- ChildS7(x = 10, y = "a")
+    parent <- convert(child, to = getClass("ParentS4"))
+
+    expect_true(isS4(parent))
+    expect_equal(class(parent)[[1]], "ParentS4")
+    expect_equal(methods::slot(parent, "x"), 10)
+  })
+
+  it("can convert an S4-derived S7 object to an S4 object via methods::as", {
+    on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
+    setClass("ParentS4", slots = list(x = "numeric"))
+    setClass("UnrelatedS4", slots = list(z = "character"))
+
+    ChildS7 <- new_class(
+      "ChildS7",
+      parent = getClass("ParentS4"),
+      properties = list(y = class_character),
+      package = NULL
+    )
+
+    setAs("ChildS7", "UnrelatedS4", function(from) {
+      new("UnrelatedS4", z = as.character(methods::slot(from, "x")))
+    })
+
+    child <- ChildS7(x = 42, y = "a")
+    res <- convert(child, to = getClass("UnrelatedS4"))
+
+    expect_true(isS4(res))
+    expect_equal(class(res)[[1]], "UnrelatedS4")
+    expect_equal(methods::slot(res, "z"), "42")
+  })
+
+  it("can convert S7 -> S7 -> S4 via S4 coercion delegation", {
+    on.exit(S4_remove_classes(c("GrandparentS4", "ParentS7", "ChildS7")))
+    setClass("GrandparentS4", slots = list(x = "numeric"))
+
+    ParentS7 <- new_class(
+      "ParentS7",
+      parent = getClass("GrandparentS4"),
+      properties = list(y = class_character),
+      package = NULL
+    )
+
+    ChildS7 <- new_class(
+      "ChildS7",
+      parent = ParentS7,
+      properties = list(z = class_logical),
+      package = NULL
+    )
+
+    child <- ChildS7(x = 100, y = "a", z = TRUE)
+    expect_true(methods::validObject(child))
+
+    # Try S4 coercion to GrandparentS4
+    gp <- methods::as(child, "GrandparentS4")
+    expect_true(isS4(gp))
+    expect_equal(class(gp)[[1]], "GrandparentS4")
+    expect_equal(methods::slot(gp, "x"), 100)
+  })
 })
 
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {

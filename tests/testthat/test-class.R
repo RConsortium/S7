@@ -63,10 +63,10 @@ describe("S7 classes", {
     })
   })
 
-  it("can't inherit from S4 or class unions", {
+  it("can inherit from S4 but not class unions", {
     parentS4 <- methods::setClass("parentS4", slots = c(x = "numeric"))
     expect_snapshot(error = TRUE, {
-      new_class("test", parent = parentS4)
+      new_class("test", parent = parentS4, package = NULL)
       new_class("test", parent = new_union("character"))
     })
   })
@@ -323,6 +323,7 @@ test_that("can round trip to disk and back", {
 test_that("can't create class with reserved property names", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(names = class_character))
+    new_class("foo", properties = list(S7_class = class_any))
     new_class("foo", properties = list(dim = NULL | class_integer))
     new_class(
       "foo",

@@ -2,24 +2,76 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
-\title{Register an S7 or S3 class with S4}
+\alias{S4_register_contains}
+\title{Register an S7, S3, or union class with S4}
 \usage{
 S4_register(class, env = parent.frame())
+
+S4_register_contains(class, env = parent.frame())
 }
 \arguments{
-\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or an S3 class created
-with \code{\link[=new_S3_class]{new_S3_class()}}.}
+\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or, for
+\code{S4_register()} only, an S3 class created with \code{\link[=new_S3_class]{new_S3_class()}} or an S7
+union created with \code{\link[=new_union]{new_union()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
 \value{
-Nothing; the function is called for its side-effect.
+Both functions are called for their side effects and invisibly return the
+registered S4 class name.
 }
 \description{
 If you want to use \link{method<-} to register a method for an S4 generic with
-an S7 class or an S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}), you need to call
-\code{S4_register()} once.
+an S7 class that does not extend an S4 class, or an S3 class created by
+\code{\link[=new_S3_class]{new_S3_class()}}, you need to call \code{S4_register()} once. Classes created by
+\code{\link[=new_class]{new_class()}} with an S4 parent are registered automatically.
 }
+\section{Details}{
+
+\code{S4_register()} registers an S7 class, S3 class, or S7 union with S4 so it can
+be used in S4 method signatures. It is called automatically for concrete S7
+classes that extend S4 classes. For other S7 classes, call it when S4 code
+needs to dispatch on the class or use it in a slot.
+
+\code{S4_register()} invisibly returns the registered S4 class name. For an S7 class
+this is the S4 old-class name used for dispatch. For an S7 union this is the
+S4 class union name.
+
+\code{S4_register_contains()} is for the opposite direction: use it when an S4 class
+needs to extend an S7 class with \code{methods::setClass(contains = )}. It registers
+the S7 class if needed, then creates and returns an S4 shim class whose name
+ends in \verb{::S4Slots}. The shim:
+\itemize{
+\item contains the S7 old class, so inherited S7 and S4 dispatch can still find the
+S7 class;
+\item exposes stored S7 properties as formal S4 slots (as does the old class);
+\item includes an \code{S7_class} slot so S7 can recover the class object from real S4
+instances; and
+\item installs S4 validity methods that recursively call S7 validation.
+}
+
+Do not instantiate the \verb{::S4Slots} shim directly. It exists so another S4 class
+can contain it:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{Foo <- new_class("Foo", properties = list(x = class_numeric))
+Foo_S4 <- S4_register_contains(Foo)
+methods::setClass("S4Foo", contains = Foo_S4)
+}\if{html}{\out{</div>}}
+
+S4 subclasses created this way are real S4 objects. Their S7 properties are
+also S4 slots, so S4 initialization and S4 slot access can set them. This is
+necessary for S4 compatibility, but it means S4 code can bypass custom S7
+property behavior. Because of that, \code{S4_register_contains()} rejects properties
+with custom getters or setters.
+
+Property defaults become the S4 prototype values for the shim.
+
+S7 unions can be registered with \code{S4_register()}. S7's \code{class_union} maps to
+S4's \code{"numeric"} class. For other unions, S7 uses an existing matching S4 class
+union if one is already registered; otherwise the union must be explicitly
+registered before it can be used as an S4 slot or method signature.
+}
+
 \examples{
 methods::setGeneric("S4_generic", function(x) {
   standardGeneric("S4_generic")
@@ -30,4 +82,8 @@ S4_register(Foo)
 method(S4_generic, Foo) <- function(x) "Hello"
 
 S4_generic(Foo())
+
+S4Foo <- new_class("S4Foo", properties = list(x = class_numeric), package = "S7")
+S4Foo_S4 <- S4_register_contains(S4Foo)
+methods::setClass("S4Child", contains = S4Foo_S4)
 }

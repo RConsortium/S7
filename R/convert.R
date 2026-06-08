@@ -125,6 +125,8 @@ convert <- function(from, to, ...) {
     convert_down(from, to, ...)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
+  } else if (is_S4_coerce(from, to)) {
+    convert_S4(from, to, ...)
   } else {
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
@@ -180,6 +182,8 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     from <- zap_attr(from, setdiff(from_props, names(to@properties)))
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
+  } else if (is_S4_coerce(from, to)) {
+    from <- convert_S4(from, to)
   } else {
     stop2("Unreachable.")
   }
@@ -219,6 +223,22 @@ convert_down <- function(from, to, ...) {
   constructor_args <- c(from_prop_values, user_args)
 
   do.call(to, constructor_args)
+}
+
+s4_to_name <- function(x) {
+  if (is_S4_class(x)) x@className else class_register(x)
+}
+
+is_S4_coerce <- function(from, to) {
+  # can loosen this restriction once convert() has default base targets
+  if (!inherits_S4(from) && !is_S4_class(to)) {
+    return(FALSE)
+  }
+  methods::canCoerce(from, s4_to_name(to))
+}
+
+convert_S4 <- function(from, to, ...) {
+  methods::as(from, s4_to_name(to), ...)
 }
 
 # Converted to S7_generic onLoad in order to avoid dependency between files
