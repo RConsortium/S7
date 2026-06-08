@@ -8,6 +8,7 @@ extern SEXP sym_dispatch_args;
 extern SEXP sym_methods;
 extern SEXP sym_S7_dispatch;
 extern SEXP sym_name;
+extern SEXP sym_u_dispatched_super;
 
 extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
@@ -219,6 +220,9 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
         if (Rf_inherits(val, "S7_super")) {
 
+          // Mark the generic's frame so S7_generic_call()/S7_user_frame() can
+          // tell this is a super() re-dispatch and walk out to the user call.
+          Rf_defineVar(sym_u_dispatched_super, R_TRUE, envir);
 
           // Put the super() stored value into the method call.
           // Note: This means we don't pass along the arg PROMSXP, meaning that
