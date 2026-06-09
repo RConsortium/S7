@@ -31,6 +31,7 @@ static const R_ExternalMethodDef ExternalEntries[] = {
 
 SEXP sym_ANY;
 SEXP sym_S7_class;
+SEXP sym_S7_class_legacy;
 
 SEXP sym_name;
 SEXP sym_parent;
@@ -92,7 +93,9 @@ void R_init_S7(DllInfo *dll)
     R_useDynamicSymbols(dll, FALSE);
 
     sym_ANY = Rf_install("ANY");
-    sym_S7_class = Rf_install("S7_class");
+    sym_S7_class = Rf_install("_S7_class");
+    // Legacy name used by objects created with an older version of S7.
+    sym_S7_class_legacy = Rf_install("S7_class");
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
     sym_package = Rf_install("package");
