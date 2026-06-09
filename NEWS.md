@@ -1,6 +1,6 @@
 # S7 (development version)
 
-* The class object that S7 stores on each instance now lives in the `_S7_class` attribute (previously `S7_class`), moving it into the `_`-prefixed namespace reserved for S7 internals so it can't collide with a user-defined property. Objects serialised by an older version of S7 (e.g. baked into another package's lazy-load database) must be rebuilt to be recognised by this version.
+* The class object that S7 stores on each instance now lives in the `_S7_class` attribute (previously `S7_class`), moving it into the `_`-prefixed namespace reserved for S7 internals so it can't collide with a user-defined property. Objects created by an older version of S7 (e.g. serialised to disk or baked into another package's lazy-load database) continue to work, as S7 falls back to the old attribute name when reading them (#677).
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).
