@@ -1,0 +1,19 @@
+Package: t5
+Title: Test Consumer Subclassing an External Class
+Version: 0.0.0.9000
+Authors@R:
+    c(person(given = "Jim",
+             family = "Hester",
+             role = c("aut", "cre"),
+             email = "james.f.hester@gmail.com",
+             comment = c(ORCID = "0000-0002-2739-7082")),
+      person(given = "RStudio",
+             role = c("cph", "fnd")))
+Description: What the package does (one paragraph).
+Imports: S7
+Suggests: t1
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+Config/roxygen2/version: 8.0.0

@@ -5,6 +5,11 @@ new_constructor <- function(
   package = NULL
 ) {
   properties <- as_properties(properties)
+
+  if (is_external_class(parent)) {
+    return(new_external_constructor(parent, properties, envir, package))
+  }
+
   arg_info <- constructor_args(parent, properties, envir, package)
   self_args <- as_names(names(arg_info$self), named = TRUE)
 
@@ -95,6 +100,57 @@ constructor_args <- function(
   ))
 
   list(parent = parent_args, self = self_args)
+}
+
+# Constructor for a class that inherits from an external class. The parent's
+# package might not be loaded when the class is defined, so rather than inlining
+# the parent's constructor arguments (which would require resolving the external
+# class now), the constructor takes the child's own properties plus a `...` that
+# is forwarded to the parent. The external class is only resolved the first time
+# an object is constructed (when its package must be loaded anyway): at that
+# point we rebuild the class with the resolved parent so that inherited
+# properties, validation, and dispatch all behave as if the parent had been
+# known up front. The completed class is cached for subsequent calls.
+new_external_constructor <- function(parent, properties, envir, package) {
+  properties <- properties[!vlapply(properties, prop_is_read_only)]
+  self_args <- as.pairlist(lapply(
+    setNames(, names2(properties)),
+    function(name) prop_default(properties[[name]], envir, package)
+  ))
+  self_names <- as_names(names(self_args), named = TRUE)
+
+  # Bind the resolver into the constructor's environment: the wrapper runs in
+  # the consumer's namespace, which only imports S7's *exported* functions, so
+  # this internal helper must be reachable lexically.
+  env <- new.env(parent = envir)
+  env$parent <- parent
+  env$completed <- NULL
+  env$complete_external_class <- complete_external_class
+
+  body <- bquote(
+    {
+      if (is.null(completed)) {
+        completed <<- complete_external_class(sys.function(), parent)
+      }
+      completed(..(self_names), ...)
+    },
+    splice = TRUE
+  )
+
+  new_function(c(self_args, alist(... = )), body, env)
+}
+
+# Rebuild a class that inherits from an external `parent`, now that the parent's
+# package is loaded and the external class can be resolved.
+complete_external_class <- function(child, parent) {
+  new_class(
+    child@name,
+    parent = resolve_external_class_req(parent),
+    package = child@package,
+    properties = child@properties,
+    abstract = child@abstract,
+    validator = child@validator
+  )
 }
 
 
