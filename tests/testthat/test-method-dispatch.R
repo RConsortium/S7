@@ -62,10 +62,13 @@ describe("multiple dispatch", {
 })
 
 
-test_that("can substitute() args", {
+test_that("can substitute() non-dispatch args", {
   foo <- new_generic("foo", "x", function(x, ..., z = 1) S7_dispatch())
+
+  # Dispatched args are forced before the method is called, so substitute()
+  # sees their value rather than the original expression.
   method(foo, class_character) <- function(x, ..., z = 1) substitute(x)
-  expect_equal(foo(letters), quote(letters))
+  expect_equal(foo(letters), letters)
 
   suppressMessages(
     method(foo, class_character) <- function(x, ..., z = 1, y) substitute(y)

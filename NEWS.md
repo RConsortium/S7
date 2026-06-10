@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* Calling `substitute()` on a dispatched argument inside a method now returns the argument's value rather than its original expression, since dispatched arguments are evaluated before the method is called. `substitute()` continues to return the original expression for non-dispatched arguments.
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).

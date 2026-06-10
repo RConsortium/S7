@@ -184,8 +184,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP mcall = PROTECT(Rf_lcons(R_NilValue, R_NilValue));
   SEXP mcall_tail = mcall;
 
-  PROTECT_INDEX arg_pi, val_pi;
-  PROTECT_WITH_INDEX(R_NilValue, &arg_pi); // unnecessary, for rchk only
+  PROTECT_INDEX val_pi;
   PROTECT_WITH_INDEX(R_NilValue, &val_pi); // unnecessary, for rchk only
 
   // For each of the arguments to the generic
@@ -194,8 +193,6 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
     SEXP name = TAG(formals);
 
     if (i < n_dispatch) {
-
-      SEXP arg = Rf_findVarInFrame(envir, name);
 
       SETCADR(missing_call, name);
       int is_missing = Rf_asLogical(Rf_eval(missing_call, envir));
@@ -207,37 +204,25 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
       } else { // arg not missing, is a PROMSXP
 
-        // Force the promise so we can look up its class.
-        // However, we preserve and pass along the promise itself so that
-        // methods can still call substitute()
-        // Instead of Rf_eval(arg, R_EmptyEnv), we do Rf_eval(name, envir), so that
-        // - if TYPEOF(arg) == LANGSXP or SYMSXP, arg doesn't need to be enquoted and
-        // - if TYPEOF(arg) == PROMSXP, arg is updated in place.
-        REPROTECT(arg, arg_pi); // unnecessary, for rchk only
+        // Force the promise so we can look up its class, then pass along the
+        // forced value (enquoted if necessary so it isn't re-evaluated). We
+        // don't pass along the promise itself, so substitute() in a method
+        // sees the value of a dispatched argument, not its original call.
         SEXP val = Rf_eval(name, envir);
         REPROTECT(val, val_pi); // unnecessary, for rchk only
 
         if (Rf_inherits(val, "S7_super")) {
 
-
           // Put the super() stored value into the method call.
-          // Note: This means we don't pass along the arg PROMSXP, meaning that
-          // substitute() in methods does not retrieve the `super()` call.
-          // If we wanted substitute() to work here too, we could do:
-          //   if (TYPEOF(arg) == PROMSXP) { SET_PRVALUE(arg, true_val); } else { arg = true_val; }
-          SEXP arg = VECTOR_ELT(val, 0); // true_val used for dispatch
-          APPEND_NODE(mcall_tail, name, arg);
+          SEXP true_val = VECTOR_ELT(val, 0); // true_val used for dispatch
+          APPEND_NODE(mcall_tail, name, maybe_enquote(true_val));
 
           // Put the super() stored class dispatch vector into dispatch_classes
           SET_VECTOR_ELT(dispatch_classes, i, VECTOR_ELT(val, 1));
 
         } else { // val is not a S7_super, a regular value
 
-          // The PROMSXP arg will have been updated in place by Rf_eval() above.
-          // Add to arguments of method call
-          APPEND_NODE(mcall_tail, name, arg);
-
-          // Determine class string to use for method look up
+          APPEND_NODE(mcall_tail, name, maybe_enquote(val));
           SET_VECTOR_ELT(dispatch_classes, i, S7_obj_dispatch(val));
         }
       }
@@ -274,6 +259,6 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SETCAR(mcall, method_name);
 
   SEXP out = Rf_eval(mcall, envir);
-  UNPROTECT(4);
+  UNPROTECT(3);
   return out;
 }
