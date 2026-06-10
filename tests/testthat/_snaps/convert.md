@@ -21,3 +21,4 @@
     Condition
       Error in `convert()`:
       ! Can't convert to abstract class <POSIXt>.
+

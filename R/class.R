@@ -270,8 +270,13 @@ is_class <- function(x) inherits(x, "S7_class")
 # A class you can't supply an instance of: an abstract S7 class, or an S3 class
 # registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
 class_is_abstract <- function(class) {
-  (is_class(class) && class@abstract) ||
-    (is_S3_class(class) && isTRUE(class$abstract))
+  if (is_class(class)) {
+    class@abstract
+  } else if (is_S3_class(class)) {
+    class$abstract %||% is_S3_stub_constructor(class$constructor)
+  } else {
+    FALSE
+  }
 }
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
