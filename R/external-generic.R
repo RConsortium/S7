@@ -108,7 +108,9 @@ registrar <- function(deps, generic, signature, method, env) {
 
 resolve_generic <- function(generic) {
   ns <- asNamespace(generic$package)
-  if (!exists(generic$name, envir = ns, inherits = FALSE)) {
+  if (exists(generic$name, envir = ns, inherits = FALSE)) {
+    get(generic$name, envir = ns, inherits = FALSE)
+  } else {
     warning(
       sprintf(
         "[S7] Failed to find generic %s() in package %s",
@@ -117,9 +119,8 @@ resolve_generic <- function(generic) {
       ),
       call. = FALSE
     )
-    return(NULL)
+    NULL
   }
-  get(generic$name, envir = ns, inherits = FALSE)
 }
 
 external_methods_reset <- function(package) {

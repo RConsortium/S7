@@ -94,8 +94,9 @@ resolve_signature <- function(signature) {
   signature
 }
 
-# Resolve to the real class if the package is loaded (and the optional version
-# constraint is met). Returns `NULL` otherwise.
+# Optional resolution: used by `class_dispatch()` when building the
+# dispatch vector, where an unavailable external class should be silently
+# skipped.
 resolve_external_class_opt <- function(x) {
   if (!dep_available(x)) {
     return(NULL)
@@ -108,8 +109,9 @@ resolve_external_class_opt <- function(x) {
   get(x$name, envir = ns, inherits = FALSE)
 }
 
-# Resolve to the real class, loading the package if needed, erroring with a
-# specific message for each failure mode.
+# Required resolution: used when registering a method, when extending
+# (since the child constructor inlines the parent arguments) and when
+# constructing or validating an instance.
 resolve_external_class_req <- function(x) {
   prefix <- sprintf("Can't find external class <%s>", x$class_name)
   if (!requireNamespace(x$package, quietly = TRUE)) {
