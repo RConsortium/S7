@@ -1,11 +1,5 @@
 #include "compat.h"
 
-#if (R_VERSION >= R_Version(4, 5, 0))
-#define getClosureFormals R_ClosureFormals
-#else
-#define getClosureFormals FORMALS
-#endif
-
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
 extern SEXP ns_S7;
@@ -169,6 +163,12 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
+
+  if (!Rf_inherits(generic, "S7_generic")) {
+    SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
+    Rf_eval(err_call, ns_S7);
+    UNPROTECT(1); // never reached
+  }
 
   // Get the number of arguments to the generic
   SEXP formals = getClosureFormals(generic);

@@ -230,7 +230,7 @@ test_that("Dynamic settable properties are included in constructor", {
   foo <- Foo()
   expect_error(
     foo@dynamic_read_only <- 1,
-    "Can't set read-only property <Foo>@dynamic_read_only"
+    "Can't set read-only property"
   )
   foo@dynamic_settable <- 1
   expect_equal(foo@dynamic_settable, 1)

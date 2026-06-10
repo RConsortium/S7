@@ -10,7 +10,7 @@
 #' dependency, and sometimes you want a soft dependency, only registering the
 #' method if the package is already installed. `new_external_generic()` allows
 #' you to provide the minimal needed information about a generic so that methods
-#' can be registered at run time, as needed, using [methods_register()].
+#' can be registered at run time, as needed, using [S7_on_load()].
 #'
 #' Note that in tests, you'll need to explicitly call the generic from the
 #' external package with `pkg::generic()`.
@@ -40,7 +40,7 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
   out
 }
 
-as_external_generic <- function(x) {
+as_external_generic <- function(x, env = parent.frame()) {
   if (is_S7_generic(x)) {
     pkg <- package_name(x)
     new_external_generic(pkg, x@name, x@dispatch_args)
@@ -50,7 +50,8 @@ as_external_generic <- function(x) {
     pkg <- package_name(x$generic)
     new_external_generic(pkg, x$name, "__S3__")
   } else if (is_S4_generic(x)) {
-    new_external_generic(x@package, as.vector(x@generic), x@signature)
+    pkg <- S4_package_name(x, env)
+    new_external_generic(pkg, as.vector(x@generic), x@signature)
   }
 }
 
@@ -73,42 +74,6 @@ print.S7_external_generic <- function(x, ...) {
 
 is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
-}
-
-#' Register methods in a package
-#'
-#' When using S7 in a package you should always call `methods_register()` when
-#' your package is loaded. This ensures that methods are registered as needed
-#' when you implement methods for generics (S3, S4, and S7) in other packages.
-#' (This is not strictly necessary if you only register methods for generics
-#' in your package, but it's better to include it and not need it than forget
-#' to include it and hit weird errors.)
-#'
-#' @importFrom utils getFromNamespace packageName
-#' @export
-#' @returns Nothing; called for its side-effects.
-#' @examples
-#' .onLoad <- function(...) {
-#'   S7::methods_register()
-#' }
-methods_register <- function() {
-  package <- packageName(parent.frame())
-  ns <- topenv(parent.frame())
-  # TODO?: check/enforce that methods_register() is being called from .onLoad()
-
-  tbl <- S7_methods_table(package)
-
-  for (x in tbl) {
-    deps <- method_deps(x$generic, x$signature)
-    register <- registrar(deps, x$generic, x$signature, x$method, ns)
-
-    register()
-    for (pkg in unique(vcapply(deps, \(dep) dep$package))) {
-      setHook(packageEvent(pkg, "onLoad"), register)
-    }
-  }
-
-  invisible()
 }
 
 # Collects all external dependencies (the generic + any external classes)
@@ -172,6 +137,19 @@ external_methods_add <- function(package, generic, signature, method) {
   )
 
   S7_methods_table(package) <- tbl
+  invisible()
+}
+
+external_methods_remove <- function(package, generic, signature) {
+  tbl <- S7_methods_table(package)
+  if (length(tbl) == 0) {
+    return(invisible())
+  }
+
+  keep <- !vlapply(tbl, function(x) {
+    identical(x$generic, generic) && identical(x$signature, signature)
+  })
+  S7_methods_table(package) <- tbl[keep]
   invisible()
 }
 

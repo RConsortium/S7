@@ -9,8 +9,10 @@ describe("property retrieval", {
     expect_equal(prop(obj, "xyz"), 1)
     expect_equal(obj@xyz, 1)
 
-    expect_snapshot_error(prop(obj, "x"))
-    expect_snapshot_error(obj@x)
+    expect_snapshot(error = TRUE, {
+      prop(obj, "x")
+      obj@x
+    })
   })
   it("evalutes dynamic properties", {
     foo <- new_class(
@@ -163,6 +165,44 @@ describe("prop setting", {
     x <- "foo"
     expect_error(x@blah <- "bar", "is not a slot in class")
   })
+
+  it("gives informative error if setter doesn't return an S7 object (#416)", {
+    foo <- new_class(
+      "foo",
+      package = NULL,
+      properties = list(
+        x = new_property(
+          class = class_integer,
+          setter = function(self, value) {
+            self@x <- as.integer(value)
+          }
+        )
+      )
+    )
+    expect_snapshot(foo(x = 1.1), error = TRUE)
+  })
+
+  it("setter can receive the property name (#552)", {
+    property_colour <- new_property(
+      class = class_character,
+      setter = function(self, name, value) {
+        prop(self, name) <- as.character(value)
+        self
+      }
+    )
+    Rectangle <- new_class(
+      "Rectangle",
+      properties = list(colour = property_colour, fill = property_colour),
+      package = NULL
+    )
+
+    r <- Rectangle(colour = "red", fill = 99L)
+    expect_equal(r@colour, "red")
+    expect_equal(r@fill, "99")
+
+    r@colour <- 42L
+    expect_equal(r@colour, "42")
+  })
 })
 
 describe("props<-", {
@@ -271,6 +311,60 @@ test_that("properties can be NULL", {
   expect_equal(x@x, NULL)
   expect_equal(prop_names(x), "x")
   expect_equal(props(x), list(x = NULL))
+})
+
+test_that("properties can use names with special base R handlers (#579)", {
+  foo <- new_class(
+    "foo",
+    properties = list(
+      names = class_character,
+      dim = class_integer,
+      dimnames = class_list,
+      class = class_character,
+      comment = class_character,
+      row.names = class_character,
+      x = class_numeric
+    )
+  )
+  obj <- foo(
+    names = c("a", "b"),
+    dim = 2L,
+    dimnames = list("a"),
+    class = "z",
+    comment = "hi",
+    row.names = "r",
+    x = 1
+  )
+
+  expect_equal(obj@names, c("a", "b"))
+  expect_equal(obj@dim, 2L)
+  expect_equal(obj@class, "z")
+  expect_equal(obj@comment, "hi")
+
+  # special-named props don't clobber the underlying dispatch class
+  expect_equal(class(obj), class_dispatch(foo))
+
+  # props are stored under "_"-prefixed attributes
+  expect_equal(attr(obj, "_names"), c("a", "b"))
+  expect_null(attr(obj, "names", exact = TRUE))
+
+  # getting and setting via prop() works too
+  expect_equal(prop(obj, "names"), c("a", "b"))
+  prop(obj, "names") <- "c"
+  expect_equal(obj@names, "c")
+})
+
+test_that("special-named property is independent of base attribute (#579)", {
+  foo <- new_class(
+    "foo",
+    parent = class_double,
+    properties = list(names = class_character)
+  )
+  obj <- foo(c(a = 1, b = 2), names = "label")
+
+  expect_equal(obj@names, "label")
+  expect_equal(names(obj), c("a", "b"))
+  expect_equal(names(S7_data(obj)), c("a", "b"))
 })
 
 describe("prop_info()", {
@@ -442,6 +536,33 @@ test_that("can validate with custom validator", {
 
     foo(x = 1:2)
   })
+})
+
+test_that("property validation runs the class's own validator", {
+  Foo <- new_class("Foo", package = NULL, properties = list(x = class_factor))
+
+  # A malformed factor passes the structural check (its class is "factor")
+  # but fails the factor validator because it has too few levels.
+  bad <- structure(1:3, levels = "a", class = "factor")
+  expect_snapshot(Foo(x = bad), error = TRUE)
+})
+
+test_that("property validation runs an S4 class's validity method", {
+  PosNum <- methods::setClass(
+    "PosNum",
+    slots = c(n = "numeric"),
+    validity = function(object) {
+      if (object@n <= 0) "n must be positive" else TRUE
+    }
+  )
+  on.exit(S4_remove_classes("PosNum"))
+  Foo <- new_class("Foo", package = NULL, properties = list(x = PosNum))
+
+  # An S4 object that passes the structural check but fails its own validity
+  # method is rejected
+  bad <- PosNum(n = 1)
+  bad@n <- -5
+  expect_snapshot(Foo(x = bad), error = TRUE)
 })
 
 test_that("prop<- won't infinitly recurse on a custom setter", {

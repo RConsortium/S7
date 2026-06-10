@@ -34,13 +34,8 @@ There are two main differences between an S7 object and an S3 object:
 
 All up, this means most usage of S7 with S3 will just work.
 
--   S7 can register methods for:
-
-    -   S7 class and S3 generic
-    -   S3 class and S7 generic
-
+-   S7 can register methods for S3 generics and S3 classes
 -   S7 classes can extend S3 classes
-
 -   S3 classes can extend S7 classes
 
 ### Methods
@@ -49,14 +44,36 @@ All up, this means most usage of S7 with S3 will just work.
 You can also register a method for an S7 class and S3 generic without using S7, because all S7 objects have S3 classes, and S3 dispatch will operate on them normally.
 
 ```{r}
-Foo <- new_class("Foo")
+Foo <- new_class("Foo", package = "Bar")
 class(Foo())
 
-mean.Foo <- function(x, ...) {
+`mean.Bar::Foo` <- function(x, ...) {
   "mean of foo"
 }
 
 mean(Foo())
+```
+
+Note that when defining classes in a package, the S3 class name will be `{package}::{class}`, and that means you'll need to use `` ` `` to define S3 methods.
+
+### Generics
+
+If you convert an S3 generic to an S7 generic and want existing S3 methods (typically in other packages) to continue to work, add a `class_any` method that calls `UseMethod()`:
+
+```{r}
+foo <- new_generic("foo", "x")
+
+# Default method dispatches to S3
+method(foo, class_any) <- function(x, ...) {
+  UseMethod("foo")
+}
+```
+
+And then if you need a genuine default method, use S3:
+
+```{r}
+# Define the "true" default method
+foo.default <- function(x) paste0(x, " + 10")
 ```
 
 ### Classes
@@ -131,9 +148,7 @@ The chief difference is that they can be dynamic.
 
 -   S7 classes can not extend S4 classes
 -   S4 classes can extend S3 classes
--   S7 can register methods for:
-    -   S7 class and S4 generic
-    -   S4 class and S7 generic
+-   S7 can register methods for S4 generics and S4 classes
 
 ### Unions
 

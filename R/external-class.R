@@ -25,7 +25,7 @@
 #'   new_class("tree", properties = list(child = NULL | tree_stub))
 #'   ```
 #'
-#' Make sure to call [methods_register()] in your package's `.onLoad()` so that
+#' Make sure to call [S7_on_load()] in your package's `.onLoad()` so that
 #' deferred method registrations fire when the relevant package is loaded.
 #'
 #' @param package Package the class is defined in.

@@ -2,7 +2,7 @@
 #'
 #' @description
 #' `convert(from, to)` is a built-in generic for converting an object from
-#' one type to another. It is special in three ways:
+#' one type to another. It is special in four ways:
 #'
 #' * It uses double-dispatch, because conversion depends on both `from` and
 #'   `to`.
@@ -16,13 +16,25 @@
 #'   to work because those methods will return `classParent` objects, not
 #'   `classChild` objects.
 #'
-#' `convert()` provides two default implementations:
+#' * `from` uses ordinary inheritance, so a method registered on a parent class
+#'   is also used for its children, with two exceptions. If `from` is already an
+#'   instance of `to`, it's returned unchanged and no dispatch is needed.
+#'   When upcasting (i.e. `to` is an ancestor of `from`), `convert()` will
+#'   never dispatch to a method registered on `to` or one of its ancestors,
+#'   because such a method would downcast.
+#'
+#' `convert()` provides three default implementations:
 #'
 #' 1. When `from` inherits from `to`, it strips any properties that `from`
 #'    possesses that `to` does not (upcasting).
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
+#' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
+#'    neither of the above apply, it calls the corresponding `as.*()` function
+#'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
+#'    that `as.*()` coercion sits below `convert()`, so you can rely on it as a
+#'    fallback but still override it with a more specific method.
 #'
 #' If you are converting an object solely for the purposes of accessing a method
 #' on a superclass, you probably want [super()] instead. See its docs for more
@@ -55,6 +67,10 @@
 #' convert(Foo1(x = 1L), to = Foo2, y = 2.5)  # Set new property
 #' convert(Foo1(x = 1L), to = Foo2, x = 2L, y = 2.5)  # Override existing and set new
 #'
+#' # Converting to a base type falls back to the corresponding `as.*()`:
+#' convert(1.5, to = class_character)
+#' convert(c("1", "2"), to = class_integer)
+#'
 #' # For all other cases, you'll need to provide your own.
 #' try(convert(Foo1(x = 1L), to = class_integer))
 #'
@@ -63,8 +79,8 @@
 #' }
 #' convert(Foo1(x = 1L), to = class_integer)
 #'
-#' # Note that conversion does not respect inheritance so if we define a
-#' # convert method for integer to foo1
+#' # Conversion does not respect inheritance for `to`, so if we define a
+#' # convert method for integer to Foo1
 #' method(convert, list(class_integer, Foo1)) <- function(from, to) {
 #'   Foo1(x = from)
 #' }
@@ -72,37 +88,82 @@
 #'
 #' # Converting to Foo2 will still error
 #' try(convert(1L, to = Foo2))
-#' # This is probably not surprising because foo2 also needs some value
+#' # This is probably not surprising because Foo2 also needs some value
 #' # for `@y`, but it definitely makes dispatch for convert() special
+#'
+#' # Conversely, `convert()` *does* use inheritance for `from`, so a method
+#' # registered on a parent class is also used for its children. This holds
+#' # even when upcasting, where it overrides the default property stripping:
+#' Bar1 <- new_class("Bar1", properties = list(label = class_character))
+#' Bar2 <- new_class("Bar2", Bar1)
+#' Bar3 <- new_class("Bar3", Bar2)
+#' method(convert, list(Bar2, Bar1)) <- function(from, to, ...) {
+#'   Bar1(label = "from a Bar2 or one of its children")
+#' }
+#' convert(Bar2(), to = Bar1)
+#' convert(Bar3(), to = Bar1) # Bar3 inherits Bar2, so the Bar2 method is used
+#'
+#' # This `from`-inheritance is limited to classes more specific than `to`. A
+#' # method whose `from` is a *parent* of `to` would downcast, so it is skipped.
+#' # For example, this method downcasts a Foo1 to a Foo2:
+#' Foo3 <- new_class("Foo3", Foo2, properties = list(z = class_double))
+#' method(convert, list(Foo1, Foo2)) <- function(from, to, ...) Foo2(y = -1)
+#'
+#' # Upcasting a Foo3 to a Foo2 ignores that inherited downcasting method,
+#' # keeping `x` and `y` and dropping `z`, rather than resetting `y` to -1:
+#' convert(Foo3(x = 1L, y = 2, z = 3), to = Foo2)
 convert <- function(from, to, ...) {
   to <- as_class(to)
   check_can_inherit(to)
 
-  dispatch <- list(obj_dispatch(from), class_register(to))
-  convert <- .Call(method_, convert, dispatch, environment(), FALSE)
-
-  if (!is.null(convert)) {
-    convert(from, to, ...)
+  method <- convert_method(from, to)
+  if (!is.null(method)) {
+    method(from, to, ...)
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
     convert_down(from, to, ...)
+  } else if (is_base_class(to)) {
+    base_coerce(from, to, ...)
   } else {
     msg <- paste_c(
       "Can't find method with dispatch classes:\n",
       c("- from: ", obj_desc(from), "\n"),
       c("- to  : ", class_desc(to))
     )
-    stop(msg)
+    stop2(msg)
   }
 }
 
-convert_up <- function(from, to) {
+# Resolve the `convert()` method for converting `from` to `to`, or `NULL` if
+# there's no registered method (so `convert()` falls back to its defaults).
+# See convert docs for the motivation for this design.
+convert_method <- function(from, to) {
+  from_dispatch <- obj_dispatch(from)
+  to_class <- class_register(to)
+
+  for (i in seq_along(from_dispatch)) {
+    if (from_dispatch[[i]] == to_class) {
+      if (i == 1L) {
+        return(function(from, to, ...) from)
+      }
+      from_dispatch <- from_dispatch[seq_len(i - 1L)]
+      break
+    }
+  }
+
+  .Call(method_, convert, list(from_dispatch, to_class), environment(), FALSE)
+}
+
+convert_up <- function(from, to, call = sys.call(-1L)) {
+  check_not_environment(from, "convert()", call = call)
+
   from_class <- S7_class(from)
-  if (is.null(from_class)) {
-    from_props <- character()
+  if (is_class(from_class)) {
+    from_props <- prop_storage_names(from)
   } else {
-    from_props <- names(from_class@properties)
+    # `from` is a base, S3, or S4 object, so it has no S7 properties
+    from_props <- character()
   }
 
   if (is_base_class(to)) {
@@ -111,24 +172,37 @@ convert_up <- function(from, to) {
     from <- zap_attr(from, c(from_props, "S7_class"))
     class(from) <- to$class
   } else if (is_class(to)) {
-    from <- zap_attr(from, setdiff(from_props, names(to@properties)))
+    to_props <- prop_storage_rename(names(to@properties))
+    if (to@abstract) {
+      msg <- sprintf("Can't convert to abstract class <%s>.", to@name)
+      stop2(msg, call = call)
+    }
+
+    from <- zap_attr(from, setdiff(from_props, to_props))
     attr(from, "S7_class") <- to
     class(from) <- class_dispatch(to)
   } else {
-    stop("Unreachable.")
+    stop2("Unreachable.")
   }
   from
 }
 
 is_down_cast <- function(x, class) {
-  inherits(x, setdiff(class_dispatch(class), "S7_object"))
+  class_dispatch_extends(obj_dispatch(x), class_dispatch(class))
 }
 
 convert_down <- function(from, to, ...) {
+  from_class <- S7_class(from)
+
+  if (!is_class(from_class)) {
+    # `from` is a base or S3 object; pass it as `.data` to the constructor
+    return(to(.data = from, ...))
+  }
+
   # Use `from` as a prototype/seed when constructing `to`: copy over property
   # values from `from` and supply them as arguments to the `to` constructor.
 
-  from_props <- S7_class(from)@properties
+  from_props <- from_class@properties
   from_props <- Filter(Negate(prop_is_read_only), from_props)
   from_prop_names <- names(from_props)
 

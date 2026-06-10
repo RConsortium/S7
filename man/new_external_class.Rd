@@ -40,7 +40,7 @@ new_class("tree", properties = list(child = NULL | tree_stub))
 }\if{html}{\out{</div>}}
 }
 
-Make sure to call \code{\link[=methods_register]{methods_register()}} in your package's \code{.onLoad()} so that
+Make sure to call \code{\link[=S7_on_load]{S7_on_load()}} in your package's \code{.onLoad()} so that
 deferred method registrations fire when the relevant package is loaded.
 }
 \examples{

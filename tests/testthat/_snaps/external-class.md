@@ -45,7 +45,7 @@
     Code
       Tree(label = "bad", child = 1)
     Condition
-      Error:
+      Error in `Tree()`:
       ! <mypkg::Tree> object properties are invalid:
       - @child must be <NULL> or <mypkg::Tree>, not <double>
 

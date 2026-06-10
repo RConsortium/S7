@@ -18,6 +18,25 @@ test_that("can get and append methods", {
   )
 })
 
+test_that("can remove methods", {
+  external_methods_reset("S7")
+  on.exit(external_methods_reset("S7"), add = TRUE)
+
+  bar <- new_external_generic("foo", "bar", "x")
+  baz <- new_external_generic("foo", "baz", "x")
+  external_methods_add("S7", bar, list("A"), function() "a")
+  external_methods_add("S7", baz, list("B"), function() "b")
+  expect_length(S7_methods_table("S7"), 2)
+
+  external_methods_remove("S7", bar, list("A"))
+  expect_length(S7_methods_table("S7"), 1)
+  expect_equal(S7_methods_table("S7")[[1]]$generic, baz)
+
+  # No-op when entry doesn't exist
+  external_methods_remove("S7", bar, list("A"))
+  expect_length(S7_methods_table("S7"), 1)
+})
+
 test_that("displays nicely", {
   bar <- new_external_generic("foo", "bar", "x")
   on.exit(external_methods_reset("S7"), add = TRUE)
@@ -59,29 +78,15 @@ test_that("new_method works with both hard and soft dependencies", {
   skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
-  on.exit({
-    .libPaths(old_libpaths)
-    try(detach("package:t2", unload = TRUE), silent = TRUE)
-    try(detach("package:t1", unload = TRUE), silent = TRUE)
-    try(detach("package:t0", unload = TRUE), silent = TRUE)
-    unlink(tmp_lib, recursive = TRUE)
-    # remove.packages(c("t1", "t0", "t2"))
-  })
-
-  tmp_lib <- tempfile()
-  dir.create(tmp_lib)
-  old_libpaths <- .libPaths()
-  .libPaths(c(tmp_lib, old_libpaths))
+  tmp_lib <- local_libpath()
 
   # t2 has a hard dependency on t0
   # t2 has a soft dependency on t1
 
   # First, ensure that t2 can install and run successfully without t1 installed
-  quick_install(test_path("t0"), tmp_lib)
-  quick_install(test_path("t2"), tmp_lib)
+  local_install_and_attach(test_path("t0"), tmp_lib)
+  local_install_and_attach(test_path("t2"), tmp_lib)
 
-  library("t2")
-  library("t0")
   expect_equal(an_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(an_s7_generic("x"), "foo")
 
@@ -132,9 +137,7 @@ test_that("new_method works with both hard and soft dependencies", {
   })
 
   # Now install the soft dependency
-  quick_install(test_path("t1"), tmp_lib)
-
-  library("t1")
+  local_install_and_attach(test_path("t1"), tmp_lib)
   expect_equal(another_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(another_s7_generic("x"), "foo")
 

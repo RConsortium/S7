@@ -126,7 +126,7 @@ new_class <- function(
       abstract &&
         (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
     ) {
-      stop("Abstract classes must have abstract parents.")
+      stop2("Abstract classes must have abstract parents.")
     }
   }
 
@@ -174,14 +174,14 @@ S7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
 }
 
-check_S7_constructor <- function(constructor) {
+check_S7_constructor <- function(constructor, call = sys.call(-1L)) {
   if (!is.function(constructor)) {
-    stop("`constructor` must be a function.", call. = FALSE)
+    stop2("`constructor` must be a function.", call = call)
   }
 
   method_call <- find_call(body(constructor), quote(new_object), packageName())
   if (is.null(method_call)) {
-    stop("`constructor` must contain a call to `new_object()`.", call. = FALSE)
+    stop2("`constructor` must contain a call to `new_object()`.", call = call)
   }
 }
 
@@ -189,9 +189,19 @@ check_S7_constructor <- function(constructor) {
 print.S7_class <- function(x, ...) {
   props <- x@properties
   if (length(props) > 0) {
-    prop_names <- format(names(props))
-    prop_types <- format(vcapply(props, function(x) class_desc(x$class)))
-    prop_fmt <- paste0(" $ ", prop_names, ": ", prop_types, "\n", collapse = "")
+    prop_names <- names(props)
+    prop_defaults <- vcapply(props, prop_default_desc, package = x@package)
+    prop_types <- vcapply(props, function(p) class_desc(p$class))
+    suffix <- ifelse(prop_defaults == "", "", paste0(" ", prop_defaults))
+    prop_fmt <- paste0(
+      " $ ",
+      prop_names,
+      ": ",
+      prop_types,
+      suffix,
+      "\n",
+      collapse = ""
+    )
   } else {
     prop_fmt <- ""
   }
@@ -235,35 +245,34 @@ str.S7_class <- function(object, ..., nest.lev = 0) {
 
 #' @export
 c.S7_class <- function(...) {
-  msg <- "Can not combine S7 class objects."
-  stop(msg)
+  stop2("Can not combine S7 class objects.")
 }
 
 can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
 
-check_can_inherit <- function(x, arg = deparse(substitute(x))) {
+check_can_inherit <- function(
+  x,
+  arg = deparse(substitute(x)),
+  call = sys.call(-1L)
+) {
   if (!can_inherit(x)) {
     msg <- sprintf(
       "`%s` must be an S7 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
-    stop(msg, call. = FALSE)
-  }
-
-  if (is_base_class(x) && x$class == "environment") {
-    stop("Can't inherit from an environment.", call. = FALSE)
+    stop2(msg, call = call)
   }
 }
 
 is_class <- function(x) inherits(x, "S7_class")
 
-check_parent <- function(parent, class) {
+check_parent <- function(parent, class, call = sys.call(-1L)) {
   parent_class <- class@parent
   if (is.null(parent_class)) {
-    stop(
+    stop2(
       "`.parent` must not be supplied when class has no parent.",
-      call. = FALSE
+      call = call
     )
   }
 
@@ -280,7 +289,7 @@ check_parent <- function(parent, class) {
     class_desc(parent_class),
     obj_desc(parent)
   )
-  stop(msg, call. = FALSE)
+  stop2(msg, call = call)
 }
 
 # Object ------------------------------------------------------------------
@@ -292,14 +301,14 @@ check_parent <- function(parent, class) {
 new_object <- function(.parent, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "S7_class")) {
-    stop("`new_object()` must be called from within a constructor.")
+    stop2("`new_object()` must be called from within a constructor.")
   }
   if (class@abstract) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
     )
-    stop(msg)
+    stop2(msg)
   }
 
   if (!missing(.parent)) {
@@ -308,17 +317,19 @@ new_object <- function(.parent, ...) {
 
   args <- list(...)
   if ("" %in% names2(args)) {
-    stop("All arguments to `...` must be named.")
+    stop2("All arguments to `...` must be named.")
   }
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
+  self_attrs <- args[!has_setter]
+  names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
   # We must awkwardly operate on `.parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
     list(class = class_dispatch(class), S7_class = class),
-    args[!has_setter],
+    self_attrs,
     attributes(.parent)
   )
   attrs <- attrs[!duplicated(names(attrs))]
@@ -334,7 +345,12 @@ new_object <- function(.parent, ...) {
   # i.e. it's a non-abstract S7 class
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
-  validate(.parent, recursive = !parent_validated)
+  validate_from(
+    .parent,
+    parent = if (parent_validated) class@parent,
+    # Attribute validation failures to the constructor call, not new_object()
+    call = sys.call(-1L)
+  )
 
   .parent
 }
@@ -349,7 +365,10 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
   cat(obj_desc(object))
 
-  if (!is_S7_type(object)) {
+  if (is.environment(object)) {
+    # Can't use S7_data() with environments
+    cat(" ", format.default(object), "\n", sep = "")
+  } else if (!is_S7_type(object)) {
     if (!typeof(object) %in% c("numeric", "integer", "character", "double")) {
       cat(" ")
     }
@@ -398,25 +417,11 @@ S7_class <- function(object) {
 }
 
 
-check_prop_names <- function(properties, error_call = sys.call(-1L)) {
-  # these attributes have special C handlers in base R
-  forbidden <- c(
-    "names",
-    "dim",
-    "dimnames",
-    "class",
-    "tsp",
-    "comment",
-    "row.names",
-    "..."
-  )
-  forbidden <- intersect(forbidden, names(properties))
-  if (length(forbidden)) {
-    msg <- paste0(
-      "Property can't be named: ",
-      paste0(forbidden, collapse = ", "),
-      "."
-    )
-    stop(simpleError(msg, error_call))
+check_prop_names <- function(properties, call = sys.call(-1L)) {
+  nms <- names2(properties)
+
+  # `...` can't be a property name because it's special syntax
+  if ("..." %in% nms) {
+    stop2("Properties can't be named \"...\".", call = call)
   }
 }

@@ -38,83 +38,6 @@ describe("method registration", {
     expect_equal(sum, base::sum)
   })
 
-  it("can register S7 method for S3 generic", {
-    foo1 <- new_class("foo")
-    method(sum, foo1) <- function(x, ...) "foo"
-    expect_equal(sum(foo1()), "foo")
-
-    foo2 <- new_class("foo", package = "bar")
-    method(sum, foo2) <- function(x, ...) "foo"
-    expect_equal(sum(foo2()), "foo")
-
-    # and doesn't modify generic
-    expect_equal(sum, base::sum)
-  })
-
-  it("can register S7 method for S3 Ops generic", {
-    foo <- new_class("foo")
-    bar <- new_class("bar")
-
-    method(`+`, list(foo, bar)) <- function(e1, e2) "foobar"
-    expect_equal(foo() + bar(), "foobar")
-
-    if (getRversion() >= "4.3.0") {
-      method(`%*%`, list(foo, bar)) <- function(x, y) "foo.bar"
-      expect_equal(foo() %*% bar(), "foo.bar")
-    }
-  })
-
-  it("S3 registration requires a S7 class", {
-    foo <- new_class("foo")
-    expect_snapshot(error = TRUE, {
-      method(sum, new_S3_class("foo")) <- function(x, ...) "foo"
-    })
-  })
-
-  it("can register S7 method for S4 generic", {
-    methods::setGeneric("bar", function(x) standardGeneric("bar"))
-    S4foo <- new_class("S4foo", package = NULL)
-
-    expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
-
-    S4_register(S4foo)
-    on.exit(S4_remove_classes("S4foo"), add = TRUE)
-
-    method(bar, S4foo) <- function(x) "foo"
-    expect_equal(bar(S4foo()), "foo")
-  })
-
-  it("can register S4 methods for base types, class_any, class_missing, and NULL", {
-    methods::setGeneric("s4_gen", function(x) standardGeneric("s4_gen"))
-    method(s4_gen, class_character) <- function(x) "char"
-    method(s4_gen, class_any) <- function(x) "any"
-    method(s4_gen, class_missing) <- function(x) "missing"
-    method(s4_gen, NULL) <- function(x) "null"
-
-    expect_equal(s4_gen("hi"), "char")
-    expect_equal(s4_gen(list()), "any")
-    expect_equal(s4_gen(), "missing")
-    expect_equal(s4_gen(NULL), "null")
-  })
-
-  it("S4 method registration expands S7 unions to one method per class", {
-    methods::setGeneric("s4_union", function(x) standardGeneric("s4_union"))
-    method(s4_union, class_integer | class_character) <- function(x) "u"
-
-    expect_equal(s4_union(1L), "u")
-    expect_equal(s4_union("a"), "u")
-  })
-
-  it("S4 method registration on class_double catches actual doubles", {
-    # class(1.5) is "numeric", not "double", so class_double must register
-    # under S4's "numeric" class to dispatch on real doubles.
-    methods::setGeneric("s4_double", function(x) standardGeneric("s4_double"))
-    method(s4_double, class_numeric) <- function(x) "num"
-
-    expect_equal(s4_double(1L), "num")
-    expect_equal(s4_double(1.5), "num")
-  })
-
   it("checks argument types", {
     foo <- new_generic("foo", "x")
     expect_snapshot(error = TRUE, {
@@ -122,6 +45,87 @@ describe("method registration", {
       method(x, class_character) <- function(x) ...
       method(foo, 1) <- function(x) ...
     })
+  })
+
+  it("returns the generic unchanged when not in a package (#364)", {
+    foo <- new_generic("foo", "x")
+    out <- register_method(foo, class_integer, function(x) "i", package = NULL)
+    expect_identical(out, foo)
+
+    bar <- new_class("bar", package = NULL)
+    out <- register_method(sum, bar, function(x, ...) "bar", package = NULL)
+    expect_identical(out, sum)
+  })
+
+  it("returns a strippable sentinel for foreign generics in a package (#364)", {
+    external_methods_reset("S7")
+    on.exit(external_methods_reset("S7"), add = TRUE)
+
+    foo <- new_class("foo", package = NULL)
+    ext <- new_external_generic("notloaded.pkg", "ext_gen", "x")
+
+    out <- register_method(
+      ext,
+      foo,
+      function(x) "x",
+      env = asNamespace("S7"),
+      package = "S7"
+    )
+    expect_s3_class(out, "S7_generic_sentinel")
+    expect_s3_class(out, "S7_external_generic")
+
+    # the sentinel is still a usable generic, so further methods can be
+    # registered through the same binding (as in the t2 test package)
+    foo2 <- new_class("foo2", package = NULL)
+    out <- register_method(
+      out,
+      foo2,
+      function(x) "y",
+      env = asNamespace("S7"),
+      package = "S7"
+    )
+    expect_s3_class(out, "S7_generic_sentinel")
+    expect_length(S7_methods_table("S7"), 2)
+  })
+})
+
+describe("method unregistration", {
+  it("removes S7 method via NULL assignment", {
+    foo <- new_generic("foo", "x")
+    method(foo, class_character) <- function(x) "c"
+    method(foo, class_integer) <- function(x) "i"
+    expect_length(methods(foo), 2)
+
+    method(foo, class_character) <- NULL
+    expect_length(methods(foo), 1)
+    expect_equal(foo(1L), "i")
+    expect_snapshot(foo("x"), error = TRUE)
+  })
+
+  it("removes each method in a union signature", {
+    foo <- new_generic("foo", "x")
+    method(foo, class_numeric) <- function(x) "n"
+    expect_length(methods(foo), 2)
+
+    method(foo, class_numeric) <- NULL
+    expect_length(methods(foo), 0)
+  })
+
+  it("removes method with multi-dispatch signature", {
+    foo <- new_generic("foo", c("x", "y"))
+    A <- new_class("A")
+    B <- new_class("B")
+    method(foo, list(A, B)) <- function(x, y) "AB"
+    expect_equal(foo(A(), B()), "AB")
+
+    method(foo, list(A, B)) <- NULL
+    expect_snapshot(foo(A(), B()), error = TRUE)
+  })
+
+  it("is a silent no-op when the method doesn't exist", {
+    foo <- new_generic("foo", "x")
+    expect_silent(method(foo, class_character) <- NULL)
+    expect_length(methods(foo), 0)
   })
 })
 

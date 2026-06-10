@@ -90,15 +90,15 @@
 #' my_generic(Sys.Date())
 new_S3_class <- function(class, constructor = NULL, validator = NULL) {
   if (!is.character(class)) {
-    stop("`class` must be a character vector.")
+    stop2("`class` must be a character vector.")
   }
   if (!is.null(constructor)) {
     check_S3_constructor(constructor)
   } else {
     constructor <- function(.data) {
-      stop(
+      stop2(
         sprintf("S3 class <%s> doesn't have a constructor.", class[[1]]),
-        call. = FALSE
+        call = NULL
       )
     }
   }
@@ -130,13 +130,13 @@ nameOfClass.S7_S3_class <- function(x) {
   x[["class"]]
 }
 
-check_S3_constructor <- function(constructor) {
+check_S3_constructor <- function(constructor, call = sys.call(-1L)) {
   arg_names <- names(formals(constructor))
   if (arg_names[[1]] != ".data") {
-    stop("First argument to `constructor` must be .data.", call. = FALSE)
+    stop2("First argument to `constructor` must be .data.", call = call)
   }
   if ("..." %in% arg_names) {
-    stop("`constructor` can not use `...`.", call. = FALSE)
+    stop2("`constructor` can not use `...`.", call = call)
   }
 }
 
@@ -184,9 +184,9 @@ validate_POSIXct <- function(self) {
     return("Underlying data must be numeric")
   }
 
-  tz <- attr(self, "tz")
-  if (!is.character(tz) || length(tz) != 1) {
-    return("attr(, 'tz') must be a single string")
+  tz <- attr(self, "tzone", exact = TRUE)
+  if (!is.null(tz) && (!is.character(tz) || length(tz) != 1)) {
+    return("attr(, 'tzone') must be NULL or a single string")
   }
 }
 

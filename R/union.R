@@ -83,7 +83,10 @@ str.S7_union <- function(object, ..., nest.lev = 0) {
 }
 
 class_flatten <- function(x) {
-  x <- lapply(x, as_class)
+  x <- lapply(
+    seq_along(x),
+    function(i) as_class(x[[i]], arg = sprintf("..%i", i))
+  )
 
   # Flatten unions
   is_union <- vlapply(x, is_union)

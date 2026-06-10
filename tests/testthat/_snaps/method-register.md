@@ -6,25 +6,13 @@
     Message
       Overwriting method foo(<character>)
 
-# method registration / S3 registration requires a S7 class
-
-    Code
-      method(sum, new_S3_class("foo")) <- (function(x, ...) "foo")
-    Condition
-      Error:
-      ! When registering methods for S3 generic sum(), signature must be an S7 class, not an S3 class.
-
-# method registration / can register S7 method for S4 generic
-
-    Class has not been registered with S4; please call S4_register(S4foo).
-
 # method registration / checks argument types
 
     Code
       x <- 10
       method(x, class_character) <- (function(x) ...)
     Condition
-      Error:
+      Error in `method<-`:
       ! `generic` must be a function, not a <double>.
     Code
       method(foo, 1) <- (function(x) ...)
@@ -36,6 +24,24 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+
+# method unregistration / removes S7 method via NULL assignment
+
+    Code
+      foo("x")
+    Condition
+      Error:
+      ! Can't find method for `foo(<character>)`.
+
+# method unregistration / removes method with multi-dispatch signature
+
+    Code
+      foo(A(), B())
+    Condition
+      Error:
+      ! Can't find method for generic `foo(x, y)`:
+      - x: <S7::A>
+      - y: <S7::B>
 
 # as_signature() / accepts a length-1 list for single dispatch (#555)
 
