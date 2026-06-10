@@ -38,6 +38,13 @@ self-referential or mutually recursive class.
 \if{html}{\out{<div class="sourceCode R">}}\preformatted{tree_stub <- new_external_class("mypkg", "tree")
 new_class("tree", properties = list(child = NULL | tree_stub))
 }\if{html}{\out{</div>}}
+\item To subclass a class from a soft dependency. The child constructor forwards
+\code{...} to the parent, so the parent is only resolved when an object is
+constructed (not when the class is defined), and your package builds and
+loads even if the parent's package is absent.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{Child <- new_class("Child", parent = new_external_class("pkg", "Parent"))
+}\if{html}{\out{</div>}}
 }
 
 Make sure to call \code{\link[=S7_on_load]{S7_on_load()}} in your package's \code{.onLoad()} so that

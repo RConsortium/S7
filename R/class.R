@@ -248,7 +248,9 @@ c.S7_class <- function(...) {
   stop2("Can not combine S7 class objects.")
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_external_class(x)
+}
 
 check_can_inherit <- function(
   x,

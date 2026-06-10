@@ -117,6 +117,48 @@ test_that("method_deps() collects the generic and external classes", {
   expect_equal(deps[[3]]$version, "1.0")
 })
 
+test_that("can subclass an external class without resolving it (in process)", {
+  ec <- new_external_class("not_a_pkg", "Foo")
+  Child <- new_class("Child", parent = ec, properties = list(x = class_integer))
+
+  expect_named(formals(Child), c("x", "..."))
+  # still can't construct
+  expect_snapshot(Child(x = 1), error = TRUE)
+})
+
+test_that("can subclass an external class with deferred resolution", {
+  # NB: Relies on installed S7
+  skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
+  skip_if(quick_test())
+  tmp_lib <- local_libpath()
+
+  # t5 subclasses ParentClass from t1 (a soft dependency) via
+  # new_external_class(). It must install and load even though t1 is absent,
+  # because the external parent is only resolved when an object is constructed.
+  local_install_and_attach(test_path("t5"), tmp_lib)
+
+  # Constructing errors clearly while t1 is unavailable
+  expect_snapshot(
+    t5::ChildClass(child_prop = "a", parent_prop = "b"),
+    error = TRUE
+  )
+
+  # Once t1 is installed, construction resolves the parent and forwards the
+  # parent property through `...`
+  local_install_and_attach(test_path("t1"), tmp_lib)
+  obj <- t5::ChildClass(child_prop = "a", parent_prop = "b")
+  expect_equal(obj@child_prop, "a")
+  expect_equal(obj@parent_prop, "b")
+  expect_s3_class(obj, "t5::ChildClass")
+  expect_s3_class(obj, "t1::ParentClass")
+
+  # The parent constructor still validates the inherited property's type
+  expect_snapshot(
+    error = TRUE,
+    t5::ChildClass(child_prop = "a", parent_prop = 1)
+  )
+})
+
 test_that("dep_available() respects loaded + version", {
   # S7 is loaded, so this dep is available
   expect_true(dep_available(new_external_generic("S7", "S7_inherits", "x")))

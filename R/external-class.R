@@ -25,6 +25,15 @@
 #'   new_class("tree", properties = list(child = NULL | tree_stub))
 #'   ```
 #'
+#' * To subclass a class from a soft dependency. The child constructor forwards
+#'   `...` to the parent, so the parent is only resolved when an object is
+#'   constructed (not when the class is defined), and your package builds and
+#'   loads even if the parent's package is absent.
+#'
+#'   ```R
+#'   Child <- new_class("Child", parent = new_external_class("pkg", "Parent"))
+#'   ```
+#'
 #' Make sure to call [S7_on_load()] in your package's `.onLoad()` so that
 #' deferred method registrations fire when the relevant package is loaded.
 #'

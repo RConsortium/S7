@@ -49,3 +49,28 @@
       ! <mypkg::Tree> object properties are invalid:
       - @child must be <NULL> or <mypkg::Tree>, not <double>
 
+# can subclass an external class without resolving it (in process)
+
+    Code
+      Child(x = 1)
+    Condition
+      Error:
+      ! Can't find external class <not_a_pkg::Foo>: package 'not_a_pkg' is not installed.
+
+# can subclass an external class with deferred resolution
+
+    Code
+      t5::ChildClass(child_prop = "a", parent_prop = "b")
+    Condition
+      Error:
+      ! Can't find external class <t1::ParentClass>: package 't1' is not installed.
+
+---
+
+    Code
+      t5::ChildClass(child_prop = "a", parent_prop = 1)
+    Condition
+      Error in `ParentClass()`:
+      ! <t1::ParentClass> object properties are invalid:
+      - @parent_prop must be <character>, not <double>
+
