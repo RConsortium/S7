@@ -271,7 +271,7 @@ is_class <- function(x) inherits(x, "S7_class")
 # registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
 class_is_abstract <- function(class) {
   (is_class(class) && class@abstract) ||
-    (is_S3_class(class) && class$abstract)
+    (is_S3_class(class) && isTRUE(class$abstract))
 }
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
