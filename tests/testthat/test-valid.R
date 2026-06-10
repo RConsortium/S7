@@ -120,3 +120,72 @@ test_that("class validator errors have class S7_error_validation_failed", {
   attr(obj, "x") <- -1
   expect_error(validate(obj), class = "S7_error_validation_failed")
 })
+
+test_that("inherited property validators run only once during construction", {
+  x_calls <- 0L
+  parent <- new_class(
+    "parent",
+    package = NULL,
+    properties = list(
+      x = new_property(
+        validator = function(value) {
+          x_calls <<- x_calls + 1L
+          NULL
+        },
+        default = 1
+      )
+    )
+  )
+  child <- new_class("child", package = NULL, parent = parent)
+  grandchild <- new_class("grandchild", package = NULL, parent = child)
+
+  x_calls <- 0L
+  parent()
+  expect_equal(x_calls, 1L)
+
+  x_calls <- 0L
+  child()
+  expect_equal(x_calls, 1L)
+
+  x_calls <- 0L
+  grandchild()
+  expect_equal(x_calls, 1L)
+})
+
+test_that("overridden property validators run during construction", {
+  parent_calls <- 0L
+  child_calls <- 0L
+  parent <- new_class(
+    "parent",
+    package = NULL,
+    properties = list(
+      x = new_property(
+        validator = function(value) {
+          parent_calls <<- parent_calls + 1L
+          NULL
+        },
+        default = 1
+      )
+    )
+  )
+  child <- new_class(
+    "child",
+    package = NULL,
+    parent = parent,
+    properties = list(
+      x = new_property(
+        validator = function(value) {
+          child_calls <<- child_calls + 1L
+          NULL
+        },
+        default = 1
+      )
+    )
+  )
+
+  parent_calls <- 0L
+  child_calls <- 0L
+  child()
+  expect_equal(parent_calls, 1L)
+  expect_equal(child_calls, 1L)
+})

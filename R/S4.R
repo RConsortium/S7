@@ -29,7 +29,7 @@ S4_register <- function(class, env = parent.frame()) {
       "`class` must be an S7 class or an S3 class, not a %s.",
       obj_desc(class)
     )
-    stop(msg, call. = FALSE)
+    stop2(msg)
   }
 
   methods::setOldClass(classes, where = topenv(env))
@@ -38,7 +38,7 @@ S4_register <- function(class, env = parent.frame()) {
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
 
-S4_to_S7_class <- function(x, error_base = "") {
+S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
   # Silence R CMD check false positives
   distance <- subClass <- className <- package <- NULL
 
@@ -46,7 +46,8 @@ S4_to_S7_class <- function(x, error_base = "") {
   if (methods::is(x, "classGeneratorFunction")) {
     return(S4_to_S7_class(
       methods::getClass(as.character(x@className)),
-      error_base
+      error_base,
+      call = call
     ))
   }
 
@@ -71,7 +72,7 @@ S4_to_S7_class <- function(x, error_base = "") {
       "Unsupported S4 object: must be a class generator or a class definition, not a %s.",
       obj_desc(x)
     )
-    stop(paste0(error_base, msg), call. = FALSE)
+    stop2(paste0(error_base, msg), call = call)
   }
 }
 
@@ -145,6 +146,45 @@ S4_class_name <- function(x) {
     paste0("S4/", class)
   } else {
     paste0("S4/", package, "::", class)
+  }
+}
+
+S4_package_name <- function(f, env) {
+  if (methods::getPackageName(topenv(env), create = FALSE) == f@package) {
+    ## current ns might not be loaded yet, catch here
+    return(f@package)
+  }
+
+  name <- as.character(f@generic)
+  generic_in_its_package <- methods::isGeneric(
+    name,
+    where = asNamespace(f@package)
+  )
+  if (generic_in_its_package) {
+    return(f@package)
+  }
+
+  # generic was defined for a function from a different package, like base
+  find_package_with_symbol(name, env, exclude = f@package) %||%
+    stop2(
+      sprintf(
+        "Failed to find originating package for S4 generic '%s' in imports.",
+        f@generic
+      ),
+      call = NULL
+    )
+}
+
+find_package_with_symbol <- function(name, env, exclude = NULL) {
+  imports <- getNamespaceImports(topenv(env))
+  pkgs <- setdiff(names(imports), exclude)
+  for (pkg in pkgs) {
+    if (
+      (isTRUE(imports[[pkg]]) && name %in% getNamespaceExports(pkg)) ||
+        name %in% imports[[pkg]]
+    ) {
+      return(pkg)
+    }
   }
 }
 

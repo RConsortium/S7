@@ -1,0 +1,10 @@
+Package: t4
+Title: Test Consumer Registering Methods for Another Package's Generics
+Version: 0.0.0.9000
+Authors@R:
+    person("Jim", "Hester", , "james.f.hester@gmail.com", role = c("aut", "cre"))
+Description: Registers S7 methods for the S3 and S4 generics defined in t3,
+    exercising S7_on_build().
+Imports: S7, t3, methods
+License: MIT + file LICENSE
+Encoding: UTF-8

@@ -160,3 +160,35 @@ describe("S4_class_dispatch", {
     expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
   })
 })
+
+test_that("S4_package_name resolves S4 package name correctly in all cases", {
+  stats_ns <- asNamespace("stats")
+
+  # Case 1: Generic in declared package
+  show_S4 <- getGeneric("show")
+  expect_equal(S4_package_name(show_S4, stats_ns), "methods")
+
+  # Case 2: Current package bypass
+  dummy_S4 <- getGeneric("show")
+  dummy_S4@package <- "stats"
+  expect_equal(S4_package_name(dummy_S4, stats_ns), "stats")
+
+  # Case 3: Originating package in namespace imports
+  methods::setGeneric("axTicks")
+  on.exit(methods::removeGeneric("axTicks"))
+  mock_S4 <- getGeneric("axTicks")
+  mock_S4@package <- "base"
+  expect_equal(S4_package_name(mock_S4, stats_ns), "graphics")
+})
+
+test_that("S4_package_name errors if originating package can't be found", {
+  stats_ns <- asNamespace("stats")
+
+  methods::setGeneric("nonexistent_generic", function(x) {
+    standardGeneric("nonexistent_generic")
+  })
+  on.exit(methods::removeGeneric("nonexistent_generic"))
+  mock_S4 <- getGeneric("nonexistent_generic")
+  mock_S4@package <- "base"
+  expect_snapshot(S4_package_name(mock_S4, stats_ns), error = TRUE)
+})

@@ -55,9 +55,11 @@
 #' MyInt(10L)
 #' ```
 #'
-#' @param from An S7 object to cast.
-#' @param to An S7 class specification, passed to [as_class()]. Must be a
-#'   superclass of `object`.
+#' @param from An object to cast. Usually an S7 object, but `super()` also
+#'   works with S3 and S4 objects, as long as their dispatch chain includes
+#'   `to`.
+#' @param to A class specification, passed to [as_class()]. Must be a
+#'   superclass of `from`.
 #' @returns An `S7_super` object which should always be passed
 #'   immediately to a generic. It has no other special behavior.
 #' @export
@@ -98,17 +100,21 @@
 #' # super() only affects the _next_ call to a generic:
 #' bar2(super(obj, to = Foo1))
 super <- function(from, to) {
-  check_is_S7(from)
-
   to <- as_class(to)
-  check_can_inherit(to)
+  if (!class_type(to) %in% c("S7", "S7_base", "S7_S3", "S4")) {
+    msg <- sprintf(
+      "`to` must be an S7, S3, S4, or base class, not %s.",
+      class_friendly(to)
+    )
+    stop2(msg)
+  }
   if (!class_inherits(from, to)) {
     msg <- sprintf(
       "%s doesn't inherit from %s.",
       obj_desc(from),
       class_desc(to)
     )
-    stop(msg)
+    stop2(msg)
   }
 
   # Must not change order of these fields as C code indexes by position

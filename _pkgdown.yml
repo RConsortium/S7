@@ -40,7 +40,7 @@ reference:
     Functions needed when using S7 within a package. See `vignette("packages")`
     for more details.
   contents:
-  - methods_register
+  - S7_on_load
   - new_external_generic
 
 - title: Compatibility
@@ -49,6 +49,7 @@ reference:
     classes, and base types. See `vignette("compatibility")` for more details.
   contents:
   - base_classes
+  - class_environment
   - base_s3_classes
   - new_S3_class
   - S4_register

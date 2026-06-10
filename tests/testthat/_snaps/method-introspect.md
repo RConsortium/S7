@@ -3,13 +3,13 @@
     Code
       method(print, 1)
     Condition
-      Error:
+      Error in `method()`:
       ! `generic` must be a <S7_generic>, not a <closure>.
     Code
       foo <- new_generic("foo", "x")
       method(foo)
     Condition
-      Error:
+      Error in `method()`:
       ! Must supply exactly one of `class` and `object`.
     Code
       method(foo, 1)
@@ -24,13 +24,13 @@
     Code
       method(foo, new_union(class_integer, class_double))
     Condition
-      Error:
+      Error in `method()`:
       ! Can't dispatch on unions; must be a concrete type.
     Code
       foo2 <- new_generic("foo2", c("x", "y"))
       method(foo2, object = list(class_character))
     Condition
-      Error:
+      Error in `method()`:
       ! `object` must be length 2.
 
 # method introspection / errors if no method found

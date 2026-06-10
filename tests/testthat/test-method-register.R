@@ -123,6 +123,87 @@ describe("method registration", {
       method(foo, 1) <- function(x) ...
     })
   })
+
+  it("returns the generic unchanged when not in a package (#364)", {
+    foo <- new_generic("foo", "x")
+    out <- register_method(foo, class_integer, function(x) "i", package = NULL)
+    expect_identical(out, foo)
+
+    bar <- new_class("bar", package = NULL)
+    out <- register_method(sum, bar, function(x, ...) "bar", package = NULL)
+    expect_identical(out, sum)
+  })
+
+  it("returns a strippable sentinel for foreign generics in a package (#364)", {
+    external_methods_reset("S7")
+    on.exit(external_methods_reset("S7"), add = TRUE)
+
+    foo <- new_class("foo", package = NULL)
+    ext <- new_external_generic("notloaded.pkg", "ext_gen", "x")
+
+    out <- register_method(
+      ext,
+      foo,
+      function(x) "x",
+      env = asNamespace("S7"),
+      package = "S7"
+    )
+    expect_s3_class(out, "S7_generic_sentinel")
+    expect_s3_class(out, "S7_external_generic")
+
+    # the sentinel is still a usable generic, so further methods can be
+    # registered through the same binding (as in the t2 test package)
+    foo2 <- new_class("foo2", package = NULL)
+    out <- register_method(
+      out,
+      foo2,
+      function(x) "y",
+      env = asNamespace("S7"),
+      package = "S7"
+    )
+    expect_s3_class(out, "S7_generic_sentinel")
+    expect_length(S7_methods_table("S7"), 2)
+  })
+})
+
+describe("method unregistration", {
+  it("removes S7 method via NULL assignment", {
+    foo <- new_generic("foo", "x")
+    method(foo, class_character) <- function(x) "c"
+    method(foo, class_integer) <- function(x) "i"
+    expect_length(methods(foo), 2)
+
+    method(foo, class_character) <- NULL
+    expect_length(methods(foo), 1)
+    expect_equal(foo(1L), "i")
+    expect_snapshot(foo("x"), error = TRUE)
+  })
+
+  it("removes each method in a union signature", {
+    foo <- new_generic("foo", "x")
+    method(foo, class_numeric) <- function(x) "n"
+    expect_length(methods(foo), 2)
+
+    method(foo, class_numeric) <- NULL
+    expect_length(methods(foo), 0)
+  })
+
+  it("removes method with multi-dispatch signature", {
+    foo <- new_generic("foo", c("x", "y"))
+    A <- new_class("A")
+    B <- new_class("B")
+    method(foo, list(A, B)) <- function(x, y) "AB"
+    expect_equal(foo(A(), B()), "AB")
+
+    method(foo, list(A, B)) <- NULL
+    expect_snapshot(foo(A(), B()), error = TRUE)
+  })
+
+  it("is a silent no-op when the method doesn't exist", {
+    foo <- new_generic("foo", "x")
+    expect_silent(method(foo, class_character) <- NULL)
+    expect_length(methods(foo), 0)
+  })
 })
 
 describe("as_signature()", {

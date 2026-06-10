@@ -188,6 +188,11 @@ test_that("multiple dispatch fails with informative messages", {
   expect_error(fail(TRUE, TRUE), class = "S7_error_method_not_found")
 })
 
+test_that("dispatch fails cleanly when generic is not an S7 generic", {
+  f <- function() S7_dispatch()
+  expect_snapshot(f(), error = TRUE)
+})
+
 test_that("S7_error_method_not_found error class is not duplicated", {
   fail <- new_generic("fail", "x")
   cnd <- tryCatch(fail(TRUE), S7_error_method_not_found = identity)
