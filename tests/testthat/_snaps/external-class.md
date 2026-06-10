@@ -28,17 +28,20 @@
       resolve_external_class_req(new_external_class("not_a_pkg", "X"))
     Condition
       Error:
-      ! Can't find external class <not_a_pkg::X>: package 'not_a_pkg' is not installed.
+      ! Can't find external class <not_a_pkg::X>:
+      * Package 'not_a_pkg' is not installed.
     Code
-      resolve_external_class_req(new_external_class("S7", "S7_object", "999.0"))
+      resolve_external_class_req(new_external_class("S7", "S7_object", "2.0.0"))
     Condition
       Error:
-      ! Can't find external class <S7::S7_object>: package 'S7' is version 0.2.2.9000, but >= 999.0 is required.
+      ! Can't find external class <S7::S7_object>:
+      * Package 'S7' needs version 2.0.0, but only 1.0.0 is available.
     Code
       resolve_external_class_req(new_external_class("S7", "not_a_class"))
     Condition
       Error:
-      ! Can't find external class <S7::not_a_class>: 'not_a_class' is not found in package 'S7'.
+      ! Can't find external class <S7::not_a_class>:
+      * Packages 'S7' doesn't contain 'not_a_class'.
 
 # external class works as a property type for self-reference
 

@@ -48,10 +48,10 @@
 #' )
 new_external_class <- function(package, name, version = NULL) {
   if (!is_string(package)) {
-    stop("`package` must be a string.")
+    stop2("`package` must be a string.")
   }
   if (!is_string(name)) {
-    stop("`name` must be a string.")
+    stop2("`name` must be a string.")
   }
 
   out <- list(
@@ -85,6 +85,9 @@ dep_available <- function(dep) {
     (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)
 }
 
+# Make it mockable
+getNamespaceVersion <- NULL
+
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
     if (is_external_class(signature[[i]])) {
@@ -113,41 +116,37 @@ resolve_external_class_opt <- function(x) {
 # (since the child constructor inlines the parent arguments) and when
 # constructing or validating an instance.
 resolve_external_class_req <- function(x) {
-  prefix <- sprintf("Can't find external class <%s>", x$class_name)
+  prefix <- sprintf("Can't find external class <%s>:\n", x$class_name)
   if (!requireNamespace(x$package, quietly = TRUE)) {
-    stop(
-      sprintf(
-        "%s: package '%s' is not installed.",
-        prefix,
-        x$package
-      ),
-      call. = FALSE
+    stop2(
+      paste0(prefix, sprintf("* Package '%s' is not installed.", x$package)),
+      call = NULL
     )
   }
 
   if (!is.null(x$version) && getNamespaceVersion(x$package) < x$version) {
-    stop(
-      sprintf(
-        "%s: package '%s' is version %s, but >= %s is required.",
+    stop2(
+      paste0(
         prefix,
-        x$package,
-        getNamespaceVersion(x$package),
-        x$version
+        sprintf(
+          "* Package '%s' needs version %s, but only %s is available.",
+          x$package,
+          x$version,
+          getNamespaceVersion(x$package)
+        )
       ),
-      call. = FALSE
+      call = NULL
     )
   }
 
   ns <- asNamespace(x$package)
   if (!exists(x$name, envir = ns, inherits = FALSE)) {
-    stop(
-      sprintf(
-        "%s: '%s' is not found in package '%s'.",
+    stop2(
+      paste0(
         prefix,
-        x$name,
-        x$package
+        sprintf("* Packages '%s' doesn't contain '%s'.", x$package, x$name)
       ),
-      call. = FALSE
+      call = NULL
     )
   }
   get(x$name, envir = ns, inherits = FALSE)
