@@ -1,6 +1,5 @@
 test_that("can inherit from environments", {
-  Foo <- new_class(
-    "Foo",
+  Foo := new_class(
     parent = class_environment,
     properties = list(name = class_character),
     package = NULL
@@ -27,8 +26,7 @@ test_that("can inherit from environments", {
 })
 
 test_that("str() and print() work for environment-derived classes", {
-  Foo <- new_class(
-    "Foo",
+  Foo := new_class(
     parent = class_environment,
     properties = list(name = class_character),
     package = NULL
@@ -45,8 +43,8 @@ test_that("str() and print() work for environment-derived classes", {
 })
 
 test_that("can't upcast an environment", {
-  Parent <- new_class("Parent", class_environment, package = NULL)
-  Child <- new_class("Child", Parent, package = NULL)
+  Parent := new_class(class_environment, package = NULL)
+  Child := new_class(Parent, package = NULL)
 
   expect_snapshot(convert(Child(), Parent), error = TRUE)
 })

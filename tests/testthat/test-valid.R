@@ -123,8 +123,7 @@ test_that("class validator errors have class S7_error_validation_failed", {
 
 test_that("inherited property validators run only once during construction", {
   x_calls <- 0L
-  parent <- new_class(
-    "parent",
+  parent := new_class(
     package = NULL,
     properties = list(
       x = new_property(
@@ -136,8 +135,8 @@ test_that("inherited property validators run only once during construction", {
       )
     )
   )
-  child <- new_class("child", package = NULL, parent = parent)
-  grandchild <- new_class("grandchild", package = NULL, parent = child)
+  child := new_class(package = NULL, parent = parent)
+  grandchild := new_class(package = NULL, parent = child)
 
   x_calls <- 0L
   parent()
@@ -155,8 +154,7 @@ test_that("inherited property validators run only once during construction", {
 test_that("overridden property validators run during construction", {
   parent_calls <- 0L
   child_calls <- 0L
-  parent <- new_class(
-    "parent",
+  parent := new_class(
     package = NULL,
     properties = list(
       x = new_property(
@@ -168,8 +166,7 @@ test_that("overridden property validators run during construction", {
       )
     )
   )
-  child <- new_class(
-    "child",
+  child := new_class(
     package = NULL,
     parent = parent,
     properties = list(

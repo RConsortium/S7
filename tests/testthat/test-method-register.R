@@ -129,7 +129,7 @@ describe("method registration", {
     out <- register_method(foo, class_integer, function(x) "i", package = NULL)
     expect_identical(out, foo)
 
-    bar <- new_class("bar", package = NULL)
+    bar := new_class(package = NULL)
     out <- register_method(sum, bar, function(x, ...) "bar", package = NULL)
     expect_identical(out, sum)
   })
@@ -138,7 +138,7 @@ describe("method registration", {
     external_methods_reset("S7")
     on.exit(external_methods_reset("S7"), add = TRUE)
 
-    foo <- new_class("foo", package = NULL)
+    foo := new_class(package = NULL)
     ext <- new_external_generic("notloaded.pkg", "ext_gen", "x")
 
     out <- register_method(
@@ -153,7 +153,7 @@ describe("method registration", {
 
     # the sentinel is still a usable generic, so further methods can be
     # registered through the same binding (as in the t2 test package)
-    foo2 <- new_class("foo2", package = NULL)
+    foo2 := new_class(package = NULL)
     out <- register_method(
       out,
       foo2,
@@ -190,8 +190,8 @@ describe("method unregistration", {
 
   it("removes method with multi-dispatch signature", {
     foo <- new_generic("foo", c("x", "y"))
-    A <- new_class("A")
-    B <- new_class("B")
+    A := new_class()
+    B := new_class()
     method(foo, list(A, B)) <- function(x, y) "AB"
     expect_equal(foo(A(), B()), "AB")
 

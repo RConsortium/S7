@@ -160,8 +160,7 @@ describe("prop setting", {
   })
 
   it("gives informative error if setter doesn't return an S7 object (#416)", {
-    foo <- new_class(
-      "foo",
+    foo := new_class(
       package = NULL,
       properties = list(
         x = new_property(
@@ -183,8 +182,7 @@ describe("prop setting", {
         self
       }
     )
-    Rectangle <- new_class(
-      "Rectangle",
+    Rectangle := new_class(
       properties = list(colour = property_colour, fill = property_colour),
       package = NULL
     )
@@ -302,8 +300,7 @@ test_that("properties can be NULL", {
 })
 
 test_that("properties can use names with special base R handlers (#579)", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(
       names = class_character,
       dim = class_integer,
@@ -343,8 +340,7 @@ test_that("properties can use names with special base R handlers (#579)", {
 })
 
 test_that("special-named property is independent of base attribute (#579)", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     parent = class_double,
     properties = list(names = class_character)
   )
@@ -525,7 +521,7 @@ test_that("can validate with custom validator", {
 })
 
 test_that("property validation runs the class's own validator", {
-  Foo <- new_class("Foo", package = NULL, properties = list(x = class_factor))
+  Foo := new_class(package = NULL, properties = list(x = class_factor))
 
   # A malformed factor passes the structural check (its class is "factor")
   # but fails the factor validator because it has too few levels.
@@ -542,7 +538,7 @@ test_that("property validation runs an S4 class's validity method", {
     }
   )
   on.exit(S4_remove_classes("PosNum"))
-  Foo <- new_class("Foo", package = NULL, properties = list(x = PosNum))
+  Foo := new_class(package = NULL, properties = list(x = PosNum))
 
   # An S4 object that passes the structural check but fails its own validity
   # method is rejected
@@ -757,8 +753,7 @@ test_that("custom setters don't evaulate call objects", {
 
 test_that("errors from custom property accessors include a call that shows the class and prop name", {
   error <- FALSE
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(
       x = new_property(
         setter = \(self, value) if (error) stop("nope") else self,
@@ -786,8 +781,7 @@ test_that("errors from custom property accessors include a call that shows the c
 test_that("erroring getter/setter doesn't leave object in broken state", {
   # https://github.com/RConsortium/S7/issues/520
 
-  Test <- new_class(
-    "Test",
+  Test := new_class(
     properties = list(
       a = new_property(
         getter = function(self) {
@@ -819,7 +813,7 @@ test_that("erroring getter/setter doesn't leave object in broken state", {
 })
 
 test_that("prop<- doesn't evaluate language values (#511)", {
-  Cls <- new_class("Cls", properties = list(r = class_any))
+  Cls := new_class(properties = list(r = class_any))
 
   foo <- Cls()
   foo@r <- as.symbol("x")

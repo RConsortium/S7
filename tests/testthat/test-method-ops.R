@@ -68,7 +68,7 @@ test_that("operator bridge does not clobber an existing group method", {
 
   # + method used for S7 classes
   x <- structure(list(), class = "myS3")
-  foo <- new_class("foo")
+  foo := new_class()
   expect_equal(x + foo(), "!")
 
   # but `Ops.myS3` used for base/S3 classes

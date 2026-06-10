@@ -126,23 +126,22 @@ describe("fallback convert", {
 })
 
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
-  Base <- new_class("Base", package = NULL)
-  A <- new_class(
-    "A",
+  Base := new_class(package = NULL)
+  A := new_class(
     Base,
     package = NULL,
     properties = list(x = class_numeric)
   )
-  B <- new_class("B", Base, package = NULL)
-  B_child <- new_class("B_child", B, package = NULL)
+  B := new_class(Base, package = NULL)
+  B_child := new_class(B, package = NULL)
 
   # `to` is a descendant of `from`'s class
   expect_equal(is_down_cast(Base(), A), TRUE)
   expect_equal(is_down_cast(B(), B_child), TRUE)
 
   # base/S3 `from` to an S7 class that extends it
-  my_logical <- new_class("my_logical", class_logical, package = NULL)
-  my_factor <- new_class("my_factor", class_factor, package = NULL)
+  my_logical := new_class(class_logical, package = NULL)
+  my_factor := new_class(class_factor, package = NULL)
   expect_equal(is_down_cast(TRUE, my_logical), TRUE)
   expect_equal(is_down_cast(factor("a"), my_factor), TRUE)
 
@@ -167,7 +166,7 @@ test_that("is_down_cast() requires `from`'s classes to be contiguous and ordered
 
 test_that("convert() is idempotent when `from` is an instance of `to` (#429)", {
   local_methods(convert)
-  Foo <- new_class("Foo", package = NULL, properties = list(x = class_numeric))
+  Foo := new_class(package = NULL, properties = list(x = class_numeric))
 
   # A registered method must not override the idempotent behaviour
   method(convert, list(Foo, Foo)) <- function(from, to, ...) Foo(x = -1)
@@ -178,9 +177,9 @@ test_that("convert() is idempotent when `from` is an instance of `to` (#429)", {
 
 test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
   local_methods(convert)
-  A <- new_class("A", package = NULL, properties = list(x = class_numeric))
-  B <- new_class("B", A, package = NULL, properties = list(y = class_numeric))
-  C <- new_class("C", B, package = NULL, properties = list(z = class_numeric))
+  A := new_class(package = NULL, properties = list(x = class_numeric))
+  B := new_class(A, package = NULL, properties = list(y = class_numeric))
+  C := new_class(B, package = NULL, properties = list(z = class_numeric))
 
   # A method to downcast a superclass `A` to `B`
   method(convert, list(A, B)) <- function(from, to, ...) B(y = -1)
@@ -198,8 +197,8 @@ test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
 })
 
 test_that("convert() errors when upcasting to an abstract class (#680)", {
-  Foo <- new_class("Foo", abstract = TRUE, package = NULL)
-  Bar <- new_class("Bar", Foo, package = NULL)
+  Foo := new_class(abstract = TRUE, package = NULL)
+  Bar := new_class(Foo, package = NULL)
   expect_snapshot(convert(Bar(), Foo), error = TRUE)
 })
 
@@ -216,7 +215,7 @@ test_that("base type fallback sits below user methods and inheritance", {
   local_methods(convert)
 
   # A registered method wins over the as.*() fallback
-  Txt <- new_class("Txt", class_character, package = NULL)
+  Txt := new_class(class_character, package = NULL)
   method(convert, list(Txt, class_character)) <- function(from, to, ...) {
     "custom"
   }

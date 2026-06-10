@@ -22,7 +22,7 @@ describe("S7_data", {
     expect_equal(x, text("bar"))
   })
   it("preserves names from the new data (#478)", {
-    foo <- new_class("foo", class_list)
+    foo := new_class(class_list)
     x <- foo(list(a = 1, b = 2, c = 3))
     S7_data(x) <- list(b = 2, c = 3)
     expect_equal(x, foo(list(b = 2, c = 3)))
@@ -32,8 +32,7 @@ describe("S7_data", {
     expect_equal(x, foo(list(a = 1, b = 2, c = 3)))
   })
   it("preserves S7 properties when setting data", {
-    foo <- new_class(
-      "foo",
+    foo := new_class(
       class_list,
       properties = list(extra = class_character)
     )

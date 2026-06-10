@@ -12,8 +12,8 @@ test_that("can register S7 method for S3 generic", {
 })
 
 test_that("can register S7 method for S3 Ops generic", {
-  foo <- new_class("foo")
-  bar <- new_class("bar")
+  foo := new_class()
+  bar := new_class()
 
   method(`+`, list(foo, bar)) <- function(e1, e2) "foobar"
   expect_equal(foo() + bar(), "foobar")
@@ -96,7 +96,7 @@ test_that("rejects class_missing on S3 generics", {
 })
 
 test_that("errors when unregistering from an S3 generic", {
-  foo <- new_class("foo")
+  foo := new_class()
   method(sum, foo) <- function(x, ...) "foo"
   expect_snapshot(method(sum, foo) <- NULL, error = TRUE)
 

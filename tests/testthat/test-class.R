@@ -32,9 +32,8 @@ describe("S7 classes", {
   })
 
   it("shows property defaults and read-only annotations", {
-    Address <- new_class("Address", package = "S7")
-    Person <- new_class(
-      "Person",
+    Address := new_class(package = "S7")
+    Person := new_class(
       properties = list(
         implicit_default = new_property(class_character),
         implicit_complex = new_property(class_Date),
