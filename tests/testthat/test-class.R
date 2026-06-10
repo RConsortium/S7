@@ -158,6 +158,15 @@ describe("new_object()", {
     expect_no_error(Concrete(x = 1L))
   })
 
+  it("allows arbitrary placeholder for abstract S3 parents (#686)", {
+    Concrete <- new_class(
+      "Concrete",
+      parent = class_POSIXt,
+      constructor = function(x) new_object(x)
+    )
+    expect_no_error(Concrete(list(1, "A")))
+  })
+
   it("errors if `.parent` is supplied but class has no parent", {
     NoParent <- new_class(
       "NoParent",

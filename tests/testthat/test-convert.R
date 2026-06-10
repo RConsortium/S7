@@ -207,6 +207,12 @@ test_that("convert() errors when upcasting to an abstract class (#680)", {
   expect_snapshot(convert(Bar(), Foo), error = TRUE)
 })
 
+test_that("convert() errors when upcasting to an abstract S3 class (#686)", {
+  # An S3 class without a constructor is abstract, so there's no valid instance
+  # to convert to (class_POSIXt is the union of POSIXct and POSIXlt)
+  expect_snapshot(convert(.POSIXct(1), class_POSIXt), error = TRUE)
+})
+
 test_that("convert() falls back to as.*() for base type targets (#472)", {
   expect_identical(convert(1.5, class_character), "1.5")
   expect_identical(convert(c("1", "2"), class_integer), c(1L, 2L))

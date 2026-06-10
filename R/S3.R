@@ -93,8 +93,10 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     stop2("`class` must be a character vector.")
   }
   if (!is.null(constructor)) {
+    abstract <- FALSE
     check_S3_constructor(constructor)
   } else {
+    abstract <- TRUE
     constructor <- function(.data) {
       stop2(
         sprintf("S3 class <%s> doesn't have a constructor.", class[[1]]),
@@ -106,7 +108,8 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
   out <- list(
     class = class,
     constructor = constructor,
-    validator = validator
+    validator = validator,
+    abstract = abstract
   )
   class(out) <- "S7_S3_class"
   out
