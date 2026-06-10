@@ -1,9 +1,9 @@
 test_that("can register S7 method for S3 generic", {
-  foo1 <- new_class("foo")
+  foo1 := new_class()
   method(sum, foo1) <- function(x, ...) "foo"
   expect_equal(sum(foo1()), "foo")
 
-  foo2 <- new_class("foo", package = "bar")
+  foo2 := new_class(package = "bar")
   method(sum, foo2) <- function(x, ...) "foo"
   expect_equal(sum(foo2()), "foo")
 

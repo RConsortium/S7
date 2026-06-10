@@ -77,8 +77,8 @@ test_that("operator bridge does not clobber an existing group method", {
 
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
   local_methods(base_ops[["+"]])
-  fooS4 <- local_S4_class("foo", contains = "character")
-  fooS7 <- new_class("foo")
+  fooS4 <- local_S4_class("fooS4", contains = "character")
+  fooS7 := new_class()
 
   method(`+`, list(fooS7, fooS4)) <- function(e1, e2) "S7-S4"
   method(`+`, list(fooS4, fooS7)) <- function(e1, e2) "S4-S7"
