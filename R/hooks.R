@@ -47,12 +47,13 @@ S7_on_load_ <- function(env) {
   tbl <- S7_methods_table(package)
 
   for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method, ns)
+    deps <- method_deps(x$generic, x$signature)
+    register <- registrar(deps, x$generic, x$signature, x$method, ns)
 
-    if (isNamespaceLoaded(x$generic$package)) {
-      register()
+    register()
+    for (pkg in unique(vcapply(deps, \(dep) dep$package))) {
+      setHook(packageEvent(pkg, "onLoad"), register)
     }
-    setHook(packageEvent(x$generic$package, "onLoad"), register)
   }
 
   invisible()

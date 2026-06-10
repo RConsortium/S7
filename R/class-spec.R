@@ -53,6 +53,7 @@ is_foundation_class <- function(x) {
     is_union(x) ||
     is_base_class(x) ||
     is_S3_class(x) ||
+    is_external_class(x) ||
     is_class_missing(x) ||
     is_class_any(x)
 }
@@ -72,6 +73,8 @@ class_type <- function(x) {
     "S7_union"
   } else if (is_S3_class(x)) {
     "S7_S3"
+  } else if (is_external_class(x)) {
+    "S7_external"
   } else if (is_S4_class(x)) {
     "S4"
   } else {
@@ -90,6 +93,7 @@ class_friendly <- function(x) {
     S7_base = "a base type",
     S7_union = "an S7 union",
     S7_S3 = "an S3 class",
+    S7_external = "an external S7 class",
   )
 }
 
@@ -185,6 +189,7 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
+    S7_external = class_constructor(resolve_external_class_req(.x)),
     stop2(sprintf("Can't construct %s.", class_friendly(.x)), call = NULL)
   )
 }
@@ -199,6 +204,7 @@ class_validate <- function(class, object) {
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
+    S7_external = class_validate(resolve_external_class_req(class), object),
     NULL
   )
 
@@ -238,6 +244,7 @@ class_desc <- function(x) {
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
+    S7_external = paste0("<", x$class_name, ">"),
   )
 }
 
@@ -256,6 +263,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
+    S7_external = class_dispatch(resolve_external_class_opt(x)),
     stop2("Unsupported class type.", call = NULL)
   )
 }
@@ -271,6 +279,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
+    S7_external = x$class_name,
     stop2("Unsupported class type.", call = NULL)
   )
 }
@@ -290,6 +299,7 @@ class_deparse <- function(x) {
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
     S7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
+    S7_external = sprintf("new_external_class(%s, %s)", x$package, x$name),
   )
 }
 
@@ -304,6 +314,7 @@ class_inherits <- function(x, what) {
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
+    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
 

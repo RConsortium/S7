@@ -52,15 +52,42 @@ If you export a class (i.e. its constructor), you must also set the `package` ar
 
 NB: if your package creates a hierarchy of classes, subclasses must be defined _after_ the parent classes. That means if you define the classes in separate files, you will need to use the `DESCRIPTION` Collate field (or the equivalent roxygen2 `@include` tag) to ensure the files are loaded in the correct order.
 
-## Generics and methods
+## Generics
 
 You should document generics like regular functions (since they are!).
 If you expect others to create their own methods for your generic, you may want to include a section describing the properties that you expect all methods to have.
 If you want to list all methods for a generic, you can use the [doclisting](https://doclisting.r-lib.org) package.
 
+## Methods
+
 If you use roxygen2, you can document S7 generics and methods by following the advice in [`vignette("rd-S7", package = "roxygen2")`](https://roxygen2.r-lib.org/articles/rd-S7.html).
 
 Note that methods can only be defined after both the class and generic have been defined. If generics/methods/classes live in different files, you will need to use the `DESCRIPTION` Collate field (or the equivalent roxygen2 `@include` tag) to ensure the files are loaded in the correct order.
+
+### Methods for generics in suggested packages
+
+If you want to register a method for a generic defined in a package that you only suggest (rather than import), use `new_external_generic()` to refer to the generic without taking a hard dependency:
+
+```{r, eval = FALSE}
+# In your package
+median <- new_external_generic("stats", "median", "x")
+method(median, MyClass) <- function(x, ...) { ... }
+```
+
+When the suggested package is loaded, S7 will register the method automatically (via `S7_on_load()` as described above).
+
+### Methods for classes in suggested packages
+
+Conversely, you may want to register a method for one of your own generics, dispatching on a class from a suggested package. Use `new_external_class()` to refer to the class by name:
+
+```{r, eval = FALSE}
+# In your package
+my_generic <- new_generic("my_generic", "x")
+ggplot <- new_external_class("ggplot2", "ggplot")
+method(my_generic, ggplot) <- function(x) { ... }
+```
+
+When the suggested package is loaded, S7 will register the method automatically (via `S7_on_load()` as described above).
 
 ## Backward compatibility
 

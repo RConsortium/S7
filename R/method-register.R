@@ -85,6 +85,14 @@ register_method <- function(
     )
   }
 
+  # Delay all external classes until onLoad
+  is_external <- any(vlapply(signature, is_external_class))
+  if (is_external) {
+    generic_ext <- as_external_generic(generic)
+    external_methods_add(package, generic_ext, signature, method)
+    return(invisible(generic))
+  }
+
   # Register in current session
   signatures <- flatten_signature(signature)
   if (is_S7_generic(generic)) {

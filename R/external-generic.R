@@ -76,30 +76,50 @@ is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
 }
 
-registrar <- function(generic, signature, method, env) {
+registrar <- function(deps, generic, signature, method, env) {
   # Force all arguments
+  deps
   generic
   signature
   method
   env
 
   function(...) {
-    ns <- asNamespace(generic$package)
-    if (
-      is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
-    ) {
-      if (!exists(generic$name, envir = ns, inherits = FALSE)) {
-        msg <- sprintf(
-          "[S7] Failed to find generic %s() in package %s",
-          generic$name,
-          generic$package
-        )
-        warning(msg, call. = FALSE)
-      } else {
-        generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
-        register_method(generic_fun, signature, method, env, package = NULL)
-      }
+    if (!all(vlapply(deps, dep_available))) {
+      return(invisible())
     }
+
+    generic_fun <- resolve_generic(generic)
+    if (is.null(generic_fun)) {
+      return(invisible())
+    }
+
+    signature <- resolve_signature(signature)
+    register_method(generic_fun, signature, method, env, package = NULL)
+  }
+}
+
+# Collects all external dependencies (the generic + any external classes)
+# into a single list. Each entry has at minimum `package` + `version`.
+method_deps <- function(generic, signature) {
+  ext <- vlapply(signature, is_external_class)
+  c(list(generic), signature[ext])
+}
+
+resolve_generic <- function(generic) {
+  ns <- asNamespace(generic$package)
+  if (exists(generic$name, envir = ns, inherits = FALSE)) {
+    get(generic$name, envir = ns, inherits = FALSE)
+  } else {
+    warning(
+      sprintf(
+        "[S7] Failed to find generic %s() in package %s",
+        generic$name,
+        generic$package
+      ),
+      call. = FALSE
+    )
+    NULL
   }
 }
 
