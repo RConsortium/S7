@@ -10,7 +10,7 @@ new_constructor <- function(
     # There's no parent constructor to delegate to, so the constructor must
     # handle all properties: inherited and newly declared (which win).
     all_props <- modify_list(
-      attr(parent, "properties", exact = TRUE) %||% list(),
+      attr(parent, "properties", exact = TRUE),
       properties
     )
 
