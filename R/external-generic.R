@@ -76,13 +76,6 @@ is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
 }
 
-# Collects all external dependencies (the generic + any external classes)
-# into a single list. Each entry has at minimum `package` + `version`.
-method_deps <- function(generic, signature) {
-  ext <- vlapply(signature, is_external_class)
-  c(list(generic), signature[ext])
-}
-
 registrar <- function(deps, generic, signature, method, env) {
   # Force all arguments
   deps
@@ -104,6 +97,13 @@ registrar <- function(deps, generic, signature, method, env) {
     signature <- resolve_signature(signature)
     register_method(generic_fun, signature, method, env, package = NULL)
   }
+}
+
+# Collects all external dependencies (the generic + any external classes)
+# into a single list. Each entry has at minimum `package` + `version`.
+method_deps <- function(generic, signature) {
+  ext <- vlapply(signature, is_external_class)
+  c(list(generic), signature[ext])
 }
 
 resolve_generic <- function(generic) {
