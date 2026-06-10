@@ -139,7 +139,7 @@ new_class <- function(
   if (is.null(constructor)) {
     constructor <- new_constructor(
       parent,
-      all_props,
+      new_props,
       envir = parent.frame(),
       package = package
     )
