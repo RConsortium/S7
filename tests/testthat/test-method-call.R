@@ -54,6 +54,32 @@ test_that("a different nested generic stops the walk (nearest generic)", {
   expect_equal(outer(1), list(inner = quote(inner(x)), outer = quote(outer(1))))
 })
 
+test_that("super() passed to a different generic stops the walk", {
+  inner <- new_generic("inner", "x")
+  outer <- new_generic("outer", "x")
+  Number <- new_class("Number", parent = class_double)
+
+  method(inner, class_double) <- function(x) {
+    list(
+      call = S7_generic_call(),
+      sentinel = eval(quote(sentinel), S7_user_frame())
+    )
+  }
+  method(outer, Number) <- function(x) {
+    sentinel <- "outer method"
+    inner(super(x, class_double))
+  }
+
+  sentinel <- "caller"
+  expect_equal(
+    outer(Number(1)),
+    list(
+      call = quote(inner(super(x, class_double))),
+      sentinel = "outer method"
+    )
+  )
+})
+
 test_that("same-generic nested calls are not super redispatches", {
   foo <- new_generic("foo", "x")
 
