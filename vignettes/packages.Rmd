@@ -74,7 +74,7 @@ median <- new_external_generic("stats", "median", "x")
 method(median, MyClass) <- function(x, ...) { ... }
 ```
 
-When the suggested package is loaded, S7 will register the method automatically. You must call `methods_register()` in `.onLoad()` (see the "Getting started" section above) for this to work.
+When the suggested package is loaded, S7 will register the method automatically (via `S7_on_load()` as described above).
 
 ### Methods for classes in suggested packages
 
@@ -83,11 +83,11 @@ Conversely, you may want to register a method for one of your own generics, disp
 ```{r, eval = FALSE}
 # In your package
 my_generic <- new_generic("my_generic", "x")
-method(my_generic, new_external_class("ggplot2", "ggplot")) <-
-  function(x) { ... }
+ggplot <- new_external_class("ggplot2", "ggplot")
+method(my_generic, ggplot) <- function(x) { ... }
 ```
 
-S7 will register the method when the suggested package (here, ggplot2) is loaded. As above, `methods_register()` must be called from `.onLoad()`. If the method requires both a soft-dependency generic and a soft-dependency class, it will be registered when both packages are loaded.
+When the suggested package is loaded, S7 will register the method automatically (via `S7_on_load()` as described above).
 
 ## Backward compatibility
 
