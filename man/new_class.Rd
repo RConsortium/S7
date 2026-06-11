@@ -89,7 +89,7 @@ Learn more in \code{vignette("classes-objects")}
 }
 \examples{
 # Create an class that represents a range using a numeric start and end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric
@@ -107,7 +107,7 @@ try(Range(start = "hello", end = 20))
 
 # But we might also want to use a validator to ensure that start and end
 # are length 1, and that start is < end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric

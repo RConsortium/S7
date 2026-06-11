@@ -59,7 +59,7 @@
 #' @export
 #' @examples
 #' # Create an class that represents a range using a numeric start and end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -77,7 +77,7 @@
 #'
 #' # But we might also want to use a validator to ensure that start and end
 #' # are length 1, and that start is < end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -397,7 +397,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 #' @returns A class specification.
 #' @export
 #' @examples
-#' Foo <- new_class("Foo")
+#' Foo := new_class()
 #' S7_class(Foo())
 #'
 #' # Also works on non-S7 objects

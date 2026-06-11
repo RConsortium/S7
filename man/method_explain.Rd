@@ -33,10 +33,10 @@ to avoid ambiguity.
 }
 }
 \examples{
-Foo1 <- new_class("Foo1")
-Foo2 <- new_class("Foo2", Foo1)
+Foo1 := new_class()
+Foo2 := new_class(Foo1)
 
-add <- new_generic("add", c("x", "y"))
+add := new_generic(c("x", "y"))
 method(add, list(Foo2, Foo1)) <- function(x, y) c(2, 1)
 method(add, list(Foo1, Foo1)) <- function(x, y) c(1, 1)
 

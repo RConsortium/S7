@@ -131,13 +131,33 @@ You get an error if you call the generic with a class that doesn't have a method
 speak(1)
 ```
 
+## Named bindings
+
+So far we've typed the name of each new class and generic twice: once as the name of the variable that we assign to, and once as the `name` argument. 
+Wouldn't it be nice to eliminate that duplication?
+That's the job of the `:=` operator (the "bind" operator): it uses the name of the variable on the left-hand side as the `name` argument of the call on the right-hand side, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")`.
+
+That means we could have defined `Dog` and `speak()` like this:
+
+```{r}
+Dog := new_class(properties = list(
+  name = class_character,
+  age = class_numeric
+))
+Dog
+
+speak := new_generic("x")
+```
+
+We'll use `:=` in the rest of this vignette, and throughout the rest of S7's documentation.
+
 ## Method dispatch and inheritance
 
 The `cat` and `dog` classes share the same properties, so we could use a common parent class to extract out the duplicated specification.
 We first define the parent class:
 
 ```{r}
-Pet <- new_class("Pet",
+Pet := new_class(
   properties = list(
     name = class_character,
     age = class_numeric
@@ -148,8 +168,8 @@ Pet <- new_class("Pet",
 Then use the `parent` argument to `new_class:`
 
 ```{r}
-Cat <- new_class("Cat", parent = Pet)
-Dog <- new_class("Dog", parent = Pet)
+Cat := new_class(parent = Pet)
+Dog := new_class(parent = Pet)
 
 Cat
 Dog
@@ -166,7 +186,7 @@ Method dispatch takes advantage of the hierarchy of parent classes: if a method 
 This inheritance is a powerful mechanism for sharing code across classes.
 
 ```{r}
-describe <- new_generic("describe", "x")
+describe := new_generic("x")
 method(describe, Pet) <- function(x) {
   paste0(x@name, " is ", x@age, " years old")
 }
@@ -187,7 +207,7 @@ method(describe, S7_object) <- function(x) {
   "An S7 object"
 }
 
-Cocktail <- new_class("Cocktail",
+Cocktail := new_class(
   properties = list(
     ingredients = class_character
   )

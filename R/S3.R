@@ -84,7 +84,7 @@
 #' # No checking, just used for dispatch
 #' Date <- new_S3_class("Date")
 #'
-#' my_generic <- new_generic("my_generic", "x")
+#' my_generic := new_generic("x")
 #' method(my_generic, Date) <- function(x) "This is a date"
 #'
 #' my_generic(Sys.Date())
