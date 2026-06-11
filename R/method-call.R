@@ -82,7 +82,9 @@ generic_call_frame <- function(call = sys.call(-1L)) {
     }
 
     parent <- parent_generic_frame(frame, parents)
-    if (is.na(parent) || !identical(sys.function(parent), sys.function(frame))) {
+    if (
+      is.na(parent) || !identical(sys.function(parent), sys.function(frame))
+    ) {
       break
     }
     frame <- parent
