@@ -69,25 +69,51 @@ S7_user_frame <- function() {
 generic_call_frame <- function(call = sys.call(-1L)) {
   parents <- sys.parents()
 
-  # Find the nearest enclosing generic, scanning outward from the caller.
-  frame <- NA_integer_
-  for (i in rev(seq_len(sys.nframe() - 1L))) {
-    if (inherits(sys.function(i), "S7_generic")) {
-      frame <- i
-      break
-    }
-  }
+  method_frame <- active_method_frame(call)
+  frame <- parent_generic_frame(method_frame, parents)
   if (is.na(frame)) {
     stop2("Must be called from within a method.", call = call)
   }
 
-  # Walk past super() re-dispatches
-  while (is_super_dispatch(frame)) {
-    method <- parents[frame]
-    frame <- parents[method]
+  # Walk past same-generic super() re-dispatches.
+  repeat {
+    if (!is_super_dispatch(frame)) {
+      break
+    }
+
+    parent <- parent_generic_frame(frame, parents)
+    if (is.na(parent) || !identical(sys.function(parent), sys.function(frame))) {
+      break
+    }
+    frame <- parent
   }
 
   frame
+}
+
+active_method_frame <- function(call) {
+  for (i in rev(seq_len(sys.nframe() - 1L))) {
+    if (inherits(sys.function(i), "S7_method")) {
+      return(i)
+    }
+    if (inherits(sys.function(i), "S7_generic")) {
+      break
+    }
+  }
+
+  stop2("Must be called from within a method.", call = call)
+}
+
+parent_generic_frame <- function(frame, parents) {
+  parent <- parents[[frame]]
+  while (parent > 0L) {
+    if (inherits(sys.function(parent), "S7_generic")) {
+      return(parent)
+    }
+    parent <- parents[[parent]]
+  }
+
+  NA_integer_
 }
 
 # S7_dispatch() marks the generic's frame with `_dispatched_super` when it
