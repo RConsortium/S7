@@ -54,8 +54,8 @@
 #'   is not possible.
 #' @export
 #' @examples
-#' Foo1 <- new_class("Foo1", properties = list(x = class_integer))
-#' Foo2 <- new_class("Foo2", Foo1, properties = list(y = class_double))
+#' Foo1 := new_class(properties = list(x = class_integer))
+#' Foo2 := new_class(Foo1, properties = list(y = class_double))
 #'
 #' # Upcasting: S7 provides a default implementation for coercing an object
 #' # to one of its parent classes:
@@ -94,9 +94,9 @@
 #' # Conversely, `convert()` *does* use inheritance for `from`, so a method
 #' # registered on a parent class is also used for its children. This holds
 #' # even when upcasting, where it overrides the default property stripping:
-#' Bar1 <- new_class("Bar1", properties = list(label = class_character))
-#' Bar2 <- new_class("Bar2", Bar1)
-#' Bar3 <- new_class("Bar3", Bar2)
+#' Bar1 := new_class(properties = list(label = class_character))
+#' Bar2 := new_class(Bar1)
+#' Bar3 := new_class(Bar2)
 #' method(convert, list(Bar2, Bar1)) <- function(from, to, ...) {
 #'   Bar1(label = "from a Bar2 or one of its children")
 #' }
@@ -106,7 +106,7 @@
 #' # This `from`-inheritance is limited to classes more specific than `to`. A
 #' # method whose `from` is a *parent* of `to` would downcast, so it is skipped.
 #' # For example, this method downcasts a Foo1 to a Foo2:
-#' Foo3 <- new_class("Foo3", Foo2, properties = list(z = class_double))
+#' Foo3 := new_class(Foo2, properties = list(z = class_double))
 #' method(convert, list(Foo1, Foo2)) <- function(from, to, ...) Foo2(y = -1)
 #'
 #' # Upcasting a Foo3 to a Foo2 ignores that inherited downcasting method,

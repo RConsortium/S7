@@ -1,10 +1,10 @@
 describe("super()", {
   it("overrides dispatch, matching inherited behaviour", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
-    foo3 <- new_class("foo3", foo2)
+    foo1 := new_class()
+    foo2 := new_class(foo1)
+    foo3 := new_class(foo2)
 
-    bar <- new_generic("bar", "x")
+    bar := new_generic("x")
     method(bar, foo1) <- function(x) 1
     method(bar, foo3) <- function(x) 3
 
@@ -13,14 +13,14 @@ describe("super()", {
   })
 
   it("only affects one dispatch", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 := new_class()
+    foo2 := new_class(foo1)
 
-    bar1 <- new_generic("bar1", "x")
+    bar1 := new_generic("x")
     method(bar1, foo1) <- function(x) 1
     method(bar1, foo2) <- function(x) 2
 
-    bar2 <- new_generic("bar2", "x")
+    bar2 := new_generic("x")
     method(bar2, foo1) <- function(x) c(1, bar1(x))
     method(bar2, foo2) <- function(x) c(2, bar1(x))
 
@@ -30,7 +30,7 @@ describe("super()", {
 
   it("checks to", {
     expect_snapshot(error = TRUE, {
-      foo <- new_class("foo", package = NULL)
+      foo := new_class(package = NULL)
       super(foo(), class_character)
       super(foo(), class_numeric)
       super(foo(), NULL)
@@ -40,7 +40,7 @@ describe("super()", {
   it("works with S3 objects", {
     my_int <- structure(10L, class = c("MyInt", "integer"))
 
-    gen <- new_generic("gen", "x")
+    gen := new_generic("x")
     method(gen, new_S3_class("MyInt")) <- function(x) "MyInt"
     method(gen, class_integer) <- function(x) "integer"
 
@@ -54,7 +54,7 @@ describe("super()", {
     on.exit(S4_remove_classes(c("Foo1", "Foo2")))
     obj <- methods::new("Foo2", x = 5)
 
-    gen <- new_generic("gen", "x")
+    gen := new_generic("x")
     method(gen, methods::getClass("Foo1")) <- function(x) "parent"
     method(gen, methods::getClass("Foo2")) <- function(x) "child"
 
@@ -63,8 +63,8 @@ describe("super()", {
   })
 
   it("displays nicely", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", foo1, package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(foo1, package = NULL)
 
     expect_snapshot({
       f1 <- super(foo2(), foo1)

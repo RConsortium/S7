@@ -1,5 +1,5 @@
 describe("single dispatch", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
 
   it("works for specials", {
     method(foo, class_any) <- function(x) "fallback"
@@ -17,7 +17,7 @@ describe("single dispatch", {
   })
 
   it("works for S7 objects", {
-    text <- new_class("text", class_character)
+    text := new_class(class_character)
     method(foo, text) <- function(x) "S7"
 
     expect_equal(foo(text("bar")), "S7")
@@ -47,10 +47,10 @@ describe("single dispatch", {
 
 describe("multiple dispatch", {
   it("works", {
-    foo1 <- new_class("foo1")
-    foo2 <- new_class("foo2", foo1)
+    foo1 := new_class()
+    foo2 := new_class(foo1)
 
-    bar <- new_generic("bar", c("x", "y"))
+    bar := new_generic(c("x", "y"))
     method(bar, list(foo1, foo1)) <- function(x, y) c(1, 1)
     method(bar, list(foo2, foo2)) <- function(x, y) c(2, 2)
 
@@ -63,7 +63,7 @@ describe("multiple dispatch", {
 
 
 test_that("can substitute() args", {
-  foo <- new_generic("foo", "x", function(x, ..., z = 1) S7_dispatch())
+  foo := new_generic("x", function(x, ..., z = 1) S7_dispatch())
   method(foo, class_character) <- function(x, ..., z = 1) substitute(x)
   expect_equal(foo(letters), quote(letters))
 
@@ -103,7 +103,7 @@ test_that("can substitute() args", {
 })
 
 test_that("methods get values modified in the generic", {
-  foo <- new_generic("foo", "x", function(x, y = 1) {
+  foo := new_generic("x", function(x, y = 1) {
     y <- 10
     S7_dispatch()
   })
@@ -120,13 +120,13 @@ test_that("dispatched arguments are evaluated once", {
     }
   })
 
-  f <- new_generic("f", "x")
+  f := new_generic("x")
   method(f, class_double) <- function(x) x
   expect_equal(f(counter()), 1)
 })
 
 test_that("generics pass ... to methods", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
 
   method(foo, class_character) <- function(x, y = 1) y
   expect_equal(foo("x"), 1)
@@ -135,13 +135,13 @@ test_that("generics pass ... to methods", {
 })
 
 test_that("generics pass extra args to methods", {
-  foo <- new_generic("foo", "x", function(x, ..., z = 1) S7_dispatch())
+  foo := new_generic("x", function(x, ..., z = 1) S7_dispatch())
   method(foo, class_character) <- function(x, ..., z = 1) z
   expect_equal(foo("x", z = 3), 3)
 })
 
 test_that("can dispatch on base 'union' types", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   suppressMessages({
     method(foo, class_vector) <- function(x) "v"
     method(foo, class_atomic) <- function(x) "a"
@@ -156,9 +156,9 @@ test_that("can dispatch on base 'union' types", {
 })
 
 test_that("single dispatch fails with informative messages", {
-  fail <- new_generic("fail", "x")
+  fail := new_generic("x")
 
-  foo <- new_class("foo", package = NULL)
+  foo := new_class(package = NULL)
   Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
@@ -173,9 +173,9 @@ test_that("single dispatch fails with informative messages", {
 })
 
 test_that("multiple dispatch fails with informative messages", {
-  fail <- new_generic("fail", c("x", "y"))
+  fail := new_generic(c("x", "y"))
 
-  foo <- new_class("foo")
+  foo := new_class()
   Foo <- setClass("Foo", slots = list("x" = "numeric"))
   on.exit(S4_remove_classes("Foo"))
 
@@ -194,7 +194,7 @@ test_that("dispatch fails cleanly when generic is not an S7 generic", {
 })
 
 test_that("S7_error_method_not_found error class is not duplicated", {
-  fail <- new_generic("fail", "x")
+  fail := new_generic("x")
   cnd <- tryCatch(fail(TRUE), S7_error_method_not_found = identity)
   expect_s3_class(
     cnd,
@@ -204,7 +204,7 @@ test_that("S7_error_method_not_found error class is not duplicated", {
 })
 
 test_that("method dispatch preserves method return visibility", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   method(foo, class_integer) <- function(x) invisible("bar")
   expect_invisible(foo(1L))
 
@@ -220,7 +220,7 @@ test_that("method dispatch preserves method return visibility", {
 })
 
 test_that("can dispatch on evaluated arguments", {
-  my_generic <- new_generic("my_generic", "x", function(x) {
+  my_generic := new_generic("x", function(x) {
     x <- 10
     S7_dispatch()
   })
@@ -230,7 +230,7 @@ test_that("can dispatch on evaluated arguments", {
 
 
 test_that("method dispatch works for class_missing", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   method(foo, class_missing) <- function(x) missing(x)
   method(foo, class_any) <- function(x) FALSE
 
@@ -251,11 +251,11 @@ test_that("errors from dispatched methods have reasonable tracebacks", {
     lapply(x, utils::removeSource)
   }
 
-  my_generic <- new_generic("my_generic", "x")
+  my_generic := new_generic("x")
   method(my_generic, class_numeric) <- function(x) get_call_stack()
   expect_snapshot(my_generic(10))
 
-  my_generic <- new_generic("my_generic", c("x", "y"))
+  my_generic := new_generic(c("x", "y"))
   method(my_generic, list(class_numeric, class_numeric)) <-
     function(x, y) get_call_stack()
   expect_snapshot(my_generic(3, 4))
