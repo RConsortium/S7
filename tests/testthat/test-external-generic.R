@@ -47,7 +47,7 @@ test_that("displays nicely", {
 })
 
 test_that("can convert existing generics to external", {
-  foo_S7 <- new_generic("foo_S7", "x")
+  foo_S7 := new_generic("x")
   env <- new.env()
   env$.packageName <- "test"
   environment(foo_S7) <- env

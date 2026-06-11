@@ -13,7 +13,7 @@ test_that("can inherit from environments", {
   e@name <- "alice"
   expect_equal(e@name, "alice")
 
-  gen <- new_generic("gen", "x")
+  gen := new_generic("x")
   method(gen, Foo) <- function(x) "foo"
   expect_equal(gen(e), "foo")
 

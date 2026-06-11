@@ -1,13 +1,13 @@
 describe("method registration", {
   it("adds methods to the generic", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     method(foo, class_character) <- function(x) "c"
     method(foo, class_integer) <- function(x) "i"
     expect_length(methods(foo), 2)
   })
 
   it("adds messages when overwriting", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     expect_snapshot({
       method(foo, class_character) <- function(x) "c"
       method(foo, class_character) <- function(x) "c"
@@ -16,7 +16,7 @@ describe("method registration", {
   })
 
   it("adds method for each element of a union", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     method(foo, class_numeric) <- function(x) "x"
 
     # one method for each union component
@@ -39,7 +39,7 @@ describe("method registration", {
   })
 
   it("checks argument types", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     expect_snapshot(error = TRUE, {
       x <- 10
       method(x, class_character) <- function(x) ...
@@ -48,7 +48,7 @@ describe("method registration", {
   })
 
   it("returns the generic unchanged when not in a package (#364)", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     out <- register_method(foo, class_integer, function(x) "i", package = NULL)
     expect_identical(out, foo)
 
@@ -91,7 +91,7 @@ describe("method registration", {
 
 describe("method unregistration", {
   it("removes S7 method via NULL assignment", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     method(foo, class_character) <- function(x) "c"
     method(foo, class_integer) <- function(x) "i"
     expect_length(methods(foo), 2)
@@ -103,7 +103,7 @@ describe("method unregistration", {
   })
 
   it("removes each method in a union signature", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     method(foo, class_numeric) <- function(x) "n"
     expect_length(methods(foo), 2)
 
@@ -112,7 +112,7 @@ describe("method unregistration", {
   })
 
   it("removes method with multi-dispatch signature", {
-    foo <- new_generic("foo", c("x", "y"))
+    foo := new_generic(c("x", "y"))
     A := new_class()
     B := new_class()
     method(foo, list(A, B)) <- function(x, y) "AB"
@@ -123,7 +123,7 @@ describe("method unregistration", {
   })
 
   it("is a silent no-op when the method doesn't exist", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     expect_silent(method(foo, class_character) <- NULL)
     expect_length(methods(foo), 0)
   })
@@ -131,12 +131,12 @@ describe("method unregistration", {
 
 describe("as_signature()", {
   it("returns a list that matches length of dispatch args", {
-    foo1 <- new_generic("foo1", "x")
+    foo1 := new_generic("x")
     sig1 <- as_signature(class_numeric, foo1)
     expect_s3_class(sig1, "S7_signature")
     expect_length(sig1, 1)
 
-    foo2 <- new_generic("foo2", c("x", "y"))
+    foo2 := new_generic(c("x", "y"))
     sig2 <- as_signature(list(class_numeric, class_character), foo2)
     expect_s3_class(sig1, "S7_signature")
     expect_length(sig2, 2)
@@ -147,7 +147,7 @@ describe("as_signature()", {
   })
 
   it("accepts a length-1 list for single dispatch (#555)", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     sig <- as_signature(list(class_character), foo)
     expect_s3_class(sig, "S7_signature")
     expect_equal(sig, as_signature(class_character, foo))
@@ -157,7 +157,7 @@ describe("as_signature()", {
   })
 
   it("requires a list of the correct length for multiple dispatch", {
-    foo <- new_generic("foo", c("x", "y"))
+    foo := new_generic(c("x", "y"))
     expect_snapshot(error = TRUE, {
       as_signature(class_character, foo)
       as_signature(list(class_character), foo)
@@ -165,29 +165,29 @@ describe("as_signature()", {
   })
 
   it("works with NULL", {
-    foo <- new_generic("foo", c("x"))
+    foo := new_generic(c("x"))
     sig <- as_signature(NULL, foo)
     expect_length(sig, 1)
 
-    foo <- new_generic("foo", c("x", "y", "z"))
+    foo := new_generic(c("x", "y", "z"))
     sig <- as_signature(list(NULL, NULL, class_integer), foo)
     expect_length(sig, 3)
   })
 })
 
 test_that("check_method returns TRUE if the functions are compatible", {
-  foo <- new_generic("foo", "x", function(x, ...) S7_dispatch())
+  foo := new_generic("x", function(x, ...) S7_dispatch())
   expect_true(check_method(function(x, ...) x, foo))
   # extra arguments are ignored
   expect_true(check_method(function(x, ..., y) x, foo))
 
-  foo <- new_generic("foo", "x", function(x) S7_dispatch())
+  foo := new_generic("x", function(x) S7_dispatch())
   expect_true(check_method(function(x) x, foo))
 })
 
 test_that("check_method complains if the functions are not compatible", {
   expect_snapshot(error = TRUE, {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     check_method(1, foo)
     check_method(function(y) {}, foo)
     check_method(function(x = "foo") {}, foo)
@@ -195,28 +195,28 @@ test_that("check_method complains if the functions are not compatible", {
   })
 
   expect_snapshot(error = TRUE, {
-    foo <- new_generic("foo", "x", function(x) S7_dispatch())
+    foo := new_generic("x", function(x) S7_dispatch())
     check_method(function(x, y) {}, foo)
   })
 })
 
 test_that("check_method rejects primitive functions", {
   expect_snapshot(error = TRUE, {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     check_method(log, foo)
   })
 })
 
 test_that("check_method warn if default arguments don't match", {
   expect_snapshot({
-    foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())
+    foo := new_generic("x", function(x, ..., z = 2, y = 1) S7_dispatch())
     check_method(function(x, ..., y = 1) {}, foo)
     check_method(function(x, ..., y = 1, z = 1) {}, foo)
   })
 })
 
 test_that("S7_method printing", {
-  foo <- new_generic("foo", c("x", "y"))
+  foo := new_generic(c("x", "y"))
   method(foo, list(class_integer, class_integer)) <- function(x, y, ...) {
     paste0("bar:", x, y)
   }

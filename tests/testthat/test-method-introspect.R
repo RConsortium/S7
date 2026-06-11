@@ -1,6 +1,6 @@
 describe("method introspection", {
   it("can dispatch by class or object", {
-    foo <- new_generic("foo", "x")
+    foo := new_generic("x")
     method(foo, class_character) <- function(x) "c"
 
     expect_equal(
@@ -13,19 +13,19 @@ describe("method introspection", {
     expect_snapshot(error = TRUE, {
       method(print, 1)
 
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       method(foo)
       method(foo, 1)
       method(foo, new_union(class_integer, class_double))
 
-      foo2 <- new_generic("foo2", c("x", "y"))
+      foo2 := new_generic(c("x", "y"))
       method(foo2, object = list(class_character))
     })
   })
 
   it("errors if no method found", {
-    foo <- new_generic("foo", "x")
-    foo2 <- new_generic("foo", c("x", "y"))
+    foo := new_generic("x")
+    foo2 := new_generic(c("x", "y"))
 
     expect_snapshot(error = TRUE, {
       method(foo, class = class_integer)
@@ -42,7 +42,7 @@ describe("method explanation", {
     foo1 := new_class(package = NULL)
     foo2 := new_class(foo1, package = NULL)
 
-    add <- new_generic("add", c("x", "y"))
+    add := new_generic(c("x", "y"))
     method(add, list(foo2, foo1)) <- function(x, y) c(2, 1)
     method(add, list(foo1, foo1)) <- function(x, y) c(1, 1)
 
