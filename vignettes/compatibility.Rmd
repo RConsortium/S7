@@ -92,20 +92,20 @@ rle <- function(x) {
   }
   n <- length(x)
   if (n == 0L) {
-    new_rle(integer(), x)
+    Rle(integer(), x)
   } else {
     y <- x[-1L] != x[-n]
     i <- c(which(y | is.na(y)), n)
-    new_rle(diff(c(0L, i)), x[i])
+    Rle(diff(c(0L, i)), x[i])
   }
 }
-new_rle <- function(lengths, values) {
+Rle <- function(lengths, values) {
   structure(
     list(
       lengths = lengths,
       values = values
     ),
-    class = "rle"
+    class = "Rle"
   )
 }
 ```
@@ -114,7 +114,7 @@ There are two ways to convert this to S7.
 You could keep the structure exactly the same, using a `list` as the underlying data structure and using a constructor to enforce the structure:
 
 ```{r}
-new_rle <- new_class("rle",
+Rle := new_class(
   parent = class_list,
   constructor = function(lengths, values) {
     new_object(list(lengths = lengths, values = values))
@@ -126,17 +126,17 @@ rle(1:10)
 Alternatively you could convert it to the most natural representation using S7:
 
 ```{r}
-new_rle <- new_class("rle", properties = list(
+Rle := new_class(properties = list(
   lengths = class_integer,
   values = class_atomic
 ))
 ```
 
-To allow existing methods to work you'll need to override `$` to access properties instead of list elements:
+To allow existing code that uses `$` to keep working, like `inverse.rle()`, you'll need to override `$` to access properties instead of list elements:
 
 ```{r}
-method(`$`, new_rle) <- prop
-rle(1:10)
+method(`$`, Rle) <- prop
+inverse.rle(rle(1:10))
 ```
 
 The chief disadvantage of this approach is any subclasses will need to be converted to S7 as well.
