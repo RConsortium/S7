@@ -89,6 +89,23 @@
       Error in `new_property()`:
       ! `default` must be an instance of <integer>, not a <character>.
 
+# new_property() / warns if default is not a scalar or quoted call
+
+    Code
+      . <- new_property(class_integer, default = c(any = 1L))
+    Condition
+      Warning in `new_property()`:
+      `default` should be a scalar or a quoted call, not a <integer>.
+      * Did you mean `default = quote(c(any = 1L))`?
+      * This warning will become an error in a future release.
+    Code
+      . <- new_property(class_POSIXct, default = Sys.time())
+    Condition
+      Warning in `new_property()`:
+      `default` should be a scalar or a quoted call, not a S3<POSIXct/POSIXt>.
+      * Did you mean `default = quote(Sys.time())`?
+      * This warning will become an error in a future release.
+
 # new_property() / displays nicely
 
     Code
