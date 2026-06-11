@@ -293,8 +293,8 @@ test_that("c(<S7_class>, ...) gives error", {
 test_that("can round trip to disk and back", {
   eval(
     quote({
-      foo1 <- new_class("foo1", properties = list(y = class_integer))
-      foo2 <- new_class("foo2", properties = list(x = foo1))
+      foo1 := new_class(properties = list(y = class_integer))
+      foo2 := new_class(properties = list(x = foo1))
       f <- foo2(x = foo1(y = 1L))
     }),
     globalenv()

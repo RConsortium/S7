@@ -9,6 +9,7 @@ reference:
   - new_class
   - new_generic
   - new_union
+  - ":="
   - method<-
   - S7_inherits
   - validate
