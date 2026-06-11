@@ -44,7 +44,7 @@ to explain why a specific method was picked.
 
 ``` r
 # Create a generic and register some methods
-bizarro <- new_generic("bizarro", "x")
+bizarro := new_generic("x")
 method(bizarro, class_numeric) <- function(x) rev(x)
 method(bizarro, class_factor) <- function(x) {
   levels(x) <- rev(levels(x))
@@ -63,12 +63,12 @@ method(bizarro, class = class_integer)
 #> <S7_method> method(bizarro, class_integer)
 #> function (x) 
 #> rev(x)
-#> <environment: 0x55f4dbbcbca0>
+#> <environment: 0x55b48829ed20>
 method(bizarro, object = 1)
 #> <S7_method> method(bizarro, class_double)
 #> function (x) 
 #> rev(x)
-#> <environment: 0x55f4dbbcbca0>
+#> <environment: 0x55b48829ed20>
 method(bizarro, class = class_factor)
 #> <S7_method> method(bizarro, new_S3_class("factor"))
 #> function (x) 
@@ -76,7 +76,7 @@ method(bizarro, class = class_factor)
 #>     levels(x) <- rev(levels(x))
 #>     x
 #> }
-#> <environment: 0x55f4dbbcbca0>
+#> <environment: 0x55b48829ed20>
 
 # errors if method not found
 try(method(bizarro, class = class_data.frame))

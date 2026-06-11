@@ -47,7 +47,7 @@ An S7 external generic, i.e. a list with class `S7_external_generic`.
 ## Examples
 
 ``` r
-MyClass <- new_class("MyClass")
+MyClass := new_class()
 
 your_generic <- new_external_generic("stats", "median", "x")
 method(your_generic, MyClass) <- function(x) "Hi!"

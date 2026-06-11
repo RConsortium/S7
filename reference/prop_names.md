@@ -49,7 +49,7 @@ prop_info(object)
 ## Examples
 
 ``` r
-Horse <- new_class("Horse", properties = list(
+Horse := new_class(properties = list(
   name = class_character,
   colour = class_character,
   height = new_property(class_numeric, default = 15),

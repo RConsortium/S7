@@ -46,7 +46,7 @@ logical_or_character
 # or with shortcut syntax
 logical_or_character <- class_logical | class_character
 
-Foo <- new_class("Foo", properties = list(x = logical_or_character))
+Foo := new_class(properties = list(x = logical_or_character))
 Foo(x = TRUE)
 #> <Foo>
 #>  @ x: logi TRUE
@@ -57,7 +57,7 @@ try(Foo(1:3))
 #> Error in Foo(1:3) : <Foo> object properties are invalid:
 #> - @x must be <logical> or <character>, not <integer>
 
-bar <- new_generic("bar", "x")
+bar := new_generic("x")
 # Use built-in union
 method(bar, class_atomic) <- function(x) "Hi!"
 bar

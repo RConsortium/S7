@@ -103,7 +103,7 @@ An S7 property, i.e. a list with class `S7_property`.
 
 ``` r
 # Simple properties store data inside an object
-Pizza <- new_class("Pizza", properties = list(
+Pizza := new_class(properties = list(
   slices = new_property(class_numeric, default = 10),
   special = new_property(NULL | class_character)
 ))
@@ -123,14 +123,14 @@ your_pizza@special
 #> NULL
 
 # Dynamic properties can compute on demand
-Clock <- new_class("Clock", properties = list(
+Clock := new_class(properties = list(
   now = new_property(getter = function(self) Sys.time())
 ))
 my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
-#> [1] "2026-06-08 20:33:00 UTC"
+#> [1] "2026-06-11 16:27:31 UTC"
 my_clock@now
-#> [1] "2026-06-08 20:33:01 UTC"
+#> [1] "2026-06-11 16:27:32 UTC"
 # This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 #> Error in `<Clock>@now`() : Can't set read-only property.

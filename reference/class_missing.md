@@ -18,7 +18,7 @@ Sentinel objects used for special types of dispatch.
 ## Examples
 
 ``` r
-foo <- new_generic("foo", "x")
+foo := new_generic("x")
 method(foo, class_numeric) <- function(x) "number"
 method(foo, class_missing) <- function(x) "missing"
 method(foo, class_any) <- function(x) "fallback"

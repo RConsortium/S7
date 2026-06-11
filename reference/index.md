@@ -10,6 +10,8 @@
   : Define a new generic
 - [`new_union()`](https://rconsortium.github.io/S7/reference/new_union.md)
   : Define a class union
+- [`` `:=`() ``](https://rconsortium.github.io/S7/reference/named-bind.md)
+  : Create and name an object in one step
 - [`` `method<-`() ``](https://rconsortium.github.io/S7/reference/method-set.md)
   : Register an S7 method for a generic
 - [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)

@@ -39,7 +39,7 @@ classes, and S3 dispatch will operate on them normally.
 
 ``` r
 
-Foo <- new_class("Foo", package = "Bar")
+Foo := new_class(package = "Bar")
 class(Foo())
 #> [1] "Bar::Foo"  "S7_object"
 
@@ -64,7 +64,7 @@ methods (typically in other packages) to continue to work, add a
 
 ``` r
 
-foo <- new_generic("foo", "x")
+foo := new_generic("x")
 
 # Default method dispatches to S3
 method(foo, class_any) <- function(x, ...) {
@@ -99,20 +99,20 @@ rle <- function(x) {
   }
   n <- length(x)
   if (n == 0L) {
-    new_rle(integer(), x)
+    Rle(integer(), x)
   } else {
     y <- x[-1L] != x[-n]
     i <- c(which(y | is.na(y)), n)
-    new_rle(diff(c(0L, i)), x[i])
+    Rle(diff(c(0L, i)), x[i])
   }
 }
-new_rle <- function(lengths, values) {
+Rle <- function(lengths, values) {
   structure(
     list(
       lengths = lengths,
       values = values
     ),
-    class = "rle"
+    class = "Rle"
   )
 }
 ```
@@ -123,16 +123,16 @@ using a constructor to enforce the structure:
 
 ``` r
 
-new_rle <- new_class("rle",
+Rle := new_class(
   parent = class_list,
   constructor = function(lengths, values) {
     new_object(list(lengths = lengths, values = values))
   }
 )
 rle(1:10)
-#> Run Length Encoding
-#>   lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1
-#>   values : int [1:10] 1 2 3 4 5 6 7 8 9 10
+#> <Rle> List of 2
+#>  $ lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1
+#>  $ values : int [1:10] 1 2 3 4 5 6 7 8 9 10
 ```
 
 Alternatively you could convert it to the most natural representation
@@ -140,22 +140,21 @@ using S7:
 
 ``` r
 
-new_rle <- new_class("rle", properties = list(
+Rle := new_class(properties = list(
   lengths = class_integer,
   values = class_atomic
 ))
 ```
 
-To allow existing methods to work you’ll need to override `$` to access
-properties instead of list elements:
+To allow existing code that uses `$` to keep working, like
+[`inverse.rle()`](https://rdrr.io/r/base/rle.html), you’ll need to
+override `$` to access properties instead of list elements:
 
 ``` r
 
-method(`$`, new_rle) <- prop
-rle(1:10)
-#> Run Length Encoding
-#>   lengths: int [1:10] 1 1 1 1 1 1 1 1 1 1
-#>   values : int [1:10] 1 2 3 4 5 6 7 8 9 10
+method(`$`, Rle) <- prop
+inverse.rle(rle(1:10))
+#>  [1]  1  2  3  4  5  6  7  8  9 10
 ```
 
 The chief disadvantage of this approach is any subclasses will need to
@@ -182,11 +181,11 @@ a method for each of the classes.
 
 ``` r
 
-Class1 <- new_class("Class1")
-Class2 <- new_class("Class2")
+Class1 := new_class()
+Class2 := new_class()
 Union1 <- new_union(Class1, Class2)
 
-foo <- new_generic("foo", "x")
+foo := new_generic("x")
 method(foo, Union1) <- function(x) ""
 foo
 #> <S7_generic> foo(x, ...) with 2 methods:

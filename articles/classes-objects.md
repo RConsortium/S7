@@ -26,7 +26,7 @@ In the following example we create a `Range` class that enforces that
 
 ``` r
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double
@@ -154,7 +154,7 @@ For example, the property definition of range above is shorthand for:
 
 ``` r
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = new_property(class_double),
     end = new_property(class_double)
@@ -184,7 +184,7 @@ prop_number <- new_property(
   }
 )
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = prop_number,
     end = prop_number
@@ -225,7 +225,7 @@ create a class that can be constructed with no arguments:
 
 ``` r
 
-Empty <- new_class("Empty",
+Empty := new_class(
   properties = list(
     x = class_double,
     y = class_character,
@@ -244,7 +244,7 @@ instances. You can instead provide your own defaults by using the
 
 ``` r
 
-Empty <- new_class("Empty",
+Empty := new_class(
   properties = list(
     x = new_property(class_numeric, default = 0),
     y = new_property(class_character, default = ""),
@@ -263,7 +263,7 @@ constructor, evaluated at the time the object is constructed.
 
 ``` r
 
-Stopwatch <- new_class("Stopwatch", properties = list(
+Stopwatch := new_class(properties = list(
   start_time = new_property(
     class = class_POSIXct,
     default = quote(Sys.time())
@@ -292,7 +292,7 @@ dynamically compute the value of a property by defining a `getter`:
 
 ``` r
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double,
@@ -332,7 +332,7 @@ to be set, by modifying the `@end` of the vector:
 
 ``` r
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double,
@@ -378,7 +378,7 @@ A `setter` + `getter` can be used to to deprecate a property:
 
 ``` r
 
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  first_name = class_character,
  firstName = new_property(
     class_character,
@@ -427,7 +427,7 @@ You can make a property required by the constructor either by:
 
 ``` r
 
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  name = new_property(
    class_character,
    validator = function(value) {
@@ -452,7 +452,7 @@ Person("Alice")
 
 ``` r
 
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  name = new_property(
    class_character,
    default = quote(stop("@name is required")))
@@ -473,7 +473,7 @@ custom `setter`.
 
 ``` r
 
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  birth_date = new_property(
    class_Date,
    setter = function(self, value) {
@@ -517,7 +517,7 @@ we could do:
 
 ``` r
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric

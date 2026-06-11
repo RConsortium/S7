@@ -53,7 +53,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
-<ul><li>Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (<a href="https://github.com/RConsortium/S7/issues/646" class="external-link">#646</a>).</li>
+<ul><li>New <code>:=</code> operator creates and names an object in one step, so <code>Foo := new_class()</code> is equivalent to <code>Foo &lt;- new_class(name = "Foo")</code> (<a href="https://github.com/RConsortium/S7/issues/658" class="external-link">#658</a>).</li>
+<li>Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (<a href="https://github.com/RConsortium/S7/issues/646" class="external-link">#646</a>).</li>
 <li>
 <code>class_POSIXct</code> uses the <code>tzone</code> attribute (not <code>tz</code>), and allows it to be absent (<a href="https://github.com/RConsortium/S7/issues/401" class="external-link">#401</a>).</li>
 <li>Base type wrappers like <code>class_integer</code> now define their constructor and validator in the S7 namespace. (<a href="https://github.com/RConsortium/S7/issues/553" class="external-link">#553</a>).</li>

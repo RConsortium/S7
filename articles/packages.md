@@ -95,7 +95,7 @@ which means you’ll need to wrap the method name in `` ` ``:
 
 ``` r
 
-Foo <- new_class("Foo", package = "S7")
+Foo := new_class(package = "S7")
 `length.S7::Foo` <- function(x) 10
 length(Foo())
 #> [1] 10

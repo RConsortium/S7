@@ -40,7 +40,7 @@ A class specification.
 ## Examples
 
 ``` r
-Foo <- new_class("Foo")
+Foo := new_class()
 S7_class(Foo())
 #> <Foo> class
 #> @ parent     : <S7_object>

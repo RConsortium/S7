@@ -86,8 +86,9 @@ generate this for you.</p>
 
 
 <dl><dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
-<dd><p>The name of the generic. This should be the same as the object
-that you assign it to.</p></dd>
+<dd><p>The name of the generic. The result of calling <code>new_generic()</code>
+should always be assigned to a variable with this name, i.e.
+<code>bar &lt;- new_generic("bar", ...)</code> or <code>bar := new_generic(...)</code>.</p></dd>
 
 
 <dt id="arg-dispatch-args">dispatch_args<a class="anchor" aria-label="anchor" href="#arg-dispatch-args"></a></dt>
@@ -130,7 +131,7 @@ in another package without taking a strong dependency on it.</p></div>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A simple generic with methods for some base types and S3 classes</span></span></span>
-<span class="r-in"><span><span class="va">type_of</span> <span class="op">&lt;-</span> <span class="fu">new_generic</span><span class="op">(</span><span class="st">"type_of"</span>, dispatch_args <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">type_of</span> <span class="op">:=</span> <span class="fu">new_generic</span><span class="op">(</span>dispatch_args <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">type_of</span>, <span class="va">class_character</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="st">"A character vector"</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">type_of</span>, <span class="fu"><a href="new_S3_class.html">new_S3_class</a></span><span class="op">(</span><span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="st">"A data frame"</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">type_of</span>, <span class="va">class_function</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="st">"A function"</span></span></span>
@@ -144,7 +145,7 @@ in another package without taking a strong dependency on it.</p></div>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># If you want to require that methods implement additional arguments,</span></span></span>
 <span class="r-in"><span><span class="co"># you can use a custom function:</span></span></span>
-<span class="r-in"><span><span class="va">mean2</span> <span class="op">&lt;-</span> <span class="fu">new_generic</span><span class="op">(</span><span class="st">"mean2"</span>, <span class="st">"x"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span>, <span class="va">na.rm</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">mean2</span> <span class="op">:=</span> <span class="fu">new_generic</span><span class="op">(</span><span class="st">"x"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span>, <span class="va">na.rm</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>   <span class="fu">S7_dispatch</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

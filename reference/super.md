@@ -27,7 +27,7 @@ understand and reason about.
 Note that you can't use `super()` in methods for an S3 generic. For
 example, imagine that you have made a subclass of "integer":
 
-    MyInt <- new_class("MyInt", parent = class_integer, package = NULL)
+    MyInt := new_class(parent = class_integer, package = NULL)
 
 Now you go to write a custom print method:
 
@@ -82,10 +82,10 @@ generic. It has no other special behavior.
 ## Examples
 
 ``` r
-Foo1 <- new_class("Foo1", properties = list(x = class_numeric, y = class_numeric))
-Foo2 <- new_class("Foo2", Foo1, properties = list(z = class_numeric))
+Foo1 := new_class(properties = list(x = class_numeric, y = class_numeric))
+Foo2 := new_class(Foo1, properties = list(z = class_numeric))
 
-total <- new_generic("total", "x")
+total := new_generic("x")
 method(total, Foo1) <- function(x) x@x + x@y
 
 # This won't work because it'll be stuck in an infinite loop:
@@ -106,11 +106,11 @@ total(Foo2(1, 2, 3))
 # To see the difference between convert() and super() we need a
 # method that calls another generic
 
-bar1 <- new_generic("bar1", "x")
+bar1 := new_generic("x")
 method(bar1, Foo1) <- function(x) 1
 method(bar1, Foo2) <- function(x) 2
 
-bar2 <- new_generic("bar2", "x")
+bar2 := new_generic("x")
 method(bar2, Foo1) <- function(x) c(1, bar1(x))
 method(bar2, Foo2) <- function(x) c(2, bar1(x))
 

@@ -2,6 +2,9 @@
 
 ## S7 (development version)
 
+- New `:=` operator creates and names an object in one step, so
+  `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")`
+  ([\#658](https://github.com/RConsortium/S7/issues/658)).
 - Errors thrown by S7 now report the function where they occurred,
   making it easier to track down the source of a problem
   ([\#646](https://github.com/RConsortium/S7/issues/646)).

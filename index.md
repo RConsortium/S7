@@ -43,11 +43,12 @@ library(S7)
 S7 classes have a formal definition, which includes a list of properties
 and an optional validator. Use
 [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-to define a class:
+to define a class, with the `:=` operator supplying its name from the
+variable that you assign the result to:
 
 ``` r
 
-range <- new_class("range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double
@@ -70,9 +71,9 @@ create instances of the class:
 
 ``` r
 
-x <- range(start = 1, end = 10)
+x <- Range(start = 1, end = 10)
 x
-#> <range>
+#> <Range>
 #>  @ start: num 1
 #>  @ end  : num 10
 ```
@@ -88,7 +89,7 @@ x@start
 #> [1] 1
 x@end <- 20
 x
-#> <range>
+#> <Range>
 #>  @ start: num 1
 #>  @ end  : num 20
 ```
@@ -100,11 +101,11 @@ Properties are automatically validated against the type declared in
 ``` r
 
 x@end <- "x"
-#> Error:
-#> ! <range>@end must be <double>, not <character>
+#> Error in `<Range>@end`:
+#> ! <Range>@end must be <double>, not <character>
 x@end <- -1
 #> Error:
-#> ! <range> object is invalid:
+#> ! <Range> object is invalid:
 #> - @end must be greater than or equal to @start
 ```
 
@@ -118,15 +119,15 @@ internally the components are also functions.
 
 Use
 [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md)
-to create a new generic: the first argument is the generic name (used in
-error messages) and the second gives the arguments used for dispatch.
-The third, and optional argument, supplies the body of the generic. This
-is only needed if your generic has additional arguments that aren’t used
-for method dispatch.
+to create a new generic: it needs the generic’s name (again supplied
+with `:=`, and used in error messages) and the arguments used for
+dispatch. The optional `fun` argument supplies the body of the generic.
+This is only needed if your generic has additional arguments that aren’t
+used for method dispatch.
 
 ``` r
 
-inside <- new_generic("inside", "x")
+inside := new_generic("x")
 ```
 
 Once you have a generic, you can define a method for a specific class
@@ -135,7 +136,7 @@ with `method<-`:
 ``` r
 
 # Add a method for our class
-method(inside, range) <- function(x, y) {
+method(inside, Range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
 

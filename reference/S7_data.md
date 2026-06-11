@@ -38,7 +38,7 @@ called for its side-effects and returns `object` invisibly.
 ## Examples
 
 ``` r
-Text <- new_class("Text", parent = class_character)
+Text := new_class(parent = class_character)
 y <- Text(c(foo = "bar"))
 y
 #> <Text> Named chr "bar"
@@ -52,7 +52,7 @@ y
 #> <Text> chr [1:2] "a" "b"
 
 # S3 classes are preserved
-MyDF <- new_class("MyDF", parent = class_data.frame)
+MyDF := new_class(parent = class_data.frame)
 S7_data(MyDF(data.frame(x = 1, y = 2)))
 #>   x y
 #> 1 1 2
