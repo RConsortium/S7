@@ -22,8 +22,9 @@ new_object(.parent, ...)
 CamelCase for S7 class names, but it is not required.)
 
 The result of calling \code{new_class()} should always be assigned to a variable
-with this name, i.e. \code{Foo <- new_class("Foo")}. This object both represents
-the class and is used to construct new instances of the class.}
+with this name, i.e. \code{Foo <- new_class("Foo", ...)} or
+\code{Foo := new_class(...)}. This object both represents the class and is used
+to construct new instances of the class.}
 
 \item{parent}{The parent class to inherit behavior from.
 There are three options:

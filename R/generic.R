@@ -21,8 +21,9 @@
 #' arguments to the generic and if the generic uses `...`, it must occur
 #' immediately after the dispatch arguments.
 #'
-#' @param name The name of the generic. This should be the same as the object
-#'   that you assign it to.
+#' @param name The name of the generic. The result of calling `new_generic()`
+#'   should always be assigned to a variable with this name, i.e.
+#'   `bar <- new_generic("bar", ...)` or `bar := new_generic(...)`.
 #' @param dispatch_args A character vector giving the names of one or more
 #'   arguments used to find the method.
 #' @param fun An optional specification of the generic, which must call

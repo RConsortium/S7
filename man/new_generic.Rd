@@ -10,8 +10,9 @@ new_generic(name, dispatch_args, fun = NULL)
 S7_dispatch()
 }
 \arguments{
-\item{name}{The name of the generic. This should be the same as the object
-that you assign it to.}
+\item{name}{The name of the generic. The result of calling \code{new_generic()}
+should always be assigned to a variable with this name, i.e.
+\code{bar <- new_generic("bar", ...)} or \code{bar := new_generic(...)}.}
 
 \item{dispatch_args}{A character vector giving the names of one or more
 arguments used to find the method.}
