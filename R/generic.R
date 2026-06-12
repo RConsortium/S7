@@ -226,7 +226,8 @@ generic_add_method <- function(generic, signature, method) {
       }
       p_tbl <- tbl
     } else {
-      if (!is.null(p_tbl[[class_name]])) {
+      existing <- p_tbl[[class_name]]
+      if (!is.null(existing) && !identical(existing, method)) {
         message("Overwriting method ", method_name(generic, signature))
       }
       p_tbl[[class_name]] <- method

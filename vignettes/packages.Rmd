@@ -26,11 +26,15 @@ library(S7)
 
 First, add `S7` to the `Imports` field of your `DESCRIPTION`. We then recommend importing all S7 functions into your package `NAMESPACE` with `import(S7)`, or, if you're using roxygen2, `@import S7`.
 
-Next, create a `zzz.R` with a `.onLoad()` that calls `S7_on_load()` and a top-level call to `S7_on_build()`:
+Next, create a `zzz.R` with a `.onLoad()` that calls `S7_on_load()`, an `.onUnload()` that calls `S7_on_unload()`, and a top-level call to `S7_on_build()`:
 
 ```{r}
 .onLoad <- function(...) {
   S7::S7_on_load()
+}
+
+.onUnload <- function(...) {
+  S7::S7_on_unload()
 }
 
 S7::S7_on_build()
@@ -38,6 +42,8 @@ S7::S7_on_build()
 
 `S7_on_load()` is S7's way of registering methods, rather than using export directives in your `NAMESPACE` like S3 and S4 do.
 This is only strictly necessary if you are registering methods for generics in other packages, but there's no harm in adding it and it ensures that you won't forget later.
+
+`S7_on_unload()` undoes the work of `S7_on_load()`: it unregisters the methods that your package registered for generics in other packages and removes the hooks that `S7_on_load()` added, so unloading your package doesn't leave stale methods behind.
 
 `S7_on_build()` cleans up after `method<-`.
 Because `method<-` is a replacement function, `method(generic, class) <- fun` is evaluated as `generic <- method<-(generic, class, fun)`, which would otherwise leave a copy of `generic` in your namespace.
