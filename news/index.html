@@ -60,7 +60,7 @@
 <li>Base type wrappers like <code>class_integer</code> now define their constructor and validator in the S7 namespace. (<a href="https://github.com/RConsortium/S7/issues/553" class="external-link">#553</a>).</li>
 <li>Method dispatch on <code>class_missing</code> now correctly handles missing arguments forwarded through a wrapper functions (<a href="https://github.com/RConsortium/S7/issues/595" class="external-link">#595</a>).</li>
 <li>
-<code><a href="../reference/convert.html">convert()</a></code> now errors when upcasting to an abstract class, rather than producing an instance of that abstract class (<a href="https://github.com/RConsortium/S7/issues/680" class="external-link">#680</a>).</li>
+<code><a href="../reference/convert.html">convert()</a></code> now errors when upcasting to an abstract class, rather than producing an instance of that abstract class (<a href="https://github.com/RConsortium/S7/issues/680" class="external-link">#680</a>, <a href="https://github.com/RConsortium/S7/issues/686" class="external-link">#686</a>).</li>
 <li>
 <code><a href="../reference/convert.html">convert()</a></code> no longer automatically converts between sibling classes (classes that merely share a common ancestor); the default downcast now applies only when <code>to</code> is genuinely a descendant of <code>from</code>’s class (<a href="https://github.com/RConsortium/S7/issues/509" class="external-link">#509</a>).</li>
 <li>
