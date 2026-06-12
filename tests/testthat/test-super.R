@@ -48,6 +48,16 @@ describe("super()", {
     expect_equal(gen(super(my_int, to = class_integer)), "integer")
   })
 
+  it("works with abstract S3 classes (#686)", {
+    gen <- new_generic("gen", "x")
+    method(gen, class_POSIXct) <- function(x) "POSIXct"
+    method(gen, class_POSIXt) <- function(x) "POSIXt"
+
+    x <- .POSIXct(1)
+    expect_equal(gen(x), "POSIXct")
+    expect_equal(gen(super(x, to = class_POSIXt)), "POSIXt")
+  })
+
   it("works with S4 objects", {
     methods::setClass("Foo1", representation(x = "numeric"))
     methods::setClass("Foo2", contains = "Foo1")

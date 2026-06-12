@@ -93,8 +93,10 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     stop2("`class` must be a character vector.")
   }
   if (!is.null(constructor)) {
+    abstract <- FALSE
     check_S3_constructor(constructor)
   } else {
+    abstract <- TRUE
     constructor <- function(.data) {
       stop2(
         sprintf("S3 class <%s> doesn't have a constructor.", class[[1]]),
@@ -106,7 +108,8 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
   out <- list(
     class = class,
     constructor = constructor,
-    validator = validator
+    validator = validator,
+    abstract = abstract
   )
   class(out) <- "S7_S3_class"
   out
@@ -142,6 +145,21 @@ check_S3_constructor <- function(constructor, call = sys.call(-1L)) {
 
 is_S3_class <- function(x) {
   inherits(x, "S7_S3_class")
+}
+
+# Detect the stub constructor that `new_S3_class()` inserts when no constructor
+# is supplied. Needed as a fallback for `S7_S3_class` objects created by older
+# versions of S7.
+is_S3_stub_constructor <- function(constructor) {
+  if (!is.function(constructor)) {
+    return(FALSE)
+  }
+  call <- find_call(body(constructor), quote(sprintf))
+  if (is.null(call)) {
+    return(FALSE)
+  }
+  fmt <- call[[2]]
+  is.character(fmt) && grepl("doesn't have a constructor", fmt, fixed = TRUE)
 }
 
 # -------------------------------------------------------------------------
