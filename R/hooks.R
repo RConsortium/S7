@@ -1,7 +1,7 @@
 #' Package hooks for S7 methods
 #'
 #' @description
-#' When using S7 in a package, add two hooks to your `zzz.R`:
+#' When using S7 in a package, add three hooks to your `zzz.R`:
 #'
 #' * Call `S7_on_load()` from `.onLoad()`. This is S7's way of
 #'   registering methods, rather than using `NAMESPACE` directives like S3 and
@@ -10,6 +10,13 @@
 #'   is only strictly necessary if you register methods for generics in other
 #'   packages, but there's no harm in always including it and it ensures you
 #'   won't forget later.
+#'
+#' * Call `S7_on_unload()` from `.onUnload()`. This undoes the work of
+#'   `S7_on_load()`: it unregisters the methods that your package registered
+#'   for S7 generics in other packages and removes any hooks that
+#'   `S7_on_load()` added. This matters mostly during development, where it
+#'   ensures that reloading your package (e.g. with `devtools::load_all()`)
+#'   doesn't leave stale methods behind.
 #'
 #' * Call `S7_on_build()` at the top level (i.e. *not* inside `.onLoad()`)
 #'   after all method registration is complete. This avoids embedding copies
@@ -21,11 +28,14 @@
 #' See `vignette("packages")` for more details.
 #'
 #' @importFrom utils getFromNamespace packageName
-#' @returns Nothing; both functions are called for their side-effects.
+#' @returns Nothing; these functions are called for their side-effects.
 #' @examples
 #' # In zzz.R:
 #' .onLoad <- function(...) {
 #'   S7::S7_on_load()
+#' }
+#' .onUnload <- function(...) {
+#'   S7::S7_on_unload()
 #' }
 #' S7::S7_on_build()
 #' @export
@@ -46,13 +56,67 @@ S7_on_load_ <- function(env) {
 
   tbl <- S7_methods_table(package)
 
+  # Remove any hooks left behind by a previous load of this package
+  registrar_hooks_remove(tbl, package)
+
   for (x in tbl) {
     register <- registrar(x$generic, x$signature, x$method, ns)
+    attr(register, "S7_package") <- package
 
     if (isNamespaceLoaded(x$generic$package)) {
       register()
     }
     setHook(packageEvent(x$generic$package, "onLoad"), register)
+  }
+
+  invisible()
+}
+
+#' @export
+#' @rdname S7_on_load
+S7_on_unload <- function() {
+  S7_on_unload_(parent.frame())
+}
+
+S7_on_unload_ <- function(env) {
+  package <- packageName(env)
+
+  tbl <- S7_methods_table(package)
+  registrar_hooks_remove(tbl, package)
+
+  for (x in tbl) {
+    if (!isNamespaceLoaded(x$generic$package)) {
+      next
+    }
+
+    generic <- get0(
+      x$generic$name,
+      envir = asNamespace(x$generic$package),
+      inherits = FALSE
+    )
+    # Methods registered for S3 and S4 generics can't be unregistered
+    if (is_S7_generic(generic)) {
+      unregister_S7_method(generic, x$signature)
+    }
+  }
+
+  invisible()
+}
+
+# Remove the hooks that S7_on_load_() added on behalf of `package`,
+# identified by their "S7_package" attribute.
+registrar_hooks_remove <- function(tbl, package) {
+  pkgs <- unique(vcapply(tbl, function(x) x$generic$package))
+
+  for (pkg in pkgs) {
+    event <- packageEvent(pkg, "onLoad")
+    hooks <- getHook(event)
+    ours <- vlapply(hooks, function(hook) {
+      identical(attr(hook, "S7_package", TRUE), package)
+    })
+    if (any(ours)) {
+      setHook(event, hooks[!ours], action = "replace")
+    }
   }
 
   invisible()

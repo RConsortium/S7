@@ -1,3 +1,82 @@
+describe("S7_on_load()", {
+  it("doesn't accumulate hooks across repeated loads", {
+    external_methods_reset("S7")
+    on.exit(external_methods_reset("S7"), add = TRUE)
+
+    Foo <- new_class("Foo")
+    Bar <- new_class("Bar")
+    external <- new_external_generic("S7", "convert", c("from", "to"))
+    external_methods_add(
+      "S7",
+      external,
+      new_signature(list(Foo, Bar)),
+      function(from, to, ...) "converted"
+    )
+    on.exit(
+      unregister_S7_method(convert, new_signature(list(Foo, Bar))),
+      add = TRUE
+    )
+
+    ns <- asNamespace("S7")
+    n_hooks <- length(getHook(packageEvent("S7", "onLoad")))
+
+    S7_on_load_(ns)
+    S7_on_load_(ns)
+    expect_length(getHook(packageEvent("S7", "onLoad")), n_hooks + 1)
+
+    S7_on_unload_(ns)
+  })
+})
+
+describe("S7_on_unload()", {
+  it("unregisters methods and removes hooks", {
+    external_methods_reset("S7")
+    on.exit(external_methods_reset("S7"), add = TRUE)
+
+    Foo <- new_class("Foo")
+    Bar <- new_class("Bar")
+    external <- new_external_generic("S7", "convert", c("from", "to"))
+    external_methods_add(
+      "S7",
+      external,
+      new_signature(list(Foo, Bar)),
+      function(from, to, ...) "converted"
+    )
+    on.exit(
+      unregister_S7_method(convert, new_signature(list(Foo, Bar))),
+      add = TRUE
+    )
+
+    ns <- asNamespace("S7")
+    n_hooks <- length(getHook(packageEvent("S7", "onLoad")))
+
+    S7_on_load_(ns)
+    expect_length(getHook(packageEvent("S7", "onLoad")), n_hooks + 1)
+    expect_equal(convert(Foo(), Bar), "converted")
+
+    S7_on_unload_(ns)
+    expect_length(getHook(packageEvent("S7", "onLoad")), n_hooks)
+    expect_null(convert@methods[["Foo"]][["Bar"]])
+  })
+
+  it("unregisters methods when a real package is unloaded (#316)", {
+    skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
+    skip_if(quick_test())
+
+    tmp_lib <- local_libpath()
+    local_install_and_attach(test_path("t0"), tmp_lib)
+    local_install_and_attach(test_path("t2"), tmp_lib)
+
+    expect_equal(t0::an_s7_generic("x"), "foo")
+
+    # t2's .onUnload() calls S7_on_unload(), which unregisters the methods
+    # it registered for t0's generics and removes its hooks for t1
+    unloadNamespace("t2")
+    expect_null(t0::an_s7_generic@methods[["character"]])
+    expect_length(getHook(packageEvent("t1", "onLoad")), 0)
+  })
+})
+
 describe("S7_on_build()", {
   it("removes only generic sentinels from the namespace", {
     ns <- new.env(parent = emptyenv())

@@ -18,6 +18,17 @@ test_that("can get and append methods", {
   )
 })
 
+test_that("re-adding a method replaces the existing entry", {
+  external_methods_reset("S7")
+  on.exit(external_methods_reset("S7"), add = TRUE)
+
+  bar <- new_external_generic("foo", "bar", "x")
+  external_methods_add("S7", bar, list("A"), function() "a")
+  external_methods_add("S7", bar, list("A"), function() "b")
+  expect_length(S7_methods_table("S7"), 1)
+  expect_equal(S7_methods_table("S7")[[1]]$method(), "b")
+})
+
 test_that("can remove methods", {
   external_methods_reset("S7")
   on.exit(external_methods_reset("S7"), add = TRUE)

@@ -109,6 +109,8 @@ external_methods_reset <- function(package) {
 }
 
 external_methods_add <- function(package, generic, signature, method) {
+  # Re-registering a method replaces the existing entry
+  external_methods_remove(package, generic, signature)
   tbl <- S7_methods_table(package)
 
   append1(tbl) <- list(
