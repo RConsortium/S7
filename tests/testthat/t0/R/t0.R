@@ -6,3 +6,9 @@ an_s3_generic <- function(x) UseMethod("an_s3_generic")
 
 #' @export
 `An S7 Class` <- S7::new_class("An S7 Class")
+
+.onLoad <- function(...) {
+  S7::S7_on_load()
+}
+
+S7::S7_on_build()
