@@ -44,6 +44,7 @@ SEXP sym_getter;
 SEXP sym_dot_should_validate;
 SEXP sym_dot_getting_prop;
 SEXP sym_dot_setting_prop;
+SEXP sym_u_dispatched_super;
 
 // `comment` lacks a predefined R_*Symbol, unlike the other special names.
 SEXP sym_comment;
@@ -104,6 +105,7 @@ void R_init_S7(DllInfo *dll)
     sym_dot_should_validate = Rf_install(".should_validate");
     sym_dot_getting_prop = Rf_install(".getting_prop");
     sym_dot_setting_prop = Rf_install(".setting_prop");
+    sym_u_dispatched_super = Rf_install("_dispatched_super");
 
     sym_comment = Rf_install("comment");
 
