@@ -81,6 +81,131 @@ test_that("inheritance lets child properties override parent", {
   expect_equal(foo2@properties$x$class, class_double)
 })
 
+test_that("inheritance lets child properties narrow the parent's type", {
+  Parent <- new_class("Parent", package = NULL)
+  Child <- new_class("Child", parent = Parent, package = NULL)
+  foo1 <- new_class("foo1", properties = list(x = Parent))
+  expect_no_error(new_class("foo2", foo1, properties = list(x = Child)))
+  expect_no_error(new_class(
+    "foo3",
+    foo1,
+    properties = list(x = new_property(Child, default = quote(Child())))
+  ))
+})
+
+test_that("inheritance lets child properties narrow with S4 inheritance", {
+  on.exit(S4_remove_classes(c("S4PropertyParent", "S4PropertyChild")))
+  S4PropertyParent <- methods::setClass(
+    "S4PropertyParent",
+    slots = c(x = "numeric")
+  )
+  S4PropertyChild <- methods::setClass(
+    "S4PropertyChild",
+    contains = "S4PropertyParent"
+  )
+
+  Parent <- new_class(
+    "Parent",
+    properties = list(x = S4PropertyParent),
+    package = NULL
+  )
+  Child <- new_class(
+    "Child",
+    Parent,
+    properties = list(x = S4PropertyChild),
+    package = NULL
+  )
+
+  x <- methods::new("S4PropertyChild", x = 1)
+  expect_s4_class(Child(x = x)@x, "S4PropertyChild")
+})
+
+test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
+  Parent <- new_class(
+    "Parent",
+    properties = list(x = S7_object),
+    package = NULL,
+    abstract = TRUE
+  )
+
+  expect_error(
+    new_class(
+      "IntegerChild",
+      Parent,
+      properties = list(x = class_integer),
+      package = NULL
+    ),
+    "must narrow"
+  )
+  expect_error(
+    new_class(
+      "FormulaChild",
+      Parent,
+      properties = list(x = class_formula),
+      package = NULL
+    ),
+    "must narrow"
+  )
+})
+
+test_that("inheritance lets child properties narrow parent unions that include any", {
+  Parent <- new_class(
+    "Parent",
+    properties = list(x = class_any | class_integer),
+    package = NULL
+  )
+  expect_no_error(new_class(
+    "Child",
+    Parent,
+    properties = list(x = class_any),
+    package = NULL
+  ))
+})
+
+test_that("inheritance lets child properties narrow optional union properties with NULL", {
+  Parent <- new_class(
+    "Parent",
+    properties = list(x = NULL | class_numeric),
+    package = NULL
+  )
+
+  NullChild <- new_class(
+    "NullChild",
+    Parent,
+    properties = list(x = NULL),
+    package = NULL
+  )
+  expect_equal(NullChild()@x, NULL)
+
+  OptionalIntegerChild <- new_class(
+    "OptionalIntegerChild",
+    Parent,
+    properties = list(x = NULL | class_integer),
+    package = NULL
+  )
+  expect_equal(OptionalIntegerChild()@x, NULL)
+  expect_equal(OptionalIntegerChild(x = 1L)@x, 1L)
+})
+
+test_that("inheritance doesn't let child properties widen or change the parent's type", {
+  foo1 <- new_class(
+    "foo1",
+    properties = list(x = class_integer),
+    package = NULL
+  )
+  expect_snapshot(error = TRUE, {
+    new_class("foo2", foo1, properties = list(x = class_character))
+    new_class("foo3", foo1, properties = list(x = class_numeric))
+    new_class("foo4", foo1, properties = list(x = class_any))
+  })
+})
+
+test_that("inheritance lets dynamic child properties override any parent type", {
+  foo1 <- new_class("foo1", properties = list(x = class_integer))
+  readonly <- new_property(class_character, getter = function(self) "x")
+  expect_no_error(new_class("foo2", foo1, properties = list(x = readonly)))
+})
+
 test_that("abstract classes can't be instantiated", {
   expect_snapshot(error = TRUE, {
     foo := new_class(abstract = TRUE)

@@ -125,6 +125,30 @@
        * An S4 class object
        * A base class
 
+# inheritance doesn't let child properties widen or change the parent's type
+
+    Code
+      new_class("foo2", foo1, properties = list(x = class_character))
+    Condition
+      Error in `new_class()`:
+      ! <foo2>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo2>@x is <character>.
+    Code
+      new_class("foo3", foo1, properties = list(x = class_numeric))
+    Condition
+      Error in `new_class()`:
+      ! <foo3>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo3>@x is <integer> or <double>.
+    Code
+      new_class("foo4", foo1, properties = list(x = class_any))
+    Condition
+      Error in `new_class()`:
+      ! <foo4>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo4>@x is <ANY>.
+
 # abstract classes can't be instantiated
 
     Code
