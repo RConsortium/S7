@@ -160,26 +160,26 @@
       Error in `new_object()`:
       ! `new_object()` must be called from within a constructor.
 
-# new_object() / errors if `.parent` doesn't inherit from the parent class (#409)
+# new_object() / errors if `_parent` doesn't inherit from the parent class (#409)
 
     Code
       Foo()
     Condition
       Error in `new_object()`:
-      ! `.parent` must be an instance of <Bar>, not S3<S7_base_class>.
+      ! `_parent` must be an instance of <Bar>, not S3<S7_base_class>.
     Code
       Baz()
     Condition
       Error in `new_object()`:
-      ! `.parent` must be an instance of <integer>, not <character>.
+      ! `_parent` must be an instance of <integer>, not <character>.
 
-# new_object() / errors if `.parent` is supplied but class has no parent
+# new_object() / errors if `_parent` is supplied but class has no parent
 
     Code
       NoParent()
     Condition
       Error in `new_object()`:
-      ! `.parent` must not be supplied when class has no parent.
+      ! `_parent` must not be supplied when class has no parent.
 
 # new_object() / validates object
 

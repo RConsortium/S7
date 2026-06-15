@@ -49,7 +49,9 @@
 #' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods. For
 #'   downcasting, these can be used to override existing properties or set new
-#'   ones.
+#'   ones. As a convenience, you can supply a single unnamed list instead of
+#'   individual name-value pairs, which makes it easy to override properties
+#'   programmatically.
 #' @return Either `from` coerced to class `to`, or an error if the coercion
 #'   is not possible.
 #' @export
@@ -122,7 +124,8 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    convert_down(from, to, ...)
+    dots <- collect_dots(...)
+    convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
   } else {
@@ -195,12 +198,13 @@ is_down_cast <- function(x, class) {
   class_dispatch_extends(obj_dispatch(x), class_dispatch(class))
 }
 
-convert_down <- function(from, to, ...) {
+convert_down <- function(from, to, user_args = list()) {
   from_class <- S7_class(from)
 
   if (!is_class(from_class)) {
     # `from` is a base or S3 object; pass it as `.data` to the constructor
-    return(to(.data = from, ...))
+    user_args$.data <- from
+    return(do.call(to, user_args))
   }
 
   # Use `from` as a prototype/seed when constructing `to`: copy over property
@@ -217,7 +221,6 @@ convert_down <- function(from, to, ...) {
   }
 
   # Drop properties overridden by user-supplied arguments
-  user_args <- list(...)
   from_prop_names <- setdiff(from_prop_names, names(user_args))
 
   from_prop_values <- props(from, from_prop_names)

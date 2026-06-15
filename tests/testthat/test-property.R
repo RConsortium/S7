@@ -231,6 +231,19 @@ describe("props<-", {
     expect_equal(obj2@x, 2)
   })
 
+  it("set_props() can set a property named `object` (#423)", {
+    Foo := new_class(properties = list(object = class_double))
+    obj <- set_props(Foo(1), object = 2)
+    expect_equal(obj@object, 2)
+  })
+
+  it("set_props() accepts a single unnamed list (#497)", {
+    Foo := new_class(properties = list(x = class_double, y = class_double))
+    obj <- set_props(Foo(1, 2), list(x = 3, y = 4))
+    expect_equal(obj@x, 3)
+    expect_equal(obj@y, 4)
+  })
+
   it("set_props() skip validation with `.check = FALSE`", {
     foo := new_class(
       properties = list(x = class_double, y = class_double),

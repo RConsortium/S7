@@ -284,7 +284,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
   parent_class <- class@parent
   if (is.null(parent_class)) {
     stop2(
-      "`.parent` must not be supplied when class has no parent.",
+      "`_parent` must not be supplied when class has no parent.",
       call = call
     )
   }
@@ -298,7 +298,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
     return()
   }
   msg <- sprintf(
-    "`.parent` must be an instance of %s, not %s.",
+    "`_parent` must be an instance of %s, not %s.",
     class_desc(parent_class),
     obj_desc(parent)
   )
@@ -307,11 +307,15 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 
 # Object ------------------------------------------------------------------
 
-#' @param .parent,... Parent object and named properties used to construct the
+#' @param _parent,... Parent object and named properties used to construct the
 #'   object.
+#'
+#'   As a convenience, if `...` is a single unnamed list, then the elements of
+#'   that list are used as the properties. This makes it easy to
+#'   programmatically construct an object from a list of property values.
 #' @rdname new_class
 #' @export
-new_object <- function(.parent, ...) {
+new_object <- function(`_parent`, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
@@ -324,34 +328,31 @@ new_object <- function(.parent, ...) {
     stop2(msg)
   }
 
-  if (!missing(.parent)) {
-    check_parent(.parent, class)
+  if (!missing(`_parent`)) {
+    check_parent(`_parent`, class)
   }
 
-  args <- list(...)
-  if ("" %in% names2(args)) {
-    stop2("All arguments to `...` must be named.")
-  }
+  args <- collect_dots(...)
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
   self_attrs <- args[!has_setter]
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
-  # We must awkwardly operate on `.parent` rather than binding to a local
+  # We must awkwardly operate on `_parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
     list(class = class_dispatch(class), S7_class = class),
     self_attrs,
-    attributes(.parent)
+    attributes(`_parent`)
   )
   attrs <- attrs[!duplicated(names(attrs))]
-  attributes(.parent) <- attrs
+  attributes(`_parent`) <- attrs
 
   # invoke custom property setters
   prop_setter_vals <- args[has_setter]
   for (name in names(prop_setter_vals)) {
-    prop(.parent, name, check = FALSE) <- prop_setter_vals[[name]]
+    prop(`_parent`, name, check = FALSE) <- prop_setter_vals[[name]]
   }
 
   # Don't need to validate if parent class already validated,
@@ -359,13 +360,13 @@ new_object <- function(.parent, ...) {
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
   validate_from(
-    .parent,
+    `_parent`,
     parent = if (parent_validated) class@parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )
 
-  .parent
+  `_parent`
 }
 
 #' @export

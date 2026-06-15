@@ -122,9 +122,9 @@ describe("new_object()", {
     expect_snapshot(new_object(), error = TRUE)
   })
 
-  it("errors if `.parent` doesn't inherit from the parent class (#409)", {
+  it("errors if `_parent` doesn't inherit from the parent class (#409)", {
     Bar := new_class(package = NULL)
-    # `.parent` should be `Bar()`, not the class spec `Bar`
+    # `_parent` should be `Bar()`, not the class spec `Bar`
     Foo := new_class(
       parent = Bar,
       package = NULL,
@@ -153,8 +153,7 @@ describe("new_object()", {
   })
 
   it("allows arbitrary placeholder for abstract S3 parents (#686)", {
-    Concrete <- new_class(
-      "Concrete",
+    Concrete := new_class(
       parent = class_POSIXt,
       constructor = function(x) new_object(x)
     )
@@ -164,17 +163,27 @@ describe("new_object()", {
   it("has fallback for S3 classes created by older S7 (#686)", {
     old_s3 <- class_POSIXt
     old_s3$abstract <- NULL
-    Foo <- new_class("Foo", parent = old_s3, constructor = \(x) new_object(x))
+    Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
     expect_no_error(Foo(list(1, "A")))
   })
 
-  it("errors if `.parent` is supplied but class has no parent", {
+  it("errors if `_parent` is supplied but class has no parent", {
     NoParent := new_class(
       package = NULL,
       parent = NULL,
       constructor = function() new_object(42L)
     )
     expect_snapshot(NoParent(), error = TRUE)
+  })
+
+  it("can set a property named `.parent` (#423)", {
+    foo := new_class(
+      properties = list(.parent = class_double),
+      package = NULL,
+      constructor = function(.parent) new_object(S7_object(), .parent = .parent)
+    )
+    obj <- foo(.parent = 1)
+    expect_equal(obj@.parent, 1)
   })
 
   it("validates object", {
@@ -188,6 +197,17 @@ describe("new_object()", {
       foo("x")
       foo(-1)
     })
+  })
+
+  it("accepts a single unnamed named list of properties (#497)", {
+    Foo := new_class(
+      properties = list(x = class_double, y = class_double),
+      package = NULL,
+      constructor = function(props) new_object(S7_object(), props)
+    )
+    obj <- Foo(list(x = 1, y = 2))
+    expect_equal(obj@x, 1)
+    expect_equal(obj@y, 2)
   })
 
   it("runs each parent validator exactly once", {

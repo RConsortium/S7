@@ -102,6 +102,15 @@ describe("fallback convert", {
     expect_error(convert(foo, Unrelated), "Can't find method")
   })
 
+  it("accepts a single unnamed list of overrides when downcasting (#497)", {
+    Foo := new_class(properties = list(x = class_numeric))
+    Bar := new_class(Foo, properties = list(y = class_numeric))
+
+    bar <- convert(Foo(x = 1), Bar, list(x = 2, y = 3))
+    expect_equal(bar@x, 2)
+    expect_equal(bar@y, 3)
+  })
+
   it("can convert to S3 class", {
     factor2 := new_class(
       class_factor,
