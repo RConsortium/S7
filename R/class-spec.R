@@ -316,18 +316,18 @@ class_extends <- function(child, parent) {
   } else if (is_class_any(parent)) {
     # as a parent, `class_any` accepts every child class
     TRUE
-  } else if (is.null(child) && !is.null(parent)) {
-    # as a child, NULL can only extend NULL
-    FALSE
-  } else if (is.null(parent)) {
-    # as a parent, NULL only accepts NULL
-    is.null(child)
   } else if (is_union(child)) {
     # A union child extends `parent` only if every one of its members does.
     all(vlapply(child$classes, class_extends, parent = parent))
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
     any(vlapply(parent$classes, class_extends, child = child))
+  } else if (is.null(child) && !is.null(parent)) {
+    # as a child, NULL can only extend NULL
+    FALSE
+  } else if (is.null(parent)) {
+    # as a parent, NULL only accepts NULL
+    is.null(child)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     is_S4_class(child) &&
       is_S4_class(parent) &&

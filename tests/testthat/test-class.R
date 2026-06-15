@@ -95,6 +95,30 @@ describe("inheritance", {
       properties = list(x = new_property(Child, default = quote(Child())))
     ))
   })
+  it("child properties can narrow optional union properties with NULL", {
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = NULL | class_numeric),
+      package = NULL
+    )
+
+    NullChild <- new_class(
+      "NullChild",
+      Parent,
+      properties = list(x = NULL),
+      package = NULL
+    )
+    expect_equal(NullChild()@x, NULL)
+
+    OptionalIntegerChild <- new_class(
+      "OptionalIntegerChild",
+      Parent,
+      properties = list(x = NULL | class_integer),
+      package = NULL
+    )
+    expect_equal(OptionalIntegerChild()@x, NULL)
+    expect_equal(OptionalIntegerChild(x = 1L)@x, 1L)
+  })
   it("child properties can't widen or change the parent's type", {
     foo1 <- new_class(
       "foo1",
