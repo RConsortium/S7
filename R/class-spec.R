@@ -334,6 +334,8 @@ class_extends <- function(child, parent) {
     is_S4_class(child) &&
       is_S4_class(parent) &&
       S4_extends_unconditionally(child, parent)
+  } else if (is_class(parent) && parent@name == "S7_object") {
+    is_class(child)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
@@ -469,8 +471,6 @@ bundled_S3_implicit_base <- function(x) {
     class_numeric
   } else if (identical(x, class_POSIXlt) || identical(x, class_data.frame)) {
     class_list
-  } else if (identical(x, class_formula)) {
-    class_call
   } else if (identical(x, class_matrix) || identical(x, class_array)) {
     class_vector
   } else {

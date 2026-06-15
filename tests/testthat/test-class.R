@@ -120,6 +120,66 @@ describe("inheritance", {
       package = NULL
     ))
   })
+  it("child properties can't narrow S7_object with base or S3 classes", {
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = S7_object),
+      package = NULL,
+      abstract = TRUE
+    )
+
+    expect_error(
+      new_class(
+        "IntegerChild",
+        Parent,
+        properties = list(x = class_integer),
+        package = NULL
+      ),
+      "must narrow"
+    )
+    expect_error(
+      new_class(
+        "FormulaChild",
+        Parent,
+        properties = list(x = class_formula),
+        package = NULL
+      ),
+      "must narrow"
+    )
+  })
+  it("child properties can't narrow call-like classes with formulas", {
+    CallParent <- new_class(
+      "CallParent",
+      properties = list(x = class_call),
+      package = NULL,
+      abstract = TRUE
+    )
+    LanguageParent <- new_class(
+      "LanguageParent",
+      properties = list(x = class_language),
+      package = NULL,
+      abstract = TRUE
+    )
+
+    expect_error(
+      new_class(
+        "CallChild",
+        CallParent,
+        properties = list(x = class_formula),
+        package = NULL
+      ),
+      "must narrow"
+    )
+    expect_error(
+      new_class(
+        "LanguageChild",
+        LanguageParent,
+        properties = list(x = class_formula),
+        package = NULL
+      ),
+      "must narrow"
+    )
+  })
   it("child properties can narrow base properties with S4 subclasses", {
     on.exit(S4_remove_classes("S4PropertyNum"))
     S4PropertyNum <- methods::setClass("S4PropertyNum", contains = "numeric")
