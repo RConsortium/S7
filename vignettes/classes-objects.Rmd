@@ -31,7 +31,7 @@ A validator is a function that takes the object (called `self`) and returns `NUL
 In the following example we create a `Range` class that enforces that `@start` and `@end` are single numbers, and that `@start` is less than `@end`:
 
 ```{r}
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double
@@ -119,7 +119,7 @@ This is a convenient shorthand for a call to `new_property()`.
 For example, the property definition of range above is shorthand for:
 
 ```{r}
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = new_property(class_double),
     end = new_property(class_double)
@@ -143,7 +143,7 @@ prop_number <- new_property(
   }
 )
 
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = prop_number,
     end = prop_number
@@ -171,7 +171,7 @@ This makes it possible to use the same property definition for multiple properti
 The defaults of `new_class()` create a class that can be constructed with no arguments:
 
 ```{r}
-Empty <- new_class("Empty",
+Empty := new_class(
   properties = list(
     x = class_double,
     y = class_character,
@@ -184,7 +184,7 @@ The default values of the properties will be filled in with "empty" instances.
 You can instead provide your own defaults by using the `default` argument:
 
 ```{r}
-Empty <- new_class("Empty",
+Empty := new_class(
   properties = list(
     x = new_property(class_numeric, default = 0),
     y = new_property(class_character, default = ""),
@@ -197,7 +197,7 @@ Empty()
 A quoted call becomes a standard function promise in the default constructor, evaluated at the time the object is constructed.
 
 ```{r}
-Stopwatch <- new_class("Stopwatch", properties = list(
+Stopwatch := new_class(properties = list(
   start_time = new_property(
     class = class_POSIXct,
     default = quote(Sys.time())
@@ -220,7 +220,7 @@ For example, it'd be convenient to pretend that our range has a length, which is
 You can dynamically compute the value of a property by defining a `getter`:
 
 ```{r}
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double,
@@ -249,7 +249,7 @@ A `setter` is a function with arguments `self` and `value` that returns a modifi
 For example, we could extend the previous example to allow the `@length` to be set, by modifying the `@end` of the vector:
 
 ```{r}
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double,
@@ -285,7 +285,7 @@ x
 A `setter` + `getter` can be used to to deprecate a property:
 
 ```{r}
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  first_name = class_character,
  firstName = new_property(
     class_character,
@@ -326,7 +326,7 @@ You can make a property required by the constructor either by:
 -   setting the property default to a quoted error call.
 
 ```{r}
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  name = new_property(
    class_character,
    validator = function(value) {
@@ -344,7 +344,7 @@ Person("Alice")
 ```
 
 ```{r}
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  name = new_property(
    class_character,
    default = quote(stop("@name is required")))
@@ -360,7 +360,7 @@ Person("Alice")
 You can mark a property as read-only after construction by providing a custom `setter`.
 
 ```{r}
-Person <- new_class("Person", properties = list(
+Person := new_class(properties = list(
  birth_date = new_property(
    class_Date,
    setter = function(self, value) {
@@ -391,7 +391,7 @@ For example, for our range class, maybe we'd like to construct it from a vector 
 To implement this we could do:
 
 ```{r}
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric

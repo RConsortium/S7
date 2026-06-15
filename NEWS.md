@@ -1,10 +1,11 @@
 # S7 (development version)
 
+* New `:=` operator creates and names an object in one step, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")` (#658).
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).
-* `convert()` now errors when upcasting to an abstract class, rather than producing an instance of that abstract class (#680).
+* `convert()` now errors when upcasting to an abstract class, rather than producing an instance of that abstract class (#680, #686).
 * `convert()` no longer automatically converts between sibling classes (classes that merely share a common ancestor); the default downcast now applies only when `to` is genuinely a descendant of `from`'s class (#509).
 * `convert()` now falls back to the corresponding `as.*()` function (e.g. `as.character()`) when converting to a base type like `class_character` and no method or inheritance-based default applies, so `convert(1, class_character)` works out of the box (#472).
 * `convert()` accepts a single unnamed list of property overrides when downcasting, as a shortcut for individual name-value pairs (#497).
@@ -37,8 +38,9 @@
 * `S7_data<-()` now preserves attributes (like `names` or `dim`) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (#478).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
-* `set_props()` and `new_object()` now name their first arguments `_object` and `_parent`, so a property with any name (e.g. `object`) can be passed through `...` without clashing with the argument. Property names starting with `_` are now reserved for this sort of internal use (#423).
+* `set_props()` and `new_object()` now name their first arguments `_object` and `_parent`, so a property with any name (e.g. `object`) can be passed through `...` without clashing with the argument (#423).
 * `set_props()` accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (#497).
+* `S7_on_load()` is the new name for `methods_register()`, giving it a nicer symmetry with `S7_on_build()`; `methods_register()` remains available for backward compatibility (#615).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
 * `validate()` now signals validation errors with class `S7_error_validation_failed`, so they can be caught with `tryCatch()` (#602, #605).

@@ -9,6 +9,7 @@ reference:
   - new_class
   - new_generic
   - new_union
+  - ":="
   - method<-
   - S7_inherits
   - validate
@@ -40,7 +41,7 @@ reference:
     Functions needed when using S7 within a package. See `vignette("packages")`
     for more details.
   contents:
-  - methods_register
+  - S7_on_load
   - new_external_generic
 
 - title: Compatibility

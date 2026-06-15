@@ -44,7 +44,7 @@ object with new values for the specified properties.
 }
 }
 \examples{
-Horse <- new_class("Horse", properties = list(
+Horse := new_class(properties = list(
   name = class_character,
   colour = class_character,
   height = class_numeric

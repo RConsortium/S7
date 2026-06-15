@@ -22,3 +22,11 @@
       Error in `convert()`:
       ! Can't convert to abstract class <Foo>.
 
+# convert() errors when upcasting to an abstract S3 class (#686)
+
+    Code
+      convert(.POSIXct(1), class_POSIXt)
+    Condition
+      Error in `convert()`:
+      ! Can't convert to abstract class <POSIXt>.
+
