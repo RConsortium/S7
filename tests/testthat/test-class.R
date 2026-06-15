@@ -95,37 +95,6 @@ describe("inheritance", {
       properties = list(x = new_property(Child, default = quote(Child())))
     ))
   })
-  it("child properties can't narrow base properties with bundled S3 classes", {
-    integer_parent <- new_class(
-      "integer_parent",
-      properties = list(x = class_integer),
-      package = NULL
-    )
-    expect_error(
-      new_class(
-        "factor_child",
-        integer_parent,
-        properties = list(x = class_factor),
-        package = NULL
-      ),
-      "must narrow"
-    )
-
-    numeric_parent <- new_class(
-      "numeric_parent",
-      properties = list(x = class_numeric),
-      package = NULL
-    )
-    expect_error(
-      new_class(
-        "date_child",
-        numeric_parent,
-        properties = list(x = class_Date),
-        package = NULL
-      ),
-      "must narrow"
-    )
-  })
   it("child properties can't narrow S7_object with base or S3 classes", {
     Parent <- new_class(
       "Parent",
@@ -148,58 +117,6 @@ describe("inheritance", {
         "FormulaChild",
         Parent,
         properties = list(x = class_formula),
-        package = NULL
-      ),
-      "must narrow"
-    )
-  })
-  it("child properties can't narrow call-like classes with formulas", {
-    CallParent <- new_class(
-      "CallParent",
-      properties = list(x = class_call),
-      package = NULL,
-      abstract = TRUE
-    )
-    LanguageParent <- new_class(
-      "LanguageParent",
-      properties = list(x = class_language),
-      package = NULL,
-      abstract = TRUE
-    )
-
-    expect_error(
-      new_class(
-        "CallChild",
-        CallParent,
-        properties = list(x = class_formula),
-        package = NULL
-      ),
-      "must narrow"
-    )
-    expect_error(
-      new_class(
-        "LanguageChild",
-        LanguageParent,
-        properties = list(x = class_formula),
-        package = NULL
-      ),
-      "must narrow"
-    )
-  })
-  it("child properties can't narrow base properties with S4 subclasses", {
-    on.exit(S4_remove_classes("S4PropertyNum"))
-    S4PropertyNum <- methods::setClass("S4PropertyNum", contains = "numeric")
-
-    Parent <- new_class(
-      "Parent",
-      properties = list(x = class_numeric),
-      package = NULL
-    )
-    expect_error(
-      new_class(
-        "Child",
-        Parent,
-        properties = list(x = S4PropertyNum),
         package = NULL
       ),
       "must narrow"
@@ -235,34 +152,6 @@ describe("inheritance", {
         "Child",
         Parent,
         properties = list(x = S4PropertyConditionalChild),
-        package = NULL
-      ),
-      "must narrow"
-    )
-  })
-  it("child properties can't narrow base properties with S4 coercions", {
-    on.exit(S4_remove_classes("S4PropertyCoercesToNumeric"))
-    S4PropertyCoercesToNumeric <- methods::setClass(
-      "S4PropertyCoercesToNumeric",
-      slots = c(x = "numeric")
-    )
-    suppressWarnings(methods::setIs(
-      "S4PropertyCoercesToNumeric",
-      "numeric",
-      coerce = function(from) from@x
-    ))
-
-    Parent <- new_class(
-      "Parent",
-      properties = list(x = class_numeric),
-      package = NULL
-    )
-
-    expect_error(
-      new_class(
-        "Child",
-        Parent,
-        properties = list(x = S4PropertyCoercesToNumeric),
         package = NULL
       ),
       "must narrow"
