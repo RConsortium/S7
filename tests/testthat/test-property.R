@@ -430,6 +430,20 @@ describe("new_property()", {
     })
   })
 
+  it("warns if default is not a scalar or quoted call", {
+    expect_snapshot({
+      . <- new_property(class_integer, default = c(any = 1L))
+      . <- new_property(class_POSIXct, default = Sys.time())
+    })
+  })
+
+  it("doesn't warn for scalar or quoted defaults", {
+    expect_no_warning(new_property(class_integer, default = 1L))
+    expect_no_warning(new_property(class_integer, default = NA_integer_))
+    expect_no_warning(new_property(class_integer, default = quote(foo())))
+    expect_no_warning(new_property(class_integer, default = quote(x)))
+  })
+
   it("displays nicely", {
     x <- new_property(class_integer, name = "foo")
     expect_snapshot({

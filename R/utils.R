@@ -31,6 +31,14 @@ stop2 <- function(message, call = sys.call(-1L), class = NULL) {
   ))
 }
 
+warning2 <- function(message, call = sys.call(-1L), class = NULL) {
+  warning(warningCondition(
+    message = paste(message, collapse = "\n"),
+    call = call,
+    class = class
+  ))
+}
+
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
   if (single) {
