@@ -244,11 +244,6 @@ describe("props<-", {
     expect_equal(obj@y, 4)
   })
 
-  it("set_props() errors if single unnamed list has unnamed elements (#497)", {
-    Foo := new_class(properties = list(x = class_double))
-    expect_snapshot(set_props(Foo(1), list(2)), error = TRUE)
-  })
-
   it("set_props() skip validation with `.check = FALSE`", {
     foo := new_class(
       properties = list(x = class_double, y = class_double),

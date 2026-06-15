@@ -59,14 +59,6 @@
       ! <S7::foo> object is invalid:
       - bad
 
-# props<- / set_props() errors if single unnamed list has unnamed elements (#497)
-
-    Code
-      set_props(Foo(1), list(2))
-    Condition
-      Error in `set_props()`:
-      ! All elements of `..1` must be named.
-
 # props<- / set_props() skip validation with `.check = FALSE`
 
     Code

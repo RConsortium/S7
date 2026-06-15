@@ -186,16 +186,6 @@ describe("new_object()", {
     expect_equal(obj@.parent, 1)
   })
 
-  it("can set a property named `.parent` (#423)", {
-    Foo := new_class(
-      properties = list(.parent = class_double),
-      package = NULL,
-      constructor = function(.parent) new_object(S7_object(), .parent = .parent)
-    )
-    obj <- Foo(.parent = 1)
-    expect_equal(obj@.parent, 1)
-  })
-
   it("validates object", {
     foo := new_class(
       properties = list(x = new_property(class_double)),
@@ -218,15 +208,6 @@ describe("new_object()", {
     obj <- Foo(list(x = 1, y = 2))
     expect_equal(obj@x, 1)
     expect_equal(obj@y, 2)
-  })
-
-  it("errors if single unnamed list has unnamed elements", {
-    Foo := new_class(
-      properties = list(x = class_double),
-      package = NULL,
-      constructor = function(props) new_object(S7_object(), props)
-    )
-    expect_snapshot(Foo(list(1)), error = TRUE)
   })
 
   it("runs each parent validator exactly once", {

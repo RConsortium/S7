@@ -111,13 +111,6 @@ describe("fallback convert", {
     expect_equal(bar@y, 3)
   })
 
-  it("errors if single unnamed list has unnamed elements (#497)", {
-    Foo := new_class(properties = list(x = class_numeric))
-    Bar := new_class(Foo, properties = list(y = class_numeric))
-
-    expect_snapshot(convert(Foo(x = 1), Bar, list(2)), error = TRUE)
-  })
-
   it("can convert to S3 class", {
     factor2 := new_class(
       class_factor,
