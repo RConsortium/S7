@@ -30,7 +30,7 @@ S7 class and properties. If the class inherits from an S3 class,
 object of that type.
 }
 \examples{
-Text <- new_class("Text", parent = class_character)
+Text := new_class(parent = class_character)
 y <- Text(c(foo = "bar"))
 y
 S7_data(y)
@@ -39,6 +39,6 @@ S7_data(y) <- c("a", "b")
 y
 
 # S3 classes are preserved
-MyDF <- new_class("MyDF", parent = class_data.frame)
+MyDF := new_class(parent = class_data.frame)
 S7_data(MyDF(data.frame(x = 1, y = 2)))
 }

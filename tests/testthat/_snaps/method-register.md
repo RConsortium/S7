@@ -69,10 +69,17 @@
       Error:
       ! `signature` must be length 2.
 
+# S7_signature has format and print methods
+
+    Code
+      print(sig)
+    Output
+      <integer>, <character>
+
 # check_method complains if the functions are not compatible
 
     Code
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       check_method(1, foo)
     Condition
       Error:
@@ -93,7 +100,7 @@
 ---
 
     Code
-      foo <- new_generic("foo", "x", function(x) S7_dispatch())
+      foo := new_generic("x", function(x) S7_dispatch())
       check_method(function(x, y) { }, foo)
     Condition
       Error:
@@ -104,7 +111,7 @@
 # check_method rejects primitive functions
 
     Code
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       check_method(log, foo)
     Condition
       Error:
@@ -113,7 +120,7 @@
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())
+      foo := new_generic("x", function(x, ..., z = 2, y = 1) S7_dispatch())
       check_method(function(x, ..., y = 1) { }, foo)
     Condition
       Warning:

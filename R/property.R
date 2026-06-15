@@ -63,7 +63,7 @@
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
-#' Pizza <- new_class("Pizza", properties = list(
+#' Pizza := new_class(properties = list(
 #'   slices = new_property(class_numeric, default = 10),
 #'   special = new_property(NULL | class_character)
 #' ))
@@ -78,7 +78,7 @@
 #' your_pizza@special
 #'
 #' # Dynamic properties can compute on demand
-#' Clock <- new_class("Clock", properties = list(
+#' Clock := new_class(properties = list(
 #'   now = new_property(getter = function(self) Sys.time())
 #' ))
 #' my_clock <- Clock()
@@ -233,7 +233,7 @@ class_default_desc <- function(class, package = NULL) {
 #'    the modified object, invisibly.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
@@ -358,7 +358,7 @@ prop_call <- function(object, name) {
 #'     the property has a getter, setter, or validator.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = new_property(class_numeric, default = 15),
@@ -455,7 +455,7 @@ prop_info <- function(object) {
 #' @returns A named list of property values.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
@@ -497,11 +497,14 @@ props <- function(object, names = prop_names(object)) {
 }
 
 #' @export
-#' @param ... Name-value pairs given property to modify and new value.
+#' @param _object The object to modify.
+#' @param ... Name-value pairs given property to modify and new value. As a
+#'   convenience, you can supply a single unnamed list instead of individual
+#'   name-value pairs, which makes it easy to set properties programmatically.
 #' @rdname props
-set_props <- function(object, ..., .check = TRUE) {
-  props(object, check = .check) <- list(...)
-  object
+set_props <- function(`_object`, ..., .check = TRUE) {
+  props(`_object`, check = .check) <- collect_dots(...)
+  `_object`
 }
 
 as_properties <- function(x, call = sys.call(-1L)) {

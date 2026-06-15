@@ -128,7 +128,7 @@
 # abstract classes / can't be instantiated
 
     Code
-      foo <- new_class("foo", abstract = TRUE)
+      foo := new_class(abstract = TRUE)
       foo()
     Condition
       Error in `S7::new_object()`:
@@ -137,7 +137,7 @@
 # abstract classes / can't inherit from concrete class
 
     Code
-      foo1 <- new_class("foo1")
+      foo1 := new_class()
       new_class("foo2", parent = foo1, abstract = TRUE)
     Condition
       Error in `new_class()`:
@@ -160,26 +160,26 @@
       Error in `new_object()`:
       ! `new_object()` must be called from within a constructor.
 
-# new_object() / errors if `.parent` doesn't inherit from the parent class (#409)
+# new_object() / errors if `_parent` doesn't inherit from the parent class (#409)
 
     Code
       Foo()
     Condition
       Error in `new_object()`:
-      ! `.parent` must be an instance of <Bar>, not S3<S7_base_class>.
+      ! `_parent` must be an instance of <Bar>, not S3<S7_base_class>.
     Code
       Baz()
     Condition
       Error in `new_object()`:
-      ! `.parent` must be an instance of <integer>, not <character>.
+      ! `_parent` must be an instance of <integer>, not <character>.
 
-# new_object() / errors if `.parent` is supplied but class has no parent
+# new_object() / errors if `_parent` is supplied but class has no parent
 
     Code
       NoParent()
     Condition
       Error in `new_object()`:
-      ! `.parent` must not be supplied when class has no parent.
+      ! `_parent` must not be supplied when class has no parent.
 
 # new_object() / validates object
 
@@ -214,7 +214,7 @@
 # S7 object / displays nicely
 
     Code
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
+      foo := new_class(properties = list(x = class_double, y = class_double),
       package = NULL)
       foo()
     Output
@@ -232,7 +232,7 @@
 # S7 object / displays objects with data nicely
 
     Code
-      text <- new_class("text", class_character, package = NULL)
+      text := new_class(class_character, package = NULL)
       text("x")
     Output
       <text> chr "x"

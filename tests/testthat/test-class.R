@@ -1,6 +1,6 @@
 describe("S7 classes", {
   it("possess expected properties", {
-    foo <- new_class("foo", package = "S7", validator = function(self) NULL)
+    foo := new_class(package = "S7", validator = function(self) NULL)
 
     expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
     expect_type(foo@name, "character")
@@ -11,12 +11,11 @@ describe("S7 classes", {
   })
 
   it("print nicely", {
-    foo1 <- new_class(
-      "foo1",
+    foo1 := new_class(
       properties = list(x = class_integer, y = class_integer),
       package = NULL
     )
-    foo2 <- new_class("foo2", foo1, package = NULL)
+    foo2 := new_class(foo1, package = NULL)
 
     expect_snapshot({
       foo2
@@ -28,14 +27,13 @@ describe("S7 classes", {
   })
 
   it("prints @package and @abstract details", {
-    foo <- new_class("foo", package = "S7", abstract = TRUE)
+    foo := new_class(package = "S7", abstract = TRUE)
     expect_snapshot(foo)
   })
 
   it("shows property defaults and read-only annotations", {
-    Address <- new_class("Address", package = "S7")
-    Person <- new_class(
-      "Person",
+    Address := new_class(package = "S7")
+    Person := new_class(
       properties = list(
         implicit_default = new_property(class_character),
         implicit_complex = new_property(class_Date),
@@ -74,13 +72,13 @@ describe("S7 classes", {
 
 describe("inheritance", {
   it("combines properties for parent classes", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
+    foo1 := new_class(properties = list(x = class_double))
+    foo2 := new_class(foo1, properties = list(y = class_double))
     expect_equal(names(foo2@properties), c("x", "y"))
   })
   it("child properties override parent", {
-    foo1 <- new_class("foo1", properties = list(x = class_numeric))
-    foo2 <- new_class("foo2", foo1, properties = list(x = class_double))
+    foo1 := new_class(properties = list(x = class_numeric))
+    foo2 := new_class(foo1, properties = list(x = class_double))
     expect_equal(names(foo2@properties), "x")
     expect_equal(foo2@properties$x$class, class_double)
   })
@@ -89,24 +87,23 @@ describe("inheritance", {
 describe("abstract classes", {
   it("can't be instantiated", {
     expect_snapshot(error = TRUE, {
-      foo <- new_class("foo", abstract = TRUE)
+      foo := new_class(abstract = TRUE)
       foo()
     })
   })
   it("can't inherit from concrete class", {
     expect_snapshot(error = TRUE, {
-      foo1 <- new_class("foo1")
+      foo1 := new_class()
       new_class("foo2", parent = foo1, abstract = TRUE)
     })
   })
   it("can construct concrete subclasses", {
-    foo1 <- new_class("foo1", abstract = TRUE, package = NULL)
-    foo2 <- new_class("foo2", parent = foo1, package = NULL)
+    foo1 := new_class(abstract = TRUE, package = NULL)
+    foo2 := new_class(parent = foo1, package = NULL)
     expect_s3_class(foo2(), "foo2")
   })
   it("can use inherited validator from abstract class", {
-    foo1 <- new_class(
-      "foo1",
+    foo1 := new_class(
       properties = list(x = class_double),
       abstract = TRUE,
       validator = function(self) {
@@ -114,7 +111,7 @@ describe("abstract classes", {
       },
       package = NULL
     )
-    foo2 <- new_class("foo2", parent = foo1, package = NULL)
+    foo2 := new_class(parent = foo1, package = NULL)
     expect_no_error(foo2(x = 1))
     expect_snapshot(foo2(x = 2), error = TRUE)
   })
@@ -125,18 +122,16 @@ describe("new_object()", {
     expect_snapshot(new_object(), error = TRUE)
   })
 
-  it("errors if `.parent` doesn't inherit from the parent class (#409)", {
-    Bar <- new_class("Bar", package = NULL)
-    # `.parent` should be `Bar()`, not the class spec `Bar`
-    Foo <- new_class(
-      "Foo",
+  it("errors if `_parent` doesn't inherit from the parent class (#409)", {
+    Bar := new_class(package = NULL)
+    # `_parent` should be `Bar()`, not the class spec `Bar`
+    Foo := new_class(
       parent = Bar,
       package = NULL,
       constructor = function() new_object(class_integer)
     )
     # wrong-type instance
-    Baz <- new_class(
-      "Baz",
+    Baz := new_class(
       parent = class_integer,
       package = NULL,
       constructor = function() new_object("hello")
@@ -148,19 +143,32 @@ describe("new_object()", {
   })
 
   it("allows S7_object placeholder for abstract parents", {
-    Abstract <- new_class(
-      "Abstract",
+    Abstract := new_class(
       package = NULL,
       properties = list(x = class_integer),
       abstract = TRUE
     )
-    Concrete <- new_class("Concrete", parent = Abstract, package = NULL)
+    Concrete := new_class(parent = Abstract, package = NULL)
     expect_no_error(Concrete(x = 1L))
   })
 
-  it("errors if `.parent` is supplied but class has no parent", {
-    NoParent <- new_class(
-      "NoParent",
+  it("allows arbitrary placeholder for abstract S3 parents (#686)", {
+    Concrete := new_class(
+      parent = class_POSIXt,
+      constructor = function(x) new_object(x)
+    )
+    expect_no_error(Concrete(list(1, "A")))
+  })
+
+  it("has fallback for S3 classes created by older S7 (#686)", {
+    old_s3 <- class_POSIXt
+    old_s3$abstract <- NULL
+    Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
+    expect_no_error(Foo(list(1, "A")))
+  })
+
+  it("errors if `_parent` is supplied but class has no parent", {
+    NoParent := new_class(
       package = NULL,
       parent = NULL,
       constructor = function() new_object(42L)
@@ -168,9 +176,18 @@ describe("new_object()", {
     expect_snapshot(NoParent(), error = TRUE)
   })
 
+  it("can set a property named `.parent` (#423)", {
+    foo := new_class(
+      properties = list(.parent = class_double),
+      package = NULL,
+      constructor = function(.parent) new_object(S7_object(), .parent = .parent)
+    )
+    obj <- foo(.parent = 1)
+    expect_equal(obj@.parent, 1)
+  })
+
   it("validates object", {
-    foo <- new_class(
-      "foo",
+    foo := new_class(
       properties = list(x = new_property(class_double)),
       validator = function(self) if (self@x < 0) "x must be positive",
       package = NULL
@@ -182,10 +199,21 @@ describe("new_object()", {
     })
   })
 
+  it("accepts a single unnamed named list of properties (#497)", {
+    Foo := new_class(
+      properties = list(x = class_double, y = class_double),
+      package = NULL,
+      constructor = function(props) new_object(S7_object(), props)
+    )
+    obj <- Foo(list(x = 1, y = 2))
+    expect_equal(obj@x, 1)
+    expect_equal(obj@y, 2)
+  })
+
   it("runs each parent validator exactly once", {
-    A <- new_class("A", validator = function(self) cat("A "))
-    B <- new_class("B", parent = A, validator = function(self) cat("B "))
-    C <- new_class("C", parent = B, validator = function(self) cat("C "))
+    A := new_class(validator = function(self) cat("A "))
+    B := new_class(parent = A, validator = function(self) cat("B "))
+    C := new_class(parent = B, validator = function(self) cat("C "))
 
     expect_snapshot({
       . <- A()
@@ -197,7 +225,7 @@ describe("new_object()", {
 
 describe("S7 object", {
   it("has an S7 and S3 class", {
-    foo <- new_class("foo", package = NULL)
+    foo := new_class(package = NULL)
     x <- foo()
     expect_equal(S7_class(x), foo)
     expect_equal(class(x), c("foo", "S7_object"))
@@ -205,8 +233,7 @@ describe("S7 object", {
 
   it("displays nicely", {
     expect_snapshot({
-      foo <- new_class(
-        "foo",
+      foo := new_class(
         properties = list(x = class_double, y = class_double),
         package = NULL
       )
@@ -217,20 +244,19 @@ describe("S7 object", {
 
   it("displays objects with data nicely", {
     expect_snapshot({
-      text <- new_class("text", class_character, package = NULL)
+      text := new_class(class_character, package = NULL)
       text("x")
       str(list(text("x")))
     })
   })
 
   it("displays data.frame subclasses without error (#494)", {
-    mydf <- new_class("mydf", class_data.frame, package = NULL)
+    mydf := new_class(class_data.frame, package = NULL)
     expect_snapshot(str(mydf(data.frame(a = 1:2, b = 1:2))))
   })
 
   it("displays list objects nicely", {
-    foo1 <- new_class(
-      "foo1",
+    foo1 := new_class(
       parent = class_list,
       properties = list(x = class_double, y = class_list),
       package = NULL
@@ -250,23 +276,22 @@ describe("S7 object", {
 
 describe("default constructor", {
   it("initializes properties with defaults", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
+    foo1 := new_class(properties = list(x = class_double))
     expect_equal(props(foo1()), list(x = double()))
 
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
+    foo2 := new_class(foo1, properties = list(y = class_double))
     expect_equal(props(foo2()), list(x = double(), y = double()))
   })
 
   it("overrides properties with arguments", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
+    foo1 := new_class(properties = list(x = class_double))
+    foo2 := new_class(foo1, properties = list(y = class_double))
     expect_equal(props(foo2(x = 1)), list(x = 1, y = double()))
     expect_equal(props(foo2(x = 1, y = 2)), list(x = 1, y = 2))
   })
 
   it("can initialise a property to NULL", {
-    foo <- new_class(
-      "foo",
+    foo := new_class(
       properties = list(
         x = new_property(default = 10)
       )
@@ -276,26 +301,26 @@ describe("default constructor", {
   })
 
   it("initializes data with defaults", {
-    text1 <- new_class("text1", parent = class_character)
+    text1 := new_class(parent = class_character)
     obj <- text1()
     expect_equal(S7_data(obj), character())
   })
 
   it("overrides data with defaults", {
-    text1 <- new_class("text1", parent = class_character)
+    text1 := new_class(parent = class_character)
     expect_equal(S7_data(text1("x")), "x")
   })
 
   it("initializes property with S7 object", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", properties = list(x = foo1), package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(properties = list(x = foo1), package = NULL)
     x <- foo2()
     expect_s3_class(x@x, "foo1")
   })
 })
 
 test_that("c(<S7_class>, ...) gives error", {
-  foo1 <- new_class("foo1")
+  foo1 := new_class()
   expect_snapshot(error = TRUE, {
     c(foo1, foo1)
   })
@@ -304,8 +329,8 @@ test_that("c(<S7_class>, ...) gives error", {
 test_that("can round trip to disk and back", {
   eval(
     quote({
-      foo1 <- new_class("foo1", properties = list(y = class_integer))
-      foo2 <- new_class("foo2", properties = list(x = foo1))
+      foo1 := new_class(properties = list(y = class_integer))
+      foo2 := new_class(properties = list(x = foo1))
       f <- foo2(x = foo1(y = 1L))
     }),
     globalenv()

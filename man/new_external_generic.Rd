@@ -36,7 +36,7 @@ Note that in tests, you'll need to explicitly call the generic from the
 external package with \code{pkg::generic()}.
 }
 \examples{
-MyClass <- new_class("MyClass")
+MyClass := new_class()
 
 your_generic <- new_external_generic("stats", "median", "x")
 method(your_generic, MyClass) <- function(x) "Hi!"

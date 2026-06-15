@@ -19,7 +19,7 @@
 #' @export
 #' @examples
 #' # Create a generic and register some methods
-#' bizarro <- new_generic("bizarro", "x")
+#' bizarro := new_generic("x")
 #' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, class_factor) <- function(x) {
 #'   levels(x) <- rev(levels(x))
@@ -71,10 +71,10 @@ method <- function(generic, class = NULL, object = NULL) {
 #' @return Nothing; this function is called for it's side effects.
 #' @export
 #' @examples
-#' Foo1 <- new_class("Foo1")
-#' Foo2 <- new_class("Foo2", Foo1)
+#' Foo1 := new_class()
+#' Foo2 := new_class(Foo1)
 #'
-#' add <- new_generic("add", c("x", "y"))
+#' add := new_generic(c("x", "y"))
 #' method(add, list(Foo2, Foo1)) <- function(x, y) c(2, 1)
 #' method(add, list(Foo1, Foo1)) <- function(x, y) c(1, 1)
 #'
