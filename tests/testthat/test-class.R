@@ -95,6 +95,44 @@ describe("inheritance", {
       properties = list(x = new_property(Child, default = quote(Child())))
     ))
   })
+  it("child properties can narrow base properties with bundled S3 classes", {
+    integer_parent <- new_class(
+      "integer_parent",
+      properties = list(x = class_integer),
+      package = NULL
+    )
+    expect_no_error(new_class(
+      "factor_child",
+      integer_parent,
+      properties = list(x = class_factor),
+      package = NULL
+    ))
+
+    numeric_parent <- new_class(
+      "numeric_parent",
+      properties = list(x = class_numeric),
+      package = NULL
+    )
+    expect_no_error(new_class(
+      "date_child",
+      numeric_parent,
+      properties = list(x = class_Date),
+      package = NULL
+    ))
+  })
+  it("child properties can narrow parent unions that include any", {
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = class_any | class_integer),
+      package = NULL
+    )
+    expect_no_error(new_class(
+      "Child",
+      Parent,
+      properties = list(x = class_any),
+      package = NULL
+    ))
+  })
   it("child properties can narrow optional union properties with NULL", {
     Parent <- new_class(
       "Parent",

@@ -310,15 +310,17 @@ class_inherits <- function(x, what) {
 # Is every instance of `child` guaranteed to also be an instance of `parent`?
 # Used to check that a child class only narrows the type of a property
 class_extends <- function(child, parent) {
-  if (is_class_any(child) && !is_class_any(parent)) {
-    # as a child, `class_any` only allows `class_any` as a parent
-    FALSE
-  } else if (is_class_any(parent)) {
+  if (is_class_any(parent) || union_contains_any(parent)) {
     # as a parent, `class_any` accepts every child class
     TRUE
+  } else if (is_class_any(child)) {
+    # as a child, `class_any` only allows `class_any` as a parent
+    FALSE
   } else if (is_union(child)) {
     # A union child extends `parent` only if every one of its members does.
     all(vlapply(child$classes, class_extends, parent = parent))
+  } else if (class_extends_implicit_base(child, parent)) {
+    TRUE
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
     any(vlapply(parent$classes, class_extends, child = child))
@@ -387,6 +389,41 @@ class_dispatch_extends <- function(parent, child) {
 drop_S7_object <- function(x) {
   n <- length(x)
   if (n > 0 && x[[n]] == "S7_object") x[-n] else x
+}
+
+union_contains_any <- function(x) {
+  is_union(x) && any(vlapply(x$classes, is_class_any))
+}
+
+class_extends_implicit_base <- function(child, parent) {
+  base <- class_implicit_base(child)
+  !is.null(base) && class_extends(base, parent)
+}
+
+class_implicit_base <- function(x) {
+  switch(
+    class_type(x),
+    S7 = class_implicit_base(x@parent),
+    S7_S3 = bundled_S3_implicit_base(x),
+    NULL
+  )
+}
+
+bundled_S3_implicit_base <- function(x) {
+  # Arbitrary S3 classes do not declare a base contract; bundled classes do.
+  if (identical(x, class_factor)) {
+    class_integer
+  } else if (identical(x, class_Date) || identical(x, class_POSIXct)) {
+    class_numeric
+  } else if (identical(x, class_POSIXlt) || identical(x, class_data.frame)) {
+    class_list
+  } else if (identical(x, class_formula)) {
+    class_call
+  } else if (identical(x, class_matrix) || identical(x, class_array)) {
+    class_vector
+  } else {
+    NULL
+  }
 }
 
 # Suppress @className false positive
