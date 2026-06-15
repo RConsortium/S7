@@ -95,6 +95,32 @@ describe("inheritance", {
       properties = list(x = new_property(Child, default = quote(Child())))
     ))
   })
+  it("child properties can narrow with S4 inheritance", {
+    on.exit(S4_remove_classes(c("S4PropertyParent", "S4PropertyChild")))
+    S4PropertyParent <- methods::setClass(
+      "S4PropertyParent",
+      slots = c(x = "numeric")
+    )
+    S4PropertyChild <- methods::setClass(
+      "S4PropertyChild",
+      contains = "S4PropertyParent"
+    )
+
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = S4PropertyParent),
+      package = NULL
+    )
+    Child <- new_class(
+      "Child",
+      Parent,
+      properties = list(x = S4PropertyChild),
+      package = NULL
+    )
+
+    x <- methods::new("S4PropertyChild", x = 1)
+    expect_s4_class(Child(x = x)@x, "S4PropertyChild")
+  })
   it("child properties can't narrow S7_object with base or S3 classes", {
     Parent <- new_class(
       "Parent",

@@ -331,7 +331,7 @@ class_extends <- function(child, parent) {
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     is_S4_class(child) &&
       is_S4_class(parent) &&
-      S4_extends_simple(child, parent)
+      methods::extends(child@className, parent@className)
   } else if (is_class(parent) && parent@name == "S7_object") {
     is_class(child)
   } else {
@@ -393,16 +393,6 @@ drop_S7_object <- function(x) {
 
 union_contains_any <- function(x) {
   is_union(x) && any(vlapply(x$classes, is_class_any))
-}
-
-S4_extends_simple <- function(child, parent) {
-  extension <- methods::extends(
-    child@className,
-    parent@className,
-    fullInfo = TRUE
-  )
-  isTRUE(extension) ||
-    (isS4(extension) && isTRUE(methods::slot(extension, "simple")))
 }
 
 # Suppress @className false positive
