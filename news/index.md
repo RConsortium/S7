@@ -34,6 +34,10 @@
   works out of the box
   ([\#472](https://github.com/RConsortium/S7/issues/472)).
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  accepts a single unnamed list of property overrides when downcasting,
+  as a shortcut for individual name-value pairs
+  ([\#497](https://github.com/RConsortium/S7/issues/497)).
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
   no longer errors when `from` is a base or S3 object and `to` is an S7
   class that inherits from `from`’s class. The base/S3 value is now
   passed as `.data` to the `to` constructor
@@ -68,6 +72,14 @@
   accept a length-1 list as `signature` for single-dispatch generics,
   matching the list-of-classes form required for multi-dispatch
   ([\#555](https://github.com/RConsortium/S7/issues/555)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now names its first argument `_parent` to minimise the chance of a
+  clash with a property
+  ([\#423](https://github.com/RConsortium/S7/issues/423)). It also
+  accepts a single unnamed named list as a shortcut for splicing
+  property values, making it easier to programmatically construct an
+  object from a list of properties
+  ([\#497](https://github.com/RConsortium/S7/issues/497)).
 - `method<-` can now register methods on S3 and S4 generics with base
   types (e.g. `class_character`), S3 classes
   ([`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md),
@@ -184,6 +196,13 @@
   now accept any class specification (S7 class, S7 union, S3 class, S4
   class, or base type wrapper like `class_integer`), not just S7 classes
   ([\#556](https://github.com/RConsortium/S7/issues/556)).
+- [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
+  now names its first argument `_object` to minimise the chances of a
+  clash with a property
+  ([\#423](https://github.com/RConsortium/S7/issues/423)). It also
+  accepts a single unnamed named list as a shortcut for splicing
+  property values, making it easier to set properties programmatically
+  ([\#497](https://github.com/RConsortium/S7/issues/497)).
 - [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   is the new name for
   [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),

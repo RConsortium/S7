@@ -83,7 +83,7 @@ object with new values for the specified properties.</p></li>
 <span></span>
 <span><span class="fu">props</span><span class="op">(</span><span class="va">object</span>, check <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
-<span><span class="fu">set_props</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span>, .check <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">set_props</span><span class="op">(</span><span class="va">`_object`</span>, <span class="va">...</span>, .check <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -109,8 +109,14 @@ before returning.</p></dd>
 only after all replacements are performed.</p></dd>
 
 
+<dt id="arg--object">_object<a class="anchor" aria-label="anchor" href="#arg--object"></a></dt>
+<dd><p>The object to modify.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Name-value pairs given property to modify and new value.</p></dd>
+<dd><p>Name-value pairs given property to modify and new value. As a
+convenience, you can supply a single unnamed list instead of individual
+name-value pairs, which makes it easy to set properties programmatically.</p></dd>
 
 </dl></div>
     <div class="section level2">

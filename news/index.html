@@ -66,6 +66,8 @@
 <li>
 <code><a href="../reference/convert.html">convert()</a></code> now falls back to the corresponding <code>as.*()</code> function (e.g. <code><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character()</a></code>) when converting to a base type like <code>class_character</code> and no method or inheritance-based default applies, so <code>convert(1, class_character)</code> works out of the box (<a href="https://github.com/RConsortium/S7/issues/472" class="external-link">#472</a>).</li>
 <li>
+<code><a href="../reference/convert.html">convert()</a></code> accepts a single unnamed list of property overrides when downcasting, as a shortcut for individual name-value pairs (<a href="https://github.com/RConsortium/S7/issues/497" class="external-link">#497</a>).</li>
+<li>
 <code><a href="../reference/convert.html">convert()</a></code> no longer errors when <code>from</code> is a base or S3 object and <code>to</code> is an S7 class that inherits from <code>from</code>’s class. The base/S3 value is now passed as <code>.data</code> to the <code>to</code> constructor (<a href="https://github.com/RConsortium/S7/issues/537" class="external-link">#537</a>).</li>
 <li>
 <code>method&lt;-</code> now works for double-dispatch operators (e.g. <code>+</code>, <code>==</code>, <code>%*%</code>) with plain S3 or S4 classes, even when neither operand is an S7 object (<a href="https://github.com/RConsortium/S7/issues/544" class="external-link">#544</a>).</li>
@@ -79,6 +81,8 @@
 <code>method&lt;-</code> now gives a clear error when assigning a primitive function (e.g. <code>log</code>) as a method (<a href="https://github.com/RConsortium/S7/issues/608" class="external-link">#608</a>).</li>
 <li>
 <code>method&lt;-</code> and <code><a href="../reference/method.html">method()</a></code> now accept a length-1 list as <code>signature</code> for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (<a href="https://github.com/RConsortium/S7/issues/555" class="external-link">#555</a>).</li>
+<li>
+<code><a href="../reference/new_class.html">new_object()</a></code> now names its first argument <code>_parent</code> to minimise the chance of a clash with a property (<a href="https://github.com/RConsortium/S7/issues/423" class="external-link">#423</a>). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to programmatically construct an object from a list of properties (<a href="https://github.com/RConsortium/S7/issues/497" class="external-link">#497</a>).</li>
 <li>
 <code>method&lt;-</code> can now register methods on S3 and S4 generics with base types (e.g. <code>class_character</code>), S3 classes (<code><a href="../reference/new_S3_class.html">new_S3_class()</a></code>, <code>class_factor</code>, etc.), S7 unions (expanded to one registration per class), <code>class_any</code> (registered as the <code>default</code> method), and <code>NULL</code> (registered as the <code>NULL</code> method) (<a href="https://github.com/RConsortium/S7/issues/455" class="external-link">#455</a>).</li>
 <li>
@@ -120,6 +124,8 @@
 <code>S7_error_method_not_found</code> now has a correct class vector without a duplicate <code>"error"</code> entry (<a href="https://github.com/jjjermiah" class="external-link">@jjjermiah</a>, <a href="https://github.com/RConsortium/S7/issues/604" class="external-link">#604</a>).</li>
 <li>
 <code><a href="../reference/S7_inherits.html">S7_inherits()</a></code> and <code><a href="../reference/S7_inherits.html">check_is_S7()</a></code> now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like <code>class_integer</code>), not just S7 classes (<a href="https://github.com/RConsortium/S7/issues/556" class="external-link">#556</a>).</li>
+<li>
+<code><a href="../reference/props.html">set_props()</a></code> now names its first argument <code>_object</code> to minimise the chances of a clash with a property (<a href="https://github.com/RConsortium/S7/issues/423" class="external-link">#423</a>). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (<a href="https://github.com/RConsortium/S7/issues/497" class="external-link">#497</a>).</li>
 <li>
 <code><a href="../reference/S7_on_load.html">S7_on_load()</a></code> is the new name for <code><a href="../reference/S7_on_load.html">methods_register()</a></code>, giving it a nicer symmetry with <code><a href="../reference/S7_on_load.html">S7_on_build()</a></code>; <code><a href="../reference/S7_on_load.html">methods_register()</a></code> remains available for backward compatibility (<a href="https://github.com/RConsortium/S7/issues/615" class="external-link">#615</a>).</li>
 <li>

@@ -20,7 +20,7 @@ new_class(
   validator = NULL
 )
 
-new_object(.parent, ...)
+new_object(`_parent`, ...)
 ```
 
 ## Arguments
@@ -105,9 +105,13 @@ new_object(.parent, ...)
   for more details, examples, and how to temporarily suppress validation
   when needed.
 
-- .parent, ...:
+- \_parent, ...:
 
   Parent object and named properties used to construct the object.
+
+  As a convenience, if `...` is a single unnamed list, then the elements
+  of that list are used as the properties. This makes it easy to
+  programmatically construct an object from a list of property values.
 
 ## Value
 
