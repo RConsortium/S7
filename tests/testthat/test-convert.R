@@ -103,8 +103,8 @@ describe("fallback convert", {
   })
 
   it("accepts a single unnamed list of overrides when downcasting (#497)", {
-    Foo <- new_class("Foo", properties = list(x = class_numeric))
-    Bar <- new_class("Bar", Foo, properties = list(y = class_numeric))
+    Foo := new_class(properties = list(x = class_numeric))
+    Bar := new_class(Foo, properties = list(y = class_numeric))
 
     bar <- convert(Foo(x = 1), Bar, list(x = 2, y = 3))
     expect_equal(bar@x, 2)
@@ -112,8 +112,8 @@ describe("fallback convert", {
   })
 
   it("errors if single unnamed list has unnamed elements (#497)", {
-    Foo <- new_class("Foo", properties = list(x = class_numeric))
-    Bar <- new_class("Bar", Foo, properties = list(y = class_numeric))
+    Foo := new_class(properties = list(x = class_numeric))
+    Bar := new_class(Foo, properties = list(y = class_numeric))
 
     expect_snapshot(convert(Foo(x = 1), Bar, list(2)), error = TRUE)
   })

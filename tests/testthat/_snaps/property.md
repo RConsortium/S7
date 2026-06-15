@@ -62,7 +62,7 @@
 # props<- / set_props() errors if single unnamed list has unnamed elements (#497)
 
     Code
-      set_props(foo(1), list(2))
+      set_props(Foo(1), list(2))
     Condition
       Error in `set_props()`:
       ! All elements of `..1` must be named.
