@@ -310,9 +310,6 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @param _parent,... Parent object and named properties used to construct the
 #'   object.
 #'
-#'   `_parent` has an unusual name to avoid clashing with property names
-#'   supplied in `...`; see [new_property()] for details.
-#'
 #'   As a convenience, if `...` is a single unnamed list, then the elements of
 #'   that list are used as the properties. This makes it easy to
 #'   programmatically construct an object from a list of property values.

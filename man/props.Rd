@@ -24,8 +24,7 @@ before returning.}
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
 
-\item{_object}{The object to modify. It has an unusual name to avoid clashing
-with property names supplied in \code{...}; see \code{\link[=new_property]{new_property()}} for details.}
+\item{_object}{The object to modify.}
 
 \item{...}{Name-value pairs given property to modify and new value. As a
 convenience, you can supply a single unnamed list instead of individual

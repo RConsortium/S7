@@ -77,9 +77,6 @@ suppress validation when needed.}
 \item{_parent, ...}{Parent object and named properties used to construct the
 object.
 
-\verb{_parent} has an unusual name to avoid clashing with property names
-supplied in \code{...}; see \code{\link[=new_property]{new_property()}} for details.
-
 As a convenience, if \code{...} is a single unnamed list, then the elements of
 that list are used as the properties. This makes it easy to
 programmatically construct an object from a list of property values.}

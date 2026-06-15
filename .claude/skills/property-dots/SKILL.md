@@ -78,14 +78,6 @@ Use `collect_dots()` instead of `list(...)`.
 
 ## Documenting it
 
-In the `@param` for the underscore argument, explain the unusual name and point
-to `new_property()`:
-
-```r
-#' @param _object The object to modify. It has an unusual name to avoid clashing
-#'   with property names supplied in `...`; see [new_property()] for details.
-```
-
 In the `@param` for `...`, mention the single-list shortcut:
 
 ```r

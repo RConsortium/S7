@@ -497,8 +497,7 @@ props <- function(object, names = prop_names(object)) {
 }
 
 #' @export
-#' @param _object The object to modify. It has an unusual name to avoid clashing
-#'   with property names supplied in `...`; see [new_property()] for details.
+#' @param _object The object to modify.
 #' @param ... Name-value pairs given property to modify and new value. As a
 #'   convenience, you can supply a single unnamed list instead of individual
 #'   name-value pairs, which makes it easy to set properties programmatically.
