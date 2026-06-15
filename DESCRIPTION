@@ -37,7 +37,8 @@ Suggests:
     methods,
     rmarkdown,
     testthat (>= 3.2.0),
-    tibble
+    tibble,
+    withr
 VignetteBuilder:
     knitr
 Config/build/compilation-database: true

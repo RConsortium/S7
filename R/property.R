@@ -168,10 +168,10 @@ check_prop_default <- function(
     return()
   }
 
-  if (!is_scalar(default)) {
-    warn_prop_default_complex(default, default_expr, call)
-  }
   if (class_inherits(default, class)) {
+    if (!is_scalar(default)) {
+      warn_prop_default_complex(default, default_expr, call)
+    }
     return()
   }
 

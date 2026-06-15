@@ -434,6 +434,15 @@ describe("new_property()", {
     })
   })
 
+  it("rejects invalid complex defaults without warning first", {
+    withr::local_options(list(warn = 2))
+
+    expect_error(
+      new_property(class_integer, default = c("x", "y")),
+      "`default` must be an instance of <integer>"
+    )
+  })
+
   it("warns if default is not a scalar or quoted call", {
     expect_snapshot({
       . <- new_property(class_integer, default = c(any = 1L))
