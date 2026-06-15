@@ -19,8 +19,8 @@
 #' the second argument, supporting usage like `inherits(x, Foo)`.
 #' @export
 #' @examples
-#' Foo1 <- new_class("Foo1")
-#' Foo2 <- new_class("Foo2")
+#' Foo1 := new_class()
+#' Foo2 := new_class()
 #'
 #' S7_inherits(Foo1(), Foo1)
 #' check_is_S7(Foo1())

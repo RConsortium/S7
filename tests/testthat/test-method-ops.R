@@ -1,7 +1,7 @@
 test_that("Ops generics dispatch to S7 methods for S7 classes", {
   local_methods(base_ops[["+"]])
-  foo1 <- new_class("foo1")
-  foo2 <- new_class("foo2")
+  foo1 := new_class()
+  foo2 := new_class()
 
   method(`+`, list(foo1, foo1)) <- function(e1, e2) "foo1-foo1"
   method(`+`, list(foo1, foo2)) <- function(e1, e2) "foo1-foo2"
@@ -22,8 +22,9 @@ test_that("Ops generics dispatch to S7 methods for S7 classes", {
 test_that("Ops generics dispatch to S3 methods", {
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
+  defer(unregister_s3_methods(baseenv(), "Ops"))
 
-  foo <- new_class("foo")
+  foo := new_class()
   method(`+`, list(class_factor, foo)) <- function(e1, e2) "factor-foo"
   method(`+`, list(foo, class_factor)) <- function(e1, e2) "foo-factor"
 
@@ -32,8 +33,7 @@ test_that("Ops generics dispatch to S3 methods", {
 
   # Even if custom method exists
   foo_S3 <- structure(list(), class = "foo_S3")
-  assign("+.foo_S3", function(e1, e2) stop("Failure!"), envir = globalenv())
-  defer(rm("+.foo_S3", envir = globalenv()))
+  local_s3_method("+.foo_S3", function(e1, e2) stop("Failure!"))
 
   method(`+`, list(new_S3_class("foo_S3"), foo)) <- function(e1, e2) "S3-S7"
   method(`+`, list(foo, new_S3_class("foo_S3"))) <- function(e1, e2) "S7-S3"
@@ -42,10 +42,43 @@ test_that("Ops generics dispatch to S3 methods", {
   expect_equal(foo_S3 + foo(), "S3-S7")
 })
 
+test_that("operator methods on S3/S4 classes work when neither operand is S7", {
+  local_methods(base_ops[["+"]])
+
+  class_foo <- new_S3_class("foo")
+  foo <- structure(list(), class = "foo")
+  method(`+`, list(class_foo, class_any)) <- function(e1, e2) "foo+any"
+  expect_equal(foo + 10, "foo+any")
+
+  fooS4 <- local_S4_class("fooS4")
+  method(`+`, list(fooS4, class_any)) <- function(e1, e2) "fooS4+any"
+  expect_equal(fooS4("x") + 10, "fooS4+any")
+
+  # An unregistered operator still falls back to the base behaviour
+  expect_error(foo * 10, regexp = "non-numeric argument")
+})
+
+test_that("operator bridge does not clobber an existing group method", {
+  skip_if(getRversion() < "4.3")
+  local_methods(base_ops[["+"]])
+  defer(unregister_s3_methods(baseenv(), "Ops"))
+
+  local_s3_method("Ops.myS3", function(e1, e2) "myS3-ops")
+  method(`+`, list(new_S3_class("myS3"), class_any)) <- function(e1, e2) "!"
+
+  # + method used for S7 classes
+  x <- structure(list(), class = "myS3")
+  foo := new_class()
+  expect_equal(x + foo(), "!")
+
+  # but `Ops.myS3` used for base/S3 classes
+  expect_equal(x + 10, "myS3-ops")
+})
+
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
   local_methods(base_ops[["+"]])
-  fooS4 <- local_S4_class("foo", contains = "character")
-  fooS7 <- new_class("foo")
+  fooS4 <- local_S4_class("fooS4", contains = "character")
+  fooS7 := new_class()
 
   method(`+`, list(fooS7, fooS4)) <- function(e1, e2) "S7-S4"
   method(`+`, list(fooS4, fooS7)) <- function(e1, e2) "S4-S7"
@@ -61,7 +94,7 @@ test_that("Ops generics dispatch to S7 methods for POSIXct", {
 
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
-  foo <- new_class("foo")
+  foo := new_class()
 
   method(`+`, list(foo, class_POSIXct)) <- function(e1, e2) "foo-POSIXct"
   expect_equal(foo() + Sys.time(), "foo-POSIXct")
@@ -72,7 +105,7 @@ test_that("Ops generics dispatch to S7 methods for POSIXct", {
 
 test_that("Ops generics dispatch to S7 methods for NULL", {
   local_methods(base_ops[["+"]])
-  foo <- new_class("foo")
+  foo := new_class()
 
   method(`+`, list(foo, NULL)) <- function(e1, e2) "foo-NULL"
   method(`+`, list(NULL, foo)) <- function(e1, e2) "NULL-foo"
@@ -84,7 +117,7 @@ test_that("Ops generics dispatch to S7 methods for NULL", {
 test_that("Ops generics falls back to base behaviour", {
   local_methods(base_ops[["+"]])
 
-  foo <- new_class("foo", parent = class_double)
+  foo := new_class(parent = class_double)
   expect_equal(foo(1) + 1, foo(2))
   expect_equal(foo(1) + 1:2, 2:3)
   expect_equal(1 + foo(1), foo(2))
@@ -103,7 +136,7 @@ test_that("`%*%` dispatches to S7 methods", {
   skip_if(getRversion() < "4.3")
   local_methods(base_ops[["+"]])
 
-  ClassX <- new_class("ClassX")
+  ClassX := new_class()
   method(`%*%`, list(ClassX, class_any)) <- function(x, y) {
     "ClassX %*% class_any"
   }
@@ -117,8 +150,8 @@ test_that("`%*%` dispatches to S7 methods", {
 })
 
 test_that("Ops methods can use super", {
-  foo <- new_class("foo", class_integer)
-  foo2 <- new_class("foo2", foo)
+  foo := new_class(class_integer)
+  foo2 := new_class(foo)
 
   method(`+`, list(foo, class_double)) <- function(e1, e2) {
     foo(S7_data(e1) + as.integer(e2))

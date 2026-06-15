@@ -6,7 +6,7 @@
       Error in `method()`:
       ! `generic` must be a <S7_generic>, not a <closure>.
     Code
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       method(foo)
     Condition
       Error in `method()`:
@@ -27,7 +27,7 @@
       Error in `method()`:
       ! Can't dispatch on unions; must be a concrete type.
     Code
-      foo2 <- new_generic("foo2", c("x", "y"))
+      foo2 := new_generic(c("x", "y"))
       method(foo2, object = list(class_character))
     Condition
       Error in `method()`:
@@ -49,14 +49,14 @@
       method(foo2, class = list(class_integer, class_double))
     Condition
       Error in `method()`:
-      ! Can't find method for generic `foo(x, y)`:
+      ! Can't find method for generic `foo2(x, y)`:
       - x: <integer>
       - y: <double>
     Code
       method(foo2, object = list(1L, 2))
     Condition
       Error in `method()`:
-      ! Can't find method for generic `foo(x, y)`:
+      ! Can't find method for generic `foo2(x, y)`:
       - x: <integer>
       - y: <double>
 

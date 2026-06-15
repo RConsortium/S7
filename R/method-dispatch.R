@@ -1,4 +1,12 @@
 # Called from C
+dispatch_not_generic_error <- function() {
+  stop2(
+    "Must be called from within an S7 generic.",
+    call = quote(S7_dispatch())
+  )
+}
+
+# Called from C
 method_lookup_error <- function(name, args) {
   types <- vcapply(args, obj_desc)
   msg <- method_lookup_error_message(name, types)

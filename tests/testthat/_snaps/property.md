@@ -1,18 +1,23 @@
 # property retrieval / retrieves the properties that exist & errors otherwise
 
-    Can't find property <foo>@x.
-
----
-
-    Can't find property <foo>@x.
+    Code
+      prop(obj, "x")
+    Condition
+      Error in `<foo>@x`:
+      ! Property not found.
+    Code
+      obj@x
+    Condition
+      Error in `<foo>@x`:
+      ! Property not found.
 
 # prop setting / can't set read-only properties
 
     Code
       obj@x <- 1
     Condition
-      Error:
-      ! Can't set read-only property <foo>@x.
+      Error in `<foo>@x`:
+      ! Can't set read-only property.
 
 # prop setting / errors if the property doesn't exist or is wrong class
 
@@ -20,12 +25,12 @@
       obj <- foo(123)
       obj@foo <- 10
     Condition
-      Error:
-      ! Can't find property <foo>@foo.
+      Error in `<foo>@foo`:
+      ! Property not found.
     Code
       obj@x <- "x"
     Condition
-      Error:
+      Error in `<foo>@x`:
       ! <foo>@x must be <double>, not <character>
 
 # prop setting / validates all attributes if custom setter
@@ -34,8 +39,16 @@
       obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     Condition
-      Error:
+      Error in `<foo>@y`:
       ! <foo>@y must be <double>, not <character>
+
+# prop setting / gives informative error if setter doesn't return an S7 object (#416)
+
+    Code
+      foo(x = 1.1)
+    Condition
+      Error in `<foo>@x`:
+      ! Custom setter must return an <S7_object>, not <integer>.
 
 # props<- / `check = FALSE` skip validation
 
@@ -123,32 +136,32 @@
     Code
       my_obj@null <- "x"
     Condition
-      Error:
+      Error in `<my_class>@null`:
       ! <my_class>@null must be <NULL>, not <character>
     Code
       my_obj@base <- "x"
     Condition
-      Error:
+      Error in `<my_class>@base`:
       ! <my_class>@base must be <integer>, not <character>
     Code
       my_obj@S3 <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S3`:
       ! <my_class>@S3 must be S3<factor>, not <character>
     Code
       my_obj@S4 <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S4`:
       ! <my_class>@S4 must be S4<class_S4>, not <character>
     Code
       my_obj@S7 <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S7`:
       ! <my_class>@S7 must be <class_S7>, not <character>
     Code
       my_obj@S7_union <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S7_union`:
       ! <my_class>@S7_union must be <integer> or <logical>, not <character>
 
 # as_properties() gives useful error messages
@@ -190,7 +203,7 @@
       f <- foo(x = 1L)
       f@x <- 1:2
     Condition
-      Error:
+      Error in `<foo>@x`:
       ! <foo>@x must be length 1
     Code
       foo(x = 1:2)
@@ -198,6 +211,24 @@
       Error in `foo()`:
       ! <foo> object properties are invalid:
       - @x must be length 1
+
+# property validation runs the class's own validator
+
+    Code
+      Foo(x = bad)
+    Condition
+      Error in `Foo()`:
+      ! <Foo> object properties are invalid:
+      - @x: Not enough 'levels' for underlying data
+
+# property validation runs an S4 class's validity method
+
+    Code
+      Foo(x = bad)
+    Condition
+      Error in `Foo()`:
+      ! <Foo> object properties are invalid:
+      - @x: n must be positive
 
 # prop<- won't infinitly recurse on a custom setter
 

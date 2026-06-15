@@ -1,5 +1,5 @@
 test_that("can work with S7 classes", {
-  klass <- new_class("klass", package = NULL)
+  klass := new_class(package = NULL)
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "S7")
@@ -17,7 +17,7 @@ test_that("can work with S7 classes", {
 })
 
 test_that("can work with S7 classes in packages", {
-  klass <- new_class("klass", package = "pkg")
+  klass := new_class(package = "pkg")
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "S7")
@@ -35,8 +35,8 @@ test_that("can work with S7 classes in packages", {
 })
 
 test_that("can work with unions", {
-  text <- new_class("text", class_character, package = NULL)
-  number <- new_class("number", class_double, package = NULL)
+  text := new_class(class_character, package = NULL)
+  number := new_class(class_double, package = NULL)
   klass <- new_union(text, number)
   expect_equal(as_class(klass), klass)
 
@@ -143,12 +143,27 @@ test_that("can work with S3 classes", {
   expect_equal(class_inherits(factor(), klass), FALSE)
 })
 
+test_that("class_inherits() requires S3 classes to be contiguous and ordered", {
+  klass <- new_S3_class(c("a", "b"))
+
+  # `klass`'s classes all present, but not contiguously
+  gappy <- structure(list(), class = c("a", "x", "b"))
+  expect_equal(class_inherits(gappy, klass), FALSE)
+
+  # `klass`'s classes all present, but in the wrong order
+  reversed <- structure(list(), class = c("b", "a"))
+  expect_equal(class_inherits(reversed, klass), FALSE)
+
+  # A genuine contiguous, ordered run succeeds
+  ok <- structure(list(), class = c("z", "a", "b"))
+  expect_equal(class_inherits(ok, klass), TRUE)
+})
+
 test_that("can work with S7 classes that extend S3 classes", {
   Date <- new_S3_class("Date", constructor = function(.data = numeric()) {
     .Date(.data)
   })
-  Date2 <- new_class(
-    "Date2",
+  Date2 := new_class(
     parent = Date,
     properties = list(x = class_numeric),
     package = NULL
@@ -197,7 +212,7 @@ test_that("can work with S4 classes", {
 })
 
 test_that("S7_class_desc() formats every supported class spec", {
-  Foo <- new_class("Foo", package = NULL)
+  Foo := new_class(package = NULL)
 
   expect_equal(S7_class_desc(Foo), "<Foo>")
   expect_equal(S7_class_desc(class_integer), "<integer>")

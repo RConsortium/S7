@@ -128,7 +128,7 @@
 # abstract classes / can't be instantiated
 
     Code
-      foo <- new_class("foo", abstract = TRUE)
+      foo := new_class(abstract = TRUE)
       foo()
     Condition
       Error in `S7::new_object()`:
@@ -137,7 +137,7 @@
 # abstract classes / can't inherit from concrete class
 
     Code
-      foo1 <- new_class("foo1")
+      foo1 := new_class()
       new_class("foo2", parent = foo1, abstract = TRUE)
     Condition
       Error in `new_class()`:
@@ -214,7 +214,7 @@
 # S7 object / displays nicely
 
     Code
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
+      foo := new_class(properties = list(x = class_double, y = class_double),
       package = NULL)
       foo()
     Output
@@ -232,7 +232,7 @@
 # S7 object / displays objects with data nicely
 
     Code
-      text <- new_class("text", class_character, package = NULL)
+      text := new_class(class_character, package = NULL)
       text("x")
     Output
       <text> chr "x"
@@ -275,23 +275,13 @@
       Error in `c.S7_class()`:
       ! Can not combine S7 class objects.
 
-# can't create class with reserved property names
+# can't create class with `...` property name
 
     Code
-      new_class("foo", properties = list(names = class_character))
+      new_class("foo", properties = list(... = class_character))
     Condition
       Error in `new_class()`:
-      ! Property can't be named: names.
-    Code
-      new_class("foo", properties = list(dim = NULL | class_integer))
-    Condition
-      Error in `new_class()`:
-      ! Property can't be named: dim.
-    Code
-      new_class("foo", properties = list(dim = NULL | class_integer, dimnames = class_list))
-    Condition
-      Error in `new_class()`:
-      ! Property can't be named: dim, dimnames.
+      ! Properties can't be named "...".
 
 # S7_class() gives informative error if no S7 spec available
 

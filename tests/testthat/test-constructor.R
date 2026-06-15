@@ -34,14 +34,13 @@ test_that("generates correct arguments from parent + properties", {
   expect_equal(args$parent, pairlist())
 
   # Includes parent properties
-  foo <- new_class("foo", properties = list(x = class_numeric))
+  foo := new_class(properties = list(x = class_numeric))
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
   expect_equal(args$self, pairlist(y = integer()))
   expect_equal(args$parent, pairlist(x = integer()))
 
   # But only those in the constructor
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_numeric),
     constructor = function() new_object(x = 1)
   )
@@ -59,10 +58,10 @@ test_that("generates meaningful constructors", {
         as_properties(list(x = class_numeric, y = class_numeric))
       )
 
-      foo <- new_class("foo", parent = class_character)
+      foo := new_class(parent = class_character)
       new_constructor(foo, list())
 
-      foo2 <- new_class("foo2", parent = foo)
+      foo2 := new_class(parent = foo)
       new_constructor(foo2, list())
     },
     transform = scrub_environment
@@ -85,8 +84,7 @@ test_that("can generate constructors for S3 classes", {
 test_that("can generate constructor for inherited abstract classes", {
   expect_snapshot(
     {
-      foo1 <- new_class(
-        "foo1",
+      foo1 := new_class(
         abstract = TRUE,
         properties = list(x = class_double)
       )
@@ -95,18 +93,17 @@ test_that("can generate constructor for inherited abstract classes", {
     },
     transform = scrub_environment
   )
-  child <- new_class("child", foo1, properties = list(y = class_double))
+  child := new_class(foo1, properties = list(y = class_double))
   expect_no_error(child(y = 0.5))
 
   # even if it has a read-only property
   prop_readonly <- new_property(getter = function(self) "test")
-  child <- new_class("child", foo1, properties = list(x = prop_readonly))
+  child := new_class(foo1, properties = list(x = prop_readonly))
   expect_no_error(child())
 })
 
 test_that("can use `...` in parent constructor", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_list),
     constructor = function(...) new_object(S7_object(), x = list(...))
   )
@@ -117,15 +114,14 @@ test_that("can use `...` in parent constructor", {
   )
 
   # And check that arguments matched correctly
-  bar <- new_class("bar", foo, properties = list(y = class_double))
+  bar := new_class(foo, properties = list(y = class_double))
   expect_equal(bar()@x, list())
   expect_equal(bar(2)@x, list(2))
   expect_equal(bar(y = 2)@x, list())
 })
 
 test_that("can create constructors with missing or lazy defaults", {
-  Person <- new_class(
-    name = "Person",
+  Person := new_class(
     properties = list(
       # non-dynamic, default error call (required constructor arg)
       first_name = new_property(
@@ -203,8 +199,7 @@ test_that("can create constructors with missing or lazy defaults", {
 })
 
 test_that("Dynamic settable properties are included in constructor", {
-  Foo <- new_class(
-    name = "Foo",
+  Foo := new_class(
     package = NULL,
     properties = list(
       dynamic_settable = new_property(
@@ -230,7 +225,7 @@ test_that("Dynamic settable properties are included in constructor", {
   foo <- Foo()
   expect_error(
     foo@dynamic_read_only <- 1,
-    "Can't set read-only property <Foo>@dynamic_read_only"
+    "Can't set read-only property"
   )
   foo@dynamic_settable <- 1
   expect_equal(foo@dynamic_settable, 1)

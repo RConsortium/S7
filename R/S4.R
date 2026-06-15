@@ -14,7 +14,7 @@
 #'   standardGeneric("S4_generic")
 #' })
 #'
-#' Foo <- new_class("Foo")
+#' Foo := new_class()
 #' S4_register(Foo)
 #' method(S4_generic, Foo) <- function(x) "Hello"
 #'
@@ -146,6 +146,45 @@ S4_class_name <- function(x) {
     paste0("S4/", class)
   } else {
     paste0("S4/", package, "::", class)
+  }
+}
+
+S4_package_name <- function(f, env) {
+  if (methods::getPackageName(topenv(env), create = FALSE) == f@package) {
+    ## current ns might not be loaded yet, catch here
+    return(f@package)
+  }
+
+  name <- as.character(f@generic)
+  generic_in_its_package <- methods::isGeneric(
+    name,
+    where = asNamespace(f@package)
+  )
+  if (generic_in_its_package) {
+    return(f@package)
+  }
+
+  # generic was defined for a function from a different package, like base
+  find_package_with_symbol(name, env, exclude = f@package) %||%
+    stop2(
+      sprintf(
+        "Failed to find originating package for S4 generic '%s' in imports.",
+        f@generic
+      ),
+      call = NULL
+    )
+}
+
+find_package_with_symbol <- function(name, env, exclude = NULL) {
+  imports <- getNamespaceImports(topenv(env))
+  pkgs <- setdiff(names(imports), exclude)
+  for (pkg in pkgs) {
+    if (
+      (isTRUE(imports[[pkg]]) && name %in% getNamespaceExports(pkg)) ||
+        name %in% imports[[pkg]]
+    ) {
+      return(pkg)
+    }
   }
 }
 

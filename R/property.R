@@ -15,6 +15,9 @@
 #'
 #' @param class Class that the property must be an instance of.
 #'   See [as_class()] for details.
+#'
+#'   If you want to make a property optional, create a union with `NULL`,
+#'   e.g. `class_integer | NULL`.
 #' @param getter An optional function used to get the value. The function
 #'   should take `self` as its sole argument and return the value. If you
 #'   supply a `getter`, you are responsible for ensuring that it returns
@@ -53,23 +56,29 @@
 #'   don't need to set this here, as it's more convenient to supply as
 #'   the element name when defining a list of properties. If both `name`
 #'   and a list-name are supplied, the list-name will be used.
+#'
+#'   Property names must not start with `_`; these properties are reserved for
+#'   internal use by S7.
 #' @returns An S7 property, i.e. a list with class `S7_property`.
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
-#' Pizza <- new_class("Pizza", properties = list(
-#'   slices = new_property(class_numeric, default = 10)
+#' Pizza := new_class(properties = list(
+#'   slices = new_property(class_numeric, default = 10),
+#'   special = new_property(NULL | class_character)
 #' ))
-#' my_pizza <- Pizza(slices = 6)
+#' my_pizza <- Pizza(slices = 6, special = "mushrooms")
 #' my_pizza@slices
+#' my_pizza@special
 #' my_pizza@slices <- 5
 #' my_pizza@slices
 #'
 #' your_pizza <- Pizza()
 #' your_pizza@slices
+#' your_pizza@special
 #'
 #' # Dynamic properties can compute on demand
-#' Clock <- new_class("Clock", properties = list(
+#' Clock := new_class(properties = list(
 #'   now = new_property(getter = function(self) Sys.time())
 #' ))
 #' my_clock <- Clock()
@@ -224,7 +233,7 @@ class_default_desc <- function(class, package = NULL) {
 #'    the modified object, invisibly.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
@@ -239,10 +248,6 @@ prop <- function(object, name) {
   .Call(prop_, object, name)
 }
 
-signal_prop_error_unknown <- function(object, name) {
-  stop2(prop_error_unknown(object, name), call = NULL)
-}
-
 #' @rdname prop
 #' @param check If `TRUE`, check that `value` is of the correct type and run
 #'   [validate()] on the object before returning.
@@ -252,21 +257,18 @@ signal_prop_error_unknown <- function(object, name) {
 }
 
 # called from src/prop.c
-signal_prop_error <- function(fmt, object, name) {
-  msg <- sprintf(fmt, obj_desc(object), name)
-  stop2(msg, call = NULL)
+signal_prop_error <- function(msg, object, name) {
+  stop2(msg, call = prop_call(object, name))
 }
-
-# called from src/prop.c
-signal_error <- function(msg) {
-  stop2(msg, call = NULL)
+signal_setter_error <- function(value, object, name) {
+  stop2(
+    sprintf(
+      "Custom setter must return an <S7_object>, not %s.",
+      obj_desc(value)
+    ),
+    call = prop_call(object, name)
+  )
 }
-
-
-prop_error_unknown <- function(object, prop_name) {
-  sprintf("Can't find property %s@%s.", obj_desc(object), prop_name)
-}
-
 
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
@@ -277,6 +279,11 @@ prop_validate <- function(prop, value, object = NULL) {
       class_desc(prop$class),
       obj_desc(value)
     ))
+  }
+
+  class_error <- class_validate(prop$class, value)
+  if (length(class_error) > 0) {
+    return(paste0(prop_label(object, prop$name), ": ", class_error))
   }
 
   if (is.null(validator <- prop$validator)) {
@@ -308,6 +315,9 @@ prop_validate <- function(prop, value, object = NULL) {
 
 prop_label <- function(object, name) {
   sprintf("%s@%s", if (!is.null(object)) obj_desc(object) else "", name)
+}
+prop_call <- function(object, name) {
+  call(prop_label(object, name))
 }
 
 # Note: we need to explicitly refer to base with "base::`@`" in the
@@ -348,7 +358,7 @@ prop_label <- function(object, name) {
 #'     the property has a getter, setter, or validator.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = new_property(class_numeric, default = 15),
@@ -445,7 +455,7 @@ prop_info <- function(object) {
 #' @returns A named list of property values.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
@@ -538,6 +548,14 @@ as_property <- function(x, name, i, call = sys.call(-1L)) {
     class <- as_class(x, arg = paste0("property$", name))
     new_property(x, name = name)
   }
+}
+
+prop_storage_rename <- function(names) {
+  .Call(prop_storage_rename_, names)
+}
+
+prop_storage_names <- function(object) {
+  prop_storage_rename(prop_names(object))
 }
 
 prop_is_read_only <- function(prop) {

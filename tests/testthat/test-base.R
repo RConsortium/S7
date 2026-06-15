@@ -8,6 +8,11 @@ test_that("validation uses typeof", {
   expect_equal(class_function$validator(mean), NULL)
 })
 
+test_that("constructor and validator live in the S7 namespace (#553)", {
+  expect_identical(environment(class_integer$constructor), asNamespace("S7"))
+  expect_identical(environment(class_integer$validator), asNamespace("S7"))
+})
+
 test_that("base class display as expected", {
   expect_snapshot({
     class_integer
@@ -19,7 +24,7 @@ test_that("classes can inherit from base types", {
   base_classes <- c(class_vector$classes, list(class_function))
 
   for (class in base_classes) {
-    foo <- new_class("foo", parent = class)
+    foo := new_class(parent = class)
     expect_error(foo(), NA)
   }
 })
@@ -344,11 +349,11 @@ test_that("ALTREP vectors aren't materialised (#607)", {
   local_mocked_bindings(new_object = compiler::cmpfun(new_object))
 
   # parent
-  myint <- new_class("myint", parent = class_integer)
+  myint := new_class(parent = class_integer)
   expect_true(is_altrep_preserved(myint(seq_len(1e6))))
 
   # properties, set during construction and via @<-
-  Foo <- new_class("Foo", properties = list(x = class_integer))
+  Foo := new_class(properties = list(x = class_integer))
   y <- Foo(x = seq_len(1e6))
   expect_true(is_altrep_preserved(y@x))
   y@x <- seq_len(1e6)
