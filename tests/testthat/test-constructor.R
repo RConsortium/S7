@@ -120,6 +120,75 @@ test_that("can use `...` in parent constructor", {
   expect_equal(bar(y = 2)@x, list())
 })
 
+test_that("subclass can change the default of a parent property", {
+  foo <- new_class(
+    "foo",
+    properties = list(x = new_property(class_numeric, default = 1))
+  )
+  foo2 <- new_class(
+    "foo2",
+    parent = foo,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+
+  expect_equal(foo()@x, 1)
+  expect_equal(foo2()@x, 2)
+  expect_equal(foo2(x = 3)@x, 3)
+})
+
+test_that("subclass setter is used during construction", {
+  foo <- new_class("foo", properties = list(x = class_integer, z = class_any))
+  foo2 <- new_class(
+    "foo2",
+    parent = foo,
+    properties = list(
+      z = new_property(
+        class_double,
+        setter = function(self, value) {
+          self@z <- value * 2
+          self
+        }
+      )
+    )
+  )
+
+  expect_equal(foo2(z = 1)@z, 2)
+  expect_equal(foo2(x = 1L, z = 1)@x, 1L)
+})
+
+test_that("overridden properties keep their position in the constructor", {
+  foo <- new_class(
+    "foo",
+    properties = list(x = class_numeric, y = class_numeric)
+  )
+  foo2 <- new_class(
+    "foo2",
+    foo,
+    properties = list(
+      x = new_property(class_numeric, default = 2),
+      z = class_numeric
+    )
+  )
+
+  expect_named(formals(foo2), c("x", "y", "z"))
+  obj <- foo2(1, 2, 3)
+  expect_equal(obj@x, 1)
+  expect_equal(obj@y, 2)
+  expect_equal(obj@z, 3)
+})
+
+test_that("property redeclared as read-only is removed from the constructor", {
+  foo <- new_class("foo", properties = list(x = class_character))
+  foo2 <- new_class(
+    "foo2",
+    foo,
+    properties = list(x = new_property(getter = function(self) "fixed"))
+  )
+
+  expect_null(formals(foo2))
+  expect_equal(foo2()@x, "fixed")
+})
+
 test_that("can create constructors with missing or lazy defaults", {
   Person := new_class(
     properties = list(

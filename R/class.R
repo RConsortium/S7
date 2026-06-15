@@ -131,20 +131,19 @@ new_class <- function(
     }
   }
 
-  # Combine properties from parent, overriding as needed
-  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
   check_prop_names(new_props)
-  all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
     constructor <- new_constructor(
       parent,
-      all_props,
+      new_props,
       envir = parent.frame(),
       package = package
     )
   }
+
+  all_props <- modify_list(attr(parent, "properties", exact = TRUE), new_props)
 
   object <- constructor
   # Must synchronise with prop_names
