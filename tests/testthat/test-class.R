@@ -120,6 +120,25 @@ describe("inheritance", {
       package = NULL
     ))
   })
+  it("child properties can narrow base properties with S4 subclasses", {
+    on.exit(S4_remove_classes("S4PropertyNum"))
+    S4PropertyNum <- methods::setClass("S4PropertyNum", contains = "numeric")
+
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = class_numeric),
+      package = NULL
+    )
+    Child <- new_class(
+      "Child",
+      Parent,
+      properties = list(x = S4PropertyNum),
+      package = NULL
+    )
+
+    x <- methods::new("S4PropertyNum", 1)
+    expect_s4_class(Child(x = x)@x, "S4PropertyNum")
+  })
   it("child properties can narrow parent unions that include any", {
     Parent <- new_class(
       "Parent",

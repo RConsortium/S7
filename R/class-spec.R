@@ -403,9 +403,42 @@ class_extends_implicit_base <- function(child, parent) {
 class_implicit_base <- function(x) {
   switch(
     class_type(x),
+    S4 = S4_implicit_base(x),
     S7 = class_implicit_base(x@parent),
     S7_S3 = bundled_S3_implicit_base(x),
     NULL
+  )
+}
+
+S4_implicit_base <- function(x) {
+  classes <- methods::extends(x)
+  basic_classes <- S4_basic_base_classes()
+
+  for (class in classes) {
+    if (hasName(basic_classes, class)) {
+      return(basic_classes[[class]])
+    }
+  }
+
+  NULL
+}
+
+S4_basic_base_classes <- function() {
+  list(
+    logical = class_logical,
+    integer = class_integer,
+    double = class_double,
+    numeric = class_numeric,
+    character = class_character,
+    complex = class_complex,
+    raw = class_raw,
+    list = class_list,
+    expression = class_expression,
+    vector = class_vector,
+    `function` = class_function,
+    environment = class_environment,
+    name = class_name,
+    call = class_call
   )
 }
 
