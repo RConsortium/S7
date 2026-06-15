@@ -165,9 +165,16 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP envir = CAR(args_); args_ = CDR(args_);
 
   if (!Rf_inherits(generic, "S7_generic")) {
-    SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
-    Rf_eval(err_call, ns_S7);
-    UNPROTECT(1); // never reached
+    // A generic modified by trace() is an S4 object that wraps the real
+    // generic in its "original" attribute
+    SEXP original = Rf_getAttrib(generic, Rf_install("original"));
+    if (Rf_inherits(original, "S7_generic")) {
+      generic = original;
+    } else {
+      SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
+      Rf_eval(err_call, ns_S7);
+      UNPROTECT(1); // never reached
+    }
   }
 
   // Get the number of arguments to the generic
