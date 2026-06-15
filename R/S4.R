@@ -45,13 +45,13 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
   # Convert generator function to class
   if (methods::is(x, "classGeneratorFunction")) {
     return(S4_to_S7_class(
-      methods::getClass(as.character(x@className)),
+      methods::getClass(x@className),
       error_base,
       call = call
     ))
   }
 
-  if (methods::is(x, "ClassUnionRepresentation")) {
+  if (methods::isClassUnion(x)) {
     subclasses <- Filter(function(y) y@distance == 1, x@subclasses)
     subclasses <- lapply(subclasses, function(x) methods::getClass(x@subClass))
     do.call("new_union", subclasses)
@@ -62,8 +62,8 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
         return(basic_classes[[x@className]])
       }
     }
-    if (methods::extends(x, "oldClass")) {
-      new_S3_class(as.character(x@className))
+    if (is_oldClass(x)) {
+      new_S3_class(methods::extends(x))
     } else {
       x
     }
@@ -129,7 +129,8 @@ S4_class_dispatch <- function(x) {
 }
 
 is_oldClass <- function(x) {
-  x@virtual && methods::extends(x, "oldClass") && x@className != "oldClass"
+  methods::extends(x, "oldClass") &&
+    x@className %in% attr(x@prototype, ".S3Class")
 }
 
 S4_class_name <- function(x) {
