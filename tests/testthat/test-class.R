@@ -82,6 +82,34 @@ describe("inheritance", {
     expect_equal(names(foo2@properties), "x")
     expect_equal(foo2@properties$x$class, class_double)
   })
+  it("child properties can narrow the parent's type", {
+    Parent <- new_class("Parent", package = NULL)
+    Child <- new_class("Child", parent = Parent, package = NULL)
+    foo1 <- new_class("foo1", properties = list(x = Parent))
+    expect_no_error(new_class("foo2", foo1, properties = list(x = Child)))
+    expect_no_error(new_class(
+      "foo3",
+      foo1,
+      properties = list(x = new_property(Child, default = quote(Child())))
+    ))
+  })
+  it("child properties can't widen or change the parent's type", {
+    foo1 <- new_class(
+      "foo1",
+      properties = list(x = class_integer),
+      package = NULL
+    )
+    expect_snapshot(error = TRUE, {
+      new_class("foo2", foo1, properties = list(x = class_character))
+      new_class("foo3", foo1, properties = list(x = class_numeric))
+      new_class("foo4", foo1, properties = list(x = class_any))
+    })
+  })
+  it("dynamic child properties can override any parent type", {
+    foo1 <- new_class("foo1", properties = list(x = class_integer))
+    readonly <- new_property(class_character, getter = function(self) "x")
+    expect_no_error(new_class("foo2", foo1, properties = list(x = readonly)))
+  })
 })
 
 describe("abstract classes", {
