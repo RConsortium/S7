@@ -61,7 +61,7 @@ test_that("S7 classes check inputs", {
 })
 
 test_that("S7 classes can't inherit from S4 or class unions", {
-  parentS4 <- methods::setClass("parentS4", slots = c(x = "numeric"))
+  parentS4 := local_S4_class(slots = c(x = "numeric"))
   expect_snapshot(error = TRUE, {
     new_class("test", parent = parentS4)
     new_class("test", parent = new_union("character"))
@@ -94,15 +94,8 @@ test_that("inheritance lets child properties narrow the parent's type", {
 })
 
 test_that("inheritance lets child properties narrow with S4 inheritance", {
-  on.exit(S4_remove_classes(c("S4PropertyParent", "S4PropertyChild")))
-  S4PropertyParent <- methods::setClass(
-    "S4PropertyParent",
-    slots = c(x = "numeric")
-  )
-  S4PropertyChild <- methods::setClass(
-    "S4PropertyChild",
-    contains = "S4PropertyParent"
-  )
+  S4PropertyParent := local_S4_class(slots = c(x = "numeric"))
+  S4PropertyChild := local_S4_class(contains = "S4PropertyParent")
 
   Parent <- new_class(
     "Parent",

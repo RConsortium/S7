@@ -215,12 +215,10 @@ test_that("can work with S7 classes that extend S3 classes", {
 # S4 ----------------------------------------------------------------------
 
 test_that("can work with S4 classes", {
-  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Foo4")))
-
-  methods::setClass("Foo1", contains = "character")
-  methods::setClass("Foo2", contains = "Foo1")
-  methods::setClass("Foo3", slots = list(x = "numeric"))
-  methods::setClass("Foo4", contains = c("Foo2", "Foo3"))
+  Foo1 := local_S4_class(contains = "character")
+  Foo2 := local_S4_class(contains = "Foo1")
+  Foo3 := local_S4_class(slots = list(x = "numeric"))
+  Foo4 := local_S4_class(contains = c("Foo2", "Foo3"))
 
   klass <- methods::getClass("Foo4")
 

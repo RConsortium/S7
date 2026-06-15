@@ -38,7 +38,7 @@ test_that("single dispatch works for S3 objects", {
 test_that("single dispatch works for S4 objects", {
   foo := new_generic("x")
 
-  my_S4 <- setClass("my_S4", contains = "numeric")
+  my_S4 := local_S4_class(contains = "numeric")
   method(foo, my_S4) <- function(x) "S4"
 
   expect_equal(foo(my_S4(1)), "S4")
@@ -165,8 +165,7 @@ test_that("single dispatch fails with informative messages", {
   fail := new_generic("x")
 
   foo := new_class(package = NULL)
-  Foo <- setClass("Foo", slots = list("x" = "numeric"))
-  on.exit(S4_remove_classes("Foo"))
+  Foo := local_S4_class(slots = list("x" = "numeric"))
 
   expect_snapshot(error = TRUE, {
     fail(TRUE)
@@ -182,8 +181,7 @@ test_that("multiple dispatch fails with informative messages", {
   fail := new_generic(c("x", "y"))
 
   foo := new_class()
-  Foo <- setClass("Foo", slots = list("x" = "numeric"))
-  on.exit(S4_remove_classes("Foo"))
+  Foo := local_S4_class(slots = list("x" = "numeric"))
 
   expect_snapshot(error = TRUE, {
     fail(TRUE)

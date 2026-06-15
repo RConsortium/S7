@@ -430,7 +430,7 @@ test_that("new_property() displays nicely", {
 
 test_that("properties can be base, S3, S4, S7, or S7 union", {
   class_S7 := new_class(package = NULL)
-  class_S4 <- methods::setClass("class_S4", slots = c(x = "numeric"))
+  class_S4 := local_S4_class(slots = c(x = "numeric"))
 
   my_class := new_class(
     package = NULL,
@@ -532,14 +532,12 @@ test_that("property validation runs the class's own validator", {
 })
 
 test_that("property validation runs an S4 class's validity method", {
-  PosNum <- methods::setClass(
-    "PosNum",
+  PosNum := local_S4_class(
     slots = c(n = "numeric"),
     validity = function(object) {
       if (object@n <= 0) "n must be positive" else TRUE
     }
   )
-  on.exit(S4_remove_classes("PosNum"))
   Foo := new_class(package = NULL, properties = list(x = PosNum))
 
   # An S4 object that passes the structural check but fails its own validity
