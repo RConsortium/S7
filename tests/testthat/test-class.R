@@ -95,30 +95,36 @@ describe("inheritance", {
       properties = list(x = new_property(Child, default = quote(Child())))
     ))
   })
-  it("child properties can narrow base properties with bundled S3 classes", {
+  it("child properties can't narrow base properties with bundled S3 classes", {
     integer_parent <- new_class(
       "integer_parent",
       properties = list(x = class_integer),
       package = NULL
     )
-    expect_no_error(new_class(
-      "factor_child",
-      integer_parent,
-      properties = list(x = class_factor),
-      package = NULL
-    ))
+    expect_error(
+      new_class(
+        "factor_child",
+        integer_parent,
+        properties = list(x = class_factor),
+        package = NULL
+      ),
+      "must narrow"
+    )
 
     numeric_parent <- new_class(
       "numeric_parent",
       properties = list(x = class_numeric),
       package = NULL
     )
-    expect_no_error(new_class(
-      "date_child",
-      numeric_parent,
-      properties = list(x = class_Date),
-      package = NULL
-    ))
+    expect_error(
+      new_class(
+        "date_child",
+        numeric_parent,
+        properties = list(x = class_Date),
+        package = NULL
+      ),
+      "must narrow"
+    )
   })
   it("child properties can't narrow S7_object with base or S3 classes", {
     Parent <- new_class(
@@ -180,7 +186,7 @@ describe("inheritance", {
       "must narrow"
     )
   })
-  it("child properties can narrow base properties with S4 subclasses", {
+  it("child properties can't narrow base properties with S4 subclasses", {
     on.exit(S4_remove_classes("S4PropertyNum"))
     S4PropertyNum <- methods::setClass("S4PropertyNum", contains = "numeric")
 
@@ -189,15 +195,15 @@ describe("inheritance", {
       properties = list(x = class_numeric),
       package = NULL
     )
-    Child <- new_class(
-      "Child",
-      Parent,
-      properties = list(x = S4PropertyNum),
-      package = NULL
+    expect_error(
+      new_class(
+        "Child",
+        Parent,
+        properties = list(x = S4PropertyNum),
+        package = NULL
+      ),
+      "must narrow"
     )
-
-    x <- methods::new("S4PropertyNum", 1)
-    expect_s4_class(Child(x = x)@x, "S4PropertyNum")
   })
   it("child properties can't narrow with conditional S4 extensions", {
     on.exit(S4_remove_classes(c(

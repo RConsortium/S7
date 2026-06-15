@@ -319,8 +319,6 @@ class_extends <- function(child, parent) {
   } else if (is_union(child)) {
     # A union child extends `parent` only if every one of its members does.
     all(vlapply(child$classes, class_extends, parent = parent))
-  } else if (class_extends_implicit_base(child, parent)) {
-    TRUE
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
     any(vlapply(parent$classes, class_extends, child = child))
@@ -397,37 +395,6 @@ union_contains_any <- function(x) {
   is_union(x) && any(vlapply(x$classes, is_class_any))
 }
 
-class_extends_implicit_base <- function(child, parent) {
-  base <- class_implicit_base(child)
-  !is.null(base) && class_extends(base, parent)
-}
-
-class_implicit_base <- function(x) {
-  switch(
-    class_type(x),
-    S4 = S4_implicit_base(x),
-    S7 = class_implicit_base(x@parent),
-    S7_S3 = bundled_S3_implicit_base(x),
-    NULL
-  )
-}
-
-S4_implicit_base <- function(x) {
-  extensions <- methods::extends(x, fullInfo = TRUE)
-  basic_classes <- S4_basic_base_classes()
-
-  for (class in names(extensions)) {
-    if (
-      hasName(basic_classes, class) &&
-        S4_extension_is_data_part(extensions[[class]])
-    ) {
-      return(basic_classes[[class]])
-    }
-  }
-
-  NULL
-}
-
 S4_extends_unconditionally <- function(child, parent) {
   extension <- methods::extends(
     child@className,
@@ -436,46 +403,6 @@ S4_extends_unconditionally <- function(child, parent) {
   )
   isTRUE(extension) ||
     (isS4(extension) && !methods::is(extension, "conditionalExtension"))
-}
-
-S4_extension_is_data_part <- function(extension) {
-  isS4(extension) &&
-    isTRUE(methods::slot(extension, "simple")) &&
-    isTRUE(methods::slot(extension, "dataPart"))
-}
-
-S4_basic_base_classes <- function() {
-  list(
-    logical = class_logical,
-    integer = class_integer,
-    double = class_double,
-    numeric = class_numeric,
-    character = class_character,
-    complex = class_complex,
-    raw = class_raw,
-    list = class_list,
-    expression = class_expression,
-    vector = class_vector,
-    `function` = class_function,
-    environment = class_environment,
-    name = class_name,
-    call = class_call
-  )
-}
-
-bundled_S3_implicit_base <- function(x) {
-  # Arbitrary S3 classes do not declare a base contract; bundled classes do.
-  if (identical(x, class_factor)) {
-    class_integer
-  } else if (identical(x, class_Date) || identical(x, class_POSIXct)) {
-    class_numeric
-  } else if (identical(x, class_POSIXlt) || identical(x, class_data.frame)) {
-    class_list
-  } else if (identical(x, class_matrix) || identical(x, class_array)) {
-    class_vector
-  } else {
-    NULL
-  }
 }
 
 # Suppress @className false positive
