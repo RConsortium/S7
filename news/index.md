@@ -159,6 +159,21 @@
   class, with one row per property and columns for name, default, class,
   getter, setter, and validator
   ([\#551](https://github.com/RConsortium/S7/issues/551)).
+- New
+  [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md),
+  [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md),
+  and
+  [`S7_methods()`](https://rconsortium.github.io/S7/reference/S7_methods.md)
+  introspection helpers.
+  [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
+  and
+  [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
+  list the S7 classes / generics defined in a given environment/package
+  ([\#335](https://github.com/RConsortium/S7/issues/335)).
+  [`S7_methods()`](https://rconsortium.github.io/S7/reference/S7_methods.md)
+  list methods methods registered on a generic or all methods associated
+  with a class (across generics in attached packages)
+  ([\#435](https://github.com/RConsortium/S7/issues/435)).
 - [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
   now gives a clear error when called from a function that is not an S7
   generic, e.g. `unclass(generic)()`, instead of failing with a

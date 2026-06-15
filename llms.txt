@@ -214,6 +214,11 @@ for more details.
   : Retrieve the class specification of an object
 - [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
   : Format a class specification as a string
+- [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
+  [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
+  : Find S7 classes and generics in an environment
+- [`S7_methods()`](https://rconsortium.github.io/S7/reference/S7_methods.md)
+  : List S7 methods
 
 ## Packages
 
