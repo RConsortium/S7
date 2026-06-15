@@ -1,64 +1,70 @@
-describe("single dispatch", {
+test_that("single dispatch works for specials", {
   foo := new_generic("x")
 
-  it("works for specials", {
-    method(foo, class_any) <- function(x) "fallback"
-    expect_equal(foo(), "fallback")
-    expect_equal(foo(1), "fallback")
+  method(foo, class_any) <- function(x) "fallback"
+  expect_equal(foo(), "fallback")
+  expect_equal(foo(1), "fallback")
 
-    method(foo, class_missing) <- function(x) "missing"
-    expect_equal(foo(), "missing")
-  })
-
-  it("works for base types", {
-    method(foo, class_character) <- function(x) "base"
-
-    expect_equal(foo("bar"), "base")
-  })
-
-  it("works for S7 objects", {
-    text := new_class(class_character)
-    method(foo, text) <- function(x) "S7"
-
-    expect_equal(foo(text("bar")), "S7")
-  })
-
-  it("works for S3 objects", {
-    obj <- structure("hi", class = "my_S3")
-    method(foo, new_S3_class("my_S3")) <- function(x) "S3"
-
-    expect_equal(foo(obj), "S3")
-  })
-
-  it("works for S4 objects", {
-    my_S4 <- setClass("my_S4", contains = "numeric")
-    method(foo, my_S4) <- function(x) "S4"
-
-    expect_equal(foo(my_S4(1)), "S4")
-  })
-
-  it("works for unions", {
-    method(foo, new_union(class_integer, class_logical)) <- function(x) "union"
-
-    expect_equal(foo(TRUE), "union")
-    expect_equal(foo(1L), "union")
-  })
+  method(foo, class_missing) <- function(x) "missing"
+  expect_equal(foo(), "missing")
 })
 
-describe("multiple dispatch", {
-  it("works", {
-    foo1 := new_class()
-    foo2 := new_class(foo1)
+test_that("single dispatch works for base types", {
+  foo := new_generic("x")
 
-    bar := new_generic(c("x", "y"))
-    method(bar, list(foo1, foo1)) <- function(x, y) c(1, 1)
-    method(bar, list(foo2, foo2)) <- function(x, y) c(2, 2)
+  method(foo, class_character) <- function(x) "base"
 
-    expect_equal(bar(foo1(), foo1()), c(1, 1))
-    expect_equal(bar(foo1(), foo2()), c(1, 1))
-    expect_equal(bar(foo2(), foo1()), c(1, 1))
-    expect_equal(bar(foo2(), foo2()), c(2, 2))
-  })
+  expect_equal(foo("bar"), "base")
+})
+
+test_that("single dispatch works for S7 objects", {
+  foo := new_generic("x")
+
+  text := new_class(class_character)
+  method(foo, text) <- function(x) "S7"
+
+  expect_equal(foo(text("bar")), "S7")
+})
+
+test_that("single dispatch works for S3 objects", {
+  foo := new_generic("x")
+
+  obj <- structure("hi", class = "my_S3")
+  method(foo, new_S3_class("my_S3")) <- function(x) "S3"
+
+  expect_equal(foo(obj), "S3")
+})
+
+test_that("single dispatch works for S4 objects", {
+  foo := new_generic("x")
+
+  my_S4 <- setClass("my_S4", contains = "numeric")
+  method(foo, my_S4) <- function(x) "S4"
+
+  expect_equal(foo(my_S4(1)), "S4")
+})
+
+test_that("single dispatch works for unions", {
+  foo := new_generic("x")
+
+  method(foo, new_union(class_integer, class_logical)) <- function(x) "union"
+
+  expect_equal(foo(TRUE), "union")
+  expect_equal(foo(1L), "union")
+})
+
+test_that("multiple dispatch works", {
+  foo1 := new_class()
+  foo2 := new_class(foo1)
+
+  bar := new_generic(c("x", "y"))
+  method(bar, list(foo1, foo1)) <- function(x, y) c(1, 1)
+  method(bar, list(foo2, foo2)) <- function(x, y) c(2, 2)
+
+  expect_equal(bar(foo1(), foo1()), c(1, 1))
+  expect_equal(bar(foo1(), foo2()), c(1, 1))
+  expect_equal(bar(foo2(), foo1()), c(1, 1))
+  expect_equal(bar(foo2(), foo2()), c(2, 2))
 })
 
 

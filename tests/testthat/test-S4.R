@@ -4,29 +4,27 @@ test_that("can work with classGenerators", {
   expect_equal(S4_to_S7_class(Foo), getClass("Foo"))
 })
 
-describe("S4_register", {
-  it("registers an S7 class so it can be used with S4 methods", {
-    on.exit(S4_remove_classes("S4regS7"))
-    S4regS7 := new_class(package = NULL)
-    S4_register(S4regS7)
-    expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
-  })
+test_that("S4_register registers an S7 class so it can be used with S4 methods", {
+  on.exit(S4_remove_classes("S4regS7"))
+  S4regS7 := new_class(package = NULL)
+  S4_register(S4regS7)
+  expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
+})
 
-  it("registers an S3 class so it can be used with S4 methods", {
-    on.exit(S4_remove_classes(c("S4regS3a", "S4regS3b")))
-    S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
-    # Must not extend S7_object — that was a silent bug pre-fix
-    expect_equal(
-      methods::extends("S4regS3a"),
-      c("S4regS3a", "S4regS3b", "oldClass")
-    )
-  })
+test_that("S4_register registers an S3 class so it can be used with S4 methods", {
+  on.exit(S4_remove_classes(c("S4regS3a", "S4regS3b")))
+  S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
+  # Must not extend S7_object — that was a silent bug pre-fix
+  expect_equal(
+    methods::extends("S4regS3a"),
+    c("S4regS3a", "S4regS3b", "oldClass")
+  )
+})
 
-  it("errors on unsupported inputs", {
-    expect_snapshot(error = TRUE, {
-      S4_register(1)
-      S4_register("foo")
-    })
+test_that("S4_register errors on unsupported inputs", {
+  expect_snapshot(error = TRUE, {
+    S4_register(1)
+    S4_register("foo")
   })
 })
 
@@ -68,97 +66,95 @@ test_that("errors on non-S4 classes", {
 })
 
 
-describe("S4_class_dispatch", {
-  it("returns name of base class", {
-    on.exit(S4_remove_classes("Foo1"))
-    setClass("Foo1", slots = list("x" = "numeric"))
-    expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
-  })
+test_that("S4_class_dispatch returns name of base class", {
+  on.exit(S4_remove_classes("Foo1"))
+  setClass("Foo1", slots = list("x" = "numeric"))
+  expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
+})
 
-  it("respects single inheritance hierarchy", {
-    on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
+test_that("S4_class_dispatch respects single inheritance hierarchy", {
+  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
 
-    setClass("Foo1", slots = list("x" = "numeric"))
-    setClass("Foo2", contains = "Foo1")
-    setClass("Foo3", contains = "Foo2")
-    expect_equal(
-      S4_class_dispatch("Foo3"),
-      c("S4/S7::Foo3", "S4/S7::Foo2", "S4/S7::Foo1")
+  setClass("Foo1", slots = list("x" = "numeric"))
+  setClass("Foo2", contains = "Foo1")
+  setClass("Foo3", contains = "Foo2")
+  expect_equal(
+    S4_class_dispatch("Foo3"),
+    c("S4/S7::Foo3", "S4/S7::Foo2", "S4/S7::Foo1")
+  )
+})
+
+test_that("S4_class_dispatch performs breadth first search for multiple dispatch", {
+  on.exit(S4_remove_classes(c("Foo1a", "Foo1b", "Foo2a", "Foo2b", "Foo3")))
+  setClass("Foo1a", slots = list("x" = "numeric"))
+  setClass("Foo1b", contains = "Foo1a")
+  setClass("Foo2a", slots = list("x" = "numeric"))
+  setClass("Foo2b", contains = "Foo2a")
+  setClass("Foo3", contains = c("Foo1b", "Foo2b"))
+  expect_equal(
+    S4_class_dispatch("Foo3"),
+    c(
+      "S4/S7::Foo3",
+      "S4/S7::Foo1b",
+      "S4/S7::Foo2b",
+      "S4/S7::Foo1a",
+      "S4/S7::Foo2a"
     )
-  })
+  )
+})
 
-  it("performs breadth first search for multiple dispatch", {
-    on.exit(S4_remove_classes(c("Foo1a", "Foo1b", "Foo2a", "Foo2b", "Foo3")))
-    setClass("Foo1a", slots = list("x" = "numeric"))
-    setClass("Foo1b", contains = "Foo1a")
-    setClass("Foo2a", slots = list("x" = "numeric"))
-    setClass("Foo2b", contains = "Foo2a")
-    setClass("Foo3", contains = c("Foo1b", "Foo2b"))
-    expect_equal(
-      S4_class_dispatch("Foo3"),
-      c(
-        "S4/S7::Foo3",
-        "S4/S7::Foo1b",
-        "S4/S7::Foo2b",
-        "S4/S7::Foo1a",
-        "S4/S7::Foo2a"
-      )
-    )
-  })
+test_that("S4_class_dispatch handles extensions of base classes", {
+  on.exit(S4_remove_classes("Foo1"))
+  setClass("Foo1", contains = "character")
+  expect_equal(S4_class_dispatch("Foo1"), c("S4/S7::Foo1", "character"))
+})
 
-  it("handles extensions of base classes", {
-    on.exit(S4_remove_classes("Foo1"))
-    setClass("Foo1", contains = "character")
-    expect_equal(S4_class_dispatch("Foo1"), c("S4/S7::Foo1", "character"))
-  })
+test_that("S4_class_dispatch handles extensions of S3 classes", {
+  on.exit(S4_remove_classes(c("Soo1", "Foo2", "Foo3")))
 
-  it("handles extensions of S3 classes", {
-    on.exit(S4_remove_classes(c("Soo1", "Foo2", "Foo3")))
+  setOldClass(c("Soo1", "Soo"))
+  setClass("Foo2", contains = "Soo1")
+  setClass("Foo3", contains = "Foo2")
+  expect_equal(
+    S4_class_dispatch("Foo3"),
+    c("S4/S7::Foo3", "S4/S7::Foo2", "Soo1", "Soo")
+  )
+})
 
-    setOldClass(c("Soo1", "Soo"))
-    setClass("Foo2", contains = "Soo1")
-    setClass("Foo3", contains = "Foo2")
-    expect_equal(
-      S4_class_dispatch("Foo3"),
-      c("S4/S7::Foo3", "S4/S7::Foo2", "Soo1", "Soo")
-    )
-  })
+test_that("S4_class_dispatch ignores unions", {
+  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
 
-  it("ignores unions", {
-    on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3")))
+  setClass("Foo1", slots = list("x" = "numeric"))
+  setClass("Foo2", slots = list("x" = "numeric"))
+  setClassUnion("Foo3", c("Foo1", "Foo2"))
 
-    setClass("Foo1", slots = list("x" = "numeric"))
-    setClass("Foo2", slots = list("x" = "numeric"))
-    setClassUnion("Foo3", c("Foo1", "Foo2"))
+  expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
+  expect_equal(S4_class_dispatch("Foo2"), "S4/S7::Foo2")
+})
 
-    expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
-    expect_equal(S4_class_dispatch("Foo2"), "S4/S7::Foo2")
-  })
+test_that("S4_class_dispatch includes virtual classes", {
+  on.exit(S4_remove_classes(c("Foo1", "Foo2")))
 
-  it("includes virtual classes", {
-    on.exit(S4_remove_classes(c("Foo1", "Foo2")))
+  setClass("Foo1")
+  setClass("Foo2", contains = "Foo1")
 
-    setClass("Foo1")
-    setClass("Foo2", contains = "Foo1")
+  expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
+  expect_equal(S4_class_dispatch("Foo2"), c("S4/S7::Foo2", "S4/S7::Foo1"))
+})
 
-    expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
-    expect_equal(S4_class_dispatch("Foo2"), c("S4/S7::Foo2", "S4/S7::Foo1"))
-  })
+test_that("S4_class_dispatch captures explicit package name", {
+  on.exit(S4_remove_classes("Foo1"))
+  setClass("Foo1", package = "pkg")
+  expect_equal(S4_class_dispatch("Foo1"), "S4/pkg::Foo1")
+})
 
-  it("captures explicit package name", {
-    on.exit(S4_remove_classes("Foo1"))
-    setClass("Foo1", package = "pkg")
-    expect_equal(S4_class_dispatch("Foo1"), "S4/pkg::Foo1")
-  })
+test_that("S4_class_dispatch captures implicit package name", {
+  on.exit(S4_remove_classes("Foo1", env))
 
-  it("captures implicit package name", {
-    on.exit(S4_remove_classes("Foo1", env))
-
-    env <- new.env()
-    env$.packageName <- "mypkg"
-    setClass("Foo1", where = env)
-    expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
-  })
+  env <- new.env()
+  env$.packageName <- "mypkg"
+  setClass("Foo1", where = env)
+  expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
 })
 
 test_that("S4_package_name resolves S4 package name correctly in all cases", {
