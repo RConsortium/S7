@@ -125,3 +125,7 @@ method(convert, list(Foo1, Foo2)) <- function(from, to, ...) Foo2(y = -1)
 # keeping `x` and `y` and dropping `z`, rather than resetting `y` to -1:
 convert(Foo3(x = 1L, y = 2, z = 3), to = Foo2)
 }
+\seealso{
+\code{\link[=convert_lazy]{convert_lazy()}} for a non-strict variant that leaves \code{from}
+unchanged when it already inherits from \code{to}.
+}

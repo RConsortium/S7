@@ -10,6 +10,7 @@
 * `convert()` now falls back to the corresponding `as.*()` function (e.g. `as.character()`) when converting to a base type like `class_character` and no method or inheritance-based default applies, so `convert(1, class_character)` works out of the box (#472).
 * `convert()` accepts a single unnamed list of property overrides when downcasting, as a shortcut for individual name-value pairs (#497).
 * `convert()` no longer errors when `from` is a base or S3 object and `to` is an S7 class that inherits from `from`'s class. The base/S3 value is now passed as `.data` to the `to` constructor (#537).
+* New `convert_lazy()` is a non-strict variant of `convert()` that returns `from` unchanged if it already inherits from `to`, preserving any extra properties instead of stripping them (#428).
 * `method<-` now works for double-dispatch operators (e.g. `+`, `==`, `%*%`) with plain S3 or S4 classes, even when neither operand is an S7 object (#544).
 * `method<-` no longer embeds a copy of a generic owned by another package in your package namespace. Instead it returns a sentinel value that the new `S7_on_build()` removes from the namespace at build time; call `S7_on_build()` at the top level of `zzz.R` (see `vignette("packages")`) (#364).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
