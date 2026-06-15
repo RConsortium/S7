@@ -139,6 +139,69 @@ describe("inheritance", {
     x <- methods::new("S4PropertyNum", 1)
     expect_s4_class(Child(x = x)@x, "S4PropertyNum")
   })
+  it("child properties can't narrow with conditional S4 extensions", {
+    on.exit(S4_remove_classes(c(
+      "S4PropertyConditionalChild",
+      "S4PropertyConditionalParent"
+    )))
+    S4PropertyConditionalParent <- methods::setClass(
+      "S4PropertyConditionalParent",
+      slots = c(x = "numeric")
+    )
+    S4PropertyConditionalChild <- methods::setClass(
+      "S4PropertyConditionalChild",
+      slots = c(x = "numeric")
+    )
+    suppressWarnings(methods::setIs(
+      "S4PropertyConditionalChild",
+      "S4PropertyConditionalParent",
+      test = function(object) length(object@x) > 0
+    ))
+
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = S4PropertyConditionalParent),
+      package = NULL
+    )
+
+    expect_error(
+      new_class(
+        "Child",
+        Parent,
+        properties = list(x = S4PropertyConditionalChild),
+        package = NULL
+      ),
+      "must narrow"
+    )
+  })
+  it("child properties can't narrow base properties with S4 coercions", {
+    on.exit(S4_remove_classes("S4PropertyCoercesToNumeric"))
+    S4PropertyCoercesToNumeric <- methods::setClass(
+      "S4PropertyCoercesToNumeric",
+      slots = c(x = "numeric")
+    )
+    suppressWarnings(methods::setIs(
+      "S4PropertyCoercesToNumeric",
+      "numeric",
+      coerce = function(from) from@x
+    ))
+
+    Parent <- new_class(
+      "Parent",
+      properties = list(x = class_numeric),
+      package = NULL
+    )
+
+    expect_error(
+      new_class(
+        "Child",
+        Parent,
+        properties = list(x = S4PropertyCoercesToNumeric),
+        package = NULL
+      ),
+      "must narrow"
+    )
+  })
   it("child properties can narrow parent unions that include any", {
     Parent <- new_class(
       "Parent",

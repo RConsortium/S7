@@ -333,7 +333,7 @@ class_extends <- function(child, parent) {
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     is_S4_class(child) &&
       is_S4_class(parent) &&
-      methods::extends(child@className, parent@className)
+      S4_extends_unconditionally(child, parent)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
@@ -411,16 +411,35 @@ class_implicit_base <- function(x) {
 }
 
 S4_implicit_base <- function(x) {
-  classes <- methods::extends(x)
+  extensions <- methods::extends(x, fullInfo = TRUE)
   basic_classes <- S4_basic_base_classes()
 
-  for (class in classes) {
-    if (hasName(basic_classes, class)) {
+  for (class in names(extensions)) {
+    if (
+      hasName(basic_classes, class) &&
+        S4_extension_is_data_part(extensions[[class]])
+    ) {
       return(basic_classes[[class]])
     }
   }
 
   NULL
+}
+
+S4_extends_unconditionally <- function(child, parent) {
+  extension <- methods::extends(
+    child@className,
+    parent@className,
+    fullInfo = TRUE
+  )
+  isTRUE(extension) ||
+    (isS4(extension) && !methods::is(extension, "conditionalExtension"))
+}
+
+S4_extension_is_data_part <- function(extension) {
+  isS4(extension) &&
+    isTRUE(methods::slot(extension, "simple")) &&
+    isTRUE(methods::slot(extension, "dataPart"))
 }
 
 S4_basic_base_classes <- function() {
