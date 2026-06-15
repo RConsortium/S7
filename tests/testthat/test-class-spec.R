@@ -102,6 +102,36 @@ test_that("class_inherits handles variation in class names", {
   expect_false(class_inherits("x", class_function))
 })
 
+test_that("class_extends checks subclass relationship between classes", {
+  Parent <- new_class("Parent", package = NULL)
+  Child <- new_class("Child", parent = Parent, package = NULL)
+
+  expect_true(class_extends(Child, Parent))
+  expect_true(class_extends(Child, Child))
+  expect_false(class_extends(Parent, Child))
+
+  # base types
+  expect_true(class_extends(class_integer, class_integer))
+  expect_false(class_extends(class_integer, class_character))
+})
+
+test_that("class_extends handles unions, any, and NULL", {
+  # union parent accepts any member; union child must have all members extend
+  expect_true(class_extends(class_double, class_numeric))
+  expect_false(class_extends(class_numeric, class_double))
+  expect_true(class_extends(class_numeric, class_numeric))
+
+  # class_any is the top type
+  expect_true(class_extends(class_integer, class_any))
+  expect_false(class_extends(class_any, class_integer))
+  expect_true(class_extends(class_any, class_any))
+
+  # NULL only extends NULL
+  expect_true(class_extends(NULL, NULL))
+  expect_false(class_extends(NULL, class_integer))
+  expect_false(class_extends(class_integer, NULL))
+})
+
 test_that("dispatch for base objects use underlying type", {
   expect_equal(obj_dispatch(1), "double")
   expect_equal(obj_dispatch(1L), "integer")
