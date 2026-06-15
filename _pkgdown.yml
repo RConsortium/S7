@@ -35,6 +35,8 @@ reference:
   - method_explain
   - S7_class
   - S7_class_desc
+  - S7_classes
+  - S7_methods
 
 - title: Packages
   desc: >

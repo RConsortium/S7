@@ -175,6 +175,14 @@ describe("as_signature()", {
   })
 })
 
+test_that("S7_signature has format and print methods", {
+  foo <- new_generic("foo", c("x", "y"))
+  sig <- as_signature(list(class_integer, class_character), foo)
+
+  expect_equal(format(sig), "<integer>, <character>")
+  expect_snapshot(print(sig))
+})
+
 test_that("check_method returns TRUE if the functions are compatible", {
   foo := new_generic("x", function(x, ...) S7_dispatch())
   expect_true(check_method(function(x, ...) x, foo))

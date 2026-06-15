@@ -239,6 +239,17 @@ new_signature <- function(x) {
   x
 }
 
+#' @export
+format.S7_signature <- function(x, ...) {
+  paste0(vcapply(unclass(x), class_desc), collapse = ", ")
+}
+
+#' @export
+print.S7_signature <- function(x, ...) {
+  cat(format(x), "\n", sep = "")
+  invisible(x)
+}
+
 check_method <- function(
   method,
   generic,
