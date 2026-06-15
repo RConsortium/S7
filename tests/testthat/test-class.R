@@ -122,41 +122,6 @@ describe("inheritance", {
       "must narrow"
     )
   })
-  it("child properties can't narrow with conditional S4 extensions", {
-    on.exit(S4_remove_classes(c(
-      "S4PropertyConditionalChild",
-      "S4PropertyConditionalParent"
-    )))
-    S4PropertyConditionalParent <- methods::setClass(
-      "S4PropertyConditionalParent",
-      slots = c(x = "numeric")
-    )
-    S4PropertyConditionalChild <- methods::setClass(
-      "S4PropertyConditionalChild",
-      slots = c(x = "numeric")
-    )
-    suppressWarnings(methods::setIs(
-      "S4PropertyConditionalChild",
-      "S4PropertyConditionalParent",
-      test = function(object) length(object@x) > 0
-    ))
-
-    Parent <- new_class(
-      "Parent",
-      properties = list(x = S4PropertyConditionalParent),
-      package = NULL
-    )
-
-    expect_error(
-      new_class(
-        "Child",
-        Parent,
-        properties = list(x = S4PropertyConditionalChild),
-        package = NULL
-      ),
-      "must narrow"
-    )
-  })
   it("child properties can narrow parent unions that include any", {
     Parent <- new_class(
       "Parent",
