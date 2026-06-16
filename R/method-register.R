@@ -85,12 +85,16 @@ register_method <- function(
     )
   }
 
-  # Delay all external classes until onLoad
-  is_external <- any(vlapply(signature, is_external_class))
-  if (is_external) {
-    generic_ext <- as_external_generic(generic)
-    external_methods_add(package, generic_ext, signature, method)
-    return(invisible(generic))
+  # Delay package methods with external classes until onLoad. Outside a package
+  # there is no deferred methods table, so resolve them before registering.
+  if (signature_has_external_class(signature)) {
+    if (is.null(package)) {
+      signature <- resolve_signature(signature)
+    } else {
+      generic_ext <- as_external_generic(generic, env)
+      external_methods_add(package, generic_ext, signature, method)
+      return(invisible(generic))
+    }
   }
 
   # Register in current session

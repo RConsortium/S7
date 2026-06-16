@@ -263,7 +263,10 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    S7_external = class_dispatch(resolve_external_class_opt(x)),
+    S7_external = {
+      class <- resolve_external_class_opt(x)
+      if (is.null(class)) character() else class_dispatch(class)
+    },
     stop2("Unsupported class type.", call = NULL)
   )
 }

@@ -102,8 +102,7 @@ registrar <- function(deps, generic, signature, method, env) {
 # Collects all external dependencies (the generic + any external classes)
 # into a single list. Each entry has at minimum `package` + `version`.
 method_deps <- function(generic, signature) {
-  ext <- vlapply(signature, is_external_class)
-  c(list(generic), signature[ext])
+  c(list(generic), signature_external_deps(signature))
 }
 
 resolve_generic <- function(generic) {

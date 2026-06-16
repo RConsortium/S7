@@ -68,6 +68,38 @@ is_external_class <- function(x) {
   inherits(x, "S7_external_class")
 }
 
+class_has_external_class <- function(x) {
+  if (is_external_class(x)) {
+    TRUE
+  } else if (is_union(x)) {
+    any(vlapply(x$classes, class_has_external_class))
+  } else {
+    FALSE
+  }
+}
+
+signature_has_external_class <- function(signature) {
+  any(vlapply(signature, class_has_external_class))
+}
+
+class_external_deps <- function(x) {
+  if (is_external_class(x)) {
+    list(x)
+  } else if (is_union(x)) {
+    flatten_external_deps(lapply(x$classes, class_external_deps))
+  } else {
+    list()
+  }
+}
+
+signature_external_deps <- function(signature) {
+  flatten_external_deps(lapply(signature, class_external_deps))
+}
+
+flatten_external_deps <- function(x) {
+  unlist(x, recursive = FALSE, use.names = FALSE)
+}
+
 #' @export
 print.S7_external_class <- function(x, ...) {
   cat(
@@ -90,11 +122,19 @@ getNamespaceVersion <- NULL
 
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
-    if (is_external_class(signature[[i]])) {
-      signature[[i]] <- resolve_external_class_req(signature[[i]])
-    }
+    signature[[i]] <- resolve_class_req(signature[[i]])
   }
   signature
+}
+
+resolve_class_req <- function(x) {
+  if (is_external_class(x)) {
+    resolve_external_class_req(x)
+  } else if (is_union(x)) {
+    do.call(new_union, lapply(x$classes, resolve_class_req))
+  } else {
+    x
+  }
 }
 
 # Optional resolution: used by `class_dispatch()` when building the
