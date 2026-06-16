@@ -193,6 +193,34 @@ test_that("inheritance doesn't let child properties widen or change the parent's
   })
 })
 
+test_that("inheritance doesn't widen properties with unresolved external classes", {
+  Ext <- new_external_class("notloaded.pkg", "Cls")
+  Parent <- new_class(
+    "Parent",
+    properties = list(x = NULL | Ext),
+    package = NULL
+  )
+
+  expect_no_error(
+    new_class(
+      "SameTypeChild",
+      Parent,
+      properties = list(x = Ext),
+      package = NULL
+    )
+  )
+
+  expect_error(
+    new_class(
+      "Child",
+      Parent,
+      properties = list(x = class_character),
+      package = NULL
+    ),
+    "must narrow"
+  )
+})
+
 test_that("inheritance lets dynamic child properties override any parent type", {
   foo1 <- new_class("foo1", properties = list(x = class_integer))
   readonly <- new_property(class_character, getter = function(self) "x")

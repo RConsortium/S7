@@ -100,6 +100,23 @@ test_that("method registration returns a strippable sentinel for foreign generic
   expect_length(S7_methods_table("S7"), 2)
 })
 
+test_that("deferred external-class methods preserve sentinel for foreign generics", {
+  external_methods_reset("S7")
+  on.exit(external_methods_reset("S7"), add = TRUE)
+
+  out <- register_method(
+    sum,
+    new_external_class("notloaded.pkg", "ext_class"),
+    function(x, ...) "x",
+    env = asNamespace("S7"),
+    package = "S7"
+  )
+
+  expect_s3_class(out, "S7_generic_sentinel")
+  expect_s3_class(out, "S7_external_generic")
+  expect_length(S7_methods_table("S7"), 1)
+})
+
 test_that("method registration defers external classes in union signatures", {
   external_methods_reset("S7")
   on.exit(external_methods_reset("S7"), add = TRUE)

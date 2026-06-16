@@ -30,6 +30,21 @@ test_that("resolve_external_class_opt() resolves a loaded class", {
   expect_equal(resolved@name, "S7_object")
 })
 
+test_that("external class resolution uses the S7 class name", {
+  skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
+  skip_if(quick_test())
+
+  tmp_lib <- local_libpath()
+  local_install_and_attach(test_path("t1"), tmp_lib)
+
+  ec <- new_external_class("t1", "renamed")
+  resolved <- resolve_external_class_req(ec)
+
+  expect_true(is_class(resolved))
+  expect_equal(S7_class_name(resolved), "t1::renamed")
+  expect_identical(resolve_external_class_opt(ec), resolved)
+})
+
 test_that("resolve_external_class_opt() returns NULL when unavailable", {
   expect_null(resolve_external_class_opt(new_external_class("not_a_pkg", "X")))
   expect_null(resolve_external_class_opt(new_external_class(
