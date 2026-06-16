@@ -136,14 +136,6 @@ named_list <- function(...) {
   x
 }
 
-`:=` <- function(sym, val) {
-  cl <- sys.call()
-  cl[[1L]] <- quote(`<-`)
-  stopifnot(is.symbol(cl[[2L]]) && is.call(cl[[3L]]))
-  cl[[3L]]$name <- as.character(cl[[2L]])
-  eval.parent(cl)
-}
-
 `add<-` <- `+`
 
 dbg <- function(..., .display = utils::str, .file = NULL) {

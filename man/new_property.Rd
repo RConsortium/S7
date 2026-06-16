@@ -89,7 +89,7 @@ for more examples.
 }
 \examples{
 # Simple properties store data inside an object
-Pizza <- new_class("Pizza", properties = list(
+Pizza := new_class(properties = list(
   slices = new_property(class_numeric, default = 10),
   special = new_property(NULL | class_character)
 ))
@@ -104,7 +104,7 @@ your_pizza@slices
 your_pizza@special
 
 # Dynamic properties can compute on demand
-Clock <- new_class("Clock", properties = list(
+Clock := new_class(properties = list(
   now = new_property(getter = function(self) Sys.time())
 ))
 my_clock <- Clock()

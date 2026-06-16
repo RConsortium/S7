@@ -69,7 +69,7 @@ Note that methods can only be defined after both the class and generic have been
 S7 objects are S3 objects, so it's possible to manually register an S7 method for an S3 generic without using `method<-`. The main thing to note is that the S3 class name of an S7 object is `{package}::{class}`, which means you'll need to wrap the method name in `` ` ``:
 
 ```{r}
-Foo <- new_class("Foo", package = "S7")
+Foo := new_class(package = "S7")
 `length.S7::Foo` <- function(x) 10
 length(Foo())
 ```

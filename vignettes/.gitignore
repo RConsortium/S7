@@ -3,3 +3,5 @@
 performance_cache
 
 /.quarto/
+
+**/*.quarto_ipynb

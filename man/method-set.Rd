@@ -57,7 +57,7 @@ when needed.
 }
 \examples{
 # Create a generic
-bizarro <- new_generic("bizarro", "x")
+bizarro := new_generic("x")
 # Register some methods
 method(bizarro, class_numeric) <- function(x) rev(x)
 method(bizarro, new_S3_class("data.frame")) <- function(x) {

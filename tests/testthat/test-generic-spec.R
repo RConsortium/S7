@@ -1,5 +1,5 @@
 test_that("can standardise generics", {
-  foo_S7 <- new_generic("foo", "x")
+  foo_S7 := new_generic("x")
   methods::setGeneric("foo_S4", function(x) {})
 
   expect_equal(as_generic(foo_S7), foo_S7)

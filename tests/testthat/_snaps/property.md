@@ -1,4 +1,4 @@
-# property retrieval / retrieves the properties that exist & errors otherwise
+# property retrieval retrieves the properties that exist & errors otherwise
 
     Code
       prop(obj, "x")
@@ -11,7 +11,7 @@
       Error in `<foo>@x`:
       ! Property not found.
 
-# prop setting / can't set read-only properties
+# prop setting can't set read-only properties
 
     Code
       obj@x <- 1
@@ -19,7 +19,7 @@
       Error in `<foo>@x`:
       ! Can't set read-only property.
 
-# prop setting / errors if the property doesn't exist or is wrong class
+# prop setting errors if the property doesn't exist or is wrong class
 
     Code
       obj <- foo(123)
@@ -33,7 +33,7 @@
       Error in `<foo>@x`:
       ! <foo>@x must be <double>, not <character>
 
-# prop setting / validates all attributes if custom setter
+# prop setting validates all attributes if custom setter
 
     Code
       obj <- foo(y = 123, x = 123)
@@ -42,7 +42,7 @@
       Error in `<foo>@y`:
       ! <foo>@y must be <double>, not <character>
 
-# prop setting / gives informative error if setter doesn't return an S7 object (#416)
+# prop setting gives informative error if setter doesn't return an S7 object (#416)
 
     Code
       foo(x = 1.1)
@@ -50,7 +50,7 @@
       Error in `<foo>@x`:
       ! Custom setter must return an <S7_object>, not <integer>.
 
-# props<- / `check = FALSE` skip validation
+# props<- with `check = FALSE` skips validation
 
     Code
       validate(obj)
@@ -59,7 +59,7 @@
       ! <S7::foo> object is invalid:
       - bad
 
-# props<- / set_props() skip validation with `.check = FALSE`
+# props<- set_props() skips validation with `.check = FALSE`
 
     Code
       validate(obj2)
@@ -68,7 +68,7 @@
       ! <S7::foo> object is invalid:
       - bad
 
-# new_property() / validates getter and settor
+# new_property() validates getter and setter
 
     Code
       new_property(getter = function(x) { })
@@ -81,7 +81,7 @@
       Error in `new_property()`:
       ! `setter` must be function(self, value) or function(self, name, value), not function(x, y, z).
 
-# new_property() / validates default
+# new_property() validates default
 
     Code
       new_property(class_integer, default = "x")
@@ -89,7 +89,7 @@
       Error in `new_property()`:
       ! `default` must be an instance of <integer>, not a <character>.
 
-# new_property() / warns if default is not a scalar or quoted call
+# new_property() warns if default is not a scalar or quoted call
 
     Code
       . <- new_property(class_integer, default = c(any = 1L))
@@ -106,7 +106,7 @@
       * Did you mean `default = quote(Sys.time())`?
       * This warning will become an error in a future release.
 
-# new_property() / displays nicely
+# new_property() displays nicely
 
     Code
       print(x)

@@ -45,7 +45,7 @@
 #' @export
 #' @examples
 #' # Create a generic
-#' bizarro <- new_generic("bizarro", "x")
+#' bizarro := new_generic("x")
 #' # Register some methods
 #' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, new_S3_class("data.frame")) <- function(x) {
@@ -237,6 +237,17 @@ check_signature_list <- function(
 new_signature <- function(x) {
   class(x) <- "S7_signature"
   x
+}
+
+#' @export
+format.S7_signature <- function(x, ...) {
+  paste0(vcapply(unclass(x), class_desc), collapse = ", ")
+}
+
+#' @export
+print.S7_signature <- function(x, ...) {
+  cat(format(x), "\n", sep = "")
+  invisible(x)
 }
 
 check_method <- function(
