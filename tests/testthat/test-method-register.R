@@ -111,10 +111,13 @@ test_that("method registration defers external classes in union signatures", {
   env$ext <- new_external_class("notloaded.pkg", "ext_class")
   env$f <- function(x) "x"
 
-  evalq({
-    foo <- new_generic("foo", "x")
-    method(foo, NULL | ext) <- f
-  }, env)
+  evalq(
+    {
+      foo <- new_generic("foo", "x")
+      method(foo, NULL | ext) <- f
+    },
+    env
+  )
 
   expect_length(methods(env$foo), 0)
   expect_length(S7_methods_table("S7"), 1)
