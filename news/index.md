@@ -131,6 +131,13 @@
   visible in [`class()`](https://rdrr.io/r/base/class.html)
   ([\#401](https://github.com/RConsortium/S7/issues/401)).
 - [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  now warns when `default` is a complex value like a named vector,
+  because such values are inlined into the constructor and can cause
+  `R CMD check` failures. Wrap them in
+  [`quote()`](https://rdrr.io/r/base/substitute.html) instead. This
+  warning will become an error in a future release
+  ([\#541](https://github.com/RConsortium/S7/issues/541)).
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
   now accepts a `setter` that takes `self`, `name`, and `value` making
   it easy to reuse the same definition for multiple properties
   ([\#552](https://github.com/RConsortium/S7/issues/552)).
