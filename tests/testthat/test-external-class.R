@@ -104,7 +104,7 @@ test_that("method_deps() collects the generic and external classes", {
   sig <- list(
     new_external_class("baz", "X"),
     class_character,
-    new_external_class("qux", "Y", version = "1.0")
+    NULL | new_external_class("qux", "Y", version = "1.0")
   )
   deps <- method_deps(gen, sig)
   expect_equal(vcapply(deps, `[[`, "package"), c("foo", "baz", "qux"))

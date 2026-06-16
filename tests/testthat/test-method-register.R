@@ -56,6 +56,19 @@ test_that("method registration returns the generic unchanged when not in a packa
   expect_identical(out, sum)
 })
 
+test_that("method registration resolves external classes outside packages", {
+  env <- new.env(parent = baseenv())
+  env[["method<-"]] <- `method<-`
+  env$g <- new_generic("g", "x")
+  env$ext <- new_external_class("S7", "S7_object")
+  env$f <- function(x) "external"
+
+  expect_null(packageName(env))
+  evalq(method(g, ext) <- f, env)
+
+  expect_equal(env$g(S7_object()), "external")
+})
+
 test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {
   external_methods_reset("S7")
   on.exit(external_methods_reset("S7"), add = TRUE)
@@ -85,6 +98,26 @@ test_that("method registration returns a strippable sentinel for foreign generic
   )
   expect_s3_class(out, "S7_generic_sentinel")
   expect_length(S7_methods_table("S7"), 2)
+})
+
+test_that("method registration defers external classes in union signatures", {
+  external_methods_reset("S7")
+  on.exit(external_methods_reset("S7"), add = TRUE)
+
+  env <- new.env(parent = baseenv())
+  env$.packageName <- "S7"
+  env[["method<-"]] <- `method<-`
+  env$new_generic <- new_generic
+  env$ext <- new_external_class("notloaded.pkg", "ext_class")
+  env$f <- function(x) "x"
+
+  evalq({
+    foo <- new_generic("foo", "x")
+    method(foo, NULL | ext) <- f
+  }, env)
+
+  expect_length(methods(env$foo), 0)
+  expect_length(S7_methods_table("S7"), 1)
 })
 
 test_that("method unregistration removes an S7 method via NULL assignment", {

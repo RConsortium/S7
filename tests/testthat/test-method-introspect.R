@@ -35,6 +35,14 @@ test_that("method introspection errors if no method found", {
   })
 })
 
+test_that("method introspection skips unresolved external classes", {
+  foo := new_generic("x")
+  method(foo, NULL) <- function(x) "null"
+
+  ext <- new_external_class("not_a_package", "X")
+  expect_error(method(foo, class = ext), "Can't find method")
+})
+
 test_that("method explanation shows all possible methods along with matches", {
   foo1 := new_class(package = NULL)
   foo2 := new_class(foo1, package = NULL)
