@@ -76,15 +76,14 @@ is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
 }
 
-registrar <- function(generic, signature, method, env, package) {
+registrar <- function(generic, signature, method, env) {
   # Force all arguments
   generic
   signature
   method
   env
-  package
 
-  fun <- function(...) {
+  function(...) {
     ns <- asNamespace(generic$package)
     if (
       is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
@@ -102,7 +101,6 @@ registrar <- function(generic, signature, method, env, package) {
       }
     }
   }
-  S7_hook(fun, package)
 }
 
 external_methods_reset <- function(package) {

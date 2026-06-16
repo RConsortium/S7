@@ -49,22 +49,10 @@ methods_register <- function() {
 
 S7_on_load_ <- function(env) {
   package <- packageName(env)
-  ns <- topenv(env)
-  # TODO?: check/enforce that S7_on_load() is being called from .onLoad()
 
-  tbl <- S7_methods_table(package)
-
-  # Remove any hooks left behind by a previous load of this package
-  registrar_hooks_remove(tbl, package)
-
-  for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method, ns, package)
-
-    if (isNamespaceLoaded(x$generic$package)) {
-      register()
-    }
-    setHook(packageEvent(x$generic$package, "onLoad"), register)
-  }
+  hooks_remove(package) # always start from a clean slate
+  hooks <- hooks_add(package)
+  hooks_run_loaded(hooks)
 
   invisible()
 }
@@ -77,10 +65,9 @@ S7_on_unload <- function() {
 
 S7_on_unload_ <- function(env) {
   package <- packageName(env)
+  hooks_remove(package)
 
   tbl <- S7_methods_table(package)
-  registrar_hooks_remove(tbl, package)
-
   for (x in tbl) {
     if (!isNamespaceLoaded(x$generic$package)) {
       next
@@ -100,8 +87,26 @@ S7_on_unload_ <- function(env) {
   invisible()
 }
 
-# Remove the hooks that S7_on_load_() added on behalf of `package`
-registrar_hooks_remove <- function(tbl, package) {
+# Add a hook for each method that registers it when its generic's package is
+# loaded. Returns the added hooks, named by the package they're attached to.
+hooks_add <- function(package) {
+  ns <- asNamespace(package)
+  tbl <- S7_methods_table(package)
+
+  hooks <- lapply(tbl, function(x) {
+    register <- registrar(x$generic, x$signature, x$method, ns)
+    hook <- S7_hook(register, package)
+    setHook(packageEvent(x$generic$package, "onLoad"), hook)
+    hook
+  })
+  names(hooks) <- vcapply(tbl, function(x) x$generic$package)
+  hooks
+}
+
+# Remove our hooks for `package`. Returns the removed hooks, named by the
+# package they were attached to.
+hooks_remove <- function(package) {
+  tbl <- S7_methods_table(package)
   pkgs <- unique(vcapply(tbl, function(x) x$generic$package))
 
   for (pkg in pkgs) {
@@ -112,7 +117,16 @@ registrar_hooks_remove <- function(tbl, package) {
       setHook(event, hooks[!ours], action = "replace")
     }
   }
+  invisible()
+}
 
+# onLoad hooks don't fire for packages that are already loaded, so fire our
+# hooks now to register methods for any generic packages already available.
+hooks_run_loaded <- function(hooks) {
+  is_loaded <- vlapply(names(hooks), isNamespaceLoaded)
+  for (hook in hooks[is_loaded]) {
+    hook()
+  }
   invisible()
 }
 
