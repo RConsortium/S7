@@ -348,10 +348,35 @@ class_extends <- function(child, parent) {
       methods::extends(child@className, parent@className)
   } else if (is_class(parent) && parent@name == "S7_object") {
     is_class(child)
+  } else if (is_external_class(child) || is_external_class(parent)) {
+    class_extends_external(child, parent)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
   }
+}
+
+class_extends_external <- function(child, parent) {
+  if (is_external_class(child)) {
+    child_resolved <- resolve_external_class_opt(child)
+    if (is.null(child_resolved)) {
+      return(
+        is_external_class(parent) &&
+          identical(child$class_name, parent$class_name)
+      )
+    }
+    child <- child_resolved
+  }
+
+  if (is_external_class(parent)) {
+    parent_resolved <- resolve_external_class_opt(parent)
+    if (is.null(parent_resolved)) {
+      return(FALSE)
+    }
+    parent <- parent_resolved
+  }
+
+  class_extends(child, parent)
 }
 
 obj_type <- function(x) {

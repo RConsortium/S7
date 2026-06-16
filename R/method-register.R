@@ -93,7 +93,10 @@ register_method <- function(
     } else {
       generic_ext <- as_external_generic(generic, env)
       external_methods_add(package, generic_ext, signature, method)
-      return(invisible(generic))
+      if (!is_local_generic(generic, package)) {
+        return(generic_sentinel(generic_ext))
+      }
+      return(invisible(original))
     }
   }
 

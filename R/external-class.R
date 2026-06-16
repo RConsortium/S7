@@ -145,11 +145,37 @@ resolve_external_class_opt <- function(x) {
     return(NULL)
   }
 
+  find_external_class(x)
+}
+
+find_external_class <- function(x) {
   ns <- asNamespace(x$package)
-  if (!exists(x$name, envir = ns, inherits = FALSE)) {
-    return(NULL)
+  if (exists(x$name, envir = ns, inherits = FALSE)) {
+    obj <- get(x$name, envir = ns, inherits = FALSE)
+    if (is_external_class_match(obj, x)) {
+      return(obj)
+    }
   }
-  get(x$name, envir = ns, inherits = FALSE)
+
+  for (name in ls(ns, all.names = TRUE)) {
+    obj <- get(name, envir = ns, inherits = FALSE)
+    if (is_external_class_match(obj, x)) {
+      return(obj)
+    }
+  }
+
+  NULL
+}
+
+is_external_class_match <- function(obj, x) {
+  is_class(obj) &&
+    (
+      identical(S7_class_name(obj), x$class_name) ||
+        (
+          identical(obj@name, x$name) &&
+            (is.null(obj@package) || identical(obj@package, x$package))
+        )
+    )
 }
 
 # Required resolution: used when registering a method, when extending
@@ -179,8 +205,8 @@ resolve_external_class_req <- function(x) {
     )
   }
 
-  ns <- asNamespace(x$package)
-  if (!exists(x$name, envir = ns, inherits = FALSE)) {
+  class <- find_external_class(x)
+  if (is.null(class)) {
     stop2(
       paste0(
         prefix,
@@ -189,5 +215,5 @@ resolve_external_class_req <- function(x) {
       call = NULL
     )
   }
-  get(x$name, envir = ns, inherits = FALSE)
+  class
 }
