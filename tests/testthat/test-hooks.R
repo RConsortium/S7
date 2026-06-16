@@ -1,6 +1,5 @@
 test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_external_methods()
 
   Foo := new_class()
   Bar := new_class()
@@ -27,8 +26,7 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
 })
 
 test_that("S7_on_unload() unregisters methods and removes hooks", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_external_methods()
 
   Foo := new_class()
   Bar := new_class()
