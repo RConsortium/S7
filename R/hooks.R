@@ -58,8 +58,7 @@ S7_on_load_ <- function(env) {
   registrar_hooks_remove(tbl, package)
 
   for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method, ns)
-    attr(register, "S7_package") <- package
+    register <- registrar(x$generic, x$signature, x$method, ns, package)
 
     if (isNamespaceLoaded(x$generic$package)) {
       register()
@@ -101,17 +100,14 @@ S7_on_unload_ <- function(env) {
   invisible()
 }
 
-# Remove the hooks that S7_on_load_() added on behalf of `package`,
-# identified by their "S7_package" attribute.
+# Remove the hooks that S7_on_load_() added on behalf of `package`
 registrar_hooks_remove <- function(tbl, package) {
   pkgs <- unique(vcapply(tbl, function(x) x$generic$package))
 
   for (pkg in pkgs) {
     event <- packageEvent(pkg, "onLoad")
     hooks <- getHook(event)
-    ours <- vlapply(hooks, function(hook) {
-      identical(attr(hook, "S7_package", TRUE), package)
-    })
+    ours <- vlapply(hooks, is_S7_hook, package = package)
     if (any(ours)) {
       setHook(event, hooks[!ours], action = "replace")
     }
@@ -142,3 +138,14 @@ generic_sentinel <- function(generic) {
 }
 
 is_generic_sentinel <- function(x) inherits(x, "S7_generic_sentinel")
+
+
+# Tag our hooks so we can remove later
+S7_hook <- function(fun, package) {
+  attr(fun, "S7_package") <- package
+  class(fun) <- "S7_hook"
+  fun
+}
+is_S7_hook <- function(x, package) {
+  inherits(x, "S7_hook") && identical(attr(x, "S7_package", TRUE), package)
+}
