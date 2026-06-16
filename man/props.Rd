@@ -10,7 +10,7 @@ props(object, names = prop_names(object))
 
 props(object, check = TRUE) <- value
 
-set_props(object, ..., .check = TRUE)
+set_props(`_object`, ..., .check = TRUE)
 }
 \arguments{
 \item{object}{An object from a S7 class}
@@ -24,7 +24,11 @@ before returning.}
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
 
-\item{...}{Name-value pairs given property to modify and new value.}
+\item{_object}{The object to modify.}
+
+\item{...}{Name-value pairs given property to modify and new value. As a
+convenience, you can supply a single unnamed list instead of individual
+name-value pairs, which makes it easy to set properties programmatically.}
 }
 \value{
 A named list of property values.

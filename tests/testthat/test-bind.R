@@ -14,6 +14,23 @@ test_that(":= returns the value invisibly", {
   expect_invisible(foo := new_thing())
 })
 
+test_that(":= defers rhs cleanup to the caller, not a transient eval frame", {
+  log <- new.env()
+  log$cleaned <- FALSE
+
+  record_cleanup <- function(log, name, frame = parent.frame()) {
+    defer(log$cleaned <- TRUE, frame = frame)
+    name
+  }
+  outer <- function() {
+    thing := record_cleanup(log)
+    log$cleaned
+  }
+
+  expect_false(outer()) # outer is still running
+  expect_true(log$cleaned) # but fires once outer() returns
+})
+
 test_that(":= validates its inputs", {
   new_thing <- function(name) list(name = name)
   no_name <- function() "x"
