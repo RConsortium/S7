@@ -14,9 +14,7 @@
 #' * Call `S7_on_unload()` from `.onUnload()`. This undoes the work of
 #'   `S7_on_load()`: it unregisters the methods that your package registered
 #'   for S7 generics in other packages and removes any hooks that
-#'   `S7_on_load()` added. This matters mostly during development, where it
-#'   ensures that reloading your package (e.g. with `devtools::load_all()`)
-#'   doesn't leave stale methods behind.
+#'   `S7_on_load()` added.
 #'
 #' * Call `S7_on_build()` at the top level (i.e. *not* inside `.onLoad()`)
 #'   after all method registration is complete. This avoids embedding copies

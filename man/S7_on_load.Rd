@@ -31,9 +31,7 @@ won't forget later.
 \item Call \code{S7_on_unload()} from \code{.onUnload()}. This undoes the work of
 \code{S7_on_load()}: it unregisters the methods that your package registered
 for S7 generics in other packages and removes any hooks that
-\code{S7_on_load()} added. This matters mostly during development, where it
-ensures that reloading your package (e.g. with \code{devtools::load_all()})
-doesn't leave stale methods behind.
+\code{S7_on_load()} added.
 \item Call \code{S7_on_build()} at the top level (i.e. \emph{not} inside \code{.onLoad()})
 after all method registration is complete. This avoids embedding copies
 of external generics in your package when you use \verb{method<-}.
