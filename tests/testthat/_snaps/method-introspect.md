@@ -1,4 +1,4 @@
-# method introspection / errors on invalid inputs
+# method introspection errors on invalid inputs
 
     Code
       method(print, 1)
@@ -6,7 +6,7 @@
       Error in `method()`:
       ! `generic` must be a <S7_generic>, not a <closure>.
     Code
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       method(foo)
     Condition
       Error in `method()`:
@@ -27,13 +27,13 @@
       Error in `method()`:
       ! Can't dispatch on unions; must be a concrete type.
     Code
-      foo2 <- new_generic("foo2", c("x", "y"))
+      foo2 := new_generic(c("x", "y"))
       method(foo2, object = list(class_character))
     Condition
       Error in `method()`:
       ! `object` must be length 2.
 
-# method introspection / errors if no method found
+# method introspection errors if no method found
 
     Code
       method(foo, class = class_integer)
@@ -49,18 +49,18 @@
       method(foo2, class = list(class_integer, class_double))
     Condition
       Error in `method()`:
-      ! Can't find method for generic `foo(x, y)`:
+      ! Can't find method for generic `foo2(x, y)`:
       - x: <integer>
       - y: <double>
     Code
       method(foo2, object = list(1L, 2))
     Condition
       Error in `method()`:
-      ! Can't find method for generic `foo(x, y)`:
+      ! Can't find method for generic `foo2(x, y)`:
       - x: <integer>
       - y: <double>
 
-# method explanation / shows all possible methods along with matches
+# method explanation shows all possible methods along with matches
 
        add([foo2], [foo2])
     -> add([foo2], [foo1])

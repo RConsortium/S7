@@ -318,6 +318,39 @@ class_inherits <- function(x, what) {
   )
 }
 
+# Is every instance of `child` guaranteed to also be an instance of `parent`?
+# Used to check that a child class only narrows the type of a property
+class_extends <- function(child, parent) {
+  if (is_class_any(parent) || union_contains_any(parent)) {
+    # as a parent, `class_any` accepts every child class
+    TRUE
+  } else if (is_class_any(child)) {
+    # as a child, `class_any` only allows `class_any` as a parent
+    FALSE
+  } else if (is_union(child)) {
+    # A union child extends `parent` only if every one of its members does.
+    all(vlapply(child$classes, class_extends, parent = parent))
+  } else if (is_union(parent)) {
+    # A non-union child extends a union parent if it extends any of its members.
+    any(vlapply(parent$classes, class_extends, child = child))
+  } else if (is.null(child) && !is.null(parent)) {
+    # as a child, NULL can only extend NULL
+    FALSE
+  } else if (is.null(parent)) {
+    # as a parent, NULL only accepts NULL
+    is.null(child)
+  } else if (is_S4_class(child) || is_S4_class(parent)) {
+    is_S4_class(child) &&
+      is_S4_class(parent) &&
+      methods::extends(child@className, parent@className)
+  } else if (is_class(parent) && parent@name == "S7_object") {
+    is_class(child)
+  } else {
+    # handle S7, S3, and base types.
+    class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
+  }
+}
+
 obj_type <- function(x) {
   if (identical(x, quote(expr = ))) {
     "missing"
@@ -367,6 +400,10 @@ class_dispatch_extends <- function(parent, child) {
 drop_S7_object <- function(x) {
   n <- length(x)
   if (n > 0 && x[[n]] == "S7_object") x[-n] else x
+}
+
+union_contains_any <- function(x) {
+  is_union(x) && any(vlapply(x$classes, is_class_any))
 }
 
 # Suppress @className false positive

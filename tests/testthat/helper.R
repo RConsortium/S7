@@ -55,8 +55,19 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
-local_S4_class <- function(name, ..., env = parent.frame()) {
-  out <- methods::setClass(name, contains = "character")
+local_S4_class <- function(
+  name,
+  ...,
+  env = parent.frame(),
+  where = topenv(env)
+) {
+  out <- methods::setClass(name, ..., where = where)
+  defer(S4_remove_classes(name, env), env)
+  out
+}
+
+local_S4_union <- function(name, members, env = parent.frame()) {
+  out <- methods::setClassUnion(name, members, where = topenv(env))
   defer(S4_remove_classes(name, env), env)
   out
 }
@@ -134,14 +145,6 @@ named_list <- function(...) {
   x <- list(...)
   names(x) <- names2(x)
   x
-}
-
-`:=` <- function(sym, val) {
-  cl <- sys.call()
-  cl[[1L]] <- quote(`<-`)
-  stopifnot(is.symbol(cl[[2L]]) && is.call(cl[[3L]]))
-  cl[[3L]]$name <- as.character(cl[[2L]])
-  eval.parent(cl)
 }
 
 `add<-` <- `+`

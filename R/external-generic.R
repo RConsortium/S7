@@ -24,7 +24,7 @@
 #'   `S7_external_generic`.
 #' @export
 #' @examples
-#' MyClass <- new_class("MyClass")
+#' MyClass := new_class()
 #'
 #' your_generic <- new_external_generic("stats", "median", "x")
 #' method(your_generic, MyClass) <- function(x) "Hi!"

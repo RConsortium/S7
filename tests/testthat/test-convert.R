@@ -1,6 +1,6 @@
 test_that("can register convert methods", {
   local_methods(convert)
-  converttest <- new_class("converttest", package = NULL)
+  converttest := new_class(package = NULL)
   method(convert, list(converttest, class_character)) <- function(
     from,
     to,
@@ -27,8 +27,8 @@ test_that("can register convert methods", {
 
 test_that("doesn't convert to subclass", {
   local_methods(convert)
-  converttest1 <- new_class("converttest1")
-  converttest2 <- new_class("converttest2", converttest1)
+  converttest1 := new_class()
+  converttest2 := new_class(converttest1)
 
   method(convert, list(class_integer, converttest1)) <- function(
     from,
@@ -40,113 +40,119 @@ test_that("doesn't convert to subclass", {
   expect_error(convert(class_integer, to = converttest2), "Can't find method")
 })
 
-describe("fallback convert", {
+test_that("fallback convert can convert to own class", {
   local_methods(convert)
+  foo1 := new_class(package = NULL)
+  foo2 := new_class(foo1, package = NULL)
 
-  it("can convert to own class", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", foo1, package = NULL)
+  obj <- convert(foo2(), to = foo2)
+  expect_equal(class(obj), c("foo2", "foo1", "S7_object"))
+  expect_equal(S7_class(obj), foo2)
+})
 
-    obj <- convert(foo2(), to = foo2)
-    expect_equal(class(obj), c("foo2", "foo1", "S7_object"))
-    expect_equal(S7_class(obj), foo2)
-  })
+test_that("fallback convert can convert to super class", {
+  local_methods(convert)
+  foo1 := new_class(
+    properties = list(x = class_double),
+    package = NULL
+  )
+  foo2 := new_class(
+    foo1,
+    properties = list(y = class_double),
+    package = NULL
+  )
 
-  it("can convert to super class", {
-    foo1 <- new_class(
-      "foo1",
-      properties = list(x = class_double),
-      package = NULL
-    )
-    foo2 <- new_class(
-      "foo2",
-      foo1,
-      properties = list(y = class_double),
-      package = NULL
-    )
+  obj <- convert(foo2(1, 2), to = foo1)
+  expect_equal(class(obj), c("foo1", "S7_object"))
+  expect_equal(S7_class(obj), foo1)
+  expect_equal(props(obj), list(x = 1))
+  expect_equal(attr(obj, "y"), NULL)
+})
 
-    obj <- convert(foo2(1, 2), to = foo1)
-    expect_equal(class(obj), c("foo1", "S7_object"))
-    expect_equal(S7_class(obj), foo1)
-    expect_equal(props(obj), list(x = 1))
-    expect_equal(attr(obj, "y"), NULL)
-  })
+test_that("fallback convert can convert to subclass", {
+  local_methods(convert)
+  Foo := new_class(properties = list(x = class_numeric))
+  Bar := new_class(Foo, properties = list(y = class_numeric))
 
-  it("can convert to subclass", {
-    Foo <- new_class("Foo", properties = list(x = class_numeric))
-    Bar <- new_class("Bar", Foo, properties = list(y = class_numeric))
+  foo <- Foo(x = 1)
 
-    foo <- Foo(x = 1)
+  # Basic conversion
+  bar <- convert(foo, Bar)
+  expect_s3_class(bar, c("Bar", "Foo", "S7_object"))
+  expect_equal(S7_class(bar), Bar)
+  expect_equal(bar@x, 1)
+  expect_equal(bar@y, numeric(0))
 
-    # Basic conversion
-    bar <- convert(foo, Bar)
-    expect_s3_class(bar, c("Bar", "Foo", "S7_object"))
-    expect_equal(S7_class(bar), Bar)
-    expect_equal(bar@x, 1)
-    expect_equal(bar@y, numeric(0))
+  # Overriding existing property
+  bar <- convert(foo, Bar, x = 2)
+  expect_equal(bar@x, 2)
 
-    # Overriding existing property
-    bar <- convert(foo, Bar, x = 2)
-    expect_equal(bar@x, 2)
+  # Setting new property
+  bar <- convert(foo, Bar, y = 2)
+  expect_equal(bar@x, 1)
+  expect_equal(bar@y, 2)
 
-    # Setting new property
-    bar <- convert(foo, Bar, y = 2)
-    expect_equal(bar@x, 1)
-    expect_equal(bar@y, 2)
+  # Setting both properties
+  bar <- convert(foo, Bar, y = 2, x = 3)
+  expect_equal(bar@x, 3)
+  expect_equal(bar@y, 2)
 
-    # Setting both properties
-    bar <- convert(foo, Bar, y = 2, x = 3)
-    expect_equal(bar@x, 3)
-    expect_equal(bar@y, 2)
+  # Error on converting to unrelated class
+  Unrelated := new_class(properties = list(z = class_character))
+  expect_error(convert(foo, Unrelated), "Can't find method")
+})
 
-    # Error on converting to unrelated class
-    Unrelated <- new_class("Unrelated", properties = list(z = class_character))
-    expect_error(convert(foo, Unrelated), "Can't find method")
-  })
+test_that("fallback convert accepts a single unnamed list of overrides when downcasting (#497)", {
+  local_methods(convert)
+  Foo := new_class(properties = list(x = class_numeric))
+  Bar := new_class(Foo, properties = list(y = class_numeric))
 
-  it("can convert to S3 class", {
-    factor2 <- new_class(
-      "factor2",
-      class_factor,
-      properties = list(x = class_double)
-    )
-    obj <- convert(factor2(1, "x", x = 1), to = class_factor)
-    expect_equal(class(obj), "factor")
-    expect_false(S7_inherits(obj))
-    expect_equal(attr(obj, "x"), NULL)
-  })
+  bar <- convert(Foo(x = 1), Bar, list(x = 2, y = 3))
+  expect_equal(bar@x, 2)
+  expect_equal(bar@y, 3)
+})
 
-  it("can convert to base type", {
-    character2 <- new_class(
-      "character2",
-      parent = class_character,
-      properties = list(x = class_double)
-    )
-    obj <- convert(character2("x", x = 1), to = class_character)
-    expect_equal(attr(obj, "class"), NULL)
-    expect_false(S7_inherits(obj))
-    expect_equal(attr(obj, "x"), NULL)
-  })
+test_that("fallback convert can convert to S3 class", {
+  local_methods(convert)
+  factor2 := new_class(
+    class_factor,
+    properties = list(x = class_double)
+  )
+  obj <- convert(factor2(1, "x", x = 1), to = class_factor)
+  expect_equal(class(obj), "factor")
+  expect_false(S7_inherits(obj))
+  expect_equal(attr(obj, "x"), NULL)
+})
+
+test_that("fallback convert can convert to base type", {
+  local_methods(convert)
+  character2 := new_class(
+    parent = class_character,
+    properties = list(x = class_double)
+  )
+  obj <- convert(character2("x", x = 1), to = class_character)
+  expect_equal(attr(obj, "class"), NULL)
+  expect_false(S7_inherits(obj))
+  expect_equal(attr(obj, "x"), NULL)
 })
 
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
-  Base <- new_class("Base", package = NULL)
-  A <- new_class(
-    "A",
+  Base := new_class(package = NULL)
+  A := new_class(
     Base,
     package = NULL,
     properties = list(x = class_numeric)
   )
-  B <- new_class("B", Base, package = NULL)
-  B_child <- new_class("B_child", B, package = NULL)
+  B := new_class(Base, package = NULL)
+  B_child := new_class(B, package = NULL)
 
   # `to` is a descendant of `from`'s class
   expect_equal(is_down_cast(Base(), A), TRUE)
   expect_equal(is_down_cast(B(), B_child), TRUE)
 
   # base/S3 `from` to an S7 class that extends it
-  my_logical <- new_class("my_logical", class_logical, package = NULL)
-  my_factor <- new_class("my_factor", class_factor, package = NULL)
+  my_logical := new_class(class_logical, package = NULL)
+  my_factor := new_class(class_factor, package = NULL)
   expect_equal(is_down_cast(TRUE, my_logical), TRUE)
   expect_equal(is_down_cast(factor("a"), my_factor), TRUE)
 
@@ -171,7 +177,7 @@ test_that("is_down_cast() requires `from`'s classes to be contiguous and ordered
 
 test_that("convert() is idempotent when `from` is an instance of `to` (#429)", {
   local_methods(convert)
-  Foo <- new_class("Foo", package = NULL, properties = list(x = class_numeric))
+  Foo := new_class(package = NULL, properties = list(x = class_numeric))
 
   # A registered method must not override the idempotent behaviour
   method(convert, list(Foo, Foo)) <- function(from, to, ...) Foo(x = -1)
@@ -182,9 +188,9 @@ test_that("convert() is idempotent when `from` is an instance of `to` (#429)", {
 
 test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
   local_methods(convert)
-  A <- new_class("A", package = NULL, properties = list(x = class_numeric))
-  B <- new_class("B", A, package = NULL, properties = list(y = class_numeric))
-  C <- new_class("C", B, package = NULL, properties = list(z = class_numeric))
+  A := new_class(package = NULL, properties = list(x = class_numeric))
+  B := new_class(A, package = NULL, properties = list(y = class_numeric))
+  C := new_class(B, package = NULL, properties = list(z = class_numeric))
 
   # A method to downcast a superclass `A` to `B`
   method(convert, list(A, B)) <- function(from, to, ...) B(y = -1)
@@ -202,9 +208,15 @@ test_that("convert() upcasting ignores inherited downcasting methods (#429)", {
 })
 
 test_that("convert() errors when upcasting to an abstract class (#680)", {
-  Foo <- new_class("Foo", abstract = TRUE, package = NULL)
-  Bar <- new_class("Bar", Foo, package = NULL)
+  Foo := new_class(abstract = TRUE, package = NULL)
+  Bar := new_class(Foo, package = NULL)
   expect_snapshot(convert(Bar(), Foo), error = TRUE)
+})
+
+test_that("convert() errors when upcasting to an abstract S3 class (#686)", {
+  # An S3 class without a constructor is abstract, so there's no valid instance
+  # to convert to (class_POSIXt is the union of POSIXct and POSIXlt)
+  expect_snapshot(convert(.POSIXct(1), class_POSIXt), error = TRUE)
 })
 
 test_that("convert() falls back to as.*() for base type targets (#472)", {
@@ -220,7 +232,7 @@ test_that("base type fallback sits below user methods and inheritance", {
   local_methods(convert)
 
   # A registered method wins over the as.*() fallback
-  Txt <- new_class("Txt", class_character, package = NULL)
+  Txt := new_class(class_character, package = NULL)
   method(convert, list(Txt, class_character)) <- function(from, to, ...) {
     "custom"
   }

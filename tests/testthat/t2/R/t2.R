@@ -44,3 +44,5 @@ S7::method(own_generic, S7::new_external_class("t1", "Another S7 Class")) <-
 .onLoad <- function(libname, pkgname) {
   S7::S7_on_load()
 }
+
+S7::S7_on_build()

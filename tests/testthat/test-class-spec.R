@@ -1,5 +1,5 @@
 test_that("can work with S7 classes", {
-  klass <- new_class("klass", package = NULL)
+  klass := new_class(package = NULL)
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "S7")
@@ -17,7 +17,7 @@ test_that("can work with S7 classes", {
 })
 
 test_that("can work with S7 classes in packages", {
-  klass <- new_class("klass", package = "pkg")
+  klass := new_class(package = "pkg")
   expect_equal(as_class(klass), klass)
 
   expect_equal(class_type(klass), "S7")
@@ -35,8 +35,8 @@ test_that("can work with S7 classes in packages", {
 })
 
 test_that("can work with unions", {
-  text <- new_class("text", class_character, package = NULL)
-  number <- new_class("number", class_double, package = NULL)
+  text := new_class(class_character, package = NULL)
+  number := new_class(class_double, package = NULL)
   klass <- new_union(text, number)
   expect_equal(as_class(klass), klass)
 
@@ -102,6 +102,36 @@ test_that("class_inherits handles variation in class names", {
   expect_false(class_inherits("x", class_function))
 })
 
+test_that("class_extends checks subclass relationship between classes", {
+  Parent <- new_class("Parent", package = NULL)
+  Child <- new_class("Child", parent = Parent, package = NULL)
+
+  expect_true(class_extends(Child, Parent))
+  expect_true(class_extends(Child, Child))
+  expect_false(class_extends(Parent, Child))
+
+  # base types
+  expect_true(class_extends(class_integer, class_integer))
+  expect_false(class_extends(class_integer, class_character))
+})
+
+test_that("class_extends handles unions, any, and NULL", {
+  # union parent accepts any member; union child must have all members extend
+  expect_true(class_extends(class_double, class_numeric))
+  expect_false(class_extends(class_numeric, class_double))
+  expect_true(class_extends(class_numeric, class_numeric))
+
+  # class_any is the top type
+  expect_true(class_extends(class_integer, class_any))
+  expect_false(class_extends(class_any, class_integer))
+  expect_true(class_extends(class_any, class_any))
+
+  # NULL only extends NULL
+  expect_true(class_extends(NULL, NULL))
+  expect_false(class_extends(NULL, class_integer))
+  expect_false(class_extends(class_integer, NULL))
+})
+
 test_that("dispatch for base objects use underlying type", {
   expect_equal(obj_dispatch(1), "double")
   expect_equal(obj_dispatch(1L), "integer")
@@ -163,8 +193,7 @@ test_that("can work with S7 classes that extend S3 classes", {
   Date <- new_S3_class("Date", constructor = function(.data = numeric()) {
     .Date(.data)
   })
-  Date2 <- new_class(
-    "Date2",
+  Date2 := new_class(
     parent = Date,
     properties = list(x = class_numeric),
     package = NULL
@@ -186,12 +215,10 @@ test_that("can work with S7 classes that extend S3 classes", {
 # S4 ----------------------------------------------------------------------
 
 test_that("can work with S4 classes", {
-  on.exit(S4_remove_classes(c("Foo1", "Foo2", "Foo3", "Foo4")))
-
-  methods::setClass("Foo1", contains = "character")
-  methods::setClass("Foo2", contains = "Foo1")
-  methods::setClass("Foo3", slots = list(x = "numeric"))
-  methods::setClass("Foo4", contains = c("Foo2", "Foo3"))
+  Foo1 := local_S4_class(contains = "character")
+  Foo2 := local_S4_class(contains = "Foo1")
+  Foo3 := local_S4_class(slots = list(x = "numeric"))
+  Foo4 := local_S4_class(contains = c("Foo2", "Foo3"))
 
   klass <- methods::getClass("Foo4")
 
@@ -213,7 +240,7 @@ test_that("can work with S4 classes", {
 })
 
 test_that("S7_class_desc() formats every supported class spec", {
-  Foo <- new_class("Foo", package = NULL)
+  Foo := new_class(package = NULL)
 
   expect_equal(S7_class_desc(Foo), "<Foo>")
   expect_equal(S7_class_desc(class_integer), "<integer>")

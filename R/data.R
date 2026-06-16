@@ -13,7 +13,7 @@
 #'   invisibly.
 #' @export
 #' @examples
-#' Text <- new_class("Text", parent = class_character)
+#' Text := new_class(parent = class_character)
 #' y <- Text(c(foo = "bar"))
 #' y
 #' S7_data(y)
@@ -22,7 +22,7 @@
 #' y
 #'
 #' # S3 classes are preserved
-#' MyDF <- new_class("MyDF", parent = class_data.frame)
+#' MyDF := new_class(parent = class_data.frame)
 #' S7_data(MyDF(data.frame(x = 1, y = 2)))
 S7_data <- function(object) {
   check_is_S7(object)

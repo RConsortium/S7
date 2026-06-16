@@ -9,6 +9,7 @@ reference:
   - new_class
   - new_generic
   - new_union
+  - ":="
   - method<-
   - S7_inherits
   - validate
@@ -34,6 +35,8 @@ reference:
   - method_explain
   - S7_class
   - S7_class_desc
+  - S7_classes
+  - S7_methods
 
 - title: Packages
   desc: >
