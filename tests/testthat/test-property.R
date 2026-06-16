@@ -421,7 +421,8 @@ test_that("new_property() validates default", {
 })
 
 test_that("new_property() rejects invalid complex defaults without warning first", {
-  withr::local_options(list(warn = 2))
+  old <- options(warn = 2)
+  defer(options(old))
 
   expect_error(
     new_property(class_integer, default = c("x", "y")),
