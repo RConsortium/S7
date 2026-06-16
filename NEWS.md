@@ -25,6 +25,7 @@
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * `new_object()` no longer re-runs property validators for properties inherited unchanged from an already-validated parent class, so constructing an instance of a deeply nested class hierarchy validates each property exactly once (#539).
 * `new_property()` now runs the property class's own validator when checking a value, not just the structural class check, so a property restricted to an S3 class (e.g. `class_factor`) now enforces constraints that aren't visible in `class()` (#401).
+* `new_property()` now warns when `default` is a complex value like a named vector, because such values are inlined into the constructor and can cause `R CMD check` failures. Wrap them in `quote()` instead. This warning will become an error in a future release (#541).
 * `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
 * `print(<S7_class>)` now shows property defaults inline (`= "value"`) and annotates read-only properties (`[read-only]`) (#439).

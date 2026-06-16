@@ -420,6 +420,30 @@ test_that("new_property() validates default", {
   })
 })
 
+test_that("new_property() rejects invalid complex defaults without warning first", {
+  old <- options(warn = 2)
+  defer(options(old))
+
+  expect_error(
+    new_property(class_integer, default = c("x", "y")),
+    "`default` must be an instance of <integer>"
+  )
+})
+
+test_that("new_property() warns if default is not a scalar or quoted call", {
+  expect_snapshot({
+    . <- new_property(class_integer, default = c(any = 1L))
+    . <- new_property(class_POSIXct, default = Sys.time())
+  })
+})
+
+test_that("new_property() doesn't warn for scalar or quoted defaults", {
+  expect_no_warning(new_property(class_integer, default = 1L))
+  expect_no_warning(new_property(class_integer, default = NA_integer_))
+  expect_no_warning(new_property(class_integer, default = quote(foo())))
+  expect_no_warning(new_property(class_integer, default = quote(x)))
+})
+
 test_that("new_property() displays nicely", {
   x <- new_property(class_integer, name = "foo")
   expect_snapshot({

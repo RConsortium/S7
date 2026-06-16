@@ -48,16 +48,20 @@ The validator will be called after the \code{class} has been verified, so
 your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
-what should it default to?
-
-If \code{NULL}, it defaults to the "empty" instance of \code{class}. For base
+what should it default to? There are three options:
+\itemize{
+\item A simple scalar (e.g. \code{1L}, \code{"x"}, \code{TRUE}).
+\item A \code{quote()}d call. This will be evaluated when the object is
+constructed and should be used for any thing more complicated like
+a named vector or a function call.
+\item \code{NULL}, it defaults to the "empty" instance of \code{class}. For base
 vector types, this will be a zero length vector, e.g. \code{character()} for
 \code{class_character()}. For S7 classes, this will be a call to the
-constructor
+constructor.
+}
 
-This can also be a \code{quote()}d call, which then becomes a standard function
-promise in the default constructor, evaluated when the object is
-constructed.}
+Anything else will generate a warning, which will become an error in
+a future release.}
 
 \item{name}{Property name, primarily used for error messages. Generally
 don't need to set this here, as it's more convenient to supply as
