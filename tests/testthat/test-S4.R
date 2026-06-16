@@ -137,7 +137,7 @@ test_that("S4_class_dispatch captures explicit package name", {
 test_that("S4_class_dispatch captures implicit package name", {
   env <- new.env()
   env$.packageName <- "mypkg"
-  Foo1 := local_S4_class(package = "mypkg")
+  Foo1 := local_S4_class(where = env)
   expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
 })
 
