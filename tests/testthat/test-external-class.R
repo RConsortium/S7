@@ -55,8 +55,7 @@ test_that("external class can be used as a union arm", {
 })
 
 test_that("external class works as a property type for self-reference", {
-  Tree <- new_class(
-    "Tree",
+  Tree := new_class(
     package = "mypkg",
     properties = list(
       label = class_character,
@@ -75,13 +74,11 @@ test_that("external class works as a property type for self-reference", {
 })
 
 test_that("external class works for mutually recursive classes", {
-  ClassOne <- new_class(
-    "ClassOne",
+  ClassOne := new_class(
     package = "mypkg",
     properties = list(x = NULL | new_external_class("mypkg", "ClassTwo"))
   )
-  ClassTwo <- new_class(
-    "ClassTwo",
+  ClassTwo := new_class(
     package = "mypkg",
     properties = list(y = NULL | new_external_class("mypkg", "ClassOne"))
   )
@@ -92,8 +89,7 @@ test_that("external class works for mutually recursive classes", {
 })
 
 test_that("class_inherits() works for external class", {
-  Tree <- new_class(
-    "Tree",
+  Tree := new_class(
     package = "mypkg",
     properties = list(child = NULL | new_external_class("mypkg", "Tree"))
   )
