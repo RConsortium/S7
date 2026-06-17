@@ -52,7 +52,7 @@ S7_on_load_ <- function(env) {
 
   hooks_remove(package) # always start from a clean slate
   hooks <- hooks_add(package)
-  hooks_run_loaded(hooks)
+  hooks_run_loaded(hooks) # run hooks for loaded packages
 
   invisible()
 }
@@ -73,11 +73,8 @@ S7_on_unload_ <- function(env) {
       next
     }
 
-    generic <- get0(
-      x$generic$name,
-      envir = asNamespace(x$generic$package),
-      inherits = FALSE
-    )
+    ns <- asNamespace(x$generic$package)
+    generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
     # Methods registered for S3 and S4 generics can't be unregistered
     if (is_S7_generic(generic)) {
       unregister_S7_method(generic, x$signature)
@@ -103,8 +100,7 @@ hooks_add <- function(package) {
   hooks
 }
 
-# Remove our hooks for `package`. Returns the removed hooks, named by the
-# package they were attached to.
+# Remove our hooks for `package`.
 hooks_remove <- function(package) {
   tbl <- S7_methods_table(package)
   pkgs <- unique(vcapply(tbl, function(x) x$generic$package))
@@ -120,8 +116,6 @@ hooks_remove <- function(package) {
   invisible()
 }
 
-# onLoad hooks don't fire for packages that are already loaded, so fire our
-# hooks now to register methods for any generic packages already available.
 hooks_run_loaded <- function(hooks) {
   is_loaded <- vlapply(names(hooks), isNamespaceLoaded)
   for (hook in hooks[is_loaded]) {

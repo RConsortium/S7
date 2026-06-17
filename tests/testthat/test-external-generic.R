@@ -1,6 +1,5 @@
 test_that("can get and append methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_external_methods()
 
   expect_equal(S7_methods_table("S7"), list())
 
@@ -19,8 +18,7 @@ test_that("can get and append methods", {
 })
 
 test_that("re-adding a method replaces the existing entry", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_external_methods()
 
   bar <- new_external_generic("foo", "bar", "x")
   external_methods_add("S7", bar, list("A"), function() "a")
@@ -30,8 +28,7 @@ test_that("re-adding a method replaces the existing entry", {
 })
 
 test_that("can remove methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_external_methods()
 
   bar <- new_external_generic("foo", "bar", "x")
   baz <- new_external_generic("foo", "baz", "x")
@@ -49,9 +46,9 @@ test_that("can remove methods", {
 })
 
 test_that("displays nicely", {
-  bar <- new_external_generic("foo", "bar", "x")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_external_methods()
 
+  bar <- new_external_generic("foo", "bar", "x")
   expect_snapshot({
     print(bar)
   })
