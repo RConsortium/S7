@@ -121,12 +121,10 @@ test_that("can use `...` in parent constructor", {
 })
 
 test_that("subclass can change the default of a parent property", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = new_property(class_numeric, default = 1))
   )
-  foo2 <- new_class(
-    "foo2",
+  foo2 := new_class(
     parent = foo,
     properties = list(x = new_property(class_numeric, default = 2))
   )
@@ -152,9 +150,8 @@ test_that("subclass can override a parent property with a mandatory default", {
 })
 
 test_that("subclass setter is used during construction", {
-  foo <- new_class("foo", properties = list(x = class_integer, z = class_any))
-  foo2 <- new_class(
-    "foo2",
+  foo := new_class(properties = list(x = class_integer, z = class_any))
+  foo2 := new_class(
     parent = foo,
     properties = list(
       z = new_property(
@@ -172,12 +169,10 @@ test_that("subclass setter is used during construction", {
 })
 
 test_that("overridden properties keep their position in the constructor", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_numeric, y = class_numeric)
   )
-  foo2 <- new_class(
-    "foo2",
+  foo2 := new_class(
     foo,
     properties = list(
       x = new_property(class_numeric, default = 2),
@@ -193,9 +188,8 @@ test_that("overridden properties keep their position in the constructor", {
 })
 
 test_that("property redeclared as read-only is removed from the constructor", {
-  foo <- new_class("foo", properties = list(x = class_character))
-  foo2 <- new_class(
-    "foo2",
+  foo := new_class(properties = list(x = class_character))
+  foo2 := new_class(
     foo,
     properties = list(x = new_property(getter = function(self) "fixed"))
   )
