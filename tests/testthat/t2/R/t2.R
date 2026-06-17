@@ -38,4 +38,8 @@ S7::method(another_s3_generic, an_s7_class) <- function(x) "foo"
   S7::S7_on_load()
 }
 
+.onUnload <- function(libpath) {
+  S7::S7_on_unload()
+}
+
 S7::S7_on_build()

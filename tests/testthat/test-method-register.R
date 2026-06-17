@@ -9,8 +9,16 @@ test_that("method registration adds messages when overwriting", {
   foo := new_generic("x")
   expect_snapshot({
     method(foo, class_character) <- function(x) "c"
-    method(foo, class_character) <- function(x) "c"
+    method(foo, class_character) <- function(x) "C"
   })
+  expect_length(methods(foo), 1)
+})
+
+test_that("re-registering an identical method is silent (#474)", {
+  foo := new_generic("x")
+  fn <- function(x) "c"
+  method(foo, class_character) <- fn
+  expect_no_message(method(foo, class_character) <- fn)
   expect_length(methods(foo), 1)
 })
 

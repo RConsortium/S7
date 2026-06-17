@@ -55,6 +55,37 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
+# Simulate a package with namesapce
+local_package <- function(name, ..., frame = parent.frame()) {
+  ns <- new.env(parent = asNamespace("S7"))
+
+  info <- new.env(parent = emptyenv())
+  info$spec <- c(name = name, version = "0.0.0")
+  ns[[".__NAMESPACE__."]] <- info
+  ns[[".packageName"]] <- name
+  ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())
+
+  # register namespace so asNamespace(pkg) works
+  internal <- get(".Internal", envir = baseenv())
+  internal(registerNamespace(name, ns))
+  defer(internal(unregisterNamespace(name)), frame = frame)
+  defer(S7_on_unload_(ns), frame = frame)
+
+  for (expr in eval(substitute(alist(...)))) {
+    eval(expr, ns)
+  }
+
+  ns
+}
+
+# Filter out any IDE hooks added interactively (e.g. Positron registers an
+# "ark_onload_hook" for every package), leaving only the hooks S7 manages.
+package_hooks <- function(package, event = "onLoad") {
+  hooks <- getHook(packageEvent(package, event))
+  is_ide_hook <- function(hook) any(startsWith(class(hook), "ark_"))
+  Filter(function(hook) !is_ide_hook(hook), hooks)
+}
+
 local_S4_class <- function(
   name,
   ...,
