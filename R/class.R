@@ -355,13 +355,15 @@ new_object <- function(`_parent`, ...) {
     prop(`_parent`, name, check = FALSE) <- prop_setter_vals[[name]]
   }
 
-  # Don't need to validate if parent class already validated,
-  # i.e. it's a non-abstract S7 class
+  # Don't need to validate the parent class if it's already validated and none
+  # of its properties were reset by this call.
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
+  parent_props_reset <- parent_validated &&
+    any(names2(args) %in% names2(class@parent@properties))
   validate_from(
     `_parent`,
-    parent = if (parent_validated) class@parent,
+    parent = if (parent_validated && !parent_props_reset) class@parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )

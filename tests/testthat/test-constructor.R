@@ -184,6 +184,43 @@ test_that("subclass setter is used during construction", {
   expect_equal(foo2(x = 1L, z = 1)@x, 1L)
 })
 
+test_that("parent validators rerun after inherited properties are reset", {
+  validator <- function(self) {
+    if (self@x < 0) "@x must be non-negative"
+  }
+
+  foo := new_class(
+    properties = list(x = class_double),
+    validator = validator
+  )
+  foo2 := new_class(
+    foo,
+    properties = list(
+      x = new_property(
+        class_double,
+        setter = function(self, value) {
+          self@x <- -abs(value)
+          self
+        }
+      )
+    )
+  )
+
+  expect_error(foo2(1), "@x must be non-negative")
+
+  bar := new_class(
+    properties = list(x = class_double),
+    constructor = function() new_object(S7_object(), x = 0),
+    validator = validator
+  )
+  bar2 := new_class(
+    bar,
+    properties = list(x = new_property(class_double, default = -1))
+  )
+
+  expect_error(bar2(), "@x must be non-negative")
+})
+
 test_that("overridden properties keep their position in the constructor", {
   foo := new_class(
     properties = list(x = class_numeric, y = class_numeric)
