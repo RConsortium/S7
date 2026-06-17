@@ -55,12 +55,6 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
-local_external_methods <- function(package = "S7", frame = parent.frame()) {
-  old <- S7_methods_table(package)
-  defer(S7_methods_table(package) <- old, frame = frame)
-  invisible()
-}
-
 # Simulate a package with namesapce
 local_package <- function(name, ..., frame = parent.frame()) {
   ns <- new.env(parent = asNamespace("S7"))
