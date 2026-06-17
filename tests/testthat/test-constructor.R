@@ -120,6 +120,22 @@ test_that("can use `...` in parent constructor", {
   expect_equal(bar(y = 2)@x, list())
 })
 
+test_that("overridden property is passed through parent `...`", {
+  foo := new_class(
+    properties = list(
+      x = new_property(class_numeric, default = quote(stop("need x")))
+    ),
+    constructor = function(...) new_object(S7_object(), ...)
+  )
+  foo2 := new_class(
+    foo,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+
+  expect_equal(foo2()@x, 2)
+  expect_equal(foo2(x = 3)@x, 3)
+})
+
 test_that("subclass can change the default of a parent property", {
   foo := new_class(
     properties = list(x = new_property(class_numeric, default = 1))

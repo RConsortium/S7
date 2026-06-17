@@ -81,10 +81,17 @@ new_constructor <- function(
     prop_nms[is_dynamic_settable],
     parent_prop_nms
   )
+  forwarded_override_nms <- setdiff(
+    intersect(prop_nms, parent_prop_nms),
+    c(read_only_override_nms, dynamic_settable_override_nms)
+  )
   parent_arg_nms <- setdiff(
     names(arg_info$parent),
     c(read_only_override_nms, dynamic_settable_override_nms)
   )
+  if ("..." %in% names(arg_info$parent)) {
+    parent_arg_nms <- union(parent_arg_nms, forwarded_override_nms)
+  }
   parent_args <- as_names(parent_arg_nms, named = TRUE)
   names(parent_args)[names(parent_args) == "..."] <- ""
   parent_call <- new_call(parent_name, parent_args)
