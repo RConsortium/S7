@@ -19,7 +19,9 @@ recommend importing all S7 functions into your package `NAMESPACE` with
 `import(S7)`, or, if you’re using roxygen2, `@import S7`.
 
 Next, create a `zzz.R` with a `.onLoad()` that calls
-[`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+[`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
+an `.onUnload()` that calls
+[`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
 and a top-level call to
 [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md):
 
@@ -27,6 +29,10 @@ and a top-level call to
 
 .onLoad <- function(...) {
   S7::S7_on_load()
+}
+
+.onUnload <- function(...) {
+  S7::S7_on_unload()
 }
 
 S7::S7_on_build()
@@ -37,6 +43,13 @@ is S7’s way of registering methods, rather than using export directives
 in your `NAMESPACE` like S3 and S4 do. This is only strictly necessary
 if you are registering methods for generics in other packages, but
 there’s no harm in adding it and it ensures that you won’t forget later.
+
+[`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+cleans up after
+[`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md):
+it unregisters methods that your package registered, if they are still
+active, and removes hooks, so unloading your package doesn’t leave stale
+state behind.
 
 [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
 cleans up after `method<-`. Because `method<-` is a replacement

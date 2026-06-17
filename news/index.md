@@ -87,6 +87,10 @@
   class), `class_any` (registered as the `default` method), and `NULL`
   (registered as the `NULL` method)
   ([\#455](https://github.com/RConsortium/S7/issues/455)).
+- `method<-` no longer emits an “Overwriting method” message when
+  re-registering an identical method, eliminating spurious messages from
+  `devtools::load_all()`
+  ([\#474](https://github.com/RConsortium/S7/issues/474)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now errors if a child class overrides a parent property with a type
   that doesn’t extend the parent’s type, since such a class could never
@@ -224,13 +228,6 @@
   now accept any class specification (S7 class, S7 union, S3 class, S4
   class, or base type wrapper like `class_integer`), not just S7 classes
   ([\#556](https://github.com/RConsortium/S7/issues/556)).
-- [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
-  now names its first argument `_object` to minimise the chances of a
-  clash with a property
-  ([\#423](https://github.com/RConsortium/S7/issues/423)). It also
-  accepts a single unnamed named list as a shortcut for splicing
-  property values, making it easier to set properties programmatically
-  ([\#497](https://github.com/RConsortium/S7/issues/497)).
 - [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   is the new name for
   [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
@@ -238,7 +235,22 @@
   [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md);
   [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   remains available for backward compatibility
-  ([\#615](https://github.com/RConsortium/S7/issues/615)).
+  ([\#615](https://github.com/RConsortium/S7/issues/615)). It no longer
+  accumulates duplicate registration hooks when a package is loaded
+  repeatedly ([\#316](https://github.com/RConsortium/S7/issues/316)).
+- New
+  [`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
+  to be called from `.onUnload()`, unregisters active methods and
+  removes hooks added by
+  [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  ([\#316](https://github.com/RConsortium/S7/issues/316)).
+- [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
+  now names its first argument `_object` to minimise the chances of a
+  clash with a property
+  ([\#423](https://github.com/RConsortium/S7/issues/423)). It also
+  accepts a single unnamed named list as a shortcut for splicing
+  property values, making it easier to set properties programmatically
+  ([\#497](https://github.com/RConsortium/S7/issues/497)).
 - [`str()`](https://rdrr.io/r/utils/str.html) on S7 objects that inherit
   from data.frame (or other S3 classes whose underlying data has a `dim`
   attribute incompatible with the bare base type) no longer errors
