@@ -136,6 +136,21 @@ test_that("subclass can change the default of a parent property", {
   expect_equal(foo2(x = 3)@x, 3)
 })
 
+test_that("subclass can override a parent property with a mandatory default", {
+  foo := new_class(
+    properties = list(
+      x = new_property(class_numeric, default = quote(stop("need x")))
+    )
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+
+  expect_equal(foo2()@x, 2)
+  expect_equal(foo2(x = 3)@x, 3)
+})
+
 test_that("subclass setter is used during construction", {
   foo <- new_class("foo", properties = list(x = class_integer, z = class_any))
   foo2 <- new_class(

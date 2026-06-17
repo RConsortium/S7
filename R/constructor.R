@@ -69,10 +69,12 @@ new_constructor <- function(
     args[names(args) == "..."] <- list(quote(expr = ))
   }
 
-  # Declared properties (including overrides of parent properties) are set by
-  # new_object() so that their defaults and setters are respected;
-  # only the remaining arguments are passed to the parent constructor.
-  parent_arg_nms <- setdiff(names(arg_info$parent), names2(properties))
+  # Overridden properties are passed to both the parent and child.
+  # This make it possible to override mandatory properties and custom setters.
+  parent_arg_nms <- setdiff(
+    names(arg_info$parent),
+    names2(properties)[is_read_only]
+  )
   parent_args <- as_names(parent_arg_nms, named = TRUE)
   names(parent_args)[names(parent_args) == "..."] <- ""
   parent_call <- new_call(parent_name, parent_args)
