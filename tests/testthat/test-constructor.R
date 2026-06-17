@@ -165,6 +165,31 @@ test_that("subclass can override a parent property with a mandatory default", {
   expect_equal(foo2(x = 3)@x, 3)
 })
 
+test_that("compatible dynamic settable override is passed to parent", {
+  foo := new_class(
+    properties = list(
+      x = new_property(class_numeric, default = quote(stop("need x")))
+    )
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      x = new_property(
+        class_double,
+        default = 1,
+        getter = function(self) self@x,
+        setter = function(self, value) {
+          self@x <- value + 1
+          self
+        }
+      )
+    )
+  )
+
+  expect_equal(foo2(x = 1)@x, 2)
+  expect_equal(foo2()@x, 2)
+})
+
 test_that("subclass setter is used during construction", {
   foo := new_class(properties = list(x = class_integer, z = class_any))
   foo2 := new_class(
