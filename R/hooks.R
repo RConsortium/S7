@@ -77,7 +77,10 @@ S7_on_unload_ <- function(env) {
     generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
-      unregister_own_S7_method(generic, x$signature, x$method)
+      removed <- unregister_own_S7_method(generic, x$signature, x$method)
+      if (removed) {
+        hooks_restore_loaded(x$generic$package)
+      }
     }
   }
 
@@ -124,8 +127,22 @@ hooks_remove <- function(package) {
 
 hooks_run_loaded <- function(hooks) {
   is_loaded <- vlapply(names(hooks), isNamespaceLoaded)
-  for (hook in hooks[is_loaded]) {
-    hook()
+  hooks_run(hooks[is_loaded])
+}
+
+hooks_restore_loaded <- function(package) {
+  hooks <- getHook(packageEvent(package, "onLoad"))
+  hooks <- hooks[vlapply(hooks, is_S7_hook)]
+  hooks_run(hooks, quiet = TRUE)
+}
+
+hooks_run <- function(hooks, quiet = FALSE) {
+  for (hook in hooks) {
+    if (quiet) {
+      suppressMessages(hook())
+    } else {
+      hook()
+    }
   }
   invisible()
 }
@@ -160,8 +177,11 @@ S7_hook <- function(fun, package) {
   class(fun) <- "S7_hook"
   fun
 }
-is_S7_hook <- function(x, package) {
-  inherits(x, "S7_hook") && identical(attr(x, "S7_package", TRUE), package)
+is_S7_hook <- function(x, package = NULL) {
+  if (!inherits(x, "S7_hook")) {
+    return(FALSE)
+  }
+  is.null(package) || identical(attr(x, "S7_package", TRUE), package)
 }
 
 hooks_packages <- function(package) {
@@ -178,6 +198,7 @@ hooks_packages <- function(package) {
 
 unregister_own_S7_method <- function(generic, signature, method) {
   signatures <- flatten_signature(signature)
+  removed <- FALSE
   for (sig in signatures) {
     current <- generic_get_method(generic, sig)
     own <- S7_method(method, generic = generic, signature = sig)
@@ -186,7 +207,8 @@ unregister_own_S7_method <- function(generic, signature, method) {
     }
     if (identical(current, own)) {
       generic_remove_method(generic, sig)
+      removed <- TRUE
     }
   }
-  invisible()
+  invisible(removed)
 }
