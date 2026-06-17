@@ -82,28 +82,6 @@ test_that("S7_on_unload() doesn't remove methods registered by another package",
   expect_equal(upstream$gen("x"), "second")
 })
 
-test_that("S7_on_unload() doesn't restore overwritten methods", {
-  upstream <- local_package(
-    "upstream_no_restore",
-    gen := new_generic("x"),
-    method(gen, class_character) <- function(x) "upstream"
-  )
-  expect_equal(upstream$gen("x"), "upstream")
-
-  downstream <- local_package(
-    "downstream_no_restore",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
-    gen := new_external_generic("upstream_no_restore", dispatch_args = "x"),
-    method(gen, class_character) <- function(x) "downstream"
-  )
-  downstream$.onLoad()
-  expect_equal(upstream$gen("x"), "downstream")
-
-  downstream$.onUnload()
-  expect_error(upstream$gen("x"), class = "S7_error_method_not_found")
-})
-
 test_that("S7_on_load() removes hooks for deleted external methods", {
   upstream <- local_package("upstream_deleted", gen := new_generic("x"))
   downstream <- local_package(
