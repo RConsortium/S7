@@ -253,7 +253,10 @@ external_method_restoration <- function(method, generic, signature, generic_fun)
   }
 
   package <- S7_method_package(method)
-  if (is.null(package) || !isNamespaceLoaded(package)) {
+  if (is.null(package)) {
+    return(method)
+  }
+  if (!isNamespaceLoaded(package)) {
     return(NULL)
   }
 

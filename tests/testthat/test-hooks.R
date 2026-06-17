@@ -134,6 +134,35 @@ test_that("S7_on_unload() restores overwritten methods from the generic package"
   expect_equal(upstream$gen("x"), "upstream")
 })
 
+test_that("S7_on_unload() restores overwritten methods from the session", {
+  upstream <- local_package("upstream_restore_session", gen := new_generic("x"))
+  local_methods(upstream$gen)
+
+  session <- new.env(parent = globalenv())
+  session$upstream <- upstream
+  eval(
+    quote(method(upstream$gen, class_character) <- function(x) "session"),
+    session
+  )
+  expect_equal(upstream$gen("x"), "session")
+
+  downstream <- local_package(
+    "downstream_restore_session",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      "upstream_restore_session",
+      dispatch_args = "x"
+    ),
+    method(gen, class_character) <- function(x) "downstream"
+  )
+  downstream$.onLoad()
+  expect_equal(upstream$gen("x"), "downstream")
+
+  downstream$.onUnload()
+  expect_equal(upstream$gen("x"), "session")
+})
+
 test_that("S7_on_unload() restores upstream methods from base functions", {
   upstream <- local_package(
     "upstream_restore_base_function",
