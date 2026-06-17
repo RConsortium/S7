@@ -11,10 +11,10 @@
 #'   packages, but there's no harm in always including it and it ensures you
 #'   won't forget later.
 #'
-#' * Call `S7_on_unload()` from `.onUnload()`. This undoes the work of
-#'   `S7_on_load()`: it unregisters the methods that your package registered
-#'   for S7 generics in other packages and removes any hooks that
-#'   `S7_on_load()` added.
+#' * Call `S7_on_unload()` from `.onUnload()`. This cleans up after
+#'   `S7_on_load()`: it unregisters methods that your package registered for
+#'   S7 generics in other packages, if they are still active, and removes any
+#'   hooks that `S7_on_load()` added.
 #'
 #' * Call `S7_on_build()` at the top level (i.e. *not* inside `.onLoad()`)
 #'   after all method registration is complete. This avoids embedding copies
@@ -85,16 +85,12 @@ S7_on_unload_ <- function(env) {
     generic <- as_generic(generic)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
-      removed <- unregister_own_S7_method(
+      unregister_own_S7_method(
         generic,
         x$signature,
         x$method,
-        x$previous,
         package
       )
-      if (removed) {
-        hooks_restore_loaded(x$generic$package)
-      }
     }
   }
 
@@ -141,22 +137,8 @@ hooks_remove <- function(package) {
 
 hooks_run_loaded <- function(hooks) {
   is_loaded <- vlapply(names(hooks), isNamespaceLoaded)
-  hooks_run(hooks[is_loaded])
-}
-
-hooks_restore_loaded <- function(package) {
-  hooks <- getHook(packageEvent(package, "onLoad"))
-  hooks <- hooks[vlapply(hooks, is_S7_hook)]
-  hooks_run(hooks, quiet = TRUE)
-}
-
-hooks_run <- function(hooks, quiet = FALSE) {
-  for (hook in hooks) {
-    if (quiet) {
-      suppressMessages(hook())
-    } else {
-      hook()
-    }
+  for (hook in hooks[is_loaded]) {
+    hook()
   }
   invisible()
 }
@@ -214,22 +196,16 @@ unregister_own_S7_method <- function(
   generic,
   signature,
   method,
-  previous = NULL,
   package = NULL
 ) {
   signatures <- flatten_signature(signature)
-  removed <- FALSE
   for (i in seq_along(signatures)) {
     sig <- signatures[[i]]
     current <- generic_get_method(generic, sig)
     own <- S7_method_for_signature(method, generic, sig, package = package)
     if (identical(current, own)) {
       generic_remove_method(generic, sig)
-      if (length(previous) >= i && !is.null(previous[[i]])) {
-        generic_add_method(generic, sig, previous[[i]])
-      }
-      removed <- TRUE
     }
   }
-  invisible(removed)
+  invisible()
 }

@@ -87,18 +87,8 @@ register_method <- function(
   }
 
   external <- NULL
-  previous <- NULL
   if (!is.null(package) && !is_local_generic(generic, package)) {
     external <- as_external_generic(generic, env)
-    if (is_S7_generic(generic)) {
-      previous <- external_methods_capture_previous(
-        external,
-        signature,
-        method,
-        generic,
-        method_package
-      )
-    }
   }
 
   # Register in current session
@@ -127,7 +117,7 @@ register_method <- function(
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    external_methods_add(package, external, signature, method, previous)
+    external_methods_add(package, external, signature, method)
     return(generic_sentinel(external))
   }
 

@@ -28,10 +28,10 @@ other packages are registered as needed when your package is loaded. This
 is only strictly necessary if you register methods for generics in other
 packages, but there's no harm in always including it and it ensures you
 won't forget later.
-\item Call \code{S7_on_unload()} from \code{.onUnload()}. This undoes the work of
-\code{S7_on_load()}: it unregisters the methods that your package registered
-for S7 generics in other packages and removes any hooks that
-\code{S7_on_load()} added.
+\item Call \code{S7_on_unload()} from \code{.onUnload()}. This cleans up after
+\code{S7_on_load()}: it unregisters methods that your package registered for
+S7 generics in other packages, if they are still active, and removes any
+hooks that \code{S7_on_load()} added.
 \item Call \code{S7_on_build()} at the top level (i.e. \emph{not} inside \code{.onLoad()})
 after all method registration is complete. This avoids embedding copies
 of external generics in your package when you use \verb{method<-}.
