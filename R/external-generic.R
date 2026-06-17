@@ -131,6 +131,9 @@ external_methods_add <- function(
   method,
   previous = NULL
 ) {
+  existing <- external_methods_find(package, generic, signature)
+  previous <- external_methods_merge_previous(previous, existing$previous)
+
   # Remove any existing entries
   external_methods_remove(package, generic, signature)
 
@@ -148,6 +151,33 @@ external_methods_add <- function(
 
   S7_methods_table(package) <- tbl
   invisible()
+}
+
+external_methods_find <- function(package, generic, signature) {
+  tbl <- S7_methods_table(package)
+  for (x in tbl) {
+    if (identical(x$generic, generic) && identical(x$signature, signature)) {
+      return(x)
+    }
+  }
+
+  NULL
+}
+
+external_methods_merge_previous <- function(previous, existing) {
+  if (is.null(previous)) {
+    return(existing)
+  }
+  if (is.null(existing)) {
+    return(previous)
+  }
+
+  n <- max(length(previous), length(existing))
+  length(previous) <- n
+  length(existing) <- n
+  missing <- vlapply(previous, is.null)
+  previous[missing] <- existing[missing]
+  previous
 }
 
 external_methods_remove <- function(package, generic, signature) {
@@ -173,11 +203,9 @@ external_methods_capture_previous <- function(generic, signature, method, generi
     current <- generic_get_method(generic_fun, sig)
     own <- S7_method_for_signature(method, generic_fun, sig)
 
-    if (
-      is_S7_method_from_package(current, generic$package) &&
-        !identical(current, own)
-    ) {
-      previous[[i]] <- current
+    restored <- external_method_restoration(current, generic, sig, generic_fun)
+    if (!identical(current, own) && !is.null(restored)) {
+      previous[[i]] <- restored
       found <- TRUE
     }
   }
@@ -197,6 +225,48 @@ external_methods_set_previous <- function(package, generic, signature, previous)
   }
 
   invisible()
+}
+
+external_method_restoration <- function(method, generic, signature, generic_fun) {
+  if (is.null(method)) {
+    return(NULL)
+  }
+  if (is_S7_method_from_package(method, generic$package)) {
+    return(method)
+  }
+
+  package <- packageName(environment(method))
+  if (is.null(package) || !isNamespaceLoaded(package)) {
+    return(NULL)
+  }
+
+  tbl <- S7_methods_table(package)
+  for (x in tbl) {
+    if (!external_generics_match(x$generic, generic)) {
+      next
+    }
+
+    signatures <- flatten_signature(x$signature)
+    for (i in seq_along(signatures)) {
+      sig <- signatures[[i]]
+      own <- S7_method_for_signature(x$method, generic_fun, sig)
+      if (
+        identical(signature, sig) &&
+          identical(method, own) &&
+          length(x$previous) >= i
+      ) {
+        return(x$previous[[i]])
+      }
+    }
+  }
+
+  NULL
+}
+
+external_generics_match <- function(x, y) {
+  identical(x$package, y$package) &&
+    identical(x$name, y$name) &&
+    identical(x$dispatch_args, y$dispatch_args)
 }
 
 is_S7_method_from_package <- function(method, package) {

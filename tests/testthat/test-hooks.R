@@ -114,6 +114,75 @@ test_that("S7_on_unload() restores overwritten methods from the generic package"
   expect_equal(upstream$gen("x"), "upstream")
 })
 
+test_that("S7_on_unload() preserves restoration after repeated registration", {
+  upstream <- local_package(
+    "upstream_restore_reregister",
+    gen := new_generic("x"),
+    method(gen, class_character) <- function(x) "upstream"
+  )
+  downstream <- local_package(
+    "downstream_restore_reregister",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      "upstream_restore_reregister",
+      dispatch_args = "x"
+    ),
+    method(gen, class_character) <- function(x) "downstream"
+  )
+  expect_equal(upstream$gen("x"), "downstream")
+
+  expect_message(
+    eval(
+      quote(method(gen, class_character) <- function(x) "downstream again"),
+      downstream
+    ),
+    "Overwriting method"
+  )
+  expect_equal(upstream$gen("x"), "downstream again")
+
+  downstream$.onUnload()
+  expect_equal(upstream$gen("x"), "upstream")
+})
+
+test_that("S7_on_unload() preserves restoration across unload order", {
+  upstream <- local_package(
+    "upstream_restore_chain",
+    gen := new_generic("x"),
+    method(gen, class_character) <- function(x) "upstream"
+  )
+  first <- local_package(
+    "downstream_restore_chain_first",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic("upstream_restore_chain", dispatch_args = "x"),
+    method(gen, class_character) <- function(x) "first"
+  )
+  expect_equal(upstream$gen("x"), "first")
+
+  second <- NULL
+  expect_message(
+    second <- local_package(
+      "downstream_restore_chain_second",
+      .onLoad <- function(...) S7_on_load(),
+      .onUnload <- function(...) S7_on_unload(),
+      gen := new_external_generic(
+        "upstream_restore_chain",
+        dispatch_args = "x"
+      ),
+      method(gen, class_character) <- function(x) "second"
+    ),
+    "Overwriting method"
+  )
+  expect_equal(upstream$gen("x"), "second")
+
+  first$.onUnload()
+  expect_equal(upstream$gen("x"), "second")
+
+  second$.onUnload()
+  expect_equal(upstream$gen("x"), "upstream")
+})
+
 test_that("S7_on_load() removes hooks for deleted external methods", {
   upstream <- local_package("upstream_deleted", gen := new_generic("x"))
   downstream <- local_package(
