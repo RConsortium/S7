@@ -58,10 +58,14 @@ new_constructor <- function(
   # so that positional matching is preserved.
   args <- modify_list(arg_info$parent, arg_info$self)
 
-  # Read-only props don't get args
+  parent_prop_nms <- names2(attr(parent, "properties", exact = TRUE) %||% list())
+  prop_nms <- names2(properties)
+
+  # Read-only props that override parent props don't get args
   is_read_only <- vlapply(properties, prop_is_read_only)
-  if (any(is_read_only)) {
-    args <- args[setdiff(names2(args), names2(properties)[is_read_only])]
+  read_only_override_nms <- intersect(prop_nms[is_read_only], parent_prop_nms)
+  if (length(read_only_override_nms) > 0) {
+    args <- args[setdiff(names2(args), read_only_override_nms)]
   }
 
   # ensure default value for `...` is empty
@@ -70,10 +74,16 @@ new_constructor <- function(
   }
 
   # Overridden properties are passed to both the parent and child.
-  # This make it possible to override mandatory properties and custom setters.
+  # This makes it possible to override mandatory properties and custom setters.
+  is_dynamic_settable <- vlapply(properties, prop_is_dynamic) &
+    vlapply(properties, prop_has_setter)
+  dynamic_settable_override_nms <- intersect(
+    prop_nms[is_dynamic_settable],
+    parent_prop_nms
+  )
   parent_arg_nms <- setdiff(
     names(arg_info$parent),
-    names2(properties)[is_read_only]
+    c(read_only_override_nms, dynamic_settable_override_nms)
   )
   parent_args <- as_names(parent_arg_nms, named = TRUE)
   names(parent_args)[names(parent_args) == "..."] <- ""

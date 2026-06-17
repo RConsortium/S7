@@ -198,6 +198,40 @@ test_that("property redeclared as read-only is removed from the constructor", {
   expect_equal(foo2()@x, "fixed")
 })
 
+test_that("read-only properties don't remove parent-only constructor arguments", {
+  Factor := new_class(
+    class_factor,
+    properties = list(levels = new_property(getter = function(self) levels(self)))
+  )
+
+  expect_named(formals(Factor), c(".data", "levels"))
+  x <- Factor(c(1L, 2L), levels = c("a", "b"))
+
+  expect_equal(levels(x), c("a", "b"))
+  expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
+})
+
+test_that("dynamic settable property overrides are not passed to parent", {
+  foo := new_class(properties = list(x = class_integer))
+  foo2 := new_class(
+    foo,
+    properties = list(
+      x = new_property(
+        class_character,
+        getter = function(self) self@x,
+        setter = function(self, value) {
+          self@x <- value
+          self
+        }
+      )
+    )
+  )
+
+  expect_named(formals(foo2), "x")
+  expect_equal(foo2()@x, character())
+  expect_equal(foo2("a")@x, "a")
+})
+
 test_that("can create constructors with missing or lazy defaults", {
   Person := new_class(
     properties = list(
