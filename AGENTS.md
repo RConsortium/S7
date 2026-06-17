@@ -1,6 +1,8 @@
 ## This package
 
-<!-- Insert package-specific content here. use_tidy_agents() will preserve this section when updating the rest of the file. -->
+* Use `:=` with `new_class()` and `new_generic()`, i.e. `foo := new_class(...)` instead of `foo <- new_class("foo", ...)`.
+* Use `defer()` instead of `on.exit()`.
+* For tests, only use `test_that()`, not `describe()`/`it()`
 
 ## Package development
 
