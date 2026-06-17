@@ -253,3 +253,17 @@ generic_remove_method <- function(generic, signature) {
   }
   invisible()
 }
+
+generic_get_method <- function(generic, signature) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, class_register)
+
+  for (class_name in chr_signature) {
+    p_tbl <- p_tbl[[class_name]]
+    if (is.null(p_tbl)) {
+      return(NULL)
+    }
+  }
+
+  p_tbl
+}

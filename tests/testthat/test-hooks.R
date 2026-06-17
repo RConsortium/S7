@@ -32,6 +32,63 @@ test_that("S7_on_unload() unregisters methods and removes hooks", {
   )
 })
 
+test_that("S7_on_unload() doesn't remove methods registered by another package", {
+  upstream <- local_package("upstream_conflict", gen := new_generic("x"))
+  first <- local_package(
+    "downstream_first",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic("upstream_conflict", dispatch_args = "x"),
+    method(gen, class_character) <- function(x) "first"
+  )
+  first$.onLoad()
+  expect_equal(upstream$gen("x"), "first")
+
+  second <- NULL
+  expect_message(
+    second <- local_package(
+      "downstream_second",
+      .onLoad <- function(...) S7_on_load(),
+      .onUnload <- function(...) S7_on_unload(),
+      gen := new_external_generic("upstream_conflict", dispatch_args = "x"),
+      method(gen, class_character) <- function(x) "second"
+    ),
+    "Overwriting method"
+  )
+  second$.onLoad()
+  expect_equal(upstream$gen("x"), "second")
+
+  first$.onUnload()
+  expect_equal(upstream$gen("x"), "second")
+})
+
+test_that("S7_on_load() removes hooks for deleted external methods", {
+  upstream <- local_package("upstream_deleted", gen := new_generic("x"))
+  downstream <- local_package(
+    "downstream_deleted",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    Foo := new_class(),
+    gen := new_external_generic("upstream_deleted", dispatch_args = "x"),
+    method(gen, Foo) <- function(x) "dispatched"
+  )
+  downstream$.onLoad()
+  expect_length(package_hooks("upstream_deleted"), 1)
+
+  eval(quote(method(gen, Foo) <- NULL), downstream)
+  expect_error(
+    upstream$gen(downstream$Foo()),
+    class = "S7_error_method_not_found"
+  )
+
+  downstream$.onLoad()
+  expect_length(package_hooks("upstream_deleted"), 0)
+  expect_error(
+    upstream$gen(downstream$Foo()),
+    class = "S7_error_method_not_found"
+  )
+})
+
 test_that("S7_on_unload() unregisters methods when a real package is unloaded (#316)", {
   skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())

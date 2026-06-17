@@ -77,7 +77,7 @@ S7_on_unload_ <- function(env) {
     generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
-      unregister_S7_method(generic, x$signature)
+      unregister_own_S7_method(generic, x$signature, x$method)
     }
   }
 
@@ -89,6 +89,7 @@ S7_on_unload_ <- function(env) {
 hooks_add <- function(package) {
   ns <- asNamespace(package)
   tbl <- S7_methods_table(package)
+  pkgs <- vcapply(tbl, function(x) x$generic$package)
 
   hooks <- lapply(tbl, function(x) {
     register <- registrar(x$generic, x$signature, x$method, ns)
@@ -96,14 +97,18 @@ hooks_add <- function(package) {
     setHook(packageEvent(x$generic$package, "onLoad"), hook)
     hook
   })
-  names(hooks) <- vcapply(tbl, function(x) x$generic$package)
+  names(hooks) <- pkgs
+  hooks_packages(package) <- union(hooks_packages(package), pkgs)
   hooks
 }
 
 # Remove our hooks for `package`.
 hooks_remove <- function(package) {
   tbl <- S7_methods_table(package)
-  pkgs <- unique(vcapply(tbl, function(x) x$generic$package))
+  pkgs <- unique(c(
+    hooks_packages(package),
+    vcapply(tbl, function(x) x$generic$package)
+  ))
 
   for (pkg in pkgs) {
     event <- packageEvent(pkg, "onLoad")
@@ -113,6 +118,7 @@ hooks_remove <- function(package) {
       setHook(event, hooks[!ours], action = "replace")
     }
   }
+  hooks_packages(package) <- character()
   invisible()
 }
 
@@ -156,4 +162,31 @@ S7_hook <- function(fun, package) {
 }
 is_S7_hook <- function(x, package) {
   inherits(x, "S7_hook") && identical(attr(x, "S7_package", TRUE), package)
+}
+
+hooks_packages <- function(package) {
+  ns <- asNamespace(package)
+  tbl <- ns[[".__S3MethodsTable__."]]
+  attr(tbl, "S7hooks") %||% character()
+}
+`hooks_packages<-` <- function(package, value) {
+  ns <- asNamespace(package)
+  tbl <- ns[[".__S3MethodsTable__."]]
+  attr(tbl, "S7hooks") <- value
+  invisible()
+}
+
+unregister_own_S7_method <- function(generic, signature, method) {
+  signatures <- flatten_signature(signature)
+  for (sig in signatures) {
+    current <- generic_get_method(generic, sig)
+    own <- S7_method(method, generic = generic, signature = sig)
+    if (is.null(attr(own, "name", TRUE))) {
+      attr(own, "name") <- as.name(method_signature(generic, sig))
+    }
+    if (identical(current, own)) {
+      generic_remove_method(generic, sig)
+    }
+  }
+  invisible()
 }
