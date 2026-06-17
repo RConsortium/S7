@@ -85,6 +85,20 @@ register_method <- function(
     )
   }
 
+  external <- NULL
+  previous <- NULL
+  if (!is.null(package) && !is_local_generic(generic, package)) {
+    external <- as_external_generic(generic, env)
+    if (is_S7_generic(generic)) {
+      previous <- external_methods_capture_previous(
+        external,
+        signature,
+        method,
+        generic
+      )
+    }
+  }
+
   # Register in current session
   signatures <- flatten_signature(signature)
   if (is_S7_generic(generic)) {
@@ -105,8 +119,7 @@ register_method <- function(
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    external <- as_external_generic(generic, env)
-    external_methods_add(package, external, signature, method)
+    external_methods_add(package, external, signature, method, previous)
     return(generic_sentinel(external))
   }
 
@@ -163,10 +176,18 @@ register_S7_method <- function(
     name = method_name(generic, signature),
     call = call
   )
-  method <- S7_method(method, generic = generic, signature = signature)
+  method <- S7_method_for_signature(method, generic, signature)
   generic_add_method(generic, signature, method)
 
   invisible()
+}
+
+S7_method_for_signature <- function(method, generic, signature) {
+  method <- S7_method(method, generic = generic, signature = signature)
+  if (is.null(attr(method, "name", TRUE))) {
+    attr(method, "name") <- as.name(method_signature(generic, signature))
+  }
+  method
 }
 
 unregister_S7_method <- function(generic, signature) {

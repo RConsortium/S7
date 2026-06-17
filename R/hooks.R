@@ -77,7 +77,12 @@ S7_on_unload_ <- function(env) {
     generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
-      removed <- unregister_own_S7_method(generic, x$signature, x$method)
+      removed <- unregister_own_S7_method(
+        generic,
+        x$signature,
+        x$method,
+        x$previous
+      )
       if (removed) {
         hooks_restore_loaded(x$generic$package)
       }
@@ -196,17 +201,23 @@ hooks_packages <- function(package) {
   invisible()
 }
 
-unregister_own_S7_method <- function(generic, signature, method) {
+unregister_own_S7_method <- function(
+  generic,
+  signature,
+  method,
+  previous = NULL
+) {
   signatures <- flatten_signature(signature)
   removed <- FALSE
-  for (sig in signatures) {
+  for (i in seq_along(signatures)) {
+    sig <- signatures[[i]]
     current <- generic_get_method(generic, sig)
-    own <- S7_method(method, generic = generic, signature = sig)
-    if (is.null(attr(own, "name", TRUE))) {
-      attr(own, "name") <- as.name(method_signature(generic, sig))
-    }
+    own <- S7_method_for_signature(method, generic, sig)
     if (identical(current, own)) {
       generic_remove_method(generic, sig)
+      if (length(previous) >= i && !is.null(previous[[i]])) {
+        generic_add_method(generic, sig, previous[[i]])
+      }
       removed <- TRUE
     }
   }

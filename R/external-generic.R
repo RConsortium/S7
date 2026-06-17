@@ -97,6 +97,22 @@ registrar <- function(generic, signature, method, env) {
         warning(msg, call. = FALSE)
       } else {
         generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
+        if (is_S7_generic(generic_fun)) {
+          previous <- external_methods_capture_previous(
+            generic,
+            signature,
+            method,
+            generic_fun
+          )
+          if (!is.null(previous)) {
+            external_methods_set_previous(
+              packageName(env),
+              generic,
+              signature,
+              previous
+            )
+          }
+        }
         register_method(generic_fun, signature, method, env, package = NULL)
       }
     }
@@ -108,16 +124,27 @@ external_methods_reset <- function(package) {
   invisible()
 }
 
-external_methods_add <- function(package, generic, signature, method) {
+external_methods_add <- function(
+  package,
+  generic,
+  signature,
+  method,
+  previous = NULL
+) {
   # Remove any existing entries
   external_methods_remove(package, generic, signature)
 
-  tbl <- S7_methods_table(package)
-  append1(tbl) <- list(
+  entry <- list(
     generic = generic,
     signature = signature,
     method = method
   )
+  if (!is.null(previous)) {
+    entry$previous <- previous
+  }
+
+  tbl <- S7_methods_table(package)
+  append1(tbl) <- entry
 
   S7_methods_table(package) <- tbl
   invisible()
@@ -134,6 +161,47 @@ external_methods_remove <- function(package, generic, signature) {
   })
   S7_methods_table(package) <- tbl[keep]
   invisible()
+}
+
+external_methods_capture_previous <- function(generic, signature, method, generic_fun) {
+  signatures <- flatten_signature(signature)
+  previous <- vector("list", length(signatures))
+  found <- FALSE
+
+  for (i in seq_along(signatures)) {
+    sig <- signatures[[i]]
+    current <- generic_get_method(generic_fun, sig)
+    own <- S7_method_for_signature(method, generic_fun, sig)
+
+    if (
+      is_S7_method_from_package(current, generic$package) &&
+        !identical(current, own)
+    ) {
+      previous[[i]] <- current
+      found <- TRUE
+    }
+  }
+
+  if (found) previous else NULL
+}
+
+external_methods_set_previous <- function(package, generic, signature, previous) {
+  tbl <- S7_methods_table(package)
+  for (i in seq_along(tbl)) {
+    x <- tbl[[i]]
+    if (identical(x$generic, generic) && identical(x$signature, signature)) {
+      tbl[[i]]$previous <- previous
+      S7_methods_table(package) <- tbl
+      return(invisible())
+    }
+  }
+
+  invisible()
+}
+
+is_S7_method_from_package <- function(method, package) {
+  inherits(method, "S7_method") &&
+    identical(packageName(environment(method)), package)
 }
 
 # Store external methods in an attribute of the S3 methods table since
