@@ -218,7 +218,7 @@ external_methods_set_previous <- function(package, generic, signature, previous)
   for (i in seq_along(tbl)) {
     x <- tbl[[i]]
     if (identical(x$generic, generic) && identical(x$signature, signature)) {
-      tbl[[i]]$previous <- previous
+      tbl[[i]]$previous <- external_methods_merge_previous(previous, x$previous)
       S7_methods_table(package) <- tbl
       return(invisible())
     }

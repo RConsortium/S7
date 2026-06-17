@@ -32,6 +32,26 @@ test_that("S7_on_unload() unregisters methods and removes hooks", {
   )
 })
 
+test_that("S7_on_unload() unregisters base operator methods", {
+  local_methods(base_ops[["+"]])
+
+  downstream <- local_package(
+    "downstream_base_ops_unload",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    Foo := new_class(),
+    method(`+`, list(Foo, Foo)) <- function(e1, e2) "dispatched"
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$Foo() + downstream$Foo(), "dispatched")
+
+  downstream$.onUnload()
+  expect_error(
+    downstream$Foo() + downstream$Foo(),
+    class = "S7_error_method_not_found"
+  )
+})
+
 test_that("S7_on_unload() doesn't remove methods registered by another package", {
   upstream <- local_package("upstream_conflict", gen := new_generic("x"))
   first <- local_package(
@@ -181,6 +201,52 @@ test_that("S7_on_unload() preserves restoration across unload order", {
 
   second$.onUnload()
   expect_equal(upstream$gen("x"), "upstream")
+})
+
+test_that("S7_on_unload() preserves union restorations after partial overwrite", {
+  upstream <- local_package(
+    "upstream_restore_union",
+    gen := new_generic("x"),
+    method(gen, class_character) <- function(x) "upstream-character",
+    method(gen, class_integer) <- function(x) "upstream-integer"
+  )
+  first <- local_package(
+    "downstream_restore_union_first",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic("upstream_restore_union", dispatch_args = "x"),
+    method(gen, new_union(class_character, class_integer)) <-
+      function(x) "first"
+  )
+  first$.onLoad()
+  expect_equal(upstream$gen("x"), "first")
+  expect_equal(upstream$gen(1L), "first")
+
+  second <- NULL
+  expect_message(
+    second <- local_package(
+      "downstream_restore_union_second",
+      .onLoad <- function(...) S7_on_load(),
+      .onUnload <- function(...) S7_on_unload(),
+      gen := new_external_generic(
+        "upstream_restore_union",
+        dispatch_args = "x"
+      ),
+      method(gen, class_character) <- function(x) "second"
+    ),
+    "Overwriting method"
+  )
+  second$.onLoad()
+  expect_equal(upstream$gen("x"), "second")
+  expect_equal(upstream$gen(1L), "first")
+
+  expect_message(first$.onLoad(), "Overwriting method")
+  expect_equal(upstream$gen("x"), "first")
+  expect_equal(upstream$gen(1L), "first")
+
+  first$.onUnload()
+  expect_equal(upstream$gen("x"), "second")
+  expect_equal(upstream$gen(1L), "upstream-integer")
 })
 
 test_that("S7_on_load() removes hooks for deleted external methods", {

@@ -75,6 +75,10 @@ S7_on_unload_ <- function(env) {
 
     ns <- asNamespace(x$generic$package)
     generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
+    if (is.null(generic)) {
+      next
+    }
+    generic <- as_generic(generic)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
       removed <- unregister_own_S7_method(
