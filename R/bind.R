@@ -41,5 +41,7 @@
 
   cl[[1L]] <- quote(`<-`)
   cl[[3L]]$name <- as.character(cl[[2L]])
-  invisible(eval.parent(cl))
+
+  # Can't use eval because it introduces a new frame
+  invisible(.Call(S7_eval_bare_, cl, parent.frame()))
 }

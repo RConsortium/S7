@@ -131,8 +131,11 @@ new_class <- function(
     }
   }
 
+  # Combine properties from parent, overriding as needed
+  parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
   check_prop_names(new_props)
+  check_prop_overrides(new_props, parent_props, name, parent)
 
   if (is.null(constructor)) {
     constructor <- new_constructor(
@@ -143,20 +146,18 @@ new_class <- function(
     )
   }
 
-  all_props <- modify_list(attr(parent, "properties", exact = TRUE), new_props)
-
   object <- constructor
   # Must synchronise with prop_names
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
-  attr(object, "properties") <- all_props
+  attr(object, "properties") <- modify_list(parent_props, new_props)
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
-  global_variables(names(all_props))
+  global_variables(names(new_props))
   object
 }
 globalVariables(c(
@@ -436,5 +437,45 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   # `...` can't be a property name because it's special syntax
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
+  }
+}
+
+check_prop_overrides <- function(
+  child_props,
+  parent_props,
+  name,
+  parent,
+  call = sys.call(-1L)
+) {
+  overridden <- intersect(names(child_props), names(parent_props))
+
+  for (prop in overridden) {
+    child_prop <- child_props[[prop]]
+
+    # Dynamic properties are computed, not stored, so they're never validated
+    # against the parent's type
+    if (prop_is_dynamic(child_prop)) {
+      next
+    }
+
+    child_class <- child_prop$class
+    parent_class <- parent_props[[prop]]$class
+
+    if (!class_extends(child_class, parent_class)) {
+      child_desc <- paste0("<", name, ">")
+      parent_desc <- class_desc(parent)
+      msg <- c(
+        sprintf(
+          "%s@%s must narrow %s@%s.",
+          child_desc,
+          prop,
+          parent_desc,
+          prop
+        ),
+        sprintf("- %s@%s is %s.", parent_desc, prop, class_desc(parent_class)),
+        sprintf("- %s@%s is %s.", child_desc, prop, class_desc(child_class))
+      )
+      stop2(msg, call = call)
+    }
   }
 }
