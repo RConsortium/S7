@@ -203,6 +203,8 @@ unregister_own_S7_method <- function(
     sig <- signatures[[i]]
     current <- generic_get_method(generic, sig)
     own <- S7_method_for_signature(method, generic, sig, package = package)
+    # Unload only removes the method this package currently owns. It does not
+    # remember or restore any method that was overwritten during loading.
     if (identical(current, own)) {
       generic_remove_method(generic, sig)
     }
