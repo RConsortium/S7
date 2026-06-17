@@ -50,7 +50,7 @@ test_that("operator methods on S3/S4 classes work when neither operand is S7", {
   method(`+`, list(class_foo, class_any)) <- function(e1, e2) "foo+any"
   expect_equal(foo + 10, "foo+any")
 
-  fooS4 <- local_S4_class("fooS4")
+  fooS4 := local_S4_class(contains = "character")
   method(`+`, list(fooS4, class_any)) <- function(e1, e2) "fooS4+any"
   expect_equal(fooS4("x") + 10, "fooS4+any")
 
@@ -77,7 +77,7 @@ test_that("operator bridge does not clobber an existing group method", {
 
 test_that("Ops generics dispatch to S7 methods for S4 classes", {
   local_methods(base_ops[["+"]])
-  fooS4 <- local_S4_class("fooS4", contains = "character")
+  fooS4 := local_S4_class(contains = "character")
   fooS7 := new_class()
 
   method(`+`, list(fooS7, fooS4)) <- function(e1, e2) "S7-S4"

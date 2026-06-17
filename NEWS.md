@@ -19,6 +19,7 @@
 * `method<-` and `method()` now accept a length-1 list as `signature` for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (#555).
 * `new_object()` now names its first argument `_parent` to minimise the chance of a clash with a property (#423). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to programmatically construct an object from a list of properties (#497).
 * `method<-` can now register methods on S3 and S4 generics with base types (e.g. `class_character`), S3 classes (`new_S3_class()`, `class_factor`, etc.), S7 unions (expanded to one registration per class), `class_any` (registered as the `default` method), and `NULL` (registered as the `NULL` method) (#455).
+* `method<-` no longer emits an "Overwriting method" message when re-registering an identical method, eliminating spurious messages from `devtools::load_all()` (#474).
 * `new_class()` now errors if a child class overrides a parent property with a type that doesn't extend the parent's type, since such a class could never be instantiated. Narrowing the type is still allowed, as are dynamic (getter) properties (#352).
 * `new_class()` now allows properties named `names`, `dim`, `dimnames`, `class`, `comment`, `tsp`, and `row.names`. But property names beginning with `_` are now reserved for internal use (#579).
 * `new_class()` experimentally allows `class_environment` as a parent again, so you can build S7 objects that share R's reference semantics for environments. This support is provisional: because environments are mutated in place, some operations behave differently than for value-typed S7 objects, and the API may change. `S7_data()` and `S7_data<-()` error on environment-based objects, since they would otherwise destroy the object's S7 attributes in place (#590).
@@ -26,6 +27,7 @@
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * `new_object()` no longer re-runs property validators for properties inherited unchanged from an already-validated parent class, so constructing an instance of a deeply nested class hierarchy validates each property exactly once (#539).
 * `new_property()` now runs the property class's own validator when checking a value, not just the structural class check, so a property restricted to an S3 class (e.g. `class_factor`) now enforces constraints that aren't visible in `class()` (#401).
+* `new_property()` now warns when `default` is a complex value like a named vector, because such values are inlined into the constructor and can cause `R CMD check` failures. Wrap them in `quote()` instead. This warning will become an error in a future release (#541).
 * `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
 * `print(<S7_class>)` now shows property defaults inline (`= "value"`) and annotates read-only properties (`[read-only]`) (#439).
@@ -41,8 +43,9 @@
 * `S7_data<-()` now preserves attributes (like `names` or `dim`) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (#478).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
+* `S7_on_load()` is the new name for `methods_register()`, giving it a nicer symmetry with `S7_on_build()`; `methods_register()` remains available for backward compatibility (#615). It no longer accumulates duplicate registration hooks when a package is loaded repeatedly (#316).
+* New `S7_on_unload()`, to be called from `.onUnload()`, unregisters active methods and removes hooks added by `S7_on_load()` (#316).
 * `set_props()` now names its first argument `_object` to minimise the chances of a clash with a property (#423). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (#497).
-* `S7_on_load()` is the new name for `methods_register()`, giving it a nicer symmetry with `S7_on_build()`; `methods_register()` remains available for backward compatibility (#615).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
 * `validate()` now signals validation errors with class `S7_error_validation_failed`, so they can be caught with `tryCatch()` (#602, #605).

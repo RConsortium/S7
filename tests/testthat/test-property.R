@@ -420,6 +420,30 @@ test_that("new_property() validates default", {
   })
 })
 
+test_that("new_property() rejects invalid complex defaults without warning first", {
+  old <- options(warn = 2)
+  defer(options(old))
+
+  expect_error(
+    new_property(class_integer, default = c("x", "y")),
+    "`default` must be an instance of <integer>"
+  )
+})
+
+test_that("new_property() warns if default is not a scalar or quoted call", {
+  expect_snapshot({
+    . <- new_property(class_integer, default = c(any = 1L))
+    . <- new_property(class_POSIXct, default = Sys.time())
+  })
+})
+
+test_that("new_property() doesn't warn for scalar or quoted defaults", {
+  expect_no_warning(new_property(class_integer, default = 1L))
+  expect_no_warning(new_property(class_integer, default = NA_integer_))
+  expect_no_warning(new_property(class_integer, default = quote(foo())))
+  expect_no_warning(new_property(class_integer, default = quote(x)))
+})
+
 test_that("new_property() displays nicely", {
   x <- new_property(class_integer, name = "foo")
   expect_snapshot({
@@ -430,7 +454,7 @@ test_that("new_property() displays nicely", {
 
 test_that("properties can be base, S3, S4, S7, or S7 union", {
   class_S7 := new_class(package = NULL)
-  class_S4 <- methods::setClass("class_S4", slots = c(x = "numeric"))
+  class_S4 := local_S4_class(slots = c(x = "numeric"))
 
   my_class := new_class(
     package = NULL,
@@ -532,14 +556,12 @@ test_that("property validation runs the class's own validator", {
 })
 
 test_that("property validation runs an S4 class's validity method", {
-  PosNum <- methods::setClass(
-    "PosNum",
+  PosNum := local_S4_class(
     slots = c(n = "numeric"),
     validity = function(object) {
       if (object@n <= 0) "n must be positive" else TRUE
     }
   )
-  on.exit(S4_remove_classes("PosNum"))
   Foo := new_class(package = NULL, properties = list(x = PosNum))
 
   # An S4 object that passes the structural check but fails its own validity
