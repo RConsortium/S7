@@ -55,13 +55,10 @@ test_that("displays nicely", {
 })
 
 test_that("can convert existing generics to external", {
-  foo_S7 := new_generic("x")
-  env <- new.env()
-  env$.packageName <- "test"
-  environment(foo_S7) <- env
+  ns <- local_package("test", foo_S7 := new_generic("x"))
 
   expect_equal(
-    as_external_generic(foo_S7),
+    as_external_generic(ns$foo_S7),
     new_external_generic("test", "foo_S7", "x")
   )
 

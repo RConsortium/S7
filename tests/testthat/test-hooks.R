@@ -1,57 +1,35 @@
 test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
-  local_external_methods()
+  upstream <- local_package("upstream", gen := new_generic("x"))
+  expect_length(package_hooks("upstream"), 0)
 
-  Foo := new_class()
-  Bar := new_class()
-  external <- new_external_generic("S7", "convert", c("from", "to"))
-  external_methods_add(
-    "S7",
-    external,
-    new_signature(list(Foo, Bar)),
-    function(from, to, ...) "converted"
+  downstream <- local_package(
+    "downstream",
+    Foo := new_class(),
+    gen := new_external_generic("upstream", dispatch_args = "x"),
+    method(gen, Foo) <- \(x) "dispatched"
   )
-  on.exit(
-    unregister_S7_method(convert, new_signature(list(Foo, Bar))),
-    add = TRUE
-  )
-
-  ns <- asNamespace("S7")
-  n_hooks <- length(getHook(packageEvent("S7", "onLoad")))
-
-  S7_on_load_(ns)
-  S7_on_load_(ns)
-  expect_length(getHook(packageEvent("S7", "onLoad")), n_hooks + 1)
-
-  S7_on_unload_(ns)
+  S7_on_load_(downstream)
+  expect_length(package_hooks("upstream"), 1)
+  S7_on_load_(downstream)
+  expect_length(package_hooks("upstream"), 1)
 })
 
 test_that("S7_on_unload() unregisters methods and removes hooks", {
-  local_external_methods()
-
-  Foo := new_class()
-  Bar := new_class()
-  external <- new_external_generic("S7", "convert", c("from", "to"))
-  external_methods_add(
-    "S7",
-    external,
-    new_signature(list(Foo, Bar)),
-    function(from, to, ...) "converted"
+  upstream <- local_package("upstream", gen := new_generic("x"))
+  downstream <- local_package(
+    "downstream",
+    Foo := new_class(),
+    gen := new_external_generic("upstream", dispatch_args = "x"),
+    method(gen, Foo) <- \(x) "dispatched"
   )
-  on.exit(
-    unregister_S7_method(convert, new_signature(list(Foo, Bar))),
-    add = TRUE
+  S7_on_load_(downstream)
+
+  S7_on_unload_(downstream)
+  expect_length(package_hooks("upstream"), 0)
+  expect_error(
+    upstream$gen(downstream$Foo()),
+    class = "S7_error_method_not_found"
   )
-
-  ns <- asNamespace("S7")
-  n_hooks <- length(getHook(packageEvent("S7", "onLoad")))
-
-  S7_on_load_(ns)
-  expect_length(getHook(packageEvent("S7", "onLoad")), n_hooks + 1)
-  expect_equal(convert(Foo(), Bar), "converted")
-
-  S7_on_unload_(ns)
-  expect_length(getHook(packageEvent("S7", "onLoad")), n_hooks)
-  expect_null(convert@methods[["Foo"]][["Bar"]])
 })
 
 test_that("S7_on_unload() unregisters methods when a real package is unloaded (#316)", {
@@ -68,7 +46,7 @@ test_that("S7_on_unload() unregisters methods when a real package is unloaded (#
   # it registered for t0's generics and removes its hooks for t1
   unloadNamespace("t2")
   expect_null(t0::an_s7_generic@methods[["character"]])
-  expect_length(getHook(packageEvent("t1", "onLoad")), 0)
+  expect_length(package_hooks("t1"), 0)
 })
 
 test_that("S7_on_build() removes only generic sentinels from the namespace", {
