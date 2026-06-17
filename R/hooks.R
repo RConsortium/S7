@@ -74,6 +74,10 @@ S7_on_unload_ <- function(env) {
     }
 
     ns <- asNamespace(x$generic$package)
+    if (!external_generic_version_ok(x$generic, ns)) {
+      next
+    }
+
     generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
     if (is.null(generic)) {
       next
@@ -85,7 +89,8 @@ S7_on_unload_ <- function(env) {
         generic,
         x$signature,
         x$method,
-        x$previous
+        x$previous,
+        package
       )
       if (removed) {
         hooks_restore_loaded(x$generic$package)
@@ -209,14 +214,15 @@ unregister_own_S7_method <- function(
   generic,
   signature,
   method,
-  previous = NULL
+  previous = NULL,
+  package = NULL
 ) {
   signatures <- flatten_signature(signature)
   removed <- FALSE
   for (i in seq_along(signatures)) {
     sig <- signatures[[i]]
     current <- generic_get_method(generic, sig)
-    own <- S7_method_for_signature(method, generic, sig)
+    own <- S7_method_for_signature(method, generic, sig, package = package)
     if (identical(current, own)) {
       generic_remove_method(generic, sig)
       if (length(previous) >= i && !is.null(previous[[i]])) {

@@ -76,6 +76,18 @@ is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
 }
 
+external_generic_available <- function(generic) {
+  is_external_generic(generic) &&
+    isNamespaceLoaded(generic$package) &&
+    external_generic_version_ok(generic, asNamespace(generic$package))
+}
+
+external_generic_version_ok <- function(generic, ns) {
+  stopifnot(is_external_generic(generic), is.environment(ns))
+
+  is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
+}
+
 registrar <- function(generic, signature, method, env) {
   # Force all arguments
   generic
@@ -85,9 +97,7 @@ registrar <- function(generic, signature, method, env) {
 
   function(...) {
     ns <- asNamespace(generic$package)
-    if (
-      is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
-    ) {
+    if (external_generic_version_ok(generic, ns)) {
       if (!exists(generic$name, envir = ns, inherits = FALSE)) {
         msg <- sprintf(
           "[S7] Failed to find generic %s() in package %s",
@@ -102,7 +112,8 @@ registrar <- function(generic, signature, method, env) {
             generic,
             signature,
             method,
-            generic_fun
+            generic_fun,
+            packageName(env)
           )
           if (!is.null(previous)) {
             external_methods_set_previous(
@@ -193,7 +204,13 @@ external_methods_remove <- function(package, generic, signature) {
   invisible()
 }
 
-external_methods_capture_previous <- function(generic, signature, method, generic_fun) {
+external_methods_capture_previous <- function(
+  generic,
+  signature,
+  method,
+  generic_fun,
+  package = NULL
+) {
   signatures <- flatten_signature(signature)
   previous <- vector("list", length(signatures))
   found <- FALSE
@@ -201,7 +218,7 @@ external_methods_capture_previous <- function(generic, signature, method, generi
   for (i in seq_along(signatures)) {
     sig <- signatures[[i]]
     current <- generic_get_method(generic_fun, sig)
-    own <- S7_method_for_signature(method, generic_fun, sig)
+    own <- S7_method_for_signature(method, generic_fun, sig, package = package)
 
     restored <- external_method_restoration(current, generic, sig, generic_fun)
     if (!identical(current, own) && !is.null(restored)) {
@@ -235,7 +252,7 @@ external_method_restoration <- function(method, generic, signature, generic_fun)
     return(method)
   }
 
-  package <- packageName(environment(method))
+  package <- S7_method_package(method)
   if (is.null(package) || !isNamespaceLoaded(package)) {
     return(NULL)
   }
@@ -249,7 +266,12 @@ external_method_restoration <- function(method, generic, signature, generic_fun)
     signatures <- flatten_signature(x$signature)
     for (i in seq_along(signatures)) {
       sig <- signatures[[i]]
-      own <- S7_method_for_signature(x$method, generic_fun, sig)
+      own <- S7_method_for_signature(
+        x$method,
+        generic_fun,
+        sig,
+        package = package
+      )
       if (
         identical(signature, sig) &&
           identical(method, own) &&
@@ -271,7 +293,15 @@ external_generics_match <- function(x, y) {
 
 is_S7_method_from_package <- function(method, package) {
   inherits(method, "S7_method") &&
-    identical(packageName(environment(method)), package)
+    identical(S7_method_package(method), package)
+}
+
+S7_method_package <- function(method) {
+  if (!inherits(method, "S7_method")) {
+    return(NULL)
+  }
+
+  attr(method, "S7_package", TRUE) %||% packageName(environment(method))
 }
 
 # Store external methods in an attribute of the S3 methods table since

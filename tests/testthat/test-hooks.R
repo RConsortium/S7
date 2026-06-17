@@ -134,6 +134,31 @@ test_that("S7_on_unload() restores overwritten methods from the generic package"
   expect_equal(upstream$gen("x"), "upstream")
 })
 
+test_that("S7_on_unload() restores upstream methods from base functions", {
+  upstream <- local_package(
+    "upstream_restore_base_function",
+    gen := new_generic("x"),
+    method(gen, class_character) <- identity
+  )
+  expect_equal(upstream$gen("x"), "x")
+
+  downstream <- local_package(
+    "downstream_restore_base_function",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      "upstream_restore_base_function",
+      dispatch_args = "x"
+    ),
+    method(gen, class_character) <- function(x) "downstream"
+  )
+  downstream$.onLoad()
+  expect_equal(upstream$gen("x"), "downstream")
+
+  downstream$.onUnload()
+  expect_equal(upstream$gen("x"), "x")
+})
+
 test_that("S7_on_unload() preserves restoration after repeated registration", {
   upstream <- local_package(
     "upstream_restore_reregister",
@@ -274,6 +299,28 @@ test_that("S7_on_load() removes hooks for deleted external methods", {
     upstream$gen(downstream$Foo()),
     class = "S7_error_method_not_found"
   )
+})
+
+test_that("S7_on_unload() honors external generic version gates", {
+  downstream <- local_package(
+    "downstream_version_gate_unload",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      "upstream_version_gate_unload",
+      dispatch_args = "x",
+      version = "1.0.0"
+    ),
+    method(gen, class_character) <- function(x) "downstream"
+  )
+  upstream <- local_package(
+    "upstream_version_gate_unload",
+    gen <- function(x) "not an S7 generic"
+  )
+
+  downstream$.onLoad()
+  expect_equal(upstream$gen("x"), "not an S7 generic")
+  expect_no_error(downstream$.onUnload())
 })
 
 test_that("S7_on_unload() unregisters methods when a real package is unloaded (#316)", {
