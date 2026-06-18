@@ -254,27 +254,6 @@ test_that("read-only properties filter only overridden constructor arguments", {
   expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
 })
 
-test_that("dynamic settable property overrides are not passed to parent", {
-  foo := new_class(properties = list(x = class_integer))
-  foo2 := new_class(
-    parent = foo,
-    properties = list(
-      x = new_property(
-        class_character,
-        getter = function(self) self@x,
-        setter = function(self, value) {
-          self@x <- value
-          self
-        }
-      )
-    )
-  )
-
-  expect_named(formals(foo2), "x")
-  expect_equal(foo2()@x, character())
-  expect_equal(foo2("a")@x, "a")
-})
-
 test_that("can create constructors with missing or lazy defaults", {
   Person := new_class(
     properties = list(

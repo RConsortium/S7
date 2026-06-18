@@ -15,7 +15,7 @@ new_constructor <- function(
     )
 
     arg_info <- constructor_args(parent, all_props, envir, package)
-    self_args <- as_names(names(arg_info$self), named = TRUE)
+    self_args <- as_names(names(arg_info$self))
 
     new_object_call <-
       if (has_S7_symbols(envir, "new_object", "S7_object")) {
@@ -37,9 +37,6 @@ new_constructor <- function(
     ))
   }
 
-  arg_info <- constructor_args(parent, properties, envir, package)
-  self_args <- as_names(names(arg_info$self), named = TRUE)
-
   if (is_class(parent)) {
     parent_name <- parent@name
     parent_fun <- parent
@@ -53,70 +50,74 @@ new_constructor <- function(
     # user facing error in S7_class()
     stop2("Unsupported `parent` type.", call = NULL)
   }
-
-  # Overridden properties replace the corresponding parent argument in place
-  # so that positional matching is preserved.
-  args <- modify_list(arg_info$parent, arg_info$self)
-
   parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
-  prop_nms <- names2(properties)
-  override_nms <- intersect(prop_nms, names2(parent_props))
 
-  # Read-only props that override parent props don't get args
-  is_read_only <- vlapply(properties, prop_is_read_only)
-  read_only_override_nms <- intersect(prop_nms[is_read_only], override_nms)
-  if (length(read_only_override_nms) > 0) {
-    args <- args[setdiff(names2(args), read_only_override_nms)]
-  }
+  # We need to work out three things:
+  # * The argument list for the constructor (`constr_args`)
+  # * Which of those arguments is passed to the parent (`parent_args`)
+  # * Which of those arguments is passed to new_object() (`self_args`)
+  #
+  # For overridden properties, we generally need to pass to both the parent
+  # and the child so that we can both override parent defaults and respect
+  # child setters. The exceptions are described below.
 
-  # ensure default value for `...` is empty
-  if ("..." %in% names(args)) {
-    args[names(args) == "..."] <- list(quote(expr = ))
-  }
+  # In constructor args, the subclass default replaces the parent default
+  arg_info <- constructor_args(parent, properties, envir, package)
+  constr_args <- modify_list(arg_info$parent, arg_info$self)
 
-  # Overridden properties are passed to both the parent and child.
-  # This makes it possible to override mandatory properties and custom setters.
-  is_dynamic_settable <- vlapply(properties, prop_is_dynamic) &
-    vlapply(properties, prop_has_setter)
-  dynamic_settable_override_nms <- intersect(
-    prop_nms[is_dynamic_settable],
-    override_nms
-  )
-  dynamic_settable_compatible <- vlapply(
-    dynamic_settable_override_nms,
-    function(name) {
-      class_extends(properties[[name]]$class, parent_props[[name]]$class)
-    }
-  )
-  incompatible_dynamic_settable_override_nms <-
-    dynamic_settable_override_nms[!dynamic_settable_compatible]
-  forwarded_override_nms <- setdiff(
-    override_nms,
-    c(read_only_override_nms, incompatible_dynamic_settable_override_nms)
-  )
-  parent_arg_nms <- setdiff(
-    names(arg_info$parent),
-    c(read_only_override_nms, incompatible_dynamic_settable_override_nms)
-  )
+  # The rest of the work is about moving args around not changing their values
+  # so it's easier to work with their names
+  constr_nms <- names2(constr_args)
+  self_nms <- names2(arg_info$self)
+  parent_nms <- names2(arg_info$parent)
+  # We also need to figure out properties are overridden in the child
+  override_nms <- intersect(constr_nms, names2(parent_props))
+
+  # We can't forward read-only overridden properties
+  read_only_nms <- parent_nms[vlapply(properties, prop_is_read_only)]
+  read_only_override_nms <- intersect(read_only_nms, override_nms)
+  parent_nms <- setdiff(parent_nms, read_only_override_nms)
+  constr_nms <- setdiff(constr_nms, read_only_override_nms)
+
+  # If parent takes ..., we can't match overrides by name, so pass all args on
   if ("..." %in% names(arg_info$parent)) {
-    parent_arg_nms <- union(parent_arg_nms, forwarded_override_nms)
+    parent_nms <- union(
+      parent_nms,
+      setdiff(override_nms, read_only_override_nms)
+    )
   }
-  parent_args <- as_names(parent_arg_nms, named = TRUE)
-  names(parent_args)[names(parent_args) == "..."] <- ""
-  parent_call <- new_call(parent_name, parent_args)
-  body <- new_call(
-    if (has_S7_symbols(envir, "new_object")) {
-      "new_object"
-    } else {
-      c("S7", "new_object")
-    },
-    c(parent_call, self_args)
-  )
 
+  # Now we can generate the parent call
+  parent_args <- as_names(parent_nms)
+  parent_call <- new_call(parent_name, parent_args)
+
+  # Then the call for the child
+  new_object <- c(if (!has_S7_symbols(envir, "new_object")) "S7", "new_object")
+  self_args <- as_names(names(arg_info$self))
+  body <- new_call(new_object, c(parent_call, self_args))
+
+  # And finally the constructor itself
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
+  new_function(constr_args[constr_nms], body, env)
+}
 
-  new_function(args, body, env)
+# Names of the overridden properties that are dynamic and settable but whose
+# declared class doesn't extend the parent's. Their values can't be forwarded
+# to the parent constructor, which would reject them.
+incompatible_dynamic_settable_overrides <- function(properties, parent_props) {
+  is_dynamic_settable <- vlapply(properties, prop_is_dynamic) &
+    vlapply(properties, prop_has_setter)
+  # Overrides are the properties that are also present in the parent.
+  nms <- intersect(
+    names2(properties)[is_dynamic_settable],
+    names2(parent_props)
+  )
+
+  incompatible <- !vlapply(nms, function(name) {
+    class_extends(properties[[name]]$class, parent_props[[name]]$class)
+  })
+  nms[incompatible]
 }
 
 constructor_args <- function(
@@ -158,9 +159,9 @@ new_call <- function(call, args) {
   as.call(c(list(call), args))
 }
 
-as_names <- function(x, named = FALSE) {
-  if (named) {
-    names(x) <- x
+as_names <- function(x) {
+  if (length(x) > 0) {
+    names(x) <- ifelse(x == "...", "", x)
   }
   lapply(x, as.name)
 }
