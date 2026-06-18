@@ -97,24 +97,6 @@ new_constructor <- function(
   new_function(constr_args[constr_nms], child_call, env)
 }
 
-# Names of the overridden properties that are dynamic and settable but whose
-# declared class doesn't extend the parent's. Their values can't be forwarded
-# to the parent constructor, which would reject them.
-incompatible_dynamic_settable_overrides <- function(properties, parent_props) {
-  is_dynamic_settable <- vlapply(properties, prop_is_dynamic) &
-    vlapply(properties, prop_has_setter)
-  # Overrides are the properties that are also present in the parent.
-  nms <- intersect(
-    names2(properties)[is_dynamic_settable],
-    names2(parent_props)
-  )
-
-  incompatible <- !vlapply(nms, function(name) {
-    class_extends(properties[[name]]$class, parent_props[[name]]$class)
-  })
-  nms[incompatible]
-}
-
 constructor_args <- function(
   parent,
   properties = list(),
