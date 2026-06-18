@@ -202,15 +202,16 @@ show_args <- function(x, name = "function", suffix = "") {
 }
 
 modify_list <- function(x, new_vals) {
-  stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
+  stopifnot(
+    is.null(x) || is.list(x) || is.pairlist(x),
+    all(nzchar(names2(x)))
+  )
+  x <- x %||% list()
 
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
       stop2("All elements in `new_vals` must be named.")
-    }
-    if (is.null(x)) {
-      x <- list()
     }
     x[nms] <- new_vals
   }

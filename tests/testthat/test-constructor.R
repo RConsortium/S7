@@ -120,6 +120,140 @@ test_that("can use `...` in parent constructor", {
   expect_equal(bar(y = 2)@x, list())
 })
 
+test_that("subclass can override simple parent property defaults", {
+  foo := new_class(
+    properties = list(x = new_property(class_numeric, default = 1))
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+  expect_equal(foo2()@x, 2)
+  expect_equal(foo2(x = 3)@x, 3)
+})
+
+test_that("subclass can override required parent propertes", {
+  need_x <- quote(stop("need x"))
+  required := new_class(
+    properties = list(x = new_property(class_numeric, default = need_x))
+  )
+  required2 := new_class(
+    parent = required,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+  expect_equal(required2()@x, 2)
+})
+
+test_that("subclass can override simple parent property when parent uses ...", {
+  need_x <- quote(stop("need x"))
+  dots := new_class(
+    properties = list(x = new_property(class_numeric, default = need_x)),
+    constructor = function(...) new_object(S7_object(), ...)
+  )
+  dots2 := new_class(
+    parent = dots,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+  expect_equal(dots2()@x, 2)
+})
+
+test_that("compatible dynamic settable override is passed to parent", {
+  need_x <- quote(stop("need x"))
+  foo := new_class(
+    properties = list(x = new_property(class_numeric, default = need_x))
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      x = new_property(
+        class_double,
+        default = 1,
+        getter = function(self) self@x,
+        setter = function(self, value) {
+          self@x <- value + 1
+          self
+        }
+      )
+    )
+  )
+  expect_equal(foo2(x = 1)@x, 2)
+  expect_equal(foo2()@x, 2)
+})
+
+test_that("subclass setter is used during construction", {
+  foo := new_class(properties = list(x = class_integer, z = class_any))
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      z = new_property(
+        class_double,
+        setter = function(self, value) {
+          self@z <- value * 2
+          self
+        }
+      )
+    )
+  )
+  expect_equal(foo2(z = 1)@z, 2)
+  expect_equal(foo2(x = 1L, z = 1)@x, 1L)
+})
+
+test_that("parent validators rerun after inherited properties are reset", {
+  validator <- function(self) {
+    if (self@x < 0) "@x must be non-negative"
+  }
+
+  foo := new_class(
+    properties = list(x = class_double),
+    constructor = function() new_object(S7_object(), x = 0),
+    validator = validator
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(class_double, default = -1))
+  )
+
+  expect_error(foo2(), "@x must be non-negative")
+})
+
+test_that("overridden properties keep their position in the constructor", {
+  foo := new_class(
+    properties = list(x = class_numeric, y = class_numeric)
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      x = new_property(class_numeric, default = 2),
+      z = class_numeric
+    )
+  )
+
+  expect_named(formals(foo2), c("x", "y", "z"))
+  expect_equal(props(foo2(1, 2, 3)), list(x = 1, y = 2, z = 3))
+})
+
+test_that("read-only properties filter only overridden constructor arguments", {
+  foo := new_class(properties = list(x = class_character))
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(getter = function(self) "fixed"))
+  )
+  expect_null(formals(foo2))
+  expect_equal(foo2()@x, "fixed")
+
+  Factor := new_class(
+    parent = class_factor,
+    properties = list(
+      levels = new_property(getter = function(self) levels(self))
+    )
+  )
+  expect_named(formals(Factor), c(".data", "levels"))
+
+  x <- Factor(c(1L, 2L), levels = c("a", "b"))
+  expect_equal(levels(x), c("a", "b"))
+  expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
+})
+
 test_that("can create constructors with missing or lazy defaults", {
   Person := new_class(
     properties = list(

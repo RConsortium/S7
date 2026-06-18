@@ -1,3 +1,16 @@
+test_that("modify_list() replaces existing values and appends new ones", {
+  expect_equal(
+    modify_list(list(a = 1, b = 2), list(b = 3, c = 4)),
+    list(a = 1, b = 3, c = 4)
+  )
+  expect_equal(modify_list(list(a = 1), list()), list(a = 1))
+})
+
+test_that("modify_list() accepts NULL x", {
+  expect_equal(modify_list(NULL, list()), list())
+  expect_equal(modify_list(NULL, list(a = 1)), list(a = 1))
+})
+
 test_that("collect_dots() collects named dots into a list", {
   expect_equal(collect_dots(x = 1, y = 2), list(x = 1, y = 2))
   expect_equal(collect_dots(), list())
