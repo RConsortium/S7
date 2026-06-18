@@ -70,6 +70,34 @@ test_that("external class works as a property type for self-reference", {
   expect_snapshot(error = TRUE, Tree(label = "bad", child = 1))
 })
 
+test_that("external class property validation reports validator errors", {
+  dep := local_package(
+    Ext := new_class(
+      properties = list(x = class_integer),
+      validator = function(self) {
+        if (self@x < 0L) {
+          "x must be non-negative"
+        }
+      }
+    )
+  )
+  Holder := new_class(
+    properties = list(
+      child = new_property(
+        class = new_external_class("dep", "Ext"),
+        default = quote(dep$Ext(x = 0L))
+      )
+    )
+  )
+
+  invalid <- valid_implicitly(dep$Ext(x = 1L), function(self) {
+    self@x <- -1L
+    self
+  })
+
+  expect_snapshot(Holder(child = invalid), error = TRUE)
+})
+
 test_that("external class works for mutually recursive classes", {
   ClassOne := new_class(
     package = "mypkg",

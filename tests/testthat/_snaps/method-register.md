@@ -25,6 +25,30 @@
        * An S4 class object
        * A base class
 
+# method registration resolves external classes outside packages
+
+    Code
+      env$g(S7_object())
+    Condition
+      Error:
+      ! Can't find method for `g(<S7_object>)`.
+
+# method unregistration removes deferred unions regardless of order
+
+    Code
+      downstream$foo(upstream$Ext())
+    Condition
+      Error:
+      ! Can't find method for `foo(<upstream_external_union_unregister::Ext>)`.
+
+---
+
+    Code
+      downstream$foo(upstream$Ext())
+    Condition
+      Error:
+      ! Can't find method for `foo(<upstream_external_union_unregister::Ext>)`.
+
 # method unregistration removes an S7 method via NULL assignment
 
     Code

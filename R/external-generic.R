@@ -198,10 +198,32 @@ external_method_class_matches <- function(x, y) {
     return(is_external_class_match(x, y))
   }
   if (is_union(x) && is_union(y)) {
-    return(external_method_signature_matches(x$classes, y$classes))
+    return(external_method_union_matches(x$classes, y$classes))
   }
 
   FALSE
+}
+
+external_method_union_matches <- function(x, y) {
+  if (length(x) != length(y)) {
+    return(FALSE)
+  }
+
+  matched <- rep(FALSE, length(y))
+  for (xi in x) {
+    hits <- which(
+      !matched &
+        vlapply(y, function(yi) {
+          external_method_class_matches(xi, yi)
+        })
+    )
+    if (length(hits) == 0) {
+      return(FALSE)
+    }
+    matched[[hits[[1]]]] <- TRUE
+  }
+
+  TRUE
 }
 
 # Store external methods in an attribute of the S3 methods table since

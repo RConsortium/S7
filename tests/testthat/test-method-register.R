@@ -75,6 +75,9 @@ test_that("method registration resolves external classes outside packages", {
   evalq(method(g, ext) <- f, env)
 
   expect_equal(env$g(S7_object()), "external")
+
+  evalq(method(g, ext) <- NULL, env)
+  expect_snapshot(env$g(S7_object()), error = TRUE)
 })
 
 test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {
@@ -129,6 +132,28 @@ test_that("method unregistration removes deferred external-class methods", {
 
   evalq(method(foo, ext) <- NULL, pkg)
   expect_length(S7_methods_table("pkg"), 0)
+})
+
+test_that("method unregistration removes deferred unions regardless of order", {
+  upstream <- local_package(
+    "upstream_external_union_unregister",
+    Ext := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_union_unregister",
+    .onLoad <- function(...) S7_on_load(),
+    foo := new_generic("x"),
+    Ext := new_external_class("upstream_external_union_unregister"),
+    method(foo, NULL | Ext) <- function(x) "external"
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$foo(upstream$Ext()), "external")
+
+  evalq(method(foo, Ext | NULL) <- NULL, downstream)
+  expect_snapshot(downstream$foo(upstream$Ext()), error = TRUE)
+
+  downstream$.onLoad()
+  expect_snapshot(downstream$foo(upstream$Ext()), error = TRUE)
 })
 
 test_that("method unregistration removes an S7 method via NULL assignment", {

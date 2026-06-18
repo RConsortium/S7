@@ -52,3 +52,12 @@
       ! <mypkg::Tree> object properties are invalid:
       - @child must be <NULL> or <mypkg::Tree>, not <double>
 
+# external class property validation reports validator errors
+
+    Code
+      Holder(child = invalid)
+    Condition
+      Error in `Holder()`:
+      ! <S7::Holder> object properties are invalid:
+      - @child: x must be non-negative
+

@@ -157,6 +157,10 @@ unregister_method <- function(
     )
   }
 
+  if (is.null(package) && signature_has_external_class(signature)) {
+    signature <- resolve_signature(signature)
+  }
+
   # Unregister in current session
   if (is_S7_generic(generic)) {
     unregister_S7_method(generic, signature)
