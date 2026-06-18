@@ -116,56 +116,6 @@ constructor_args <- function(
   list(parent = parent_args, self = self_args)
 }
 
-constructor_override_info <- function(properties, parent_props) {
-  prop_nms <- names2(properties)
-  override_nms <- intersect(prop_nms, names2(parent_props))
-
-  read_only_override_nms <- intersect(
-    prop_nms[vlapply(properties, prop_is_read_only)],
-    override_nms
-  )
-
-  # Dynamic settable overrides can accept values the parent would reject unless
-  # the child property narrows the parent property class.
-  dynamic_settable_override_nms <- intersect(
-    prop_nms[
-      vlapply(properties, prop_is_dynamic) &
-        vlapply(properties, prop_has_setter)
-    ],
-    override_nms
-  )
-  dynamic_settable_compatible <- vlapply(
-    dynamic_settable_override_nms,
-    function(name) {
-      class_extends(properties[[name]]$class, parent_props[[name]]$class)
-    }
-  )
-  incompatible_dynamic_settable_override_nms <-
-    dynamic_settable_override_nms[!dynamic_settable_compatible]
-
-  omit_from_parent <- c(
-    read_only_override_nms,
-    incompatible_dynamic_settable_override_nms
-  )
-
-  list(
-    omit_from_constructor = read_only_override_nms,
-    omit_from_parent = omit_from_parent,
-    forward_to_parent = setdiff(override_nms, omit_from_parent)
-  )
-}
-
-constructor_parent_arg_names <- function(parent_arg_nms, override_info) {
-  out <- setdiff(parent_arg_nms, override_info$omit_from_parent)
-
-  if ("..." %in% parent_arg_nms) {
-    out <- union(out, override_info$forward_to_parent)
-  }
-
-  out
-}
-
-
 # helpers -----------------------------------------------------------------
 
 is_property_dynamic <- function(x) is.function(x$getter)
