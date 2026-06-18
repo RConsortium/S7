@@ -345,24 +345,16 @@ class_extends <- function(child, parent) {
       methods::extends(child@className, parent@className)
   } else if (is_class(parent) && parent@name == "S7_object") {
     is_class(child)
-  } else if (is_external_class(child) || is_external_class(parent)) {
-    class_extends_external(child, parent)
+  } else if (is_external_class(child)) {
+    child <- resolve_external_class_req(child)
+    class_extends(child, parent)
+  } else if (is_external_class(parent)) {
+    parent <- resolve_external_class_req(parent)
+    class_extends(child, parent)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
   }
-}
-
-# Subclassing an external class requires its package to be loaded, so we can
-# always resolve it here (erroring clearly if it's unavailable).
-class_extends_external <- function(child, parent) {
-  if (is_external_class(child)) {
-    child <- resolve_external_class_req(child)
-  }
-  if (is_external_class(parent)) {
-    parent <- resolve_external_class_req(parent)
-  }
-  class_extends(child, parent)
 }
 
 obj_type <- function(x) {
