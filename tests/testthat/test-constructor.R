@@ -251,7 +251,9 @@ test_that("read-only properties filter only overridden constructor arguments", {
 
   Factor := new_class(
     class_factor,
-    properties = list(levels = new_property(getter = function(self) levels(self)))
+    properties = list(
+      levels = new_property(getter = function(self) levels(self))
+    )
   )
 
   expect_named(formals(Factor), c(".data", "levels"))
