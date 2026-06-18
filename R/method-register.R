@@ -168,10 +168,8 @@ unregister_method <- function(
 
   # If we're inside a package, also remove from the deferred external
   # methods table so the method isn't re-registered on package load.
-  local <- !is.null(package) && is_local_generic(generic, package)
-  deferred <- !is.null(package) &&
-    (!local || signature_has_external_class(signature))
-  if (deferred) {
+  if (!is.null(package)) {
+    local <- is_local_generic(generic, package)
     external <- as_external_generic(generic, env)
     external_methods_remove(package, external, signature)
     if (!local) {

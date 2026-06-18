@@ -30,6 +30,41 @@ test_that("S7_on_load() registers methods dispatching on an external class", {
   expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
 })
 
+test_that("method<- NULL removes deferred methods for resolved external classes", {
+  upstream <- local_package(
+    "upstream_resolved_external_unregister",
+    Foo := new_class()
+  )
+  downstream <- local_package(
+    "downstream_resolved_external_unregister",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    own_generic := new_generic("x"),
+    Foo := new_external_class(
+      package = "upstream_resolved_external_unregister"
+    ),
+    method(own_generic, Foo) <- function(x) "from external class"
+  )
+  downstream$.onLoad()
+  downstream$ResolvedFoo <- upstream$Foo
+
+  expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
+  expect_length(S7_methods_table("downstream_resolved_external_unregister"), 1)
+
+  evalq(method(own_generic, ResolvedFoo) <- NULL, downstream)
+  expect_length(S7_methods_table("downstream_resolved_external_unregister"), 0)
+  expect_error(
+    downstream$own_generic(upstream$Foo()),
+    class = "S7_error_method_not_found"
+  )
+
+  downstream$.onLoad()
+  expect_error(
+    downstream$own_generic(upstream$Foo()),
+    class = "S7_error_method_not_found"
+  )
+})
+
 test_that("S7_on_unload() unregisters methods and removes hooks", {
   upstream <- local_package("upstream", gen := new_generic("x"))
   downstream <- local_package(

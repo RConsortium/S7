@@ -166,10 +166,42 @@ external_methods_remove <- function(package, generic, signature) {
   }
 
   keep <- !vlapply(tbl, function(x) {
-    identical(x$generic, generic) && identical(x$signature, signature)
+    identical(x$generic, generic) &&
+      external_method_signature_matches(x$signature, signature)
   })
   S7_methods_table(package) <- tbl[keep]
   invisible()
+}
+
+external_method_signature_matches <- function(x, y) {
+  if (identical(x, y)) {
+    return(TRUE)
+  }
+  if (length(x) != length(y)) {
+    return(FALSE)
+  }
+
+  all(vlapply(seq_along(x), function(i) {
+    external_method_class_matches(x[[i]], y[[i]])
+  }))
+}
+
+external_method_class_matches <- function(x, y) {
+  if (identical(x, y)) {
+    return(TRUE)
+  }
+
+  if (is_external_class(x) && is_class(y)) {
+    return(is_external_class_match(y, x))
+  }
+  if (is_class(x) && is_external_class(y)) {
+    return(is_external_class_match(x, y))
+  }
+  if (is_union(x) && is_union(y)) {
+    return(external_method_signature_matches(x$classes, y$classes))
+  }
+
+  FALSE
 }
 
 # Store external methods in an attribute of the S3 methods table since
