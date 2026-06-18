@@ -98,6 +98,14 @@ test_that("external class property validation reports validator errors", {
   expect_snapshot(Holder(child = invalid), error = TRUE)
 })
 
+test_that("external class property validation uses resolved dispatch", {
+  Holder := new_class(
+    properties = list(x = new_external_class("S7", "S7_object"))
+  )
+
+  expect_s3_class(Holder(x = S7_object())@x, "S7_object")
+})
+
 test_that("external class works for mutually recursive classes", {
   ClassOne := new_class(
     package = "mypkg",

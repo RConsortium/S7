@@ -173,6 +173,19 @@ test_that("can work with S3 classes", {
   expect_equal(class_inherits(factor(), klass), FALSE)
 })
 
+test_that("external classes deparse as executable calls", {
+  ext <- new_external_class("foo", "Bar")
+  ext_versioned <- new_external_class("foo", "Bar", version = "1.0")
+
+  expect_equal(class_deparse(ext), 'new_external_class("foo", "Bar")')
+  expect_equal(
+    class_deparse(ext_versioned),
+    'new_external_class("foo", "Bar", version = "1.0")'
+  )
+  expect_equal(eval(parse(text = class_deparse(ext))), ext)
+  expect_equal(eval(parse(text = class_deparse(ext_versioned))), ext_versioned)
+})
+
 test_that("class_inherits() requires S3 classes to be contiguous and ordered", {
   klass <- new_S3_class(c("a", "b"))
 
