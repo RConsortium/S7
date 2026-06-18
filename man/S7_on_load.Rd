@@ -3,6 +3,7 @@
 \name{S7_on_load}
 \alias{S7_on_load}
 \alias{methods_register}
+\alias{S7_on_unload}
 \alias{S7_on_build}
 \title{Package hooks for S7 methods}
 \usage{
@@ -10,13 +11,15 @@ S7_on_load()
 
 methods_register()
 
+S7_on_unload()
+
 S7_on_build()
 }
 \value{
-Nothing; both functions are called for their side-effects.
+Nothing; these functions are called for their side-effects.
 }
 \description{
-When using S7 in a package, add two hooks to your \code{zzz.R}:
+When using S7 in a package, add three hooks to your \code{zzz.R}:
 \itemize{
 \item Call \code{S7_on_load()} from \code{.onLoad()}. This is S7's way of
 registering methods, rather than using \code{NAMESPACE} directives like S3 and
@@ -25,6 +28,10 @@ other packages are registered as needed when your package is loaded. This
 is only strictly necessary if you register methods for generics in other
 packages, but there's no harm in always including it and it ensures you
 won't forget later.
+\item Call \code{S7_on_unload()} from \code{.onUnload()}. This cleans up after
+\code{S7_on_load()}: it unregisters methods that your package registered for
+S7 generics in other packages, if they are still active, and removes any
+hooks that \code{S7_on_load()} added.
 \item Call \code{S7_on_build()} at the top level (i.e. \emph{not} inside \code{.onLoad()})
 after all method registration is complete. This avoids embedding copies
 of external generics in your package when you use \verb{method<-}.
@@ -39,6 +46,9 @@ See \code{vignette("packages")} for more details.
 # In zzz.R:
 .onLoad <- function(...) {
   S7::S7_on_load()
+}
+.onUnload <- function(...) {
+  S7::S7_on_unload()
 }
 S7::S7_on_build()
 }

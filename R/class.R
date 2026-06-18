@@ -137,13 +137,10 @@ new_class <- function(
   check_prop_names(new_props)
   check_prop_overrides(new_props, parent_props, name, parent)
 
-  all_props <- parent_props
-  all_props[names(new_props)] <- new_props
-
   if (is.null(constructor)) {
     constructor <- new_constructor(
       parent,
-      all_props,
+      new_props,
       envir = parent.frame(),
       package = package
     )
@@ -154,13 +151,13 @@ new_class <- function(
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
-  attr(object, "properties") <- all_props
+  attr(object, "properties") <- modify_list(parent_props, new_props)
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
-  global_variables(names(all_props))
+  global_variables(names(new_props))
   object
 }
 globalVariables(c(
@@ -358,13 +355,15 @@ new_object <- function(`_parent`, ...) {
     prop(`_parent`, name, check = FALSE) <- prop_setter_vals[[name]]
   }
 
-  # Don't need to validate if parent class already validated,
-  # i.e. it's a non-abstract S7 class
+  # Don't need to validate the parent class if it's already validated and none
+  # of its properties were reset by this call.
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
+  parent_props_reset <- parent_validated &&
+    any(names2(args) %in% names2(class@parent@properties))
   validate_from(
     `_parent`,
-    parent = if (parent_validated) class@parent,
+    parent = if (parent_validated && !parent_props_reset) class@parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )

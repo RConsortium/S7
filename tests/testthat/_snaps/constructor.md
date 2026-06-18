@@ -55,18 +55,20 @@
       foo1 := new_class(abstract = TRUE, properties = list(x = class_double))
       new_constructor(foo1, list())
     Output
-      function () 
+      function (x = numeric(0)) 
       {
-          new_object(S7_object())
+          x
+          new_object(S7_object(), x = x)
       }
       <environment: namespace:S7>
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
-      function (y = numeric(0)) 
+      function (x = numeric(0), y = numeric(0)) 
       {
+          x
           y
-          new_object(S7_object(), y = y)
+          new_object(S7_object(), x = x, y = y)
       }
       <environment: namespace:S7>
 

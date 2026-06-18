@@ -1,13 +1,12 @@
 test_that("can get and append methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_package("testpkg")
 
-  expect_equal(S7_methods_table("S7"), list())
+  expect_equal(S7_methods_table("testpkg"), list())
 
   bar <- new_external_generic("foo", "bar", "x")
-  external_methods_add("S7", bar, list(), function() {})
+  external_methods_add("testpkg", bar, list(), function() {})
   expect_equal(
-    S7_methods_table("S7"),
+    S7_methods_table("testpkg"),
     list(
       list(
         generic = bar,
@@ -18,42 +17,46 @@ test_that("can get and append methods", {
   )
 })
 
+test_that("re-adding a method replaces the existing entry", {
+  local_package("testpkg")
+
+  bar <- new_external_generic("foo", "bar", "x")
+  external_methods_add("testpkg", bar, list("A"), function() "a")
+  external_methods_add("testpkg", bar, list("A"), function() "b")
+  expect_length(S7_methods_table("testpkg"), 1)
+  expect_equal(S7_methods_table("testpkg")[[1]]$method(), "b")
+})
+
 test_that("can remove methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_package("testpkg")
 
   bar <- new_external_generic("foo", "bar", "x")
   baz <- new_external_generic("foo", "baz", "x")
-  external_methods_add("S7", bar, list("A"), function() "a")
-  external_methods_add("S7", baz, list("B"), function() "b")
-  expect_length(S7_methods_table("S7"), 2)
+  external_methods_add("testpkg", bar, list("A"), function() "a")
+  external_methods_add("testpkg", baz, list("B"), function() "b")
+  expect_length(S7_methods_table("testpkg"), 2)
 
-  external_methods_remove("S7", bar, list("A"))
-  expect_length(S7_methods_table("S7"), 1)
-  expect_equal(S7_methods_table("S7")[[1]]$generic, baz)
+  external_methods_remove("testpkg", bar, list("A"))
+  expect_length(S7_methods_table("testpkg"), 1)
+  expect_equal(S7_methods_table("testpkg")[[1]]$generic, baz)
 
   # No-op when entry doesn't exist
-  external_methods_remove("S7", bar, list("A"))
-  expect_length(S7_methods_table("S7"), 1)
+  external_methods_remove("testpkg", bar, list("A"))
+  expect_length(S7_methods_table("testpkg"), 1)
 })
 
 test_that("displays nicely", {
   bar <- new_external_generic("foo", "bar", "x")
-  on.exit(external_methods_reset("S7"), add = TRUE)
-
   expect_snapshot({
     print(bar)
   })
 })
 
 test_that("can convert existing generics to external", {
-  foo_S7 := new_generic("x")
-  env <- new.env()
-  env$.packageName <- "test"
-  environment(foo_S7) <- env
+  ns <- local_package("test", foo_S7 := new_generic("x"))
 
   expect_equal(
-    as_external_generic(foo_S7),
+    as_external_generic(ns$foo_S7),
     new_external_generic("test", "foo_S7", "x")
   )
 

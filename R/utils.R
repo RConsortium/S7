@@ -31,6 +31,14 @@ stop2 <- function(message, call = sys.call(-1L), class = NULL) {
   ))
 }
 
+warning2 <- function(message, call = sys.call(-1L), class = NULL) {
+  warning(warningCondition(
+    message = paste(message, collapse = "\n"),
+    call = call,
+    class = class
+  ))
+}
+
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
   if (single) {
@@ -194,15 +202,16 @@ show_args <- function(x, name = "function", suffix = "") {
 }
 
 modify_list <- function(x, new_vals) {
-  stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
+  stopifnot(
+    is.null(x) || is.list(x) || is.pairlist(x),
+    all(nzchar(names2(x)))
+  )
+  x <- x %||% list()
 
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
       stop2("All elements in `new_vals` must be named.")
-    }
-    if (is.null(x)) {
-      x <- list()
     }
     x[nms] <- new_vals
   }
