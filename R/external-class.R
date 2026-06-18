@@ -169,13 +169,9 @@ find_external_class <- function(x) {
 
 is_external_class_match <- function(obj, x) {
   is_class(obj) &&
-    (
-      identical(S7_class_name(obj), x$class_name) ||
-        (
-          identical(obj@name, x$name) &&
-            (is.null(obj@package) || identical(obj@package, x$package))
-        )
-    )
+    (identical(S7_class_name(obj), x$class_name) ||
+      (identical(obj@name, x$name) &&
+        (is.null(obj@package) || identical(obj@package, x$package))))
 }
 
 # Required resolution: used when registering a method, when extending
