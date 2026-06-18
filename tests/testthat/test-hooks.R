@@ -14,6 +14,22 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
   expect_length(package_hooks("upstream"), 1)
 })
 
+test_that("S7_on_load() registers methods dispatching on an external class", {
+  upstream := local_package(
+    Foo := new_class()
+  )
+  downstream := local_package(
+    own_generic := new_generic("x"),
+    Foo := new_external_class("upstream"),
+    method(own_generic, Foo) <- \(x) "from external class"
+  )
+  # The method is deferred (its signature has an external class), not yet live
+  expect_length(methods(downstream$own_generic), 0)
+
+  S7_on_load_(downstream)
+  expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
+})
+
 test_that("S7_on_unload() unregisters methods and removes hooks", {
   upstream <- local_package("upstream", gen := new_generic("x"))
   downstream <- local_package(

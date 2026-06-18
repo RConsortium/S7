@@ -134,11 +134,6 @@ resolve_generic <- function(generic) {
   }
 }
 
-external_methods_reset <- function(package) {
-  S7_methods_table(package) <- list()
-  invisible()
-}
-
 external_methods_add <- function(
   package,
   generic,

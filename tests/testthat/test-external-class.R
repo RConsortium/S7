@@ -23,17 +23,16 @@ test_that("external class is a valid class spec", {
 })
 
 test_that("external class resolution uses the S7 class name", {
-  skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
-  skip_if(quick_test())
+  # The class is bound to `class_renamed`, but its S7 name is "renamed", so
+  # resolution must find it by scanning for a matching S7 class name.
+  pkg := local_package(
+    renamed <- new_class("named")
+  )
+  named := new_external_class("pkg")
+  resolved <- resolve_external_class_req(named)
 
-  tmp_lib <- local_libpath()
-  local_install_and_attach(test_path("t1"), tmp_lib)
-
-  ec <- new_external_class("t1", "renamed")
-  resolved <- resolve_external_class_req(ec)
-
-  expect_true(is_class(resolved))
-  expect_equal(S7_class_name(resolved), "t1::renamed")
+  expect_s3_class(resolved, "S7_class")
+  expect_equal(S7_class_name(resolved), "pkg::named")
 })
 
 test_that("resolve_external_class_req() errors per failure mode", {
