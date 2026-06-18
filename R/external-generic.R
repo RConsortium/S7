@@ -116,6 +116,9 @@ registrar <- function(deps, generic, signature, method, env) {
 method_deps <- function(generic, signature) {
   c(list(generic), signature_external_deps(signature))
 }
+method_deps_packages <- function(deps) {
+  unique(vcapply(deps, function(dep) dep$package))
+}
 
 resolve_generic <- function(generic) {
   ns <- asNamespace(generic$package)
