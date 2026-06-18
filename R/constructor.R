@@ -59,12 +59,12 @@ new_constructor <- function(
   args <- modify_list(arg_info$parent, arg_info$self)
 
   parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
-  parent_prop_nms <- names2(parent_props)
   prop_nms <- names2(properties)
+  override_nms <- intersect(prop_nms, names2(parent_props))
 
   # Read-only props that override parent props don't get args
   is_read_only <- vlapply(properties, prop_is_read_only)
-  read_only_override_nms <- intersect(prop_nms[is_read_only], parent_prop_nms)
+  read_only_override_nms <- intersect(prop_nms[is_read_only], override_nms)
   if (length(read_only_override_nms) > 0) {
     args <- args[setdiff(names2(args), read_only_override_nms)]
   }
@@ -80,7 +80,7 @@ new_constructor <- function(
     vlapply(properties, prop_has_setter)
   dynamic_settable_override_nms <- intersect(
     prop_nms[is_dynamic_settable],
-    parent_prop_nms
+    override_nms
   )
   dynamic_settable_compatible <- vlapply(
     dynamic_settable_override_nms,
@@ -91,7 +91,7 @@ new_constructor <- function(
   incompatible_dynamic_settable_override_nms <-
     dynamic_settable_override_nms[!dynamic_settable_compatible]
   forwarded_override_nms <- setdiff(
-    intersect(prop_nms, parent_prop_nms),
+    override_nms,
     c(read_only_override_nms, incompatible_dynamic_settable_override_nms)
   )
   parent_arg_nms <- setdiff(
