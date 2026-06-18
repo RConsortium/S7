@@ -1,6 +1,7 @@
 ## This package
 
-* Use `:=` with `new_class()` and `new_generic()`, i.e. `foo := new_class(...)` instead of `foo <- new_class("foo", ...)`.
+* Use `:=` with `new_class()` and `new_generic()`, i.e. `foo := new_class(...)` instead of `foo <- new_class("foo", ...)`. 
+* Always name all arguments to `new_class()` and to constructors.
 * Use `defer()` instead of `on.exit()`.
 * For tests, only use `test_that()`, not `describe()`/`it()`
 

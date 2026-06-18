@@ -120,49 +120,47 @@ test_that("can use `...` in parent constructor", {
   expect_equal(bar(y = 2)@x, list())
 })
 
-test_that("subclass can override parent property defaults", {
+test_that("subclass can override simple parent property defaults", {
   foo := new_class(
     properties = list(x = new_property(class_numeric, default = 1))
   )
   foo2 := new_class(
-    foo,
+    parent = foo,
     properties = list(x = new_property(class_numeric, default = 2))
   )
-
   expect_equal(foo2()@x, 2)
   expect_equal(foo2(x = 3)@x, 3)
+})
 
+test_that("subclass can override required parent propertes", {
+  need_x <- quote(stop("need x"))
   required := new_class(
-    properties = list(
-      x = new_property(class_numeric, default = quote(stop("need x")))
-    )
+    properties = list(x = new_property(class_numeric, default = need_x))
   )
   required2 := new_class(
-    required,
+    parent = required,
     properties = list(x = new_property(class_numeric, default = 2))
   )
-
   expect_equal(required2()@x, 2)
+})
 
+test_that("subclass can override simple parent property when parent uses ...", {
+  need_x <- quote(stop("need x"))
   dots := new_class(
-    properties = list(
-      x = new_property(class_numeric, default = quote(stop("need x")))
-    ),
+    properties = list(x = new_property(class_numeric, default = need_x)),
     constructor = function(...) new_object(S7_object(), ...)
   )
   dots2 := new_class(
-    dots,
+    parent = dots,
     properties = list(x = new_property(class_numeric, default = 2))
   )
-
   expect_equal(dots2()@x, 2)
 })
 
 test_that("compatible dynamic settable override is passed to parent", {
+  need_x <- quote(stop("need x"))
   foo := new_class(
-    properties = list(
-      x = new_property(class_numeric, default = quote(stop("need x")))
-    )
+    properties = list(x = new_property(class_numeric, default = need_x))
   )
   foo2 := new_class(
     parent = foo,
@@ -178,7 +176,6 @@ test_that("compatible dynamic settable override is passed to parent", {
       )
     )
   )
-
   expect_equal(foo2(x = 1)@x, 2)
   expect_equal(foo2()@x, 2)
 })
@@ -197,7 +194,6 @@ test_that("subclass setter is used during construction", {
       )
     )
   )
-
   expect_equal(foo2(z = 1)@z, 2)
   expect_equal(foo2(x = 1L, z = 1)@x, 1L)
 })
@@ -213,7 +209,7 @@ test_that("parent validators rerun after inherited properties are reset", {
     validator = validator
   )
   foo2 := new_class(
-    foo,
+    parent = foo,
     properties = list(x = new_property(class_double, default = -1))
   )
 
@@ -225,7 +221,7 @@ test_that("overridden properties keep their position in the constructor", {
     properties = list(x = class_numeric, y = class_numeric)
   )
   foo2 := new_class(
-    foo,
+    parent = foo,
     properties = list(
       x = new_property(class_numeric, default = 2),
       z = class_numeric
@@ -233,32 +229,27 @@ test_that("overridden properties keep their position in the constructor", {
   )
 
   expect_named(formals(foo2), c("x", "y", "z"))
-  obj <- foo2(1, 2, 3)
-  expect_equal(obj@x, 1)
-  expect_equal(obj@y, 2)
-  expect_equal(obj@z, 3)
+  expect_equal(props(foo2(1, 2, 3)), list(x = 1, y = 2, z = 3))
 })
 
 test_that("read-only properties filter only overridden constructor arguments", {
   foo := new_class(properties = list(x = class_character))
   foo2 := new_class(
-    foo,
+    parent = foo,
     properties = list(x = new_property(getter = function(self) "fixed"))
   )
-
   expect_null(formals(foo2))
   expect_equal(foo2()@x, "fixed")
 
   Factor := new_class(
-    class_factor,
+    parent = class_factor,
     properties = list(
       levels = new_property(getter = function(self) levels(self))
     )
   )
-
   expect_named(formals(Factor), c(".data", "levels"))
-  x <- Factor(c(1L, 2L), levels = c("a", "b"))
 
+  x <- Factor(c(1L, 2L), levels = c("a", "b"))
   expect_equal(levels(x), c("a", "b"))
   expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
 })
@@ -266,7 +257,7 @@ test_that("read-only properties filter only overridden constructor arguments", {
 test_that("dynamic settable property overrides are not passed to parent", {
   foo := new_class(properties = list(x = class_integer))
   foo2 := new_class(
-    foo,
+    parent = foo,
     properties = list(
       x = new_property(
         class_character,
