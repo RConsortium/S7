@@ -193,31 +193,14 @@ test_that("inheritance doesn't let child properties widen or change the parent's
   })
 })
 
-test_that("inheritance doesn't widen properties with unresolved external classes", {
+
+test_that("subclassing an external class requires its package to be loaded", {
   Ext <- new_external_class("notloaded.pkg", "Cls")
-  Parent <- new_class(
-    "Parent",
-    properties = list(x = NULL | Ext),
-    package = NULL
-  )
+  Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
 
-  expect_no_error(
-    new_class(
-      "SameTypeChild",
-      Parent,
-      properties = list(x = Ext),
-      package = NULL
-    )
-  )
-
-  expect_error(
-    new_class(
-      "Child",
-      Parent,
-      properties = list(x = class_character),
-      package = NULL
-    ),
-    "must narrow"
+  expect_snapshot(
+    new_class("Child", Parent, properties = list(x = Ext)),
+    error = TRUE
   )
 })
 

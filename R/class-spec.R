@@ -263,10 +263,7 @@ class_dispatch <- function(x) {
     S7 = c(S7_class_name(x), class_dispatch(x@parent)),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
-    S7_external = {
-      class <- resolve_external_class_opt(x)
-      if (is.null(class)) character() else class_dispatch(class)
-    },
+    S7_external = class_dispatch(resolve_external_class_req(x)),
     stop2("Unsupported class type.", call = NULL)
   )
 }
@@ -356,26 +353,15 @@ class_extends <- function(child, parent) {
   }
 }
 
+# Subclassing an external class requires its package to be loaded, so we can
+# always resolve it here (erroring clearly if it's unavailable).
 class_extends_external <- function(child, parent) {
   if (is_external_class(child)) {
-    child_resolved <- resolve_external_class_opt(child)
-    if (is.null(child_resolved)) {
-      return(
-        is_external_class(parent) &&
-          identical(child$class_name, parent$class_name)
-      )
-    }
-    child <- child_resolved
+    child <- resolve_external_class_req(child)
   }
-
   if (is_external_class(parent)) {
-    parent_resolved <- resolve_external_class_opt(parent)
-    if (is.null(parent_resolved)) {
-      return(FALSE)
-    }
-    parent <- parent_resolved
+    parent <- resolve_external_class_req(parent)
   }
-
   class_extends(child, parent)
 }
 

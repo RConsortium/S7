@@ -42,6 +42,9 @@ new_class("tree", properties = list(child = NULL | tree_stub))
 
 Make sure to call \code{\link[=S7_on_load]{S7_on_load()}} in your package's \code{.onLoad()} so that
 deferred method registrations fire when the relevant package is loaded.
+
+External classes can not currently be used as parents in \code{\link[=new_class]{new_class()}}.
+We hope to relax that restriction in the near future.
 }
 \examples{
 # Refer to a class in another package without taking a hard dependency:

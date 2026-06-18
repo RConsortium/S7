@@ -22,14 +22,6 @@ test_that("external class is a valid class spec", {
   expect_equal(S7_class_desc(ec), "<foo::Bar>")
 })
 
-test_that("resolve_external_class_opt() resolves a loaded class", {
-  # S7 is itself loaded, S7_object exists in it
-  ec <- new_external_class("S7", "S7_object")
-  resolved <- resolve_external_class_opt(ec)
-  expect_true(is_class(resolved))
-  expect_equal(resolved@name, "S7_object")
-})
-
 test_that("external class resolution uses the S7 class name", {
   skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
@@ -42,15 +34,6 @@ test_that("external class resolution uses the S7 class name", {
 
   expect_true(is_class(resolved))
   expect_equal(S7_class_name(resolved), "t1::renamed")
-  expect_identical(resolve_external_class_opt(ec), resolved)
-})
-
-test_that("resolve_external_class_opt() returns NULL when unavailable", {
-  expect_null(resolve_external_class_opt(new_external_class("not_a_pkg", "X")))
-  expect_null(resolve_external_class_opt(new_external_class(
-    "S7",
-    "not_a_class"
-  )))
 })
 
 test_that("resolve_external_class_req() errors per failure mode", {

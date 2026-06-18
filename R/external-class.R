@@ -28,6 +28,9 @@
 #' Make sure to call [S7_on_load()] in your package's `.onLoad()` so that
 #' deferred method registrations fire when the relevant package is loaded.
 #'
+#' External classes can not currently be used as parents in [new_class()].
+#' We hope to relax that restriction in the near future.
+#'
 #' @param package Package the class is defined in.
 #' @param name Name of the class, as a string.
 #' @inheritParams new_external_generic version
@@ -137,17 +140,6 @@ resolve_class_req <- function(x) {
   }
 }
 
-# Optional resolution: used by `class_dispatch()` when building the
-# dispatch vector, where an unavailable external class should be silently
-# skipped.
-resolve_external_class_opt <- function(x) {
-  if (!dep_available(x)) {
-    return(NULL)
-  }
-
-  find_external_class(x)
-}
-
 find_external_class <- function(x) {
   ns <- asNamespace(x$package)
   if (exists(x$name, envir = ns, inherits = FALSE)) {
@@ -174,8 +166,9 @@ is_external_class_match <- function(obj, x) {
         (is.null(obj@package) || identical(obj@package, x$package))))
 }
 
-# Required resolution: used when registering a method, when extending
-# (since the child constructor inlines the parent arguments) and when
+# Required resolution: errors if the external class can't be resolved (e.g.
+# its package isn't loaded). Used wherever we need the real class: registering
+# or looking up methods, checking property overrides in a subclass, and
 # constructing or validating an instance.
 resolve_external_class_req <- function(x) {
   prefix <- sprintf("Can't find external class <%s>:\n", x$class_name)

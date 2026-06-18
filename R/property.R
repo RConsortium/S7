@@ -216,16 +216,7 @@ str.S7_property <- function(object, ..., nest.lev = 0) {
 }
 
 prop_default <- function(prop, envir, package) {
-  if (!is.null(prop$default)) {
-    return(prop$default)
-  }
-  # An unresolved external class has no constructor, so it can't supply a
-  # default; use a missing argument and let the value come from the parent.
-  cls <- prop$class
-  if (is_external_class(cls) && is.null(resolve_external_class_opt(cls))) {
-    return(quote(expr = ))
-  }
-  class_construct_expr(cls, envir, package)
+  prop$default %||% class_construct_expr(prop$class, envir, package)
 }
 
 prop_default_desc <- function(prop, package = NULL) {

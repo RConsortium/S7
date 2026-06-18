@@ -60,6 +60,21 @@
       - x: <integer>
       - y: <double>
 
+# method introspection requires external class's package to be loaded
+
+    Code
+      method(foo, class = ext)
+    Condition
+      Error:
+      ! Can't find external class <not_a_package::X>:
+      * Package 'not_a_package' is not installed.
+    Code
+      method_explain(foo, class = ext)
+    Condition
+      Error:
+      ! Can't find external class <not_a_package::X>:
+      * Package 'not_a_package' is not installed.
+
 # method explanation shows all possible methods along with matches
 
        add([foo2], [foo2])
