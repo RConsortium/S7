@@ -169,7 +169,11 @@ external_methods_remove <- function(package, generic, signature) {
     identical(x$generic, generic) &&
       external_method_signature_matches(x$signature, signature)
   })
+  removed <- tbl[!keep]
   S7_methods_table(package) <- tbl[keep]
+  for (x in removed) {
+    hooks_remove_method(package, x)
+  }
   invisible()
 }
 

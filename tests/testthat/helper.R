@@ -68,8 +68,14 @@ local_package <- function(name, ..., frame = parent.frame()) {
   # register namespace so asNamespace(pkg) works
   internal <- get(".Internal", envir = baseenv())
   internal(registerNamespace(name, ns))
-  defer(internal(unregisterNamespace(name)), frame = frame)
-  defer(S7_on_unload_(ns), frame = frame)
+  defer(
+    if (isNamespaceLoaded(name)) internal(unregisterNamespace(name)),
+    frame = frame
+  )
+  defer(
+    if (isNamespaceLoaded(name)) S7_on_unload_(ns),
+    frame = frame
+  )
 
   for (expr in eval(substitute(alist(...)))) {
     eval(expr, ns)

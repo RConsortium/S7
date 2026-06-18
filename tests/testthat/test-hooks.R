@@ -53,6 +53,42 @@ test_that("S7_on_unload() unregisters methods dispatching on an external class",
   )
 })
 
+test_that("S7_on_unload() unregisters external-class methods after class unload", {
+  generic_pkg <- local_package(
+    "upstream_external_unloaded_class_generic",
+    gen := new_generic("x")
+  )
+  class_pkg <- local_package(
+    "upstream_external_unloaded_class",
+    Foo := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_unloaded_class",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      package = "upstream_external_unloaded_class_generic",
+      dispatch_args = "x"
+    ),
+    Foo := new_external_class(
+      package = "upstream_external_unloaded_class"
+    ),
+    method(gen, Foo) <- function(x) "from external class"
+  )
+  downstream$.onLoad()
+
+  obj <- class_pkg$Foo()
+  expect_equal(generic_pkg$gen(obj), "from external class")
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 1)
+
+  unloadNamespace("upstream_external_unloaded_class")
+  expect_false(isNamespaceLoaded("upstream_external_unloaded_class"))
+  expect_equal(generic_pkg$gen(obj), "from external class")
+
+  downstream$.onUnload()
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
+})
+
 test_that("method<- NULL removes deferred methods for resolved external classes", {
   upstream <- local_package(
     "upstream_resolved_external_unregister",
@@ -86,6 +122,43 @@ test_that("method<- NULL removes deferred methods for resolved external classes"
     downstream$own_generic(upstream$Foo()),
     class = "S7_error_method_not_found"
   )
+})
+
+test_that("method<- NULL removes installed hooks for deferred external-class methods", {
+  upstream <- local_package(
+    "upstream_deferred_external_hook",
+    gen := new_generic("x")
+  )
+  downstream <- local_package(
+    "downstream_deferred_external_hook",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      package = "upstream_deferred_external_hook",
+      dispatch_args = "x"
+    ),
+    Ext := new_external_class(
+      package = "upstream_deferred_external_hook_class"
+    ),
+    method(gen, Ext) <- function(x) "from stale hook"
+  )
+  downstream$.onLoad()
+  expect_equal(nrow(S7_methods(generic = upstream$gen)), 0)
+
+  evalq(method(gen, Ext) <- NULL, downstream)
+  expect_length(S7_methods_table("downstream_deferred_external_hook"), 0)
+
+  ext_pkg <- local_package(
+    "upstream_deferred_external_hook_class",
+    Ext := new_class()
+  )
+  for (hook in package_hooks("upstream_deferred_external_hook_class")) {
+    hook()
+  }
+
+  expect_equal(nrow(S7_methods(generic = upstream$gen)), 0)
+  expect_length(package_hooks("upstream_deferred_external_hook_class"), 0)
+  invisible(ext_pkg)
 })
 
 test_that("S7_on_unload() unregisters methods and removes hooks", {

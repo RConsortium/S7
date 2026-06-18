@@ -81,11 +81,10 @@ S7_on_unload_ <- function(env) {
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
       signature <- x$signature
-      if (signature_has_external_class(signature)) {
-        deps <- signature_external_deps(signature)
-        if (!all(vlapply(deps, dep_available))) {
-          next
-        }
+      if (
+        signature_has_external_class(signature) &&
+          all(vlapply(signature_external_deps(signature), dep_available))
+      ) {
         signature <- resolve_signature(signature)
       }
       unregister_own_S7_method(
@@ -125,7 +124,7 @@ hook_add <- function(package, x) {
 
   deps <- method_deps(x$generic, x$signature)
   register <- registrar(deps, x$generic, x$signature, x$method, ns)
-  hook <- S7_hook(register, package)
+  hook <- S7_hook(register, package, x$generic, x$signature)
 
   pkgs <- method_deps_packages(deps)
   for (pkg in pkgs) {
@@ -144,10 +143,25 @@ hooks_remove <- function(package) {
   hooks_packages(package) <- character()
   invisible()
 }
-hook_remove <- function(package, pkg) {
+
+hooks_remove_method <- function(package, x) {
+  deps <- method_deps(x$generic, x$signature)
+  for (pkg in method_deps_packages(deps)) {
+    hook_remove(package, pkg, x$generic, x$signature)
+  }
+  invisible()
+}
+
+hook_remove <- function(package, pkg, generic = NULL, signature = NULL) {
   event <- packageEvent(pkg, "onLoad")
   hooks <- getHook(event)
-  ours <- vlapply(hooks, is_S7_hook, package = package)
+  ours <- vlapply(
+    hooks,
+    is_S7_hook,
+    package = package,
+    generic = generic,
+    signature = signature
+  )
   if (any(ours)) {
     setHook(event, hooks[!ours], action = "replace")
   }
@@ -178,16 +192,34 @@ is_generic_sentinel <- function(x) inherits(x, "S7_generic_sentinel")
 
 
 # Tag our hooks so we can remove later
-S7_hook <- function(fun, package) {
+S7_hook <- function(fun, package, generic = NULL, signature = NULL) {
   attr(fun, "S7_package") <- package
+  attr(fun, "S7_generic") <- generic
+  attr(fun, "S7_signature") <- signature
   class(fun) <- "S7_hook"
   fun
 }
-is_S7_hook <- function(x, package = NULL) {
+is_S7_hook <- function(x, package = NULL, generic = NULL, signature = NULL) {
   if (!inherits(x, "S7_hook")) {
     return(FALSE)
   }
-  is.null(package) || identical(attr(x, "S7_package", TRUE), package)
+  if (!is.null(package) && !identical(attr(x, "S7_package", TRUE), package)) {
+    return(FALSE)
+  }
+  if (!is.null(generic) && !identical(attr(x, "S7_generic", TRUE), generic)) {
+    return(FALSE)
+  }
+  if (!is.null(signature)) {
+    hook_signature <- attr(x, "S7_signature", TRUE)
+    if (
+      is.null(hook_signature) ||
+        !external_method_signature_matches(hook_signature, signature)
+    ) {
+      return(FALSE)
+    }
+  }
+
+  TRUE
 }
 
 hooks_packages <- function(package) {
@@ -215,9 +247,24 @@ unregister_own_S7_method <- function(
     own <- S7_method_for_signature(method, generic, sig, package = package)
     # Unload only removes the method this package currently owns. It does not
     # remember or restore any method that was overwritten during loading.
-    if (identical(current, own)) {
+    if (identical(current, own) || is_own_S7_method(current, method, package)) {
       generic_remove_method(generic, sig)
     }
   }
   invisible()
+}
+
+is_own_S7_method <- function(current, method, package = NULL) {
+  if (!is.function(current)) {
+    return(FALSE)
+  }
+  if (
+    !is.null(package) && !identical(attr(current, "S7_package", TRUE), package)
+  ) {
+    return(FALSE)
+  }
+
+  current_method <- current
+  attributes(current_method) <- attributes(method)
+  identical(current_method, method)
 }
