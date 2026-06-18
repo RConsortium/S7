@@ -25,6 +25,7 @@ reference:
 - title: Method dispatch
   contents:
   - convert
+  - convert_lazy
   - class_missing
   - class_any
   - super

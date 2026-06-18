@@ -245,3 +245,24 @@ test_that("base type fallback sits below user methods and inheritance", {
   expect_null(attributes(obj))
   expect_identical(obj, "hi")
 })
+
+test_that("convert_lazy() leaves `from` untouched if it inherits from `to` (#428)", {
+  foo1 := new_class(properties = list(x = class_double))
+  foo2 := new_class(foo1, properties = list(y = class_double))
+
+  obj <- foo2(x = 1, y = 2)
+  expect_identical(convert_lazy(obj, to = foo1), obj)
+  expect_identical(convert_lazy(obj, to = foo2), obj)
+})
+
+test_that("convert_lazy() falls back to convert() when not a subtype", {
+  foo1 := new_class(properties = list(x = class_double))
+  foo2 := new_class(foo1, properties = list(y = class_double))
+
+  # Downcasting still works
+  obj <- convert_lazy(foo1(x = 1), to = foo2, y = 2.5)
+  expect_equal(obj, foo2(x = 1, y = 2.5))
+
+  # As does casting to a different class
+  expect_identical(convert_lazy(1.5, class_character), "1.5")
+})
