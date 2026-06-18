@@ -112,6 +112,15 @@
   and `S7_data<-()` error on environment-based objects, since they would
   otherwise destroy the object’s S7 attributes in place
   ([\#590](https://github.com/RConsortium/S7/issues/590)).
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)’s
+  default constructor now respects properties overridden in a subclass:
+  the subclass’s default is used
+  ([\#467](https://github.com/RConsortium/S7/issues/467)) and its setter
+  is run during construction
+  ([\#585](https://github.com/RConsortium/S7/issues/585)). Values for
+  overridden properties are passed to both the parent constructor and
+  the new object, so a subclass can override a parent property whose
+  default is mandatory.
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class

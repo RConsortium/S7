@@ -8,6 +8,9 @@
   [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md),
   i.e. `foo := new_class(...)` instead of
   `foo <- new_class("foo", ...)`.
+- Always name all arguments to
+  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  and to constructors.
 - Use `defer()` instead of
   [`on.exit()`](https://rdrr.io/r/base/on.exit.html).
 - For tests, only use `test_that()`, not `describe()`/`it()`
