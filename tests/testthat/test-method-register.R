@@ -119,6 +119,18 @@ test_that("method registration defers external classes in union signatures", {
   expect_length(S7_methods_table("pkg"), 1)
 })
 
+test_that("method unregistration removes deferred external-class methods", {
+  pkg := local_package(
+    foo := new_generic("x"),
+    ext := new_external_class("notloaded.pkg"),
+    method(foo, ext) <- function(x) "x"
+  )
+  expect_length(S7_methods_table("pkg"), 1)
+
+  evalq(method(foo, ext) <- NULL, pkg)
+  expect_length(S7_methods_table("pkg"), 0)
+})
+
 test_that("method unregistration removes an S7 method via NULL assignment", {
   foo := new_generic("x")
   method(foo, class_character) <- function(x) "c"

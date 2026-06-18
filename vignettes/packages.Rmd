@@ -84,16 +84,24 @@ When the suggested package is loaded, S7 will register the method automatically 
 
 ### Methods for classes in suggested packages
 
-Conversely, you may want to register a method for one of your own generics, dispatching on a class from a suggested package. Use `new_external_class()` to refer to the class by name:
+Conversely, you may want to register a method for one of your own generics, dispatching on an S7 class from a suggested package. Use `new_external_class()` to refer to the class by name:
 
 ```{r, eval = FALSE}
 # In your package
 my_generic <- new_generic("my_generic", "x")
-ggplot <- new_external_class("ggplot2", "ggplot")
-method(my_generic, ggplot) <- function(x) { ... }
+TheirClass <- new_external_class("theirpkg", "TheirClass")
+method(my_generic, TheirClass) <- function(x) { ... }
 ```
 
 When the suggested package is loaded, S7 will register the method automatically (via `S7_on_load()` as described above).
+
+`new_external_class()` is only for S7 classes. For S3 classes from suggested packages, use `new_S3_class()`:
+
+```{r, eval = FALSE}
+# In your package
+ggplot <- new_S3_class("ggplot")
+method(my_generic, ggplot) <- function(x) { ... }
+```
 
 ## Backward compatibility
 

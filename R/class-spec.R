@@ -339,18 +339,18 @@ class_extends <- function(child, parent) {
   } else if (is.null(parent)) {
     # as a parent, NULL only accepts NULL
     is.null(child)
-  } else if (is_S4_class(child) || is_S4_class(parent)) {
-    is_S4_class(child) &&
-      is_S4_class(parent) &&
-      methods::extends(child@className, parent@className)
-  } else if (is_class(parent) && parent@name == "S7_object") {
-    is_class(child)
   } else if (is_external_class(child)) {
     child <- resolve_external_class_req(child)
     class_extends(child, parent)
   } else if (is_external_class(parent)) {
     parent <- resolve_external_class_req(parent)
     class_extends(child, parent)
+  } else if (is_S4_class(child) || is_S4_class(parent)) {
+    is_S4_class(child) &&
+      is_S4_class(parent) &&
+      methods::extends(child@className, parent@className)
+  } else if (is_class(parent) && parent@name == "S7_object") {
+    is_class(child)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
