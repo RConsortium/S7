@@ -149,6 +149,7 @@ find_external_class <- function(x) {
     }
   }
 
+  # Also consider cases where the constructor isn't named the same as the class
   for (name in ls(ns, all.names = TRUE)) {
     obj <- get(name, envir = ns, inherits = FALSE)
     if (is_external_class_match(obj, x)) {
