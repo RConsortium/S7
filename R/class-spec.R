@@ -340,7 +340,9 @@ class_inherits <- function(x, what) {
 # Is every instance of `child` guaranteed to also be an instance of `parent`?
 # Used to check that a child class only narrows the type of a property
 class_extends <- function(child, parent) {
-  if (is_class_any(parent) || union_contains_any(parent)) {
+  if (identical(child, parent)) {
+    TRUE
+  } else if (is_class_any(parent) || union_contains_any(parent)) {
     # as a parent, `class_any` accepts every child class
     TRUE
   } else if (is_class_any(child)) {

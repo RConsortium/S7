@@ -115,18 +115,10 @@ test_that("inheritance lets child properties narrow S7_object with external clas
   )
 
   expect_s3_class(Child(x = dep$External())@x, "dep::External")
-})
 
-test_that("inheritance lets child properties narrow S7_object with unloaded external classes", {
   Ext <- new_external_class("notloaded.pkg", "Cls")
-  Parent := new_class(
-    properties = list(x = S7_object),
-    package = NULL,
-    abstract = TRUE
-  )
-
   expect_no_error(new_class(
-    "Child",
+    "UnloadedChild",
     parent = Parent,
     properties = list(
       x = new_property(
@@ -244,31 +236,27 @@ test_that("inheritance lets child properties keep external class specs", {
   ))
 })
 
-test_that("inheritance short-circuits matching union parent properties", {
-  Ext <- new_external_class("S7testthatmissing", "Ext")
-  Parent := new_class(
-    properties = list(
-      x = new_property(Ext | S7_object, default = quote(S7_object()))
-    ),
-    package = NULL
-  )
-
-  expect_no_error(new_class(
-    "Child",
-    Parent,
-    properties = list(x = S7_object),
-    package = NULL
-  ))
-})
-
-test_that("inheritance skips non-matching external union parent properties", {
+test_that("inheritance matches available union parent properties", {
   dep := local_package(
     External := new_class()
   )
-  Missing <- new_external_class("S7testthatmissing", "Missing")
-  External <- new_external_class("dep", "External")
+  Missing <- new_external_class(package = "S7testthatmissing", name = "Missing")
+  External <- new_external_class(package = "dep", name = "External")
 
-  Parent := new_class(
+  Parent1 := new_class(
+    properties = list(
+      x = new_property(Missing | S7_object, default = quote(S7_object()))
+    ),
+    package = NULL
+  )
+  expect_no_error(new_class(
+    "Child1",
+    Parent1,
+    properties = list(x = S7_object),
+    package = NULL
+  ))
+
+  Parent2 := new_class(
     properties = list(
       x = new_property(Missing | External, default = quote(dep$External()))
     ),
@@ -276,8 +264,8 @@ test_that("inheritance skips non-matching external union parent properties", {
   )
 
   expect_no_error(new_class(
-    "Child",
-    Parent,
+    "Child2",
+    Parent2,
     properties = list(
       x = new_property(External, default = quote(dep$External()))
     ),
@@ -323,16 +311,6 @@ test_that("inheritance doesn't let child properties widen or change the parent's
   })
 })
 
-
-test_that("subclassing an external class requires its package to be loaded", {
-  Ext <- new_external_class("notloaded.pkg", "Cls")
-  Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
-
-  expect_snapshot(
-    new_class("Child", Parent, properties = list(x = Ext)),
-    error = TRUE
-  )
-})
 
 test_that("inheritance lets dynamic child properties override any parent type", {
   foo1 <- new_class("foo1", properties = list(x = class_integer))

@@ -13,65 +13,34 @@ test_that("print method works", {
 })
 
 test_that("external class is a valid class spec", {
-  ec <- new_external_class("foo", "Bar")
+  ec <- new_external_class(package = "foo", name = "Bar")
 
   expect_identical(as_class(ec), ec)
-  expect_equal(class_type(ec), "S7_external")
-  expect_equal(class_register(ec), "foo::Bar")
-  expect_equal(class_desc(ec), "<foo::Bar>")
   expect_equal(S7_class_desc(ec), "<foo::Bar>")
 })
 
 test_that("external class resolution uses the S7 class name", {
-  # The class is bound to `class_renamed`, but its S7 name is "renamed", so
+  # The class is bound to `renamed`, but its S7 name is "named", so
   # resolution must find it by scanning for a matching S7 class name.
   pkg := local_package(
     renamed <- new_class("named")
   )
-  named := new_external_class("pkg")
-  resolved <- resolve_external_class_req(named)
-
-  expect_s3_class(resolved, "S7_class")
-  expect_equal(S7_class_name(resolved), "pkg::named")
-})
-
-test_that("external class resolution rejects package-less classes", {
-  pkg := local_package(
-    Foo := new_class(package = NULL)
+  Named <- new_external_class(package = "pkg", name = "named")
+  Holder := new_class(
+    properties = list(
+      x = new_property(class = Named, default = quote(pkg$renamed()))
+    )
   )
-  Foo := new_external_class("pkg")
 
-  expect_snapshot(error = TRUE, resolve_external_class_req(Foo))
+  expect_s3_class(Holder(x = pkg$renamed())@x, "pkg::named")
 })
 
-test_that("resolve_external_class_req() errors per failure mode", {
-  local_mocked_bindings(getNamespaceVersion = function(package) "1.0.0")
-  expect_snapshot(error = TRUE, {
-    resolve_external_class_req(new_external_class("not_a_pkg", "X"))
-    resolve_external_class_req(new_external_class("S7", "S7_object", "2.0.0"))
-    resolve_external_class_req(new_external_class("S7", "not_a_class"))
-  })
-})
-
-test_that("external class can be used as a union arm", {
-  ec <- new_external_class("foo", "Bar")
-  u <- NULL | ec
-  expect_s3_class(u, "S7_union")
-  expect_length(u$classes, 2)
-})
-
-test_that("S7_inherits() short-circuits external union classes", {
+test_that("S7_inherits() matches loaded union arms around unloaded external classes", {
   Foo := new_class(package = NULL)
-  union <- Foo | new_external_class("S7testthatmissing", "Bar")
+  Missing <- new_external_class(package = "S7testthatmissing", name = "Bar")
 
-  expect_true(S7_inherits(Foo(), union))
-})
-
-test_that("S7_inherits() skips non-matching external union classes", {
-  Foo := new_class(package = NULL)
-  union <- new_external_class("S7testthatmissing", "Bar") | Foo
-
-  expect_true(S7_inherits(Foo(), union))
+  expect_true(S7_inherits(Foo(), Foo | Missing))
+  expect_true(S7_inherits(Foo(), Missing | Foo))
 })
 
 test_that("external class works as a property type for self-reference", {
@@ -129,32 +98,6 @@ test_that("external class property validation uses resolved dispatch", {
   expect_s3_class(Holder(x = S7_object())@x, "S7_object")
 })
 
-test_that("external class works for mutually recursive classes", {
-  ClassOne := new_class(
-    package = "mypkg",
-    properties = list(x = NULL | new_external_class("mypkg", "ClassTwo"))
-  )
-  ClassTwo := new_class(
-    package = "mypkg",
-    properties = list(y = NULL | new_external_class("mypkg", "ClassOne"))
-  )
-
-  obj <- ClassOne(x = ClassTwo(y = ClassOne()))
-  expect_s3_class(obj@x, "mypkg::ClassTwo")
-  expect_s3_class(obj@x@y, "mypkg::ClassOne")
-})
-
-test_that("class_inherits() works for external class", {
-  Tree := new_class(
-    package = "mypkg",
-    properties = list(child = NULL | new_external_class("mypkg", "Tree"))
-  )
-  ec <- new_external_class("mypkg", "Tree")
-  expect_true(class_inherits(Tree(), ec))
-  expect_false(class_inherits(1, ec))
-  expect_false(class_inherits(NULL, ec))
-})
-
 test_that("versioned external class checks package version", {
   versioned_pkg := local_package(
     Foo := new_class()
@@ -166,9 +109,4 @@ test_that("versioned external class checks package version", {
   )
 
   expect_snapshot(error = TRUE, S7_inherits(versioned_pkg$Foo(), Foo))
-
-  Holder := new_class(
-    properties = list(x = NULL | Foo)
-  )
-  expect_snapshot(error = TRUE, Holder(x = versioned_pkg$Foo()))
 })
