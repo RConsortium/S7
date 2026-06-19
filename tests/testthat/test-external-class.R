@@ -35,6 +35,15 @@ test_that("external class resolution uses the S7 class name", {
   expect_equal(S7_class_name(resolved), "pkg::named")
 })
 
+test_that("external class resolution rejects package-less classes", {
+  pkg := local_package(
+    Foo := new_class(package = NULL)
+  )
+  Foo := new_external_class("pkg")
+
+  expect_snapshot(error = TRUE, resolve_external_class_req(Foo))
+})
+
 test_that("resolve_external_class_req() errors per failure mode", {
   local_mocked_bindings(getNamespaceVersion = function(package) "1.0.0")
   expect_snapshot(error = TRUE, {

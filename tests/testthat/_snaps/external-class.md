@@ -22,6 +22,15 @@
     Output
       <S7_external_class> foo::Bar (>= 1.0)
 
+# external class resolution rejects package-less classes
+
+    Code
+      resolve_external_class_req(Foo)
+    Condition
+      Error:
+      ! Can't find external class <pkg::Foo>:
+      * Packages 'pkg' doesn't contain 'Foo'.
+
 # resolve_external_class_req() errors per failure mode
 
     Code

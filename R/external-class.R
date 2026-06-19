@@ -170,8 +170,11 @@ find_external_class <- function(x) {
 is_external_class_match <- function(obj, x) {
   is_class(obj) &&
     (identical(S7_class_name(obj), x$class_name) ||
+      (identical(x$package, "S7") &&
+        identical(x$name, "S7_object") &&
+        identical(obj, S7_object)) ||
       (identical(obj@name, x$name) &&
-        (is.null(obj@package) || identical(obj@package, x$package))))
+        identical(obj@package, x$package)))
 }
 
 # Required resolution: errors if the external class can't be resolved (e.g.
