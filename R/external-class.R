@@ -176,7 +176,16 @@ resolve_external_class_req <- function(x) {
     stop2(
       paste0(
         prefix,
-        sprintf("* Packages '%s' doesn't contain '%s'.", x$package, x$name)
+        sprintf(
+          paste0(
+            "* Package '%s' must bind an S7 class to `%s` with ",
+            "@name '%s' and @package '%s'."
+          ),
+          x$package,
+          x$name,
+          x$name,
+          x$package
+        )
       ),
       call = NULL
     )

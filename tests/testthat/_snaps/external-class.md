@@ -22,6 +22,15 @@
     Output
       <S7_external_class> foo::Bar (>= 1.0)
 
+# external class resolution explains class binding contract
+
+    Code
+      new_class(name = "Holder", properties = list(child = Bar))
+    Condition
+      Error:
+      ! Can't find external class <dep::Bar>:
+      * Package 'dep' must bind an S7 class to `Bar` with @name 'Bar' and @package 'dep'.
+
 # external class works as a property type for self-reference
 
     Code
@@ -48,3 +57,4 @@
       Error:
       ! Can't find external class <versioned_pkg::Foo>:
       * Package 'versioned_pkg' needs version 999.0, but only 0.0.0 is available.
+

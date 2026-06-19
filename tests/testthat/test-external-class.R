@@ -19,6 +19,21 @@ test_that("external class is a valid class spec", {
   expect_equal(S7_class_desc(ec), "<foo::Bar>")
 })
 
+test_that("external class resolution explains class binding contract", {
+  local_package(
+    "dep",
+    Foo <- new_class(name = "Bar", package = "dep")
+  )
+  Bar <- new_external_class(package = "dep", name = "Bar")
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      name = "Holder",
+      properties = list(child = Bar)
+    )
+  })
+})
+
 test_that("S7_inherits() matches loaded union arms around unloaded external classes", {
   Foo := new_class(package = NULL)
   Missing <- new_external_class(package = "S7testthatmissing", name = "Bar")
