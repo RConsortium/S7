@@ -69,16 +69,15 @@ S7_on_unload_ <- function(env) {
 
   tbl <- S7_methods_table(package)
   for (x in tbl) {
-    if (!isNamespaceLoaded(x$generic$package)) {
+    if (!dep_available(x$generic)) {
       next
     }
 
-    ns <- asNamespace(x$generic$package)
-    if (!external_generic_version_ok(x$generic, ns)) {
-      next
-    }
-
-    generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
+    generic <- get0(
+      x$generic$name,
+      envir = asNamespace(x$generic$package),
+      inherits = FALSE
+    )
     if (is.null(generic)) {
       next
     }

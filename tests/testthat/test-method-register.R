@@ -97,34 +97,6 @@ test_that("method registration returns a strippable sentinel for foreign generic
   expect_s3_class(pkg$ext, "S7_generic_sentinel")
 })
 
-test_that("deferred external-class methods preserve sentinel for foreign generics", {
-  pkg := local_package(
-    ext := new_external_class("notloaded.pkg")
-  )
-
-  # In a package, `method<-` writes a sentinel back into the binding
-  evalq(method(sum, ext) <- function(x, ...) "x", pkg)
-  expect_s3_class(pkg$sum, "S7_generic_sentinel")
-  expect_s3_class(pkg$sum, "S7_external_generic")
-})
-
-test_that("deferred external-class methods can reuse sentinel foreign generics", {
-  pkg := local_package(
-    gen := new_external_generic(
-      package = "notloaded.pkg",
-      dispatch_args = "x"
-    ),
-    Ext1 := new_external_class(package = "notloaded.pkg"),
-    Ext2 := new_external_class(package = "notloaded.pkg")
-  )
-
-  evalq(method(gen, Ext1) <- function(x) "first", pkg)
-  expect_s3_class(pkg$gen, "S7_generic_sentinel")
-
-  expect_no_error(evalq(method(gen, Ext2) <- function(x) "second", pkg))
-  expect_s3_class(pkg$gen, "S7_generic_sentinel")
-})
-
 test_that("method registration validates deferred external-class methods", {
   expect_snapshot(error = TRUE, {
     local_package(

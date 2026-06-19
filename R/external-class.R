@@ -114,8 +114,11 @@ external_class_register <- function(x) {
 }
 
 dep_available <- function(dep) {
-  isNamespaceLoaded(dep$package) &&
-    (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)
+  isNamespaceLoaded(dep$package) && dep_version_ok(dep)
+}
+
+dep_version_ok <- function(dep) {
+  is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version
 }
 
 # Make it mockable
@@ -170,7 +173,7 @@ resolve_external_class_req <- function(x) {
     )
   }
 
-  if (!is.null(x$version) && getNamespaceVersion(x$package) < x$version) {
+  if (!dep_version_ok(x)) {
     stop2(
       paste0(
         prefix,

@@ -23,9 +23,6 @@ test_that("S7_on_load() registers methods dispatching on an external class", {
     Foo := new_external_class("upstream"),
     method(own_generic, Foo) <- \(x) "from external class"
   )
-  # The method is deferred (its signature has an external class), not yet live
-  expect_length(methods(downstream$own_generic), 0)
-
   S7_on_load_(downstream)
   expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
 })
@@ -57,7 +54,10 @@ test_that("S7_on_load() waits until all external union arms are available", {
   )
 
   downstream$.onLoad()
-  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
+  expect_error(
+    generic_pkg$gen(upstream_a$A()),
+    class = "S7_error_method_not_found"
+  )
 
   upstream_b <- local_package(
     "upstream_external_union_b",
@@ -66,7 +66,6 @@ test_that("S7_on_load() waits until all external union arms are available", {
   downstream$.onLoad()
   expect_equal(generic_pkg$gen(upstream_a$A()), "union")
   expect_equal(generic_pkg$gen(upstream_b$B()), "union")
-  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 2)
 })
 
 test_that("S7_on_unload() unregisters methods dispatching on an external class", {

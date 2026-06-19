@@ -81,14 +81,7 @@ is_external_generic <- function(x) {
 
 external_generic_available <- function(generic) {
   is_external_generic(generic) &&
-    isNamespaceLoaded(generic$package) &&
-    external_generic_version_ok(generic, asNamespace(generic$package))
-}
-
-external_generic_version_ok <- function(generic, ns) {
-  stopifnot(is_external_generic(generic), is.environment(ns))
-
-  is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
+    dep_available(generic)
 }
 
 registrar <- function(generic, signature, method, env) {
