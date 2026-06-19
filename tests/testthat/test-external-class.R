@@ -172,26 +172,3 @@ test_that("versioned external class checks package version", {
   )
   expect_snapshot(error = TRUE, Holder(x = versioned_pkg$Foo()))
 })
-
-test_that("method_deps() collects the generic and external classes", {
-  gen <- new_external_generic("foo", "bar", "x")
-  sig <- list(
-    new_external_class("baz", "X"),
-    class_character,
-    NULL | new_external_class("qux", "Y", version = "1.0")
-  )
-  deps <- method_deps(gen, sig)
-  expect_equal(vcapply(deps, `[[`, "package"), c("foo", "baz", "qux"))
-  expect_equal(deps[[3]]$version, "1.0")
-})
-
-test_that("dep_available() respects loaded + version", {
-  # S7 is loaded, so this dep is available
-  expect_true(dep_available(new_external_generic("S7", "S7_inherits", "x")))
-  # version too high → not available
-  expect_false(dep_available(
-    new_external_generic("S7", "S7_inherits", "x", version = "999.0")
-  ))
-  # unloaded package → not available
-  expect_false(dep_available(new_external_class("not_a_package", "X")))
-})

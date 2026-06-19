@@ -48,7 +48,12 @@ methods_register <- function() {
 }
 
 S7_on_load_ <- function(env) {
-  hooks_set_and_run(packageName(env))
+  package <- packageName(env)
+
+  hooks_remove(package) # always start from a clean slate
+  hooks <- hooks_add(package)
+  hooks_run_loaded(hooks) # run hooks for loaded packages
+
   invisible()
 }
 
@@ -99,106 +104,51 @@ S7_on_unload_ <- function(env) {
   invisible()
 }
 
-# Start from a clean slate, then register each method whose dependency packages
-# are already loaded, and add a hook so it (re)registers whenever one of those
-# packages is loaded in the future.
-hooks_set_and_run <- function(package) {
-  hooks_remove(package)
-  `hooks_active<-`(package, TRUE)
+# Add a hook for each method that registers it when any of its dependency
+# packages are loaded. Returns the added hooks, named by the package they're
+# attached to.
+hooks_add <- function(package) {
+  ns <- asNamespace(package)
+  hooks <- list()
+  pkgs <- character()
 
-  for (x in S7_methods_table(package)) {
-    hook_set_and_run(package, x)
-  }
-  invisible()
-}
-
-hook_set_and_run <- function(package, x) {
-  package_name <- force(package)
-  x <- force(x)
-
-  hook <- hook_add(package_name, x)
-  `hooks_packages<-`(
-    package_name,
-    union(hooks_packages(package_name), hook$pkgs)
-  )
-  hook$run()
-}
-
-# Add a hook that (re)registers method `x` whenever one of its dependency
-# packages is loaded, and return its registrar so it can also be run now.
-hook_add <- function(package, x) {
-  package_name <- force(package)
-  x <- force(x)
-
-  ns <- asNamespace(package_name)
-
-  deps <- method_deps(x$generic, x$signature)
-  register <- registrar(x$generic, x$signature, x$method, ns)
-
-  pkgs <- method_deps_packages(deps)
-  for (pkg in pkgs) {
-    hook_add_package(package_name, x, ns, pkg)
-  }
-
-  list(run = register, pkgs = pkgs)
-}
-
-hook_add_package <- function(package, x, ns, on_load_package) {
-  package_name <- force(package)
-  x <- force(x)
-  ns <- force(ns)
-  on_load_package <- force(on_load_package)
-
-  hook_register <- registrar(
-    x$generic,
-    x$signature,
-    x$method,
-    ns,
-    on_load_package = on_load_package
-  )
-  hook <- S7_hook(hook_register, package_name, x$generic, x$signature)
-  setHook(packageEvent(on_load_package, "onLoad"), hook)
-}
-
-# Remove all of our hooks for `package`. Start with the recorded package
-# events, then re-derive from deferred methods in case loading failed and R
-# discarded our record while leaving the global hooks installed.
-hooks_remove <- function(package) {
-  pkgs <- hooks_packages(package)
   for (x in S7_methods_table(package)) {
     deps <- method_deps(x$generic, x$signature)
-    pkgs <- union(pkgs, method_deps_packages(deps))
+    register <- registrar(x$generic, x$signature, x$method, ns)
+
+    for (pkg in method_deps_packages(deps)) {
+      hook <- S7_hook(register, package)
+      setHook(packageEvent(pkg, "onLoad"), hook)
+      append1(hooks) <- hook
+      append1(pkgs) <- pkg
+    }
   }
 
-  for (pkg in pkgs) {
-    hook_remove(package, pkg)
+  names(hooks) <- pkgs
+  hooks_packages(package) <- unique(pkgs)
+  hooks
+}
+
+# Remove our hooks for `package`.
+hooks_remove <- function(package) {
+  for (pkg in hooks_packages(package)) {
+    event <- packageEvent(pkg, "onLoad")
+    hooks <- getHook(event)
+    ours <- vlapply(hooks, is_S7_hook, package = package)
+    if (any(ours)) {
+      setHook(event, hooks[!ours], action = "replace")
+    }
   }
-  `hooks_packages<-`(package, character())
-  `hooks_active<-`(package, FALSE)
+  hooks_packages(package) <- character()
   invisible()
 }
 
-hooks_remove_method <- function(package, x) {
-  deps <- method_deps(x$generic, x$signature)
-  for (pkg in method_deps_packages(deps)) {
-    hook_remove(package, pkg, x$generic, x$signature)
+hooks_run_loaded <- function(hooks) {
+  is_loaded <- vlapply(names(hooks), isNamespaceLoaded)
+  for (hook in hooks[is_loaded]) {
+    hook()
   }
   invisible()
-}
-
-hook_remove <- function(package, pkg, generic = NULL, signature = NULL) {
-  event <- packageEvent(pkg, "onLoad")
-  hooks <- getHook(event)
-  ours <- vlapply(
-    hooks,
-    is_S7_hook,
-    package = package,
-    generic = generic,
-    signature = signature
-  )
-  if (any(ours)) {
-    setHook(event, hooks[!ours], action = "replace")
-  }
 }
 
 #' @export
@@ -226,34 +176,16 @@ is_generic_sentinel <- function(x) inherits(x, "S7_generic_sentinel")
 
 
 # Tag our hooks so we can remove later
-S7_hook <- function(fun, package, generic = NULL, signature = NULL) {
+S7_hook <- function(fun, package) {
   attr(fun, "S7_package") <- package
-  attr(fun, "S7_generic") <- generic
-  attr(fun, "S7_signature") <- signature
   class(fun) <- "S7_hook"
   fun
 }
-is_S7_hook <- function(x, package = NULL, generic = NULL, signature = NULL) {
+is_S7_hook <- function(x, package = NULL) {
   if (!inherits(x, "S7_hook")) {
     return(FALSE)
   }
-  if (!is.null(package) && !identical(attr(x, "S7_package", TRUE), package)) {
-    return(FALSE)
-  }
-  if (!is.null(generic) && !identical(attr(x, "S7_generic", TRUE), generic)) {
-    return(FALSE)
-  }
-  if (!is.null(signature)) {
-    hook_signature <- attr(x, "S7_signature", TRUE)
-    if (
-      is.null(hook_signature) ||
-        !external_method_signature_matches(hook_signature, signature)
-    ) {
-      return(FALSE)
-    }
-  }
-
-  TRUE
+  is.null(package) || identical(attr(x, "S7_package", TRUE), package)
 }
 
 hooks_packages <- function(package) {
@@ -265,18 +197,6 @@ hooks_packages <- function(package) {
   ns <- asNamespace(package)
   tbl <- ns[[".__S3MethodsTable__."]]
   attr(tbl, "S7hooks") <- value
-  invisible()
-}
-
-hooks_active <- function(package) {
-  ns <- asNamespace(package)
-  tbl <- ns[[".__S3MethodsTable__."]]
-  isTRUE(attr(tbl, "S7hooks_active"))
-}
-`hooks_active<-` <- function(package, value) {
-  ns <- asNamespace(package)
-  tbl <- ns[[".__S3MethodsTable__."]]
-  attr(tbl, "S7hooks_active") <- value
   invisible()
 }
 

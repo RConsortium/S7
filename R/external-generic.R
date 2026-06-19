@@ -91,23 +91,24 @@ external_generic_version_ok <- function(generic, ns) {
   is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
 }
 
-registrar <- function(
-  generic,
-  signature,
-  method,
-  env,
-  on_load_package = NULL
-) {
+registrar <- function(generic, signature, method, env) {
   # Force all arguments
   generic
   signature
   method
   env
-  on_load_package
 
   function(...) {
     if (!dep_available(generic)) {
       return(invisible())
+    }
+
+    sig_deps <- signature_external_deps(signature)
+    if (!all(vlapply(sig_deps, dep_available))) {
+      return(invisible())
+    }
+    for (dep in sig_deps) {
+      resolve_external_class_req(dep)
     }
 
     generic_fun <- resolve_generic(generic)
@@ -115,39 +116,17 @@ registrar <- function(
       return(invisible())
     }
 
-    signatures <- list()
-    for (sig in flatten_signature(signature)) {
-      if (!registrar_signature_needs_package(sig, generic, on_load_package)) {
-        next
-      }
-
-      sig_deps <- signature_external_deps(sig)
-      if (!all(vlapply(sig_deps, dep_available))) {
-        next
-      }
-
-      append1(signatures) <- resolve_signature(sig)
-    }
-
-    for (sig in signatures) {
-      register_method(generic_fun, sig, method, env, package = NULL)
-    }
-
+    register_method(
+      generic_fun,
+      resolve_signature(signature),
+      method,
+      env,
+      package = NULL
+    )
     invisible()
   }
 }
 
-registrar_signature_needs_package <- function(signature, generic, package) {
-  if (is.null(package) || identical(package, generic$package)) {
-    return(TRUE)
-  }
-
-  deps <- signature_external_deps(signature)
-  any(vlapply(deps, function(dep) identical(dep$package, package)))
-}
-
-# Collects all external dependencies (the generic + any external classes)
-# into a single list. Each entry has at minimum `package` + `version`.
 method_deps <- function(generic, signature) {
   c(list(generic), signature_external_deps(signature))
 }
@@ -179,7 +158,7 @@ external_methods_add <- function(
   method
 ) {
   # Remove any existing entries
-  removed <- external_methods_remove(package, generic, signature)
+  external_methods_remove(package, generic, signature)
 
   entry <- list(
     generic = generic,
@@ -191,114 +170,20 @@ external_methods_add <- function(
   append1(tbl) <- entry
 
   S7_methods_table(package) <- tbl
-  invisible(removed)
+  invisible()
 }
 
 external_methods_remove <- function(package, generic, signature) {
   tbl <- S7_methods_table(package)
   if (length(tbl) == 0) {
-    return(invisible(list()))
+    return(invisible())
   }
 
-  active <- hooks_active(package)
-  new_tbl <- list()
-  removed <- list()
-  rehook <- list()
-
-  for (x in tbl) {
-    if (!identical(x$generic, generic)) {
-      append1(new_tbl) <- x
-      next
-    }
-
-    change <- external_method_signature_remove(x$signature, signature)
-    if (is.null(change)) {
-      append1(new_tbl) <- x
-      next
-    }
-
-    for (sig in change$removed) {
-      removed_x <- x
-      removed_x$signature <- sig
-      append1(removed) <- removed_x
-    }
-    hooks_remove_method(package, x)
-
-    for (sig in change$remaining) {
-      remaining_x <- x
-      remaining_x$signature <- sig
-      append1(new_tbl) <- remaining_x
-      append1(rehook) <- remaining_x
-    }
-  }
-
-  `S7_methods_table<-`(package, new_tbl)
-  if (length(rehook) > 0 && active) {
-    for (x in rehook) {
-      hook_set_and_run(package, x)
-    }
-  }
-
-  invisible(removed)
-}
-
-external_method_signature_remove <- function(x, y) {
-  if (length(x) != length(y)) {
-    return(NULL)
-  }
-
-  x_signatures <- flatten_signature(x)
-  y_signatures <- flatten_signature(y)
-  removed <- list()
-  remaining <- list()
-
-  for (x_sig in x_signatures) {
-    matched <- any(vlapply(y_signatures, function(y_sig) {
-      external_method_signature_matches(x_sig, y_sig)
-    }))
-    if (matched) {
-      append1(removed) <- new_signature(x_sig)
-    } else {
-      append1(remaining) <- new_signature(x_sig)
-    }
-  }
-
-  if (length(removed) == 0) {
-    return(NULL)
-  }
-
-  list(removed = removed, remaining = remaining)
-}
-
-external_method_signature_matches <- function(x, y) {
-  if (identical(x, y)) {
-    return(TRUE)
-  }
-  if (length(x) != length(y)) {
-    return(FALSE)
-  }
-
-  all(vlapply(seq_along(x), function(i) {
-    external_method_class_matches(x[[i]], y[[i]])
-  }))
-}
-
-external_method_class_matches <- function(x, y) {
-  if (identical(x, y)) {
-    return(TRUE)
-  }
-
-  if (is_external_class(x) && is_class(y)) {
-    return(is_external_class_match(y, x))
-  }
-  if (is_class(x) && is_external_class(y)) {
-    return(is_external_class_match(x, y))
-  }
-  if (is_external_class(x) && is_external_class(y)) {
-    return(identical(x$class_name, y$class_name))
-  }
-
-  FALSE
+  keep <- !vlapply(tbl, function(x) {
+    identical(x$generic, generic) && identical(x$signature, signature)
+  })
+  S7_methods_table(package) <- tbl[keep]
+  invisible()
 }
 
 # Store external methods in an attribute of the S3 methods table since

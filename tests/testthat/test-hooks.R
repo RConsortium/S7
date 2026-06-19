@@ -14,84 +14,6 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
   expect_length(package_hooks("upstream"), 1)
 })
 
-test_that("S7_on_load() doesn't duplicate hooks when registrars error", {
-  upstream_generic <- local_package(
-    "hookgenericpkg",
-    gen := new_generic("x")
-  )
-  upstream_class <- local_package(
-    "hookclasspkg",
-    Real := new_class()
-  )
-  downstream <- local_package(
-    "downstreamerrorhook",
-    .onLoad <- function(...) S7_on_load(),
-    gen <- new_external_generic(
-      package = "hookgenericpkg",
-      name = "gen",
-      dispatch_args = "x"
-    ),
-    Missing <- new_external_class(
-      package = "hookclasspkg",
-      name = "Missing"
-    ),
-    method(gen, Missing) <- function(x) "dispatched"
-  )
-
-  expect_snapshot(downstream$.onLoad(), error = TRUE)
-  expect_length(package_hooks("hookgenericpkg"), 1)
-  expect_length(package_hooks("hookclasspkg"), 1)
-
-  expect_snapshot(downstream$.onLoad(), error = TRUE)
-  expect_length(package_hooks("hookgenericpkg"), 1)
-  expect_length(package_hooks("hookclasspkg"), 1)
-
-  evalq(method(gen, Missing) <- NULL, downstream)
-  expect_length(package_hooks("hookgenericpkg"), 0)
-  expect_length(package_hooks("hookclasspkg"), 0)
-
-  invisible(upstream_generic)
-  invisible(upstream_class)
-})
-
-test_that("S7_on_load() removes stale hooks when hook records are lost", {
-  upstream_generic <- local_package(
-    "hooklostgenericpkg",
-    gen := new_generic("x")
-  )
-  upstream_class <- local_package(
-    "hooklostclasspkg",
-    Real := new_class()
-  )
-  downstream <- local_package(
-    "hooklostdownstream",
-    .onLoad <- function(...) S7_on_load(),
-    gen <- new_external_generic(
-      package = "hooklostgenericpkg",
-      name = "gen",
-      dispatch_args = "x"
-    ),
-    Missing <- new_external_class(
-      package = "hooklostclasspkg",
-      name = "Missing"
-    ),
-    method(gen, Missing) <- function(x) "dispatched"
-  )
-
-  expect_snapshot(downstream$.onLoad(), error = TRUE)
-  expect_length(package_hooks("hooklostgenericpkg"), 1)
-  expect_length(package_hooks("hooklostclasspkg"), 1)
-
-  `hooks_packages<-`("hooklostdownstream", character())
-
-  expect_snapshot(downstream$.onLoad(), error = TRUE)
-  expect_length(package_hooks("hooklostgenericpkg"), 1)
-  expect_length(package_hooks("hooklostclasspkg"), 1)
-
-  invisible(upstream_generic)
-  invisible(upstream_class)
-})
-
 test_that("S7_on_load() registers methods dispatching on an external class", {
   upstream := local_package(
     Foo := new_class()
@@ -108,232 +30,43 @@ test_that("S7_on_load() registers methods dispatching on an external class", {
   expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
 })
 
-test_that("method<- updates loaded external-class methods after S7_on_load()", {
-  upstream <- local_package(
-    "upstream_runtime_external_loaded",
-    Foo := new_class()
-  )
-  downstream <- local_package(
-    "downstream_runtime_external_loaded",
-    .onLoad <- function(...) S7_on_load(),
-    own_generic := new_generic("x"),
-    Foo := new_external_class("upstream_runtime_external_loaded"),
-    method(own_generic, Foo) <- function(x) "first"
-  )
-  downstream$.onLoad()
-  expect_equal(downstream$own_generic(upstream$Foo()), "first")
-
-  expect_message(
-    evalq(method(own_generic, Foo) <- function(x) "second", downstream),
-    "Overwriting method"
-  )
-  expect_equal(downstream$own_generic(upstream$Foo()), "second")
-})
-
-test_that("method<- clears stale external-class methods before deferring", {
-  upstream <- local_package(
-    "upstream_runtime_external_replaced_unloaded",
-    Foo := new_class()
-  )
-  downstream <- local_package(
-    "downstream_runtime_external_replaced_unloaded",
-    .onLoad <- function(...) S7_on_load(),
-    own_generic := new_generic(dispatch_args = "x"),
-    Foo := new_external_class(
-      package = "upstream_runtime_external_replaced_unloaded"
-    ),
-    method(own_generic, Foo) <- function(x) "first"
-  )
-  downstream$.onLoad()
-  expect_equal(downstream$own_generic(upstream$Foo()), "first")
-
-  unloadNamespace("upstream_runtime_external_replaced_unloaded")
-  expect_false(isNamespaceLoaded("upstream_runtime_external_replaced_unloaded"))
-
-  evalq(method(own_generic, Foo) <- function(x) "second", downstream)
-  expect_equal(nrow(S7_methods(generic = downstream$own_generic)), 0)
-
-  upstream <- local_package(
-    "upstream_runtime_external_replaced_unloaded",
-    Foo := new_class()
-  )
-  downstream$.onLoad()
-  expect_equal(downstream$own_generic(upstream$Foo()), "second")
-})
-
-test_that("method<- hooks unloaded external-class methods after S7_on_load()", {
-  downstream <- local_package(
-    "downstream_runtime_external_unloaded",
-    .onLoad <- function(...) S7_on_load(),
-    own_generic := new_generic("x"),
-    Foo := new_external_class("upstream_runtime_external_unloaded")
-  )
-  downstream$.onLoad()
-
-  evalq(method(own_generic, Foo) <- function(x) "runtime", downstream)
-  expect_length(package_hooks("upstream_runtime_external_unloaded"), 1)
-
-  upstream <- local_package(
-    "upstream_runtime_external_unloaded",
-    Foo := new_class()
-  )
-  for (hook in package_hooks("upstream_runtime_external_unloaded")) {
-    hook()
-  }
-  expect_equal(downstream$own_generic(upstream$Foo()), "runtime")
-})
-
-test_that("method<- rehooks unloaded external-generic methods after S7_on_load()", {
-  downstream <- local_package(
-    "downstream_runtime_external_generic_replaced",
-    .onLoad <- function(...) S7_on_load(),
-    Foo := new_class(),
-    gen <- new_external_generic(
-      package = "upstream_runtime_external_generic_replaced",
-      name = "gen",
-      dispatch_args = "x"
-    ),
-    method(gen, Foo) <- function(x) "first"
-  )
-  downstream$.onLoad()
-  expect_length(package_hooks("upstream_runtime_external_generic_replaced"), 1)
-
-  evalq(method(gen, Foo) <- function(x) "second", downstream)
-  expect_length(package_hooks("upstream_runtime_external_generic_replaced"), 1)
-
-  upstream <- local_package(
-    "upstream_runtime_external_generic_replaced",
-    gen := new_generic(dispatch_args = "x")
-  )
-  for (hook in package_hooks("upstream_runtime_external_generic_replaced")) {
-    hook()
-  }
-  expect_equal(upstream$gen(downstream$Foo()), "second")
-})
-
-test_that("S7_on_load() registers available union arms independently", {
+test_that("S7_on_load() waits until all external union arms are available", {
   generic_pkg <- local_package(
-    "upstream_external_union_partial_generic",
+    "upstream_external_union_generic",
     gen := new_generic(dispatch_args = "x")
   )
   upstream_a <- local_package(
-    "upstream_external_union_partial_a",
+    "upstream_external_union_a",
     A := new_class()
   )
   downstream <- local_package(
-    "downstream_external_union_partial",
+    "downstream_external_union",
     .onLoad <- function(...) S7_on_load(),
     gen <- new_external_generic(
-      package = "upstream_external_union_partial_generic",
+      package = "upstream_external_union_generic",
       name = "gen",
       dispatch_args = "x"
     ),
     A := new_external_class(
-      package = "upstream_external_union_partial_a"
+      package = "upstream_external_union_a"
     ),
     B := new_external_class(
-      package = "upstream_external_union_partial_b"
+      package = "upstream_external_union_b"
     ),
     method(gen, A | B) <- function(x) "union"
   )
 
   downstream$.onLoad()
-  expect_equal(generic_pkg$gen(upstream_a$A()), "union")
-  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 1)
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
 
   upstream_b <- local_package(
-    "upstream_external_union_partial_b",
+    "upstream_external_union_b",
     B := new_class()
   )
   downstream$.onLoad()
+  expect_equal(generic_pkg$gen(upstream_a$A()), "union")
   expect_equal(generic_pkg$gen(upstream_b$B()), "union")
   expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 2)
-})
-
-test_that("external-class hooks only register arms for the loaded package", {
-  generic_pkg <- local_package(
-    "upstream.external.union.hook.generic",
-    gen := new_generic(dispatch_args = "x")
-  )
-  upstream_a <- local_package(
-    "upstream.external.union.hook.a",
-    A := new_class()
-  )
-  downstream <- local_package(
-    "downstream.external.union.hook",
-    .onLoad <- function(...) S7_on_load(),
-    gen <- new_external_generic(
-      package = "upstream.external.union.hook.generic",
-      name = "gen",
-      dispatch_args = "x"
-    ),
-    A := new_external_class(
-      package = "upstream.external.union.hook.a"
-    ),
-    B := new_external_class(
-      package = "upstream.external.union.hook.b"
-    ),
-    method(gen, A | B) <- function(x) "union"
-  )
-
-  downstream$.onLoad()
-  expect_equal(generic_pkg$gen(upstream_a$A()), "union")
-
-  gen <- generic_pkg$gen
-  expect_message(
-    method(gen, upstream_a$A) <- function(x) "specific",
-    "Overwriting method"
-  )
-  expect_equal(generic_pkg$gen(upstream_a$A()), "specific")
-
-  upstream_b <- local_package(
-    "upstream.external.union.hook.b",
-    B := new_class()
-  )
-  expect_no_message({
-    for (hook in package_hooks("upstream.external.union.hook.b")) {
-      hook()
-    }
-  })
-
-  expect_equal(generic_pkg$gen(upstream_a$A()), "specific")
-  expect_equal(generic_pkg$gen(upstream_b$B()), "union")
-})
-
-test_that("S7_on_load() does not partially register unions when an arm errors", {
-  generic_pkg <- local_package(
-    "upstream_external_union_error_generic",
-    gen := new_generic(dispatch_args = "x")
-  )
-  upstream_a <- local_package(
-    "upstream_external_union_error_a",
-    A := new_class()
-  )
-  local_package(
-    "upstream_external_union_error_b",
-    Other := new_class()
-  )
-  downstream <- local_package(
-    "downstream_external_union_error",
-    .onLoad <- function(...) S7_on_load(),
-    gen <- new_external_generic(
-      package = "upstream_external_union_error_generic",
-      name = "gen",
-      dispatch_args = "x"
-    ),
-    A := new_external_class(
-      package = "upstream_external_union_error_a"
-    ),
-    B <- new_external_class(
-      package = "upstream_external_union_error_b",
-      name = "B"
-    ),
-    method(gen, A | B) <- function(x) "union"
-  )
-
-  expect_snapshot(error = TRUE, downstream$.onLoad())
-  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
-  expect_snapshot(generic_pkg$gen(upstream_a$A()), error = TRUE)
 })
 
 test_that("S7_on_unload() unregisters methods dispatching on an external class", {
@@ -393,78 +126,6 @@ test_that("S7_on_unload() unregisters external-class methods after class unload"
 
   downstream$.onUnload()
   expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
-})
-
-test_that("method<- NULL removes deferred methods for resolved external classes", {
-  upstream <- local_package(
-    "upstream_resolved_external_unregister",
-    Foo := new_class()
-  )
-  downstream <- local_package(
-    "downstream_resolved_external_unregister",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
-    own_generic := new_generic("x"),
-    Foo := new_external_class(
-      package = "upstream_resolved_external_unregister"
-    ),
-    method(own_generic, Foo) <- function(x) "from external class"
-  )
-  downstream$.onLoad()
-  downstream$ResolvedFoo <- upstream$Foo
-
-  expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
-  expect_length(S7_methods_table("downstream_resolved_external_unregister"), 1)
-
-  evalq(method(own_generic, ResolvedFoo) <- NULL, downstream)
-  expect_length(S7_methods_table("downstream_resolved_external_unregister"), 0)
-  expect_error(
-    downstream$own_generic(upstream$Foo()),
-    class = "S7_error_method_not_found"
-  )
-
-  downstream$.onLoad()
-  expect_error(
-    downstream$own_generic(upstream$Foo()),
-    class = "S7_error_method_not_found"
-  )
-})
-
-test_that("method<- NULL removes installed hooks for deferred external-class methods", {
-  upstream <- local_package(
-    "upstream_deferred_external_hook",
-    gen := new_generic("x")
-  )
-  downstream <- local_package(
-    "downstream_deferred_external_hook",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
-    gen := new_external_generic(
-      package = "upstream_deferred_external_hook",
-      dispatch_args = "x"
-    ),
-    Ext := new_external_class(
-      package = "upstream_deferred_external_hook_class"
-    ),
-    method(gen, Ext) <- function(x) "from stale hook"
-  )
-  downstream$.onLoad()
-  expect_equal(nrow(S7_methods(generic = upstream$gen)), 0)
-
-  evalq(method(gen, Ext) <- NULL, downstream)
-  expect_length(S7_methods_table("downstream_deferred_external_hook"), 0)
-
-  ext_pkg <- local_package(
-    "upstream_deferred_external_hook_class",
-    Ext := new_class()
-  )
-  for (hook in package_hooks("upstream_deferred_external_hook_class")) {
-    hook()
-  }
-
-  expect_equal(nrow(S7_methods(generic = upstream$gen)), 0)
-  expect_length(package_hooks("upstream_deferred_external_hook_class"), 0)
-  invisible(ext_pkg)
 })
 
 test_that("S7_on_unload() unregisters methods and removes hooks", {
