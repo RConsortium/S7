@@ -140,30 +140,19 @@ resolve_class_req <- function(x) {
 
 find_external_class <- function(x) {
   ns <- asNamespace(x$package)
-  if (exists(x$name, envir = ns, inherits = FALSE)) {
-    obj <- get(x$name, envir = ns, inherits = FALSE)
-    if (is_external_class_match(obj, x)) {
-      return(obj)
-    }
+  obj <- get0(x$name, envir = ns, inherits = FALSE)
+  if (is_external_class_match(obj, x)) {
+    obj
+  } else {
+    NULL
   }
-
-  # Also consider cases where the constructor isn't named the same as the class
-  for (name in ls(ns, all.names = TRUE)) {
-    obj <- get(name, envir = ns, inherits = FALSE)
-    if (is_external_class_match(obj, x)) {
-      return(obj)
-    }
-  }
-
-  NULL
 }
 
 is_external_class_match <- function(obj, x) {
   is_class(obj) &&
-    (identical(S7_class_name(obj), x$class_name) ||
-      (identical(x$package, "S7") &&
-        identical(x$name, "S7_object") &&
-        identical(obj, S7_object)) ||
+    ((identical(x$package, "S7") &&
+      identical(x$name, "S7_object") &&
+      identical(obj, S7_object)) ||
       (identical(obj@name, x$name) &&
         identical(obj@package, x$package)))
 }

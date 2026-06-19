@@ -19,22 +19,6 @@ test_that("external class is a valid class spec", {
   expect_equal(S7_class_desc(ec), "<foo::Bar>")
 })
 
-test_that("external class resolution uses the S7 class name", {
-  # The class is bound to `renamed`, but its S7 name is "named", so
-  # resolution must find it by scanning for a matching S7 class name.
-  pkg := local_package(
-    renamed <- new_class("named")
-  )
-  Named <- new_external_class(package = "pkg", name = "named")
-  Holder := new_class(
-    properties = list(
-      x = new_property(class = Named, default = quote(pkg$renamed()))
-    )
-  )
-
-  expect_s3_class(Holder(x = pkg$renamed())@x, "pkg::named")
-})
-
 test_that("S7_inherits() matches loaded union arms around unloaded external classes", {
   Foo := new_class(package = NULL)
   Missing <- new_external_class(package = "S7testthatmissing", name = "Bar")
