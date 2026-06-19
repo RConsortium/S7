@@ -104,11 +104,13 @@ registrar <- function(generic, signature, method, env) {
     }
 
     sig_deps <- signature_external_deps(signature)
-    if (!all(vlapply(sig_deps, dep_available))) {
-      return(invisible())
-    }
-    for (dep in sig_deps) {
-      resolve_external_class_req(dep)
+    if (length(sig_deps)) {
+      if (!all(vlapply(sig_deps, dep_available))) {
+        return(invisible())
+      }
+      for (dep in sig_deps) {
+        resolve_external_class_req(dep)
+      }
     }
 
     generic_fun <- resolve_generic(generic)

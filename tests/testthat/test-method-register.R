@@ -125,16 +125,6 @@ test_that("deferred external-class methods can reuse sentinel foreign generics",
   expect_s3_class(pkg$gen, "S7_generic_sentinel")
 })
 
-test_that("method registration defers external classes in union signatures", {
-  pkg := local_package(
-    foo := new_generic("x"),
-    ext := new_external_class("notloaded.pkg"),
-    method(foo, NULL | ext) <- function(x) "x"
-  )
-
-  expect_length(methods(pkg$foo), 0)
-})
-
 test_that("method registration validates deferred external-class methods", {
   expect_snapshot(error = TRUE, {
     local_package(

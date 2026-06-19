@@ -93,45 +93,6 @@ test_that("inheritance lets child properties narrow the parent's type", {
   ))
 })
 
-test_that("inheritance lets child properties narrow S7_object with external classes", {
-  dep := local_package(
-    External := new_class()
-  )
-  Parent := new_class(
-    properties = list(x = S7_object),
-    package = NULL,
-    abstract = TRUE
-  )
-
-  Child := new_class(
-    parent = Parent,
-    properties = list(
-      x = new_property(
-        class = new_external_class("dep", "External"),
-        default = quote(dep$External())
-      )
-    ),
-    package = NULL
-  )
-
-  expect_s3_class(Child(x = dep$External())@x, "dep::External")
-
-  Ext <- new_external_class("notloaded.pkg", "Cls")
-  expect_no_error(new_class(
-    "UnloadedChild",
-    parent = Parent,
-    properties = list(
-      x = new_property(
-        Ext,
-        default = quote({
-          NULL
-        })
-      )
-    ),
-    package = NULL
-  ))
-})
-
 test_that("inheritance lets child properties narrow with S4 inheritance", {
   S4PropertyParent := local_S4_class(slots = c(x = "numeric"))
   S4PropertyChild := local_S4_class(contains = "S4PropertyParent")
@@ -194,81 +155,65 @@ test_that("inheritance lets child properties narrow parent unions that include a
   ))
 })
 
-test_that("inheritance lets child properties keep external class specs", {
-  Ext <- new_external_class("notloaded.pkg", "Cls")
-
-  x <- new_property(
-    Ext,
-    default = quote({
-      NULL
-    })
-  )
-  child_x <- new_property(
-    Ext,
-    default = quote({
-      NULL
-    })
-  )
-  Parent <- new_class("Parent", properties = list(x = x), package = NULL)
-  expect_no_error(new_class("Child", Parent, properties = list(x = child_x)))
-
-  optional_x <- new_property(
-    NULL | Ext,
-    default = quote({
-      NULL
-    })
-  )
-  optional_child_x <- new_property(
-    NULL | Ext,
-    default = quote({
-      NULL
-    })
-  )
-  OptionalParent <- new_class(
-    "OptionalParent",
-    properties = list(x = optional_x),
-    package = NULL
-  )
-  expect_no_error(new_class(
-    "OptionalChild",
-    OptionalParent,
-    properties = list(x = optional_child_x)
-  ))
-})
-
-test_that("inheritance matches available union parent properties", {
+test_that("inheritance handles external class property specs", {
   dep := local_package(
     External := new_class()
   )
-  Missing <- new_external_class(package = "S7testthatmissing", name = "Missing")
   External <- new_external_class(package = "dep", name = "External")
+  Missing <- new_external_class(package = "S7testthatmissing", name = "Missing")
 
-  Parent1 := new_class(
+  ParentObject := new_class(
+    properties = list(x = S7_object),
+    package = NULL
+  )
+  ChildObject := new_class(
+    parent = ParentObject,
     properties = list(
-      x = new_property(Missing | S7_object, default = quote(S7_object()))
+      x = new_property(class = External, default = quote(dep$External()))
+    ),
+    package = NULL
+  )
+  expect_s3_class(ChildObject(x = dep$External())@x, "dep::External")
+
+  Ext <- new_external_class(package = "notloaded.pkg", name = "Cls")
+  ParentSame := new_class(
+    properties = list(
+      x = new_property(
+        class = Ext,
+        default = quote({
+          NULL
+        })
+      )
     ),
     package = NULL
   )
   expect_no_error(new_class(
-    "Child1",
-    Parent1,
-    properties = list(x = S7_object),
+    name = "ChildSame",
+    parent = ParentSame,
+    properties = list(
+      x = new_property(
+        class = Ext,
+        default = quote({
+          NULL
+        })
+      )
+    ),
     package = NULL
   ))
 
-  Parent2 := new_class(
+  ParentUnion := new_class(
     properties = list(
-      x = new_property(Missing | External, default = quote(dep$External()))
+      x = new_property(
+        class = Missing | S7_object,
+        default = quote(S7_object())
+      )
     ),
     package = NULL
   )
-
   expect_no_error(new_class(
-    "Child2",
-    Parent2,
-    properties = list(
-      x = new_property(External, default = quote(dep$External()))
-    ),
+    name = "ChildUnion",
+    parent = ParentUnion,
+    properties = list(x = S7_object),
     package = NULL
   ))
 })

@@ -88,7 +88,8 @@ register_method <- function(
 
   # Delay package methods with external classes until onLoad. Outside a package
   # there is no deferred methods table, so resolve them before registering.
-  if (signature_has_external_class(signature)) {
+  deps <- signature_external_deps(signature)
+  if (length(deps)) {
     if (is.null(package)) {
       signature <- resolve_signature(signature)
     } else {
@@ -170,11 +171,9 @@ unregister_method <- function(
     )
   }
 
+  deps <- signature_external_deps(signature)
   unregister_signature <- signature
-  if (
-    signature_has_external_class(signature) &&
-      (is.null(package) || signature_external_deps_resolvable(signature))
-  ) {
+  if (length(deps) && (is.null(package) || external_deps_resolvable(deps))) {
     unregister_signature <- resolve_signature(signature)
   }
 
