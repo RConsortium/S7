@@ -91,13 +91,21 @@ external_generic_version_ok <- function(generic, ns) {
   is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
 }
 
-registrar <- function(deps, generic, signature, method, env) {
+registrar <- function(
+  deps,
+  generic,
+  signature,
+  method,
+  env,
+  on_load_package = NULL
+) {
   # Force all arguments
   deps
   generic
   signature
   method
   env
+  on_load_package
 
   function(...) {
     if (!dep_available(generic)) {
@@ -111,6 +119,10 @@ registrar <- function(deps, generic, signature, method, env) {
 
     signatures <- list()
     for (sig in flatten_signature(signature)) {
+      if (!registrar_signature_needs_package(sig, generic, on_load_package)) {
+        next
+      }
+
       sig_deps <- signature_external_deps(sig)
       if (!all(vlapply(sig_deps, dep_available))) {
         next
@@ -125,6 +137,15 @@ registrar <- function(deps, generic, signature, method, env) {
 
     invisible()
   }
+}
+
+registrar_signature_needs_package <- function(signature, generic, package) {
+  if (is.null(package) || identical(package, generic$package)) {
+    return(TRUE)
+  }
+
+  deps <- signature_external_deps(signature)
+  any(vlapply(deps, function(dep) identical(dep$package, package)))
 }
 
 # Collects all external dependencies (the generic + any external classes)

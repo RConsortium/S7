@@ -250,6 +250,56 @@ test_that("S7_on_load() registers available union arms independently", {
   expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 2)
 })
 
+test_that("external-class hooks only register arms for the loaded package", {
+  generic_pkg <- local_package(
+    "upstream.external.union.hook.generic",
+    gen := new_generic(dispatch_args = "x")
+  )
+  upstream_a <- local_package(
+    "upstream.external.union.hook.a",
+    A := new_class()
+  )
+  downstream <- local_package(
+    "downstream.external.union.hook",
+    .onLoad <- function(...) S7_on_load(),
+    gen <- new_external_generic(
+      package = "upstream.external.union.hook.generic",
+      name = "gen",
+      dispatch_args = "x"
+    ),
+    A := new_external_class(
+      package = "upstream.external.union.hook.a"
+    ),
+    B := new_external_class(
+      package = "upstream.external.union.hook.b"
+    ),
+    method(gen, A | B) <- function(x) "union"
+  )
+
+  downstream$.onLoad()
+  expect_equal(generic_pkg$gen(upstream_a$A()), "union")
+
+  gen <- generic_pkg$gen
+  expect_message(
+    method(gen, upstream_a$A) <- function(x) "specific",
+    "Overwriting method"
+  )
+  expect_equal(generic_pkg$gen(upstream_a$A()), "specific")
+
+  upstream_b <- local_package(
+    "upstream.external.union.hook.b",
+    B := new_class()
+  )
+  expect_no_message({
+    for (hook in package_hooks("upstream.external.union.hook.b")) {
+      hook()
+    }
+  })
+
+  expect_equal(generic_pkg$gen(upstream_a$A()), "specific")
+  expect_equal(generic_pkg$gen(upstream_b$B()), "union")
+})
+
 test_that("S7_on_load() does not partially register unions when an arm errors", {
   generic_pkg <- local_package(
     "upstream_external_union_error_generic",

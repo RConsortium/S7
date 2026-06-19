@@ -134,14 +134,32 @@ hook_add <- function(package, x) {
 
   deps <- method_deps(x$generic, x$signature)
   register <- registrar(deps, x$generic, x$signature, x$method, ns)
-  hook <- S7_hook(register, package_name, x$generic, x$signature)
 
   pkgs <- method_deps_packages(deps)
   for (pkg in pkgs) {
-    setHook(packageEvent(pkg, "onLoad"), hook)
+    hook_add_package(package_name, x, deps, ns, pkg)
   }
 
   list(run = register, pkgs = pkgs)
+}
+
+hook_add_package <- function(package, x, deps, ns, on_load_package) {
+  package_name <- force(package)
+  x <- force(x)
+  deps <- force(deps)
+  ns <- force(ns)
+  on_load_package <- force(on_load_package)
+
+  hook_register <- registrar(
+    deps,
+    x$generic,
+    x$signature,
+    x$method,
+    ns,
+    on_load_package = on_load_package
+  )
+  hook <- S7_hook(hook_register, package_name, x$generic, x$signature)
+  setHook(packageEvent(on_load_package, "onLoad"), hook)
 }
 
 # Remove all of our hooks for `package`. Start with the recorded package

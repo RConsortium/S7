@@ -222,9 +222,10 @@ test_that("inheritance lets child properties keep external class specs", {
 })
 
 test_that("inheritance short-circuits matching union parent properties", {
+  Ext <- new_external_class("S7testthatmissing", "Ext")
   Parent := new_class(
     properties = list(
-      x = S7_object | new_external_class("S7testthatmissing", "Ext")
+      x = new_property(Ext | S7_object, default = quote(S7_object()))
     ),
     package = NULL
   )

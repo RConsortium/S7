@@ -357,7 +357,10 @@ class_extends <- function(child, parent) {
     all(vlapply(child$classes, class_extends, parent = parent))
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
-    for (class in parent$classes) {
+    classes <- parent$classes
+    external <- vlapply(classes, is_external_class)
+    classes <- c(classes[!external], classes[external])
+    for (class in classes) {
       if (class_extends(child, class)) {
         return(TRUE)
       }
