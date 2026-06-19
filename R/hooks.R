@@ -132,10 +132,17 @@ hook_add <- function(package, x) {
   list(run = register, pkgs = pkgs)
 }
 
-# Remove all of our hooks for `package`. `hooks_packages()` records every
-# package event we've added a hook to, so we don't need to re-derive them here.
+# Remove all of our hooks for `package`. Start with the recorded package
+# events, then re-derive from deferred methods in case loading failed and R
+# discarded our record while leaving the global hooks installed.
 hooks_remove <- function(package) {
-  for (pkg in hooks_packages(package)) {
+  pkgs <- hooks_packages(package)
+  for (x in S7_methods_table(package)) {
+    deps <- method_deps(x$generic, x$signature)
+    pkgs <- union(pkgs, method_deps_packages(deps))
+  }
+
+  for (pkg in pkgs) {
     hook_remove(package, pkg)
   }
   hooks_packages(package) <- character()

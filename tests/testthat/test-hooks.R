@@ -54,6 +54,44 @@ test_that("S7_on_load() doesn't duplicate hooks when registrars error", {
   invisible(upstream_class)
 })
 
+test_that("S7_on_load() removes stale hooks when hook records are lost", {
+  upstream_generic <- local_package(
+    "hooklostgenericpkg",
+    gen := new_generic("x")
+  )
+  upstream_class <- local_package(
+    "hooklostclasspkg",
+    Real := new_class()
+  )
+  downstream <- local_package(
+    "hooklostdownstream",
+    .onLoad <- function(...) S7_on_load(),
+    gen <- new_external_generic(
+      package = "hooklostgenericpkg",
+      name = "gen",
+      dispatch_args = "x"
+    ),
+    Missing <- new_external_class(
+      package = "hooklostclasspkg",
+      name = "Missing"
+    ),
+    method(gen, Missing) <- function(x) "dispatched"
+  )
+
+  expect_snapshot(downstream$.onLoad(), error = TRUE)
+  expect_length(package_hooks("hooklostgenericpkg"), 1)
+  expect_length(package_hooks("hooklostclasspkg"), 1)
+
+  `hooks_packages<-`("hooklostdownstream", character())
+
+  expect_snapshot(downstream$.onLoad(), error = TRUE)
+  expect_length(package_hooks("hooklostgenericpkg"), 1)
+  expect_length(package_hooks("hooklostclasspkg"), 1)
+
+  invisible(upstream_generic)
+  invisible(upstream_class)
+})
+
 test_that("S7_on_load() registers methods dispatching on an external class", {
   upstream := local_package(
     Foo := new_class()
