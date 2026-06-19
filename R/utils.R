@@ -243,6 +243,9 @@ deparse_trunc <- function(x, width, collapse = "\n") {
   x
 }
 
+is_plain_list <- function(x) {
+  is.list(x) && !is.object(x)
+}
 
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {
