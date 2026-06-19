@@ -2,12 +2,9 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
-\alias{S4_register_contains}
 \title{Register an S7, S3, or union class with S4}
 \usage{
-S4_register(class, env = parent.frame())
-
-S4_register_contains(class, env = parent.frame())
+S4_register(class, env = parent.frame(), contains = FALSE)
 }
 \arguments{
 \item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or, for
@@ -15,10 +12,13 @@ S4_register_contains(class, env = parent.frame())
 union created with \code{\link[=new_union]{new_union()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
+
+\item{contains}{If \code{TRUE}, create the heavier S4 class needed for S4 classes
+to extend an S7 class. This exposes stored S7 properties as S4 slots.}
 }
 \value{
-Both functions are called for their side effects and invisibly return the
-registered S4 class name.
+Called for its side effects and invisibly returns the registered S4 class
+name.
 }
 \description{
 If you want to use \link{method<-} to register a method for an S4 generic with
@@ -31,10 +31,10 @@ an S7 class that does not extend an S4 class, or an S3 class created by
 \code{S4_register()} registers an S7 class, S3 class, or S7 union with S4 and
 invisibly returns the registered S4 class name.
 
-\code{S4_register_contains()} returns an S4 shim class name for use in
-\code{methods::setClass(contains = )}, allowing S4 classes to extend an S7 class.
-The shim exposes stored S7 properties as S4 slots and carries the \code{S7_class}
-slot needed for S7 dispatch and validation. Do not instantiate it directly.
+Use \code{S4_register(contains = TRUE)} when an S4 class should extend an S7
+class with \code{methods::setClass(contains = )}. This creates a virtual S4 class
+that exposes stored S7 properties as S4 slots and carries the \code{S7_class} slot
+needed for S7 dispatch and validation. Do not instantiate it directly.
 
 Properties with custom getters or setters cannot be represented as S4 slots.
 Register S7 unions with \code{S4_register()} before using them in S4 slots or
@@ -55,6 +55,6 @@ method(S4_generic, Foo) <- function(x) "Hello"
 S4_generic(Foo())
 
 S4Foo <- new_class("S4Foo", properties = list(x = class_numeric), package = "S7")
-S4Foo_S4 <- S4_register_contains(S4Foo)
+S4Foo_S4 <- S4_register(S4Foo, contains = TRUE)
 methods::setClass("S4Child", contains = S4Foo_S4)
 }
