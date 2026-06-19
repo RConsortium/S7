@@ -50,4 +50,3 @@
     Condition
       Error:
       ! Can't find method for `gen(<upstream_external_union_error_a::A>)`.
-

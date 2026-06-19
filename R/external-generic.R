@@ -197,19 +197,14 @@ external_methods_add <- function(
 }
 
 external_methods_remove <- function(package, generic, signature) {
-  package_name <- force(package)
-  generic <- force(generic)
-  signature <- force(signature)
-
-  tbl <- S7_methods_table(package_name)
+  tbl <- S7_methods_table(package)
   if (length(tbl) == 0) {
     return(invisible(list()))
   }
 
-  active <- hooks_active(package_name)
+  active <- hooks_active(package)
   new_tbl <- list()
   removed <- list()
-  unhook <- list()
   rehook <- list()
 
   for (x in tbl) {
@@ -229,7 +224,7 @@ external_methods_remove <- function(package, generic, signature) {
       removed_x$signature <- sig
       append1(removed) <- removed_x
     }
-    append1(unhook) <- x
+    hooks_remove_method(package, x)
 
     for (sig in change$remaining) {
       remaining_x <- x
@@ -239,13 +234,10 @@ external_methods_remove <- function(package, generic, signature) {
     }
   }
 
-  `S7_methods_table<-`(package_name, new_tbl)
-  for (x in unhook) {
-    hooks_remove_method(package_name, x)
-  }
+  `S7_methods_table<-`(package, new_tbl)
   if (length(rehook) > 0 && active) {
     for (x in rehook) {
-      hook_set_and_run(package_name, x)
+      hook_set_and_run(package, x)
     }
   }
 
@@ -307,33 +299,8 @@ external_method_class_matches <- function(x, y) {
   if (is_external_class(x) && is_external_class(y)) {
     return(identical(x$class_name, y$class_name))
   }
-  if (is_union(x) && is_union(y)) {
-    return(external_method_union_matches(x$classes, y$classes))
-  }
 
   FALSE
-}
-
-external_method_union_matches <- function(x, y) {
-  if (length(x) != length(y)) {
-    return(FALSE)
-  }
-
-  matched <- rep(FALSE, length(y))
-  for (xi in x) {
-    hits <- which(
-      !matched &
-        vlapply(y, function(yi) {
-          external_method_class_matches(xi, yi)
-        })
-    )
-    if (length(hits) == 0) {
-      return(FALSE)
-    }
-    matched[[hits[[1]]]] <- TRUE
-  }
-
-  TRUE
 }
 
 # Store external methods in an attribute of the S3 methods table since

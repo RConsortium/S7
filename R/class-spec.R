@@ -357,10 +357,7 @@ class_extends <- function(child, parent) {
     all(vlapply(child$classes, class_extends, parent = parent))
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
-    classes <- parent$classes
-    external <- vlapply(classes, is_external_class)
-    classes <- c(classes[!external], classes[external])
-    for (class in classes) {
+    for (class in parent$classes) {
       if (class_extends(child, class)) {
         return(TRUE)
       }
@@ -377,6 +374,15 @@ class_extends <- function(child, parent) {
   } else if (is_external_class(child)) {
     child <- resolve_external_class_req(child)
     class_extends(child, parent)
+  } else if (is_class(child) && is_external_class(parent)) {
+    if (!is_external_class_match(child, parent)) {
+      FALSE
+    } else if (is.null(parent$version)) {
+      TRUE
+    } else {
+      parent <- resolve_external_class_req(parent)
+      class_extends(child, parent)
+    }
   } else if (is_external_class(parent)) {
     parent <- resolve_external_class_req(parent)
     class_extends(child, parent)

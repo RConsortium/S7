@@ -261,6 +261,30 @@ test_that("inheritance short-circuits matching union parent properties", {
   ))
 })
 
+test_that("inheritance skips non-matching external union parent properties", {
+  dep := local_package(
+    External := new_class()
+  )
+  Missing <- new_external_class("S7testthatmissing", "Missing")
+  External <- new_external_class("dep", "External")
+
+  Parent := new_class(
+    properties = list(
+      x = new_property(Missing | External, default = quote(dep$External()))
+    ),
+    package = NULL
+  )
+
+  expect_no_error(new_class(
+    "Child",
+    Parent,
+    properties = list(
+      x = new_property(External, default = quote(dep$External()))
+    ),
+    package = NULL
+  ))
+})
+
 test_that("inheritance lets child properties narrow optional union properties with NULL", {
   Parent <- new_class(
     "Parent",
