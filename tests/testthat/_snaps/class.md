@@ -125,6 +125,15 @@
        * An S4 class object
        * A base class
 
+# external class property defaults require loaded packages
+
+    Code
+      new_class("Child", Parent, properties = list(x = Ext))
+    Condition
+      Error:
+      ! Can't find external class <notloaded.pkg::Cls>:
+      * Package 'notloaded.pkg' is not installed.
+
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code

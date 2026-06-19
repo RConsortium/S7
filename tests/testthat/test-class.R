@@ -210,6 +210,16 @@ test_that("inheritance handles external class property specs", {
   expect_s3_class(ChildUnion(), "ChildUnion")
 })
 
+test_that("external class property defaults require loaded packages", {
+  Ext <- new_external_class("notloaded.pkg", "Cls")
+  Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
+
+  expect_snapshot(
+    new_class("Child", Parent, properties = list(x = Ext)),
+    error = TRUE
+  )
+})
+
 test_that("inheritance lets child properties narrow optional union properties with NULL", {
   Parent <- new_class(
     "Parent",
