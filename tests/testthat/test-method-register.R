@@ -145,6 +145,24 @@ test_that("method unregistration removes deferred external-class methods", {
   expect_length(S7_methods_table("pkg"), 0)
 })
 
+test_that("method unregistration resolves loaded external-class methods in packages", {
+  downstream <- local_package(
+    "downstream_external_unregister_resolve",
+    .onLoad <- function(...) S7_on_load(),
+    foo := new_generic("x"),
+    Ext <- new_external_class("S7", "S7_object"),
+    method(foo, Ext) <- function(x) "external"
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$foo(S7_object()), "external")
+
+  evalq(method(foo, Ext) <- NULL, downstream)
+  expect_snapshot(downstream$foo(S7_object()), error = TRUE)
+
+  downstream$.onLoad()
+  expect_snapshot(downstream$foo(S7_object()), error = TRUE)
+})
+
 test_that("method unregistration removes deferred unions regardless of order", {
   upstream <- local_package(
     "upstream_external_union_unregister",

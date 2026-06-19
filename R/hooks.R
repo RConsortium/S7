@@ -83,7 +83,7 @@ S7_on_unload_ <- function(env) {
       signature <- x$signature
       if (
         signature_has_external_class(signature) &&
-          all(vlapply(signature_external_deps(signature), dep_available))
+          signature_external_deps_resolvable(signature)
       ) {
         signature <- resolve_signature(signature)
       }

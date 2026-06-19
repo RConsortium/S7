@@ -43,6 +43,22 @@
       Error in `method<-`:
       ! foo() dispatches on `x`, but foo(<notloaded.pkg::ext>) has arguments `y`.
 
+# method unregistration resolves loaded external-class methods in packages
+
+    Code
+      downstream$foo(S7_object())
+    Condition
+      Error:
+      ! Can't find method for `foo(<S7_object>)`.
+
+---
+
+    Code
+      downstream$foo(S7_object())
+    Condition
+      Error:
+      ! Can't find method for `foo(<S7_object>)`.
+
 # method unregistration removes deferred unions regardless of order
 
     Code

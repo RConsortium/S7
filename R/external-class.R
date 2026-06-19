@@ -99,6 +99,13 @@ signature_external_deps <- function(signature) {
   flatten_external_deps(lapply(signature, class_external_deps))
 }
 
+signature_external_deps_resolvable <- function(signature) {
+  deps <- signature_external_deps(signature)
+  all(vlapply(deps, function(dep) {
+    dep_available(dep) && !is.null(find_external_class(dep))
+  }))
+}
+
 flatten_external_deps <- function(x) {
   unlist(x, recursive = FALSE, use.names = FALSE)
 }

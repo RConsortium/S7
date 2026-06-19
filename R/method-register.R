@@ -165,13 +165,19 @@ unregister_method <- function(
     )
   }
 
-  if (is.null(package) && signature_has_external_class(signature)) {
-    signature <- resolve_signature(signature)
+  unregister_signature <- signature
+  if (signature_has_external_class(signature)) {
+    if (
+      is.null(package) ||
+        signature_external_deps_resolvable(signature)
+    ) {
+      unregister_signature <- resolve_signature(signature)
+    }
   }
 
   # Unregister in current session
   if (is_S7_generic(generic)) {
-    unregister_S7_method(generic, signature)
+    unregister_S7_method(generic, unregister_signature)
   } else if (is_S3_generic(generic)) {
     stop2("Can't unregister methods for S3 generics", call = call)
   } else if (is_S4_generic(generic)) {
