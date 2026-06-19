@@ -41,7 +41,10 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
 }
 
 as_external_generic <- function(x, env = parent.frame()) {
-  if (is_S7_generic(x)) {
+  if (is_generic_sentinel(x)) {
+    class(x) <- "S7_external_generic"
+    x
+  } else if (is_S7_generic(x)) {
     pkg <- package_name(x)
     new_external_generic(pkg, x@name, x@dispatch_args)
   } else if (is_external_generic(x)) {

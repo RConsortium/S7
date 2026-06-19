@@ -111,6 +111,23 @@ test_that("deferred external-class methods preserve sentinel for foreign generic
   expect_length(S7_methods_table("pkg"), 1)
 })
 
+test_that("deferred external-class methods match sentinel foreign generics", {
+  pkg := local_package(
+    gen := new_external_generic("notloaded.pkg", "x"),
+    ext := new_external_class("notloaded.pkg")
+  )
+
+  evalq(method(gen, ext) <- function(x) "first", pkg)
+  expect_s3_class(pkg$gen, "S7_generic_sentinel")
+
+  evalq(method(gen, ext) <- function(x) "second", pkg)
+  expect_length(S7_methods_table("pkg"), 1)
+  expect_equal(S7_methods_table("pkg")[[1]]$method(NULL), "second")
+
+  evalq(method(gen, ext) <- NULL, pkg)
+  expect_length(S7_methods_table("pkg"), 0)
+})
+
 test_that("method registration defers external classes in union signatures", {
   pkg := local_package(
     foo := new_generic("x"),
