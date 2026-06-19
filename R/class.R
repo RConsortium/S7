@@ -463,6 +463,10 @@ check_prop_overrides <- function(
     child_class <- child_prop$class
     parent_class <- parent_props[[prop]]$class
 
+    if (identical(child_class, parent_class)) {
+      next
+    }
+
     if (!class_extends(child_class, parent_class)) {
       child_desc <- paste0("<", name, ">")
       parent_desc <- class_desc(parent)

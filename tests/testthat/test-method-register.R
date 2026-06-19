@@ -292,6 +292,48 @@ test_that("method unregistration removes deferred concrete methods by union", {
   expect_snapshot(downstream$foo(upstream$Ext()), error = TRUE)
 })
 
+test_that("method unregistration splits deferred multidispatch unions", {
+  upstream <- local_package(
+    "upstream_external_multi_union_unregister",
+    gen := new_generic(c("x", "y")),
+    A := new_class(),
+    B := new_class(),
+    C := new_class(),
+    D := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_multi_union_unregister",
+    .onLoad <- function(...) S7_on_load(),
+    gen <- new_external_generic(
+      package = "upstream_external_multi_union_unregister",
+      name = "gen",
+      dispatch_args = c("x", "y")
+    ),
+    A := new_external_class("upstream_external_multi_union_unregister"),
+    B := new_external_class("upstream_external_multi_union_unregister"),
+    C := new_external_class("upstream_external_multi_union_unregister"),
+    D := new_external_class("upstream_external_multi_union_unregister"),
+    method(gen, list(A | B, C | D)) <- function(x, y) "external"
+  )
+  downstream$.onLoad()
+  expect_equal(upstream$gen(upstream$A(), upstream$C()), "external")
+  expect_equal(upstream$gen(upstream$A(), upstream$D()), "external")
+  expect_equal(upstream$gen(upstream$B(), upstream$C()), "external")
+  expect_equal(upstream$gen(upstream$B(), upstream$D()), "external")
+
+  evalq(method(gen, list(A, C)) <- NULL, downstream)
+  expect_snapshot(upstream$gen(upstream$A(), upstream$C()), error = TRUE)
+  expect_equal(upstream$gen(upstream$A(), upstream$D()), "external")
+  expect_equal(upstream$gen(upstream$B(), upstream$C()), "external")
+  expect_equal(upstream$gen(upstream$B(), upstream$D()), "external")
+
+  downstream$.onLoad()
+  expect_snapshot(upstream$gen(upstream$A(), upstream$C()), error = TRUE)
+  expect_equal(upstream$gen(upstream$A(), upstream$D()), "external")
+  expect_equal(upstream$gen(upstream$B(), upstream$C()), "external")
+  expect_equal(upstream$gen(upstream$B(), upstream$D()), "external")
+})
+
 test_that("method unregistration removes an S7 method via NULL assignment", {
   foo := new_generic("x")
   method(foo, class_character) <- function(x) "c"

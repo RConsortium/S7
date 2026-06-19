@@ -179,6 +179,48 @@ test_that("inheritance lets child properties narrow parent unions that include a
   ))
 })
 
+test_that("inheritance lets child properties keep external class specs", {
+  Ext <- new_external_class("notloaded.pkg", "Cls")
+
+  x <- new_property(
+    Ext,
+    default = quote({
+      NULL
+    })
+  )
+  child_x <- new_property(
+    Ext,
+    default = quote({
+      NULL
+    })
+  )
+  Parent <- new_class("Parent", properties = list(x = x), package = NULL)
+  expect_no_error(new_class("Child", Parent, properties = list(x = child_x)))
+
+  optional_x <- new_property(
+    NULL | Ext,
+    default = quote({
+      NULL
+    })
+  )
+  optional_child_x <- new_property(
+    NULL | Ext,
+    default = quote({
+      NULL
+    })
+  )
+  OptionalParent <- new_class(
+    "OptionalParent",
+    properties = list(x = optional_x),
+    package = NULL
+  )
+  expect_no_error(new_class(
+    "OptionalChild",
+    OptionalParent,
+    properties = list(x = optional_child_x)
+  ))
+})
+
 test_that("inheritance short-circuits matching union parent properties", {
   Parent := new_class(
     properties = list(

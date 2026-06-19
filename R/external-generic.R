@@ -203,15 +203,18 @@ external_methods_remove <- function(package, generic, signature) {
       next
     }
 
-    removed_x <- x
-    removed_x$signature <- change$removed
-    append1(removed) <- removed_x
+    for (sig in change$removed) {
+      removed_x <- x
+      removed_x$signature <- sig
+      append1(removed) <- removed_x
+    }
     append1(unhook) <- x
 
-    if (!is.null(change$remaining)) {
-      x$signature <- change$remaining
-      append1(new_tbl) <- x
-      append1(rehook) <- x
+    for (sig in change$remaining) {
+      remaining_x <- x
+      remaining_x$signature <- sig
+      append1(new_tbl) <- remaining_x
+      append1(rehook) <- remaining_x
     }
   }
 
@@ -233,86 +236,19 @@ external_method_signature_remove <- function(x, y) {
     return(NULL)
   }
 
-  if (external_method_signature_matches(x, y)) {
-    return(list(removed = y, remaining = NULL))
-  }
-
-  candidates <- which(vlapply(seq_along(x), function(i) {
-    external_method_signature_arm_matches(x, y, i)
-  }))
-  if (length(candidates) != 1) {
-    return(NULL)
-  }
-
-  i <- candidates[[1]]
-  change <- external_method_class_remove(x[[i]], y[[i]])
-  removed <- x
-  removed[i] <- list(external_method_classes_to_class(change$removed))
-
-  if (length(change$remaining) == 0) {
-    remaining <- NULL
-  } else {
-    remaining <- x
-    remaining[i] <- list(external_method_classes_to_class(change$remaining))
-    remaining <- new_signature(remaining)
-  }
-
-  list(
-    removed = new_signature(removed),
-    remaining = remaining
-  )
-}
-
-external_method_signature_arm_matches <- function(x, y, i) {
-  if (is.null(external_method_class_remove(x[[i]], y[[i]]))) {
-    return(FALSE)
-  }
-
-  other <- setdiff(seq_along(x), i)
-  all(vlapply(other, function(j) {
-    external_method_class_matches(x[[j]], y[[j]])
-  }))
-}
-
-external_method_class_remove <- function(x, y) {
-  if (is_union(x)) {
-    return(external_method_union_remove(x, y))
-  }
-  if (is_union(y)) {
-    return(external_method_concrete_remove(x, y))
-  }
-
-  NULL
-}
-
-external_method_concrete_remove <- function(x, y) {
-  stopifnot(is_union(y))
-
-  for (class in y$classes) {
-    if (external_method_class_matches(x, class)) {
-      return(list(removed = list(x), remaining = list()))
-    }
-  }
-
-  NULL
-}
-
-external_method_union_remove <- function(x, y) {
-  stopifnot(is_union(x))
-
-  remove <- if (is_union(y)) y$classes else list(y)
+  x_signatures <- flatten_signature(x)
+  y_signatures <- flatten_signature(y)
   removed <- list()
   remaining <- list()
 
-  for (class in x$classes) {
-    if (
-      any(vlapply(remove, function(y) {
-        external_method_class_matches(class, y)
-      }))
-    ) {
-      removed[length(removed) + 1L] <- list(class)
+  for (x_sig in x_signatures) {
+    matched <- any(vlapply(y_signatures, function(y_sig) {
+      external_method_signature_matches(x_sig, y_sig)
+    }))
+    if (matched) {
+      append1(removed) <- new_signature(x_sig)
     } else {
-      remaining[length(remaining) + 1L] <- list(class)
+      append1(remaining) <- new_signature(x_sig)
     }
   }
 
@@ -321,16 +257,6 @@ external_method_union_remove <- function(x, y) {
   }
 
   list(removed = removed, remaining = remaining)
-}
-
-external_method_classes_to_class <- function(x) {
-  stopifnot(length(x) > 0)
-
-  if (length(x) == 1) {
-    x[[1]]
-  } else {
-    do.call(new_union, x)
-  }
 }
 
 external_method_signature_matches <- function(x, y) {

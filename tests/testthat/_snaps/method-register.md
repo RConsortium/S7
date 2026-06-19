@@ -115,6 +115,26 @@
       Error:
       ! Can't find method for `foo(<upstream_external_concrete_union_unregister::Ext>)`.
 
+# method unregistration splits deferred multidispatch unions
+
+    Code
+      upstream$gen(upstream$A(), upstream$C())
+    Condition
+      Error:
+      ! Can't find method for generic `gen(x, y)`:
+      - x: <upstream_external_multi_union_unregister::A>
+      - y: <upstream_external_multi_union_unregister::C>
+
+---
+
+    Code
+      upstream$gen(upstream$A(), upstream$C())
+    Condition
+      Error:
+      ! Can't find method for generic `gen(x, y)`:
+      - x: <upstream_external_multi_union_unregister::A>
+      - y: <upstream_external_multi_union_unregister::C>
+
 # method unregistration removes an S7 method via NULL assignment
 
     Code
