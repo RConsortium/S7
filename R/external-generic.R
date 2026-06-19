@@ -42,6 +42,8 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
 
 as_external_generic <- function(x, env = parent.frame()) {
   if (is_generic_sentinel(x)) {
+    # Sentinels are external generic specs with an extra marker class; keep
+    # this in sync with generic_sentinel().
     class(x) <- "S7_external_generic"
     x
   } else if (is_S7_generic(x)) {
