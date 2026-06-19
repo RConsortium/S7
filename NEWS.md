@@ -2,6 +2,7 @@
 
 * New `:=` operator creates and names an object in one step, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")` (#658).
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
+* New `class_condition`, `class_error`, and `class_warning` wrap the base condition classes, making it easier to use S7 to define custom condition classes (#586).
 * `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).
 * Method dispatch on `class_missing` now correctly handles missing arguments forwarded through a wrapper functions (#595).

@@ -54,6 +54,7 @@ reference:
   - base_classes
   - class_environment
   - base_s3_classes
+  - base_condition_classes
   - new_S3_class
   - S4_register
 
