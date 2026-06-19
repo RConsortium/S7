@@ -47,6 +47,10 @@ External classes can not currently be used as parents in \code{\link[=new_class]
 We hope to relax that restriction in the near future.
 }
 \examples{
+# Refer to an S7 class in another package without taking a hard dependency:
+TheirClass <- new_external_class("theirpkg", "TheirClass")
+TheirClass
+
 # Self-referential class: the `child` property can be another `tree`,
 # or `NULL` to terminate the chain.
 tree_stub <- new_external_class("mypkg", "tree")
