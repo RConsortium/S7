@@ -75,20 +75,24 @@ class_external_deps <- function(x) {
   if (is_external_class(x)) {
     list(x)
   } else if (is_union(x)) {
-    unlist(lapply(x$classes, class_external_deps), recursive = FALSE)
+    flatten_external_deps(lapply(x$classes, class_external_deps))
   } else {
     list()
   }
 }
 
 signature_external_deps <- function(signature) {
-  unlist(lapply(signature, class_external_deps), recursive = FALSE)
+  flatten_external_deps(lapply(signature, class_external_deps))
 }
 
 external_deps_resolvable <- function(deps) {
   all(vlapply(deps, function(dep) {
     dep_available(dep) && !is.null(find_external_class(dep))
   }))
+}
+
+flatten_external_deps <- function(x) {
+  unlist(x, recursive = FALSE, use.names = FALSE)
 }
 
 #' @export
