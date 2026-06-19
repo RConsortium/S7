@@ -42,6 +42,7 @@ test_that("method introspection requires external class's package to be loaded",
   ext <- new_external_class("not_a_package", "X")
   expect_snapshot(error = TRUE, {
     method(foo, class = ext)
+    method_explain(foo, class = ext)
   })
 })
 

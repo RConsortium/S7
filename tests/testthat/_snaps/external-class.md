@@ -22,6 +22,27 @@
     Output
       <S7_external_class> foo::Bar (>= 1.0)
 
+# resolve_external_class_req() errors per failure mode
+
+    Code
+      resolve_external_class_req(new_external_class("not_a_pkg", "X"))
+    Condition
+      Error:
+      ! Can't find external class <not_a_pkg::X>:
+      * Package 'not_a_pkg' is not installed.
+    Code
+      resolve_external_class_req(new_external_class("S7", "S7_object", "2.0.0"))
+    Condition
+      Error:
+      ! Can't find external class <S7::S7_object>:
+      * Package 'S7' needs version 2.0.0, but only 1.0.0 is available.
+    Code
+      resolve_external_class_req(new_external_class("S7", "not_a_class"))
+    Condition
+      Error:
+      ! Can't find external class <S7::not_a_class>:
+      * Package 'S7' must bind an S7 class to `not_a_class` with @name 'not_a_class' and @package 'S7'.
+
 # external class resolution explains class binding contract
 
     Code

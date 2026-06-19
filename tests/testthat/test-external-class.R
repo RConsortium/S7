@@ -19,6 +19,15 @@ test_that("external class is a valid class spec", {
   expect_equal(S7_class_desc(ec), "<foo::Bar>")
 })
 
+test_that("resolve_external_class_req() errors per failure mode", {
+  local_mocked_bindings(getNamespaceVersion = function(package) "1.0.0")
+  expect_snapshot(error = TRUE, {
+    resolve_external_class_req(new_external_class("not_a_pkg", "X"))
+    resolve_external_class_req(new_external_class("S7", "S7_object", "2.0.0"))
+    resolve_external_class_req(new_external_class("S7", "not_a_class"))
+  })
+})
+
 test_that("external class resolution explains class binding contract", {
   local_package(
     "dep",
@@ -46,6 +55,13 @@ test_that("external class resolution explains class binding contract", {
   })
 })
 
+test_that("external class can be used as a union arm", {
+  ec <- new_external_class("foo", "Bar")
+  u <- NULL | ec
+  expect_s3_class(u, "S7_union")
+  expect_length(u$classes, 2)
+})
+
 test_that("S7_inherits() matches loaded union arms around unloaded external classes", {
   Foo := new_class(package = NULL)
   Missing <- new_external_class(package = "S7testthatmissing", name = "Bar")
@@ -71,6 +87,21 @@ test_that("external class works as a property type for self-reference", {
 
   # type checking still rejects wrong types
   expect_snapshot(error = TRUE, Tree(label = "bad", child = 1))
+})
+
+test_that("external class works for mutually recursive classes", {
+  ClassOne := new_class(
+    package = "mypkg",
+    properties = list(x = NULL | new_external_class("mypkg", "ClassTwo"))
+  )
+  ClassTwo := new_class(
+    package = "mypkg",
+    properties = list(y = NULL | new_external_class("mypkg", "ClassOne"))
+  )
+
+  obj <- ClassOne(x = ClassTwo(y = ClassOne()))
+  expect_s3_class(obj@x, "mypkg::ClassTwo")
+  expect_s3_class(obj@x@y, "mypkg::ClassOne")
 })
 
 test_that("external class property validation reports validator errors", {

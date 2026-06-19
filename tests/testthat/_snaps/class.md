@@ -125,15 +125,6 @@
        * An S4 class object
        * A base class
 
-# external class property defaults require loaded packages
-
-    Code
-      new_class("Child", Parent, properties = list(x = Ext))
-    Condition
-      Error:
-      ! Can't find external class <notloaded.pkg::Cls>:
-      * Package 'notloaded.pkg' is not installed.
-
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code
@@ -157,6 +148,15 @@
       ! <foo4>@x must narrow <foo1>@x.
       - <foo1>@x is <integer>.
       - <foo4>@x is <ANY>.
+
+# subclassing an external class requires its package to be loaded
+
+    Code
+      new_class("Child", Parent, properties = list(x = Ext))
+    Condition
+      Error:
+      ! Can't find external class <notloaded.pkg::Cls>:
+      * Package 'notloaded.pkg' is not installed.
 
 # abstract classes can't be instantiated
 
