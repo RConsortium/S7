@@ -132,6 +132,24 @@ test_that("class_inherits() works for external class", {
   expect_false(class_inherits(NULL, ec))
 })
 
+test_that("versioned external class checks package version", {
+  versioned_pkg := local_package(
+    Foo := new_class()
+  )
+  Foo <- new_external_class(
+    package = "versioned_pkg",
+    name = "Foo",
+    version = "999.0"
+  )
+
+  expect_snapshot(error = TRUE, S7_inherits(versioned_pkg$Foo(), Foo))
+
+  Holder := new_class(
+    properties = list(x = NULL | Foo)
+  )
+  expect_snapshot(error = TRUE, Holder(x = versioned_pkg$Foo()))
+})
+
 test_that("method_deps() collects the generic and external classes", {
   gen <- new_external_generic("foo", "bar", "x")
   sig <- list(

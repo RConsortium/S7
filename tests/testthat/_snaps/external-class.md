@@ -61,3 +61,21 @@
       ! <S7::Holder> object properties are invalid:
       - @child: x must be non-negative
 
+# versioned external class checks package version
+
+    Code
+      S7_inherits(versioned_pkg$Foo(), Foo)
+    Condition
+      Error:
+      ! Can't find external class <versioned_pkg::Foo>:
+      * Package 'versioned_pkg' needs version 999.0, but only 0.0.0 is available.
+
+---
+
+    Code
+      Holder(x = versioned_pkg$Foo())
+    Condition
+      Error:
+      ! Can't find external class <versioned_pkg::Foo>:
+      * Package 'versioned_pkg' needs version 999.0, but only 0.0.0 is available.
+
