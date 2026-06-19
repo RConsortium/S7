@@ -6,8 +6,19 @@
 #' [new_class()] with an S4 parent are registered automatically.
 #'
 #' @section Details:
-#' ```{r child = "man/rmd/S4-registration.Rmd"}
-#' ```
+#' `S4_register()` registers an S7 class, S3 class, or S7 union with S4 and
+#' invisibly returns the registered S4 class name.
+#'
+#' `S4_register_contains()` returns an S4 shim class name for use in
+#' `methods::setClass(contains = )`, allowing S4 classes to extend an S7 class.
+#' The shim exposes stored S7 properties as S4 slots and carries the `S7_class`
+#' slot needed for S7 dispatch and validation. Do not instantiate it directly.
+#'
+#' Properties with custom getters or setters cannot be represented as S4 slots.
+#' Register S7 unions with `S4_register()` before using them in S4 slots or
+#' method signatures unless an equivalent S4 union already exists.
+#'
+#' See `vignette("compatibility")` for examples and caveats.
 #'
 #' @param class An S7 class created with [new_class()], or, for
 #'   `S4_register()` only, an S3 class created with [new_S3_class()] or an S7

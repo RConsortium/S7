@@ -56,8 +56,15 @@
 #'   either be a type specification (processed by [as_class()]) or a
 #'   full property specification created [new_property()].
 #' @section S4 compatibility:
-#' ```{r child = "man/rmd/S4-compatibility.Rmd"}
-#' ```
+#' `new_class()` can use an S4 class definition or class generator as its
+#' `parent`. S4 parent slots become S7 properties, the class is registered with
+#' S4 automatically, and S4 generics can dispatch through the S4 parent.
+#'
+#' S7 objects that directly extend S4 are represented as S3 old-class objects,
+#' so `isS4()` is `FALSE` even though [methods::is()] and S4 dispatch see the
+#' S4 parent. S4 classes can extend S7 classes with [S4_register_contains()].
+#'
+#' See `vignette("compatibility")` for examples and caveats.
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
