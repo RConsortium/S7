@@ -37,10 +37,6 @@
 #' @returns An S7 external class, i.e. a list with S3 class `S7_external_class`.
 #' @export
 #' @examples
-#' # Refer to an S7 class in another package without taking a hard dependency:
-#' ExternalObject <- new_external_class("S7", "S7_object")
-#' ExternalObject
-#'
 #' # Self-referential class: the `child` property can be another `tree`,
 #' # or `NULL` to terminate the chain.
 #' tree_stub <- new_external_class("mypkg", "tree")
@@ -103,16 +99,6 @@ print.S7_external_class <- function(x, ...) {
   invisible(x)
 }
 
-external_class_register <- function(x) {
-  stopifnot(is_external_class(x))
-
-  if (identical(x$package, "S7") && identical(x$name, "S7_object")) {
-    "S7_object"
-  } else {
-    x$class_name
-  }
-}
-
 dep_available <- function(dep) {
   isNamespaceLoaded(dep$package) && dep_version_ok(dep)
 }
@@ -153,11 +139,8 @@ find_external_class <- function(x) {
 
 is_external_class_match <- function(obj, x) {
   is_class(obj) &&
-    ((identical(x$package, "S7") &&
-      identical(x$name, "S7_object") &&
-      identical(obj, S7_object)) ||
-      (identical(obj@name, x$name) &&
-        identical(obj@package, x$package)))
+    identical(obj@name, x$name) &&
+    identical(obj@package, x$package)
 }
 
 # Required resolution: errors if the external class can't be resolved (e.g.

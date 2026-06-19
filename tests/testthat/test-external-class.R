@@ -75,11 +75,19 @@ test_that("external class property validation reports validator errors", {
 })
 
 test_that("external class property validation uses resolved dispatch", {
+  dep := local_package(
+    Ext := new_class()
+  )
   Holder := new_class(
-    properties = list(x = new_external_class("S7", "S7_object"))
+    properties = list(
+      x = new_property(
+        class = new_external_class("dep", "Ext"),
+        default = quote(dep$Ext())
+      )
+    )
   )
 
-  expect_s3_class(Holder(x = S7_object())@x, "S7_object")
+  expect_s3_class(Holder(x = dep$Ext())@x, "dep::Ext")
 })
 
 test_that("versioned external class checks package version", {

@@ -28,10 +28,10 @@
 # method registration resolves external classes outside packages
 
     Code
-      env$g(S7_object())
+      env$g(dep$Ext())
     Condition
       Error:
-      ! Can't find method for `g(<S7_object>)`.
+      ! Can't find method for `g(<dep::Ext>)`.
 
 # method registration validates deferred external-class methods
 

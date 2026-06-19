@@ -65,18 +65,22 @@ test_that("method registration returns the generic unchanged when not in a packa
 })
 
 test_that("method registration resolves external classes outside packages", {
+  dep := local_package(
+    Ext := new_class()
+  )
+
   env <- new.env(parent = baseenv())
   env[["method<-"]] <- `method<-`
   env$g <- new_generic("g", "x")
-  env$ext <- new_external_class("S7", "S7_object")
+  env$ext <- new_external_class("dep", "Ext")
   env$f <- function(x) "external"
 
   evalq(method(g, ext) <- f, env)
 
-  expect_equal(env$g(S7_object()), "external")
+  expect_equal(env$g(dep$Ext()), "external")
 
   evalq(method(g, ext) <- NULL, env)
-  expect_snapshot(env$g(S7_object()), error = TRUE)
+  expect_snapshot(env$g(dep$Ext()), error = TRUE)
 })
 
 test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {

@@ -26,9 +26,12 @@ test_that("accepts any class specification (#556)", {
   expect_true(S7_inherits("anything", class_any))
 
   # external class
+  dep := local_package(
+    Ext := new_class()
+  )
   expect_true(S7_inherits(
-    S7_object(),
-    new_external_class("S7", "S7_object")
+    dep$Ext(),
+    new_external_class("dep", "Ext")
   ))
 })
 

@@ -281,7 +281,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
-    S7_external = external_class_register(x),
+    S7_external = x$class_name,
     stop2("Unsupported class type.", call = NULL)
   )
 }
@@ -330,7 +330,7 @@ class_inherits <- function(x, what) {
     },
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
     S7_external = inherits(x, "S7_object") &&
-      inherits(x, external_class_register(what)) &&
+      inherits(x, what$class_name) &&
       (is.null(what$version) ||
         class_inherits(x, resolve_external_class_req(what))),
   )
