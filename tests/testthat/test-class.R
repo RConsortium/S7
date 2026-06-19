@@ -179,6 +179,22 @@ test_that("inheritance lets child properties narrow parent unions that include a
   ))
 })
 
+test_that("inheritance short-circuits matching union parent properties", {
+  Parent := new_class(
+    properties = list(
+      x = S7_object | new_external_class("S7testthatmissing", "Ext")
+    ),
+    package = NULL
+  )
+
+  expect_no_error(new_class(
+    "Child",
+    Parent,
+    properties = list(x = S7_object),
+    package = NULL
+  ))
+})
+
 test_that("inheritance lets child properties narrow optional union properties with NULL", {
   Parent <- new_class(
     "Parent",

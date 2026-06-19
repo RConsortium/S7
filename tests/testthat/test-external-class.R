@@ -60,6 +60,13 @@ test_that("external class can be used as a union arm", {
   expect_length(u$classes, 2)
 })
 
+test_that("S7_inherits() short-circuits external union classes", {
+  Foo := new_class(package = NULL)
+  union <- Foo | new_external_class("S7testthatmissing", "Bar")
+
+  expect_true(S7_inherits(Foo(), union))
+})
+
 test_that("external class works as a property type for self-reference", {
   Tree := new_class(
     package = "mypkg",
