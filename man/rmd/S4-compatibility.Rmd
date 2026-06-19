@@ -16,7 +16,7 @@ Child <- new_class("Child", methods::getClass("Parent"),
 methods::is(Child(x = 1, y = "a"), "Parent")
 ```
 
-Things that work reasonably:
+Things that work reasonably well:
 
 * S4 dispatch inherits through the S4 parent. An S4 generic with a method for
   `Parent` can dispatch on a `Child` object.
