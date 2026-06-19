@@ -117,6 +117,29 @@ test_that("inheritance lets child properties narrow S7_object with external clas
   expect_s3_class(Child(x = dep$External())@x, "dep::External")
 })
 
+test_that("inheritance lets child properties narrow S7_object with unloaded external classes", {
+  Ext <- new_external_class("notloaded.pkg", "Cls")
+  Parent := new_class(
+    properties = list(x = S7_object),
+    package = NULL,
+    abstract = TRUE
+  )
+
+  expect_no_error(new_class(
+    "Child",
+    parent = Parent,
+    properties = list(
+      x = new_property(
+        Ext,
+        default = quote({
+          NULL
+        })
+      )
+    ),
+    package = NULL
+  ))
+})
+
 test_that("inheritance lets child properties narrow with S4 inheritance", {
   S4PropertyParent := local_S4_class(slots = c(x = "numeric"))
   S4PropertyChild := local_S4_class(contains = "S4PropertyParent")
