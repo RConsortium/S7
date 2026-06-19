@@ -102,6 +102,12 @@ register_method <- function(
         )
       }
       external_methods_add(package, generic_ext, signature, method)
+      if (hooks_active(package)) {
+        hook_set_and_run(
+          package,
+          list(generic = generic_ext, signature = signature, method = method)
+        )
+      }
       if (!is_local_generic(generic, package)) {
         return(generic_sentinel(generic_ext))
       }

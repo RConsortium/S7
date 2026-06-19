@@ -108,6 +108,50 @@ test_that("S7_on_load() registers methods dispatching on an external class", {
   expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
 })
 
+test_that("method<- updates loaded external-class methods after S7_on_load()", {
+  upstream <- local_package(
+    "upstream_runtime_external_loaded",
+    Foo := new_class()
+  )
+  downstream <- local_package(
+    "downstream_runtime_external_loaded",
+    .onLoad <- function(...) S7_on_load(),
+    own_generic := new_generic("x"),
+    Foo := new_external_class("upstream_runtime_external_loaded"),
+    method(own_generic, Foo) <- function(x) "first"
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$own_generic(upstream$Foo()), "first")
+
+  expect_message(
+    evalq(method(own_generic, Foo) <- function(x) "second", downstream),
+    "Overwriting method"
+  )
+  expect_equal(downstream$own_generic(upstream$Foo()), "second")
+})
+
+test_that("method<- hooks unloaded external-class methods after S7_on_load()", {
+  downstream <- local_package(
+    "downstream_runtime_external_unloaded",
+    .onLoad <- function(...) S7_on_load(),
+    own_generic := new_generic("x"),
+    Foo := new_external_class("upstream_runtime_external_unloaded")
+  )
+  downstream$.onLoad()
+
+  evalq(method(own_generic, Foo) <- function(x) "runtime", downstream)
+  expect_length(package_hooks("upstream_runtime_external_unloaded"), 1)
+
+  upstream <- local_package(
+    "upstream_runtime_external_unloaded",
+    Foo := new_class()
+  )
+  for (hook in package_hooks("upstream_runtime_external_unloaded")) {
+    hook()
+  }
+  expect_equal(downstream$own_generic(upstream$Foo()), "runtime")
+})
+
 test_that("S7_on_unload() unregisters methods dispatching on an external class", {
   upstream <- local_package(
     "upstream_external_class_unload",

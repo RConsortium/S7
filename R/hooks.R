@@ -104,15 +104,18 @@ S7_on_unload_ <- function(env) {
 # packages is loaded in the future.
 hooks_set_and_run <- function(package) {
   hooks_remove(package)
+  `hooks_active<-`(package, TRUE)
 
-  pkgs <- character()
   for (x in S7_methods_table(package)) {
-    hook <- hook_add(package, x)
-    pkgs <- union(pkgs, hook$pkgs)
-    `hooks_packages<-`(package, pkgs)
-    hook$run()
+    hook_set_and_run(package, x)
   }
   invisible()
+}
+
+hook_set_and_run <- function(package, x) {
+  hook <- hook_add(package, x)
+  `hooks_packages<-`(package, union(hooks_packages(package), hook$pkgs))
+  hook$run()
 }
 
 # Add a hook that (re)registers method `x` whenever one of its dependency
@@ -145,7 +148,8 @@ hooks_remove <- function(package) {
   for (pkg in pkgs) {
     hook_remove(package, pkg)
   }
-  hooks_packages(package) <- character()
+  `hooks_packages<-`(package, character())
+  `hooks_active<-`(package, FALSE)
   invisible()
 }
 
@@ -236,6 +240,18 @@ hooks_packages <- function(package) {
   ns <- asNamespace(package)
   tbl <- ns[[".__S3MethodsTable__."]]
   attr(tbl, "S7hooks") <- value
+  invisible()
+}
+
+hooks_active <- function(package) {
+  ns <- asNamespace(package)
+  tbl <- ns[[".__S3MethodsTable__."]]
+  isTRUE(attr(tbl, "S7hooks_active"))
+}
+`hooks_active<-` <- function(package, value) {
+  ns <- asNamespace(package)
+  tbl <- ns[[".__S3MethodsTable__."]]
+  attr(tbl, "S7hooks_active") <- value
   invisible()
 }
 
