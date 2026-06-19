@@ -180,6 +180,41 @@ test_that("method unregistration resolves loaded external-class methods in packa
   expect_snapshot(downstream$foo(S7_object()), error = TRUE)
 })
 
+test_that("method unregistration ignores external class version constraints", {
+  upstream <- local_package(
+    "upstream_external_versioned_unregister",
+    Ext := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_versioned_unregister",
+    .onLoad <- function(...) S7_on_load(),
+    foo := new_generic(dispatch_args = "x"),
+    ExtVersioned <- new_external_class(
+      package = "upstream_external_versioned_unregister",
+      name = "Ext",
+      version = "0.0.0"
+    ),
+    method(foo, ExtVersioned) <- function(x) "versioned"
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$foo(upstream$Ext()), "versioned")
+
+  evalq(
+    {
+      Ext <- new_external_class(
+        package = "upstream_external_versioned_unregister",
+        name = "Ext"
+      )
+      method(foo, Ext) <- NULL
+    },
+    downstream
+  )
+  expect_equal(nrow(S7_methods(generic = downstream$foo)), 0)
+
+  downstream$.onLoad()
+  expect_equal(nrow(S7_methods(generic = downstream$foo)), 0)
+})
+
 test_that("method unregistration removes deferred unions regardless of order", {
   upstream <- local_package(
     "upstream_external_union_unregister",

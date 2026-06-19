@@ -132,7 +132,7 @@ getNamespaceVersion <- NULL
 
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
-    signature[[i]] <- resolve_class_req(signature[[i]])
+    signature[i] <- list(resolve_class_req(signature[[i]]))
   }
   signature
 }

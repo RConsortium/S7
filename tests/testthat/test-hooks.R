@@ -130,6 +130,37 @@ test_that("method<- updates loaded external-class methods after S7_on_load()", {
   expect_equal(downstream$own_generic(upstream$Foo()), "second")
 })
 
+test_that("method<- clears stale external-class methods before deferring", {
+  upstream <- local_package(
+    "upstream_runtime_external_replaced_unloaded",
+    Foo := new_class()
+  )
+  downstream <- local_package(
+    "downstream_runtime_external_replaced_unloaded",
+    .onLoad <- function(...) S7_on_load(),
+    own_generic := new_generic(dispatch_args = "x"),
+    Foo := new_external_class(
+      package = "upstream_runtime_external_replaced_unloaded"
+    ),
+    method(own_generic, Foo) <- function(x) "first"
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$own_generic(upstream$Foo()), "first")
+
+  unloadNamespace("upstream_runtime_external_replaced_unloaded")
+  expect_false(isNamespaceLoaded("upstream_runtime_external_replaced_unloaded"))
+
+  evalq(method(own_generic, Foo) <- function(x) "second", downstream)
+  expect_equal(nrow(S7_methods(generic = downstream$own_generic)), 0)
+
+  upstream <- local_package(
+    "upstream_runtime_external_replaced_unloaded",
+    Foo := new_class()
+  )
+  downstream$.onLoad()
+  expect_equal(downstream$own_generic(upstream$Foo()), "second")
+})
+
 test_that("method<- hooks unloaded external-class methods after S7_on_load()", {
   downstream <- local_package(
     "downstream_runtime_external_unloaded",
@@ -150,6 +181,45 @@ test_that("method<- hooks unloaded external-class methods after S7_on_load()", {
     hook()
   }
   expect_equal(downstream$own_generic(upstream$Foo()), "runtime")
+})
+
+test_that("S7_on_load() registers available union arms independently", {
+  generic_pkg <- local_package(
+    "upstream_external_union_partial_generic",
+    gen := new_generic(dispatch_args = "x")
+  )
+  upstream_a <- local_package(
+    "upstream_external_union_partial_a",
+    A := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_union_partial",
+    .onLoad <- function(...) S7_on_load(),
+    gen <- new_external_generic(
+      package = "upstream_external_union_partial_generic",
+      name = "gen",
+      dispatch_args = "x"
+    ),
+    A := new_external_class(
+      package = "upstream_external_union_partial_a"
+    ),
+    B := new_external_class(
+      package = "upstream_external_union_partial_b"
+    ),
+    method(gen, A | B) <- function(x) "union"
+  )
+
+  downstream$.onLoad()
+  expect_equal(generic_pkg$gen(upstream_a$A()), "union")
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 1)
+
+  upstream_b <- local_package(
+    "upstream_external_union_partial_b",
+    B := new_class()
+  )
+  downstream$.onLoad()
+  expect_equal(generic_pkg$gen(upstream_b$B()), "union")
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 2)
 })
 
 test_that("S7_on_unload() unregisters methods dispatching on an external class", {

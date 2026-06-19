@@ -100,7 +100,7 @@ registrar <- function(deps, generic, signature, method, env) {
   env
 
   function(...) {
-    if (!all(vlapply(deps, dep_available))) {
+    if (!dep_available(generic)) {
       return(invisible())
     }
 
@@ -109,8 +109,17 @@ registrar <- function(deps, generic, signature, method, env) {
       return(invisible())
     }
 
-    signature <- resolve_signature(signature)
-    register_method(generic_fun, signature, method, env, package = NULL)
+    for (sig in flatten_signature(signature)) {
+      deps <- signature_external_deps(sig)
+      if (!all(vlapply(deps, dep_available))) {
+        next
+      }
+
+      sig <- resolve_signature(sig)
+      register_method(generic_fun, sig, method, env, package = NULL)
+    }
+
+    invisible()
   }
 }
 
@@ -147,7 +156,7 @@ external_methods_add <- function(
   method
 ) {
   # Remove any existing entries
-  external_methods_remove(package, generic, signature)
+  removed <- external_methods_remove(package, generic, signature)
 
   entry <- list(
     generic = generic,
@@ -159,13 +168,13 @@ external_methods_add <- function(
   append1(tbl) <- entry
 
   S7_methods_table(package) <- tbl
-  invisible()
+  invisible(removed)
 }
 
 external_methods_remove <- function(package, generic, signature) {
   tbl <- S7_methods_table(package)
   if (length(tbl) == 0) {
-    return(invisible())
+    return(invisible(list()))
   }
 
   keep <- !vlapply(tbl, function(x) {
@@ -177,7 +186,7 @@ external_methods_remove <- function(package, generic, signature) {
   for (x in removed) {
     hooks_remove_method(package, x)
   }
-  invisible()
+  invisible(removed)
 }
 
 external_method_signature_matches <- function(x, y) {
@@ -203,6 +212,9 @@ external_method_class_matches <- function(x, y) {
   }
   if (is_class(x) && is_external_class(y)) {
     return(is_external_class_match(x, y))
+  }
+  if (is_external_class(x) && is_external_class(y)) {
+    return(identical(x$class_name, y$class_name))
   }
   if (is_union(x) && is_union(y)) {
     return(external_method_union_matches(x$classes, y$classes))

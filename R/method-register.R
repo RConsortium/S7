@@ -101,7 +101,14 @@ register_method <- function(
           call = call
         )
       }
-      external_methods_add(package, generic_ext, signature, method)
+      removed <- external_methods_add(package, generic_ext, signature, method)
+      if (
+        is_S7_generic(generic) && !signature_external_deps_resolvable(signature)
+      ) {
+        for (x in removed) {
+          unregister_own_S7_method(generic, x$signature, x$method, package)
+        }
+      }
       if (hooks_active(package)) {
         hook_set_and_run(
           package,
