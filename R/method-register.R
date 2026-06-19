@@ -93,6 +93,14 @@ register_method <- function(
       signature <- resolve_signature(signature)
     } else {
       generic_ext <- as_external_generic(generic, env)
+      if (is_S7_generic(generic)) {
+        check_method(
+          method,
+          generic,
+          name = method_name(generic, signature),
+          call = call
+        )
+      }
       external_methods_add(package, generic_ext, signature, method)
       if (!is_local_generic(generic, package)) {
         return(generic_sentinel(generic_ext))

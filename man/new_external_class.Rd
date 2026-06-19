@@ -47,9 +47,9 @@ External classes can not currently be used as parents in \code{\link[=new_class]
 We hope to relax that restriction in the near future.
 }
 \examples{
-# Refer to a class in another package without taking a hard dependency:
-Tibble <- new_external_class("tibble", "tbl_df")
-Tibble
+# Refer to an S7 class in another package without taking a hard dependency:
+ExternalObject <- new_external_class("S7", "S7_object")
+ExternalObject
 
 # Self-referential class: the `child` property can be another `tree`,
 # or `NULL` to terminate the chain.

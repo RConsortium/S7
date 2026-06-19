@@ -122,6 +122,17 @@ test_that("method registration defers external classes in union signatures", {
   expect_length(S7_methods_table("pkg"), 1)
 })
 
+test_that("method registration validates deferred external-class methods", {
+  expect_snapshot(error = TRUE, {
+    local_package(
+      "pkg_invalid_deferred_external_class_method",
+      foo := new_generic("x"),
+      ext := new_external_class("notloaded.pkg"),
+      method(foo, ext) <- function(y) "x"
+    )
+  })
+})
+
 test_that("method unregistration removes deferred external-class methods", {
   pkg := local_package(
     foo := new_generic("x"),

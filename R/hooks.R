@@ -108,12 +108,10 @@ hooks_set_and_run <- function(package) {
   pkgs <- character()
   for (x in S7_methods_table(package)) {
     hook <- hook_add(package, x)
+    pkgs <- union(pkgs, hook$pkgs)
+    `hooks_packages<-`(package, pkgs)
     hook$run()
-    pkgs <- c(pkgs, hook$pkgs)
   }
-
-  # Record packages with hooks so we can remove them on unload
-  hooks_packages(package) <- unique(pkgs)
   invisible()
 }
 

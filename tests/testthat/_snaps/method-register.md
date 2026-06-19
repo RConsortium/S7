@@ -33,6 +33,16 @@
       Error:
       ! Can't find method for `g(<S7_object>)`.
 
+# method registration validates deferred external-class methods
+
+    Code
+      local_package("pkg_invalid_deferred_external_class_method", foo := new_generic(
+        "x"), ext := new_external_class("notloaded.pkg"), method(foo, ext) <-
+        (function(y) "x"))
+    Condition
+      Error in `method<-`:
+      ! foo() dispatches on `x`, but foo(<notloaded.pkg::ext>) has arguments `y`.
+
 # method unregistration removes deferred unions regardless of order
 
     Code

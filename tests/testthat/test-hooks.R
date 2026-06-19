@@ -14,6 +14,46 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
   expect_length(package_hooks("upstream"), 1)
 })
 
+test_that("S7_on_load() doesn't duplicate hooks when registrars error", {
+  upstream_generic <- local_package(
+    "hookgenericpkg",
+    gen := new_generic("x")
+  )
+  upstream_class <- local_package(
+    "hookclasspkg",
+    Real := new_class()
+  )
+  downstream <- local_package(
+    "downstreamerrorhook",
+    .onLoad <- function(...) S7_on_load(),
+    gen <- new_external_generic(
+      package = "hookgenericpkg",
+      name = "gen",
+      dispatch_args = "x"
+    ),
+    Missing <- new_external_class(
+      package = "hookclasspkg",
+      name = "Missing"
+    ),
+    method(gen, Missing) <- function(x) "dispatched"
+  )
+
+  expect_snapshot(downstream$.onLoad(), error = TRUE)
+  expect_length(package_hooks("hookgenericpkg"), 1)
+  expect_length(package_hooks("hookclasspkg"), 1)
+
+  expect_snapshot(downstream$.onLoad(), error = TRUE)
+  expect_length(package_hooks("hookgenericpkg"), 1)
+  expect_length(package_hooks("hookclasspkg"), 1)
+
+  evalq(method(gen, Missing) <- NULL, downstream)
+  expect_length(package_hooks("hookgenericpkg"), 0)
+  expect_length(package_hooks("hookclasspkg"), 0)
+
+  invisible(upstream_generic)
+  invisible(upstream_class)
+})
+
 test_that("S7_on_load() registers methods dispatching on an external class", {
   upstream := local_package(
     Foo := new_class()
