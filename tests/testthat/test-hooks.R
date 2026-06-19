@@ -14,42 +14,22 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
   expect_length(package_hooks("upstream"), 1)
 })
 
-test_that("S7_on_load() registers methods dispatching on an external class", {
-  upstream := local_package(
-    Foo := new_class()
-  )
-  downstream := local_package(
-    own_generic := new_generic("x"),
-    Foo := new_external_class("upstream"),
-    method(own_generic, Foo) <- \(x) "from external class"
-  )
-  S7_on_load_(downstream)
-  expect_equal(downstream$own_generic(upstream$Foo()), "from external class")
-})
-
 test_that("S7_on_load() waits until all external union arms are available", {
   generic_pkg <- local_package(
-    "upstream_external_union_generic",
-    gen := new_generic(dispatch_args = "x")
+    "external_union_generic",
+    gen := new_generic("x")
   )
-  upstream_a <- local_package(
-    "upstream_external_union_a",
-    A := new_class()
-  )
+  upstream_a <- local_package("external_union_a", A := new_class())
   downstream <- local_package(
-    "downstream_external_union",
+    "external_union_downstream",
     .onLoad <- function(...) S7_on_load(),
     gen <- new_external_generic(
-      package = "upstream_external_union_generic",
+      package = "external_union_generic",
       name = "gen",
       dispatch_args = "x"
     ),
-    A := new_external_class(
-      package = "upstream_external_union_a"
-    ),
-    B := new_external_class(
-      package = "upstream_external_union_b"
-    ),
+    A := new_external_class(package = "external_union_a"),
+    B := new_external_class(package = "external_union_b"),
     method(gen, A | B) <- function(x) "union"
   )
 
@@ -59,26 +39,20 @@ test_that("S7_on_load() waits until all external union arms are available", {
     class = "S7_error_method_not_found"
   )
 
-  upstream_b <- local_package(
-    "upstream_external_union_b",
-    B := new_class()
-  )
+  upstream_b <- local_package("external_union_b", B := new_class())
   downstream$.onLoad()
   expect_equal(generic_pkg$gen(upstream_a$A()), "union")
   expect_equal(generic_pkg$gen(upstream_b$B()), "union")
 })
 
-test_that("S7_on_unload() unregisters methods dispatching on an external class", {
-  upstream <- local_package(
-    "upstream_external_class_unload",
-    Foo := new_class()
-  )
+test_that("S7_on_load() and S7_on_unload() handle external classes", {
+  upstream <- local_package("external_class_unload", Foo := new_class())
   downstream <- local_package(
     "downstream_external_class_unload",
     .onLoad <- function(...) S7_on_load(),
     .onUnload <- function(...) S7_on_unload(),
     own_generic := new_generic("x"),
-    Foo := new_external_class(package = "upstream_external_class_unload"),
+    Foo := new_external_class(package = "external_class_unload"),
     method(own_generic, Foo) <- function(x) "from external class"
   )
   downstream$.onLoad()

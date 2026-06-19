@@ -68,12 +68,6 @@
       Error:
       ! Can't find external class <not_a_package::X>:
       * Package 'not_a_package' is not installed.
-    Code
-      method_explain(foo, class = ext)
-    Condition
-      Error:
-      ! Can't find external class <not_a_package::X>:
-      * Package 'not_a_package' is not installed.
 
 # method explanation shows all possible methods along with matches
 

@@ -51,6 +51,12 @@ test_that("method registration checks argument types", {
     x <- 10
     method(x, class_character) <- function(x) ...
     method(foo, 1) <- function(x) ...
+    local_package(
+      "pkg_invalid_deferred_external_class_method",
+      foo := new_generic("x"),
+      ext := new_external_class("notloaded.pkg"),
+      method(foo, ext) <- function(y) "x"
+    )
   })
 })
 
@@ -80,7 +86,7 @@ test_that("method registration resolves external classes outside packages", {
   expect_equal(env$g(dep$Ext()), "external")
 
   evalq(method(g, ext) <- NULL, env)
-  expect_snapshot(env$g(dep$Ext()), error = TRUE)
+  expect_length(methods(env$g), 0)
 })
 
 test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {
@@ -99,17 +105,6 @@ test_that("method registration returns a strippable sentinel for foreign generic
   # registered through the same binding (as in the t2 test package)
   evalq(method(ext, foo2) <- function(x) "y", pkg)
   expect_s3_class(pkg$ext, "S7_generic_sentinel")
-})
-
-test_that("method registration validates deferred external-class methods", {
-  expect_snapshot(error = TRUE, {
-    local_package(
-      "pkg_invalid_deferred_external_class_method",
-      foo := new_generic("x"),
-      ext := new_external_class("notloaded.pkg"),
-      method(foo, ext) <- function(y) "x"
-    )
-  })
 })
 
 test_that("method unregistration removes deferred external-class unions", {

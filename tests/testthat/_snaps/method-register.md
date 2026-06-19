@@ -24,17 +24,6 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
-
-# method registration resolves external classes outside packages
-
-    Code
-      env$g(dep$Ext())
-    Condition
-      Error:
-      ! Can't find method for `g(<dep::Ext>)`.
-
-# method registration validates deferred external-class methods
-
     Code
       local_package("pkg_invalid_deferred_external_class_method", foo := new_generic(
         "x"), ext := new_external_class("notloaded.pkg"), method(foo, ext) <-

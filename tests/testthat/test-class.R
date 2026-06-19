@@ -160,7 +160,6 @@ test_that("inheritance handles external class property specs", {
     External := new_class()
   )
   External <- new_external_class(package = "dep", name = "External")
-  Missing <- new_external_class(package = "S7testthatmissing", name = "Missing")
 
   ParentObject := new_class(
     properties = list(x = S7_object),
@@ -173,34 +172,27 @@ test_that("inheritance handles external class property specs", {
     ),
     package = NULL
   )
-  expect_s3_class(ChildObject(x = dep$External())@x, "dep::External")
+  expect_s3_class(ChildObject()@x, "dep::External")
 
   Ext <- new_external_class(package = "notloaded.pkg", name = "Cls")
+  prop <- new_property(
+    class = Ext,
+    default = quote({
+      NULL
+    })
+  )
   ParentSame := new_class(
-    properties = list(
-      x = new_property(
-        class = Ext,
-        default = quote({
-          NULL
-        })
-      )
-    ),
+    properties = list(x = prop),
     package = NULL
   )
   expect_no_error(new_class(
     name = "ChildSame",
     parent = ParentSame,
-    properties = list(
-      x = new_property(
-        class = Ext,
-        default = quote({
-          NULL
-        })
-      )
-    ),
+    properties = list(x = prop),
     package = NULL
   ))
 
+  Missing <- new_external_class(package = "S7testthatmissing", name = "Missing")
   ParentUnion := new_class(
     properties = list(
       x = new_property(
@@ -210,12 +202,12 @@ test_that("inheritance handles external class property specs", {
     ),
     package = NULL
   )
-  expect_no_error(new_class(
-    name = "ChildUnion",
+  ChildUnion := new_class(
     parent = ParentUnion,
     properties = list(x = S7_object),
     package = NULL
-  ))
+  )
+  expect_s3_class(ChildUnion(), "ChildUnion")
 })
 
 test_that("inheritance lets child properties narrow optional union properties with NULL", {

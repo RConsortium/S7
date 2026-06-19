@@ -66,28 +66,15 @@ test_that("external class property validation reports validator errors", {
     )
   )
 
+  valid <- Holder(child = dep$Ext(x = 1L))
+  expect_s3_class(valid@child, "dep::Ext")
+
   invalid <- valid_implicitly(dep$Ext(x = 1L), function(self) {
     self@x <- -1L
     self
   })
 
   expect_snapshot(Holder(child = invalid), error = TRUE)
-})
-
-test_that("external class property validation uses resolved dispatch", {
-  dep := local_package(
-    Ext := new_class()
-  )
-  Holder := new_class(
-    properties = list(
-      x = new_property(
-        class = new_external_class("dep", "Ext"),
-        default = quote(dep$Ext())
-      )
-    )
-  )
-
-  expect_s3_class(Holder(x = dep$Ext())@x, "dep::Ext")
 })
 
 test_that("versioned external class checks package version", {

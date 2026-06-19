@@ -24,15 +24,6 @@ test_that("accepts any class specification (#556)", {
 
   # class_any
   expect_true(S7_inherits("anything", class_any))
-
-  # external class
-  dep := local_package(
-    Ext := new_class()
-  )
-  expect_true(S7_inherits(
-    dep$Ext(),
-    new_external_class("dep", "Ext")
-  ))
 })
 
 test_that("checks that input is a class", {

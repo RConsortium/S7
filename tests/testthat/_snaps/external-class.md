@@ -48,4 +48,3 @@
       Error:
       ! Can't find external class <versioned_pkg::Foo>:
       * Package 'versioned_pkg' needs version 999.0, but only 0.0.0 is available.
-
