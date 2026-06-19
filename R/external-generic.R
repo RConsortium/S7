@@ -109,13 +109,17 @@ registrar <- function(deps, generic, signature, method, env) {
       return(invisible())
     }
 
+    signatures <- list()
     for (sig in flatten_signature(signature)) {
-      deps <- signature_external_deps(sig)
-      if (!all(vlapply(deps, dep_available))) {
+      sig_deps <- signature_external_deps(sig)
+      if (!all(vlapply(sig_deps, dep_available))) {
         next
       }
 
-      sig <- resolve_signature(sig)
+      append1(signatures) <- resolve_signature(sig)
+    }
+
+    for (sig in signatures) {
       register_method(generic_fun, sig, method, env, package = NULL)
     }
 

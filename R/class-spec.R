@@ -282,7 +282,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
-    S7_external = x$class_name,
+    S7_external = external_class_register(x),
     stop2("Unsupported class type.", call = NULL)
   )
 }

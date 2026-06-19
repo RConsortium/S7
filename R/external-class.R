@@ -122,6 +122,16 @@ print.S7_external_class <- function(x, ...) {
   invisible(x)
 }
 
+external_class_register <- function(x) {
+  stopifnot(is_external_class(x))
+
+  if (identical(x$package, "S7") && identical(x$name, "S7_object")) {
+    "S7_object"
+  } else {
+    x$class_name
+  }
+}
+
 dep_available <- function(dep) {
   isNamespaceLoaded(dep$package) &&
     (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)

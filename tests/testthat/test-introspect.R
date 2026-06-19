@@ -97,6 +97,18 @@ test_that("S7_methods(class) scans attached generics", {
   )
 })
 
+test_that("S7_methods(class) uses real key for external S7_object", {
+  gen_name <- "S7_introspect_s7_object_xyzzy"
+  gen <- new_generic(name = gen_name, dispatch_args = "x")
+  method(gen, S7_object) <- function(x) "s7"
+
+  assign(gen_name, gen, envir = globalenv())
+  defer(rm(list = gen_name, envir = globalenv()))
+
+  res <- S7_methods(class = new_external_class("S7", "S7_object"))
+  expect_equal(res$generic[res$generic == gen_name], gen_name)
+})
+
 test_that("S7_methods() reports the generic's package", {
   Foo <- new_class("Foo", package = NULL)
   gen <- new_generic("gen", "x")

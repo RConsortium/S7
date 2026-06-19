@@ -250,6 +250,42 @@ test_that("S7_on_load() registers available union arms independently", {
   expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 2)
 })
 
+test_that("S7_on_load() does not partially register unions when an arm errors", {
+  generic_pkg <- local_package(
+    "upstream_external_union_error_generic",
+    gen := new_generic(dispatch_args = "x")
+  )
+  upstream_a <- local_package(
+    "upstream_external_union_error_a",
+    A := new_class()
+  )
+  local_package(
+    "upstream_external_union_error_b",
+    Other := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_union_error",
+    .onLoad <- function(...) S7_on_load(),
+    gen <- new_external_generic(
+      package = "upstream_external_union_error_generic",
+      name = "gen",
+      dispatch_args = "x"
+    ),
+    A := new_external_class(
+      package = "upstream_external_union_error_a"
+    ),
+    B <- new_external_class(
+      package = "upstream_external_union_error_b",
+      name = "B"
+    ),
+    method(gen, A | B) <- function(x) "union"
+  )
+
+  expect_snapshot(error = TRUE, downstream$.onLoad())
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
+  expect_snapshot(generic_pkg$gen(upstream_a$A()), error = TRUE)
+})
+
 test_that("S7_on_unload() unregisters methods dispatching on an external class", {
   upstream <- local_package(
     "upstream_external_class_unload",
