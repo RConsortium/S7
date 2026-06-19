@@ -30,6 +30,12 @@
       Error:
       ! Can't find external class <dep::Bar>:
       * Package 'dep' must bind an S7 class to `Bar` with @name 'Bar' and @package 'dep'.
+    Code
+      new_class(name = "SymbolHolder", properties = list(child = SymbolMismatch))
+    Condition
+      Error:
+      ! Can't find external class <symbol_mismatch::Bar>:
+      * Package 'symbol_mismatch' must bind an S7 class to `Bar` with @name 'Bar' and @package 'symbol_mismatch'.
 
 # external class works as a property type for self-reference
 

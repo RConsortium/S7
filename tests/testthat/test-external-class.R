@@ -25,11 +25,23 @@ test_that("external class resolution explains class binding contract", {
     Foo <- new_class(name = "Bar", package = "dep")
   )
   Bar <- new_external_class(package = "dep", name = "Bar")
+  local_package(
+    "symbol_mismatch",
+    Bar <- new_class(name = "Foo", package = "symbol_mismatch")
+  )
+  SymbolMismatch <- new_external_class(
+    package = "symbol_mismatch",
+    name = "Bar"
+  )
 
   expect_snapshot(error = TRUE, {
     new_class(
       name = "Holder",
       properties = list(child = Bar)
+    )
+    new_class(
+      name = "SymbolHolder",
+      properties = list(child = SymbolMismatch)
     )
   })
 })
