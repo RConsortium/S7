@@ -177,6 +177,11 @@ unregister_method <- function(
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
 
+  external <- NULL
+  if (is_external_generic(generic)) {
+    external <- as_external_generic(generic, env)
+  }
+
   if (external_generic_available(generic)) {
     generic <- as_generic(
       getFromNamespace(generic$name, generic$package),
@@ -207,7 +212,7 @@ unregister_method <- function(
   # methods table so the method isn't re-registered on package load.
   if (!is.null(package)) {
     local <- is_local_generic(generic, package)
-    external <- as_external_generic(generic, env)
+    external <- external %||% as_external_generic(generic, env)
     external_methods_remove(package, external, signature)
     if (!local) {
       return(generic_sentinel(external))
