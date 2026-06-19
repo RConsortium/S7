@@ -237,6 +237,39 @@ test_that("method unregistration removes deferred unions regardless of order", {
   expect_snapshot(downstream$foo(upstream$Ext()), error = TRUE)
 })
 
+test_that("method unregistration removes deferred unions by concrete arm", {
+  upstream <- local_package(
+    "upstream_external_union_single_unregister",
+    gen := new_generic("x"),
+    Ext := new_class()
+  )
+  downstream <- local_package(
+    "downstream_external_union_single_unregister",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      package = "upstream_external_union_single_unregister",
+      dispatch_args = "x"
+    ),
+    Ext := new_external_class("upstream_external_union_single_unregister"),
+    method(gen, NULL | Ext) <- function(x) "external"
+  )
+  downstream$.onLoad()
+  expect_equal(upstream$gen(upstream$Ext()), "external")
+  expect_equal(upstream$gen(NULL), "external")
+
+  evalq(method(gen, Ext) <- NULL, downstream)
+  expect_snapshot(upstream$gen(upstream$Ext()), error = TRUE)
+  expect_equal(upstream$gen(NULL), "external")
+
+  downstream$.onLoad()
+  expect_snapshot(upstream$gen(upstream$Ext()), error = TRUE)
+  expect_equal(upstream$gen(NULL), "external")
+
+  downstream$.onUnload()
+  expect_snapshot(upstream$gen(NULL), error = TRUE)
+})
+
 test_that("method unregistration removes an S7 method via NULL assignment", {
   foo := new_generic("x")
   method(foo, class_character) <- function(x) "c"

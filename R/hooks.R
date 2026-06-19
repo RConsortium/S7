@@ -113,19 +113,28 @@ hooks_set_and_run <- function(package) {
 }
 
 hook_set_and_run <- function(package, x) {
-  hook <- hook_add(package, x)
-  `hooks_packages<-`(package, union(hooks_packages(package), hook$pkgs))
+  package_name <- force(package)
+  x <- force(x)
+
+  hook <- hook_add(package_name, x)
+  `hooks_packages<-`(
+    package_name,
+    union(hooks_packages(package_name), hook$pkgs)
+  )
   hook$run()
 }
 
 # Add a hook that (re)registers method `x` whenever one of its dependency
 # packages is loaded, and return its registrar so it can also be run now.
 hook_add <- function(package, x) {
-  ns <- asNamespace(package)
+  package_name <- force(package)
+  x <- force(x)
+
+  ns <- asNamespace(package_name)
 
   deps <- method_deps(x$generic, x$signature)
   register <- registrar(deps, x$generic, x$signature, x$method, ns)
-  hook <- S7_hook(register, package, x$generic, x$signature)
+  hook <- S7_hook(register, package_name, x$generic, x$signature)
 
   pkgs <- method_deps_packages(deps)
   for (pkg in pkgs) {

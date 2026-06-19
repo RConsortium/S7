@@ -176,21 +176,141 @@ external_methods_add <- function(
 }
 
 external_methods_remove <- function(package, generic, signature) {
-  tbl <- S7_methods_table(package)
+  package_name <- force(package)
+  generic <- force(generic)
+  signature <- force(signature)
+
+  tbl <- S7_methods_table(package_name)
   if (length(tbl) == 0) {
     return(invisible(list()))
   }
 
-  keep <- !vlapply(tbl, function(x) {
-    identical(x$generic, generic) &&
-      external_method_signature_matches(x$signature, signature)
-  })
-  removed <- tbl[!keep]
-  S7_methods_table(package) <- tbl[keep]
-  for (x in removed) {
-    hooks_remove_method(package, x)
+  active <- hooks_active(package_name)
+  new_tbl <- list()
+  removed <- list()
+  unhook <- list()
+  rehook <- list()
+
+  for (x in tbl) {
+    if (!identical(x$generic, generic)) {
+      append1(new_tbl) <- x
+      next
+    }
+
+    change <- external_method_signature_remove(x$signature, signature)
+    if (is.null(change)) {
+      append1(new_tbl) <- x
+      next
+    }
+
+    removed_x <- x
+    removed_x$signature <- change$removed
+    append1(removed) <- removed_x
+    append1(unhook) <- x
+
+    if (!is.null(change$remaining)) {
+      x$signature <- change$remaining
+      append1(new_tbl) <- x
+      append1(rehook) <- x
+    }
   }
+
+  `S7_methods_table<-`(package_name, new_tbl)
+  for (x in unhook) {
+    hooks_remove_method(package_name, x)
+  }
+  if (length(rehook) > 0 && active) {
+    for (x in rehook) {
+      hook_set_and_run(package_name, x)
+    }
+  }
+
   invisible(removed)
+}
+
+external_method_signature_remove <- function(x, y) {
+  if (length(x) != length(y)) {
+    return(NULL)
+  }
+
+  if (external_method_signature_matches(x, y)) {
+    return(list(removed = y, remaining = NULL))
+  }
+
+  candidates <- which(vlapply(seq_along(x), function(i) {
+    external_method_signature_arm_matches(x, y, i)
+  }))
+  if (length(candidates) != 1) {
+    return(NULL)
+  }
+
+  i <- candidates[[1]]
+  change <- external_method_union_remove(x[[i]], y[[i]])
+  removed <- x
+  removed[i] <- list(external_method_classes_to_class(change$removed))
+
+  if (length(change$remaining) == 0) {
+    remaining <- NULL
+  } else {
+    remaining <- x
+    remaining[i] <- list(external_method_classes_to_class(change$remaining))
+    remaining <- new_signature(remaining)
+  }
+
+  list(
+    removed = new_signature(removed),
+    remaining = remaining
+  )
+}
+
+external_method_signature_arm_matches <- function(x, y, i) {
+  if (!is_union(x[[i]])) {
+    return(FALSE)
+  }
+  if (is.null(external_method_union_remove(x[[i]], y[[i]]))) {
+    return(FALSE)
+  }
+
+  other <- setdiff(seq_along(x), i)
+  all(vlapply(other, function(j) {
+    external_method_class_matches(x[[j]], y[[j]])
+  }))
+}
+
+external_method_union_remove <- function(x, y) {
+  stopifnot(is_union(x))
+
+  remove <- if (is_union(y)) y$classes else list(y)
+  removed <- list()
+  remaining <- list()
+
+  for (class in x$classes) {
+    if (
+      any(vlapply(remove, function(y) {
+        external_method_class_matches(class, y)
+      }))
+    ) {
+      removed[length(removed) + 1L] <- list(class)
+    } else {
+      remaining[length(remaining) + 1L] <- list(class)
+    }
+  }
+
+  if (length(removed) == 0) {
+    return(NULL)
+  }
+
+  list(removed = removed, remaining = remaining)
+}
+
+external_method_classes_to_class <- function(x) {
+  stopifnot(length(x) > 0)
+
+  if (length(x) == 1) {
+    x[[1]]
+  } else {
+    do.call(new_union, x)
+  }
 }
 
 external_method_signature_matches <- function(x, y) {

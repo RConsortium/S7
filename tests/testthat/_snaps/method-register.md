@@ -75,6 +75,30 @@
       Error:
       ! Can't find method for `foo(<upstream_external_union_unregister::Ext>)`.
 
+# method unregistration removes deferred unions by concrete arm
+
+    Code
+      upstream$gen(upstream$Ext())
+    Condition
+      Error:
+      ! Can't find method for `gen(<upstream_external_union_single_unregister::Ext>)`.
+
+---
+
+    Code
+      upstream$gen(upstream$Ext())
+    Condition
+      Error:
+      ! Can't find method for `gen(<upstream_external_union_single_unregister::Ext>)`.
+
+---
+
+    Code
+      upstream$gen(NULL)
+    Condition
+      Error:
+      ! Can't find method for `gen(<NULL>)`.
+
 # method unregistration removes an S7 method via NULL assignment
 
     Code

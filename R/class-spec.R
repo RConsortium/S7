@@ -332,7 +332,9 @@ class_inherits <- function(x, what) {
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
     S7_external = inherits(x, "S7_object") &&
       {
-        if (is.null(what$version) && inherits(x, what$class_name)) {
+        if (!inherits(x, external_class_register(what))) {
+          FALSE
+        } else if (is.null(what$version)) {
           TRUE
         } else {
           class_inherits(x, resolve_external_class_req(what))
