@@ -190,13 +190,11 @@ unregister_method <- function(
   }
 
   unregister_signature <- signature
-  if (signature_has_external_class(signature)) {
-    if (
-      is.null(package) ||
-        signature_external_deps_resolvable(signature)
-    ) {
-      unregister_signature <- resolve_signature(signature)
-    }
+  if (
+    signature_has_external_class(signature) &&
+      (is.null(package) || signature_external_deps_resolvable(signature))
+  ) {
+    unregister_signature <- resolve_signature(signature)
   }
 
   # Unregister in current session

@@ -92,7 +92,6 @@ external_generic_version_ok <- function(generic, ns) {
 }
 
 registrar <- function(
-  deps,
   generic,
   signature,
   method,
@@ -100,7 +99,6 @@ registrar <- function(
   on_load_package = NULL
 ) {
   # Force all arguments
-  deps
   generic
   signature
   method

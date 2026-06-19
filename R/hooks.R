@@ -133,25 +133,23 @@ hook_add <- function(package, x) {
   ns <- asNamespace(package_name)
 
   deps <- method_deps(x$generic, x$signature)
-  register <- registrar(deps, x$generic, x$signature, x$method, ns)
+  register <- registrar(x$generic, x$signature, x$method, ns)
 
   pkgs <- method_deps_packages(deps)
   for (pkg in pkgs) {
-    hook_add_package(package_name, x, deps, ns, pkg)
+    hook_add_package(package_name, x, ns, pkg)
   }
 
   list(run = register, pkgs = pkgs)
 }
 
-hook_add_package <- function(package, x, deps, ns, on_load_package) {
+hook_add_package <- function(package, x, ns, on_load_package) {
   package_name <- force(package)
   x <- force(x)
-  deps <- force(deps)
   ns <- force(ns)
   on_load_package <- force(on_load_package)
 
   hook_register <- registrar(
-    deps,
     x$generic,
     x$signature,
     x$method,
