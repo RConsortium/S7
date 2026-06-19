@@ -245,7 +245,7 @@ external_method_signature_remove <- function(x, y) {
   }
 
   i <- candidates[[1]]
-  change <- external_method_union_remove(x[[i]], y[[i]])
+  change <- external_method_class_remove(x[[i]], y[[i]])
   removed <- x
   removed[i] <- list(external_method_classes_to_class(change$removed))
 
@@ -264,10 +264,7 @@ external_method_signature_remove <- function(x, y) {
 }
 
 external_method_signature_arm_matches <- function(x, y, i) {
-  if (!is_union(x[[i]])) {
-    return(FALSE)
-  }
-  if (is.null(external_method_union_remove(x[[i]], y[[i]]))) {
+  if (is.null(external_method_class_remove(x[[i]], y[[i]]))) {
     return(FALSE)
   }
 
@@ -275,6 +272,29 @@ external_method_signature_arm_matches <- function(x, y, i) {
   all(vlapply(other, function(j) {
     external_method_class_matches(x[[j]], y[[j]])
   }))
+}
+
+external_method_class_remove <- function(x, y) {
+  if (is_union(x)) {
+    return(external_method_union_remove(x, y))
+  }
+  if (is_union(y)) {
+    return(external_method_concrete_remove(x, y))
+  }
+
+  NULL
+}
+
+external_method_concrete_remove <- function(x, y) {
+  stopifnot(is_union(y))
+
+  for (class in y$classes) {
+    if (external_method_class_matches(x, class)) {
+      return(list(removed = list(x), remaining = list()))
+    }
+  }
+
+  NULL
 }
 
 external_method_union_remove <- function(x, y) {

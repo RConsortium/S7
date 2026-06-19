@@ -99,6 +99,22 @@
       Error:
       ! Can't find method for `gen(<NULL>)`.
 
+# method unregistration removes deferred concrete methods by union
+
+    Code
+      downstream$foo(upstream$Ext())
+    Condition
+      Error:
+      ! Can't find method for `foo(<upstream_external_concrete_union_unregister::Ext>)`.
+
+---
+
+    Code
+      downstream$foo(upstream$Ext())
+    Condition
+      Error:
+      ! Can't find method for `foo(<upstream_external_concrete_union_unregister::Ext>)`.
+
 # method unregistration removes an S7 method via NULL assignment
 
     Code
