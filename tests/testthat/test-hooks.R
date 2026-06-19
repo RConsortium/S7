@@ -183,6 +183,34 @@ test_that("method<- hooks unloaded external-class methods after S7_on_load()", {
   expect_equal(downstream$own_generic(upstream$Foo()), "runtime")
 })
 
+test_that("method<- rehooks unloaded external-generic methods after S7_on_load()", {
+  downstream <- local_package(
+    "downstream_runtime_external_generic_replaced",
+    .onLoad <- function(...) S7_on_load(),
+    Foo := new_class(),
+    gen <- new_external_generic(
+      package = "upstream_runtime_external_generic_replaced",
+      name = "gen",
+      dispatch_args = "x"
+    ),
+    method(gen, Foo) <- function(x) "first"
+  )
+  downstream$.onLoad()
+  expect_length(package_hooks("upstream_runtime_external_generic_replaced"), 1)
+
+  evalq(method(gen, Foo) <- function(x) "second", downstream)
+  expect_length(package_hooks("upstream_runtime_external_generic_replaced"), 1)
+
+  upstream <- local_package(
+    "upstream_runtime_external_generic_replaced",
+    gen := new_generic(dispatch_args = "x")
+  )
+  for (hook in package_hooks("upstream_runtime_external_generic_replaced")) {
+    hook()
+  }
+  expect_equal(upstream$gen(downstream$Foo()), "second")
+})
+
 test_that("S7_on_load() registers available union arms independently", {
   generic_pkg <- local_package(
     "upstream_external_union_partial_generic",

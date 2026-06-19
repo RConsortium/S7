@@ -154,6 +154,12 @@ register_method <- function(
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
     external_methods_add(package, external, signature, method)
+    if (hooks_active(package)) {
+      hook_set_and_run(
+        package,
+        list(generic = external, signature = signature, method = method)
+      )
+    }
     return(generic_sentinel(external))
   }
 
