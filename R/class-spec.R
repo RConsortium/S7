@@ -204,10 +204,9 @@ class_validate <- function(class, object) {
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
-    S7_external = return(class_validate(
-      resolve_external_class_req(class),
-      object
-    )),
+    S7_external = function(object) {
+      class_validate(resolve_external_class_req(class), object)
+    },
     NULL
   )
 
