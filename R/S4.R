@@ -32,15 +32,15 @@
 #' S4Foo_S4 <- S4_register_contains(S4Foo)
 #' methods::setClass("S4Child", contains = S4Foo_S4)
 S4_register <- function(class, env = parent.frame()) {
-  if (is_class(class)) {
+  if (is_union(class)) {
+    return(invisible(S4_register_union(class, topenv(env))))
+  } else if (is_class(class)) {
     if (class@abstract) {
       return(invisible(S4_register_abstract_class(class, topenv(env))))
     }
     classes <- class_dispatch(class)
   } else if (is_S3_class(class)) {
     classes <- class$class
-  } else if (is_union(class)) {
-    return(invisible(S4_register_union(class, topenv(env))))
   } else {
     msg <- sprintf(
       "`class` must be an S7 class, S3 class, or S7 union, not a %s.",
