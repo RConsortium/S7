@@ -77,7 +77,7 @@ test_that("internal generics register S4 methods for S4-backed S7 classes", {
     package = NULL
   )
   method(dim, S4regDimChild) <- function(x) c(x@x, 2L)
-  S4regDimChild_S4 <- S4_register(S4regDimChild, contains = TRUE)
+  S4regDimChild_S4 <- S4_contains(S4regDimChild)
   setClass("S4regDimShim", contains = S4regDimChild_S4)
 
   object <- methods::new("S4regDimShim", x = 1L)
@@ -114,7 +114,7 @@ test_that("internal replacement generics can register full S4 signatures", {
       x@x <- value
       x
     }
-  S4regDimnamesChild_S4 <- S4_register(S4regDimnamesChild, contains = TRUE)
+  S4regDimnamesChild_S4 <- S4_contains(S4regDimnamesChild)
   setClass("S4regDimnamesShim", contains = S4regDimnamesChild_S4)
 
   object <- methods::new("S4regDimnamesShim", x = list(NULL, NULL))

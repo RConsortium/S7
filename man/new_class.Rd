@@ -102,7 +102,7 @@ S4 automatically, and S4 generics can dispatch through the S4 parent.
 S7 objects that directly extend S4 are represented as S3 old-class objects,
 so \code{isS4()} is \code{FALSE} even though \code{\link[methods:is]{methods::is()}} and S4 dispatch see the
 S4 parent. S4 classes can extend S7 classes by calling
-\code{\link[=S4_register]{S4_register()}} with \code{contains = TRUE}.
+\code{\link[=S4_contains]{S4_contains()}} in \code{methods::setClass(contains = )}.
 
 See \code{vignette("compatibility")} for examples and caveats.
 }

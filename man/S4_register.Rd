@@ -2,9 +2,12 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
+\alias{S4_contains}
 \title{Register an S7, S3, or union class with S4}
 \usage{
-S4_register(class, env = parent.frame(), contains = FALSE)
+S4_register(class, env = parent.frame())
+
+S4_contains(class, env = parent.frame())
 }
 \arguments{
 \item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or, for
@@ -12,9 +15,6 @@ S4_register(class, env = parent.frame(), contains = FALSE)
 union created with \code{\link[=new_union]{new_union()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
-
-\item{contains}{If \code{TRUE}, create the heavier S4 class needed for S4 classes
-to extend an S7 class. This exposes stored S7 properties as S4 slots.}
 }
 \value{
 Called for its side effects and invisibly returns the registered S4 class
@@ -30,13 +30,15 @@ an S7 class that does not extend an S4 class, or an S3 class created by
 
 \code{S4_register()} registers an S7 class, S3 class, or S7 union with S4 and
 invisibly returns the registered S4 class name.
+For S7 classes, this creates a virtual S4 old class that exposes stored S7
+properties as S4 slots and carries the \code{S7_class} slot needed for S7 dispatch
+and validation.
 
-Use \code{S4_register(contains = TRUE)} when an S4 class should extend an S7
-class with \code{methods::setClass(contains = )}. This creates a virtual S4 class
-that exposes stored S7 properties as S4 slots and carries the \code{S7_class} slot
-needed for S7 dispatch and validation. Do not instantiate it directly.
+After registration, \code{S4_contains()} returns the virtual S4 class name to use
+when an S4 class should extend an S7 class with
+\code{methods::setClass(contains = )}. It asserts that the S7 properties can
+safely cross the S4 inheritance boundary.
 
-Properties with custom getters or setters cannot be represented as S4 slots.
 Register S7 unions with \code{S4_register()} before using them in S4 slots or
 method signatures unless an equivalent S4 union already exists.
 
@@ -55,6 +57,7 @@ method(S4_generic, Foo) <- function(x) "Hello"
 S4_generic(Foo())
 
 S4Foo := new_class(properties = list(x = class_numeric), package = "S7")
-S4Foo_S4 <- S4_register(S4Foo, contains = TRUE)
+S4_register(S4Foo)
+S4Foo_S4 <- S4_contains(S4Foo)
 methods::setClass("S4Child", contains = S4Foo_S4)
 }

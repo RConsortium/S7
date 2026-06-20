@@ -11,6 +11,23 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
+test_that("S4_contains requires prior S4 registration", {
+  on.exit(S4_remove_classes("S4regContainsUnregistered"))
+  S4regContainsUnregistered := new_class(package = NULL)
+
+  expect_error(
+    S4_contains(S4regContainsUnregistered),
+    "has not been registered"
+  )
+  expect_false(methods::isClass("S4regContainsUnregistered"))
+
+  S4_register(S4regContainsUnregistered)
+  expect_equal(
+    S4_contains(S4regContainsUnregistered),
+    "S4regContainsUnregistered"
+  )
+})
+
 test_that("S4_register registers S4 old classes as virtual S7_object descendants", {
   on.exit(S4_remove_classes(c("S4regParent", "S4regS7New")))
   setClass("S4regParent", slots = list(x = "numeric"))
@@ -95,7 +112,7 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   )
 
   S4regContainsChild_old <- S4_register(S4regContainsChild)
-  S4regContainsChild_S4 <- S4_register(S4regContainsChild, contains = TRUE)
+  S4regContainsChild_S4 <- S4_contains(S4regContainsChild)
   expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild")
   expect_equal(
     methods::slotNames(S4regContainsChild_S4),
@@ -204,7 +221,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
     },
     package = NULL
   )
-  S4regNewChild_S4 <- S4_register(S4regNewChild, contains = TRUE)
+  S4regNewChild_S4 <- S4_contains(S4regNewChild)
   expect_equal(
     methods::slotNames("S4regNewChild"),
     c("status", "metadata", "S7_class", "assays", "rowData", ".S3Class")
@@ -265,7 +282,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
   expect_error(methods::validObject(invalid), "bad status")
 })
 
-test_that("S4_validate_reified_class validates only matching S7 classes for S4 upcasts", {
+test_that("S4_validate_class validates only matching S7 classes for S4 upcasts", {
   on.exit(S4_remove_classes(c(
     "S4regShimRoot",
     "S4regShimParent",
@@ -289,8 +306,8 @@ test_that("S4_validate_reified_class validates only matching S7 classes for S4 u
     package = "S7"
   )
 
-  S4regShimParent_S4 <- S4_register(S4regShimParent, contains = TRUE)
-  S4regShimChild_S4 <- S4_register(S4regShimChild, contains = TRUE)
+  S4regShimParent_S4 <- S4_contains(S4regShimParent)
+  S4regShimChild_S4 <- S4_contains(S4regShimChild)
   setClass("S4regShimParent", contains = S4regShimParent_S4)
   setClass(
     "S4regShimChild",
@@ -339,10 +356,7 @@ test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
     package = NULL
   )
   method(dim, S4regAbstractConcrete) <- function(x) c(x@x, 2L)
-  S4regAbstractConcrete_S4 <- S4_register(
-    S4regAbstractConcrete,
-    contains = TRUE
-  )
+  S4regAbstractConcrete_S4 <- S4_contains(S4regAbstractConcrete)
   setClass("S4regAbstractShim", contains = S4regAbstractConcrete_S4)
 
   object <- methods::new("S4regAbstractShim", x = 1L)
@@ -380,7 +394,8 @@ test_that("S4_register uses S7 property defaults as S4 prototypes", {
     ),
     package = NULL
   )
-  S4regPrototype_S4 <- S4_register(S4regPrototype, contains = TRUE)
+  S4_register(S4regPrototype)
+  S4regPrototype_S4 <- S4_contains(S4regPrototype)
   methods::setClass("S4regPrototypeChild", contains = S4regPrototype_S4)
 
   object <- methods::new("S4regPrototypeChild")
@@ -409,7 +424,8 @@ test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 propertie
     ),
     package = NULL
   )
-  S4regNullable_S4 <- S4_register(S4regNullable, contains = TRUE)
+  S4_register(S4regNullable)
+  S4regNullable_S4 <- S4_contains(S4regNullable)
   methods::setClass("S4regNullableChild", contains = S4regNullable_S4)
 
   object <- methods::new("S4regNullableChild")
@@ -430,9 +446,11 @@ test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 propertie
   expect_identical(attr(plain, "x", exact = TRUE), as.name("\001NULL\001"))
 })
 
-test_that("S4_register rejects properties that can not be represented as slots", {
+test_that("S4_contains rejects properties with custom accessors", {
   on.exit(S4_remove_classes(c(
+    "S4regContainsDynamicChild",
     "S7::S4regContainsDynamic",
+    "S4regContainsSetterChild",
     "S7::S4regContainsSetter"
   )))
 
@@ -443,8 +461,17 @@ test_that("S4_register rejects properties that can not be represented as slots",
     ),
     package = "S7"
   )
+  expect_no_error(S4_register(S4regContainsDynamic))
   expect_error(
-    S4_register(S4regContainsDynamic, contains = TRUE),
+    S4_contains(S4regContainsDynamic),
+    "custom getter"
+  )
+  methods::setClass(
+    "S4regContainsDynamicChild",
+    contains = "S7::S4regContainsDynamic"
+  )
+  expect_error(
+    methods::new("S4regContainsDynamicChild"),
     "custom getter"
   )
 
@@ -461,8 +488,17 @@ test_that("S4_register rejects properties that can not be represented as slots",
     ),
     package = "S7"
   )
+  expect_no_error(S4_register(S4regContainsSetter))
   expect_error(
-    S4_register(S4regContainsSetter, contains = TRUE),
+    S4_contains(S4regContainsSetter),
+    "custom setter"
+  )
+  methods::setClass(
+    "S4regContainsSetterChild",
+    contains = "S7::S4regContainsSetter"
+  )
+  expect_error(
+    methods::new("S4regContainsSetterChild"),
     "custom setter"
   )
 })
@@ -479,15 +515,13 @@ test_that("S4_register uses registered S7 unions as S4 slots", {
     package = "S7"
   )
   expect_error(
-    S4_register(S4regContainsUnion, contains = TRUE),
+    S4_register(S4regContainsUnion),
     "not been registered"
   )
 
   S4_register(class_numeric | class_character)
-  S4regContainsUnion_S4 <- S4_register(
-    S4regContainsUnion,
-    contains = TRUE
-  )
+  S4_register(S4regContainsUnion)
+  S4regContainsUnion_S4 <- S4_contains(S4regContainsUnion)
   expect_equal(
     as.character(methods::getClass(S4regContainsUnion_S4)@slots$x),
     "integer_OR_numeric_OR_character"
@@ -523,10 +557,10 @@ test_that("S4_register uses matching S4 unions as S4 slots", {
     package = NULL
   )
 
-  S4regContainsExistingUnion_S4 <- S4_register(
+  S4_register(S4regContainsExistingUnion, env)
+  S4regContainsExistingUnion_S4 <- S4_contains(
     S4regContainsExistingUnion,
-    env,
-    contains = TRUE
+    env
   )
   expect_equal(
     as.character(
@@ -666,7 +700,11 @@ test_that("S7 classes can extend S4 classes", {
 })
 
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
-  on.exit(S4_remove_classes(c("ParentForSlots", "ChildForSlots", "S4ChildForSlots")))
+  on.exit(S4_remove_classes(c(
+    "ParentForSlots",
+    "ChildForSlots",
+    "S4ChildForSlots"
+  )))
   setClass("ParentForSlots", slots = list(x = "numeric"))
 
   ChildForSlots <- new_class(
@@ -746,22 +784,30 @@ test_that("S4 initialize supports S3 data parts", {
 })
 
 test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
-  on.exit(S4_remove_classes(c("Parent2", "Child2")))
+  on.exit(S4_remove_classes(c("Parent2", "Child2", "S4Child2")))
   setClass("Parent2", slots = list(x = "numeric"))
 
-  expect_error(
-    new_class(
-      "Child2",
-      parent = getClass("Parent2"),
-      properties = list(
-        y = new_property(class_character, setter = function(self, value) {
-          attr(self, "setter_called") <- TRUE
-          attr(self, "y") <- value
-          self
-        })
-      ),
-      package = NULL
+  Child2 <- new_class(
+    "Child2",
+    parent = getClass("Parent2"),
+    properties = list(
+      y = new_property(class_character, setter = function(self, value) {
+        attr(self, "setter_called") <- TRUE
+        attr(self, "y") <- value
+        self
+      })
     ),
+    package = NULL
+  )
+  expect_true(attr(Child2(x = 1, y = "a"), "setter_called", exact = TRUE))
+  expect_error(
+    S4_contains(Child2),
+    "custom setter"
+  )
+
+  methods::setClass("S4Child2", contains = "Child2")
+  expect_error(
+    methods::new("S4Child2"),
     "custom setter"
   )
 })

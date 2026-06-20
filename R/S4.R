@@ -8,13 +8,15 @@
 #' @section Details:
 #' `S4_register()` registers an S7 class, S3 class, or S7 union with S4 and
 #' invisibly returns the registered S4 class name.
+#' For S7 classes, this creates a virtual S4 old class that exposes stored S7
+#' properties as S4 slots and carries the `S7_class` slot needed for S7 dispatch
+#' and validation.
 #'
-#' Use `S4_register(contains = TRUE)` when an S4 class should extend an S7
-#' class with `methods::setClass(contains = )`. This creates a virtual S4 class
-#' that exposes stored S7 properties as S4 slots and carries the `S7_class` slot
-#' needed for S7 dispatch and validation. Do not instantiate it directly.
+#' After registration, `S4_contains()` returns the virtual S4 class name to use
+#' when an S4 class should extend an S7 class with
+#' `methods::setClass(contains = )`. It asserts that the S7 properties can
+#' safely cross the S4 inheritance boundary.
 #'
-#' Properties with custom getters or setters cannot be represented as S4 slots.
 #' Register S7 unions with `S4_register()` before using them in S4 slots or
 #' method signatures unless an equivalent S4 union already exists.
 #'
@@ -24,8 +26,6 @@
 #'   `S4_register()` only, an S3 class created with [new_S3_class()] or an S7
 #'   union created with [new_union()].
 #' @param env Expert use only. Environment where S4 class will be registered.
-#' @param contains If `TRUE`, create the heavier S4 class needed for S4 classes
-#'   to extend an S7 class. This exposes stored S7 properties as S4 slots.
 #' @returns
 #' Called for its side effects and invisibly returns the registered S4 class
 #' name.
@@ -42,19 +42,18 @@
 #' S4_generic(Foo())
 #'
 #' S4Foo := new_class(properties = list(x = class_numeric), package = "S7")
-#' S4Foo_S4 <- S4_register(S4Foo, contains = TRUE)
-#' methods::setClass("S4Child", contains = S4Foo_S4)
-S4_register <- function(class, env = parent.frame(), contains = FALSE) {
+#' S4_register(S4Foo)
+#' methods::setClass("S4Child", contains = S4_contains(S4Foo))
+S4_register <- function(class, env = parent.frame()) {
   where <- topenv(env)
   if (is_union(class)) {
     return(invisible(S4_register_union(class, where)))
   } else if (is_class(class)) {
-    if (contains || class@abstract) {
-      return(invisible(S4_register_reified_class(class, where)))
-    }
-    classes <- class_dispatch(class)
+    return(invisible(S4_register_class(class, where)))
   } else if (is_S3_class(class)) {
     classes <- class$class
+    methods::setOldClass(classes, where = where)
+    return(invisible(classes[1L]))
   } else {
     msg <- sprintf(
       "`class` must be an S7 class, S3 class, or S7 union, not a %s.",
@@ -62,9 +61,22 @@ S4_register <- function(class, env = parent.frame(), contains = FALSE) {
     )
     stop2(msg)
   }
+}
 
-  methods::setOldClass(classes, where = where)
-  invisible(classes[1L])
+#' @rdname S4_register
+#' @export
+S4_contains <- function(class, env = parent.frame()) {
+  where <- topenv(env)
+  if (!is_class(class)) {
+    msg <- sprintf("`class` must be an S7 class, not a %s.", obj_desc(class))
+    stop2(msg)
+  }
+
+  class_name <- as.character(
+    S4_registered_class(class, where, call = sys.call())@className
+  )
+  S4_check_contains(class)
+  class_name
 }
 
 S4_register_union <- function(class, env) {
@@ -202,7 +214,7 @@ inherits_S4 <- function(x) {
 }
 
 S4_register_subclass <- function(class, env) {
-  S4_register(class, env, contains = TRUE)
+  S4_register(class, env)
   invisible()
 }
 
@@ -218,15 +230,30 @@ S4_slot_names <- function(class, S4_env) {
 }
 
 S4_property_class <- function(prop, S4_env) {
-  if (prop_is_dynamic(prop) || prop_has_setter(prop)) {
-    msg <- sprintf(
-      "Can't register property %s as an S4 slot because it has a custom %s.",
-      prop$name,
-      if (prop_is_dynamic(prop)) "getter" else "setter"
-    )
-    stop(msg, call. = FALSE)
-  }
   S4_class(prop$class, S4_env)
+}
+
+S4_check_contains <- function(class, call = sys.call(-1L)) {
+  if (!is_class(class)) {
+    return(invisible())
+  }
+
+  for (prop in class@properties) {
+    if (prop_is_dynamic(prop) || prop_has_setter(prop)) {
+      msg <- sprintf(
+        paste0(
+          "Can't extend S7 class %s with S4 because property %s has a ",
+          "custom %s."
+        ),
+        class_desc(class),
+        prop$name,
+        if (prop_is_dynamic(prop)) "getter" else "setter"
+      )
+      stop2(msg, call = call)
+    }
+  }
+
+  invisible()
 }
 
 S4_properties_prototype <- function(
@@ -281,7 +308,7 @@ S4_old_classes <- function(class) {
   character()
 }
 
-S4_register_reified_class <- function(class, env = parent.frame()) {
+S4_register_class <- function(class, env = parent.frame()) {
   where <- topenv(env)
   class_name <- S7_class_name(class)
   parent_class_name <- S4_reified_parent_class(class, where)
@@ -318,7 +345,7 @@ S4_register_reified_class <- function(class, env = parent.frame()) {
   old_classes <- S4_reified_old_classes(class)
   methods::setOldClass(old_classes, S4Class = class_name, where = where)
   S4_set_S3_class_prototype(class_name, old_classes, where)
-  methods::setValidity(class_name, S4_validate_reified_class, where = where)
+  methods::setValidity(class_name, S4_validate_class, where = where)
   methods::setMethod("initialize", class_name, S4_initialize, where = where)
 
   class_name
@@ -330,7 +357,7 @@ S4_reified_parent_class <- function(class, env) {
     if (parent_class@name == "S7_object") {
       return(NULL)
     }
-    return(S4_register(parent_class, env, contains = TRUE))
+    return(S4_register(parent_class, env))
   } else if (is_S4_class(parent_class)) {
     return(S4_class(parent_class, env))
   }
@@ -346,7 +373,7 @@ S4_reified_old_classes <- function(class) {
   class_dispatch(class)
 }
 
-S4_validate_reified_class <- function(object) {
+S4_validate_class <- function(object) {
   class_name <- class(object)[1L]
   class <- S7_class(object)
 
@@ -385,6 +412,10 @@ S4_validate <- function(object) {
 }
 
 S4_initialize <- function(.Object, ...) {
+  if (isS4(.Object) && has_S7_class(.Object)) {
+    S4_check_contains(S7_class(.Object))
+  }
+
   args <- list(...)
   if (length(args) == 0) {
     return(.Object)

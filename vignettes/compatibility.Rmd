@@ -216,10 +216,11 @@ There are a few important caveats:
 
 ### S4 classes that extend S7 classes
 
-Use `S4_register(contains = TRUE)` when an S4 class should extend an S7 class.
-It returns the virtual S4 class name for `methods::setClass(contains = )`.
-This class exposes stored S7 properties as formal S4 slots and carries the
-`S7_class` slot that S7 uses for dispatch and validation.
+After calling `S4_register()`, use `S4_contains()` when an S4 class should
+extend an S7 class. It returns the virtual S4 class name for
+`methods::setClass(contains = )`. This class exposes stored S7 properties as
+formal S4 slots and carries the `S7_class` slot that S7 uses for dispatch and
+validation.
 
 ```{r}
 Sample <- new_class("Sample",
@@ -236,7 +237,8 @@ Sample <- new_class("Sample",
   }
 )
 
-Sample_S4 <- S4_register(Sample, contains = TRUE)
+S4_register(Sample)
+Sample_S4 <- S4_contains(Sample)
 methods::setClass("ReplicatedSample",
   contains = Sample_S4,
   slots = c(replicate = "integer")
@@ -266,7 +268,7 @@ method(sample_label, Sample) <- function(x) {
 sample_label(rs)
 ```
 
-The class returned by `S4_register(contains = TRUE)` is a compatibility layer,
+The class returned by `S4_contains()` is a compatibility layer,
 not a user-facing class. Do not instantiate it directly; use it only as a
 superclass for another S4 class. Since S4 subclasses are real S4 objects, S4
 code can access the S7 properties as slots. This is necessary for
