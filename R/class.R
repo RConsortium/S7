@@ -144,17 +144,20 @@ new_class <- function(
     }
   }
 
+  parent_props <- class_properties(parent)
   new_props <- as_properties(properties)
   check_prop_names(new_props)
+  check_prop_overrides(new_props, parent_props, name, parent)
 
   # Combine properties from parent, overriding as needed
-  all_props <- class_properties(parent)
+  all_props <- parent_props
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
+    constructor_props <- if (is_S4_class(parent)) all_props else new_props
     constructor <- new_constructor(
       parent,
-      all_props,
+      constructor_props,
       envir = parent.frame(),
       package = package
     )
@@ -288,17 +291,29 @@ check_can_inherit <- function(
 
 is_class <- function(x) inherits(x, "S7_class")
 
+# A class you can't supply an instance of: an abstract S7 class, or an S3 class
+# registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
+class_is_abstract <- function(class) {
+  if (is_class(class)) {
+    class@abstract
+  } else if (is_S3_class(class)) {
+    class$abstract %||% is_S3_stub_constructor(class$constructor)
+  } else {
+    FALSE
+  }
+}
+
 check_parent <- function(parent, class, call = sys.call(-1L)) {
   parent_class <- class@parent
   if (is.null(parent_class)) {
     stop2(
-      "`.parent` must not be supplied when class has no parent.",
+      "`_parent` must not be supplied when class has no parent.",
       call = call
     )
   }
 
   # Ignore abstract classes since you can't supply an instance
-  if (is_class(parent_class) && parent_class@abstract) {
+  if (class_is_abstract(parent_class)) {
     return()
   }
 
@@ -313,7 +328,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
     return()
   }
   msg <- sprintf(
-    "`.parent` must be an instance of %s, not %s.",
+    "`_parent` must be an instance of %s, not %s.",
     class_desc(parent_class),
     obj_desc(parent)
   )
@@ -322,11 +337,15 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 
 # Object ------------------------------------------------------------------
 
-#' @param .parent,... Parent object and named properties used to construct the
+#' @param _parent,... Parent object and named properties used to construct the
 #'   object.
+#'
+#'   As a convenience, if `...` is a single unnamed list, then the elements of
+#'   that list are used as the properties. This makes it easy to
+#'   programmatically construct an object from a list of property values.
 #' @rdname new_class
 #' @export
-new_object <- function(.parent, ...) {
+new_object <- function(`_parent`, ...) {
   class <- sys.function(-1)
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
@@ -339,18 +358,17 @@ new_object <- function(.parent, ...) {
     stop2(msg)
   }
 
-  if (!missing(.parent)) {
-    check_parent(.parent, class)
+  if (!missing(`_parent`)) {
+    check_parent(`_parent`, class)
   }
 
-  args <- list(...)
-  if ("" %in% names2(args)) {
-    stop2("All arguments to `...` must be named.")
-  }
+  args <- collect_dots(...)
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
+  self_attrs <- args[!has_setter]
+  names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
-  # We must awkwardly operate on `.parent` rather than binding to a local
+  # We must awkwardly operate on `_parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
@@ -359,26 +377,28 @@ new_object <- function(.parent, ...) {
     attributes(`_parent`)
   )
   attrs <- attrs[!duplicated(names(attrs))]
-  attributes(.parent) <- attrs
+  attributes(`_parent`) <- attrs
 
   # invoke custom property setters
   prop_setter_vals <- args[has_setter]
   for (name in names(prop_setter_vals)) {
-    prop(.parent, name, check = FALSE) <- prop_setter_vals[[name]]
+    prop(`_parent`, name, check = FALSE) <- prop_setter_vals[[name]]
   }
 
-  # Don't need to validate if parent class already validated,
-  # i.e. it's a non-abstract S7 class
+  # Don't need to validate the parent class if it's already validated and none
+  # of its properties were reset by this call.
   parent_validated <- inherits(class@parent, "S7_object") &&
     !class@parent@abstract
+  parent_props_reset <- parent_validated &&
+    any(names2(args) %in% names2(class@parent@properties))
   validate_from(
-    .parent,
-    parent = if (parent_validated) class@parent,
+    `_parent`,
+    parent = if (parent_validated && !parent_props_reset) class@parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )
 
-  .parent
+  `_parent`
 }
 
 #' @export
@@ -448,34 +468,59 @@ S7_class <- function(object) {
 
 
 check_prop_names <- function(properties, call = sys.call(-1L)) {
-  # these attributes have special C handlers in base R
-  forbidden <- c(
-    "names",
-    "dim",
-    "dimnames",
-    "class",
-    "tsp",
-    "comment",
-    "row.names",
-    "..."
-  )
-  forbidden <- intersect(forbidden, names(properties))
-  if (length(forbidden)) {
+  nms <- names2(properties)
+
+  # `...` can't be a property name because it's special syntax
+  if ("..." %in% nms) {
+    stop2("Properties can't be named \"...\".", call = call)
+  }
+
+  if ("S7_class" %in% nms) {
     msg <- paste0(
-      "Property can't be named: ",
-      paste0(forbidden, collapse = ", "),
+      "Property can't use S7 reserved name: ",
+      "S7_class",
       "."
     )
     stop2(msg, call = call)
   }
+}
 
-  reserved <- intersect("S7_class", names(properties))
-  if (length(reserved)) {
-    msg <- paste0(
-      "Property can't use S7 reserved name: ",
-      paste0(reserved, collapse = ", "),
-      "."
-    )
-    stop2(msg, call = call)
+check_prop_overrides <- function(
+  child_props,
+  parent_props,
+  name,
+  parent,
+  call = sys.call(-1L)
+) {
+  overridden <- intersect(names(child_props), names(parent_props))
+
+  for (prop in overridden) {
+    child_prop <- child_props[[prop]]
+
+    # Dynamic properties are computed, not stored, so they're never validated
+    # against the parent's type
+    if (prop_is_dynamic(child_prop)) {
+      next
+    }
+
+    child_class <- child_prop$class
+    parent_class <- parent_props[[prop]]$class
+
+    if (!class_extends(child_class, parent_class)) {
+      child_desc <- paste0("<", name, ">")
+      parent_desc <- class_desc(parent)
+      msg <- c(
+        sprintf(
+          "%s@%s must narrow %s@%s.",
+          child_desc,
+          prop,
+          parent_desc,
+          prop
+        ),
+        sprintf("- %s@%s is %s.", parent_desc, prop, class_desc(parent_class)),
+        sprintf("- %s@%s is %s.", child_desc, prop, class_desc(child_class))
+      )
+      stop2(msg, call = call)
+    }
   }
 }

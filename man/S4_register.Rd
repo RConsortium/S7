@@ -48,7 +48,7 @@ methods::setGeneric("S4_generic", function(x) {
   standardGeneric("S4_generic")
 })
 
-Foo := new_class()
+Foo <- new_class("Foo")
 S4_register(Foo)
 method(S4_generic, Foo) <- function(x) "Hello"
 

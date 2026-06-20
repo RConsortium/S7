@@ -301,7 +301,7 @@ test_that("S4_validate_reified_class validates only matching S7 classes for S4 u
   object <- methods::new("S4regShimGrandChild", root = 1, x = 2, y = "a")
   parent_object <- methods::as(object, S4regShimParent_S4)
 
-  expect_false("y" %in% methods::slotNames(parent_object))
+  expect_equal(methods::slot(parent_object, "y"), "a")
   expect_equal(S7_class(parent_object), S4regShimChild)
   expect_true(methods::validObject(object))
 })
