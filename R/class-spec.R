@@ -217,7 +217,7 @@ class_constructor <- function(.x) {
 
 class_validate <- function(class, object) {
   if (is_S4_class(class)) {
-    if (isS4(object) || methods::isClass(class(object)[[1]])) {
+    if (isS4(object)) {
       check <- methods::validObject(object, test = TRUE)
       return(if (isTRUE(check)) NULL else check)
     }

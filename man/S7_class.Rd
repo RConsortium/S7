@@ -24,7 +24,7 @@ that can be passed to \code{\link[=method]{method()}} or used in any S7 dispatch
 }
 }
 \examples{
-Foo := new_class()
+Foo <- new_class("Foo")
 S7_class(Foo())
 
 # Also works on non-S7 objects
