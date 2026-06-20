@@ -64,7 +64,7 @@
 #' S7 objects that directly extend S4 are represented as S3 old-class objects,
 #' so `isS4()` is `FALSE` even though [methods::is()] and S4 dispatch see the
 #' S4 parent. S4 classes can extend S7 classes by calling
-#' [S4_register()] with `contains = TRUE`.
+#' [S4_contains()] in `methods::setClass(contains = )`.
 #'
 #' See `vignette("compatibility")` for examples and caveats.
 #' @return A object constructor, a function that can be used to create objects
