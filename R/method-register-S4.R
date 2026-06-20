@@ -28,7 +28,10 @@ class_has_S4_ancestor <- function(class) {
 }
 
 S3_generic_S4_signature <- function(generic) {
-  if (!is_S3_generic(generic) || !is_internal_generic(generic$name)) {
+  if (
+    !(is_S3_generic(generic) || is_external_S3_generic(generic)) ||
+      !is_internal_generic(generic$name)
+  ) {
     return(NULL)
   }
 
@@ -38,4 +41,9 @@ S3_generic_S4_signature <- function(generic) {
   }
 
   generic@signature
+}
+
+is_external_S3_generic <- function(generic) {
+  is_external_generic(generic) &&
+    identical(generic$dispatch_args, "__S3__")
 }

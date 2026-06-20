@@ -128,6 +128,43 @@ test_that("internal replacement generics can register full S4 signatures", {
   ))
 })
 
+test_that("sentinels for internal replacement generics keep full S4 signatures", {
+  on.exit(S4_remove_classes(c(
+    "S4regDimnamesSentinelParent",
+    "S4regDimnamesSentinelChild"
+  )))
+
+  setClass("S4regDimnamesSentinelParent", contains = "VIRTUAL")
+  S4regDimnamesSentinelChild <- new_class(
+    "S4regDimnamesSentinelChild",
+    parent = getClass("S4regDimnamesSentinelParent"),
+    properties = list(x = class_list),
+    package = NULL
+  )
+
+  dimnames_sentinel <- generic_sentinel(as_generic(`dimnames<-`))
+  expect_no_error(
+    register_method(
+      dimnames_sentinel,
+      list(S4regDimnamesSentinelChild, class_list),
+      function(x, value) x,
+      package = NULL
+    )
+  )
+  on.exit(
+    methods::removeMethod(
+      "dimnames<-",
+      c("S4regDimnamesSentinelChild", "list")
+    ),
+    add = TRUE,
+    after = FALSE
+  )
+  expect_true(methods::hasMethod(
+    "dimnames<-",
+    c("S4regDimnamesSentinelChild", "list")
+  ))
+})
+
 test_that("S3 registration for a multi-class S3 class uses only the first class", {
   local_s3_generic("s3_gen")
   method(s3_gen, new_S3_class(c("ordered", "factor"))) <- function(x) "ord"
