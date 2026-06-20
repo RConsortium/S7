@@ -93,13 +93,13 @@ local_S4_class <- function(
   where = topenv(env)
 ) {
   out <- methods::setClass(name, ..., where = where)
-  defer(S4_remove_classes(name, env), env)
+  defer(S4_remove_classes(name, where), env)
   out
 }
 
 local_S4_union <- function(name, members, env = parent.frame()) {
   out <- methods::setClassUnion(name, members, where = topenv(env))
-  defer(S4_remove_classes(name, env), env)
+  defer(S4_remove_classes(name, topenv(env)), env)
   out
 }
 
