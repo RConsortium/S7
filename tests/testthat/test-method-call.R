@@ -39,6 +39,28 @@ test_that("S7_generic_call() is the originating call to the generic", {
   expect_equal(foo(Number(1)), quote(foo(Number(1))))
 })
 
+test_that("S7_generic_fun() returns the generic being dispatched", {
+  foo <- new_generic("foo", "x")
+  method(foo, class_double) <- function(x) S7_generic_fun()
+  expect_identical(foo(1), foo)
+
+  # Even in the presence of super()
+  Number <- new_class("Number", parent = class_double)
+  method(foo, Number) <- function(x) foo(super(x, class_double))
+  expect_identical(foo(Number(1)), foo)
+})
+
+test_that("S7_generic_fun() returns the nearest generic", {
+  inner <- new_generic("inner", "x")
+  outer <- new_generic("outer", "x")
+
+  method(inner, class_double) <- function(x) S7_generic_fun()
+  method(outer, class_double) <- function(x) {
+    list(inner = inner(x), outer = S7_generic_fun())
+  }
+  expect_equal(outer(1), list(inner = inner, outer = outer))
+})
+
 test_that("super redispatch through helpers reports original generic context", {
   foo <- new_generic("foo", "x")
   Number <- new_class("Number", parent = class_double)
@@ -148,6 +170,7 @@ test_that("helpers error when called outside a method", {
   expect_snapshot(error = TRUE, {
     S7_generic_call()
     S7_user_frame()
+    S7_generic_fun()
   })
 })
 

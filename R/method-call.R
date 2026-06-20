@@ -12,14 +12,19 @@
 #'   This is the equivalent of [parent.frame()] in an S3 method, and is
 #'   useful if you need non-standard evaluation.
 #'
-#' Both helpers skip intermediate frames when a method re-dispatches the same
-#' generic to a superclass with [super()], reporting the outermost user-facing
-#' call and its caller.
+#' * `S7_generic_fun()` returns the generic function itself. This is the
+#'   equivalent of [sys.function()] in an S3 method, and is useful if you need
+#'   to inspect the generic, e.g. to retrieve its name or dispatch arguments.
+#'
+#' All three helpers skip intermediate frames when a method re-dispatches the
+#' same generic to a superclass with [super()], reporting the outermost
+#' user-facing call, its caller, and the originating generic.
 #'
 #' @param match Set to `TRUE` to process with [match.call()] and name all
 #'   arguments.
 #' @returns `S7_generic_call()` returns a call; `S7_user_frame()` returns an
-#'   environment. Both error if called outside of a method.
+#'   environment; `S7_generic_fun()` returns the generic function. All error if
+#'   called outside of a method.
 #' @seealso [S7_dispatch()] for how methods are called, and [super()] for
 #'   superclass dispatch.
 #' @export
@@ -50,6 +55,15 @@
 #' df <- data.frame(x = 1:3, y = c(2, 5, 8))
 #' # `x` and `y` come from the data frame; `threshold` from this frame
 #' keep_rows(df, x + y > threshold)
+#'
+#' # S7_generic_fun() returns the generic itself, e.g. to use its name in a
+#' # message:
+#' bar <- new_generic("bar", "x")
+#' method(bar, class_double) <- function(x) {
+#'   generic <- S7_generic_fun()
+#'   paste0("Called ", generic@name, "()")
+#' }
+#' bar(1)
 S7_generic_call <- function(match = FALSE) {
   idx <- generic_call_frame()
   call <- sys.call(idx)
@@ -64,6 +78,13 @@ S7_generic_call <- function(match = FALSE) {
 S7_user_frame <- function() {
   frame <- generic_call_frame()
   sys.frame(sys.parents()[frame])
+}
+
+#' @rdname S7_generic_call
+#' @export
+S7_generic_fun <- function() {
+  frame <- generic_call_frame()
+  sys.function(frame)
 }
 
 generic_call_frame <- function(call = sys.call(-1L)) {

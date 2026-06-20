@@ -3,11 +3,14 @@
 \name{S7_generic_call}
 \alias{S7_generic_call}
 \alias{S7_user_frame}
+\alias{S7_generic_fun}
 \title{Access the generic call and user frame from within a method}
 \usage{
 S7_generic_call(match = FALSE)
 
 S7_user_frame()
+
+S7_generic_fun()
 }
 \arguments{
 \item{match}{Set to \code{TRUE} to process with \code{\link[=match.call]{match.call()}} and name all
@@ -15,7 +18,8 @@ arguments.}
 }
 \value{
 \code{S7_generic_call()} returns a call; \code{S7_user_frame()} returns an
-environment. Both error if called outside of a method.
+environment; \code{S7_generic_fun()} returns the generic function. All error if
+called outside of a method.
 }
 \description{
 These helpers give a method stable access to two pieces of context that are
@@ -27,11 +31,14 @@ generic call (e.g. \code{foo(1)}) rather than S7's internal dispatch.
 \item \code{S7_user_frame()} returns the frame from which the generic was called.
 This is the equivalent of \code{\link[=parent.frame]{parent.frame()}} in an S3 method, and is
 useful if you need non-standard evaluation.
+\item \code{S7_generic_fun()} returns the generic function itself. This is the
+equivalent of \code{\link[=sys.function]{sys.function()}} in an S3 method, and is useful if you need
+to inspect the generic, e.g. to retrieve its name or dispatch arguments.
 }
 
-Both helpers skip intermediate frames when a method re-dispatches the same
-generic to a superclass with \code{\link[=super]{super()}}, reporting the outermost user-facing
-call and its caller.
+All three helpers skip intermediate frames when a method re-dispatches the
+same generic to a superclass with \code{\link[=super]{super()}}, reporting the outermost
+user-facing call, its caller, and the originating generic.
 }
 \examples{
 # S7_generic_call() reports the call to the generic, skipping super():
@@ -60,6 +67,15 @@ threshold <- 4
 df <- data.frame(x = 1:3, y = c(2, 5, 8))
 # `x` and `y` come from the data frame; `threshold` from this frame
 keep_rows(df, x + y > threshold)
+
+# S7_generic_fun() returns the generic itself, e.g. to use its name in a
+# message:
+bar <- new_generic("bar", "x")
+method(bar, class_double) <- function(x) {
+  generic <- S7_generic_fun()
+  paste0("Called ", generic@name, "()")
+}
+bar(1)
 }
 \seealso{
 \code{\link[=S7_dispatch]{S7_dispatch()}} for how methods are called, and \code{\link[=super]{super()}} for
