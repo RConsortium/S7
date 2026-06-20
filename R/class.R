@@ -454,12 +454,6 @@ check_prop_overrides <- function(
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
 
-    # Dynamic properties are computed, not stored, so they're never validated
-    # against the parent's type
-    if (prop_is_dynamic(child_prop)) {
-      next
-    }
-
     child_class <- child_prop$class
     parent_class <- parent_props[[prop]]$class
 
