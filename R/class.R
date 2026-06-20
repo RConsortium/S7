@@ -11,8 +11,9 @@
 #'   CamelCase for S7 class names, but it is not required.)
 #'
 #'   The result of calling `new_class()` should always be assigned to a variable
-#'   with this name, i.e. `Foo <- new_class("Foo")`. This object both represents
-#'   the class and is used to construct new instances of the class.
+#'   with this name, i.e. `Foo <- new_class("Foo", ...)` or
+#'   `Foo := new_class(...)`. This object both represents the class and is used
+#'   to construct new instances of the class.
 #' @param parent The parent class to inherit behavior from.
 #'   There are four options:
 #'
@@ -71,7 +72,7 @@
 #' @export
 #' @examples
 #' # Create an class that represents a range using a numeric start and end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -89,7 +90,7 @@
 #'
 #' # But we might also want to use a validator to ensure that start and end
 #' # are length 1, and that start is < end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -443,7 +444,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 #' @returns A class specification.
 #' @export
 #' @examples
-#' Foo <- new_class("Foo")
+#' Foo := new_class()
 #' S7_class(Foo())
 #'
 #' # Also works on non-S7 objects

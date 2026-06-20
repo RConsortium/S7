@@ -48,13 +48,13 @@ methods::setGeneric("S4_generic", function(x) {
   standardGeneric("S4_generic")
 })
 
-Foo <- new_class("Foo")
+Foo := new_class()
 S4_register(Foo)
 method(S4_generic, Foo) <- function(x) "Hello"
 
 S4_generic(Foo())
 
-S4Foo <- new_class("S4Foo", properties = list(x = class_numeric), package = "S7")
+S4Foo := new_class(properties = list(x = class_numeric), package = "S7")
 S4Foo_S4 <- S4_register(S4Foo, contains = TRUE)
 methods::setClass("S4Child", contains = S4Foo_S4)
 }
