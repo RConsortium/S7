@@ -15,15 +15,16 @@ new_class(
   validator = NULL
 )
 
-new_object(.parent, ...)
+new_object(`_parent`, ...)
 }
 \arguments{
 \item{name}{The name of the class, as a string. (We recommend using
 CamelCase for S7 class names, but it is not required.)
 
 The result of calling \code{new_class()} should always be assigned to a variable
-with this name, i.e. \code{Foo <- new_class("Foo")}. This object both represents
-the class and is used to construct new instances of the class.}
+with this name, i.e. \code{Foo <- new_class("Foo", ...)} or
+\code{Foo := new_class(...)}. This object both represents the class and is used
+to construct new instances of the class.}
 
 \item{parent}{The parent class to inherit behavior from.
 There are three options:
@@ -73,8 +74,12 @@ problem, using \verb{@prop_name} to describe where the problem lies.
 See \code{validate()} for more details, examples, and how to temporarily
 suppress validation when needed.}
 
-\item{.parent, ...}{Parent object and named properties used to construct the
-object.}
+\item{_parent, ...}{Parent object and named properties used to construct the
+object.
+
+As a convenience, if \code{...} is a single unnamed list, then the elements of
+that list are used as the properties. This makes it easy to
+programmatically construct an object from a list of property values.}
 }
 \value{
 A object constructor, a function that can be used to create objects
@@ -89,7 +94,7 @@ Learn more in \code{vignette("classes-objects")}
 }
 \examples{
 # Create an class that represents a range using a numeric start and end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric
@@ -107,7 +112,7 @@ try(Range(start = "hello", end = 20))
 
 # But we might also want to use a validator to ensure that start and end
 # are length 1, and that start is < end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric

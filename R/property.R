@@ -42,16 +42,21 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to?
+#'   what should it default to? There are three options:
 #'
-#'   If `NULL`, it defaults to the "empty" instance of `class`. For base
-#'   vector types, this will be a zero length vector, e.g. `character()` for
-#'   `class_character()`. For S7 classes, this will be a call to the
-#'   constructor
+#'   * A simple scalar (e.g. `1L`, `"x"`, `TRUE`).
 #'
-#'   This can also be a `quote()`d call, which then becomes a standard function
-#'   promise in the default constructor, evaluated when the object is
-#'   constructed.
+#'   * A `quote()`d call. This will be evaluated when the object is
+#'     constructed and should be used for any thing more complicated like
+#'     a named vector or a function call.
+#'
+#'   * `NULL`, it defaults to the "empty" instance of `class`. For base
+#'     vector types, this will be a zero length vector, e.g. `character()` for
+#'     `class_character()`. For S7 classes, this will be a call to the
+#'     constructor.
+#'
+#'   Anything else will generate a warning, which will become an error in
+#'   a future release.
 #' @param name Property name, primarily used for error messages. Generally
 #'   don't need to set this here, as it's more convenient to supply as
 #'   the element name when defining a list of properties. If both `name`
@@ -63,7 +68,7 @@
 #' @export
 #' @examples
 #' # Simple properties store data inside an object
-#' Pizza <- new_class("Pizza", properties = list(
+#' Pizza := new_class(properties = list(
 #'   slices = new_property(class_numeric, default = 10),
 #'   special = new_property(NULL | class_character)
 #' ))
@@ -78,7 +83,7 @@
 #' your_pizza@special
 #'
 #' # Dynamic properties can compute on demand
-#' Clock <- new_class("Clock", properties = list(
+#' Clock := new_class(properties = list(
 #'   now = new_property(getter = function(self) Sys.time())
 #' ))
 #' my_clock <- Clock()
@@ -100,7 +105,7 @@ new_property <- function(
   name = NULL
 ) {
   class <- as_class(class)
-  check_prop_default(default, class)
+  check_prop_default(default, substitute(default), class)
 
   if (!is.null(getter)) {
     check_function(getter, alist(self = ))
@@ -132,7 +137,14 @@ new_property <- function(
   out
 }
 
-check_prop_default <- function(default, class, call = sys.call(-1L)) {
+check_prop_default <- function(
+  default,
+  default_expr,
+  class,
+  call = sys.call(-1L)
+) {
+  force(default_expr)
+
   if (is.null(default)) {
     return() # always valid.
   }
@@ -157,6 +169,9 @@ check_prop_default <- function(default, class, call = sys.call(-1L)) {
   }
 
   if (class_inherits(default, class)) {
+    if (!is_scalar(default)) {
+      warn_prop_default_complex(default, default_expr, call)
+    }
     return()
   }
 
@@ -167,6 +182,23 @@ check_prop_default <- function(default, class, call = sys.call(-1L)) {
   )
 
   stop2(msg, call = call)
+}
+
+is_scalar <- function(x) {
+  is.atomic(x) && length(x) == 1L && is.null(attributes(x))
+}
+
+warn_prop_default_complex <- function(default, default_expr, call) {
+  msg <- sprintf(
+    "`default` should be a scalar or a quoted call, not a %s.",
+    obj_desc(default)
+  )
+  hint <- deparse1(default_expr)
+  if (nchar(hint) <= 60) {
+    msg <- c(msg, sprintf("* Did you mean `default = quote(%s)`?", hint))
+  }
+  msg <- c(msg, "* This warning will become an error in a future release.")
+  warning2(msg, call = call)
 }
 
 is_property <- function(x) inherits(x, "S7_property")
@@ -233,7 +265,7 @@ class_default_desc <- function(class, package = NULL) {
 #'    the modified object, invisibly.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
@@ -358,7 +390,7 @@ prop_call <- function(object, name) {
 #'     the property has a getter, setter, or validator.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = new_property(class_numeric, default = 15),
@@ -455,7 +487,7 @@ prop_info <- function(object) {
 #' @returns A named list of property values.
 #' @export
 #' @examples
-#' Horse <- new_class("Horse", properties = list(
+#' Horse := new_class(properties = list(
 #'   name = class_character,
 #'   colour = class_character,
 #'   height = class_numeric
@@ -497,11 +529,14 @@ props <- function(object, names = prop_names(object)) {
 }
 
 #' @export
-#' @param ... Name-value pairs given property to modify and new value.
+#' @param _object The object to modify.
+#' @param ... Name-value pairs given property to modify and new value. As a
+#'   convenience, you can supply a single unnamed list instead of individual
+#'   name-value pairs, which makes it easy to set properties programmatically.
 #' @rdname props
-set_props <- function(object, ..., .check = TRUE) {
-  props(object, check = .check) <- list(...)
-  object
+set_props <- function(`_object`, ..., .check = TRUE) {
+  props(`_object`, check = .check) <- collect_dots(...)
+  `_object`
 }
 
 as_properties <- function(x, call = sys.call(-1L)) {

@@ -49,13 +49,15 @@
 #' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods. For
 #'   downcasting, these can be used to override existing properties or set new
-#'   ones.
+#'   ones. As a convenience, you can supply a single unnamed list instead of
+#'   individual name-value pairs, which makes it easy to override properties
+#'   programmatically.
 #' @return Either `from` coerced to class `to`, or an error if the coercion
 #'   is not possible.
 #' @export
 #' @examples
-#' Foo1 <- new_class("Foo1", properties = list(x = class_integer))
-#' Foo2 <- new_class("Foo2", Foo1, properties = list(y = class_double))
+#' Foo1 := new_class(properties = list(x = class_integer))
+#' Foo2 := new_class(Foo1, properties = list(y = class_double))
 #'
 #' # Upcasting: S7 provides a default implementation for coercing an object
 #' # to one of its parent classes:
@@ -94,9 +96,9 @@
 #' # Conversely, `convert()` *does* use inheritance for `from`, so a method
 #' # registered on a parent class is also used for its children. This holds
 #' # even when upcasting, where it overrides the default property stripping:
-#' Bar1 <- new_class("Bar1", properties = list(label = class_character))
-#' Bar2 <- new_class("Bar2", Bar1)
-#' Bar3 <- new_class("Bar3", Bar2)
+#' Bar1 := new_class(properties = list(label = class_character))
+#' Bar2 := new_class(Bar1)
+#' Bar3 := new_class(Bar2)
 #' method(convert, list(Bar2, Bar1)) <- function(from, to, ...) {
 #'   Bar1(label = "from a Bar2 or one of its children")
 #' }
@@ -106,7 +108,7 @@
 #' # This `from`-inheritance is limited to classes more specific than `to`. A
 #' # method whose `from` is a *parent* of `to` would downcast, so it is skipped.
 #' # For example, this method downcasts a Foo1 to a Foo2:
-#' Foo3 <- new_class("Foo3", Foo2, properties = list(z = class_double))
+#' Foo3 := new_class(Foo2, properties = list(z = class_double))
 #' method(convert, list(Foo1, Foo2)) <- function(from, to, ...) Foo2(y = -1)
 #'
 #' # Upcasting a Foo3 to a Foo2 ignores that inherited downcasting method,
@@ -122,7 +124,8 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    convert_down(from, to, ...)
+    dots <- collect_dots(...)
+    convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
   } else {
@@ -169,6 +172,10 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
   if (is_base_class(to)) {
     from <- zap_attr(from, c(from_props, "_S7_class", "S7_class", "class"))
   } else if (is_S3_class(to)) {
+    if (class_is_abstract(to)) {
+      msg <- sprintf("Can't convert to abstract class <%s>.", to$class[[1]])
+      stop2(msg, call = call)
+    }
     from <- zap_attr(from, c(from_props, "_S7_class", "S7_class"))
     class(from) <- to$class
   } else if (is_class(to)) {
@@ -191,12 +198,13 @@ is_down_cast <- function(x, class) {
   class_dispatch_extends(obj_dispatch(x), class_dispatch(class))
 }
 
-convert_down <- function(from, to, ...) {
+convert_down <- function(from, to, user_args = list()) {
   from_class <- S7_class(from)
 
   if (!is_class(from_class)) {
     # `from` is a base or S3 object; pass it as `.data` to the constructor
-    return(to(.data = from, ...))
+    user_args$.data <- from
+    return(do.call(to, user_args))
   }
 
   # Use `from` as a prototype/seed when constructing `to`: copy over property
@@ -213,7 +221,6 @@ convert_down <- function(from, to, ...) {
   }
 
   # Drop properties overridden by user-supplied arguments
-  user_args <- list(...)
   from_prop_names <- setdiff(from_prop_names, names(user_args))
 
   from_prop_values <- props(from, from_prop_names)

@@ -19,14 +19,14 @@
       }
       <environment: namespace:S7>
     Code
-      foo <- new_class("foo", parent = class_character)
+      foo := new_class(parent = class_character)
       new_constructor(foo, list())
     Output
       function (.data = character(0)) 
       new_object(foo(.data = .data))
       <environment: 0x0>
     Code
-      foo2 <- new_class("foo2", parent = foo)
+      foo2 := new_class(parent = foo)
       new_constructor(foo2, list())
     Output
       function (.data = character(0)) 
@@ -52,21 +52,23 @@
 # can generate constructor for inherited abstract classes
 
     Code
-      foo1 <- new_class("foo1", abstract = TRUE, properties = list(x = class_double))
+      foo1 := new_class(abstract = TRUE, properties = list(x = class_double))
       new_constructor(foo1, list())
     Output
-      function () 
+      function (x = numeric(0)) 
       {
-          new_object(S7_object())
+          x
+          new_object(S7_object(), x = x)
       }
       <environment: namespace:S7>
     Code
       new_constructor(foo1, as_properties(list(y = class_double)))
     Output
-      function (y = numeric(0)) 
+      function (x = numeric(0), y = numeric(0)) 
       {
+          x
           y
-          new_object(S7_object(), y = y)
+          new_object(S7_object(), x = x, y = y)
       }
       <environment: namespace:S7>
 

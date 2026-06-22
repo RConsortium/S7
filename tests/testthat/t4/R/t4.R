@@ -13,7 +13,7 @@ S7::method(t3_s4, t4_class) <- function(x) "s4-dispatch"
 S7::method(`$`, t4_class) <- function(x, name) "base-dispatch"
 
 .onLoad <- function(libname, pkgname) {
-  S7::methods_register()
+  S7::S7_on_load()
 }
 
 S7::S7_on_build()

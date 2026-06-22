@@ -26,18 +26,24 @@ library(S7)
 
 First, add `S7` to the `Imports` field of your `DESCRIPTION`. We then recommend importing all S7 functions into your package `NAMESPACE` with `import(S7)`, or, if you're using roxygen2, `@import S7`.
 
-Next, create a `zzz.R` with a `.onLoad()` that calls `methods_register()` and a top-level call to `S7_on_build()`:
+Next, create a `zzz.R` with a `.onLoad()` that calls `S7_on_load()`, an `.onUnload()` that calls `S7_on_unload()`, and a top-level call to `S7_on_build()`:
 
 ```{r}
 .onLoad <- function(...) {
-  S7::methods_register()
+  S7::S7_on_load()
+}
+
+.onUnload <- function(...) {
+  S7::S7_on_unload()
 }
 
 S7::S7_on_build()
 ```
 
-`methods_register()` is S7's way of registering methods, rather than using export directives in your `NAMESPACE` like S3 and S4 do.
+`S7_on_load()` is S7's way of registering methods, rather than using export directives in your `NAMESPACE` like S3 and S4 do.
 This is only strictly necessary if you are registering methods for generics in other packages, but there's no harm in adding it and it ensures that you won't forget later.
+
+`S7_on_unload()` cleans up after `S7_on_load()`: it unregisters methods that your package registered, if they are still active, and removes hooks, so unloading your package doesn't leave stale state behind.
 
 `S7_on_build()` cleans up after `method<-`.
 Because `method<-` is a replacement function, `method(generic, class) <- fun` is evaluated as `generic <- method<-(generic, class, fun)`, which would otherwise leave a copy of `generic` in your namespace.
@@ -69,7 +75,7 @@ Note that methods can only be defined after both the class and generic have been
 S7 objects are S3 objects, so it's possible to manually register an S7 method for an S3 generic without using `method<-`. The main thing to note is that the S3 class name of an S7 object is `{package}::{class}`, which means you'll need to wrap the method name in `` ` ``:
 
 ```{r}
-Foo <- new_class("Foo", package = "S7")
+Foo := new_class(package = "S7")
 `length.S7::Foo` <- function(x) 10
 length(Foo())
 ```

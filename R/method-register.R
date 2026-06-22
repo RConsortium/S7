@@ -12,7 +12,7 @@
 #' But this is not a general method registration function: at least one of
 #' `generic` and `signature` needs to be from S7.
 #'
-#' Note that if you are writing a package, you must call [methods_register()]
+#' Note that if you are writing a package, you must call [S7_on_load()]
 #' in your `.onLoad`. This ensures that all methods are dynamically registered
 #' when needed.
 #'
@@ -45,7 +45,7 @@
 #' @export
 #' @examples
 #' # Create a generic
-#' bizarro <- new_generic("bizarro", "x")
+#' bizarro := new_generic("x")
 #' # Register some methods
 #' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, new_S3_class("data.frame")) <- function(x) {
@@ -77,19 +77,31 @@ register_method <- function(
   original <- generic
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
+  method_package <- packageName(env)
 
-  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+  if (external_generic_available(generic)) {
     generic <- as_generic(
       getFromNamespace(generic$name, generic$package),
       call = call
     )
   }
 
+  external <- NULL
+  if (!is.null(package) && !is_local_generic(generic, package)) {
+    external <- as_external_generic(generic, env)
+  }
+
   # Register in current session
   signatures <- flatten_signature(signature)
   if (is_S7_generic(generic)) {
     for (sig in signatures) {
-      register_S7_method(generic, sig, method, call = call)
+      register_S7_method(
+        generic,
+        sig,
+        method,
+        package = method_package,
+        call = call
+      )
     }
     register_ops_bridge(generic, signatures, env)
   } else if (is_S3_generic(generic)) {
@@ -105,7 +117,6 @@ register_method <- function(
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    external <- as_external_generic(generic, env)
     external_methods_add(package, external, signature, method)
     return(generic_sentinel(external))
   }
@@ -124,7 +135,7 @@ unregister_method <- function(
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
 
-  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+  if (external_generic_available(generic)) {
     generic <- as_generic(
       getFromNamespace(generic$name, generic$package),
       call = call
@@ -155,6 +166,7 @@ register_S7_method <- function(
   generic,
   signature,
   method,
+  package = NULL,
   call = sys.call(-1L)
 ) {
   check_method(
@@ -163,10 +175,31 @@ register_S7_method <- function(
     name = method_name(generic, signature),
     call = call
   )
-  method <- S7_method(method, generic = generic, signature = signature)
+  method <- S7_method_for_signature(
+    method,
+    generic,
+    signature,
+    package = package
+  )
   generic_add_method(generic, signature, method)
 
   invisible()
+}
+
+S7_method_for_signature <- function(
+  method,
+  generic,
+  signature,
+  package = NULL
+) {
+  method <- S7_method(method, generic = generic, signature = signature)
+  if (is.null(attr(method, "name", TRUE))) {
+    attr(method, "name") <- as.name(method_signature(generic, signature))
+  }
+  if (!is.null(package)) {
+    attr(method, "S7_package") <- package
+  }
+  method
 }
 
 unregister_S7_method <- function(generic, signature) {
@@ -237,6 +270,17 @@ check_signature_list <- function(
 new_signature <- function(x) {
   class(x) <- "S7_signature"
   x
+}
+
+#' @export
+format.S7_signature <- function(x, ...) {
+  paste0(vcapply(unclass(x), class_desc), collapse = ", ")
+}
+
+#' @export
+print.S7_signature <- function(x, ...) {
+  cat(format(x), "\n", sep = "")
+  invisible(x)
 }
 
 check_method <- function(

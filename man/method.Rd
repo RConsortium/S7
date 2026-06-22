@@ -29,7 +29,7 @@ the implementation of a specific method.
 }
 \examples{
 # Create a generic and register some methods
-bizarro <- new_generic("bizarro", "x")
+bizarro := new_generic("x")
 method(bizarro, class_numeric) <- function(x) rev(x)
 method(bizarro, class_factor) <- function(x) {
   levels(x) <- rev(levels(x))

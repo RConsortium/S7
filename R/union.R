@@ -30,12 +30,12 @@
 #' # or with shortcut syntax
 #' logical_or_character <- class_logical | class_character
 #'
-#' Foo <- new_class("Foo", properties = list(x = logical_or_character))
+#' Foo := new_class(properties = list(x = logical_or_character))
 #' Foo(x = TRUE)
 #' Foo(x = letters[1:5])
 #' try(Foo(1:3))
 #'
-#' bar <- new_generic("bar", "x")
+#' bar := new_generic("x")
 #' # Use built-in union
 #' method(bar, class_atomic) <- function(x) "Hi!"
 #' bar

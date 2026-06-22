@@ -5,10 +5,18 @@ new_constructor <- function(
   package = NULL
 ) {
   properties <- as_properties(properties)
-  arg_info <- constructor_args(parent, properties, envir, package)
-  self_args <- as_names(names(arg_info$self), named = TRUE)
 
   if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
+    # There's no parent constructor to delegate to, so the constructor must
+    # handle all properties: inherited and newly declared (which win).
+    all_props <- modify_list(
+      attr(parent, "properties", exact = TRUE),
+      properties
+    )
+
+    arg_info <- constructor_args(parent, all_props, envir, package)
+    self_args <- as_names(names(arg_info$self))
+
     new_object_call <-
       if (has_S7_symbols(envir, "new_object", "S7_object")) {
         bquote(new_object(S7_object(), ..(self_args)), splice = TRUE)
@@ -29,45 +37,64 @@ new_constructor <- function(
     ))
   }
 
+  # We need a name so we get a compact constructor, and the actual function
+  # which we'll embed in the constructor's environment
   if (is_class(parent)) {
     parent_name <- parent@name
     parent_fun <- parent
-    args <- modify_list(arg_info$parent, arg_info$self)
   } else if (is_base_class(parent)) {
     parent_name <- parent$constructor_name
     parent_fun <- parent$constructor
-    args <- modify_list(arg_info$parent, arg_info$self)
   } else if (is_S3_class(parent)) {
     parent_name <- paste0("new_", parent$class[[1]])
     parent_fun <- parent$constructor
-    args <- formals(parent$constructor)
-    args[names(arg_info$self)] <- arg_info$self
   } else {
     # user facing error in S7_class()
     stop2("Unsupported `parent` type.", call = NULL)
   }
+  parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
 
-  # ensure default value for `...` is empty
-  if ("..." %in% names(args)) {
-    args[names(args) == "..."] <- list(quote(expr = ))
+  # We need to work out three things:
+  # * The argument list for the constructor (`constr_args`)
+  # * Which of those arguments is passed to the parent (`parent_args`)
+  # * Which of those arguments is passed to new_object() (`self_args`)
+
+  # In constructor args, the subclass default replaces the parent default
+  arg_info <- constructor_args(parent, properties, envir, package)
+  constr_args <- modify_list(arg_info$parent, arg_info$self)
+
+  # The rest of the work is about moving args around not changing their values
+  # so it's easier to work with their names
+  constr_nms <- names2(constr_args)
+  self_nms <- names2(arg_info$self)
+  parent_nms <- names2(arg_info$parent)
+  # We also need to figure out properties are overridden in the child
+  override_nms <- intersect(constr_nms, names2(parent_props))
+
+  # For overridden properties, we generally need to pass to both the parent
+  # and the child so that we can both override parent defaults and respect
+  # child setters. BUT we can't forward properties that are read-only in the
+  # parent
+  read_only_nms <- parent_nms[vlapply(properties, prop_is_read_only)]
+  read_only_override_nms <- intersect(read_only_nms, override_nms)
+  parent_nms <- setdiff(parent_nms, read_only_override_nms)
+  constr_nms <- setdiff(constr_nms, read_only_override_nms)
+  override_nms <- setdiff(override_nms, read_only_override_nms)
+
+  # If parent takes ..., we can't match overrides by name, so pass all args on
+  if ("..." %in% names(arg_info$parent)) {
+    parent_nms <- union(parent_nms, override_nms)
   }
 
-  parent_args <- as_names(names(arg_info$parent), named = TRUE)
-  names(parent_args)[names(parent_args) == "..."] <- ""
-  parent_call <- new_call(parent_name, parent_args)
-  body <- new_call(
-    if (has_S7_symbols(envir, "new_object")) {
-      "new_object"
-    } else {
-      c("S7", "new_object")
-    },
-    c(parent_call, self_args)
-  )
+  # Now we can generate the parent and child calls
+  parent_call <- new_call(parent_name, as_names(parent_nms))
+  new_object <- c(if (!has_S7_symbols(envir, "new_object")) "S7", "new_object")
+  child_call <- new_call(new_object, c(parent_call, as_names(self_nms)))
 
+  # And finally the constructor itself
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
-
-  new_function(args, body, env)
+  new_function(constr_args[constr_nms], child_call, env)
 }
 
 constructor_args <- function(
@@ -81,22 +108,13 @@ constructor_args <- function(
   # Remove read-only properties
   properties <- properties[!vlapply(properties, prop_is_read_only)]
 
-  self_arg_nms <- names2(properties)
-
-  if (is_class(parent) && !parent@abstract) {
-    # Remove any parent properties; can't use parent_args() since the constructor
-    # might automatically set some properties.
-    self_arg_nms <- setdiff(self_arg_nms, names2(parent@properties))
-  }
-
   self_args <- as.pairlist(lapply(
-    setNames(, self_arg_nms),
+    setNames(, names2(properties)),
     function(name) prop_default(properties[[name]], envir, package)
   ))
 
   list(parent = parent_args, self = self_args)
 }
-
 
 # helpers -----------------------------------------------------------------
 
@@ -117,9 +135,9 @@ new_call <- function(call, args) {
   as.call(c(list(call), args))
 }
 
-as_names <- function(x, named = FALSE) {
-  if (named) {
-    names(x) <- x
+as_names <- function(x) {
+  if (length(x) > 0) {
+    names(x) <- ifelse(x == "...", "", x)
   }
   lapply(x, as.name)
 }

@@ -31,6 +31,14 @@ stop2 <- function(message, call = sys.call(-1L), class = NULL) {
   ))
 }
 
+warning2 <- function(message, call = sys.call(-1L), class = NULL) {
+  warning(warningCondition(
+    message = paste(message, collapse = "\n"),
+    call = call,
+    class = class
+  ))
+}
+
 method_signature <- function(generic, signature) {
   single <- length(generic@dispatch_args) == 1
   if (single) {
@@ -50,6 +58,27 @@ names2 <- function(x) {
   } else {
     nms
   }
+}
+
+# Collect `...` into a named list. As a convenience, a single unnamed list is
+# spliced in so its elements become the values, making it easy to supply
+# values programmatically. All values must be named.
+collect_dots <- function(..., call = sys.call(-1)) {
+  args <- list(...)
+
+  is_single_list <- length(args) == 1L &&
+    !nzchar(names2(args)) &&
+    is.list(args[[1L]])
+
+  if (is_single_list) {
+    args <- args[[1L]]
+    if ("" %in% names2(args)) {
+      stop2("All elements of `..1` must be named.", call = call)
+    }
+  } else if ("" %in% names2(args)) {
+    stop2("All arguments to `...` must be named.", call = call)
+  }
+  args
 }
 
 is_prefix <- function(x, y) {
@@ -173,15 +202,16 @@ show_args <- function(x, name = "function", suffix = "") {
 }
 
 modify_list <- function(x, new_vals) {
-  stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
+  stopifnot(
+    is.null(x) || is.list(x) || is.pairlist(x),
+    all(nzchar(names2(x)))
+  )
+  x <- x %||% list()
 
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
       stop2("All elements in `new_vals` must be named.")
-    }
-    if (is.null(x)) {
-      x <- list()
     }
     x[nms] <- new_vals
   }

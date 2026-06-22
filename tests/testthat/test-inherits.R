@@ -1,6 +1,6 @@
 test_that("it works", {
-  foo1 <- new_class("foo1")
-  foo2 <- new_class("foo2", parent = foo1)
+  foo1 := new_class()
+  foo2 := new_class(parent = foo1)
 
   expect_true(S7_inherits(foo1(), NULL))
   expect_true(S7_inherits(foo1(), foo1))
@@ -32,8 +32,8 @@ test_that("checks that input is a class", {
 
 test_that("throws informative error", {
   expect_snapshot(error = TRUE, {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(package = NULL)
     check_is_S7(foo1(), foo2)
   })
   expect_snapshot(check_is_S7("a"), error = TRUE)
