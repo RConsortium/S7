@@ -54,6 +54,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="s7-development-version">S7 (development version)<a class="anchor" aria-label="anchor" href="#s7-development-version"></a></h2>
 <ul><li>New <code>:=</code> operator creates and names an object in one step, so <code>Foo := new_class()</code> is equivalent to <code>Foo &lt;- new_class(name = "Foo")</code> (<a href="https://github.com/RConsortium/S7/issues/658" class="external-link">#658</a>).</li>
+<li>The class object that S7 stores on each instance now lives in the <code>_S7_class</code> attribute (previously <code>S7_class</code>), moving it into the <code>_</code>-prefixed namespace reserved for S7 internals so it can’t collide with a user-defined property. Objects created by an older version of S7 (e.g. serialised to disk or baked into another package’s lazy-load database) continue to work, as S7 falls back to the old attribute name when reading them (<a href="https://github.com/RConsortium/S7/issues/677" class="external-link">#677</a>).</li>
 <li>Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (<a href="https://github.com/RConsortium/S7/issues/646" class="external-link">#646</a>).</li>
 <li>
 <code>class_POSIXct</code> uses the <code>tzone</code> attribute (not <code>tz</code>), and allows it to be absent (<a href="https://github.com/RConsortium/S7/issues/401" class="external-link">#401</a>).</li>
