@@ -425,10 +425,7 @@ S7_class <- function(object) {
   switch(
     obj_type(object),
     missing = class_missing,
-    # Fall back to the legacy "S7_class" attribute (renamed to "_S7_class") so
-    # objects created by an older version of S7 keep working.
-    S7 = attr(object, "_S7_class", exact = TRUE) %||%
-      attr(object, "S7_class", exact = TRUE),
+    S7 = .Call(S7_class_, object),
     S4 = methods::getClass(class(object)),
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
