@@ -370,9 +370,13 @@ class_extends <- function(child, parent) {
     child <- resolve_external_class_req(child)
     class_extends(child, parent)
   } else if (is_class(child) && is_external_class(parent)) {
-    is_external_class_match(child, parent) &&
-      (is.null(parent$version) ||
-        class_extends(child, resolve_external_class_req(parent)))
+    if (!class_dispatch_extends(parent$class_name, class_dispatch(child))) {
+      return(FALSE)
+    }
+    if (!is.null(parent$version)) {
+      resolve_external_class_req(parent)
+    }
+    TRUE
   } else if (is_external_class(parent)) {
     parent <- resolve_external_class_req(parent)
     class_extends(child, parent)

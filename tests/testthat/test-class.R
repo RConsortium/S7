@@ -210,6 +210,31 @@ test_that("inheritance handles external class property specs", {
   expect_s3_class(ChildUnion(), "ChildUnion")
 })
 
+test_that("inheritance lets child properties narrow external parent classes", {
+  dep <- local_package(
+    "dep_external_subclass",
+    Base := new_class(),
+    Sub := new_class(parent = Base)
+  )
+  Base <- new_external_class(package = "dep_external_subclass", name = "Base")
+
+  Parent := new_class(
+    properties = list(
+      x = new_property(class = Base, default = quote(dep$Base()))
+    ),
+    package = NULL
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      x = new_property(class = dep$Sub, default = quote(dep$Sub()))
+    ),
+    package = NULL
+  )
+
+  expect_s3_class(Child()@x, "dep_external_subclass::Sub")
+})
+
 test_that("inheritance lets child properties narrow optional union properties with NULL", {
   Parent <- new_class(
     "Parent",

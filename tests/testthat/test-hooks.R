@@ -65,6 +65,44 @@ test_that("S7_on_load() and S7_on_unload() handle external classes", {
   )
 })
 
+test_that("S7_on_unload() handles external classes unloaded first", {
+  generic_pkg <- local_package(
+    "external_class_unload_first_generic",
+    gen := new_generic(dispatch_args = "x")
+  )
+  downstream <- local_package(
+    "external_class_unload_first_downstream",
+    .onLoad <- function(...) S7_on_load(),
+    .onUnload <- function(...) S7_on_unload(),
+    gen := new_external_generic(
+      package = "external_class_unload_first_generic",
+      dispatch_args = "x"
+    ),
+    Foo := new_external_class(
+      package = "external_class_unload_first_dep"
+    ),
+    method(gen, Foo) <- \(x) "from external class"
+  )
+  obj <- local({
+    class_pkg <- local_package(
+      "external_class_unload_first_dep",
+      Foo := new_class()
+    )
+    downstream$.onLoad()
+
+    obj <- class_pkg$Foo()
+    expect_equal(generic_pkg$gen(obj), "from external class")
+    obj
+  })
+
+  expect_identical(isNamespaceLoaded("external_class_unload_first_dep"), FALSE)
+  downstream$.onUnload()
+  expect_error(
+    generic_pkg$gen(obj),
+    class = "S7_error_method_not_found"
+  )
+})
+
 test_that("S7_on_unload() unregisters methods and removes hooks", {
   upstream <- local_package("upstream", gen := new_generic("x"))
   downstream <- local_package(
