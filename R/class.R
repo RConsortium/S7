@@ -342,7 +342,7 @@ new_object <- function(`_parent`, ...) {
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
-    list(class = class_dispatch(class), S7_class = class),
+    list(class = class_dispatch(class), `_S7_class` = class),
     self_attrs,
     attributes(`_parent`)
   )
@@ -425,7 +425,7 @@ S7_class <- function(object) {
   switch(
     obj_type(object),
     missing = class_missing,
-    S7 = attr(object, "S7_class", exact = TRUE),
+    S7 = .Call(S7_class_, object),
     S4 = methods::getClass(class(object)),
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)

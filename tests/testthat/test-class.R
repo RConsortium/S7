@@ -455,6 +455,29 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
+test_that("objects from a previous version of S7 still work (#677)", {
+  # Older versions of S7 stored the class object in the `S7_class` attribute
+  # rather than `_S7_class`.
+  Foo <- new_class(
+    "Foo",
+    parent = class_double,
+    properties = list(x = class_numeric)
+  )
+  obj <- Foo(1, x = 2)
+  attr(obj, "S7_class") <- attr(obj, "_S7_class", exact = TRUE)
+  attr(obj, "_S7_class") <- NULL
+
+  expect_equal(S7_class(obj), Foo)
+  expect_equal(obj@x, 2)
+  expect_equal(prop(obj, "x"), 2)
+
+  obj@x <- 3
+  expect_equal(obj@x, 3)
+
+  expect_equal(S7_data(obj), 1)
+  expect_equal(convert(obj, to = class_double), 1)
+})
+
 test_that("can't create class with `...` property name", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(... = class_character))
