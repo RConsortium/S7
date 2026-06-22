@@ -149,6 +149,16 @@
       - <foo1>@x is <integer>.
       - <foo4>@x is <ANY>.
 
+# dynamic child properties must also narrow the parent's type (#708)
+
+    Code
+      new_class("foo2", foo1, properties = list(x = widen))
+    Condition
+      Error in `new_class()`:
+      ! <foo2>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo2>@x is <character>.
+
 # abstract classes can't be instantiated
 
     Code
