@@ -365,7 +365,7 @@ prop_call <- function(object, name) {
 
 #' @rawNamespace S3method("@<-",S7_object)
 `@<-.S7_object` <- function(object, name, value) {
-  if (isS4(object) && !name %in% names(slot(object, "S7_class")@properties)) {
+  if (isS4(object) && !name %in% names(S7_class(object)@properties)) {
     methods::slot(object, name) <- value
     return(object)
   }

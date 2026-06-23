@@ -43,7 +43,7 @@ test_that("S4_register registers S4 old classes as virtual S7_object descendants
     "trying to generate an object from a virtual class"
   )
   expect_true(methods::extends("S4regS7New", "S7_object"))
-  expect_true("S7_class" %in% methods::slotNames("S4regS7New"))
+  expect_true("_S7_class" %in% methods::slotNames("S4regS7New"))
 })
 
 test_that("S4_register registers an S3 class so it can be used with S4 methods", {
@@ -116,7 +116,7 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild")
   expect_equal(
     methods::slotNames(S4regContainsChild_S4),
-    c("y", "x", "S7_class", ".S3Class")
+    c("y", "x", "_S7_class", ".S3Class")
   )
   expect_contains(
     methods::extends(S4regContainsChild_S4),
@@ -138,7 +138,7 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   expect_equal(methods::slot(object, "x"), 1)
   expect_equal(methods::slot(object, "y"), "a")
   expect_equal(methods::slot(object, "z"), TRUE)
-  expect_equal(methods::slot(object, "S7_class"), S4regContainsChild)
+  expect_equal(methods::slot(object, "_S7_class"), S4regContainsChild)
   expect_equal(prop_names(object), c("x", "y"))
   expect_equal(prop(object, "x"), 1)
   expect_equal(prop(object, "y"), "a")
@@ -224,11 +224,11 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
   S4regNewChild_S4 <- S4_contains(S4regNewChild)
   expect_equal(
     methods::slotNames("S4regNewChild"),
-    c("status", "metadata", "S7_class", "assays", "rowData", ".S3Class")
+    c("status", "metadata", "_S7_class", "assays", "rowData", ".S3Class")
   )
   expect_contains(
     methods::slotNames(S4regNewChild_S4),
-    c("assays", "rowData", "metadata", "status", "S7_class")
+    c("assays", "rowData", "metadata", "status", "_S7_class")
   )
   setClass(
     "S4regNewGrandChild",
@@ -242,7 +242,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
   expect_true(methods::is(object, "S4regNewParent"))
   expect_true(methods::is(object, S4regNewChild_S4))
   expect_true(S7_inherits(object, S4regNewChild))
-  expect_equal(methods::slot(object, "S7_class"), S4regNewChild)
+  expect_equal(methods::slot(object, "_S7_class"), S4regNewChild)
   expect_equal(methods::slot(object, "assays"), list())
   expect_equal(methods::slot(object, "rowData"), character())
   expect_equal(methods::slot(object, "metadata"), character())
@@ -364,12 +364,12 @@ test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
   concrete_prototype <- methods::getClass("S4regAbstractConcrete")@prototype
 
   expect_true(methods::isVirtualClass("S4regAbstract"))
-  expect_true("S7_class" %in% methods::slotNames("S4regAbstract"))
-  expect_equal(methods::slot(abstract_prototype, "S7_class"), S4regAbstract)
+  expect_true("_S7_class" %in% methods::slotNames("S4regAbstract"))
+  expect_equal(methods::slot(abstract_prototype, "_S7_class"), S4regAbstract)
   expect_false(methods::extends("S4regAbstract", "oldClass"))
   expect_false(methods::extends("S4regAbstract", "S7_object"))
   expect_equal(
-    methods::slot(concrete_prototype, "S7_class"),
+    methods::slot(concrete_prototype, "_S7_class"),
     S4regAbstractConcrete
   )
   expect_false("S4regAbstract" %in% attr(concrete_prototype, ".S3Class"))
@@ -672,7 +672,10 @@ test_that("S7 classes can extend S4 classes", {
   expect_true(methods::is(child, "Parent"))
   expect_true(methods::validObject(child))
   expect_equal(as.character(methods::getClass("Child")@className), "Child")
-  expect_equal(methods::slotNames("Child"), c("y", "S7_class", "x", ".S3Class"))
+  expect_equal(
+    methods::slotNames("Child"),
+    c("y", "_S7_class", "x", ".S3Class")
+  )
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")
 
