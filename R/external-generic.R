@@ -94,18 +94,9 @@ registrar <- function(generic, signature, method, env) {
   env
 
   function(...) {
-    if (!dep_available(generic)) {
+    deps <- method_deps(generic, signature)
+    if (!all(vlapply(deps, dep_available))) {
       return(invisible())
-    }
-
-    sig_deps <- signature_external_deps(signature)
-    if (length(sig_deps)) {
-      if (!all(vlapply(sig_deps, dep_available))) {
-        return(invisible())
-      }
-      for (dep in sig_deps) {
-        resolve_external_class_req(dep)
-      }
     }
 
     generic_fun <- resolve_generic(generic)
@@ -113,13 +104,8 @@ registrar <- function(generic, signature, method, env) {
       return(invisible())
     }
 
-    register_method(
-      generic_fun,
-      resolve_signature(signature),
-      method,
-      env,
-      package = NULL
-    )
+    signature <- resolve_signature(signature)
+    register_method(generic_fun, signature, method, env, package = NULL)
     invisible()
   }
 }
