@@ -71,28 +71,24 @@ is_external_class <- function(x) {
   inherits(x, "S7_external_class")
 }
 
-class_external_deps <- function(x) {
-  if (is_external_class(x)) {
-    list(x)
-  } else if (is_union(x)) {
-    flatten_external_deps(lapply(x$classes, class_external_deps))
-  } else {
-    list()
-  }
+signature_external_deps <- function(signature) {
+  deps <- lapply(signature, function(x) {
+    if (is_external_class(x)) {
+      list(x)
+    } else if (is_union(x)) {
+      signature_external_deps(x$classes)
+    } else {
+      list()
+    }
+  })
+  unlist(deps, recursive = FALSE, use.names = FALSE)
 }
 
-signature_external_deps <- function(signature) {
-  flatten_external_deps(lapply(signature, class_external_deps))
-}
 
 external_deps_resolvable <- function(deps) {
   all(vlapply(deps, function(dep) {
     dep_available(dep) && !is.null(find_external_class(dep))
   }))
-}
-
-flatten_external_deps <- function(x) {
-  unlist(x, recursive = FALSE, use.names = FALSE)
 }
 
 #' @export
