@@ -161,14 +161,12 @@ test_that("inheritance handles external class property specs", {
   )
   ChildObject := new_class(
     parent = ParentObject,
-    properties = list(
-      x = new_property(class = External, default = quote(dep$External()))
-    )
+    properties = list(x = External)
   )
   expect_s3_class(ChildObject()@x, "dep::External")
 
   Ext := new_external_class(package = "notloaded.pkg")
-  prop <- new_property(class = Ext, default = quote({}))
+  prop <- new_property(class = Ext)
   ParentSame := new_class(properties = list(x = prop))
   expect_no_error(new_class(
     name = "ChildSame",
@@ -178,12 +176,7 @@ test_that("inheritance handles external class property specs", {
 
   Missing := new_external_class(package = "S7testthatmissing")
   ParentUnion := new_class(
-    properties = list(
-      x = new_property(
-        class = Missing | S7_object,
-        default = quote(S7_object())
-      )
-    )
+    properties = list(x = Missing | S7_object)
   )
   ChildUnion := new_class(
     parent = ParentUnion,
@@ -200,9 +193,7 @@ test_that("inheritance lets child properties narrow external parent classes", {
   Base := new_external_class(package = "dep_external_subclass")
 
   Parent := new_class(
-    properties = list(
-      x = new_property(class = Base, default = quote(dep$Base()))
-    )
+    properties = list(x = Base)
   )
   Child := new_class(
     parent = Parent,
@@ -249,14 +240,14 @@ test_that("inheritance doesn't let child properties widen or change the parent's
 })
 
 
-test_that("subclassing an external class requires its package to be loaded", {
+test_that("subclassing an external class defers errors until construction", {
   Ext := new_external_class("notloaded.pkg")
   Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
 
-  expect_snapshot(
-    new_class("Child", Parent, properties = list(x = Ext)),
-    error = TRUE
-  )
+  # Defining the subclass works even though the package isn't loaded; the
+  # error only surfaces when the property default is constructed.
+  Child := new_class(parent = Parent, properties = list(x = Ext))
+  expect_snapshot(Child(), error = TRUE)
 })
 
 test_that("inheritance lets dynamic child properties override any parent type", {

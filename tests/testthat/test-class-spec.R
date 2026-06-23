@@ -262,6 +262,12 @@ test_that("can work with external classes", {
   expect_equal(class_inherits(obj, Ext), TRUE)
 })
 
+test_that("class_construct_expr() defers external classes to a `pkg::name()` call", {
+  Ext := new_external_class("notloaded.pkg")
+  expect_equal(class_construct_expr(Ext), quote(notloaded.pkg::Ext()))
+  expect_equal(class_construct_expr(Ext | NULL), quote(notloaded.pkg::Ext()))
+})
+
 test_that("class_deparse() includes external class version", {
   klass := new_external_class("pkg", version = "1.0")
   expect_equal(

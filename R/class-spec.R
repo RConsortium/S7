@@ -103,6 +103,14 @@ class_construct <- function(.x, ...) {
 
 
 class_construct_expr <- function(.x, envir = NULL, package = NULL) {
+  # External classes get a quoted `pkg::name()`so the default is built when the
+  # object is constructed rather than when the class is defined
+  ctor_class <- if (is_union(.x)) .x$classes[[1L]] else .x
+  if (is_external_class(ctor_class)) {
+    cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
+    return(as.call(list(cl)))
+  }
+
   f <- class_constructor(.x)
 
   # For S7 class constructors with a non-NULL @package property

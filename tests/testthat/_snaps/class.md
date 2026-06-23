@@ -149,14 +149,13 @@
       - <foo1>@x is <integer>.
       - <foo4>@x is <ANY>.
 
-# subclassing an external class requires its package to be loaded
+# subclassing an external class defers errors until construction
 
     Code
-      new_class("Child", Parent, properties = list(x = Ext))
+      Child()
     Condition
-      Error:
-      ! Can't find external class <notloaded.pkg::Ext>:
-      * Package 'notloaded.pkg' is not installed.
+      Error in `loadNamespace()`:
+      ! there is no package called 'notloaded.pkg'
 
 # abstract classes can't be instantiated
 

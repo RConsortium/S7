@@ -66,6 +66,7 @@ local_package <- function(
 
   info <- new.env(parent = emptyenv())
   info$spec <- c(name = name, version = version)
+  info$exports <- new.env(parent = emptyenv())
   ns[[".__NAMESPACE__."]] <- info
   ns[[".packageName"]] <- name
   ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())
@@ -77,6 +78,11 @@ local_package <- function(
   defer(S7_on_unload_(ns), frame = frame)
 
   eval(substitute(code), ns)
+
+  # export everything defined by the code block so `pkg::name` works
+  for (nm in ls(ns)) {
+    assign(nm, nm, envir = info$exports)
+  }
 
   ns
 }
