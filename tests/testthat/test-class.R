@@ -152,7 +152,7 @@ test_that("inheritance lets child properties narrow parent unions that include a
 })
 
 test_that("inheritance handles external class property specs", {
-  dep <- local_package("dep", {
+  dep := local_package({
     External := new_class()
   })
   External <- new_external_class(package = "dep", name = "External")

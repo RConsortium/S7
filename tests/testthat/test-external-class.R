@@ -97,7 +97,7 @@ test_that("external class works for mutually recursive classes", {
 })
 
 test_that("external class property validation reports validator errors", {
-  dep <- local_package("dep", {
+  dep := local_package({
     Ext := new_class(
       properties = list(x = class_integer),
       validator = function(self) {

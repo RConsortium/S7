@@ -1,10 +1,10 @@
 test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
-  upstream <- local_package("upstream", {
+  upstream := local_package({
     gen := new_generic("x")
   })
   expect_length(package_hooks("upstream"), 0)
 
-  downstream <- local_package("downstream", {
+  downstream := local_package({
     Foo := new_class()
     gen := new_external_generic("upstream", dispatch_args = "x")
     method(gen, Foo) <- \(x) "dispatched"
@@ -105,10 +105,10 @@ test_that("S7_on_unload() handles external classes unloaded first", {
 })
 
 test_that("S7_on_unload() unregisters methods and removes hooks", {
-  upstream <- local_package("upstream", {
+  upstream := local_package({
     gen := new_generic("x")
   })
-  downstream <- local_package("downstream", {
+  downstream := local_package({
     Foo := new_class()
     gen := new_external_generic("upstream", dispatch_args = "x")
     method(gen, Foo) <- \(x) "dispatched"

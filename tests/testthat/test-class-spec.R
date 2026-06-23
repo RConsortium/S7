@@ -242,7 +242,7 @@ test_that("can work with S4 classes", {
 # external ----------------------------------------------------------------
 
 test_that("can work with external classes", {
-  dep <- local_package("dep", {
+  dep := local_package({
     Ext := new_class(properties = list(x = class_integer))
   })
   klass <- new_external_class(package = "dep", name = "Ext")

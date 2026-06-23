@@ -101,7 +101,7 @@ test_that("method registration returns a strippable sentinel for foreign generic
 })
 
 test_that("method registration resolves external classes outside packages", {
-  dep <- local_package("dep", {
+  dep := local_package({
     Ext := new_class()
   })
 
@@ -120,7 +120,7 @@ test_that("method registration resolves external classes outside packages", {
 })
 
 test_that("method<- writes a strippable sentinel for foreign generics in a package (#364)", {
-  pkg <- local_package("pkg", {
+  pkg := local_package({
     ext := new_external_generic("notloaded.pkg", "x")
     foo := new_class()
     foo2 := new_class()
