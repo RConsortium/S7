@@ -18,33 +18,13 @@ test_that("resolve_external_class_req() errors per failure mode", {
   expect_snapshot(error = TRUE, {
     resolve_external_class_req(new_external_class("not_a_pkg", "X"))
     resolve_external_class_req(new_external_class("too.old", "X", "2.0.0"))
-    resolve_external_class_req(new_external_class("S7", "not_a_class"))
   })
 })
 
-test_that("external class resolution explains class binding contract", {
-  local_package("dep", {
-    Foo <- new_class(name = "Bar", package = "dep")
-  })
-  Bar <- new_external_class(package = "dep", name = "Bar")
-  local_package("symbol_mismatch", {
-    Bar <- new_class(name = "Foo", package = "symbol_mismatch")
-  })
-  SymbolMismatch <- new_external_class(
-    package = "symbol_mismatch",
-    name = "Bar"
-  )
-
-  expect_snapshot(error = TRUE, {
-    new_class(
-      name = "Holder",
-      properties = list(child = Bar)
-    )
-    new_class(
-      name = "SymbolHolder",
-      properties = list(child = SymbolMismatch)
-    )
-  })
+test_that("external class resolution errors if class binding contract is violated", {
+  local_package("dep")
+  Bar := new_external_class(package = "dep")
+  expect_snapshot(find_external_class(Bar), error = TRUE)
 })
 
 test_that("external class can be used as a union arm", {

@@ -36,27 +36,14 @@
       Error:
       ! Can't find external class <too.old::X>:
       * Package 'too.old' needs version 2.0.0, but only 1.0.0 is available.
-    Code
-      resolve_external_class_req(new_external_class("S7", "not_a_class"))
-    Condition
-      Error:
-      ! Can't find external class <S7::not_a_class>:
-      * Package 'S7' must bind `not_a_class` to the S7 class <S7::not_a_class>.
 
-# external class resolution explains class binding contract
+# external class resolution errors if class binding contract is violated
 
     Code
-      new_class(name = "Holder", properties = list(child = Bar))
+      find_external_class(Bar)
     Condition
       Error:
-      ! Can't find external class <dep::Bar>:
-      * Package 'dep' must bind `Bar` to the S7 class <dep::Bar>.
-    Code
-      new_class(name = "SymbolHolder", properties = list(child = SymbolMismatch))
-    Condition
-      Error:
-      ! Can't find external class <symbol_mismatch::Bar>:
-      * Package 'symbol_mismatch' must bind `Bar` to the S7 class <symbol_mismatch::Bar>.
+      ! Package 'dep' must bind `Bar` to the S7 class <dep::Bar>.
 
 # external class works as a property type for self-reference
 

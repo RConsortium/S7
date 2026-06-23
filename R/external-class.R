@@ -84,10 +84,9 @@ signature_external_deps <- function(signature) {
   unlist(deps, recursive = FALSE, use.names = FALSE)
 }
 
-
 external_deps_resolvable <- function(deps) {
   all(vlapply(deps, function(dep) {
-    dep_available(dep) && !is.null(find_external_class(dep))
+    dep_available(dep)
   }))
 }
 
@@ -113,36 +112,41 @@ dep_version_ok <- function(dep) {
 
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
-    signature[i] <- list(resolve_class_req(signature[[i]]))
+    x <- signature[[i]]
+    if (is_external_class(x)) {
+      signature[[i]] <- resolve_external_class_req(x)
+    } else if (is_union(x)) {
+      signature[[i]] <- do.call(new_union, resolve_signature(x$classes))
+    }
   }
   signature
-}
-
-resolve_class_req <- function(x) {
-  if (is_external_class(x)) {
-    resolve_external_class_req(x)
-  } else if (is_union(x)) {
-    do.call(new_union, lapply(x$classes, resolve_class_req))
-  } else {
-    x
-  }
 }
 
 find_external_class <- function(x) {
   ns <- asNamespace(x$package)
   obj <- get0(x$name, envir = ns, inherits = FALSE)
-  if (is_external_class_match(obj, x)) {
-    obj
-  } else {
-    NULL
-  }
-}
 
-is_external_class_match <- function(obj, x) {
-  is_class(obj) &&
+  is_match <- is_class(obj) &&
     identical(obj@name, x$name) &&
     identical(obj@package, x$package)
+
+  if (!is_match) {
+    stop2(
+      c(
+        sprintf(
+          "Package '%s' must bind `%s` to the S7 class <%s>.",
+          x$package,
+          x$name,
+          x$class_name
+        )
+      ),
+      call = NULL
+    )
+  }
+
+  obj
 }
+
 
 # Required resolution: errors if the external class can't be resolved (e.g.
 # its package isn't loaded). Used wherever we need the real class: registering
@@ -172,20 +176,5 @@ resolve_external_class_req <- function(x) {
     )
   }
 
-  class <- find_external_class(x)
-  if (is.null(class)) {
-    stop2(
-      c(
-        error_header,
-        sprintf(
-          "* Package '%s' must bind `%s` to the S7 class <%s>.",
-          x$package,
-          x$name,
-          x$class_name
-        )
-      ),
-      call = NULL
-    )
-  }
-  class
+  find_external_class(x)
 }
