@@ -26,7 +26,7 @@ library(S7)
 S7 objects *are* S3 objects, because S7 is implemented on top of S3.
 There are two main differences between an S7 object and an S3 object:
 
--   As well as the `class` attribute possessed by S3 objects, S7 objects have an additional `S7_class` attribute that contains the object that defines the class.
+-   As well as the `class` attribute possessed by S3 objects, S7 objects have an additional `_S7_class` attribute that contains the object that defines the class.
 
 -   S7 objects have properties; S3 objects have attributes.
     Properties are implemented on top of attributes, so you can access them directly with `attr` and friends.
@@ -219,7 +219,7 @@ There are a few important caveats:
 After calling `S4_register()`, use `S4_contains()` when an S4 class should
 extend an S7 class. It returns the virtual S4 class name for
 `methods::setClass(contains = )`. This class exposes stored S7 properties as
-formal S4 slots and carries the `S7_class` slot that S7 uses for dispatch and
+formal S4 slots and carries the `_S7_class` slot that S7 uses for dispatch and
 validation.
 
 ```{r}

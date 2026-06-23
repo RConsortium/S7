@@ -9,7 +9,7 @@
 #' `S4_register()` registers an S7 class, S3 class, or S7 union with S4 and
 #' invisibly returns the registered S4 class name.
 #' For S7 classes, this creates a virtual S4 old class that exposes stored S7
-#' properties as S4 slots and carries the `S7_class` slot needed for S7 dispatch
+#' properties as S4 slots and carries the `_S7_class` slot needed for S7 dispatch
 #' and validation.
 #'
 #' After registration, `S4_contains()` returns the virtual S4 class name to use
@@ -270,7 +270,7 @@ S4_properties_prototype <- function(
     }
   }
   if (include_S7_class) {
-    args$S7_class <- class
+    args$`_S7_class` <- class
   }
   do.call(methods::prototype, args)
 }
@@ -320,9 +320,9 @@ S4_register_class <- function(class, env = parent.frame()) {
   properties <- class@properties
   properties <- properties[setdiff(names(properties), parent_slot_names)]
   slots <- lapply(properties, S4_property_class, S4_env = where)
-  needs_S7_class_slot <- !"S7_class" %in% parent_slot_names
+  needs_S7_class_slot <- !"_S7_class" %in% parent_slot_names
   if (needs_S7_class_slot) {
-    slots$S7_class <- "S7_class"
+    slots$`_S7_class` <- "S7_class"
   }
 
   methods::setClass(

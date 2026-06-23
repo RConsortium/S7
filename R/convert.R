@@ -187,7 +187,10 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
       stop2(msg, call = call)
     }
 
-    from <- zap_attr(from, c(setdiff(from_props, to_props), "S7_class"))
+    from <- zap_attr(
+      from,
+      c(setdiff(from_props, to_props), "_S7_class", "S7_class")
+    )
     attr(from, "_S7_class") <- to
     class(from) <- class_dispatch(to)
   } else if (is_S4_coerce(from, to)) {
