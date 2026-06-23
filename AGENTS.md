@@ -1,6 +1,31 @@
 ## This package
 
-* Use `:=` with `new_class()` and `new_generic()`, i.e. `foo := new_class(...)` instead of `foo <- new_class("foo", ...)`. 
+* Whenever a function has a name argument, use `:=` instead of `<-`.
+  `new_class()`, `new_generic()`, and test helper `local_package()` 
+  have name as first argument:
+
+    ```R
+    # instead of
+    foo <- new_class("foo", ...)
+    bar <- new_generic("bar")
+    pkg <- local_package("pkg", ...)
+
+    # prefer
+    foo := new_class(...)
+    bar := new_generic()
+    pkg := local_package(...)
+    ```
+
+    The same applies when `name` is used explicitly:
+
+    ```R
+    # instead of
+    baz <- new_external_generic(package = "pkg", name = "baz")
+    
+    # prefer
+    baz := new_external_generic(package = "pkg")
+    ```
+
 * Always name all arguments to `new_class()` and to constructors.
 * Use `defer()` instead of `on.exit()`.
 * For tests, only use `test_that()`, not `describe()`/`it()`
