@@ -92,23 +92,26 @@ dep_version_ok <- function(dep) {
 }
 
 # Resolve signature if all external classes are availabe
-resolve_signature_available <- function(signature) {
+resolve_signature_available <- function(signature, package = NULL) {
   deps <- signature_deps(signature)
   all_available <- all(vlapply(deps, dep_available))
 
   if (all_available) {
-    signature <- resolve_signature(signature)
+    signature <- resolve_signature(signature, package)
   }
   signature
 }
 
-resolve_signature <- function(signature) {
+resolve_signature <- function(signature, package = NULL) {
   for (i in seq_along(signature)) {
     x <- signature[[i]]
     if (is_external_class(x)) {
-      signature[[i]] <- resolve_external_class_req(x)
+      signature[[i]] <- resolve_external_class_req(x, package)
     } else if (is_union(x)) {
-      signature[[i]] <- do.call(new_union, resolve_signature(x$classes))
+      signature[[i]] <- do.call(
+        new_union,
+        resolve_signature(x$classes, package)
+      )
     }
   }
   signature
@@ -118,17 +121,22 @@ resolve_signature <- function(signature) {
 # Errors if the external class can't be resolved
 # * The package isn't installed
 # * The package is too old
-# * The object is not bound to the appropriate S7 class
+# * The package doesn't export the appropriate S7 class
+#
+# A package can refer to its own (possibly unexported) classes by passing its
+# own name as `package`; references to other packages must be exported.
 #
 # Used wherever we need the real class: registering or looking up methods,
 # checking property overrides in a subclass, and constructing or validating
 # an instance.
-resolve_external_class_req <- function(x) {
+resolve_external_class_req <- function(x, package = NULL) {
+  error_class <- "S7_error_external_class_unresolved"
   error_header <- sprintf("Can't find external class <%s>:", x$class_name)
   if (!requireNamespace(x$package, quietly = TRUE)) {
     stop2(
       c(error_header, sprintf("* Package '%s' is not installed.", x$package)),
-      call = NULL
+      call = NULL,
+      class = error_class
     )
   }
 
@@ -143,28 +151,35 @@ resolve_external_class_req <- function(x) {
           getNamespaceVersion(x$package)
         )
       ),
-      call = NULL
+      call = NULL,
+      class = error_class
     )
   }
 
   ns <- asNamespace(x$package)
-  obj <- get0(x$name, envir = ns, inherits = FALSE)
+  same_package <- identical(package, x$package)
+  if (same_package || x$name %in% getNamespaceExports(ns)) {
+    obj <- get0(x$name, envir = ns, inherits = FALSE)
+  } else {
+    obj <- NULL
+  }
 
   is_match <- is_class(obj) &&
     identical(obj@name, x$name) &&
     identical(obj@package, x$package)
 
   if (!is_match) {
+    verb <- if (same_package) "bind" else "export"
     stop2(
-      c(
-        sprintf(
-          "Package '%s' must bind `%s` to the S7 class <%s>.",
-          x$package,
-          x$name,
-          x$class_name
-        )
+      sprintf(
+        "Package '%s' must %s `%s` as the S7 class <%s>.",
+        x$package,
+        verb,
+        x$name,
+        x$class_name
       ),
-      call = NULL
+      call = NULL,
+      class = error_class
     )
   }
 

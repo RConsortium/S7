@@ -173,7 +173,7 @@ unregister_method <- function(
 
   # Unregister in current session
   if (is_S7_generic(generic)) {
-    unregister_signature <- resolve_signature_available(signature)
+    unregister_signature <- resolve_signature_available(signature, package)
     unregister_S7_method(generic, unregister_signature)
   } else if (is_S3_generic(generic)) {
     stop2("Can't unregister methods for S3 generics", call = call)

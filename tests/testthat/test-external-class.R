@@ -12,6 +12,26 @@ test_that("print method works", {
   })
 })
 
+test_that("resolve_external_class_req() resolves a package's own unexported class", {
+  pkg <- local_package("ownpkg", {
+    Hidden := new_class()
+  })
+  # remove from exports
+  rm("Hidden", envir = pkg[[".__NAMESPACE__."]]$exports)
+  Hidden := new_external_class("ownpkg")
+
+  # fails from the outside
+  expect_error(
+    resolve_external_class_req(Hidden),
+    class = "S7_error_external_class_unresolved"
+  )
+  # but a package can refer to its own unexported classes
+  expect_equal(
+    resolve_external_class_req(Hidden, package = "ownpkg"),
+    pkg$Hidden
+  )
+})
+
 test_that("resolve_external_class_req() errors per failure mode", {
   local_package("too.old", version = "1.0.0")
 

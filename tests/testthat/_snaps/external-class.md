@@ -40,7 +40,7 @@
       resolve_external_class_req(new_external_class("too.old", "X"))
     Condition
       Error:
-      ! Package 'too.old' must bind `X` to the S7 class <too.old::X>.
+      ! Package 'too.old' must export `X` as the S7 class <too.old::X>.
 
 # external class works as a property type for self-reference
 

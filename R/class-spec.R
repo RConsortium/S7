@@ -103,12 +103,18 @@ class_construct <- function(.x, ...) {
 
 
 class_construct_expr <- function(.x, envir = NULL, package = NULL) {
-  # External classes get a quoted `pkg::name()`so the default is built when the
-  # object is constructed rather than when the class is defined
+  # External classes get a quoted call so the default is built when the object
+  # is constructed rather than when the class is defined. References to another
+  # package are namespaced (`pkg::name()`); a class's own package uses a bare
+  # `name()`, since `::` errors on a package's own (possibly unexported) symbols.
   ctor_class <- if (is_union(.x)) .x$classes[[1L]] else .x
   if (is_external_class(ctor_class)) {
-    cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
-    return(as.call(list(cl)))
+    if (identical(package, ctor_class$package)) {
+      return(call(ctor_class$name))
+    } else {
+      cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
+      return(as.call(list(cl)))
+    }
   }
 
   f <- class_constructor(.x)

@@ -103,7 +103,7 @@ registrar <- function(generic, signature, method, env) {
       return(invisible())
     }
 
-    signature <- resolve_signature(signature)
+    signature <- resolve_signature(signature, packageName(env))
     register_method(generic_fun, signature, method, env, package = NULL)
     invisible()
   }
