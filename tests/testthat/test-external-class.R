@@ -20,10 +20,11 @@ test_that("external class is a valid class spec", {
 })
 
 test_that("resolve_external_class_req() errors per failure mode", {
-  local_mocked_bindings(getNamespaceVersion = function(package) "1.0.0")
+  local_package("too.old", version = "1.0.0")
+
   expect_snapshot(error = TRUE, {
     resolve_external_class_req(new_external_class("not_a_pkg", "X"))
-    resolve_external_class_req(new_external_class("S7", "S7_object", "2.0.0"))
+    resolve_external_class_req(new_external_class("too.old", "X", "2.0.0"))
     resolve_external_class_req(new_external_class("S7", "not_a_class"))
   })
 })

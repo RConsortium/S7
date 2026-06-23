@@ -56,11 +56,16 @@ local_methods <- function(..., frame = parent.frame()) {
 }
 
 # Simulate a package with namesapce
-local_package <- function(name, ..., frame = parent.frame()) {
+local_package <- function(
+  name,
+  ...,
+  version = "0.0.0",
+  frame = parent.frame()
+) {
   ns <- new.env(parent = asNamespace("S7"))
 
   info <- new.env(parent = emptyenv())
-  info$spec <- c(name = name, version = "0.0.0")
+  info$spec <- c(name = name, version = version)
   ns[[".__NAMESPACE__."]] <- info
   ns[[".packageName"]] <- name
   ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())

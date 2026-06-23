@@ -115,9 +115,6 @@ dep_version_ok <- function(dep) {
   is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version
 }
 
-# Make it mockable
-getNamespaceVersion <- NULL
-
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
     signature[i] <- list(resolve_class_req(signature[[i]]))

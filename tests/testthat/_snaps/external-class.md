@@ -31,11 +31,11 @@
       ! Can't find external class <not_a_pkg::X>:
       * Package 'not_a_pkg' is not installed.
     Code
-      resolve_external_class_req(new_external_class("S7", "S7_object", "2.0.0"))
+      resolve_external_class_req(new_external_class("too.old", "X", "2.0.0"))
     Condition
       Error:
-      ! Can't find external class <S7::S7_object>:
-      * Package 'S7' needs version 2.0.0, but only 1.0.0 is available.
+      ! Can't find external class <too.old::X>:
+      * Package 'too.old' needs version 2.0.0, but only 1.0.0 is available.
     Code
       resolve_external_class_req(new_external_class("S7", "not_a_class"))
     Condition
