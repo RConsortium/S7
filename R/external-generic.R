@@ -82,8 +82,7 @@ is_external_generic <- function(x) {
 }
 
 external_generic_available <- function(generic) {
-  is_external_generic(generic) &&
-    dep_available(generic)
+  is_external_generic(generic) && dep_available(generic)
 }
 
 registrar <- function(generic, signature, method, env) {
