@@ -156,10 +156,10 @@ is_external_class_match <- function(obj, x) {
 # or looking up methods, checking property overrides in a subclass, and
 # constructing or validating an instance.
 resolve_external_class_req <- function(x) {
-  prefix <- sprintf("Can't find external class <%s>:", x$class_name)
+  error_header <- sprintf("Can't find external class <%s>:", x$class_name)
   if (!requireNamespace(x$package, quietly = TRUE)) {
     stop2(
-      c(prefix, sprintf("* Package '%s' is not installed.", x$package)),
+      c(error_header, sprintf("* Package '%s' is not installed.", x$package)),
       call = NULL
     )
   }
@@ -167,7 +167,7 @@ resolve_external_class_req <- function(x) {
   if (!dep_version_ok(x)) {
     stop2(
       c(
-        prefix,
+        error_header,
         sprintf(
           "* Package '%s' needs version %s, but only %s is available.",
           x$package,
@@ -181,19 +181,14 @@ resolve_external_class_req <- function(x) {
 
   class <- find_external_class(x)
   if (is.null(class)) {
-    binding <- sprintf(
-      "`%s` with @name '%s' and @package '%s'",
-      x$name,
-      x$name,
-      x$package
-    )
     stop2(
       c(
-        prefix,
+        error_header,
         sprintf(
-          "* Package '%s' must bind an S7 class to %s.",
+          "* Package '%s' must bind `%s` to the S7 class <%s>.",
           x$package,
-          binding
+          x$name,
+          x$class_name
         )
       ),
       call = NULL
