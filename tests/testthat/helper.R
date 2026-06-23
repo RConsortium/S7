@@ -55,12 +55,17 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
-# Simulate a package with namesapce
-local_package <- function(name, ..., frame = parent.frame()) {
+# Simulate a package with namespace
+local_package <- function(
+  name,
+  code = {},
+  version = "0.0.0",
+  frame = parent.frame()
+) {
   ns <- new.env(parent = asNamespace("S7"))
 
   info <- new.env(parent = emptyenv())
-  info$spec <- c(name = name, version = "0.0.0")
+  info$spec <- c(name = name, version = version)
   ns[[".__NAMESPACE__."]] <- info
   ns[[".packageName"]] <- name
   ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())
@@ -71,9 +76,7 @@ local_package <- function(name, ..., frame = parent.frame()) {
   defer(internal(unregisterNamespace(name)), frame = frame)
   defer(S7_on_unload_(ns), frame = frame)
 
-  for (expr in eval(substitute(alist(...)))) {
-    eval(expr, ns)
-  }
+  eval(substitute(code), ns)
 
   ns
 }

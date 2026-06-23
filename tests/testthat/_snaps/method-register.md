@@ -24,6 +24,15 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+    Code
+      local_package("pkg_invalid_deferred_external_class_method", {
+        foo := new_generic("x")
+        ext := new_external_class("notloaded.pkg")
+        method(foo, ext) <- (function(y) "x")
+      })
+    Condition
+      Error in `method<-`:
+      ! foo() dispatches on `x`, but foo(<notloaded.pkg::ext>) has arguments `y`.
 
 # method unregistration removes an S7 method via NULL assignment
 

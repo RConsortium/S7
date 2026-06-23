@@ -204,7 +204,9 @@ class_validate <- function(class, object) {
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
-    S7_external = class_validate(resolve_external_class_req(class), object),
+    S7_external = function(object) {
+      class_validate(resolve_external_class_req(class), object)
+    },
     NULL
   )
 
@@ -299,7 +301,13 @@ class_deparse <- function(x) {
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
     S7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
-    S7_external = sprintf("new_external_class(%s, %s)", x$package, x$name),
+    S7_external = {
+      args <- c(deparse1(x$package), deparse1(x$name))
+      if (!is.null(x$version)) {
+        args <- c(args, paste0("version = ", deparse1(x$version)))
+      }
+      sprintf("new_external_class(%s)", paste(args, collapse = ", "))
+    },
   )
 }
 
@@ -312,16 +320,28 @@ class_inherits <- function(x, what) {
     S4 = isS4(x) && methods::is(x, what),
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
-    S7_union = any(vlapply(what$classes, class_inherits, x = x)),
+    S7_union = {
+      for (class in what$classes) {
+        if (class_inherits(x, class)) {
+          return(TRUE)
+        }
+      }
+      FALSE
+    },
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
-    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
+    S7_external = inherits(x, "S7_object") &&
+      inherits(x, what$class_name) &&
+      (is.null(what$version) ||
+        class_inherits(x, resolve_external_class_req(what))),
   )
 }
 
 # Is every instance of `child` guaranteed to also be an instance of `parent`?
 # Used to check that a child class only narrows the type of a property
 class_extends <- function(child, parent) {
-  if (is_class_any(parent) || union_contains_any(parent)) {
+  if (identical(child, parent)) {
+    TRUE
+  } else if (is_class_any(parent) || union_contains_any(parent)) {
     # as a parent, `class_any` accepts every child class
     TRUE
   } else if (is_class_any(child)) {
@@ -332,25 +352,38 @@ class_extends <- function(child, parent) {
     all(vlapply(child$classes, class_extends, parent = parent))
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
-    any(vlapply(parent$classes, class_extends, child = child))
+    for (class in parent$classes) {
+      if (class_extends(child, class)) {
+        return(TRUE)
+      }
+    }
+    FALSE
   } else if (is.null(child) && !is.null(parent)) {
     # as a child, NULL can only extend NULL
     FALSE
   } else if (is.null(parent)) {
     # as a parent, NULL only accepts NULL
     is.null(child)
+  } else if (is_class(parent) && parent@name == "S7_object") {
+    is_class(child) || is_external_class(child)
+  } else if (is_external_class(child)) {
+    child <- resolve_external_class_req(child)
+    class_extends(child, parent)
+  } else if (is_class(child) && is_external_class(parent)) {
+    if (!class_dispatch_extends(parent$class_name, class_dispatch(child))) {
+      return(FALSE)
+    }
+    if (!is.null(parent$version)) {
+      resolve_external_class_req(parent)
+    }
+    TRUE
+  } else if (is_external_class(parent)) {
+    parent <- resolve_external_class_req(parent)
+    class_extends(child, parent)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     is_S4_class(child) &&
       is_S4_class(parent) &&
       methods::extends(child@className, parent@className)
-  } else if (is_class(parent) && parent@name == "S7_object") {
-    is_class(child)
-  } else if (is_external_class(child)) {
-    child <- resolve_external_class_req(child)
-    class_extends(child, parent)
-  } else if (is_external_class(parent)) {
-    parent <- resolve_external_class_req(parent)
-    class_extends(child, parent)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))

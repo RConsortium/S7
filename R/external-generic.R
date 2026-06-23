@@ -41,7 +41,12 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
 }
 
 as_external_generic <- function(x, env = parent.frame()) {
-  if (is_S7_generic(x)) {
+  if (is_generic_sentinel(x)) {
+    # Sentinels are external generic specs with an extra marker class; keep
+    # this in sync with generic_sentinel().
+    class(x) <- "S7_external_generic"
+    x
+  } else if (is_S7_generic(x)) {
     pkg <- package_name(x)
     new_external_generic(pkg, x@name, x@dispatch_args)
   } else if (is_external_generic(x)) {
@@ -78,27 +83,29 @@ is_external_generic <- function(x) {
 
 external_generic_available <- function(generic) {
   is_external_generic(generic) &&
-    isNamespaceLoaded(generic$package) &&
-    external_generic_version_ok(generic, asNamespace(generic$package))
+    dep_available(generic)
 }
 
-external_generic_version_ok <- function(generic, ns) {
-  stopifnot(is_external_generic(generic), is.environment(ns))
-
-  is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
-}
-
-registrar <- function(deps, generic, signature, method, env) {
+registrar <- function(generic, signature, method, env) {
   # Force all arguments
-  deps
   generic
   signature
   method
   env
 
   function(...) {
-    if (!all(vlapply(deps, dep_available))) {
+    if (!dep_available(generic)) {
       return(invisible())
+    }
+
+    sig_deps <- signature_external_deps(signature)
+    if (length(sig_deps)) {
+      if (!all(vlapply(sig_deps, dep_available))) {
+        return(invisible())
+      }
+      for (dep in sig_deps) {
+        resolve_external_class_req(dep)
+      }
     }
 
     generic_fun <- resolve_generic(generic)
@@ -106,18 +113,27 @@ registrar <- function(deps, generic, signature, method, env) {
       return(invisible())
     }
 
-    signature <- resolve_signature(signature)
-    register_method(generic_fun, signature, method, env, package = NULL)
+    register_method(
+      generic_fun,
+      resolve_signature(signature),
+      method,
+      env,
+      package = NULL
+    )
+    invisible()
   }
 }
 
-# Collects all external dependencies (the generic + any external classes)
-# into a single list. Each entry has at minimum `package` + `version`.
 method_deps <- function(generic, signature) {
   c(list(generic), signature_external_deps(signature))
 }
 method_deps_packages <- function(deps) {
   unique(vcapply(deps, function(dep) dep$package))
+}
+
+external_methods_reset <- function(package) {
+  S7_methods_table(package) <- list()
+  invisible()
 }
 
 resolve_generic <- function(generic) {

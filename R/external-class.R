@@ -37,9 +37,9 @@
 #' @returns An S7 external class, i.e. a list with S3 class `S7_external_class`.
 #' @export
 #' @examples
-#' # Refer to a class in another package without taking a hard dependency:
-#' Tibble <- new_external_class("tibble", "tbl_df")
-#' Tibble
+#' # Refer to an S7 class in another package without taking a hard dependency:
+#' TheirClass <- new_external_class("theirpkg", "TheirClass")
+#' TheirClass
 #'
 #' # Self-referential class: the `child` property can be another `tree`,
 #' # or `NULL` to terminate the chain.
@@ -71,20 +71,6 @@ is_external_class <- function(x) {
   inherits(x, "S7_external_class")
 }
 
-class_has_external_class <- function(x) {
-  if (is_external_class(x)) {
-    TRUE
-  } else if (is_union(x)) {
-    any(vlapply(x$classes, class_has_external_class))
-  } else {
-    FALSE
-  }
-}
-
-signature_has_external_class <- function(signature) {
-  any(vlapply(signature, class_has_external_class))
-}
-
 class_external_deps <- function(x) {
   if (is_external_class(x)) {
     list(x)
@@ -97,6 +83,12 @@ class_external_deps <- function(x) {
 
 signature_external_deps <- function(signature) {
   flatten_external_deps(lapply(signature, class_external_deps))
+}
+
+external_deps_resolvable <- function(deps) {
+  all(vlapply(deps, function(dep) {
+    dep_available(dep) && !is.null(find_external_class(dep))
+  }))
 }
 
 flatten_external_deps <- function(x) {
@@ -116,16 +108,16 @@ print.S7_external_class <- function(x, ...) {
 }
 
 dep_available <- function(dep) {
-  isNamespaceLoaded(dep$package) &&
-    (is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version)
+  isNamespaceLoaded(dep$package) && dep_version_ok(dep)
 }
 
-# Make it mockable
-getNamespaceVersion <- NULL
+dep_version_ok <- function(dep) {
+  is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version
+}
 
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
-    signature[[i]] <- resolve_class_req(signature[[i]])
+    signature[i] <- list(resolve_class_req(signature[[i]]))
   }
   signature
 }
@@ -142,29 +134,18 @@ resolve_class_req <- function(x) {
 
 find_external_class <- function(x) {
   ns <- asNamespace(x$package)
-  if (exists(x$name, envir = ns, inherits = FALSE)) {
-    obj <- get(x$name, envir = ns, inherits = FALSE)
-    if (is_external_class_match(obj, x)) {
-      return(obj)
-    }
+  obj <- get0(x$name, envir = ns, inherits = FALSE)
+  if (is_external_class_match(obj, x)) {
+    obj
+  } else {
+    NULL
   }
-
-  # Also consider cases where the constructor isn't named the same as the class
-  for (name in ls(ns, all.names = TRUE)) {
-    obj <- get(name, envir = ns, inherits = FALSE)
-    if (is_external_class_match(obj, x)) {
-      return(obj)
-    }
-  }
-
-  NULL
 }
 
 is_external_class_match <- function(obj, x) {
   is_class(obj) &&
-    (identical(S7_class_name(obj), x$class_name) ||
-      (identical(obj@name, x$name) &&
-        (is.null(obj@package) || identical(obj@package, x$package))))
+    identical(obj@name, x$name) &&
+    identical(obj@package, x$package)
 }
 
 # Required resolution: errors if the external class can't be resolved (e.g.
@@ -172,18 +153,18 @@ is_external_class_match <- function(obj, x) {
 # or looking up methods, checking property overrides in a subclass, and
 # constructing or validating an instance.
 resolve_external_class_req <- function(x) {
-  prefix <- sprintf("Can't find external class <%s>:\n", x$class_name)
+  error_header <- sprintf("Can't find external class <%s>:", x$class_name)
   if (!requireNamespace(x$package, quietly = TRUE)) {
     stop2(
-      paste0(prefix, sprintf("* Package '%s' is not installed.", x$package)),
+      c(error_header, sprintf("* Package '%s' is not installed.", x$package)),
       call = NULL
     )
   }
 
-  if (!is.null(x$version) && getNamespaceVersion(x$package) < x$version) {
+  if (!dep_version_ok(x)) {
     stop2(
-      paste0(
-        prefix,
+      c(
+        error_header,
         sprintf(
           "* Package '%s' needs version %s, but only %s is available.",
           x$package,
@@ -198,9 +179,14 @@ resolve_external_class_req <- function(x) {
   class <- find_external_class(x)
   if (is.null(class)) {
     stop2(
-      paste0(
-        prefix,
-        sprintf("* Packages '%s' doesn't contain '%s'.", x$package, x$name)
+      c(
+        error_header,
+        sprintf(
+          "* Package '%s' must bind `%s` to the S7 class <%s>.",
+          x$package,
+          x$name,
+          x$class_name
+        )
       ),
       call = NULL
     )

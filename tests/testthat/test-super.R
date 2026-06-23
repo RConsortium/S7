@@ -48,7 +48,7 @@ test_that("super() works with S3 objects", {
 })
 
 test_that("super() works with abstract S3 classes (#686)", {
-  gen <- new_generic("gen", "x")
+  gen := new_generic("x")
   method(gen, class_POSIXct) <- function(x) "POSIXct"
   method(gen, class_POSIXt) <- function(x) "POSIXt"
 

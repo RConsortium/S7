@@ -51,6 +51,11 @@ test_that("method registration checks argument types", {
     x <- 10
     method(x, class_character) <- function(x) ...
     method(foo, 1) <- function(x) ...
+    local_package("pkg_invalid_deferred_external_class_method", {
+      foo := new_generic("x")
+      ext := new_external_class("notloaded.pkg")
+      method(foo, ext) <- function(y) "x"
+    })
   })
 })
 
@@ -64,25 +69,62 @@ test_that("method registration returns the generic unchanged when not in a packa
   expect_identical(out, sum)
 })
 
+test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {
+  external_methods_reset("S7")
+  defer(external_methods_reset("S7"))
+
+  foo := new_class(package = NULL)
+  ext_gen := new_external_generic("notloaded.pkg", dispatch_args = "x")
+
+  out <- register_method(
+    ext_gen,
+    foo,
+    function(x) "x",
+    env = asNamespace("S7"),
+    package = "S7"
+  )
+  expect_s3_class(out, "S7_generic_sentinel")
+  expect_s3_class(out, "S7_external_generic")
+
+  # the sentinel is still a usable generic, so further methods can be
+  # registered through the same binding (as in the t2 test package)
+  foo2 := new_class(package = NULL)
+  out <- register_method(
+    out,
+    foo2,
+    function(x) "y",
+    env = asNamespace("S7"),
+    package = "S7"
+  )
+  expect_s3_class(out, "S7_generic_sentinel")
+  expect_length(S7_methods_table("S7"), 2)
+})
+
 test_that("method registration resolves external classes outside packages", {
+  dep <- local_package("dep", {
+    Ext := new_class()
+  })
+
   env <- new.env(parent = baseenv())
   env[["method<-"]] <- `method<-`
   env$g <- new_generic("g", "x")
-  env$ext <- new_external_class("S7", "S7_object")
+  env$ext <- new_external_class("dep", "Ext")
   env$f <- function(x) "external"
 
-  expect_null(packageName(env))
   evalq(method(g, ext) <- f, env)
 
-  expect_equal(env$g(S7_object()), "external")
+  expect_equal(env$g(dep$Ext()), "external")
+
+  evalq(method(g, ext) <- NULL, env)
+  expect_length(methods(env$g), 0)
 })
 
-test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {
-  pkg := local_package(
-    ext := new_external_generic("notloaded.pkg", "x"),
-    foo := new_class(),
+test_that("method<- writes a strippable sentinel for foreign generics in a package (#364)", {
+  pkg <- local_package("pkg", {
+    ext := new_external_generic("notloaded.pkg", "x")
+    foo := new_class()
     foo2 := new_class()
-  )
+  })
 
   # In a package, `method<-` writes a sentinel back into the binding
   evalq(method(ext, foo) <- function(x) "x", pkg)
@@ -93,30 +135,25 @@ test_that("method registration returns a strippable sentinel for foreign generic
   # registered through the same binding (as in the t2 test package)
   evalq(method(ext, foo2) <- function(x) "y", pkg)
   expect_s3_class(pkg$ext, "S7_generic_sentinel")
-  expect_length(S7_methods_table("pkg"), 2)
 })
 
-test_that("deferred external-class methods preserve sentinel for foreign generics", {
-  pkg := local_package(
-    ext := new_external_class("notloaded.pkg")
+test_that("method unregistration removes deferred external-class unions", {
+  upstream <- local_package("upstream_external_unregister", {
+    Foo := new_class()
+  })
+  downstream <- local_package("downstream_external_unregister", {
+    .onLoad <- function(...) S7_on_load()
+    foo := new_generic("x")
+    Foo := new_external_class(package = "upstream_external_unregister")
+    method(foo, NULL | Foo) <- function(x) "x"
+    method(foo, NULL | Foo) <- NULL
+  })
+  downstream$.onLoad()
+
+  expect_error(
+    downstream$foo(upstream$Foo()),
+    class = "S7_error_method_not_found"
   )
-
-  # In a package, `method<-` writes a sentinel back into the binding
-  evalq(method(sum, ext) <- function(x, ...) "x", pkg)
-  expect_s3_class(pkg$sum, "S7_generic_sentinel")
-  expect_s3_class(pkg$sum, "S7_external_generic")
-  expect_length(S7_methods_table("pkg"), 1)
-})
-
-test_that("method registration defers external classes in union signatures", {
-  pkg := local_package(
-    foo := new_generic("x"),
-    ext := new_external_class("notloaded.pkg"),
-    method(foo, NULL | ext) <- function(x) "x"
-  )
-
-  expect_length(methods(pkg$foo), 0)
-  expect_length(S7_methods_table("pkg"), 1)
 })
 
 test_that("method unregistration removes an S7 method via NULL assignment", {
@@ -202,7 +239,7 @@ test_that("as_signature() works with NULL", {
 })
 
 test_that("S7_signature has format and print methods", {
-  foo <- new_generic("foo", c("x", "y"))
+  foo := new_generic(c("x", "y"))
   sig <- as_signature(list(class_integer, class_character), foo)
 
   expect_equal(format(sig), "<integer>, <character>")
