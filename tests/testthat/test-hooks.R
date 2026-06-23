@@ -76,6 +76,9 @@ test_that("S7_on_unload() handles external classes unloaded first", {
     Foo := new_external_class(package = "class_pkg")
     method(gen, Foo) <- \(x) "from external class"
   })
+
+  # Load class_pkg, dispatch on one of its instances, then unload it so that
+  # the external class is gone before downstream is unloaded below.
   obj <- local({
     class_pkg := local_package({
       Foo := new_class()
@@ -87,7 +90,10 @@ test_that("S7_on_unload() handles external classes unloaded first", {
     obj
   })
 
-  expect_identical(isNamespaceLoaded("external_class_unload_first_dep"), FALSE)
+  expect_identical(isNamespaceLoaded("class_pkg"), FALSE)
+
+  # This needs to unload the previously register class, even though it's
+  # not possible to register it now
   downstream$.onUnload()
   expect_error(
     generic_pkg$gen(obj),

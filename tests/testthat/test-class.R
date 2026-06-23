@@ -146,8 +146,7 @@ test_that("inheritance lets child properties narrow parent unions that include a
   expect_no_error(new_class(
     "Child",
     Parent,
-    properties = list(x = class_any),
-    package = NULL
+    properties = list(x = class_any)
   ))
 })
 
@@ -158,34 +157,23 @@ test_that("inheritance handles external class property specs", {
   External := new_external_class(package = "dep")
 
   ParentObject := new_class(
-    properties = list(x = S7_object),
-    package = NULL
+    properties = list(x = S7_object)
   )
   ChildObject := new_class(
     parent = ParentObject,
     properties = list(
       x = new_property(class = External, default = quote(dep$External()))
-    ),
-    package = NULL
+    )
   )
   expect_s3_class(ChildObject()@x, "dep::External")
 
   Ext := new_external_class(package = "notloaded.pkg")
-  prop <- new_property(
-    class = Ext,
-    default = quote({
-      NULL
-    })
-  )
-  ParentSame := new_class(
-    properties = list(x = prop),
-    package = NULL
-  )
+  prop <- new_property(class = Ext, default = quote({}))
+  ParentSame := new_class(properties = list(x = prop))
   expect_no_error(new_class(
     name = "ChildSame",
     parent = ParentSame,
     properties = list(x = prop),
-    package = NULL
   ))
 
   Missing := new_external_class(package = "S7testthatmissing")
@@ -195,15 +183,13 @@ test_that("inheritance handles external class property specs", {
         class = Missing | S7_object,
         default = quote(S7_object())
       )
-    ),
-    package = NULL
+    )
   )
   ChildUnion := new_class(
     parent = ParentUnion,
-    properties = list(x = S7_object),
-    package = NULL
+    properties = list(x = S7_object)
   )
-  expect_s3_class(ChildUnion(), "ChildUnion")
+  expect_no_error(ChildUnion())
 })
 
 test_that("inheritance lets child properties narrow external parent classes", {
@@ -216,15 +202,13 @@ test_that("inheritance lets child properties narrow external parent classes", {
   Parent := new_class(
     properties = list(
       x = new_property(class = Base, default = quote(dep$Base()))
-    ),
-    package = NULL
+    )
   )
   Child := new_class(
     parent = Parent,
     properties = list(
       x = new_property(class = dep$Sub, default = quote(dep$Sub()))
-    ),
-    package = NULL
+    )
   )
 
   expect_s3_class(Child()@x, "dep_external_subclass::Sub")

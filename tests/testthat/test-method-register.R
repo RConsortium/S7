@@ -47,15 +47,13 @@ test_that("method registration can register a method for an external generic", {
 
 test_that("method registration checks argument types", {
   foo := new_generic("x")
+  ext := new_external_class("notloaded.pkg")
+
   expect_snapshot(error = TRUE, {
     x <- 10
     method(x, class_character) <- function(x) ...
     method(foo, 1) <- function(x) ...
-    local_package("pkg_invalid_deferred_external_class_method", {
-      foo := new_generic("x")
-      ext := new_external_class("notloaded.pkg")
-      method(foo, ext) <- function(y) "x"
-    })
+    method(foo, ext) <- function(y) "x"
   })
 })
 

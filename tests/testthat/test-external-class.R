@@ -30,7 +30,7 @@ test_that("external class can be used as a union arm", {
 })
 
 test_that("S7_inherits() matches loaded union arms around unloaded external classes", {
-  Foo := new_class(package = NULL)
+  Foo := new_class()
   Bar := new_external_class(package = "S7testthatmissing")
 
   expect_true(S7_inherits(Foo(), Foo | Bar))
@@ -53,7 +53,7 @@ test_that("external class works as a property type for self-reference", {
   expect_equal(root@child@label, "leaf")
 
   # type checking still rejects wrong types
-  expect_snapshot(error = TRUE, Tree(label = "bad", child = 1))
+  expect_snapshot(Tree(label = "bad", child = 1), error = TRUE)
 })
 
 test_that("external class works for mutually recursive classes", {
