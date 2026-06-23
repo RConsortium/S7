@@ -71,25 +71,6 @@ is_external_class <- function(x) {
   inherits(x, "S7_external_class")
 }
 
-signature_external_deps <- function(signature) {
-  deps <- lapply(signature, function(x) {
-    if (is_external_class(x)) {
-      list(x)
-    } else if (is_union(x)) {
-      signature_external_deps(x$classes)
-    } else {
-      list()
-    }
-  })
-  unlist(deps, recursive = FALSE, use.names = FALSE)
-}
-
-external_deps_resolvable <- function(deps) {
-  all(vlapply(deps, function(dep) {
-    dep_available(dep)
-  }))
-}
-
 #' @export
 print.S7_external_class <- function(x, ...) {
   cat(
@@ -110,6 +91,17 @@ dep_version_ok <- function(dep) {
   is.null(dep$version) || getNamespaceVersion(dep$package) >= dep$version
 }
 
+# Resolve signature if all external classes are availabe
+resolve_signature_available <- function(signature) {
+  deps <- signature_deps(signature)
+  all_available <- all(vlapply(deps, dep_available))
+
+  if (all_available) {
+    signature <- resolve_signature(signature)
+  }
+  signature
+}
+
 resolve_signature <- function(signature) {
   for (i in seq_along(signature)) {
     x <- signature[[i]]
@@ -122,36 +114,15 @@ resolve_signature <- function(signature) {
   signature
 }
 
-find_external_class <- function(x) {
-  ns <- asNamespace(x$package)
-  obj <- get0(x$name, envir = ns, inherits = FALSE)
 
-  is_match <- is_class(obj) &&
-    identical(obj@name, x$name) &&
-    identical(obj@package, x$package)
-
-  if (!is_match) {
-    stop2(
-      c(
-        sprintf(
-          "Package '%s' must bind `%s` to the S7 class <%s>.",
-          x$package,
-          x$name,
-          x$class_name
-        )
-      ),
-      call = NULL
-    )
-  }
-
-  obj
-}
-
-
-# Required resolution: errors if the external class can't be resolved (e.g.
-# its package isn't loaded). Used wherever we need the real class: registering
-# or looking up methods, checking property overrides in a subclass, and
-# constructing or validating an instance.
+# Errors if the external class can't be resolved
+# * The package isn't installed
+# * The package is too old
+# * The object is not bound to the appropriate S7 class
+#
+# Used wherever we need the real class: registering or looking up methods,
+# checking property overrides in a subclass, and constructing or validating
+# an instance.
 resolve_external_class_req <- function(x) {
   error_header <- sprintf("Can't find external class <%s>:", x$class_name)
   if (!requireNamespace(x$package, quietly = TRUE)) {
@@ -176,5 +147,26 @@ resolve_external_class_req <- function(x) {
     )
   }
 
-  find_external_class(x)
+  ns <- asNamespace(x$package)
+  obj <- get0(x$name, envir = ns, inherits = FALSE)
+
+  is_match <- is_class(obj) &&
+    identical(obj@name, x$name) &&
+    identical(obj@package, x$package)
+
+  if (!is_match) {
+    stop2(
+      c(
+        sprintf(
+          "Package '%s' must bind `%s` to the S7 class <%s>.",
+          x$package,
+          x$name,
+          x$class_name
+        )
+      ),
+      call = NULL
+    )
+  }
+
+  obj
 }

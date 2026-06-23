@@ -73,22 +73,14 @@ S7_on_unload_ <- function(env) {
       next
     }
 
-    generic <- get0(
-      x$generic$name,
-      envir = asNamespace(x$generic$package),
-      inherits = FALSE
-    )
+    generic <- resolve_generic_opt(x$generic)
     if (is.null(generic)) {
       next
     }
     generic <- as_generic(generic)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
-      signature <- x$signature
-      deps <- signature_external_deps(signature)
-      if (length(deps) && external_deps_resolvable(deps)) {
-        signature <- resolve_signature(signature)
-      }
+      signature <- resolve_signature_available(x$signature)
       unregister_own_S7_method(
         generic,
         signature,

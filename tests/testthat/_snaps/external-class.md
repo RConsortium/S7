@@ -36,14 +36,11 @@
       Error:
       ! Can't find external class <too.old::X>:
       * Package 'too.old' needs version 2.0.0, but only 1.0.0 is available.
-
-# external class resolution errors if class binding contract is violated
-
     Code
-      find_external_class(Bar)
+      resolve_external_class_req(new_external_class("too.old", "X"))
     Condition
       Error:
-      ! Package 'dep' must bind `Bar` to the S7 class <dep::Bar>.
+      ! Package 'too.old' must bind `X` to the S7 class <too.old::X>.
 
 # external class works as a property type for self-reference
 

@@ -88,7 +88,7 @@ register_method <- function(
 
   # Delay package methods with external classes until onLoad. Outside a package
   # there is no deferred methods table, so resolve them before registering.
-  deps <- signature_external_deps(signature)
+  deps <- signature_deps(signature)
   if (length(deps)) {
     if (is.null(package)) {
       signature <- resolve_signature(signature)
@@ -171,14 +171,9 @@ unregister_method <- function(
     )
   }
 
-  deps <- signature_external_deps(signature)
-  unregister_signature <- signature
-  if (length(deps) && (is.null(package) || external_deps_resolvable(deps))) {
-    unregister_signature <- resolve_signature(signature)
-  }
-
   # Unregister in current session
   if (is_S7_generic(generic)) {
+    unregister_signature <- resolve_signature_available(signature)
     unregister_S7_method(generic, unregister_signature)
   } else if (is_S3_generic(generic)) {
     stop2("Can't unregister methods for S3 generics", call = call)
