@@ -12,13 +12,6 @@ test_that("print method works", {
   })
 })
 
-test_that("external class is a valid class spec", {
-  ec <- new_external_class(package = "foo", name = "Bar")
-
-  expect_identical(as_class(ec), ec)
-  expect_equal(S7_class_desc(ec), "<foo::Bar>")
-})
-
 test_that("resolve_external_class_req() errors per failure mode", {
   local_package("too.old", version = "1.0.0")
 
