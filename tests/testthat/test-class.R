@@ -155,7 +155,7 @@ test_that("inheritance handles external class property specs", {
   dep := local_package({
     External := new_class()
   })
-  External <- new_external_class(package = "dep", name = "External")
+  External := new_external_class(package = "dep")
 
   ParentObject := new_class(
     properties = list(x = S7_object),
@@ -170,7 +170,7 @@ test_that("inheritance handles external class property specs", {
   )
   expect_s3_class(ChildObject()@x, "dep::External")
 
-  Ext <- new_external_class(package = "notloaded.pkg", name = "Cls")
+  Ext := new_external_class(package = "notloaded.pkg")
   prop <- new_property(
     class = Ext,
     default = quote({
@@ -188,7 +188,7 @@ test_that("inheritance handles external class property specs", {
     package = NULL
   ))
 
-  Missing <- new_external_class(package = "S7testthatmissing", name = "Missing")
+  Missing := new_external_class(package = "S7testthatmissing")
   ParentUnion := new_class(
     properties = list(
       x = new_property(
@@ -211,7 +211,7 @@ test_that("inheritance lets child properties narrow external parent classes", {
     Base := new_class()
     Sub := new_class(parent = Base)
   })
-  Base <- new_external_class(package = "dep_external_subclass", name = "Base")
+  Base := new_external_class(package = "dep_external_subclass")
 
   Parent := new_class(
     properties = list(
@@ -266,7 +266,7 @@ test_that("inheritance doesn't let child properties widen or change the parent's
 
 
 test_that("subclassing an external class requires its package to be loaded", {
-  Ext <- new_external_class("notloaded.pkg", "Cls")
+  Ext := new_external_class("notloaded.pkg")
   Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
 
   expect_snapshot(

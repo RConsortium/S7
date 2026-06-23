@@ -26,6 +26,10 @@
     baz := new_external_generic(package = "pkg")
     ```
 
+    Avoid assignments where the variable and name are inconsistent unless
+    deliberately illustrating user error or other pathological cases, i.e.
+    avoid `bar <- new_class("baz")`.
+
 * Always name all arguments to `new_class()` and to constructors.
 * Use `defer()` instead of `on.exit()`.
 * For tests, only use `test_that()`, not `describe()`/`it()`

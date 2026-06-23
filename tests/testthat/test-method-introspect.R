@@ -39,10 +39,10 @@ test_that("method introspection requires external class's package to be loaded",
   foo := new_generic("x")
   method(foo, NULL) <- function(x) "null"
 
-  ext <- new_external_class("not_a_package", "X")
+  Ext := new_external_class("not_a_package")
   expect_snapshot(error = TRUE, {
-    method(foo, class = ext)
-    method_explain(foo, class = ext)
+    method(foo, class = Ext)
+    method_explain(foo, class = Ext)
   })
 })
 

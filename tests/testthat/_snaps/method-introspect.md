@@ -63,16 +63,16 @@
 # method introspection requires external class's package to be loaded
 
     Code
-      method(foo, class = ext)
+      method(foo, class = Ext)
     Condition
       Error:
-      ! Can't find external class <not_a_package::X>:
+      ! Can't find external class <not_a_package::Ext>:
       * Package 'not_a_package' is not installed.
     Code
-      method_explain(foo, class = ext)
+      method_explain(foo, class = Ext)
     Condition
       Error:
-      ! Can't find external class <not_a_package::X>:
+      ! Can't find external class <not_a_package::Ext>:
       * Package 'not_a_package' is not installed.
 
 # method explanation shows all possible methods along with matches

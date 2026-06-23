@@ -16,21 +16,17 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
 })
 
 test_that("S7_on_load() waits until all external union arms are available", {
-  generic_pkg <- local_package("external_union_generic", {
+  generic_pkg := local_package({
     gen := new_generic("x")
   })
-  upstream_a <- local_package("external_union_a", {
+  upstream_a := local_package({
     A := new_class()
   })
-  downstream <- local_package("external_union_downstream", {
+  downstream := local_package({
     .onLoad <- function(...) S7_on_load()
-    gen <- new_external_generic(
-      package = "external_union_generic",
-      name = "gen",
-      dispatch_args = "x"
-    )
-    A := new_external_class(package = "external_union_a")
-    B := new_external_class(package = "external_union_b")
+    gen := new_external_generic(package = "generic_pkg", dispatch_args = "x")
+    A := new_external_class(package = "upstream_a")
+    B := new_external_class(package = "upstream_b")
     method(gen, A | B) <- function(x) "union"
   })
 
@@ -40,7 +36,7 @@ test_that("S7_on_load() waits until all external union arms are available", {
     class = "S7_error_method_not_found"
   )
 
-  upstream_b <- local_package("external_union_b", {
+  upstream_b := local_package({
     B := new_class()
   })
   downstream$.onLoad()
@@ -49,14 +45,14 @@ test_that("S7_on_load() waits until all external union arms are available", {
 })
 
 test_that("S7_on_load() and S7_on_unload() handle external classes", {
-  upstream <- local_package("external_class_unload", {
+  upstream := local_package({
     Foo := new_class()
   })
-  downstream <- local_package("downstream_external_class_unload", {
+  downstream := local_package({
     .onLoad <- function(...) S7_on_load()
     .onUnload <- function(...) S7_on_unload()
     own_generic := new_generic("x")
-    Foo := new_external_class(package = "external_class_unload")
+    Foo := new_external_class(package = "upstream")
     method(own_generic, Foo) <- function(x) "from external class"
   })
   downstream$.onLoad()
@@ -70,23 +66,18 @@ test_that("S7_on_load() and S7_on_unload() handle external classes", {
 })
 
 test_that("S7_on_unload() handles external classes unloaded first", {
-  generic_pkg <- local_package("external_class_unload_first_generic", {
+  generic_pkg := local_package({
     gen := new_generic(dispatch_args = "x")
   })
-  downstream <- local_package("external_class_unload_first_downstream", {
+  downstream := local_package({
     .onLoad <- function(...) S7_on_load()
     .onUnload <- function(...) S7_on_unload()
-    gen := new_external_generic(
-      package = "external_class_unload_first_generic",
-      dispatch_args = "x"
-    )
-    Foo := new_external_class(
-      package = "external_class_unload_first_dep"
-    )
+    gen := new_external_generic(package = "generic_pkg", dispatch_args = "x")
+    Foo := new_external_class(package = "class_pkg")
     method(gen, Foo) <- \(x) "from external class"
   })
   obj <- local({
-    class_pkg <- local_package("external_class_unload_first_dep", {
+    class_pkg := local_package({
       Foo := new_class()
     })
     downstream$.onLoad()
@@ -201,17 +192,17 @@ test_that("S7_on_load() removes hooks for deleted external methods", {
 })
 
 test_that("S7_on_unload() honors external generic version gates", {
-  downstream <- local_package("downstream_version_gate_unload", {
+  downstream := local_package({
     .onLoad <- function(...) S7_on_load()
     .onUnload <- function(...) S7_on_unload()
     gen := new_external_generic(
-      "upstream_version_gate_unload",
+      "upstream",
       dispatch_args = "x",
       version = "1.0.0"
     )
     method(gen, class_character) <- function(x) "downstream"
   })
-  upstream <- local_package("upstream_version_gate_unload", {
+  upstream := local_package({
     gen <- function(x) "not an S7 generic"
   })
 

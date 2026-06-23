@@ -245,28 +245,28 @@ test_that("can work with external classes", {
   dep := local_package({
     Ext := new_class(properties = list(x = class_integer))
   })
-  klass <- new_external_class(package = "dep", name = "Ext")
-  expect_equal(as_class(klass), klass)
+  Ext := new_external_class(package = "dep")
+  expect_equal(as_class(Ext), Ext)
 
-  expect_equal(class_type(klass), "S7_external")
-  expect_equal(class_dispatch(klass), c("dep::Ext", "S7_object"))
-  expect_equal(class_register(klass), "dep::Ext")
-  expect_s3_class(class_construct(klass, x = 1L), "dep::Ext")
-  expect_equal(class_desc(klass), "<dep::Ext>")
-  expect_equal(class_deparse(klass), 'new_external_class("dep", "Ext")')
+  expect_equal(class_type(Ext), "S7_external")
+  expect_equal(class_dispatch(Ext), c("dep::Ext", "S7_object"))
+  expect_equal(class_register(Ext), "dep::Ext")
+  expect_s3_class(class_construct(Ext, x = 1L), "dep::Ext")
+  expect_equal(class_desc(Ext), "<dep::Ext>")
+  expect_equal(class_deparse(Ext), 'new_external_class("dep", "Ext")')
 
   obj <- dep$Ext(x = 1L)
   expect_equal(obj_type(obj), "S7")
   expect_equal(obj_desc(obj), "<dep::Ext>")
   expect_equal(obj_dispatch(obj), c("dep::Ext", "S7_object"))
-  expect_equal(class_inherits(obj, klass), TRUE)
+  expect_equal(class_inherits(obj, Ext), TRUE)
 })
 
 test_that("class_deparse() includes external class version", {
-  klass <- new_external_class("pkg", "Klass", version = "1.0")
+  klass := new_external_class("pkg", version = "1.0")
   expect_equal(
     class_deparse(klass),
-    'new_external_class("pkg", "Klass", version = "1.0")'
+    'new_external_class("pkg", "klass", version = "1.0")'
   )
 })
 

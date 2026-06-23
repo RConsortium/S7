@@ -155,7 +155,7 @@
       new_class("Child", Parent, properties = list(x = Ext))
     Condition
       Error:
-      ! Can't find external class <notloaded.pkg::Cls>:
+      ! Can't find external class <notloaded.pkg::Ext>:
       * Package 'notloaded.pkg' is not installed.
 
 # abstract classes can't be instantiated

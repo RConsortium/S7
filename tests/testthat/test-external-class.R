@@ -23,7 +23,7 @@ test_that("resolve_external_class_req() errors per failure mode", {
 })
 
 test_that("external class can be used as a union arm", {
-  ec <- new_external_class("foo", "Bar")
+  ec := new_external_class("foo")
   u <- NULL | ec
   expect_s3_class(u, "S7_union")
   expect_length(u$classes, 2)
@@ -31,10 +31,10 @@ test_that("external class can be used as a union arm", {
 
 test_that("S7_inherits() matches loaded union arms around unloaded external classes", {
   Foo := new_class(package = NULL)
-  Missing <- new_external_class(package = "S7testthatmissing", name = "Bar")
+  Bar := new_external_class(package = "S7testthatmissing")
 
-  expect_true(S7_inherits(Foo(), Foo | Missing))
-  expect_true(S7_inherits(Foo(), Missing | Foo))
+  expect_true(S7_inherits(Foo(), Foo | Bar))
+  expect_true(S7_inherits(Foo(), Bar | Foo))
 })
 
 test_that("external class works as a property type for self-reference", {
