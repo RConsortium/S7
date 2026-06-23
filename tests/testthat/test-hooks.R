@@ -1,13 +1,14 @@
 test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
-  upstream <- local_package("upstream", gen := new_generic("x"))
+  upstream <- local_package("upstream", {
+    gen := new_generic("x")
+  })
   expect_length(package_hooks("upstream"), 0)
 
-  downstream <- local_package(
-    "downstream",
-    Foo := new_class(),
-    gen := new_external_generic("upstream", dispatch_args = "x"),
+  downstream <- local_package("downstream", {
+    Foo := new_class()
+    gen := new_external_generic("upstream", dispatch_args = "x")
     method(gen, Foo) <- \(x) "dispatched"
-  )
+  })
   S7_on_load_(downstream)
   expect_length(package_hooks("upstream"), 1)
   S7_on_load_(downstream)
@@ -15,13 +16,14 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
 })
 
 test_that("S7_on_unload() unregisters methods and removes hooks", {
-  upstream <- local_package("upstream", gen := new_generic("x"))
-  downstream <- local_package(
-    "downstream",
-    Foo := new_class(),
-    gen := new_external_generic("upstream", dispatch_args = "x"),
+  upstream <- local_package("upstream", {
+    gen := new_generic("x")
+  })
+  downstream <- local_package("downstream", {
+    Foo := new_class()
+    gen := new_external_generic("upstream", dispatch_args = "x")
     method(gen, Foo) <- \(x) "dispatched"
-  )
+  })
   S7_on_load_(downstream)
 
   S7_on_unload_(downstream)
@@ -35,13 +37,12 @@ test_that("S7_on_unload() unregisters methods and removes hooks", {
 test_that("S7_on_unload() unregisters base operator methods", {
   local_methods(base_ops[["+"]])
 
-  downstream <- local_package(
-    "downstream_base_ops_unload",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
-    Foo := new_class(),
+  downstream <- local_package("downstream_base_ops_unload", {
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    Foo := new_class()
     method(`+`, list(Foo, Foo)) <- function(e1, e2) "dispatched"
-  )
+  })
   downstream$.onLoad()
   expect_equal(downstream$Foo() + downstream$Foo(), "dispatched")
 
@@ -53,26 +54,26 @@ test_that("S7_on_unload() unregisters base operator methods", {
 })
 
 test_that("S7_on_unload() doesn't remove methods registered by another package", {
-  upstream <- local_package("upstream_conflict", gen := new_generic("x"))
-  first <- local_package(
-    "downstream_first",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
-    gen := new_external_generic("upstream_conflict", dispatch_args = "x"),
+  upstream <- local_package("upstream_conflict", {
+    gen := new_generic("x")
+  })
+  first <- local_package("downstream_first", {
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    gen := new_external_generic("upstream_conflict", dispatch_args = "x")
     method(gen, class_character) <- function(x) "first"
-  )
+  })
   first$.onLoad()
   expect_equal(upstream$gen("x"), "first")
 
   second <- NULL
   expect_message(
-    second <- local_package(
-      "downstream_second",
-      .onLoad <- function(...) S7_on_load(),
-      .onUnload <- function(...) S7_on_unload(),
-      gen := new_external_generic("upstream_conflict", dispatch_args = "x"),
+    second <- local_package("downstream_second", {
+      .onLoad <- function(...) S7_on_load()
+      .onUnload <- function(...) S7_on_unload()
+      gen := new_external_generic("upstream_conflict", dispatch_args = "x")
       method(gen, class_character) <- function(x) "second"
-    ),
+    }),
     "Overwriting method"
   )
   second$.onLoad()
@@ -83,15 +84,16 @@ test_that("S7_on_unload() doesn't remove methods registered by another package",
 })
 
 test_that("S7_on_load() removes hooks for deleted external methods", {
-  upstream <- local_package("upstream_deleted", gen := new_generic("x"))
-  downstream <- local_package(
-    "downstream_deleted",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
-    Foo := new_class(),
-    gen := new_external_generic("upstream_deleted", dispatch_args = "x"),
+  upstream <- local_package("upstream_deleted", {
+    gen := new_generic("x")
+  })
+  downstream <- local_package("downstream_deleted", {
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    Foo := new_class()
+    gen := new_external_generic("upstream_deleted", dispatch_args = "x")
     method(gen, Foo) <- function(x) "dispatched"
-  )
+  })
   downstream$.onLoad()
   expect_length(package_hooks("upstream_deleted"), 1)
 
@@ -110,21 +112,19 @@ test_that("S7_on_load() removes hooks for deleted external methods", {
 })
 
 test_that("S7_on_unload() honors external generic version gates", {
-  downstream <- local_package(
-    "downstream_version_gate_unload",
-    .onLoad <- function(...) S7_on_load(),
-    .onUnload <- function(...) S7_on_unload(),
+  downstream <- local_package("downstream_version_gate_unload", {
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
     gen := new_external_generic(
       "upstream_version_gate_unload",
       dispatch_args = "x",
       version = "1.0.0"
-    ),
+    )
     method(gen, class_character) <- function(x) "downstream"
-  )
-  upstream <- local_package(
-    "upstream_version_gate_unload",
+  })
+  upstream <- local_package("upstream_version_gate_unload", {
     gen <- function(x) "not an S7 generic"
-  )
+  })
 
   downstream$.onLoad()
   expect_equal(upstream$gen("x"), "not an S7 generic")
@@ -151,8 +151,9 @@ test_that("S7_on_unload() unregisters methods when a real package is unloaded (#
 test_that("S7_on_build() removes only generic sentinels from the namespace", {
   ns <- new.env(parent = emptyenv())
   ns$keep_fun <- function() {}
-  ns$keep_ext <- new_external_generic("pkg", "gen", "x")
-  ns$drop_me <- generic_sentinel(new_external_generic("pkg", "gen", "x"))
+  gen := new_external_generic("pkg", dispatch_args = "x")
+  ns$keep_ext <- gen
+  ns$drop_me <- generic_sentinel(gen)
 
   strip_generic_sentinels(ns)
   expect_setequal(names(ns), c("keep_ext", "keep_fun"))

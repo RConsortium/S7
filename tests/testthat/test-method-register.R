@@ -69,10 +69,10 @@ test_that("method registration returns a strippable sentinel for foreign generic
   on.exit(external_methods_reset("S7"), add = TRUE)
 
   foo := new_class(package = NULL)
-  ext <- new_external_generic("notloaded.pkg", "ext_gen", "x")
+  ext_gen := new_external_generic("notloaded.pkg", dispatch_args = "x")
 
   out <- register_method(
-    ext,
+    ext_gen,
     foo,
     function(x) "x",
     env = asNamespace("S7"),
@@ -178,7 +178,7 @@ test_that("as_signature() works with NULL", {
 })
 
 test_that("S7_signature has format and print methods", {
-  foo <- new_generic("foo", c("x", "y"))
+  foo := new_generic(c("x", "y"))
   sig <- as_signature(list(class_integer, class_character), foo)
 
   expect_equal(format(sig), "<integer>, <character>")

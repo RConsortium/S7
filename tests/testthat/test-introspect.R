@@ -6,9 +6,9 @@ test_that("S7_classes() / S7_generics() inspect a single environment", {
 
 test_that("default `env` is the caller's environment", {
   local({
-    Foo <- new_class("Foo", package = NULL)
-    Bar <- new_class("Bar", package = NULL)
-    my_gen <- new_generic("my_gen", "x")
+    Foo := new_class(package = NULL)
+    Bar := new_class(package = NULL)
+    my_gen := new_generic("x")
 
     expect_setequal(S7_classes(), c("Foo", "Bar"))
     expect_setequal(S7_generics(), "my_gen")
@@ -19,9 +19,9 @@ test_that("default `env` is the caller's environment", {
 })
 
 test_that("S7_methods(generic) lists registered methods", {
-  Foo <- new_class("Foo", package = NULL)
-  Bar <- new_class("Bar", package = NULL)
-  gen <- new_generic("gen", "x")
+  Foo := new_class(package = NULL)
+  Bar := new_class(package = NULL)
+  gen := new_generic("x")
   method(gen, Foo) <- function(x) "foo"
   method(gen, Bar) <- function(x) "bar"
 
@@ -33,9 +33,9 @@ test_that("S7_methods(generic) lists registered methods", {
 })
 
 test_that("S7_methods() prints the signature column readably", {
-  Foo <- new_class("Foo", package = NULL)
-  Bar <- new_class("Bar", package = NULL)
-  gen <- new_generic("gen", "x")
+  Foo := new_class(package = NULL)
+  Bar := new_class(package = NULL)
+  gen := new_generic("x")
   method(gen, Foo) <- function(x) "foo"
   method(gen, Bar) <- function(x) "bar"
 
@@ -43,7 +43,7 @@ test_that("S7_methods() prints the signature column readably", {
 })
 
 test_that("S7_signature_list formats per element", {
-  foo <- new_generic("foo", c("x", "y"))
+  foo := new_generic(c("x", "y"))
   sigs <- new_signature_list(list(
     as_signature(list(class_integer, class_character), foo),
     as_signature(list(class_double, class_logical), foo)
@@ -56,9 +56,9 @@ test_that("S7_signature_list formats per element", {
 })
 
 test_that("S7_methods(generic) handles multi-dispatch", {
-  Foo <- new_class("Foo", package = NULL)
-  Bar <- new_class("Bar", package = NULL)
-  gen <- new_generic("gen", c("x", "y"))
+  Foo := new_class(package = NULL)
+  Bar := new_class(package = NULL)
+  gen := new_generic(c("x", "y"))
   method(gen, list(Foo, Bar)) <- function(x, y) "fb"
 
   res <- S7_methods(generic = gen)
@@ -66,7 +66,7 @@ test_that("S7_methods(generic) handles multi-dispatch", {
 })
 
 test_that("S7_methods(generic) returns empty df when no methods", {
-  gen <- new_generic("gen", "x")
+  gen := new_generic("x")
   res <- S7_methods(generic = gen)
   expect_s3_class(res, "data.frame")
   expect_equal(nrow(res), 0)
@@ -74,8 +74,8 @@ test_that("S7_methods(generic) returns empty df when no methods", {
 })
 
 test_that("S7_methods(class) scans attached generics", {
-  Foo <- new_class("Foo", package = NULL)
-  Bar <- new_class("Bar", package = NULL)
+  Foo := new_class(package = NULL)
+  Bar := new_class(package = NULL)
   g1 <- new_generic("S7_introspect_g1_xyzzy", "x")
   g2 <- new_generic("S7_introspect_g2_xyzzy", "x")
   method(g1, Foo) <- function(x) "foo"
@@ -98,8 +98,8 @@ test_that("S7_methods(class) scans attached generics", {
 })
 
 test_that("S7_methods() reports the generic's package", {
-  Foo <- new_class("Foo", package = NULL)
-  gen <- new_generic("gen", "x")
+  Foo := new_class(package = NULL)
+  gen := new_generic("x")
   method(gen, Foo) <- function(x) "foo"
 
   res <- S7_methods(generic = gen)
