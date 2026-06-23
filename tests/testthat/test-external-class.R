@@ -30,15 +30,13 @@ test_that("resolve_external_class_req() errors per failure mode", {
 })
 
 test_that("external class resolution explains class binding contract", {
-  local_package(
-    "dep",
+  local_package("dep", {
     Foo <- new_class(name = "Bar", package = "dep")
-  )
+  })
   Bar <- new_external_class(package = "dep", name = "Bar")
-  local_package(
-    "symbol_mismatch",
+  local_package("symbol_mismatch", {
     Bar <- new_class(name = "Foo", package = "symbol_mismatch")
-  )
+  })
   SymbolMismatch <- new_external_class(
     package = "symbol_mismatch",
     name = "Bar"
@@ -106,7 +104,7 @@ test_that("external class works for mutually recursive classes", {
 })
 
 test_that("external class property validation reports validator errors", {
-  dep := local_package(
+  dep <- local_package("dep", {
     Ext := new_class(
       properties = list(x = class_integer),
       validator = function(self) {
@@ -115,7 +113,7 @@ test_that("external class property validation reports validator errors", {
         }
       }
     )
-  )
+  })
   Holder := new_class(
     properties = list(
       child = new_property(
@@ -137,9 +135,9 @@ test_that("external class property validation reports validator errors", {
 })
 
 test_that("versioned external class checks package version", {
-  versioned_pkg := local_package(
+  versioned_pkg <- local_package("versioned_pkg", {
     Foo := new_class()
-  )
+  })
   Foo <- new_external_class(
     package = "versioned_pkg",
     name = "Foo",

@@ -131,6 +131,11 @@ method_deps_packages <- function(deps) {
   unique(vcapply(deps, function(dep) dep$package))
 }
 
+external_methods_reset <- function(package) {
+  S7_methods_table(package) <- list()
+  invisible()
+}
+
 resolve_generic <- function(generic) {
   ns <- asNamespace(generic$package)
   if (exists(generic$name, envir = ns, inherits = FALSE)) {

@@ -2,6 +2,7 @@
 #include <string.h>
 
 extern SEXP sym_S7_class;
+extern SEXP sym_S7_class_legacy;
 
 extern SEXP sym_name;
 extern SEXP sym_parent;
@@ -30,6 +31,22 @@ extern SEXP fn_base_quote;
 
 extern SEXP R_TRUE;
 extern SEXP R_FALSE;
+
+// Read the stored S7 class object, falling back to the legacy "S7_class"
+// attribute name so objects created with an older version of S7 keep working.
+// Can be removed >1 year after S7 0.3.0
+static inline
+SEXP get_S7_class(SEXP object) {
+  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  if (S7_class == R_NilValue)
+    S7_class = Rf_getAttrib(object, sym_S7_class_legacy);
+  return S7_class;
+}
+
+// R-callable wrapper around get_S7_class().
+SEXP S7_class_(SEXP object) {
+  return get_S7_class(object);
+}
 
 static inline
 SEXP eval_here(SEXP lang) {
@@ -455,7 +472,7 @@ SEXP prop_(SEXP object, SEXP name) {
   SEXP name_rchar = STRING_ELT(name, 0);
   SEXP name_sym = Rf_installTrChar(name_rchar);
 
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP S7_class = get_S7_class(object);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
 
   // try getter() if appropriate
@@ -526,7 +543,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   Rboolean should_validate_obj = check;
   Rboolean should_validate_prop = check;
 
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP S7_class = get_S7_class(object);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
   SEXP property = extract_name(properties, name_rchar);
 

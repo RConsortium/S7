@@ -25,9 +25,11 @@
        * An S4 class object
        * A base class
     Code
-      local_package("pkg_invalid_deferred_external_class_method", foo := new_generic(
-        "x"), ext := new_external_class("notloaded.pkg"), method(foo, ext) <-
-        (function(y) "x"))
+      local_package("pkg_invalid_deferred_external_class_method", {
+        foo := new_generic("x")
+        ext := new_external_class("notloaded.pkg")
+        method(foo, ext) <- (function(y) "x")
+      })
     Condition
       Error in `method<-`:
       ! foo() dispatches on `x`, but foo(<notloaded.pkg::ext>) has arguments `y`.

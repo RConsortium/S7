@@ -103,8 +103,8 @@ test_that("class_inherits handles variation in class names", {
 })
 
 test_that("class_extends checks subclass relationship between classes", {
-  Parent <- new_class("Parent", package = NULL)
-  Child <- new_class("Child", parent = Parent, package = NULL)
+  Parent := new_class(package = NULL)
+  Child := new_class(parent = Parent, package = NULL)
 
   expect_true(class_extends(Child, Parent))
   expect_true(class_extends(Child, Child))
