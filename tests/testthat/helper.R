@@ -55,8 +55,8 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
-# Simulate a package with namesapce
-local_package <- function(name, ..., frame = parent.frame()) {
+# Simulate a package with namespace
+local_package <- function(name, code = {}, frame = parent.frame()) {
   ns <- new.env(parent = asNamespace("S7"))
 
   info <- new.env(parent = emptyenv())
@@ -71,9 +71,7 @@ local_package <- function(name, ..., frame = parent.frame()) {
   defer(internal(unregisterNamespace(name)), frame = frame)
   defer(S7_on_unload_(ns), frame = frame)
 
-  for (expr in eval(substitute(alist(...)))) {
-    eval(expr, ns)
-  }
+  eval(substitute(code), ns)
 
   ns
 }
