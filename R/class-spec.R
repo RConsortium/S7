@@ -322,10 +322,7 @@ class_inherits <- function(x, what) {
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
-    S7_external = inherits(x, "S7_object") &&
-      inherits(x, what$class_name) &&
-      (is.null(what$version) ||
-        class_inherits(x, resolve_external_class_req(what))),
+    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
 

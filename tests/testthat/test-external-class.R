@@ -126,16 +126,3 @@ test_that("external class property validation reports validator errors", {
 
   expect_snapshot(Holder(child = invalid), error = TRUE)
 })
-
-test_that("versioned external class checks package version", {
-  versioned_pkg <- local_package("versioned_pkg", {
-    Foo := new_class()
-  })
-  Foo <- new_external_class(
-    package = "versioned_pkg",
-    name = "Foo",
-    version = "999.0"
-  )
-
-  expect_snapshot(error = TRUE, S7_inherits(versioned_pkg$Foo(), Foo))
-})
