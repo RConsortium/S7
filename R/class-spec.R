@@ -320,14 +320,7 @@ class_inherits <- function(x, what) {
     S4 = isS4(x) && methods::is(x, what),
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
-    S7_union = {
-      for (class in what$classes) {
-        if (class_inherits(x, class)) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
+    S7_union = any(vlapply(what$classes, class_inherits, x = x)),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
     S7_external = inherits(x, "S7_object") &&
       inherits(x, what$class_name) &&
