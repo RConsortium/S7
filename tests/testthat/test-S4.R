@@ -70,6 +70,17 @@ test_that("S4_contains requires prior S4 registration", {
   )
 })
 
+test_that("S4_contains rejects unrelated S4 classes with the same name", {
+  defer(S4_remove_classes("S4regContainsCollision"))
+  setClass("S4regContainsCollision", slots = list(x = "numeric"))
+  S4regContainsCollision := new_class(package = NULL)
+
+  expect_snapshot(
+    S4_contains(S4regContainsCollision),
+    error = TRUE
+  )
+})
+
 test_that("S4_register registers S4 old classes as virtual S7_object descendants", {
   on.exit(S4_remove_classes(c("S4regParent", "S4regS7New")))
   setClass("S4regParent", slots = list(x = "numeric"))
@@ -1615,6 +1626,35 @@ test_that("S4 initialize strips S7 metadata from data parts", {
   expect_equal(S7_class(out), S4regDataPartTarget)
   expect_equal(as.vector(out), 2)
   expect_equal(prop(out, "y"), "target")
+  expect_identical(methods::validObject(out), TRUE)
+})
+
+test_that("S4 initialize ignores data-part attributes that collide with slots", {
+  defer(S4_remove_classes(c(
+    "S4regDataAttrParent",
+    "S4regDataAttrChild"
+  )))
+
+  setClass(
+    "S4regDataAttrParent",
+    contains = "numeric",
+    slots = list(z = "character")
+  )
+  S4regDataAttrChild := new_class(
+    parent = getClass("S4regDataAttrParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  target <- S4regDataAttrChild(.Data = 1, y = "target", z = "slot")
+  source <- structure(2, y = "source", z = "source-slot", other = "keep")
+
+  out <- methods::initialize(target, .Data = source)
+
+  expect_equal(as.vector(out), 2)
+  expect_equal(prop(out, "y"), "target")
+  expect_equal(prop(out, "z"), "slot")
+  expect_equal(attr(out, "other", exact = TRUE), "keep")
   expect_identical(methods::validObject(out), TRUE)
 })
 

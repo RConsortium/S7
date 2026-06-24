@@ -120,7 +120,7 @@ S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
     methods::getClass(class_register(x), where = S4_env),
     error = function(err) NULL
   )
-  if (is.null(class)) {
+  if (is.null(class) || !S4_registered_class_matches(class, x)) {
     msg <- sprintf(
       "Class has not been registered with S4; please call S4_register(%s).",
       class_deparse(x)
@@ -128,6 +128,29 @@ S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
     stop2(msg, call = call)
   }
   class
+}
+
+S4_registered_class_matches <- function(class, x) {
+  S4_registered_S7_class_matches(class, x) ||
+    S4_registered_old_class_matches(class, x)
+}
+
+S4_registered_S7_class_matches <- function(class, x) {
+  if (!"_S7_class" %in% names(class@slots)) {
+    return(FALSE)
+  }
+  registered <- methods::slot(class@prototype, "_S7_class")
+  is_class(registered) && identical(S7_class_name(registered), S7_class_name(x))
+}
+
+S4_registered_old_class_matches <- function(class, x) {
+  if (!".S3Class" %in% names(class@slots)) {
+    return(FALSE)
+  }
+  identical(
+    methods::slot(class@prototype, ".S3Class"),
+    S4_reified_old_classes(x)
+  )
 }
 
 S4_union_class <- function(x, S4_env) {
@@ -739,16 +762,30 @@ S4_initialize_values <- function(object) {
 }
 
 S4_initialize_data_part <- function(value, object) {
+  protected <- S4_data_part_protected_attributes(object)
   incoming <- attributes(value) %||% list()
-  incoming[c("class", "_S7_class", "S7_class")] <- NULL
+  incoming[protected] <- NULL
   if (isS4(object)) {
-    methods::slot(object, ".Data") <- unclass(value)
+    data <- zap_attr(unclass(value), protected)
+    methods::slot(object, ".Data") <- data
     attributes(object) <- modify_list(attributes(object), incoming)
     return(object)
   }
 
+  value <- zap_attr(value, protected)
   attributes(value) <- modify_list(attributes(object), incoming)
   value
+}
+
+S4_data_part_protected_attributes <- function(object) {
+  c(
+    methods::slotNames(object),
+    prop_storage_names(object),
+    prop_names(object),
+    "class",
+    "_S7_class",
+    "S7_class"
+  )
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
