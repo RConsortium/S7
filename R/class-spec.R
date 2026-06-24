@@ -247,6 +247,9 @@ S4_validate_old_class <- function(class, object) {
       )
       break
     }
+    if (S4_is_reified_S7_class(super_def)) {
+      next
+    }
 
     validity <- methods::getValidity(super_def)
     if (is.function(validity)) {

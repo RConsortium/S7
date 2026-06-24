@@ -11,6 +11,48 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
+test_that("S4_register registers S7 property classes", {
+  defer(S4_remove_classes(c(
+    "S4regS7PropParent",
+    "S4regS7PropChild",
+    "S4regS7PropOther2",
+    "S4regS7PropFoo",
+    "S4regS7PropOther1"
+  )))
+
+  S4regS7PropOther1 := new_class(package = NULL)
+  S4regS7PropFoo := new_class(
+    properties = list(other = S4regS7PropOther1),
+    package = NULL
+  )
+
+  expect_false(methods::isClass("S4regS7PropOther1"))
+  expect_equal(S4_register(S4regS7PropFoo), "S4regS7PropFoo")
+  expect_true(methods::isClass("S4regS7PropOther1"))
+  expect_equal(
+    as.character(methods::getClass("S4regS7PropFoo")@slots$other),
+    "S4regS7PropOther1"
+  )
+  expect_true(methods::validObject(S4regS7PropFoo(
+    other = S4regS7PropOther1()
+  )))
+
+  setClass("S4regS7PropParent", slots = list(x = "numeric"))
+  S4regS7PropOther2 := new_class(package = NULL)
+  S4regS7PropChild := new_class(
+    parent = getClass("S4regS7PropParent"),
+    properties = list(other = S4regS7PropOther2),
+    package = NULL
+  )
+  object <- S4regS7PropChild(
+    x = 1,
+    other = S4regS7PropOther2()
+  )
+
+  expect_true(methods::isClass("S4regS7PropOther2"))
+  expect_true(methods::validObject(object))
+})
+
 test_that("S4_contains requires prior S4 registration", {
   on.exit(S4_remove_classes("S4regContainsUnregistered"))
   S4regContainsUnregistered := new_class(package = NULL)
@@ -1045,6 +1087,40 @@ test_that("S4 old-class slots accept normal S3 class vectors", {
   object <- S4regOldSlotChild(x = x)
 
   expect_equal(prop(object, "x"), x)
+})
+
+test_that("S7 classes do not import internal slots from S4 parents", {
+  defer(S4_remove_classes(c(
+    "S4regImportInternalChild",
+    "S4regImportInternalParent",
+    "S4regImportInternalBase"
+  )))
+
+  S4regImportInternalBase := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regImportInternalBase)
+  setClass(
+    "S4regImportInternalParent",
+    contains = S4_contains(S4regImportInternalBase),
+    slots = list(y = "character")
+  )
+  S4regImportInternalChild := new_class(
+    parent = getClass("S4regImportInternalParent"),
+    properties = list(z = class_logical),
+    package = NULL
+  )
+
+  object <- S4regImportInternalChild(
+    x = 1,
+    y = "a",
+    z = TRUE
+  )
+
+  expect_equal(names(formals(S4regImportInternalChild)), c("y", "x", "z"))
+  expect_equal(prop_names(object), c("y", "x", "z"))
+  expect_true(methods::validObject(object))
 })
 
 test_that("errors on non-S4 classes", {

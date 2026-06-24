@@ -237,7 +237,17 @@ S4_internal_slot_names <- function() {
 }
 
 S4_property_class <- function(prop, S4_env) {
+  S4_register_property_class(prop$class, S4_env)
   S4_class(prop$class, S4_env)
+}
+
+S4_register_property_class <- function(class, S4_env) {
+  if (
+    is_class(class) && !methods::isClass(class_register(class), where = S4_env)
+  ) {
+    S4_register(class, S4_env)
+  }
+  invisible()
 }
 
 S4_check_contains <- function(class, call = sys.call(-1L)) {
@@ -680,13 +690,15 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
 }
 
 S4_slot_properties <- function(class) {
+  slots <- class@slots
+  slots <- slots[!names(slots) %in% S4_internal_slot_names()]
   properties <- Map(
     S4_slot_property,
-    class@slots,
-    names(class@slots),
+    slots,
+    names(slots),
     MoreArgs = list(owner = class)
   )
-  names(properties) <- names(class@slots)
+  names(properties) <- names(slots)
   properties
 }
 
@@ -818,6 +830,15 @@ S4_reified_S7_class <- function(x) {
 
   class <- methods::slot(x@prototype, "_S7_class")
   if (is_class(class) && class@abstract) class
+}
+
+S4_is_reified_S7_class <- function(x) {
+  if (!"_S7_class" %in% names(x@slots)) {
+    return(FALSE)
+  }
+
+  class <- methods::slot(x@prototype, "_S7_class")
+  is_class(class) && identical(as.character(x@className), S7_class_name(class))
 }
 
 S4_package_name <- function(f, env) {
