@@ -332,7 +332,7 @@ class_inherits <- function(x, what) {
     S4 = isS4(x) && methods::is(x, what),
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
-    S7_union = any(vlapply(what$classes, class_inherits, x = x)),
+    S7_union = some(what$classes, class_inherits, x = x),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
     S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
@@ -351,10 +351,10 @@ class_extends <- function(child, parent) {
     FALSE
   } else if (is_union(child)) {
     # A union child extends `parent` only if every one of its members does.
-    all(vlapply(child$classes, class_extends, parent = parent))
+    every(child$classes, class_extends, parent = parent)
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
-    any(vlapply(parent$classes, class_extends, child = child))
+    some(parent$classes, class_extends, child = child)
   } else if (is.null(child) && !is.null(parent)) {
     # as a child, NULL can only extend NULL
     FALSE
@@ -439,7 +439,7 @@ drop_S7_object <- function(x) {
 }
 
 union_contains_any <- function(x) {
-  is_union(x) && any(vlapply(x$classes, is_class_any))
+  is_union(x) && some(x$classes, is_class_any)
 }
 
 # Suppress @className false positive

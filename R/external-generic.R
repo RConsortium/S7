@@ -94,7 +94,7 @@ registrar <- function(generic, signature, method, env) {
 
   function(...) {
     deps <- method_deps(generic, signature)
-    if (!all(vlapply(deps, dep_available))) {
+    if (!every(deps, dep_available)) {
       return(invisible())
     }
 

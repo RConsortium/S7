@@ -94,7 +94,7 @@ dep_version_ok <- function(dep) {
 # Resolve signature if all external classes are availabe
 resolve_signature_available <- function(signature, package = NULL) {
   deps <- signature_deps(signature)
-  all_available <- all(vlapply(deps, dep_available))
+  all_available <- every(deps, dep_available)
 
   if (all_available) {
     signature <- resolve_signature(signature, package)

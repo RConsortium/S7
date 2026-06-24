@@ -15,6 +15,22 @@ global_variables <- function(names) {
 vlapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
 }
+every <- function(X, FUN, ...) {
+  for (x in X) {
+    if (!FUN(x, ...)) {
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+some <- function(X, FUN, ...) {
+  for (x in X) {
+    if (FUN(x, ...)) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
 vcapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
 }
