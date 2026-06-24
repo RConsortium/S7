@@ -44,7 +44,7 @@ activate_bind_compatibility <- function() {
     return(invisible())
   }
 
-  for (package in packages_exporting_bind()) {
+  for (package in c("data.table", "rlang")) {
     rule <- conflictRules(package)
     conflictRules(
       package,
@@ -54,22 +54,6 @@ activate_bind_compatibility <- function() {
   }
 
   invisible()
-}
-
-packages_exporting_bind <- function(lib.loc = .libPaths()) {
-  paths <- unlist(
-    lapply(lib.loc, list.dirs, recursive = FALSE, full.names = TRUE),
-    use.names = FALSE
-  )
-  paths <- paths[file.exists(file.path(paths, "Meta", "nsInfo.rds"))]
-
-  exports_bind <- vapply(
-    file.path(paths, "Meta", "nsInfo.rds"),
-    function(path) ":=" %in% readRDS(path)$exports,
-    logical(1)
-  )
-
-  setdiff(unique(basename(paths)[exports_bind]), "S7")
 }
 
 #' @aliases @
