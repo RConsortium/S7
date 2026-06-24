@@ -187,15 +187,13 @@ named_list <- function(...) {
   x
 }
 
-`add<-` <- `+`
-
 dbg <- function(..., .display = utils::str, .file = NULL) {
   out <- NULL
   exprs <- as.list(substitute(list(...)))[-1L]
 
   if (!is.null(.file)) {
     sink(.file, append = TRUE)
-    on.exit(sink())
+    defer(sink())
   }
 
   for (i in seq_len(...length())) {
