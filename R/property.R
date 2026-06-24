@@ -639,6 +639,10 @@ prop_storage_rename <- function(names) {
   .Call(prop_storage_rename_, names)
 }
 
+prop_encode_pseudo_null <- function(value) {
+  if (is.null(value)) as.name("\001NULL\001") else value
+}
+
 prop_storage_names <- function(object) {
   prop_storage_rename(prop_names(object))
 }

@@ -47,9 +47,10 @@ S7_inherits <- function(x, class = NULL) {
 }
 
 has_S7_class <- function(x) {
-  identical(class(x), "S7_object") ||
-    inherits(x, "S7_class") ||
-    !is.null(.Call(S7_class_, x))
+  inherits(x, "S7_object") &&
+    (identical(class(x), "S7_object") ||
+      inherits(x, "S7_class") ||
+      !is.null(.Call(S7_class_, x)))
 }
 
 #' @export

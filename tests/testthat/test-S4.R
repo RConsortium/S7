@@ -662,6 +662,28 @@ test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 propertie
   expect_identical(attr(plain, "x", exact = TRUE), as.name("\001NULL\001"))
 })
 
+test_that("S4_register keeps direct S7 nullable property slots valid", {
+  defer(S4_remove_classes(c(
+    "S4regDirectNullable",
+    "NULL_OR_character"
+  )))
+
+  S4_register(NULL | class_character)
+  S4regDirectNullable <- new_class(
+    "S4regDirectNullable",
+    properties = list(x = NULL | class_character),
+    package = NULL
+  )
+  S4_register(S4regDirectNullable)
+
+  object <- S4regDirectNullable()
+
+  expect_equal(prop(object, "x"), NULL)
+  expect_equal(methods::slot(object, "x"), NULL)
+  expect_true(methods::validObject(object))
+  expect_identical(attr(object, "x", exact = TRUE), as.name("\001NULL\001"))
+})
+
 test_that("S4_contains rejects properties with custom accessors", {
   on.exit(S4_remove_classes(c(
     "S4regContainsDynamicChild",
@@ -1158,7 +1180,7 @@ test_that("S4 data part initialization preserves S4 subclasses", {
   expect_true(methods::validObject(object))
 })
 
-test_that("S4 subclasses read and write special-named S7 property slots", {
+test_that("S4 subclasses read and write special-named S7 property storage slots", {
   defer(S4_remove_classes(c(
     "S4regSpecialSlotsChild",
     "S4regSpecialSlots"
@@ -1182,13 +1204,38 @@ test_that("S4 subclasses read and write special-named S7 property slots", {
     dim = 2L
   )
 
-  expect_equal(methods::slot(object, "names"), "n")
-  expect_equal(methods::slot(object, "dim"), 2L)
+  expect_equal(methods::slot(object, "_names"), "n")
+  expect_equal(methods::slot(object, "_dim"), 2L)
   expect_equal(prop(object, "names"), "n")
+  expect_true(methods::validObject(object))
 
   prop(object, "names") <- "updated"
-  expect_equal(methods::slot(object, "names"), "updated")
+  expect_equal(methods::slot(object, "_names"), "updated")
   expect_equal(prop(object, "names"), "updated")
+})
+
+test_that("S4_register keeps direct S7 special-name property slots valid", {
+  defer(S4_remove_classes("S4regDirectSpecialSlots"))
+
+  S4regDirectSpecialSlots <- new_class(
+    "S4regDirectSpecialSlots",
+    properties = list(
+      names = class_character,
+      dim = class_integer
+    ),
+    package = NULL
+  )
+  S4_register(S4regDirectSpecialSlots)
+
+  object <- S4regDirectSpecialSlots(
+    names = "n",
+    dim = 2L
+  )
+
+  expect_equal(methods::slot(object, "_names"), "n")
+  expect_equal(methods::slot(object, "_dim"), 2L)
+  expect_equal(prop(object, "names"), "n")
+  expect_true(methods::validObject(object))
 })
 
 test_that("S4 classes can not extend S7-over-S4 classes with property setters", {

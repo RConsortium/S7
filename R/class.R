@@ -369,7 +369,7 @@ new_object <- function(`_parent`, ...) {
   args <- collect_dots(...)
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
-  self_attrs <- args[!has_setter]
+  self_attrs <- lapply(args[!has_setter], prop_encode_pseudo_null)
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
   # We must awkwardly operate on `_parent` rather than binding to a local

@@ -30,6 +30,18 @@ test_that("checks that input is a class", {
   expect_snapshot(S7_inherits(1:10, "x"), error = TRUE)
 })
 
+test_that("ignores S7 class attributes without an S7 object marker", {
+  Foo := new_class(package = NULL)
+
+  object <- structure(1, `_S7_class` = Foo)
+  legacy_object <- structure(1, S7_class = Foo)
+
+  expect_false(S7_inherits(object))
+  expect_false(S7_inherits(object, Foo))
+  expect_false(S7_inherits(legacy_object))
+  expect_false(S7_inherits(legacy_object, Foo))
+})
+
 test_that("throws informative error", {
   expect_snapshot(error = TRUE, {
     foo1 := new_class(package = NULL)

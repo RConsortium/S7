@@ -273,7 +273,8 @@ S4_properties_prototype <- function(
   for (name in names(properties)) {
     value <- S4_property_prototype(properties[[name]], env, class@package)
     if (length(value) != 0L) {
-      args[[name]] <- value[[1L]]
+      slot_name <- prop_storage_rename(name)
+      args[[slot_name]] <- value[[1L]]
     }
   }
   if (include_S7_class) {
@@ -356,11 +357,11 @@ S4_register_class <- function(class, env = parent.frame()) {
     names(stored_properties),
     ".Data"
   )]
-  slot_properties <- stored_properties[setdiff(
-    names(stored_properties),
-    parent_slot_names
-  )]
+  slot_properties <- stored_properties[
+    !prop_storage_rename(names(stored_properties)) %in% parent_slot_names
+  ]
   slots <- lapply(slot_properties, S4_property_class, S4_env = where)
+  names(slots) <- prop_storage_rename(names(slot_properties))
   needs_S7_class_slot <- !"_S7_class" %in% parent_slot_names
   if (needs_S7_class_slot) {
     slots$`_S7_class` <- "S7_class"
@@ -497,9 +498,10 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
   s4_vals <- list()
   s4_slot_nms <- character()
   if (isS4(.Object)) {
+    prop_storage_nms <- prop_storage_rename(prop_nms)
     s4_slot_nms <- setdiff(
       methods::slotNames(.Object),
-      c(prop_nms, S4_internal_slot_names())
+      c(prop_nms, prop_storage_nms, S4_internal_slot_names())
     )
   }
   data_part <- NULL
@@ -560,12 +562,14 @@ S4_initialize_default_values <- function(object, supplied, env) {
   env <- environment(class)
   properties <- class@properties
   properties <- properties[!vlapply(properties, prop_is_dynamic)]
-  properties <- properties[names(properties) %in% methods::slotNames(object)]
+  property_slot_nms <- prop_storage_rename(names(properties))
+  properties <- properties[property_slot_nms %in% methods::slotNames(object)]
   properties <- properties[setdiff(names(properties), supplied)]
 
   values <- list()
   for (name in names(properties)) {
-    if (!S4_slot_has_prototype_value(object, name)) {
+    slot_name <- prop_storage_rename(name)
+    if (!S4_slot_has_prototype_value(object, slot_name)) {
       next
     }
 
