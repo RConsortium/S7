@@ -176,8 +176,6 @@ named_list <- function(...) {
   x
 }
 
-`add<-` <- `+`
-
 dbg <- function(..., .display = utils::str, .file = NULL) {
   out <- NULL
   exprs <- as.list(substitute(list(...)))[-1L]

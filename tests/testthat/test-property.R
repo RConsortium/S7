@@ -97,7 +97,6 @@ test_that("prop setting validates all attributes if custom setter", {
 
 test_that("prop setting validates once after custom setter", {
   times_validated <- 0L
-  `add<-` <- `+`
   custom_setter <- function(self, value) {
     self@x <- as.double(value)
     self
@@ -105,7 +104,7 @@ test_that("prop setting validates once after custom setter", {
   foo2 := new_class(
     properties = list(x = new_property(class_double, setter = custom_setter)),
     validator = function(self) {
-      add(times_validated) <<- 1L
+      times_validated <<- times_validated + 1L
       character()
     }
   )
@@ -117,7 +116,6 @@ test_that("prop setting validates once after custom setter", {
 
 test_that("prop setting validates once with recursive property setters", {
   times_validated <- 0L
-  `add<-` <- `+`
   foo := new_class(
     properties = list(
       x = new_property(setter = function(self, value) {
@@ -133,7 +131,7 @@ test_that("prop setting validates once with recursive property setters", {
       z = new_property(class_character)
     ),
     validator = function(self) {
-      add(times_validated) <<- 1L
+      times_validated <<- times_validated + 1L
       NULL
     }
   )
