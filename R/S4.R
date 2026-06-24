@@ -609,6 +609,9 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
     )
     named_args <- named_args[!names(named_args) %in% s4_slot_nms]
   }
+  prop_storage_idx <- match(names(named_args), prop_storage_rename(prop_nms))
+  names(named_args)[!is.na(prop_storage_idx)] <-
+    prop_nms[prop_storage_idx[!is.na(prop_storage_idx)]]
   vals <- modify_list(vals, named_args)
   if (".Data" %in% names(named_args)) {
     data_part <- vals$.Data
@@ -647,7 +650,7 @@ S4_initialize_prop_values <- function(values, properties, storage = FALSE) {
   values
 }
 
-S4_initialize_default_values <- function(object, supplied, env) {
+S4_initialize_default_values <- function(object, supplied, S4_env) {
   class <- S7_class(object)
   env <- environment(class)
   properties <- class@properties
@@ -659,7 +662,7 @@ S4_initialize_default_values <- function(object, supplied, env) {
   values <- list()
   for (name in names(properties)) {
     slot_name <- prop_storage_rename(name)
-    if (!S4_slot_has_prototype_value(object, slot_name)) {
+    if (!S4_slot_has_prototype_value(object, slot_name, S4_env)) {
       next
     }
 
@@ -677,8 +680,8 @@ S4_initialize_default_values <- function(object, supplied, env) {
   values
 }
 
-S4_slot_has_prototype_value <- function(object, name) {
-  prototype <- methods::getClass(class(object)[1L])@prototype
+S4_slot_has_prototype_value <- function(object, name, S4_env) {
+  prototype <- S4_object_class(object, S4_env)@prototype
   value <- methods::slot(object, name)
   prototype_value <- methods::slot(prototype, name)
   if (identical(value, prototype_value)) {
@@ -692,6 +695,24 @@ S4_slot_has_prototype_value <- function(object, name) {
     S4_strip_data_part_identity(value),
     S4_strip_data_part_identity(prototype_value)
   )
+}
+
+S4_object_class <- function(object, S4_env) {
+  class <- class(object)
+  name <- class[[1L]]
+  package <- attr(class, "package", exact = TRUE)
+  if (!is.null(package)) {
+    class_def <- methods::getClassDef(
+      name,
+      package = package,
+      inherits = FALSE
+    )
+    if (!is.null(class_def)) {
+      return(class_def)
+    }
+  }
+
+  methods::getClass(name, where = S4_env)
 }
 
 S4_strip_data_part_identity <- function(x) {

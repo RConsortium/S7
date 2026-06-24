@@ -769,6 +769,57 @@ test_that("S4 parent prototype defaults preserve package-qualified classes", {
   expect_equal(methods::slot(object, "x"), 10)
 })
 
+test_that("S4_register resolves S4 prototypes from object class package", {
+  pkg_env <- local_package("s4regprototypepkg")
+  defer({
+    suppressMessages({
+      S4_remove_classes("S4regPkgPrototypeChild")
+      S4_remove_classes(
+        c(
+          "S4regPkgPrototype",
+          "S4regPkgPrototypeChild"
+        ),
+        pkg_env
+      )
+    })
+  })
+
+  setClass(
+    "S4regPkgPrototypeChild",
+    slots = list(x = "numeric"),
+    prototype = list(x = 1)
+  )
+  evalq(
+    {
+      S4regPkgPrototype <- new_class(
+        "S4regPkgPrototype",
+        properties = list(
+          x = new_property(
+            class_numeric,
+            default = quote({
+              10
+            })
+          )
+        ),
+        package = NULL
+      )
+      S4_register(S4regPkgPrototype)
+      S4regPkgPrototype_S4 <- S4_contains(S4regPkgPrototype)
+      methods::setClass(
+        "S4regPkgPrototypeChild",
+        contains = S4regPkgPrototype_S4
+      )
+    },
+    pkg_env
+  )
+
+  child_def <- methods::getClass("S4regPkgPrototypeChild", where = pkg_env)
+  suppressWarnings(object <- methods::new(child_def@className))
+
+  expect_equal(prop(object, "x"), 10)
+  expect_equal(methods::slot(object, "x"), 10)
+})
+
 test_that("S7 constructors delegate to S4 parent initialize methods", {
   defer(S4_remove_classes(c(
     "S4regInitializeParent",
@@ -1618,6 +1669,16 @@ test_that("S4 subclasses read and write special-named S7 property storage slots"
   expect_equal(methods::slot(object, "names"), "s4-only")
   expect_equal(prop(object, "names"), "n")
   expect_true(methods::validObject(object))
+
+  storage_object <- methods::new(
+    "S4regSpecialSlotsChild",
+    `_names` = "storage",
+    `_dim` = 3L
+  )
+
+  expect_equal(methods::slot(storage_object, "_names"), "storage")
+  expect_equal(methods::slot(storage_object, "_dim"), 3L)
+  expect_equal(prop(storage_object, "names"), "storage")
 
   prop(object, "names") <- "updated"
   expect_equal(methods::slot(object, "_names"), "updated")
