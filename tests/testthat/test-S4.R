@@ -456,6 +456,55 @@ test_that("S4_register evaluates expression defaults for each S4 object", {
   expect_null(prop(object2, "x")$value)
 })
 
+test_that("S4_register evaluates deferred defaults in the constructor environment", {
+  defer(S4_remove_classes(c(
+    "S4regDefaultEnv",
+    "S4regDefaultEnvChild"
+  )))
+
+  S4regDefaultEnv <- local({
+    x <- 1
+    S4regDefaultEnv := new_class(
+      properties = list(x = new_property(class_numeric, default = quote(x))),
+      package = NULL
+    )
+  })
+  S4_register(S4regDefaultEnv)
+  S4regDefaultEnv_S4 <- S4_contains(S4regDefaultEnv)
+  methods::setClass("S4regDefaultEnvChild", contains = S4regDefaultEnv_S4)
+
+  object <- methods::new("S4regDefaultEnvChild")
+
+  expect_equal(methods::slot(object, "x"), 1)
+  expect_equal(prop(object, "x"), 1)
+})
+
+test_that("S4_register validates deferred NULL defaults", {
+  defer(S4_remove_classes(c(
+    "S4regNullDefault",
+    "S4regNullDefaultChild"
+  )))
+
+  S4regNullDefault := new_class(
+    properties = list(
+      x = new_property(
+        class_numeric,
+        default = quote({
+          NULL
+        })
+      )
+    ),
+    package = NULL
+  )
+  S4_register(S4regNullDefault)
+  S4regNullDefault_S4 <- S4_contains(S4regNullDefault)
+  methods::setClass("S4regNullDefaultChild", contains = S4regNullDefault_S4)
+
+  expect_snapshot(error = TRUE, {
+    methods::new("S4regNullDefaultChild")
+  })
+})
+
 test_that("S4 parents preserve slot prototypes in S7 constructors", {
   defer(S4_remove_classes(c(
     "S4regSlotPrototypeParent",

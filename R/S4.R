@@ -540,6 +540,7 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
 
 S4_initialize_default_values <- function(object, supplied, env) {
   class <- S7_class(object)
+  env <- environment(class)
   properties <- class@properties
   properties <- properties[!vlapply(properties, prop_is_dynamic)]
   properties <- properties[names(properties) %in% methods::slotNames(object)]
@@ -557,7 +558,7 @@ S4_initialize_default_values <- function(object, supplied, env) {
       class@package
     )
     if (length(value) != 0L) {
-      values[[name]] <- value[[1L]]
+      values[name] <- value
     }
   }
   values
