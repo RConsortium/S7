@@ -71,6 +71,9 @@ S4_contains <- function(class, env = parent.frame()) {
     msg <- sprintf("`class` must be an S7 class, not a %s.", obj_desc(class))
     stop2(msg)
   }
+  if (class@abstract) {
+    stop2("S4 classes can not extend abstract S7 classes.", call = sys.call())
+  }
 
   class_name <- as.character(
     S4_registered_class(class, where, call = sys.call())@className
@@ -279,8 +282,10 @@ S4_property_prototype <- function(prop, env, package) {
   tryCatch(
     {
       value <- prop_default(prop, env, package)
+      value <- S4_decode_pseudo_null(value)
       if (is.call(value) || is.symbol(value)) {
         value <- eval(value, env)
+        value <- S4_decode_pseudo_null(value)
       }
       list(value)
     },
@@ -291,6 +296,10 @@ S4_property_prototype <- function(prop, env, package) {
       list()
     }
   )
+}
+
+S4_decode_pseudo_null <- function(value) {
+  if (identical(value, as.name("\001NULL\001"))) NULL else value
 }
 
 S4_old_classes <- function(class) {
@@ -318,8 +327,9 @@ S4_register_class <- function(class, env = parent.frame()) {
   }
 
   properties <- class@properties
-  properties <- properties[setdiff(names(properties), parent_slot_names)]
-  slots <- lapply(properties, S4_property_class, S4_env = where)
+  prototype_properties <- properties[setdiff(names(properties), ".Data")]
+  slot_properties <- properties[setdiff(names(properties), parent_slot_names)]
+  slots <- lapply(slot_properties, S4_property_class, S4_env = where)
   needs_S7_class_slot <- !"_S7_class" %in% parent_slot_names
   if (needs_S7_class_slot) {
     slots$`_S7_class` <- "S7_class"
@@ -330,7 +340,7 @@ S4_register_class <- function(class, env = parent.frame()) {
     slots = slots,
     contains = c(parent_class_name, "VIRTUAL"),
     prototype = S4_properties_prototype(
-      properties,
+      prototype_properties,
       class,
       where,
       include_S7_class = TRUE
@@ -520,15 +530,37 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
 }
 
 S4_slot_properties <- function(class) {
-  properties <- Map(S4_slot_property, class@slots, names(class@slots))
+  properties <- Map(
+    S4_slot_property,
+    class@slots,
+    names(class@slots),
+    MoreArgs = list(owner = class)
+  )
   names(properties) <- names(class@slots)
   properties
 }
 
-S4_slot_property <- function(class, name) {
+S4_slot_property <- function(class, name, owner) {
   new_property(
     class = S4_to_S7_class(methods::getClass(class)),
+    default = S4_slot_prototype_default(owner, name),
     name = name
+  )
+}
+
+S4_slot_prototype_default <- function(class, name) {
+  if (identical(name, ".Data")) {
+    return(bquote(
+      methods::getClass(.(as.character(class@className)))@prototype@.Data
+    ))
+  }
+
+  bquote(
+    attr(
+      methods::getClass(.(as.character(class@className)))@prototype,
+      .(name),
+      exact = TRUE
+    )
   )
 }
 

@@ -377,6 +377,26 @@ test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S4_contains rejects abstract S7 classes", {
+  defer(S4_remove_classes(c(
+    "S4regAbstractContainsParent",
+    "S4regAbstractContains"
+  )))
+
+  setClass("S4regAbstractContainsParent", contains = "VIRTUAL")
+  S4regAbstractContains <- new_class(
+    "S4regAbstractContains",
+    parent = getClass("S4regAbstractContainsParent"),
+    abstract = TRUE,
+    package = NULL
+  )
+
+  expect_error(
+    S4_contains(S4regAbstractContains),
+    "abstract"
+  )
+})
+
 test_that("S4_register uses S7 property defaults as S4 prototypes", {
   on.exit(S4_remove_classes(c(
     "S4regPrototype",
@@ -407,6 +427,57 @@ test_that("S4_register uses S7 property defaults as S4 prototypes", {
   expect_equal(prop(object, "y"), "a")
   expect_equal(prop(object, "z"), NULL)
   expect_true(methods::validObject(object))
+})
+
+test_that("S4 parents preserve slot prototypes in S7 constructors", {
+  defer(S4_remove_classes(c(
+    "S4regSlotPrototypeParent",
+    "S4regSlotPrototypeChild"
+  )))
+
+  setClass(
+    "S4regSlotPrototypeParent",
+    slots = list(x = "numeric"),
+    prototype = list(x = 10)
+  )
+  S4regSlotPrototypeChild <- new_class(
+    "S4regSlotPrototypeChild",
+    parent = getClass("S4regSlotPrototypeParent"),
+    package = NULL
+  )
+
+  object <- S4regSlotPrototypeChild()
+
+  expect_equal(methods::slot(object, "x"), 10)
+  expect_equal(prop(object, "x"), 10)
+})
+
+test_that("S4 prototypes use overridden inherited S7 property defaults", {
+  defer(S4_remove_classes(c(
+    "S4regOverrideParent",
+    "S4regOverrideChild",
+    "S4regOverrideShim"
+  )))
+
+  setClass(
+    "S4regOverrideParent",
+    slots = list(x = "numeric"),
+    prototype = list(x = 1)
+  )
+  S4regOverrideChild <- new_class(
+    "S4regOverrideChild",
+    parent = getClass("S4regOverrideParent"),
+    properties = list(x = new_property(class_numeric, default = 2)),
+    package = NULL
+  )
+  S4regOverrideChild_S4 <- S4_contains(S4regOverrideChild)
+  setClass("S4regOverrideShim", contains = S4regOverrideChild_S4)
+
+  expect_equal(prop(S4regOverrideChild(), "x"), 2)
+
+  object <- methods::new("S4regOverrideShim")
+  expect_equal(methods::slot(object, "x"), 2)
+  expect_equal(prop(object, "x"), 2)
 })
 
 test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 properties", {
@@ -700,6 +771,36 @@ test_that("S7 classes can extend S4 classes", {
   expect_error(methods::initialize(child, z = 1), "Property not found")
 
   expect_error(Child(x = "x", y = "a"))
+})
+
+test_that("S7 classes run S4 parent validity", {
+  defer(S4_remove_classes(c(
+    "S4regValidityParent",
+    "S4regValidityChild"
+  )))
+
+  setClass("S4regValidityParent", slots = list(x = "numeric"))
+  methods::setValidity("S4regValidityParent", function(object) {
+    if (length(methods::slot(object, "x")) != 1) {
+      "x must have length 1"
+    } else {
+      TRUE
+    }
+  })
+  S4regValidityChild <- new_class(
+    "S4regValidityChild",
+    parent = getClass("S4regValidityParent"),
+    package = NULL
+  )
+
+  expect_error(
+    S4regValidityChild(x = numeric()),
+    "x must have length 1"
+  )
+
+  object <- S4regValidityChild(x = 1)
+  methods::slot(object, "x") <- numeric()
+  expect_error(validate(object), "x must have length 1")
 })
 
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {

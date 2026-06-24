@@ -200,11 +200,12 @@ class_constructor <- function(.x) {
 
 class_validate <- function(class, object) {
   if (is_S4_class(class)) {
-    if (isS4(object)) {
-      check <- methods::validObject(object, test = TRUE)
-      return(if (isTRUE(check)) NULL else check)
+    if (!isS4(object) && has_S7_class(object)) {
+      return(S4_validate_old_class(class, object))
     }
-    return(NULL)
+
+    check <- methods::validObject(object, test = TRUE)
+    return(if (isTRUE(check)) NULL else check)
   }
 
   validator <- switch(
@@ -219,6 +220,55 @@ class_validate <- function(class, object) {
     NULL
   } else {
     validator(object)
+  }
+}
+
+S4_validate_old_class <- function(class, object) {
+  any_strings <- function(x) {
+    if (isTRUE(x)) character() else x
+  }
+
+  errors <- character()
+  extends <- rev(class@contains)
+  for (ext in extends) {
+    super_class <- ext@superClass
+    if (!ext@simple && !methods::is(object, super_class)) {
+      next
+    }
+
+    super_def <- methods::getClassDef(super_class)
+    if (is.null(super_def)) {
+      errors <- c(
+        errors,
+        sprintf(
+          "superclass %s not defined in the environment of the object's class",
+          dQuote(super_class)
+        )
+      )
+      break
+    }
+
+    validity <- methods::getValidity(super_def)
+    if (is.function(validity)) {
+      errors <- c(
+        errors,
+        any_strings(validity(methods::as(object, super_class)))
+      )
+      if (length(errors)) {
+        break
+      }
+    }
+  }
+
+  validity <- methods::getValidity(class)
+  if (length(errors) == 0L && is.function(validity)) {
+    errors <- c(errors, any_strings(validity(object)))
+  }
+
+  if (length(errors) == 0L) {
+    NULL
+  } else {
+    errors
   }
 }
 
