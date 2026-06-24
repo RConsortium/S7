@@ -131,8 +131,13 @@ S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
 }
 
 S4_registered_class_matches <- function(class, x) {
-  S4_registered_S7_class_matches(class, x) ||
+  if (S4_registered_S7_class_matches(class, x)) {
+    TRUE
+  } else if (!"_S7_class" %in% names(class@slots)) {
     S4_registered_old_class_matches(class, x)
+  } else {
+    FALSE
+  }
 }
 
 S4_registered_S7_class_matches <- function(class, x) {
@@ -140,7 +145,11 @@ S4_registered_S7_class_matches <- function(class, x) {
     return(FALSE)
   }
   registered <- methods::slot(class@prototype, "_S7_class")
-  is_class(registered) && identical(S7_class_name(registered), S7_class_name(x))
+  is_class(registered) && S4_registered_S7_class_object_matches(registered, x)
+}
+
+S4_registered_S7_class_object_matches <- function(registered, x) {
+  identical(registered, x) || isTRUE(all.equal(registered, x))
 }
 
 S4_registered_old_class_matches <- function(class, x) {
@@ -815,6 +824,10 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
       if (hasName(basic_classes, x@className)) {
         return(basic_classes[[x@className]])
       }
+    }
+    if (S4_is_reified_S7_class(x)) {
+      class <- methods::slot(x@prototype, "_S7_class")
+      return(class)
     }
     if (is_S3_oldClass(x)) {
       new_S3_class(S3_oldClass_classes(x))

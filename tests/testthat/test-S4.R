@@ -68,6 +68,31 @@ test_that("S4_register registers S7 property classes", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S4 parent slots declared as registered S7 classes use S7 classes", {
+  defer(S4_remove_classes(c(
+    "S4regSlotS7Child",
+    "S4regSlotS7Holder",
+    "S4regSlotS7Foo"
+  )))
+
+  S4regSlotS7Foo := new_class(package = NULL)
+  S4_register(S4regSlotS7Foo)
+  methods::setClass(
+    Class = "S4regSlotS7Holder",
+    slots = list(foo = "S4regSlotS7Foo")
+  )
+  S4regSlotS7Child := new_class(
+    parent = methods::getClass("S4regSlotS7Holder"),
+    package = NULL
+  )
+
+  object <- S4regSlotS7Child(foo = S4regSlotS7Foo())
+
+  expect_equal(S4regSlotS7Child@properties$foo$class, S4regSlotS7Foo)
+  expect_equal(S7_inherits(prop(object, "foo"), S4regSlotS7Foo), TRUE)
+  expect_equal(methods::validObject(object), TRUE)
+})
+
 test_that("S4_contains requires prior S4 registration", {
   on.exit(S4_remove_classes("S4regContainsUnregistered"))
   S4regContainsUnregistered := new_class(package = NULL)
@@ -93,6 +118,40 @@ test_that("S4_contains rejects unrelated S4 classes with the same name", {
   expect_snapshot(
     S4_contains(S4regContainsCollision),
     error = TRUE
+  )
+})
+
+test_that("S4_contains rejects stale S4 registrations", {
+  defer(S4_remove_classes(c(
+    "S4regStaleChild",
+    "S4regStale"
+  )))
+
+  S4regStale := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regStale)
+
+  S4regStale := new_class(
+    properties = list(y = class_character),
+    package = NULL
+  )
+  expect_snapshot(error = TRUE, {
+    S4_contains(S4regStale)
+  })
+
+  S4_register(S4regStale)
+  methods::setClass(
+    Class = "S4regStaleChild",
+    contains = S4_contains(S4regStale)
+  )
+  object <- methods::new("S4regStaleChild", y = "new")
+
+  expect_equal(prop(object, "y"), "new")
+  expect_equal(
+    intersect("x", methods::slotNames("S4regStaleChild")),
+    character()
   )
 })
 

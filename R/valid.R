@@ -167,7 +167,10 @@ validate_S4_subclass <- function(object) {
 }
 
 S4_validity_classes <- function(class) {
-  c(vcapply(class@contains, slot, "superClass"), as.character(class@className))
+  c(
+    vcapply(class@contains, methods::slot, "superClass"),
+    as.character(class@className)
+  )
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {
