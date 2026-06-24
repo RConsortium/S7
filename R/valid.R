@@ -80,8 +80,10 @@ validate_parent <- function(object, recursive) {
     return(S7_class(object)@parent)
   }
 
-  if (isS4(object) && has_S7_class(object)) {
-    return(S4_ancestor(S7_class(object)) %||% S7_object)
+  if (
+    isS4(object) && has_S7_class(object) && !S7_extends_S4(S7_class(object))
+  ) {
+    return(S7_object)
   }
 
   NULL

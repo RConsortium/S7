@@ -892,6 +892,47 @@ test_that("S7 constructors delegate to virtual S4 parent initialize methods", {
   expect_equal(prop(object, "y"), "b")
 })
 
+test_that("S7 constructors validate virtual S4 parents after initialize", {
+  defer(S4_remove_classes(c(
+    "S4regVirtualRepairParent",
+    "S4regVirtualRepairChild"
+  )))
+
+  setClass(
+    "S4regVirtualRepairParent",
+    slots = list(x = "numeric"),
+    contains = "VIRTUAL",
+    prototype = list(x = numeric())
+  )
+  methods::setValidity("S4regVirtualRepairParent", function(object) {
+    if (length(methods::slot(object, "x")) != 1) {
+      "x must have length 1"
+    } else {
+      TRUE
+    }
+  })
+  methods::setMethod(
+    "initialize",
+    "S4regVirtualRepairParent",
+    function(.Object, x = 1, ...) {
+      .Object <- callNextMethod(.Object, ...)
+      .Object@x <- x
+      .Object
+    }
+  )
+  S4regVirtualRepairChild := new_class(
+    parent = getClass("S4regVirtualRepairParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  object <- S4regVirtualRepairChild(y = "a")
+
+  expect_equal(prop(object, "x"), 1)
+  expect_equal(prop(object, "y"), "a")
+  expect_true(methods::validObject(object))
+})
+
 test_that("S7 constructors support callNextMethod in virtual S4 parents", {
   defer(S4_remove_classes(c(
     "S4regVirtualNextParent",
@@ -1415,6 +1456,45 @@ test_that("S7 classes run S4 parent validity", {
   object <- S4regValidityChild(x = 1)
   methods::slot(object, "x") <- numeric()
   expect_error(validate(object), "x must have length 1")
+})
+
+test_that("S4 subclasses of S7-over-S4 classes run S4 parent validity", {
+  defer(S4_remove_classes(c(
+    "S4regSubValidityParent",
+    "S4regSubValidityChild",
+    "S4regSubValidityShim"
+  )))
+
+  setClass("S4regSubValidityParent", slots = list(x = "numeric"))
+  methods::setValidity("S4regSubValidityParent", function(object) {
+    if (length(methods::slot(object, "x")) != 1) {
+      "x must have length 1"
+    } else {
+      TRUE
+    }
+  })
+  S4regSubValidityChild := new_class(
+    parent = getClass("S4regSubValidityParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+  S4regSubValidityChild_S4 <- S4_contains(S4regSubValidityChild)
+  setClass("S4regSubValidityShim", contains = S4regSubValidityChild_S4)
+
+  object <- methods::new("S4regSubValidityShim", x = 1, y = "a")
+  expect_snapshot(error = TRUE, {
+    prop(object, "x") <- numeric()
+  })
+
+  object <- methods::new("S4regSubValidityShim", x = 1, y = "a")
+  expect_snapshot(error = TRUE, {
+    props(object) <- list(x = numeric())
+  })
+
+  object <- methods::new("S4regSubValidityShim", x = 1, y = "a")
+  expect_snapshot(error = TRUE, {
+    methods::initialize(object, x = numeric())
+  })
 })
 
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {

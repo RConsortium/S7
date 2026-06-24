@@ -162,8 +162,15 @@ new_S4_constructor <- function(parent, properties, envir, package) {
   names(parent_value_args) <- parent_value_nms
 
   self_value_args <- as_names(names2(self_args))
-  parent_seed <- if (".Data" %in% parent_nms) {
-    if (parent@virtual) quote(.Data) else quote(.parent_values[[".Data"]])
+  parent_seed <- if (parent@virtual) {
+    quote(.parent_seed)
+  } else if (".Data" %in% parent_nms) {
+    quote(.parent_values[[".Data"]])
+  } else {
+    quote(.S7_object())
+  }
+  virtual_parent_seed <- if (".Data" %in% parent_nms) {
+    quote(.Data)
   } else {
     quote(.S7_object())
   }
@@ -186,7 +193,10 @@ new_S4_constructor <- function(parent, properties, envir, package) {
       quote(.parent_args <- list()),
       parent_arg_exprs,
       list(
+        bquote(.parent_seed <- .(virtual_parent_seed)),
+        quote(attr(.parent_seed, ".should_validate") <- FALSE),
         bquote(.object <- .(new_object_call)),
+        quote(attr(.object, ".should_validate") <- NULL),
         quote(do.call(.S4_initialize_parent, c(list(.object), .parent_args)))
       )
     ))
@@ -215,6 +225,8 @@ S4_initialize_parent <- function(class) {
   function(.Object, ...) {
     method <- methods::selectMethod("initialize", class)
     if (methods::is(method, "derivedDefaultMethod")) {
+      attr(.Object, ".should_validate") <- NULL
+      validate(.Object)
       return(.Object)
     }
 
@@ -222,6 +234,7 @@ S4_initialize_parent <- function(class) {
     class(.Object) <- class
     out <- method(.Object, ...)
     class(out) <- object_class
+    attr(out, ".should_validate") <- NULL
     validate(out)
     out
   }

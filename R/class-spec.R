@@ -200,7 +200,7 @@ class_constructor <- function(.x) {
 
 class_validate <- function(class, object) {
   if (is_S4_class(class)) {
-    if (!isS4(object) && has_S7_class(object)) {
+    if (has_S7_class(object)) {
       return(S4_validate_old_class(class, object))
     }
 
@@ -326,7 +326,7 @@ class_dispatch <- function(x) {
         parent,
         if (
           is_S4_class(x@parent) &&
-            !identical(tail(parent, 1), "S7_object")
+            !identical(utils::tail(parent, 1), "S7_object")
         ) {
           "S7_object"
         }
