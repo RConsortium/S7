@@ -24,7 +24,7 @@ new_constructor <- function(
         bquote(S7::new_object(S7::S7_object(), ..(self_args)), splice = TRUE)
       }
 
-    return(new_function(
+    return(new_S7_constructor(
       args = arg_info$self,
       body = as.call(c(
         quote(`{`),
@@ -37,6 +37,39 @@ new_constructor <- function(
     ))
   }
 
+  # Prefer to inline properties to give better constructor formals, but
+  # that's not always safe
+  if (can_inline(parent)) {
+    constructor_inline(parent, properties, envir, package)
+  } else {
+    constructor_forward(parent, properties, envir, package)
+  }
+}
+
+
+can_inline <- function(parent) {
+  if (is_external_class(parent)) {
+    FALSE
+  } else if (is_class(parent)) {
+    # can't inline custom constructors (#609)
+    inherits(parent@constructor, "S7_constructor")
+  } else if (is_S3_class(parent)) {
+    ctor <- parent$constructor
+    if (is_S3_stub_constructor(ctor)) {
+      return(TRUE)
+    }
+    # S7's own base/S3 wrappers (e.g. class_factor) define their constructors in
+    # the S7 namespace and are safe to inline; a user `new_S3_class()` wrapper
+    # carries the user's environment and must forward.
+    env <- environment(ctor)
+    identical(env, baseenv()) || identical(env, asNamespace("S7"))
+  } else {
+    TRUE
+  }
+}
+
+
+constructor_inline <- function(parent, properties, envir, package) {
   # We need a name so we get a compact constructor, and the actual function
   # which we'll embed in the constructor's environment
   if (is_class(parent)) {
@@ -94,7 +127,77 @@ new_constructor <- function(
   # And finally the constructor itself
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
-  new_function(constr_args[constr_nms], child_call, env)
+  new_S7_constructor(constr_args[constr_nms], child_call, env)
+}
+
+# The forwarding constructor: the child takes `...` and hands it to the parent
+# constructor, so the parent's arguments (and their defaults) are matched and
+# evaluated by the parent itself. Only the child's own properties become named
+# arguments, listed after `...`.
+constructor_forward <- function(parent, properties, envir, package) {
+  # Work out how to refer to and call the parent's constructor:
+  # * `ref`: passed to `new_call()` to build the parent call (a name, or a
+  #   `package`/`name` pair for an external class in another package).
+  # * `name`/`fun`: the constructor to embed in the child's environment (NULL
+  #   for external classes, which are resolved dynamically via `pkg::name`).
+  if (is_external_class(parent)) {
+    resolved <- resolve_external_class_req(parent, package)
+    ref <- if (identical(package, parent$package)) {
+      parent$name
+    } else {
+      c(parent$package, parent$name)
+    }
+    name <- NULL
+    fun <- NULL
+    parent_props <- attr(resolved, "properties", exact = TRUE) %||% list()
+    parent_formal_nms <- names(formals(resolved))
+  } else if (is_class(parent)) {
+    ref <- name <- parent@name
+    fun <- parent
+    parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
+    parent_formal_nms <- names(formals(parent))
+  } else if (is_S3_class(parent)) {
+    ref <- name <- paste0("new_", parent$class[[1]])
+    fun <- parent$constructor
+    parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
+    parent_formal_nms <- names(formals(fun))
+  } else {
+    # user facing error in S7_class()
+    stop2("Unsupported `parent` type.", call = NULL)
+  }
+
+  # New (non read-only) properties become name-only arguments after `...`.
+  self_props <- properties[!vlapply(properties, prop_is_read_only)]
+  self_nms <- names(self_props)
+  self_args <- as.pairlist(lapply(
+    setNames(, self_nms),
+    function(name) prop_default(self_props[[name]], envir, package)
+  ))
+
+  # Overridden parent properties are passed to *both* the parent (so the child
+  # default wins over the parent default) and new_object() (so the child setter
+  # runs). An override is only forwarded to the parent if it can accept it.
+  override_nms <- intersect(self_nms, names(parent_props))
+  parent_override_nms <- if ("..." %in% parent_formal_nms) {
+    override_nms
+  } else {
+    intersect(override_nms, parent_formal_nms)
+  }
+
+  # Parent(<override = override>, ...)
+  parent_call <- new_call(ref, as_names(c(parent_override_nms, "...")))
+
+  new_object <- c(if (!has_S7_symbols(envir, "new_object")) "S7", "new_object")
+  child_call <- new_call(new_object, c(list(parent_call), as_names(self_nms)))
+
+  # `...` must come first, followed by the child's own properties.
+  constr_args <- as.pairlist(c(alist(... = ), self_args))
+
+  env <- new.env(parent = envir)
+  if (!is.null(name)) {
+    env[[name]] <- fun
+  }
+  new_S7_constructor(constr_args, child_call, env)
 }
 
 constructor_args <- function(
@@ -117,6 +220,27 @@ constructor_args <- function(
 }
 
 # helpers -----------------------------------------------------------------
+
+new_S7_constructor <- function(
+  args = NULL,
+  body = NULL,
+  env = asNamespace("S7")
+) {
+  f <- new_function(args, body, env)
+  class(f) <- "S7_constructor"
+  f
+}
+
+#' @export
+print.S7_constructor <- function(x, ...) {
+  print(unclass(x), ...)
+  invisible(x)
+}
+
+#' @export
+str.S7_constructor <- function(object, ...) {
+  str(unclass(object), ...)
+}
 
 is_property_dynamic <- function(x) is.function(x$getter)
 

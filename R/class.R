@@ -15,11 +15,12 @@
 #'   `Foo := new_class(...)`. This object both represents the class and is used
 #'   to construct new instances of the class.
 #' @param parent The parent class to inherit behavior from.
-#'   There are three options:
+#'   There are four options:
 #'
 #'   * An S7 class, like [S7_object].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
+#'   * A class from another package, wrapped by [new_external_class()].
 #' @param package Package name. This is automatically resolved if the class is
 #'   defined in a package, and `NULL` otherwise.
 #'
@@ -111,6 +112,15 @@ new_class <- function(
 
   parent <- as_class(parent)
 
+  # We have to resolve at build-time to validate the properties we know.
+  # But we otherwise avoid embedding the resolved parent because its definition
+  # may have changed in between package build time and run time.
+  if (is_external_class(parent)) {
+    parent_resolved <- resolve_external_class_req(parent, package)
+  } else {
+    parent_resolved <- parent
+  }
+
   # Don't check arguments for S7_object
   if (!is.null(parent)) {
     check_can_inherit(parent)
@@ -125,14 +135,15 @@ new_class <- function(
     }
     if (
       abstract &&
-        (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
+        (!is_class(parent_resolved) ||
+          !(parent_resolved@abstract || parent_resolved@name == "S7_object"))
     ) {
       stop2("Abstract classes must have abstract parents.")
     }
   }
 
   # Combine properties from parent, overriding as needed
-  parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
+  parent_props <- attr(parent_resolved, "properties", exact = TRUE) %||% list()
   new_props <- as_properties(properties)
   check_prop_names(new_props)
   check_prop_overrides(new_props, parent_props, name, parent)
@@ -249,7 +260,9 @@ c.S7_class <- function(...) {
   stop2("Can not combine S7 class objects.")
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) || is_S3_class(x) || is_class(x) || is_external_class(x)
+}
 
 check_can_inherit <- function(
   x,
