@@ -65,33 +65,18 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
     )
   )
 
-  alias_pkg <- tempfile("aliasbind")
-  dir.create(file.path(alias_pkg, "R"), recursive = TRUE)
-  writeLines(
-    c(
-      "Package: aliasbind",
-      "Version: 0.0.0",
-      "Title: Alias Bind",
-      "Description: Test package exporting a conflicting bind operator.",
-      "License: MIT",
-      "Encoding: UTF-8"
-    ),
-    file.path(alias_pkg, "DESCRIPTION")
-  )
-  writeLines('export(":=")', file.path(alias_pkg, "NAMESPACE"))
-  writeLines(
-    c(
-      "`:=` <- function(lhs, rhs) {",
-      '  "aliasbind"',
-      "}"
-    ),
-    file.path(alias_pkg, "R", "bind.R")
-  )
-  quick_install(alias_pkg, tmp_lib)
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
 
-  check_order <- function(order) {
+  check_order <- function(package, order) {
     expect_no_error(callr::r(
-      function(order) {
+      function(package, order) {
         messages <- character()
         warnings <- character()
 
@@ -99,9 +84,9 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
           {
             if (identical(order, "S7-first")) {
               library(S7)
-              library(aliasbind)
+              library(package, character.only = TRUE)
             } else {
-              library(aliasbind)
+              library(package, character.only = TRUE)
               library(S7)
             }
           },
@@ -121,10 +106,12 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
           !any(grepl(":=", warnings, fixed = TRUE))
         })
       },
-      args = list(order = order)
+      args = list(package = package, order = order)
     ))
   }
 
-  check_order("S7-first")
-  check_order("alias-first")
+  for (package in packages) {
+    check_order(package, "S7-first")
+    check_order(package, "alias-first")
+  }
 })
