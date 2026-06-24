@@ -123,45 +123,39 @@ test_that("can use `...` in parent constructor", {
 test_that("subclass forwards `...` to a custom parent constructor (#609)", {
   # The parent default references a symbol from the parent's own environment,
   # which the child can't see -- so it must be evaluated by the parent.
-  make_parent <- function() {
+  Parent <- local({
     secret <- 42L
     new_class(
       name = "Parent",
-      package = NULL,
       properties = list(x = class_integer),
       constructor = function(x = secret) new_object(S7_object(), x = x)
     )
-  }
-  Parent <- make_parent()
+  })
   Child := new_class(
     parent = Parent,
-    package = NULL,
     properties = list(y = class_double)
   )
 
   expect_named(formals(Child), c("...", "y"))
-  expect_equal(Child()@x, 42L) # parent default resolved in the parent's env
+  expect_equal(Child()@x, 42L)
   expect_equal(Child(10L)@x, 10L) # positional arg forwarded to the parent
   expect_equal(Child(y = 2)@y, 2) # named child arg is not forwarded
 })
 
 test_that("subclass of a custom S3 parent forwards `...`", {
-  new_rle <- function(.data = list(), n = integer()) {
-    structure(.data, n = n, class = "rle2")
-  }
-  rle2 <- new_S3_class("rle2", constructor = new_rle)
-
-  Child := new_class(
-    parent = rle2,
-    package = NULL,
-    properties = list(z = class_double)
+  rle2 <- new_S3_class(
+    "rle2",
+    constructor = function(.data = list(), n = integer()) {
+      structure(.data, n = n, class = "rle2")
+    }
   )
 
+  Child := new_class(parent = rle2, properties = list(z = class_double))
   expect_named(formals(Child), c("...", "z"))
   expect_equal(Child(z = 1)@z, 1)
 
   # S7's own S3 wrappers stay on the inline path
-  Factor := new_class(parent = class_factor, package = NULL)
+  Factor := new_class(parent = class_factor)
   expect_named(formals(Factor), c(".data", "levels"))
 })
 

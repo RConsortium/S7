@@ -107,11 +107,6 @@ constructor_inline <- function(parent, properties, envir, package) {
   constr_nms <- setdiff(constr_nms, read_only_override_nms)
   override_nms <- setdiff(override_nms, read_only_override_nms)
 
-  # If parent takes ..., we can't match overrides by name, so pass all args on
-  if ("..." %in% names(arg_info$parent)) {
-    parent_nms <- union(parent_nms, override_nms)
-  }
-
   # Now we can generate the parent and child calls
   parent_call <- new_call(parent_name, as_names(parent_nms))
   new_object <- c(if (!has_S7_symbols(envir, "new_object")) "S7", "new_object")
