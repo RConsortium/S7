@@ -1635,6 +1635,53 @@ test_that("S4 subclasses of S7 classes run concrete S4 validity", {
   })
 })
 
+test_that("S4 subclass validation preserves concrete class package", {
+  pkg_env <- local_package("s4regvalidpkg")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "S4regPackageValidityParent",
+        "S4regPackageValidityChild"
+      ))
+      S4_remove_classes("S4regPackageValidityChild", pkg_env)
+    })
+  })
+
+  S4regPackageValidityParent := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regPackageValidityParent)
+  setClass("S4regPackageValidityChild")
+  pkg_child <- methods::setClass(
+    "S4regPackageValidityChild",
+    contains = S4_contains(S4regPackageValidityParent),
+    where = pkg_env
+  )
+  methods::setValidity(
+    pkg_child@className,
+    function(object) {
+      if (length(prop(object, "x")) != 1) {
+        "x must have length 1"
+      } else {
+        TRUE
+      }
+    },
+    where = pkg_env
+  )
+
+  object <- methods::new(pkg_child@className, x = 1)
+  methods::slot(object, "x") <- numeric()
+
+  expect_match(
+    methods::validObject(object, test = TRUE),
+    "x must have length 1"
+  )
+  expect_snapshot(error = TRUE, {
+    validate(object)
+  })
+})
+
 test_that("S4 initialization validates after S4-only slots are set", {
   defer(S4_remove_classes(c(
     "S4regInitValidityParent",

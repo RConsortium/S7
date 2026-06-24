@@ -156,7 +156,7 @@ validate_S4_subclass <- function(object) {
     return(NULL)
   }
 
-  class <- methods::getClass(class(object)[[1L]])
+  class <- methods::getClass(class(object))
   if (S4_is_reified_S7_class(class)) {
     return(NULL)
   }
