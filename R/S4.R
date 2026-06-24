@@ -516,7 +516,7 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
       }
     }
     if (is_oldClass(x)) {
-      new_S3_class(methods::extends(x))
+      new_S3_class(setdiff(methods::extends(x), "oldClass"))
     } else {
       x
     }

@@ -73,6 +73,18 @@ test_that("S7 classes can inherit from S4 but not class unions", {
   )
 })
 
+test_that("S7_class can be used as a property name", {
+  foo <- new_class(
+    "foo",
+    properties = list(S7_class = class_numeric),
+    package = NULL
+  )
+  object <- foo(S7_class = 1)
+
+  expect_equal(prop(object, "S7_class"), 1)
+  expect_equal(S7_class(object), foo)
+})
+
 test_that("inheritance combines properties for parent classes", {
   foo1 := new_class(properties = list(x = class_double))
   foo2 := new_class(foo1, properties = list(y = class_double))

@@ -23,9 +23,7 @@ new_constructor <- function(
 
     s4_data_part <- is_S4_class(parent) && ".Data" %in% names(parent@slots)
     parent_call <- if (s4_data_part) {
-      bquote(
-        methods::getClass(.(as.character(parent@className)))@prototype@.Data
-      )
+      quote(.Data)
     } else if (has_S7_symbols(envir, "S7_object")) {
       quote(S7_object())
     } else {

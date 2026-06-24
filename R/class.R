@@ -475,15 +475,6 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
   }
-
-  if ("S7_class" %in% nms) {
-    msg <- paste0(
-      "Property can't use S7 reserved name: ",
-      "S7_class",
-      "."
-    )
-    stop2(msg, call = call)
-  }
 }
 
 check_prop_overrides <- function(

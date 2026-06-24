@@ -713,6 +713,28 @@ test_that("converts S4 representation of S3 classes to S7 representation", {
   )
 })
 
+test_that("S4 old-class slots accept normal S3 class vectors", {
+  defer(S4_remove_classes(c(
+    "S4regOldSlotChild",
+    "S4regOldSlotParent",
+    "S4regOldFoo",
+    "S4regOldBar"
+  )))
+
+  setOldClass(c("S4regOldFoo", "S4regOldBar"))
+  setClass("S4regOldSlotParent", slots = list(x = "S4regOldFoo"))
+  S4regOldSlotChild <- new_class(
+    "S4regOldSlotChild",
+    parent = getClass("S4regOldSlotParent"),
+    package = NULL
+  )
+  x <- structure(list(), class = c("S4regOldFoo", "S4regOldBar"))
+
+  object <- S4regOldSlotChild(x = x)
+
+  expect_equal(prop(object, "x"), x)
+})
+
 test_that("errors on non-S4 classes", {
   expect_snapshot(S4_to_S7_class(1), error = TRUE)
 })
@@ -885,6 +907,66 @@ test_that("S4 initialize supports S3 data parts", {
   child <- methods::initialize(child, .Data = 3.5)
   expect_equal(as.vector(child), 3.5)
   expect_true(methods::validObject(child))
+})
+
+test_that("S4 data part constructors use the .Data argument", {
+  defer(S4_remove_classes(c(
+    "S4regDataPartParent",
+    "S4regDataPartChild"
+  )))
+
+  setClass("S4regDataPartParent", contains = "numeric")
+  methods::setValidity("S4regDataPartParent", function(object) {
+    if (!identical(as.vector(object), 1)) {
+      "data part must be 1"
+    } else {
+      TRUE
+    }
+  })
+  S4regDataPartChild <- new_class(
+    "S4regDataPartChild",
+    parent = getClass("S4regDataPartParent"),
+    package = NULL
+  )
+
+  object <- S4regDataPartChild(.Data = 1)
+
+  expect_equal(as.vector(object), 1)
+  expect_equal(prop(object, ".Data"), 1)
+  expect_true(methods::validObject(object))
+})
+
+test_that("S4 subclasses read and write special-named S7 property slots", {
+  defer(S4_remove_classes(c(
+    "S4regSpecialSlotsChild",
+    "S4regSpecialSlots"
+  )))
+
+  S4regSpecialSlots <- new_class(
+    "S4regSpecialSlots",
+    properties = list(
+      names = class_character,
+      dim = class_integer
+    ),
+    package = NULL
+  )
+  S4_register(S4regSpecialSlots)
+  S4regSpecialSlots_S4 <- S4_contains(S4regSpecialSlots)
+  setClass("S4regSpecialSlotsChild", contains = S4regSpecialSlots_S4)
+
+  object <- methods::new(
+    "S4regSpecialSlotsChild",
+    names = "n",
+    dim = 2L
+  )
+
+  expect_equal(methods::slot(object, "names"), "n")
+  expect_equal(methods::slot(object, "dim"), 2L)
+  expect_equal(prop(object, "names"), "n")
+
+  prop(object, "names") <- "updated"
+  expect_equal(methods::slot(object, "names"), "updated")
+  expect_equal(prop(object, "names"), "updated")
 })
 
 test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
