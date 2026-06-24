@@ -2,17 +2,46 @@
 
 ## This package
 
-- Use `:=` with
-  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  and
+- Whenever a function has a name argument, use `:=` instead of `<-`.
+  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md),
   [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md),
-  i.e. `foo := new_class(...)` instead of
-  `foo <- new_class("foo", ...)`.
+  and test helper `local_package()` have name as first argument:
+
+  ``` r
+
+  # instead of
+  foo <- new_class("foo", ...)
+  bar <- new_generic("bar")
+  pkg <- local_package("pkg", ...)
+
+  # prefer
+  foo := new_class(...)
+  bar := new_generic()
+  pkg := local_package(...)
+  ```
+
+  The same applies when `name` is used explicitly:
+
+  ``` r
+
+  # instead of
+  baz <- new_external_generic(package = "pkg", name = "baz")
+
+  # prefer
+  baz := new_external_generic(package = "pkg")
+  ```
+
+  Avoid assignments where the variable and name are inconsistent unless
+  deliberately illustrating user error or other pathological cases, i.e.
+  avoid `bar <- new_class("baz")`.
+
 - Always name all arguments to
   [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   and to constructors.
+
 - Use `defer()` instead of
   [`on.exit()`](https://rdrr.io/r/base/on.exit.html).
+
 - For tests, only use `test_that()`, not `describe()`/`it()`
 
 ## Package development

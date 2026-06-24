@@ -231,6 +231,8 @@ for more details.
   [`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
   : Package hooks for S7 methods
+- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+  : Classes in other packages
 - [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
   : Generics in other packages
 

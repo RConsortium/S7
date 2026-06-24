@@ -54,17 +54,36 @@
 
 <div class="section level2">
 <h2 id="this-package">This package<a class="anchor" aria-label="anchor" href="#this-package"></a></h2>
-<ul><li>Use <code>:=</code> with <code><a href="reference/new_class.html">new_class()</a></code> and <code><a href="reference/new_generic.html">new_generic()</a></code>, i.e. <code>foo := new_class(...)</code> instead of <code>foo &lt;- new_class("foo", ...)</code>.</li>
-<li>Always name all arguments to <code><a href="reference/new_class.html">new_class()</a></code> and to constructors.</li>
-<li>Use <code>defer()</code> instead of <code><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit()</a></code>.</li>
-<li>For tests, only use <code>test_that()</code>, not <code>describe()</code>/<code>it()</code>
+<ul><li>
+<p>Whenever a function has a name argument, use <code>:=</code> instead of <code>&lt;-</code>. <code><a href="reference/new_class.html">new_class()</a></code>, <code><a href="reference/new_generic.html">new_generic()</a></code>, and test helper <code>local_package()</code> have name as first argument:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># instead of</span></span>
+<span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"foo"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="va">bar</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"bar"</span><span class="op">)</span></span>
+<span><span class="va">pkg</span> <span class="op">&lt;-</span> <span class="fu">local_package</span><span class="op">(</span><span class="st">"pkg"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># prefer</span></span>
+<span><span class="va">foo</span> <span class="op">:=</span> <span class="fu"><a href="reference/new_class.html">new_class</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
+<span><span class="va">bar</span> <span class="op">:=</span> <span class="fu"><a href="reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">pkg</span> <span class="op">:=</span> <span class="fu">local_package</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<p>The same applies when <code>name</code> is used explicitly:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># instead of</span></span>
+<span><span class="va">baz</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/new_external_generic.html">new_external_generic</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"pkg"</span>, name <span class="op">=</span> <span class="st">"baz"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># prefer</span></span>
+<span><span class="va">baz</span> <span class="op">:=</span> <span class="fu"><a href="reference/new_external_generic.html">new_external_generic</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"pkg"</span><span class="op">)</span></span></code></pre></div>
+<p>Avoid assignments where the variable and name are inconsistent unless deliberately illustrating user error or other pathological cases, i.e. avoid <code>bar &lt;- new_class("baz")</code>.</p>
 </li>
+<li><p>Always name all arguments to <code><a href="reference/new_class.html">new_class()</a></code> and to constructors.</p></li>
+<li><p>Use <code>defer()</code> instead of <code><a href="https://rdrr.io/r/base/on.exit.html" class="external-link">on.exit()</a></code>.</p></li>
+<li><p>For tests, only use <code>test_that()</code>, not <code>describe()</code>/<code>it()</code></p></li>
 </ul></div>
 <div class="section level2">
 <h2 id="package-development">Package development<a class="anchor" aria-label="anchor" href="#package-development"></a></h2>
 <div class="section level3">
 <h3 id="key-commands">Key commands<a class="anchor" aria-label="anchor" href="#key-commands"></a></h3>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># To run code</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">code</span></span>

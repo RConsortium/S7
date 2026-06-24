@@ -97,6 +97,29 @@ you will need to use the `DESCRIPTION` Collate field (or the equivalent
 roxygen2 `@include` tag) to ensure the files are loaded in the correct
 order.
 
+### Methods for suggested packages
+
+Use
+[`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
+and
+[`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+to register methods for S7 generics and classes from suggested packages,
+without taking a hard dependency:
+
+``` r
+
+TheirClass <- new_external_class("theirpkg", "TheirClass")
+method(my_generic, TheirClass) <- function(x) { ... }
+
+their_generic <- new_external_generic("theirpkg", "their_generic", "x")
+method(their_generic, MyClass) <- function(x) { ... }
+```
+
+S7 will register these methods automatically when the suggested package
+is loaded, via
+[`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+as described above.
+
 ## Backward compatibility
 
 ### S3

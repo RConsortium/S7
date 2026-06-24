@@ -129,6 +129,13 @@
   overridden properties are passed to both the parent constructor and
   the new object, so a subclass can override a parent property whose
   default is mandatory.
+- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+  creates a delayed reference to an S7 class in another package (or your
+  own package, but not yet defined). It is useful for registering
+  methods on classes from suggested packages
+  ([\#573](https://github.com/RConsortium/S7/issues/573)) and for
+  creating self-referential or mutually recursive classes
+  ([\#250](https://github.com/RConsortium/S7/issues/250)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
