@@ -128,6 +128,44 @@ on_load_define_S7_method <- function() {
 }
 methods::setOldClass(c("S7_method", "function", "S7_object"))
 
+# trace() builds a "<class>WithTrace" S4 class for the traced function on
+# the fly, but the machinery it uses assumes that class() returns a single
+# string, which isn't true for S7 generics and methods. So we register the
+# traceable classes in advance, along with an initialize method that works
+# around the same assumption in methods:::.initTraceable() by giving it a
+# classless copy of the function (#584).
+make_traceable <- function(class, props) {
+  slots <- rep(list("ANY"), length(props))
+  names(slots) <- props
+
+  methods::setClass(
+    paste0(class, "WithTrace"),
+    contains = c(class, "traceable"),
+    slots = slots
+  )
+  methods::setMethod(
+    "initialize",
+    paste0(class, "WithTrace"),
+    function(.Object, def, ...) {
+      if (missing(def)) {
+        return(methods::callNextMethod(.Object, ...))
+      }
+      original <- def
+      class(def) <- NULL
+      .Object <- methods::callNextMethod(.Object, def = def, ...)
+      .Object@original <- original
+      # Mirror the S7 properties so introspection (e.g. print methods that
+      # access x@generic) keeps working on the traced object
+      for (prop in props) {
+        methods::slot(.Object, prop) <- attr(original, prop, exact = TRUE)
+      }
+      .Object
+    }
+  )
+}
+make_traceable("S7_generic", c("name", "methods", "dispatch_args"))
+make_traceable("S7_method", c("generic", "signature"))
+
 # hooks -------------------------------------------------------------------
 
 .onAttach <- function(libname, pkgname) {
