@@ -156,9 +156,10 @@ S4_registered_old_class_matches <- function(class, x) {
   if (!".S3Class" %in% names(class@slots)) {
     return(FALSE)
   }
+  classes <- if (is_S3_class(x)) x$class else S4_reified_old_classes(x)
   identical(
     methods::slot(class@prototype, ".S3Class"),
-    S4_reified_old_classes(x)
+    classes
   )
 }
 
