@@ -25,14 +25,16 @@ new_constructor <- function(
       }
 
     return(new_S7_constructor(
-      args = arg_info$self,
-      body = as.call(c(
-        quote(`{`),
-        # Force all promises here so that any errors are signaled from
-        # the constructor() call instead of the new_object() call.
-        unname(self_args),
-        new_object_call
-      )),
+      new_function(
+        args = arg_info$self,
+        body = as.call(c(
+          quote(`{`),
+          # Force all promises here so that any errors are signaled from
+          # the constructor() call instead of the new_object() call.
+          unname(self_args),
+          new_object_call
+        ))
+      ),
       env = envir
     ))
   }
@@ -52,17 +54,12 @@ can_inline <- function(parent) {
     FALSE
   } else if (is_class(parent)) {
     # can't inline custom constructors (#609)
-    inherits(parent@constructor, "S7_constructor")
+    is_default_constructor(parent@constructor)
   } else if (is_S3_class(parent)) {
-    ctor <- parent$constructor
-    if (is_S3_stub_constructor(ctor)) {
-      return(TRUE)
-    }
-    # S7's own base/S3 wrappers (e.g. class_factor) define their constructors in
-    # the S7 namespace and are safe to inline; a user `new_S3_class()` wrapper
-    # carries the user's environment and must forward.
-    env <- environment(ctor)
-    identical(env, baseenv()) || identical(env, asNamespace("S7"))
+    # S7's own base/S3 wrappers (e.g. class_factor) and the stub are inlinable;
+    # a user `new_S3_class(constructor = )` carries the user's environment and
+    # must forward (#609)
+    is_default_constructor(parent$constructor)
   } else {
     TRUE
   }
@@ -127,7 +124,10 @@ constructor_inline <- function(parent, properties, envir, package) {
   # And finally the constructor itself
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
-  new_S7_constructor(constr_args[constr_nms], child_call, env)
+  new_S7_constructor(
+    new_function(constr_args[constr_nms], child_call),
+    env = env
+  )
 }
 
 # The forwarding constructor: the child takes `...` and hands it to the parent
@@ -197,7 +197,7 @@ constructor_forward <- function(parent, properties, envir, package) {
   if (!is.null(name)) {
     env[[name]] <- fun
   }
-  new_S7_constructor(constr_args, child_call, env)
+  new_S7_constructor(new_function(constr_args, child_call), env = env)
 }
 
 constructor_args <- function(
@@ -221,14 +221,8 @@ constructor_args <- function(
 
 # helpers -----------------------------------------------------------------
 
-new_S7_constructor <- function(
-  args = NULL,
-  body = NULL,
-  env = asNamespace("S7")
-) {
-  f <- new_function(args, body, env)
-  class(f) <- "S7_constructor"
-  f
+is_default_constructor <- function(constructor) {
+  inherits(constructor, "S7_constructor")
 }
 
 #' @export
