@@ -220,26 +220,28 @@ SEXP pseudo_null(void) {
 }
 
 static inline
-Rboolean prop_has_public_slot(SEXP object, SEXP name_sym) {
-  return Rf_isS4(object) && R_has_slot(object, name_sym);
+Rboolean prop_has_storage_slot(SEXP object, SEXP storage_sym) {
+  return Rf_isS4(object) && R_has_slot(object, storage_sym);
 }
 
 static inline
 SEXP prop_get_storage(SEXP object, SEXP name_sym) {
-  SEXP value = prop_has_public_slot(object, name_sym) ?
-    R_do_slot(object, name_sym) :
-    Rf_getAttrib(object, prop_storage_sym(name_sym));
+  SEXP storage_sym = prop_storage_sym(name_sym);
+  SEXP value = prop_has_storage_slot(object, storage_sym) ?
+    R_do_slot(object, storage_sym) :
+    Rf_getAttrib(object, storage_sym);
   return value == pseudo_null() ? R_NilValue : value;
 }
 
 static inline
 SEXP prop_set_storage(SEXP object, SEXP name_sym, SEXP value) {
+  SEXP storage_sym = prop_storage_sym(name_sym);
   if (value == R_NilValue)
     value = pseudo_null();
-  if (prop_has_public_slot(object, name_sym))
-    R_do_slot_assign(object, name_sym, value);
+  if (prop_has_storage_slot(object, storage_sym))
+    R_do_slot_assign(object, storage_sym, value);
   else
-    Rf_setAttrib(object, prop_storage_sym(name_sym), value);
+    Rf_setAttrib(object, storage_sym, value);
   return object;
 }
 

@@ -202,6 +202,37 @@ test_that("fallback convert drops S4-only slots when upcasting S4 subclasses", {
   expect_null(attr(parent, ".S3Class", exact = TRUE))
 })
 
+test_that("fallback convert preserves renamed S7 property slots when upcasting", {
+  defer(S4_remove_classes(c(
+    "ConvertS4SpecialChild",
+    "ConvertS4SpecialParent"
+  )))
+
+  ConvertS4SpecialParent := new_class(
+    properties = list(names = class_character),
+    package = NULL
+  )
+  S4_register(ConvertS4SpecialParent)
+  ConvertS4SpecialParent_S4 <- S4_contains(ConvertS4SpecialParent)
+  methods::setClass(
+    "ConvertS4SpecialChild",
+    contains = ConvertS4SpecialParent_S4,
+    slots = list(extra = "character")
+  )
+
+  child <- methods::new(
+    "ConvertS4SpecialChild",
+    names = "n",
+    extra = "old"
+  )
+  parent <- convert(child, to = ConvertS4SpecialParent)
+
+  expect_identical(isS4(parent), FALSE)
+  expect_equal(S7_class(parent), ConvertS4SpecialParent)
+  expect_equal(prop(parent, "names"), "n")
+  expect_null(attr(parent, "extra", exact = TRUE))
+})
+
 test_that("fallback convert can use explicit S4 coercion via methods::as", {
   on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
   setClass("ParentS4", slots = list(x = "numeric"))

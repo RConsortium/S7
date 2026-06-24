@@ -192,7 +192,7 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
       is_class(from_class) &&
       !identical(class(from)[[1L]], S7_class_name(from_class))
     s4_slot_attrs <- if (is_s4_subclass) {
-      setdiff(methods::slotNames(from), c(to_prop_nms, ".Data"))
+      setdiff(methods::slotNames(from), c(to_props, ".Data"))
     } else {
       character()
     }

@@ -412,6 +412,41 @@ test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S4_register preserves S7 dispatch through abstract S7 parents", {
+  defer(S4_remove_classes(c(
+    "S4regAbstractPlainChild",
+    "S4regAbstractPlainConcrete",
+    "S4regAbstractPlain"
+  )))
+
+  S4regAbstractPlain := new_class(
+    abstract = TRUE,
+    package = NULL
+  )
+  S4regAbstractPlainConcrete := new_class(
+    parent = S4regAbstractPlain,
+    package = NULL
+  )
+  S4_register(S4regAbstractPlainConcrete)
+  S4regAbstractPlainConcrete_S4 <- S4_contains(S4regAbstractPlainConcrete)
+  setClass(
+    "S4regAbstractPlainChild",
+    contains = S4regAbstractPlainConcrete_S4
+  )
+
+  object <- methods::new("S4regAbstractPlainChild")
+  S4regAbstractPlainGeneric <- new_generic("S4regAbstractPlainGeneric", "x")
+  method(S4regAbstractPlainGeneric, S4regAbstractPlain) <- function(x) {
+    "abstract"
+  }
+
+  expect_equal(S4regAbstractPlainGeneric(object), "abstract")
+  expect_contains(
+    obj_dispatch(object),
+    c("S4regAbstractPlainConcrete", "S4regAbstractPlain")
+  )
+})
+
 test_that("S4_contains rejects abstract S7 classes", {
   defer(S4_remove_classes(c(
     "S4regAbstractContainsParent",
@@ -1196,22 +1231,59 @@ test_that("S4 subclasses read and write special-named S7 property storage slots"
   )
   S4_register(S4regSpecialSlots)
   S4regSpecialSlots_S4 <- S4_contains(S4regSpecialSlots)
-  setClass("S4regSpecialSlotsChild", contains = S4regSpecialSlots_S4)
+  setClass(
+    "S4regSpecialSlotsChild",
+    contains = S4regSpecialSlots_S4,
+    slots = list(names = "character")
+  )
 
   object <- methods::new(
     "S4regSpecialSlotsChild",
     names = "n",
     dim = 2L
   )
+  methods::slot(object, "names") <- "s4-only"
 
   expect_equal(methods::slot(object, "_names"), "n")
   expect_equal(methods::slot(object, "_dim"), 2L)
+  expect_equal(methods::slot(object, "names"), "s4-only")
   expect_equal(prop(object, "names"), "n")
   expect_true(methods::validObject(object))
 
   prop(object, "names") <- "updated"
   expect_equal(methods::slot(object, "_names"), "updated")
+  expect_equal(methods::slot(object, "names"), "s4-only")
   expect_equal(prop(object, "names"), "updated")
+})
+
+test_that("S4 initializers copy renamed S7 property storage slots", {
+  defer(S4_remove_classes(c(
+    "S4regCopySpecialSlotsChild",
+    "S4regCopySpecialSlots"
+  )))
+
+  S4regCopySpecialSlots := new_class(
+    properties = list(names = class_character),
+    package = NULL
+  )
+  S4_register(S4regCopySpecialSlots)
+  S4regCopySpecialSlots_S4 <- S4_contains(S4regCopySpecialSlots)
+  setClass(
+    "S4regCopySpecialSlotsChild",
+    contains = S4regCopySpecialSlots_S4,
+    slots = list(extra = "character")
+  )
+
+  old <- methods::new(
+    "S4regCopySpecialSlotsChild",
+    names = "n",
+    extra = "old"
+  )
+  new <- methods::new("S4regCopySpecialSlotsChild", old)
+
+  expect_equal(prop(new, "names"), "n")
+  expect_equal(methods::slot(new, "_names"), "n")
+  expect_equal(methods::slot(new, "extra"), "old")
 })
 
 test_that("S4_register keeps direct S7 special-name property slots valid", {

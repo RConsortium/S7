@@ -380,11 +380,15 @@ S4_register_class <- function(class, env = parent.frame()) {
     where = where
   )
 
+  old_classes <- S4_reified_old_classes(class)
   if (class@abstract) {
+    if (!S7_extends_S4(class)) {
+      methods::setOldClass(old_classes, S4Class = class_name, where = where)
+      S4_set_S3_class_prototype(class_name, old_classes, where)
+    }
     return(class_name)
   }
 
-  old_classes <- S4_reified_old_classes(class)
   methods::setOldClass(old_classes, S4Class = class_name, where = where)
   S4_set_S3_class_prototype(class_name, old_classes, where)
   methods::setValidity(class_name, S4_validate_class, where = where)
@@ -514,7 +518,11 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
       arg_s4_vals <- arg_vals[names(arg_vals) %in% s4_slot_nms]
       s4_vals <- modify_list(s4_vals, arg_s4_vals)
     }
-    arg_vals <- arg_vals[names(arg_vals) %in% prop_nms]
+    arg_vals <- S4_initialize_prop_values(
+      arg_vals,
+      prop_nms,
+      storage = isS4(arg)
+    )
     vals <- modify_list(vals, arg_vals)
   }
   named_args <- args[nms != ""]
@@ -555,6 +563,18 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
     methods::slot(.Object, name) <- s4_vals[[name]]
   }
   .Object
+}
+
+S4_initialize_prop_values <- function(values, properties, storage = FALSE) {
+  if (!storage) {
+    return(values[names(values) %in% properties])
+  }
+
+  storage_nms <- prop_storage_rename(properties)
+  idx <- match(names(values), storage_nms)
+  values <- values[!is.na(idx)]
+  names(values) <- properties[idx[!is.na(idx)]]
+  values
 }
 
 S4_initialize_default_values <- function(object, supplied, env) {
