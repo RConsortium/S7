@@ -794,6 +794,10 @@ S4_class_name <- function(x) {
   if (is_oldClass(x)) {
     return(x@className)
   }
+  S7_class <- S4_reified_S7_class(x)
+  if (!is.null(S7_class)) {
+    return(S7_class_name(S7_class))
+  }
 
   class <- x@className
   package <- x@package %||% attr(class, "package")
@@ -805,6 +809,15 @@ S4_class_name <- function(x) {
   } else {
     paste0("S4/", package, "::", class)
   }
+}
+
+S4_reified_S7_class <- function(x) {
+  if (!"_S7_class" %in% names(x@slots)) {
+    return(NULL)
+  }
+
+  class <- methods::slot(x@prototype, "_S7_class")
+  if (is_class(class) && class@abstract) class
 }
 
 S4_package_name <- function(f, env) {

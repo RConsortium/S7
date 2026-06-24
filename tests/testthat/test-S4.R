@@ -447,6 +447,48 @@ test_that("S4_register preserves S7 dispatch through abstract S7 parents", {
   )
 })
 
+test_that("S4_register preserves S7 dispatch through S4-rooted abstract S7 parents", {
+  defer(S4_remove_classes(c(
+    "S4regAbstractRootChild",
+    "S4regAbstractRootConcrete",
+    "S4regAbstractRoot",
+    "S4regAbstractRootParent"
+  )))
+
+  setClass("S4regAbstractRootParent", contains = "VIRTUAL")
+  S4regAbstractRoot := new_class(
+    parent = getClass("S4regAbstractRootParent"),
+    abstract = TRUE,
+    package = NULL
+  )
+  S4regAbstractRootConcrete := new_class(
+    parent = S4regAbstractRoot,
+    package = NULL
+  )
+  S4_register(S4regAbstractRootConcrete)
+  S4regAbstractRootConcrete_S4 <- S4_contains(S4regAbstractRootConcrete)
+  setClass(
+    "S4regAbstractRootChild",
+    contains = S4regAbstractRootConcrete_S4
+  )
+
+  object <- methods::new("S4regAbstractRootChild")
+  S4regAbstractRootGeneric <- new_generic("S4regAbstractRootGeneric", "x")
+  method(S4regAbstractRootGeneric, S4regAbstractRoot) <- function(x) {
+    "abstract"
+  }
+
+  expect_equal(
+    S4regAbstractRootGeneric(S4regAbstractRootConcrete()),
+    "abstract"
+  )
+  expect_equal(S4regAbstractRootGeneric(object), "abstract")
+  expect_contains(
+    obj_dispatch(object),
+    c("S4regAbstractRootConcrete", "S4regAbstractRoot")
+  )
+})
+
 test_that("S4_contains rejects abstract S7 classes", {
   defer(S4_remove_classes(c(
     "S4regAbstractContainsParent",
@@ -628,6 +670,44 @@ test_that("S7 constructors delegate to S4 parent initialize methods", {
   expect_equal(prop(object, "y"), "a")
 
   object <- S4regInitializeChild(y = "b")
+  expect_equal(prop(object, "x"), 10)
+  expect_equal(prop(object, "y"), "b")
+})
+
+test_that("S7 constructors delegate to virtual S4 parent initialize methods", {
+  defer(S4_remove_classes(c(
+    "S4regVirtualInitializeParent",
+    "S4regVirtualInitializeChild"
+  )))
+
+  setClass(
+    "S4regVirtualInitializeParent",
+    slots = list(x = "numeric"),
+    contains = "VIRTUAL",
+    prototype = list(x = -1)
+  )
+  methods::setMethod(
+    "initialize",
+    "S4regVirtualInitializeParent",
+    function(.Object, x = 1, ...) {
+      .Object <- callNextMethod(.Object, ...)
+      .Object@x <- x * 10
+      .Object
+    }
+  )
+  S4regVirtualInitializeChild := new_class(
+    parent = getClass("S4regVirtualInitializeParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  object <- S4regVirtualInitializeChild(x = 2, y = "a")
+
+  expect_equal(prop(object, "x"), 20)
+  expect_equal(methods::slot(object, "x"), 20)
+  expect_equal(prop(object, "y"), "a")
+
+  object <- S4regVirtualInitializeChild(y = "b")
   expect_equal(prop(object, "x"), 10)
   expect_equal(prop(object, "y"), "b")
 })
