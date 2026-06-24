@@ -321,12 +321,12 @@ S4_class_keys <- function(classes) {
 }
 
 S4_class_key <- function(class) {
-  class <- as.character(class)
   package <- attr(class, "package", exact = TRUE)
+  class <- as.character(class)
   if (is.null(package) && class %in% S4_methods_class_names()) {
     package <- "methods"
   }
-  if (is.null(package)) {
+  if (is.null(package) || identical(package, ".GlobalEnv")) {
     class
   } else {
     paste0(package, "::", class)

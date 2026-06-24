@@ -323,7 +323,7 @@ class_dispatch <- function(x) {
     NULL = "NULL",
     missing = "MISSING",
     any = character(),
-    S4 = S4_class_dispatch(methods::extends(x)),
+    S4 = S4_class_dispatch(x),
     S7 = {
       parent <- class_dispatch(x@parent)
       c(

@@ -263,6 +263,80 @@ test_that("S4_register preserves package-qualified S4 classes", {
   expect_equal(S4regPackageClassGeneric(pkg_object), "package")
 })
 
+test_that("S7 dispatch preserves package-qualified S4 parents", {
+  pkg_env <- local_package("s4regdispatchpkg")
+  defer({
+    S4_remove_classes(c(
+      "S4regDispatchChild",
+      "S4regDispatchParent"
+    ))
+    S4_remove_classes("S4regDispatchParent", pkg_env)
+  })
+
+  methods::setClass("S4regDispatchParent", slots = list(x = "character"))
+  pkg_parent <- methods::setClass(
+    "S4regDispatchParent",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+  S4regDispatchChild := new_class(
+    parent = pkg_parent,
+    properties = list(y = class_character),
+    package = NULL
+  )
+  S4regDispatchGeneric := new_generic("x")
+  method(S4regDispatchGeneric, methods::getClass("S4regDispatchParent")) <-
+    function(x) "global"
+  method(S4regDispatchGeneric, pkg_parent) <- function(x) "package"
+
+  object <- S4regDispatchChild(x = 1, y = "child")
+
+  expect_contains(
+    class(object),
+    "S4/s4regdispatchpkg::S4regDispatchParent"
+  )
+  expect_equal(S4regDispatchGeneric(object), "package")
+})
+
+test_that("S4 union matching preserves package-qualified class keys", {
+  pkg_env <- local_package("s4regunionkeypkg")
+  defer({
+    S4_remove_classes(
+      c(
+        "S4regUnionKeyHolder",
+        "S4regUnionKeyFoo_OR_character"
+      ),
+      pkg_env
+    )
+    S4_remove_classes("S4regUnionKeyFoo")
+    S4_remove_classes("S4regUnionKeyFoo", pkg_env)
+  })
+
+  methods::setClass(
+    "S4regUnionKeyFoo",
+    slots = list(x = "character")
+  )
+  pkg_foo <- methods::setClass(
+    "S4regUnionKeyFoo",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+  global_foo <- methods::getClass("S4regUnionKeyFoo")
+  suppressWarnings(methods::setClassUnion(
+    "S4regUnionKeyFoo_OR_character",
+    list(global_foo@className, "character"),
+    where = pkg_env
+  ))
+  S4regUnionKeyHolder := new_class(
+    properties = list(x = pkg_foo | class_character),
+    package = NULL
+  )
+
+  expect_snapshot(error = TRUE, {
+    S4_register(S4regUnionKeyHolder, env = pkg_env)
+  })
+})
+
 test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   on.exit({
     if (methods::isGeneric("S4regContainsGeneric")) {
