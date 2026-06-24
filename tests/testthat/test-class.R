@@ -73,6 +73,17 @@ test_that("S7 classes can inherit from S4 but not class unions", {
   )
 })
 
+test_that("S7 classes accept ordinary values for S4 parent slots", {
+  Parent := local_S4_class(slots = list(x = "ANY", y = "matrix"))
+  Child := new_class(parent = Parent, package = NULL)
+
+  y <- matrix(1, nrow = 1)
+  obj <- Child(x = 1, y = y)
+
+  expect_equal(obj@x, 1)
+  expect_equal(obj@y, y)
+})
+
 test_that("S7_class can be used as a property name", {
   foo <- new_class(
     "foo",

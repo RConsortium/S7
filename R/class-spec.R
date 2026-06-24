@@ -377,7 +377,7 @@ class_inherits <- function(x, what) {
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
-    S4 = inherits_S4(x) && methods::is(x, what),
+    S4 = inherits_S4_class(x, what),
     S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
@@ -479,6 +479,17 @@ drop_S7_object <- function(x) {
 
 union_contains_any <- function(x) {
   is_union(x) && any(vlapply(x$classes, is_class_any))
+}
+
+inherits_S4_class <- function(x, what) {
+  if (identical(as.character(what@className), "ANY")) {
+    return(TRUE)
+  }
+  if (!inherits_S4(x) && is.object(x)) {
+    return(FALSE)
+  }
+
+  methods::is(x, what)
 }
 
 # Suppress direct S4 representation slot false positives

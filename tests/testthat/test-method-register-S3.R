@@ -86,6 +86,38 @@ test_that("internal generics register S4 methods for S4-backed S7 classes", {
   expect_equal(dim(object), c(1L, 2L))
 })
 
+test_that("local S3 generics named like internal generics don't register S4 methods", {
+  defer({
+    suppressWarnings(try(
+      methods::removeMethod("dim", "S4LocalDimChild"),
+      silent = TRUE
+    ))
+    S4_remove_classes(c(
+      "S4LocalDimParent",
+      "S4LocalDimChild"
+    ))
+  })
+
+  setClass("S4LocalDimParent", contains = "VIRTUAL")
+  S4LocalDimChild := new_class(
+    parent = getClass("S4LocalDimParent"),
+    properties = list(x = class_integer),
+    package = NULL
+  )
+  dim <- local(function(x) UseMethod("dim"))
+  defer(unregister_s3_methods(topenv(environment(dim)), "dim"))
+
+  method(dim, S4LocalDimChild) <- function(x) c(x@x, 2L)
+
+  expect_equal(dim(S4LocalDimChild(x = 1L)), c(1L, 2L))
+  expect_null(methods::selectMethod(
+    "dim",
+    "S4LocalDimChild",
+    optional = TRUE,
+    useInherited = FALSE
+  ))
+})
+
 test_that("internal replacement generics can register full S4 signatures", {
   on.exit({
     try(
