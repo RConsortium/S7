@@ -903,6 +903,38 @@ test_that("S4 prototypes use overridden inherited S7 property defaults", {
   expect_equal(prop(object, "x"), 2)
 })
 
+test_that("S4 prototypes preserve overridden NULL S7 property defaults", {
+  defer(S4_remove_classes(c(
+    "S4regNullOverrideParent",
+    "S4regNullOverrideChild",
+    "S4regNullOverrideShim",
+    "S4regNullOverrideSlot"
+  )))
+
+  setClassUnion("S4regNullOverrideSlot", c("character", "NULL"))
+  setClass(
+    "S4regNullOverrideParent",
+    slots = list(x = "S4regNullOverrideSlot"),
+    prototype = list(x = "parent")
+  )
+  S4regNullOverrideChild <- new_class(
+    "S4regNullOverrideChild",
+    parent = getClass("S4regNullOverrideParent"),
+    properties = list(
+      x = new_property(NULL | class_character, default = NULL)
+    ),
+    package = NULL
+  )
+  S4regNullOverrideChild_S4 <- S4_contains(S4regNullOverrideChild)
+  setClass("S4regNullOverrideShim", contains = S4regNullOverrideChild_S4)
+
+  expect_equal(prop(S4regNullOverrideChild(), "x"), NULL)
+
+  object <- methods::new("S4regNullOverrideShim")
+  expect_equal(methods::slot(object, "x"), NULL)
+  expect_equal(prop(object, "x"), NULL)
+})
+
 test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 properties", {
   on.exit(S4_remove_classes(c(
     "S4regNullable",
@@ -1487,6 +1519,36 @@ test_that("S4 data part constructors use the .Data argument", {
   expect_equal(prop(object, ".Data"), 2)
   expect_null(attr(object, ".Data", exact = TRUE))
   expect_true(methods::validObject(object))
+})
+
+test_that("S4 data part constructors use overridden .Data defaults", {
+  defer(S4_remove_classes(c(
+    "S4regDataDefaultParent",
+    "S4regDataDefaultChild",
+    "S4regDataDefaultShim"
+  )))
+
+  setClass(
+    "S4regDataDefaultParent",
+    contains = "numeric",
+    prototype = 1
+  )
+  S4regDataDefaultChild <- new_class(
+    "S4regDataDefaultChild",
+    parent = getClass("S4regDataDefaultParent"),
+    properties = list(
+      .Data = new_property(class_numeric, default = quote(2))
+    ),
+    package = NULL
+  )
+  S4regDataDefaultChild_S4 <- S4_contains(S4regDataDefaultChild)
+  setClass("S4regDataDefaultShim", contains = S4regDataDefaultChild_S4)
+
+  expect_equal(as.vector(S4regDataDefaultChild()), 2)
+
+  object <- methods::new("S4regDataDefaultShim")
+  expect_equal(as.vector(object), 2)
+  expect_equal(prop(object, ".Data"), 2)
 })
 
 test_that("S4 data part initialization preserves S4 subclasses", {

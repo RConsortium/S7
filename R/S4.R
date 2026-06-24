@@ -310,7 +310,7 @@ S4_properties_prototype <- function(
     value <- S4_property_prototype(properties[[name]], env, class@package)
     if (length(value) != 0L) {
       slot_name <- prop_storage_rename(name)
-      args[[slot_name]] <- value[[1L]]
+      args[slot_name] <- value
     }
   }
   if (include_S7_class) {
@@ -338,12 +338,20 @@ S4_property_prototype <- function(prop, env, package) {
   )
 }
 
-S4_property_deferred_default <- function(prop, env, package) {
+S4_property_deferred_default <- function(
+  prop,
+  env,
+  package,
+  allow_simple = FALSE
+) {
   tryCatch(
     {
       value <- prop_default(prop, env, package)
       value <- S4_decode_pseudo_null(value)
       if (!is.call(value) && !is.symbol(value)) {
+        if (allow_simple) {
+          return(list(value))
+        }
         return(list())
       }
       value <- eval(value, env)
@@ -614,6 +622,10 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
     S4_initialize_default_values(.Object, names(vals), .S4_default_env),
     vals
   )
+  if (".Data" %in% names(vals)) {
+    .Object <- S4_initialize_data_part(vals$.Data, .Object)
+    vals$.Data <- NULL
+  }
   if (length(vals) > 0L) {
     props(.Object) <- vals
   }
@@ -651,10 +663,12 @@ S4_initialize_default_values <- function(object, supplied, env) {
       next
     }
 
+    prop <- properties[[name]]
     value <- S4_property_deferred_default(
-      properties[[name]],
+      prop,
       env,
-      class@package
+      class@package,
+      allow_simple = identical(name, ".Data")
     )
     if (length(value) != 0L) {
       values[name] <- value
@@ -665,7 +679,26 @@ S4_initialize_default_values <- function(object, supplied, env) {
 
 S4_slot_has_prototype_value <- function(object, name) {
   prototype <- methods::getClass(class(object)[1L])@prototype
-  identical(methods::slot(object, name), methods::slot(prototype, name))
+  value <- methods::slot(object, name)
+  prototype_value <- methods::slot(prototype, name)
+  if (identical(value, prototype_value)) {
+    return(TRUE)
+  }
+  if (!identical(name, ".Data")) {
+    return(FALSE)
+  }
+
+  identical(
+    S4_strip_data_part_identity(value),
+    S4_strip_data_part_identity(prototype_value)
+  )
+}
+
+S4_strip_data_part_identity <- function(x) {
+  attrs <- attributes(x)
+  attrs[S4_internal_slot_names()] <- NULL
+  attributes(x) <- attrs
+  x
 }
 
 S4_initialize_values <- function(object) {
