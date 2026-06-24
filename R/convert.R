@@ -209,6 +209,20 @@ convert_down <- function(from, to, user_args = list()) {
   from_class <- S7_class(from)
 
   if (!is_class(from_class)) {
+    if (isS4(from)) {
+      from_slot_values <- S4_initialize_values(from)
+      from_slot_names <- names(from_slot_values)
+
+      to_constructor_arg_names <- names(formals(to))
+      if (!"..." %in% to_constructor_arg_names) {
+        from_slot_names <- intersect(from_slot_names, to_constructor_arg_names)
+      }
+
+      from_slot_names <- setdiff(from_slot_names, names(user_args))
+      constructor_args <- c(from_slot_values[from_slot_names], user_args)
+      return(do.call(to, constructor_args))
+    }
+
     # `from` is a base or S3 object; pass it as `.data` to the constructor
     user_args$.data <- from
     return(do.call(to, user_args))

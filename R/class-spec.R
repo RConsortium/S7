@@ -396,9 +396,13 @@ class_extends <- function(child, parent) {
     # as a parent, NULL only accepts NULL
     is.null(child)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
-    is_S4_class(child) &&
-      is_S4_class(parent) &&
-      methods::extends(child@className, parent@className)
+    if (!is_S4_class(parent)) {
+      FALSE
+    } else {
+      child <- if (is_S4_class(child)) child else S4_ancestor(child)
+      !is.null(child) &&
+        methods::extends(child@className, parent@className)
+    }
   } else if (is_class(parent) && parent@name == "S7_object") {
     is_class(child)
   } else {

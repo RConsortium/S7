@@ -434,20 +434,30 @@ S4_initialize <- function(.Object, ...) {
   nms <- names2(args)
   prop_nms <- prop_names(.Object)
   vals <- list()
+  s4_vals <- list()
+  s4_slot_nms <- character()
+  if (isS4(.Object)) {
+    s4_slot_nms <- setdiff(methods::slotNames(.Object), prop_nms)
+  }
   data_part <- NULL
   for (arg in args[nms == ""]) {
     arg_vals <- S4_initialize_values(arg)
     if (".Data" %in% names(arg_vals)) {
-      data_part <- arg
+      data_part <- if (isS4(arg)) arg_vals$.Data else arg
+    }
+    if (isS4(arg)) {
+      arg_s4_vals <- arg_vals[names(arg_vals) %in% s4_slot_nms]
+      s4_vals <- modify_list(s4_vals, arg_s4_vals)
     }
     arg_vals <- arg_vals[names(arg_vals) %in% prop_nms]
     vals <- modify_list(vals, arg_vals)
   }
   named_args <- args[nms != ""]
-  s4_vals <- list()
-  if (isS4(.Object)) {
-    s4_slot_nms <- setdiff(methods::slotNames(.Object), prop_nms)
-    s4_vals <- named_args[names(named_args) %in% s4_slot_nms]
+  if (length(s4_slot_nms) > 0L) {
+    s4_vals <- modify_list(
+      s4_vals,
+      named_args[names(named_args) %in% s4_slot_nms]
+    )
     named_args <- named_args[!names(named_args) %in% s4_slot_nms]
   }
   vals <- modify_list(vals, named_args)
@@ -467,11 +477,11 @@ S4_initialize <- function(.Object, ...) {
 }
 
 S4_initialize_values <- function(object) {
-  if (S7_inherits(object)) {
-    props(object)
-  } else if (isS4(object)) {
+  if (isS4(object)) {
     slots <- methods::slotNames(object)
     stats::setNames(lapply(slots, methods::slot, object = object), slots)
+  } else if (S7_inherits(object)) {
+    props(object)
   } else {
     attrs <- attributes(object) %||% list()
     attrs$class <- NULL
@@ -485,6 +495,12 @@ S4_initialize_values <- function(object) {
 S4_initialize_data_part <- function(value, object) {
   incoming <- attributes(value) %||% list()
   incoming$class <- NULL
+  if (isS4(object)) {
+    methods::slot(object, ".Data") <- unclass(value)
+    attributes(object) <- modify_list(attributes(object), incoming)
+    return(object)
+  }
+
   attributes(value) <- modify_list(attributes(object), incoming)
   value
 }
@@ -515,8 +531,8 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
         return(basic_classes[[x@className]])
       }
     }
-    if (is_oldClass(x)) {
-      new_S3_class(setdiff(methods::extends(x), "oldClass"))
+    if (is_S3_oldClass(x)) {
+      new_S3_class(S3_oldClass_classes(x))
     } else {
       x
     }
@@ -619,6 +635,25 @@ S4_class_dispatch <- function(x) {
 is_oldClass <- function(x) {
   methods::extends(x, "oldClass") &&
     x@className %in% attr(x@prototype, ".S3Class")
+}
+
+is_S3_oldClass <- function(x) {
+  methods::extends(x, "oldClass") &&
+    !"_S7_class" %in% names(x@slots) &&
+    (is_oldClass(x) || is_ordered_oldClass(x))
+}
+
+is_ordered_oldClass <- function(x) {
+  identical(as.character(x@className), "ordered") &&
+    identical(attr(x@prototype, ".S3Class"), "factor")
+}
+
+S3_oldClass_classes <- function(x) {
+  class <- attr(x@prototype, ".S3Class")
+  if (!x@className %in% class) {
+    class <- c(as.character(x@className), class)
+  }
+  class
 }
 
 S4_class_name <- function(x) {

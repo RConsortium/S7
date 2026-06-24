@@ -713,6 +713,13 @@ test_that("converts S4 representation of S3 classes to S7 representation", {
   )
 })
 
+test_that("S4 old-class representations dispatch as S3 class vectors", {
+  S4regOrderedGeneric := new_generic(dispatch_args = "x")
+  method(S4regOrderedGeneric, getClass("ordered")) <- function(x) "ordered"
+
+  expect_equal(S4regOrderedGeneric(ordered("a")), "ordered")
+})
+
 test_that("S4 old-class slots accept normal S3 class vectors", {
   defer(S4_remove_classes(c(
     "S4regOldSlotChild",
@@ -859,6 +866,10 @@ test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
   child@y <- "d"
   expect_equal(methods::slot(child, "z"), "c")
   expect_equal(prop(child, "y"), "d")
+
+  child <- methods::new("S4ChildForSlots", child)
+  expect_equal(methods::slot(child, "z"), "c")
+  expect_equal(prop(child, "y"), "d")
 })
 
 test_that("@<- sets S4-only slots on subclasses of S7 classes", {
@@ -933,6 +944,39 @@ test_that("S4 data part constructors use the .Data argument", {
 
   expect_equal(as.vector(object), 1)
   expect_equal(prop(object, ".Data"), 1)
+  expect_true(methods::validObject(object))
+})
+
+test_that("S4 data part initialization preserves S4 subclasses", {
+  defer(S4_remove_classes(c(
+    "S4regDataPartGrandChild",
+    "S4regDataPartChild",
+    "S4regDataPartParent"
+  )))
+
+  setClass("S4regDataPartParent", contains = "numeric")
+  S4regDataPartChild := new_class(
+    parent = getClass("S4regDataPartParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+  setClass(
+    "S4regDataPartGrandChild",
+    slots = list(z = "logical"),
+    contains = "S4regDataPartChild"
+  )
+
+  object <- methods::new(
+    "S4regDataPartGrandChild",
+    .Data = 1,
+    y = "a",
+    z = TRUE
+  )
+
+  expect_s4_class(object, "S4regDataPartGrandChild")
+  expect_equal(as.vector(object), 1)
+  expect_equal(prop(object, "y"), "a")
+  expect_equal(methods::slot(object, "z"), TRUE)
   expect_true(methods::validObject(object))
 })
 

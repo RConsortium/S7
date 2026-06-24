@@ -130,6 +130,21 @@ test_that("inheritance lets child properties narrow with S4 inheritance", {
   expect_s4_class(Child(x = x)@x, "S4PropertyChild")
 })
 
+test_that("inheritance lets child properties narrow S4 slots with S7-over-S4 classes", {
+  Animal := local_S4_class()
+  Kennel := local_S4_class(slots = list(dog = "Animal"))
+  Dog := new_class(parent = Animal, package = NULL)
+
+  DogKennel := new_class(
+    parent = Kennel,
+    properties = list(dog = Dog),
+    package = NULL
+  )
+  dog <- Dog()
+
+  expect_equal(prop(DogKennel(dog = dog), "dog"), dog)
+})
+
 test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
   Parent <- new_class(
     "Parent",

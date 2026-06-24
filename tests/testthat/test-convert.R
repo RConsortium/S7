@@ -155,6 +155,25 @@ test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 ob
   expect_equal(methods::slot(parent, "x"), 10)
 })
 
+test_that("fallback convert can convert_down() an S4 object to an S7 child", {
+  local_methods(convert)
+  on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
+  setClass("ParentS4", slots = list(x = "numeric"))
+
+  ChildS7 := new_class(
+    parent = getClass("ParentS4"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  parent <- methods::new("ParentS4", x = 10)
+  child <- convert(parent, to = ChildS7, y = "a")
+
+  expect_true(S7_inherits(child, ChildS7))
+  expect_equal(prop(child, "x"), 10)
+  expect_equal(prop(child, "y"), "a")
+})
+
 test_that("fallback convert can use explicit S4 coercion via methods::as", {
   on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
   setClass("ParentS4", slots = list(x = "numeric"))
