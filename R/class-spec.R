@@ -223,7 +223,7 @@ class_validate <- function(class, object) {
   }
 }
 
-S4_validate_old_class <- function(class, object) {
+S4_validate_old_class <- function(class, object, skip = character()) {
   any_strings <- function(x) {
     if (isTRUE(x)) character() else x
   }
@@ -232,6 +232,9 @@ S4_validate_old_class <- function(class, object) {
   extends <- rev(class@contains)
   for (ext in extends) {
     super_class <- ext@superClass
+    if (super_class %in% skip) {
+      next
+    }
     if (!ext@simple && !methods::is(object, super_class)) {
       next
     }
@@ -263,9 +266,11 @@ S4_validate_old_class <- function(class, object) {
     }
   }
 
-  validity <- methods::getValidity(class)
-  if (length(errors) == 0L && is.function(validity)) {
-    errors <- c(errors, any_strings(validity(object)))
+  if (!as.character(class@className) %in% skip) {
+    validity <- methods::getValidity(class)
+    if (length(errors) == 0L && is.function(validity)) {
+      errors <- c(errors, any_strings(validity(object)))
+    }
   }
 
   if (length(errors) == 0L) {

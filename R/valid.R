@@ -161,13 +161,13 @@ validate_S4_subclass <- function(object) {
     return(NULL)
   }
 
-  validity <- class@validity
-  if (!is.function(validity)) {
-    return(NULL)
-  }
+  ancestor <- S4_ancestor(S7_class(object))
+  skip <- if (is.null(ancestor)) character() else S4_validity_classes(ancestor)
+  S4_validate_old_class(class, object, skip = skip)
+}
 
-  check <- validity(object)
-  if (isTRUE(check)) NULL else check
+S4_validity_classes <- function(class) {
+  c(vcapply(class@contains, slot, "superClass"), as.character(class@className))
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {
