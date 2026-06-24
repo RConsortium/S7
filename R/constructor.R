@@ -48,23 +48,19 @@ new_constructor <- function(
   }
 }
 
-
 can_inline <- function(parent) {
   if (is_external_class(parent)) {
+    # can't inline constructors from external classes
     FALSE
   } else if (is_class(parent)) {
     # can't inline custom constructors (#609)
     is_default_constructor(parent@constructor)
   } else if (is_S3_class(parent)) {
-    # S7's own base/S3 wrappers (e.g. class_factor) and the stub are inlinable;
-    # a user `new_S3_class(constructor = )` carries the user's environment and
-    # must forward (#609)
     is_default_constructor(parent$constructor)
   } else {
     TRUE
   }
 }
-
 
 constructor_inline <- function(parent, properties, envir, package) {
   # We need a name so we get a compact constructor, and the actual function
@@ -142,10 +138,10 @@ constructor_forward <- function(parent, properties, envir, package) {
   #   for external classes, which are resolved dynamically via `pkg::name`).
   if (is_external_class(parent)) {
     resolved <- resolve_external_class_req(parent, package)
-    ref <- if (identical(package, parent$package)) {
-      parent$name
+    if (identical(package, parent$package)) {
+      ref <- parent$name
     } else {
-      c(parent$package, parent$name)
+      ref <- c(parent$package, parent$name)
     }
     name <- NULL
     fun <- NULL
@@ -178,10 +174,10 @@ constructor_forward <- function(parent, properties, envir, package) {
   # default wins over the parent default) and new_object() (so the child setter
   # runs). An override is only forwarded to the parent if it can accept it.
   override_nms <- intersect(self_nms, names(parent_props))
-  parent_override_nms <- if ("..." %in% parent_formal_nms) {
-    override_nms
+  if ("..." %in% parent_formal_nms) {
+    parent_override_nms <- override_nms
   } else {
-    intersect(override_nms, parent_formal_nms)
+    parent_override_nms <- intersect(override_nms, parent_formal_nms)
   }
 
   # Parent(<override = override>, ...)
