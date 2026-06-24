@@ -145,6 +145,10 @@ new_class <- function(
     }
   }
 
+  if (is_S4_class(parent)) {
+    S4_check_slot_storage(parent, call = sys.call())
+  }
+
   parent_props <- class_properties(parent)
   new_props <- as_properties(properties)
   check_prop_names(new_props)

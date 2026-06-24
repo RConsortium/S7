@@ -574,6 +574,29 @@ test_that("S4_contains rejects properties with custom accessors", {
   )
 })
 
+test_that("S4_register excludes dynamic properties from S4 slots", {
+  defer(S4_remove_classes("S4regDynamicSlots"))
+
+  S4regDynamicSlots <- new_class(
+    "S4regDynamicSlots",
+    properties = list(
+      x = new_property(class_numeric, getter = function(self) 1),
+      y = class_numeric
+    ),
+    package = NULL
+  )
+
+  S4_register(S4regDynamicSlots)
+  object <- S4regDynamicSlots(y = 2)
+
+  expect_equal(
+    methods::slotNames("S4regDynamicSlots"),
+    c("y", "_S7_class", ".S3Class")
+  )
+  expect_equal(prop(object, "x"), 1)
+  expect_true(methods::validObject(object))
+})
+
 test_that("S4_register uses registered S7 unions as S4 slots", {
   on.exit(S4_remove_classes(c(
     "S7::S4regContainsUnion",
@@ -931,8 +954,9 @@ test_that("S4 data part constructors use the .Data argument", {
 
   setClass("S4regDataPartParent", contains = "numeric")
   methods::setValidity("S4regDataPartParent", function(object) {
-    if (!identical(as.vector(object), 1)) {
-      "data part must be 1"
+    data <- as.vector(object)
+    if (!identical(data, 1) && !identical(data, 2)) {
+      "data part must be 1 or 2"
     } else {
       TRUE
     }
@@ -947,6 +971,12 @@ test_that("S4 data part constructors use the .Data argument", {
 
   expect_equal(as.vector(object), 1)
   expect_equal(prop(object, ".Data"), 1)
+  expect_null(attr(object, ".Data", exact = TRUE))
+
+  prop(object, ".Data") <- 2
+  expect_equal(as.vector(object), 2)
+  expect_equal(prop(object, ".Data"), 2)
+  expect_null(attr(object, ".Data", exact = TRUE))
   expect_true(methods::validObject(object))
 })
 
@@ -1043,6 +1073,23 @@ test_that("S4 classes can not extend S7-over-S4 classes with property setters", 
     methods::new("S4Child2"),
     "custom setter"
   )
+})
+
+test_that("S4 parents reject slots that need renamed S7 storage", {
+  defer(S4_remove_classes(c(
+    "S4regRenamedSlotChild",
+    "S4regRenamedSlotParent"
+  )))
+
+  setClass("S4regRenamedSlotParent", slots = list(names = "character"))
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      "S4regRenamedSlotChild",
+      parent = getClass("S4regRenamedSlotParent"),
+      package = NULL
+    )
+  })
 })
 
 

@@ -19,16 +19,19 @@ new_constructor <- function(
     )
 
     arg_info <- constructor_args(parent, all_props, envir, package)
-    self_args <- as_names(names(arg_info$self))
+    force_args <- as_names(names(arg_info$self))
 
     s4_data_part <- is_S4_class(parent) && ".Data" %in% names(parent@slots)
+    self_arg_names <- names(arg_info$self)
     parent_call <- if (s4_data_part) {
+      self_arg_names <- setdiff(self_arg_names, ".Data")
       quote(.Data)
     } else if (has_S7_symbols(envir, "S7_object")) {
       quote(S7_object())
     } else {
       quote(S7::S7_object())
     }
+    self_args <- as_names(self_arg_names)
     new_object_call <-
       if (has_S7_symbols(envir, "new_object")) {
         bquote(new_object(.(parent_call), ..(self_args)), splice = TRUE)
@@ -42,7 +45,7 @@ new_constructor <- function(
         quote(`{`),
         # Force all promises here so that any errors are signaled from
         # the constructor() call instead of the new_object() call.
-        unname(self_args),
+        unname(force_args),
         new_object_call
       )),
       env = envir

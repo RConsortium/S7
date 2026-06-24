@@ -327,8 +327,15 @@ S4_register_class <- function(class, env = parent.frame()) {
   }
 
   properties <- class@properties
-  prototype_properties <- properties[setdiff(names(properties), ".Data")]
-  slot_properties <- properties[setdiff(names(properties), parent_slot_names)]
+  stored_properties <- properties[!vlapply(properties, prop_is_dynamic)]
+  prototype_properties <- stored_properties[setdiff(
+    names(stored_properties),
+    ".Data"
+  )]
+  slot_properties <- stored_properties[setdiff(
+    names(stored_properties),
+    parent_slot_names
+  )]
   slots <- lapply(slot_properties, S4_property_class, S4_env = where)
   needs_S7_class_slot <- !"_S7_class" %in% parent_slot_names
   if (needs_S7_class_slot) {
@@ -359,6 +366,27 @@ S4_register_class <- function(class, env = parent.frame()) {
   methods::setMethod("initialize", class_name, S4_initialize, where = where)
 
   class_name
+}
+
+S4_check_slot_storage <- function(class, call = sys.call(-1L)) {
+  nms <- names(class@slots)
+  renamed <- nms[prop_storage_rename(nms) != nms & nms != ".Data"]
+  if (length(renamed) == 0L) {
+    return(invisible())
+  }
+
+  renamed_label <- paste(dQuote(renamed), collapse = ", ")
+  slot_label <- if (length(renamed) == 1L) "slot" else "slots"
+  msg <- c(
+    sprintf(
+      "Can't extend S4 class %s because %s %s would need renamed S7 storage.",
+      class_desc(class),
+      slot_label,
+      renamed_label
+    ),
+    "These S4 slots can not be represented safely on direct S7 child objects."
+  )
+  stop2(msg, call = call)
 }
 
 S4_reified_parent_class <- function(class, env) {

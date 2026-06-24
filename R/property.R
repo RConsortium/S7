@@ -277,6 +277,10 @@ class_default_desc <- function(class, package = NULL) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
+  if (prop_is_S4_data_part(object, name)) {
+    return(S7_data(object))
+  }
+
   .Call(prop_, object, name)
 }
 
@@ -285,7 +289,37 @@ prop <- function(object, name) {
 #'   [validate()] on the object before returning.
 #' @export
 `prop<-` <- function(object, name, check = TRUE, value) {
+  if (prop_is_S4_data_part(object, name)) {
+    property <- S7_class(object)@properties[[name]]
+    if (isTRUE(check)) {
+      error <- prop_validate(property, value, object)
+      if (!is.null(error)) {
+        signal_prop_error(error, object, name)
+      }
+    }
+
+    object <- `S7_data<-`(object, check = FALSE, value = value)
+    if (isTRUE(check)) {
+      validate(object)
+    }
+    return(object)
+  }
+
   .Call(prop_set_, object, name, check, value)
+}
+
+prop_is_S4_data_part <- function(object, name) {
+  if (!identical(name, ".Data") || isS4(object) || !S7_inherits(object)) {
+    return(FALSE)
+  }
+
+  class <- S7_class(object)
+  if (!is_class(class)) {
+    return(FALSE)
+  }
+
+  parent <- S4_ancestor(class)
+  !is.null(parent) && ".Data" %in% names(parent@slots)
 }
 
 # called from src/prop.c
