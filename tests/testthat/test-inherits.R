@@ -26,6 +26,17 @@ test_that("accepts any class specification (#556)", {
   expect_true(S7_inherits("anything", class_any))
 })
 
+test_that("S4 class checks reject spoofed S3 objects", {
+  Foo := local_S4_class()
+  Child := new_class(parent = Foo, package = NULL)
+  holder := new_class(properties = list(x = Foo), package = NULL)
+  spoof <- structure(list(), class = "Foo")
+
+  expect_true(S7_inherits(Child(), Foo))
+  expect_false(S7_inherits(spoof, Foo))
+  expect_snapshot(error = TRUE, holder(x = spoof))
+})
+
 test_that("checks that input is a class", {
   expect_snapshot(S7_inherits(1:10, "x"), error = TRUE)
 })

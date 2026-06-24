@@ -171,6 +171,35 @@ test_that("inheritance lets child properties narrow to S4 subclasses of S7 class
   expect_s4_class(S4PropertyChild(x = x)@x, "S4PropertyS7Child")
 })
 
+test_that("inheritance lets S7-over-S4 children narrow to original S7 parents", {
+  defer(S4_remove_classes(c(
+    "S4PropertyS7Bridge",
+    "S4PropertyS7Descendant",
+    "S4PropertyS7Ancestor"
+  )))
+
+  S4PropertyS7Ancestor := new_class(package = NULL)
+  S4_register(S4PropertyS7Ancestor)
+  setClass("S4PropertyS7Bridge", contains = S4_contains(S4PropertyS7Ancestor))
+  S4PropertyS7Descendant := new_class(
+    parent = getClass("S4PropertyS7Bridge"),
+    package = NULL
+  )
+
+  Parent := new_class(
+    properties = list(x = S4PropertyS7Ancestor),
+    package = NULL
+  )
+
+  expect_no_error({
+    Child := new_class(
+      parent = Parent,
+      properties = list(x = S4PropertyS7Descendant),
+      package = NULL
+    )
+  })
+})
+
 test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
   Parent <- new_class(
     "Parent",

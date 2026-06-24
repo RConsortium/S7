@@ -319,11 +319,19 @@ class_dispatch <- function(x) {
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(
-      S7_class_name(x),
-      class_dispatch(x@parent),
-      if (is_S4_class(x@parent)) "S7_object"
-    ),
+    S7 = {
+      parent <- class_dispatch(x@parent)
+      c(
+        S7_class_name(x),
+        parent,
+        if (
+          is_S4_class(x@parent) &&
+            !identical(tail(parent, 1), "S7_object")
+        ) {
+          "S7_object"
+        }
+      )
+    },
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     stop2("Unsupported class type.", call = NULL)
@@ -369,7 +377,7 @@ class_inherits <- function(x, what) {
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
-    S4 = methods::is(x, what),
+    S4 = inherits_S4(x) && methods::is(x, what),
     S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
