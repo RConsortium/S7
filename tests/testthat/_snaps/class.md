@@ -149,6 +149,14 @@
       - <foo1>@x is <integer>.
       - <foo4>@x is <ANY>.
 
+# subclassing an external class defers errors until construction
+
+    Code
+      Child()
+    Condition
+      Error in `loadNamespace()`:
+      ! there is no package called 'notloaded.pkg'
+
 # abstract classes can't be instantiated
 
     Code

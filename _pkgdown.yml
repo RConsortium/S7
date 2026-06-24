@@ -44,6 +44,7 @@ reference:
     for more details.
   contents:
   - S7_on_load
+  - new_external_class
   - new_external_generic
 
 - title: Compatibility

@@ -47,10 +47,13 @@ test_that("method registration can register a method for an external generic", {
 
 test_that("method registration checks argument types", {
   foo := new_generic("x")
+  ext := new_external_class("notloaded.pkg")
+
   expect_snapshot(error = TRUE, {
     x <- 10
     method(x, class_character) <- function(x) ...
     method(foo, 1) <- function(x) ...
+    method(foo, ext) <- function(y) "x"
   })
 })
 
@@ -81,6 +84,62 @@ test_that("method registration returns a strippable sentinel for foreign generic
     c("S7_generic_sentinel", "S7_external_generic")
   )
   expect_length(S7_methods_table("testpkg"), 2)
+})
+
+test_that("method registration resolves external classes outside packages", {
+  dep := local_package({
+    Ext := new_class()
+  })
+
+  env <- new.env(parent = baseenv())
+  env[["method<-"]] <- `method<-`
+  env$g <- new_generic("g", "x")
+  env$ext <- new_external_class("dep", "Ext")
+  env$f <- function(x) "external"
+
+  evalq(method(g, ext) <- f, env)
+
+  expect_equal(env$g(dep$Ext()), "external")
+
+  evalq(method(g, ext) <- NULL, env)
+  expect_length(methods(env$g), 0)
+})
+
+test_that("method<- writes a strippable sentinel for foreign generics in a package (#364)", {
+  pkg := local_package({
+    ext := new_external_generic("notloaded.pkg", "x")
+    foo := new_class()
+    foo2 := new_class()
+  })
+
+  # In a package, `method<-` writes a sentinel back into the binding
+  evalq(method(ext, foo) <- function(x) "x", pkg)
+  expect_s3_class(pkg$ext, "S7_generic_sentinel")
+  expect_s3_class(pkg$ext, "S7_external_generic")
+
+  # the sentinel is still a usable generic, so further methods can be
+  # registered through the same binding (as in the t2 test package)
+  evalq(method(ext, foo2) <- function(x) "y", pkg)
+  expect_s3_class(pkg$ext, "S7_generic_sentinel")
+})
+
+test_that("method unregistration removes deferred external-class unions", {
+  upstream <- local_package("upstream_external_unregister", {
+    Foo := new_class()
+  })
+  downstream <- local_package("downstream_external_unregister", {
+    .onLoad <- function(...) S7_on_load()
+    foo := new_generic("x")
+    Foo := new_external_class(package = "upstream_external_unregister")
+    method(foo, NULL | Foo) <- function(x) "x"
+    method(foo, NULL | Foo) <- NULL
+  })
+  downstream$.onLoad()
+
+  expect_error(
+    downstream$foo(upstream$Foo()),
+    class = "S7_error_method_not_found"
+  )
 })
 
 test_that("method unregistration removes an S7 method via NULL assignment", {

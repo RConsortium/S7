@@ -146,9 +146,63 @@ test_that("inheritance lets child properties narrow parent unions that include a
   expect_no_error(new_class(
     "Child",
     Parent,
-    properties = list(x = class_any),
-    package = NULL
+    properties = list(x = class_any)
   ))
+})
+
+test_that("inheritance handles external class property specs", {
+  dep := local_package({
+    External := new_class()
+  })
+  External := new_external_class(package = "dep")
+
+  ParentObject := new_class(
+    properties = list(x = S7_object)
+  )
+  ChildObject := new_class(
+    parent = ParentObject,
+    properties = list(x = External)
+  )
+  expect_s3_class(ChildObject()@x, "dep::External")
+
+  Ext := new_external_class(package = "notloaded.pkg")
+  prop <- new_property(class = Ext)
+  ParentSame := new_class(properties = list(x = prop))
+  expect_no_error(new_class(
+    name = "ChildSame",
+    parent = ParentSame,
+    properties = list(x = prop),
+  ))
+
+  Missing := new_external_class(package = "S7testthatmissing")
+  ParentUnion := new_class(
+    properties = list(x = Missing | S7_object)
+  )
+  ChildUnion := new_class(
+    parent = ParentUnion,
+    properties = list(x = S7_object)
+  )
+  expect_no_error(ChildUnion())
+})
+
+test_that("inheritance lets child properties narrow external parent classes", {
+  dep <- local_package("dep_external_subclass", {
+    Base := new_class()
+    Sub := new_class(parent = Base)
+  })
+  Base := new_external_class(package = "dep_external_subclass")
+
+  Parent := new_class(
+    properties = list(x = Base)
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      x = new_property(class = dep$Sub, default = quote(dep$Sub()))
+    )
+  )
+
+  expect_s3_class(Child()@x, "dep_external_subclass::Sub")
 })
 
 test_that("inheritance lets child properties narrow optional union properties with NULL", {
@@ -183,6 +237,17 @@ test_that("inheritance doesn't let child properties widen or change the parent's
     new_class("foo3", foo1, properties = list(x = class_numeric))
     new_class("foo4", foo1, properties = list(x = class_any))
   })
+})
+
+
+test_that("subclassing an external class defers errors until construction", {
+  Ext := new_external_class("notloaded.pkg")
+  Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
+
+  # Defining the subclass works even though the package isn't loaded; the
+  # error only surfaces when the property default is constructed.
+  Child := new_class(parent = Parent, properties = list(x = Ext))
+  expect_snapshot(Child(), error = TRUE)
 })
 
 test_that("inheritance lets dynamic child properties override any parent type", {

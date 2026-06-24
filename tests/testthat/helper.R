@@ -56,11 +56,17 @@ local_methods <- function(..., frame = parent.frame()) {
 }
 
 # Simulate a package with namespace
-local_package <- function(name, code = {}, frame = parent.frame()) {
+local_package <- function(
+  name,
+  code = {},
+  version = "0.0.0",
+  frame = parent.frame()
+) {
   ns <- new.env(parent = asNamespace("S7"))
 
   info <- new.env(parent = emptyenv())
-  info$spec <- c(name = name, version = "0.0.0")
+  info$spec <- c(name = name, version = version)
+  info$exports <- new.env(parent = emptyenv())
   ns[[".__NAMESPACE__."]] <- info
   ns[[".packageName"]] <- name
   ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())
@@ -72,6 +78,11 @@ local_package <- function(name, code = {}, frame = parent.frame()) {
   defer(S7_on_unload_(ns), frame = frame)
 
   eval(substitute(code), ns)
+
+  # export everything defined by the code block so `pkg::name` works
+  for (nm in ls(ns)) {
+    assign(nm, nm, envir = info$exports)
+  }
 
   ns
 }

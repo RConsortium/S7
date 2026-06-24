@@ -41,7 +41,12 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
 }
 
 as_external_generic <- function(x, env = parent.frame()) {
-  if (is_S7_generic(x)) {
+  if (is_generic_sentinel(x)) {
+    # Sentinels are external generic specs with an extra marker class; keep
+    # this in sync with generic_sentinel().
+    class(x) <- "S7_external_generic"
+    x
+  } else if (is_S7_generic(x)) {
     pkg <- package_name(x)
     new_external_generic(pkg, x@name, x@dispatch_args)
   } else if (is_external_generic(x)) {
@@ -77,15 +82,7 @@ is_external_generic <- function(x) {
 }
 
 external_generic_available <- function(generic) {
-  is_external_generic(generic) &&
-    isNamespaceLoaded(generic$package) &&
-    external_generic_version_ok(generic, asNamespace(generic$package))
-}
-
-external_generic_version_ok <- function(generic, ns) {
-  stopifnot(is_external_generic(generic), is.environment(ns))
-
-  is.null(generic$version) || getNamespaceVersion(ns) >= generic$version
+  is_external_generic(generic) && dep_available(generic)
 }
 
 registrar <- function(generic, signature, method, env) {
@@ -96,27 +93,66 @@ registrar <- function(generic, signature, method, env) {
   env
 
   function(...) {
-    ns <- asNamespace(generic$package)
-    if (external_generic_version_ok(generic, ns)) {
-      if (!exists(generic$name, envir = ns, inherits = FALSE)) {
-        msg <- sprintf(
-          "[S7] Failed to find generic %s() in package %s",
-          generic$name,
-          generic$package
-        )
-        warning(msg, call. = FALSE)
-      } else {
-        generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
-        register_method(generic_fun, signature, method, env, package = NULL)
-      }
+    deps <- method_deps(generic, signature)
+    if (!all(vlapply(deps, dep_available))) {
+      return(invisible())
     }
+
+    generic_fun <- resolve_generic(generic)
+    if (is.null(generic_fun)) {
+      return(invisible())
+    }
+
+    signature <- resolve_signature(signature, packageName(env))
+    register_method(generic_fun, signature, method, env, package = NULL)
+    invisible()
   }
+}
+
+method_deps <- function(generic, signature) {
+  c(list(generic), signature_deps(signature))
+}
+method_deps_packages <- function(deps) {
+  unique(vcapply(deps, function(dep) dep$package))
+}
+signature_deps <- function(signature) {
+  deps <- lapply(signature, function(x) {
+    if (is_external_class(x)) {
+      list(x)
+    } else if (is_union(x)) {
+      signature_deps(x$classes)
+    } else {
+      list()
+    }
+  })
+  unlist(deps, recursive = FALSE, use.names = FALSE)
 }
 
 external_methods_reset <- function(package) {
   S7_methods_table(package) <- list()
   invisible()
 }
+
+
+resolve_generic <- function(generic) {
+  generic <- resolve_generic_opt(generic)
+  if (is.null(generic)) {
+    warning(
+      sprintf(
+        "[S7] Failed to find generic %s() in package %s",
+        generic$name,
+        generic$package
+      ),
+      call. = FALSE
+    )
+  }
+  generic
+}
+resolve_generic_opt <- function(generic) {
+  ns <- asNamespace(generic$package)
+  get(generic$name, envir = ns, inherits = FALSE)
+}
+
 
 external_methods_add <- function(
   package,
