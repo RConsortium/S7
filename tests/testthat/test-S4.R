@@ -184,6 +184,41 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   expect_equal(S4regContainsGeneric(object), 1)
 })
 
+test_that("S4 subclasses reject internal S7/S4 slots during initialization", {
+  defer(S4_remove_classes(c(
+    "S4regInternalSlotChild",
+    "S4regInternalSlots"
+  )))
+
+  S4regInternalSlots := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regInternalSlots)
+  S4regInternalSlots_S4 <- S4_contains(S4regInternalSlots)
+  methods::setClass(
+    "S4regInternalSlotChild",
+    contains = S4regInternalSlots_S4
+  )
+
+  S4regInternalOther := new_class(package = NULL)
+
+  expect_snapshot(error = TRUE, {
+    methods::new(
+      "S4regInternalSlotChild",
+      x = 1,
+      `_S7_class` = S4regInternalOther
+    )
+  })
+  expect_snapshot(error = TRUE, {
+    methods::new(
+      "S4regInternalSlotChild",
+      x = 1,
+      .S3Class = "bogus"
+    )
+  })
+})
+
 test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 classes", {
   on.exit(S4_remove_classes(c(
     "S4regNewParent",

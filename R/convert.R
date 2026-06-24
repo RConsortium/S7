@@ -181,18 +181,31 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     from <- zap_attr(from, c(from_props, "_S7_class", "S7_class"))
     class(from) <- to$class
   } else if (is_class(to)) {
-    to_props <- prop_storage_rename(names(to@properties))
+    to_prop_nms <- names(to@properties)
+    to_props <- prop_storage_rename(to_prop_nms)
     if (to@abstract) {
       msg <- sprintf("Can't convert to abstract class <%s>.", to@name)
       stop2(msg, call = call)
     }
 
+    is_s4_subclass <- isS4(from) &&
+      is_class(from_class) &&
+      !identical(class(from)[[1L]], S7_class_name(from_class))
+    s4_slot_attrs <- if (is_s4_subclass) {
+      setdiff(methods::slotNames(from), c(to_prop_nms, ".Data"))
+    } else {
+      character()
+    }
     from <- zap_attr(
       from,
-      c(setdiff(from_props, to_props), "_S7_class", "S7_class")
+      c(setdiff(from_props, to_props), s4_slot_attrs, "_S7_class", "S7_class")
     )
     attr(from, "_S7_class") <- to
-    class(from) <- class_dispatch(to)
+    if (is_s4_subclass) {
+      from <- suppressWarnings(`class<-`(from, class_dispatch(to)))
+    } else {
+      class(from) <- class_dispatch(to)
+    }
   } else if (is_S4_coerce(from, to)) {
     from <- convert_S4(from, to)
   } else {

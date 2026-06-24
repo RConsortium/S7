@@ -174,6 +174,34 @@ test_that("fallback convert can convert_down() an S4 object to an S7 child", {
   expect_equal(prop(child, "y"), "a")
 })
 
+test_that("fallback convert drops S4-only slots when upcasting S4 subclasses", {
+  defer(S4_remove_classes(c(
+    "ConvertS4OnlyChild",
+    "ConvertS4OnlyParent"
+  )))
+
+  ConvertS4OnlyParent := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(ConvertS4OnlyParent)
+  ConvertS4OnlyParent_S4 <- S4_contains(ConvertS4OnlyParent)
+  methods::setClass(
+    "ConvertS4OnlyChild",
+    contains = ConvertS4OnlyParent_S4,
+    slots = list(y = "character")
+  )
+
+  child <- methods::new("ConvertS4OnlyChild", x = 1, y = "a")
+  parent <- convert(child, to = ConvertS4OnlyParent)
+
+  expect_identical(isS4(parent), FALSE)
+  expect_equal(S7_class(parent), ConvertS4OnlyParent)
+  expect_equal(prop(parent, "x"), 1)
+  expect_null(attr(parent, "y", exact = TRUE))
+  expect_null(attr(parent, ".S3Class", exact = TRUE))
+})
+
 test_that("fallback convert can use explicit S4 coercion via methods::as", {
   on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
   setClass("ParentS4", slots = list(x = "numeric"))

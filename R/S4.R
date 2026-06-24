@@ -232,6 +232,10 @@ S4_slot_names <- function(class, S4_env) {
   names(methods::getClass(class, where = S4_env)@slots)
 }
 
+S4_internal_slot_names <- function() {
+  c("_S7_class", ".S3Class")
+}
+
 S4_property_class <- function(prop, S4_env) {
   S4_class(prop$class, S4_env)
 }
@@ -493,7 +497,10 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
   s4_vals <- list()
   s4_slot_nms <- character()
   if (isS4(.Object)) {
-    s4_slot_nms <- setdiff(methods::slotNames(.Object), prop_nms)
+    s4_slot_nms <- setdiff(
+      methods::slotNames(.Object),
+      c(prop_nms, S4_internal_slot_names())
+    )
   }
   data_part <- NULL
   for (arg in args[nms == ""]) {
@@ -509,6 +516,16 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
     vals <- modify_list(vals, arg_vals)
   }
   named_args <- args[nms != ""]
+  internal_arg_nms <- intersect(names2(named_args), S4_internal_slot_names())
+  if (length(internal_arg_nms) > 0L) {
+    slot_label <- if (length(internal_arg_nms) == 1L) "slot" else "slots"
+    msg <- sprintf(
+      "Can't initialize internal S4 %s %s.",
+      slot_label,
+      paste(dQuote(internal_arg_nms), collapse = ", ")
+    )
+    stop2(msg, call = sys.call(-1L))
+  }
   if (length(s4_slot_nms) > 0L) {
     s4_vals <- modify_list(
       s4_vals,
