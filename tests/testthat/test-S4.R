@@ -1425,6 +1425,36 @@ test_that("S4 initialize supports S3 data parts", {
   expect_true(methods::validObject(child))
 })
 
+test_that("S4 initialize strips S7 metadata from data parts", {
+  defer(S4_remove_classes(c(
+    "S4regDataPartSource",
+    "S4regDataPartTarget",
+    "S4regDataPartParent"
+  )))
+
+  setClass("S4regDataPartParent", contains = "numeric")
+  S4regDataPartTarget := new_class(
+    parent = getClass("S4regDataPartParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+  S4regDataPartSource := new_class(
+    parent = class_double,
+    properties = list(z = class_character),
+    package = NULL
+  )
+
+  target <- S4regDataPartTarget(.Data = 1, y = "target")
+  source <- S4regDataPartSource(.data = 2, z = "source")
+
+  out <- methods::initialize(target, .Data = source)
+
+  expect_equal(S7_class(out), S4regDataPartTarget)
+  expect_equal(as.vector(out), 2)
+  expect_equal(prop(out, "y"), "target")
+  expect_identical(methods::validObject(out), TRUE)
+})
+
 test_that("S4 data part constructors use the .Data argument", {
   defer(S4_remove_classes(c(
     "S4regDataPartParent",

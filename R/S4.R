@@ -250,7 +250,7 @@ S4_register_subclass <- function(class, env) {
 S4_set_S3_class_prototype <- function(class, S3_class, env) {
   class_def <- methods::getClass(class, where = env)
   attr(class_def@prototype, ".S3Class") <- S3_class
-  methods:::assignClassDef(class, class_def, env)
+  methods::setClass(Class = class, representation = class_def, where = env)
   invisible(class)
 }
 
@@ -686,7 +686,7 @@ S4_initialize_values <- function(object) {
 
 S4_initialize_data_part <- function(value, object) {
   incoming <- attributes(value) %||% list()
-  incoming$class <- NULL
+  incoming[c("class", "_S7_class", "S7_class")] <- NULL
   if (isS4(object)) {
     methods::slot(object, ".Data") <- unclass(value)
     attributes(object) <- modify_list(attributes(object), incoming)
