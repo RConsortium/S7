@@ -218,7 +218,10 @@ S4_initialize_parent <- function(class) {
       return(.Object)
     }
 
+    object_class <- class(.Object)
+    class(.Object) <- class
     out <- method(.Object, ...)
+    class(out) <- object_class
     validate(out)
     out
   }

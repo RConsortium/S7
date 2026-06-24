@@ -126,6 +126,52 @@ test_that("S4_register registers an S7 union so it can be used with S4 methods",
   expect_equal(S4regUnionGeneric("x"), "union")
 })
 
+test_that("S4_register preserves package-qualified S4 classes", {
+  pkg_env <- local_package("s4regpkgclasses")
+  defer({
+    if (methods::isGeneric("S4regPackageClassGeneric")) {
+      methods::removeGeneric("S4regPackageClassGeneric")
+    }
+    suppressMessages({
+      S4_remove_classes(c(
+        "S4regPackageClassHolder",
+        "S4regPackageClassFoo_OR_character",
+        "S4regPackageClassFoo"
+      ))
+      S4_remove_classes("S4regPackageClassFoo", pkg_env)
+    })
+  })
+
+  setClass("S4regPackageClassFoo", slots = list(x = "character"))
+  pkg_foo <- methods::setClass(
+    "S4regPackageClassFoo",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+  S4regPackageClassHolder := new_class(
+    properties = list(x = pkg_foo),
+    package = NULL
+  )
+
+  S4_register(S4regPackageClassHolder)
+  expect_identical(
+    methods::getClass("S4regPackageClassHolder")@slots$x,
+    pkg_foo@className
+  )
+
+  union_name <- S4_register(pkg_foo | class_character)
+  pkg_object <- methods::new(pkg_foo@className, x = 1)
+  expect_equal(methods::is(pkg_object, union_name), TRUE)
+
+  methods::setGeneric(
+    "S4regPackageClassGeneric",
+    function(x) standardGeneric("S4regPackageClassGeneric")
+  )
+  method(S4regPackageClassGeneric, pkg_foo) <- function(x) "package"
+
+  expect_equal(S4regPackageClassGeneric(pkg_object), "package")
+})
+
 test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   on.exit({
     if (methods::isGeneric("S4regContainsGeneric")) {
@@ -682,6 +728,47 @@ test_that("S4 parents preserve slot prototypes in S7 constructors", {
   expect_equal(prop(object, "x"), 10)
 })
 
+test_that("S4 parent prototype defaults preserve package-qualified classes", {
+  pkg_env <- local_package("s4regpkgdefaults")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "S4regPackageDefaultParent",
+        "S4regPackageDefaultChild"
+      ))
+      S4_remove_classes("S4regPackageDefaultParent", pkg_env)
+    })
+  })
+
+  setClass(
+    "S4regPackageDefaultParent",
+    slots = list(x = "character"),
+    contains = "VIRTUAL",
+    prototype = list(x = "wrong")
+  )
+  pkg_parent <- methods::setClass(
+    "S4regPackageDefaultParent",
+    slots = list(x = "numeric"),
+    contains = "VIRTUAL",
+    prototype = list(x = 10),
+    where = pkg_env
+  )
+  S4regPackageDefaultChild := new_class(
+    parent = pkg_parent,
+    package = NULL
+  )
+
+  child_def <- methods::getClass("S4regPackageDefaultChild")
+  expect_identical(
+    child_def@contains$S4regPackageDefaultParent@superClass,
+    pkg_parent@className
+  )
+
+  suppressMessages(object <- S4regPackageDefaultChild())
+  expect_equal(prop(object, "x"), 10)
+  expect_equal(methods::slot(object, "x"), 10)
+})
+
 test_that("S7 constructors delegate to S4 parent initialize methods", {
   defer(S4_remove_classes(c(
     "S4regInitializeParent",
@@ -752,6 +839,40 @@ test_that("S7 constructors delegate to virtual S4 parent initialize methods", {
   object <- S4regVirtualInitializeChild(y = "b")
   expect_equal(prop(object, "x"), 10)
   expect_equal(prop(object, "y"), "b")
+})
+
+test_that("S7 constructors support callNextMethod in virtual S4 parents", {
+  defer(S4_remove_classes(c(
+    "S4regVirtualNextParent",
+    "S4regVirtualNextChild"
+  )))
+
+  setClass(
+    "S4regVirtualNextParent",
+    slots = list(x = "numeric"),
+    contains = "VIRTUAL",
+    prototype = list(x = -1)
+  )
+  methods::setMethod(
+    "initialize",
+    "S4regVirtualNextParent",
+    function(.Object, x = 1, ...) {
+      .Object <- callNextMethod()
+      .Object@x <- x * 10
+      .Object
+    }
+  )
+  S4regVirtualNextChild := new_class(
+    parent = getClass("S4regVirtualNextParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  object <- S4regVirtualNextChild(x = 2, y = "a")
+
+  expect_equal(prop(object, "x"), 20)
+  expect_equal(methods::slot(object, "x"), 20)
+  expect_equal(prop(object, "y"), "a")
 })
 
 test_that("S4 prototypes use overridden inherited S7 property defaults", {
