@@ -361,7 +361,15 @@ prop_call <- function(object, name) {
 #' @usage object@name
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object)
 #' @name prop
-`@.S7_object` <- prop
+prop_or_slot <- function(object, name) {
+  if (isS4(object) && !name %in% names(S7_class(object)@properties)) {
+    return(methods::slot(object, name))
+  }
+
+  prop(object, name)
+}
+
+`@.S7_object` <- prop_or_slot
 
 #' @rawNamespace S3method("@<-",S7_object)
 `@<-.S7_object` <- function(object, name, value) {

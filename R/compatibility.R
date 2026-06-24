@@ -14,7 +14,7 @@ activate_backward_compatiblility <- function() {
 `@` <- function(object, name) {
   if (inherits(object, "S7_object")) {
     name <- as.character(substitute(name))
-    prop(object, name)
+    prop_or_slot(object, name)
   } else {
     name <- substitute(name)
     do.call(base::`@`, list(object, name))

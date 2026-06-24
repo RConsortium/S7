@@ -890,9 +890,12 @@ test_that("@<- sets S4-only slots on subclasses of S7 classes", {
   )
 
   child <- methods::new("S4ChildForAt", ChildForAt(x = 1, y = "a"), z = "b")
+  expect_equal(child@z, "b")
+
   child@z <- "c"
   child@y <- "d"
 
+  expect_equal(child@z, "c")
   expect_equal(methods::slot(child, "z"), "c")
   expect_equal(prop(child, "y"), "d")
 })

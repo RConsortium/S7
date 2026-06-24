@@ -395,6 +395,10 @@ class_extends <- function(child, parent) {
   } else if (is.null(parent)) {
     # as a parent, NULL only accepts NULL
     is.null(child)
+  } else if (is_S4_class(child) && is_class(parent)) {
+    parent_class <- S7_class_name(parent)
+    methods::isClass(parent_class) &&
+      methods::extends(child@className, parent_class)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     if (!is_S4_class(parent)) {
       FALSE
@@ -466,5 +470,5 @@ union_contains_any <- function(x) {
   is_union(x) && any(vlapply(x$classes, is_class_any))
 }
 
-# Suppress @className false positive
-globalVariables("className")
+# Suppress direct S4 representation slot false positives
+globalVariables(c("className", "contains", "simple"))
