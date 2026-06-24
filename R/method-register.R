@@ -86,6 +86,30 @@ register_method <- function(
     )
   }
 
+  # Delay package methods with external classes until onLoad. Outside a package
+  # there is no deferred methods table, so resolve them before registering.
+  deps <- signature_deps(signature)
+  if (length(deps)) {
+    if (is.null(package)) {
+      signature <- resolve_signature(signature)
+    } else {
+      generic_ext <- as_external_generic(generic, env)
+      if (is_S7_generic(generic)) {
+        check_method(
+          method,
+          generic,
+          name = method_name(generic, signature),
+          call = call
+        )
+      }
+      external_methods_add(package, generic_ext, signature, method)
+      if (!is_local_generic(generic, package)) {
+        return(generic_sentinel(generic_ext))
+      }
+      return(invisible(original))
+    }
+  }
+
   external <- NULL
   if (!is.null(package) && !is_local_generic(generic, package)) {
     external <- as_external_generic(generic, env)
@@ -135,6 +159,11 @@ unregister_method <- function(
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
 
+  external <- NULL
+  if (is_external_generic(generic)) {
+    external <- as_external_generic(generic, env)
+  }
+
   if (external_generic_available(generic)) {
     generic <- as_generic(
       getFromNamespace(generic$name, generic$package),
@@ -144,7 +173,8 @@ unregister_method <- function(
 
   # Unregister in current session
   if (is_S7_generic(generic)) {
-    unregister_S7_method(generic, signature)
+    unregister_signature <- resolve_signature_available(signature, package)
+    unregister_S7_method(generic, unregister_signature)
   } else if (is_S3_generic(generic)) {
     stop2("Can't unregister methods for S3 generics", call = call)
   } else if (is_S4_generic(generic)) {
@@ -153,10 +183,13 @@ unregister_method <- function(
 
   # If we're inside a package, also remove from the deferred external
   # methods table so the method isn't re-registered on package load.
-  if (!is.null(package) && !is_local_generic(generic, package)) {
-    external <- as_external_generic(generic)
+  if (!is.null(package)) {
+    local <- is_local_generic(generic, package)
+    external <- external %||% as_external_generic(generic, env)
     external_methods_remove(package, external, signature)
-    return(generic_sentinel(external))
+    if (!local) {
+      return(generic_sentinel(external))
+    }
   }
 
   invisible(original)
