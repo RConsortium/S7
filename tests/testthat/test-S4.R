@@ -1635,6 +1635,46 @@ test_that("S4 subclasses of S7 classes run concrete S4 validity", {
   })
 })
 
+test_that("S4 initialization validates after S4-only slots are set", {
+  defer(S4_remove_classes(c(
+    "S4regInitValidityParent",
+    "S4regInitValidityChild"
+  )))
+
+  S4regInitValidityParent := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regInitValidityParent)
+  setClass(
+    "S4regInitValidityChild",
+    contains = S4_contains(S4regInitValidityParent),
+    slots = list(z = "numeric"),
+    prototype = list(z = NA_real_)
+  )
+  methods::setValidity("S4regInitValidityChild", function(object) {
+    z <- methods::slot(object, "z")
+    if (is.na(z) || z < 0) {
+      "z must be non-negative"
+    } else {
+      TRUE
+    }
+  })
+
+  object <- methods::new("S4regInitValidityChild", x = 1, z = 2)
+  expect_equal(prop(object, "x"), 1)
+  expect_equal(methods::slot(object, "z"), 2)
+  expect_true(methods::validObject(object))
+
+  object <- methods::new("S4regInitValidityChild", z = 2)
+  expect_equal(methods::slot(object, "z"), 2)
+  expect_true(methods::validObject(object))
+
+  expect_snapshot(error = TRUE, {
+    methods::new("S4regInitValidityChild", z = -1)
+  })
+})
+
 test_that("S4 subclasses of S7 classes run inherited S4 validity", {
   defer(S4_remove_classes(c(
     "S4regInheritedValidityParent",

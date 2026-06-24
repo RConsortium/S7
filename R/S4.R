@@ -663,12 +663,11 @@ S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
     .Object <- S4_initialize_data_part(vals$.Data, .Object)
     vals$.Data <- NULL
   }
-  if (length(vals) > 0L) {
-    props(.Object) <- vals
-  }
+  props(.Object, check = FALSE) <- vals
   for (name in names(s4_vals)) {
     methods::slot(.Object, name) <- s4_vals[[name]]
   }
+  validate(.Object)
   .Object
 }
 
