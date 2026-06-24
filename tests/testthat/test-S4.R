@@ -4,14 +4,14 @@ test_that("can work with classGenerators", {
 })
 
 test_that("S4_register registers an S7 class so it can be used with S4 methods", {
-  on.exit(S4_remove_classes("S4regS7"))
+  defer(S4_remove_classes("S4regS7"))
   S4regS7 := new_class(package = NULL)
   S4_register(S4regS7)
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
 test_that("S4_register registers an S3 class so it can be used with S4 methods", {
-  on.exit(S4_remove_classes(c("S4regS3a", "S4regS3b")))
+  defer(S4_remove_classes(c("S4regS3a", "S4regS3b")))
   S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
   # Must not extend S7_object — that was a silent bug pre-fix
   expect_equal(
@@ -155,7 +155,7 @@ test_that("S4_package_name resolves S4 package name correctly in all cases", {
 
   # Case 3: Originating package in namespace imports
   methods::setGeneric("axTicks")
-  on.exit(methods::removeGeneric("axTicks"))
+  defer(methods::removeGeneric("axTicks"))
   mock_S4 <- getGeneric("axTicks")
   mock_S4@package <- "base"
   expect_equal(S4_package_name(mock_S4, stats_ns), "graphics")
@@ -167,7 +167,7 @@ test_that("S4_package_name errors if originating package can't be found", {
   methods::setGeneric("nonexistent_generic", function(x) {
     standardGeneric("nonexistent_generic")
   })
-  on.exit(methods::removeGeneric("nonexistent_generic"))
+  defer(methods::removeGeneric("nonexistent_generic"))
   mock_S4 <- getGeneric("nonexistent_generic")
   mock_S4@package <- "base"
   expect_snapshot(S4_package_name(mock_S4, stats_ns), error = TRUE)

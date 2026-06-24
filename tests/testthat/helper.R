@@ -184,7 +184,7 @@ dbg <- function(..., .display = utils::str, .file = NULL) {
 
   if (!is.null(.file)) {
     sink(.file, append = TRUE)
-    on.exit(sink())
+    defer(sink())
   }
 
   for (i in seq_len(...length())) {

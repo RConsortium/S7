@@ -66,7 +66,7 @@ test_that("method registration returns the generic unchanged when not in a packa
 
 test_that("method registration returns a strippable sentinel for foreign generics in a package (#364)", {
   external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  defer(external_methods_reset("S7"))
 
   foo := new_class(package = NULL)
   ext_gen := new_external_generic("notloaded.pkg", dispatch_args = "x")

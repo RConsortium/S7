@@ -5,7 +5,7 @@ test_that("can register S7 method for S4 generic", {
   expect_snapshot_error(method(bar, S4foo) <- function(x) "foo")
 
   S4_register(S4foo)
-  on.exit(S4_remove_classes("S4foo"), add = TRUE)
+  defer(S4_remove_classes("S4foo"))
 
   method(bar, S4foo) <- function(x) "foo"
   expect_equal(bar(S4foo()), "foo")
@@ -44,10 +44,10 @@ test_that("S4 method registration on class_double catches actual doubles", {
 
 test_that("errors when unregistering from an S4 generic", {
   methods::setGeneric("removeS4", function(x) standardGeneric("removeS4"))
-  on.exit(suppressMessages(methods::removeGeneric("removeS4")), add = TRUE)
+  defer(suppressMessages(methods::removeGeneric("removeS4")))
   S4foo := new_class(package = NULL)
   S4_register(S4foo)
-  on.exit(S4_remove_classes("S4foo"), add = TRUE)
+  defer(S4_remove_classes("S4foo"))
 
   method(removeS4, S4foo) <- function(x) "foo"
   expect_snapshot(method(removeS4, S4foo) <- NULL, error = TRUE)
