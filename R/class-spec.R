@@ -412,9 +412,9 @@ class_extends <- function(child, parent) {
     # as a parent, NULL only accepts NULL
     is.null(child)
   } else if (is_S4_class(child) && is_class(parent)) {
-    parent_class <- S7_class_name(parent)
-    methods::isClass(parent_class) &&
-      methods::extends(child@className, parent_class)
+    parent_class <- S4_registered_class_or_null(parent, environment(parent))
+    !is.null(parent_class) &&
+      methods::extends(child@className, parent_class@className)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     if (!is_S4_class(parent)) {
       FALSE

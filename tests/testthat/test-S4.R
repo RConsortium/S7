@@ -220,6 +220,7 @@ test_that("S4_register preserves package-qualified S4 classes", {
     suppressMessages({
       S4_remove_classes(c(
         "S4regPackageClassHolder",
+        "S4/s4regpkgclasses::S4regPackageClassFoo",
         "S4regPackageClassFoo_OR_character",
         "S4regPackageClassFoo"
       ))
@@ -246,7 +247,12 @@ test_that("S4_register preserves package-qualified S4 classes", {
 
   union_name <- S4_register(pkg_foo | class_character)
   pkg_object <- methods::new(pkg_foo@className, x = 1)
+  global_object <- methods::new(
+    methods::getClass("S4regPackageClassFoo"),
+    x = "wrong"
+  )
   expect_equal(methods::is(pkg_object, union_name), TRUE)
+  expect_equal(methods::is(global_object, union_name), FALSE)
 
   methods::setGeneric(
     "S4regPackageClassGeneric",
@@ -2163,6 +2169,34 @@ test_that("S4 parents reject slots that need renamed S7 storage", {
     new_class(
       "S4regRenamedSlotChild",
       parent = getClass("S4regRenamedSlotParent"),
+      package = NULL
+    )
+  })
+})
+
+test_that("S7 property narrowing rejects unrelated S4 name matches", {
+  defer(S4_remove_classes(c(
+    "S4regPropertyNameCollisionChild",
+    "S4regPropertyNameCollisionParent"
+  )))
+
+  setClass("S4regPropertyNameCollisionParent")
+  setClass(
+    "S4regPropertyNameCollisionChild",
+    contains = "S4regPropertyNameCollisionParent"
+  )
+
+  S4regPropertyNameCollisionParent := new_class(package = NULL)
+  Parent := new_class(
+    properties = list(x = S4regPropertyNameCollisionParent),
+    package = NULL
+  )
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      "S4regPropertyNameCollisionOverride",
+      parent = Parent,
+      properties = list(x = getClass("S4regPropertyNameCollisionChild")),
       package = NULL
     )
   })

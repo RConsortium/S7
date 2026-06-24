@@ -264,7 +264,16 @@ convert_down <- function(from, to, user_args = list()) {
 }
 
 s4_to_name <- function(x) {
-  if (is_S4_class(x)) x@className else class_register(x)
+  if (is_S4_class(x)) {
+    return(x@className)
+  }
+
+  class <- S4_registered_class_or_null(x, environment(x))
+  if (is.null(class)) {
+    NULL
+  } else {
+    class@className
+  }
 }
 
 is_S4_coerce <- function(from, to) {
@@ -272,7 +281,9 @@ is_S4_coerce <- function(from, to) {
   if (!inherits_S4(from) && !is_S4_class(to)) {
     return(FALSE)
   }
-  methods::canCoerce(from, s4_to_name(to))
+
+  to_name <- s4_to_name(to)
+  !is.null(to_name) && methods::canCoerce(from, to_name)
 }
 
 convert_S4 <- function(from, to, ...) {

@@ -84,11 +84,13 @@ S4_contains <- function(class, env = parent.frame()) {
 
 S4_register_union <- function(class, env) {
   name <- S4_union_name(class, env)
+  members <- S4_union_member_classes(class, env, register = TRUE)
   methods::setClassUnion(
     name,
-    lapply(class$classes, S4_class, S4_env = env),
+    members,
     where = env
   )
+  S4_register_union_member_extensions(class$classes, members, env)
   name
 }
 
@@ -116,16 +118,25 @@ base_to_S4 <- function(class) {
 }
 
 S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
+  class <- S4_registered_class_or_null(x, S4_env)
+  if (!is.null(class)) {
+    return(class)
+  }
+
+  msg <- sprintf(
+    "Class has not been registered with S4; please call S4_register(%s).",
+    class_deparse(x)
+  )
+  stop2(msg, call = call)
+}
+
+S4_registered_class_or_null <- function(x, S4_env) {
   class <- tryCatch(
     methods::getClass(class_register(x), where = S4_env),
     error = function(err) NULL
   )
   if (is.null(class) || !S4_registered_class_matches(class, x)) {
-    msg <- sprintf(
-      "Class has not been registered with S4; please call S4_register(%s).",
-      class_deparse(x)
-    )
-    stop2(msg, call = call)
+    return(NULL)
   }
   class
 }
@@ -193,11 +204,78 @@ S4_union_name <- function(x, S4_env) {
   paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
 }
 
-S4_union_member_classes <- function(x, S4_env) {
-  lapply(x$classes, S4_class, S4_env = S4_env)
+S4_union_member_classes <- function(x, S4_env, register = FALSE) {
+  lapply(
+    x$classes,
+    S4_union_member_class,
+    S4_env = S4_env,
+    register = register
+  )
+}
+
+S4_union_member_class <- function(x, S4_env, register = FALSE) {
+  if (!is_S4_class(x)) {
+    return(S4_class(x, S4_env))
+  }
+
+  if (!S4_class_needs_identity(x@className, S4_env)) {
+    return(x@className)
+  }
+
+  name <- S4_class_name(x)
+  if (register && !methods::isClass(name, where = S4_env)) {
+    methods::setClass(name, contains = "VIRTUAL", where = S4_env)
+  }
+  name
+}
+
+S4_register_union_member_extensions <- function(classes, members, S4_env) {
+  for (i in seq_along(classes)) {
+    S4_register_union_member_extension(classes[[i]], members[[i]], S4_env)
+  }
+  invisible()
+}
+
+S4_register_union_member_extension <- function(class, member, S4_env) {
+  if (
+    !is_S4_class(class) || !S4_class_needs_identity(class@className, S4_env)
+  ) {
+    return(invisible())
+  }
+
+  member_def <- methods::getClass(member, where = S4_env)
+  subclasses <- base::Filter(function(x) x@distance == 1, member_def@subclasses)
+  if (
+    S4_class_key(class@className) %in%
+      S4_class_keys(S4_extension_subclasses(subclasses))
+  ) {
+    return(invisible())
+  }
+
+  package <- attr(class@className, "package", exact = TRUE)
+  suppressWarnings(methods::setIs(
+    class@className,
+    member,
+    where = S4_env,
+    classDef = class,
+    test = S4_class_package_test(package)
+  ))
+  invisible()
+}
+
+S4_class_package_test <- function(package) {
+  new_function(
+    alist(object = ),
+    bquote(identical(attr(class(object), "package", exact = TRUE), .(package))),
+    baseenv()
+  )
 }
 
 S4_find_union <- function(members, S4_env) {
+  if (!all(vlapply(members, methods::isClass, where = S4_env))) {
+    return(NULL)
+  }
+
   supers <- lapply(members, S4_direct_superclasses, S4_env = S4_env)
   super_keys <- lapply(supers, S4_class_keys)
   candidate_keys <- base::Reduce(base::intersect, super_keys)
@@ -231,7 +309,11 @@ S4_union_matches <- function(class, members, S4_env) {
 
 S4_union_members <- function(class) {
   subclasses <- base::Filter(function(x) x@distance == 1, class@subclasses)
-  lapply(subclasses, function(x) x@subClass)
+  S4_extension_subclasses(subclasses)
+}
+
+S4_extension_subclasses <- function(x) {
+  lapply(x, function(x) x@subClass)
 }
 
 S4_class_keys <- function(classes) {

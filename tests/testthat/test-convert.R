@@ -257,6 +257,30 @@ test_that("fallback convert can use explicit S4 coercion via methods::as", {
   expect_equal(methods::slot(res, "z"), "42")
 })
 
+test_that("fallback convert rejects unrelated S4 name matches for S7 targets", {
+  defer(S4_remove_classes(c(
+    "ConvertS4NameCollisionFrom",
+    "ConvertS4NameCollisionTo"
+  )))
+
+  setClass("ConvertS4NameCollisionFrom", slots = list(x = "numeric"))
+  setClass("ConvertS4NameCollisionTo", slots = list(y = "numeric"))
+  ConvertS4NameCollisionTo := new_class(package = NULL)
+
+  setAs(
+    "ConvertS4NameCollisionFrom",
+    "ConvertS4NameCollisionTo",
+    function(from) {
+      new("ConvertS4NameCollisionTo", y = methods::slot(from, "x"))
+    }
+  )
+
+  from <- methods::new("ConvertS4NameCollisionFrom", x = 1)
+  expect_snapshot(error = TRUE, {
+    convert(from, to = ConvertS4NameCollisionTo)
+  })
+})
+
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
   Base := new_class(package = NULL)
   A := new_class(
