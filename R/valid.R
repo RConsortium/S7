@@ -139,6 +139,8 @@ validate_from <- function(
     class <- class@parent
   }
 
+  errors <- c(errors, validate_S4_subclass(object))
+
   # If needed, report errors
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
@@ -147,6 +149,25 @@ validate_from <- function(
   }
 
   invisible(object)
+}
+
+validate_S4_subclass <- function(object) {
+  if (!isS4(object) || !has_S7_class(object)) {
+    return(NULL)
+  }
+
+  class <- methods::getClass(class(object)[[1L]])
+  if (S4_is_reified_S7_class(class)) {
+    return(NULL)
+  }
+
+  validity <- class@validity
+  if (!is.function(validity)) {
+    return(NULL)
+  }
+
+  check <- validity(object)
+  if (isTRUE(check)) NULL else check
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {

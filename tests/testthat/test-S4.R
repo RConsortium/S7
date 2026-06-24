@@ -11,6 +11,21 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
+test_that("S4_register registers S7 classes with base parents", {
+  defer(S4_remove_classes("S4regS7Integer"))
+
+  S4regS7Integer := new_class(parent = class_integer, package = NULL)
+
+  expect_equal(S4_register(S4regS7Integer), "S4regS7Integer")
+  expect_contains(methods::extends("S4regS7Integer"), "integer")
+
+  object <- S4regS7Integer(.data = 1L)
+  expect_equal(class(object), c("S4regS7Integer", "integer", "S7_object"))
+  expect_true(methods::is(object, "integer"))
+  expect_true(methods::is(object, "S7_object"))
+  expect_true(methods::validObject(object))
+})
+
 test_that("S4_register registers S7 property classes", {
   defer(S4_remove_classes(c(
     "S4regS7PropParent",
@@ -1256,7 +1271,26 @@ test_that("S4_register errors on unsupported inputs", {
 
 test_that("converts S4 base classes to S7 base classes", {
   expect_equal(S4_to_S7_class(getClass("NULL")), NULL)
+  expect_equal(S4_to_S7_class(getClass("ANY")), class_any)
   expect_equal(S4_to_S7_class(getClass("character")), class_character)
+})
+
+test_that("S4 ANY slots can be narrowed by S7 children", {
+  defer(S4_remove_classes(c(
+    "S4regAnySlotChild",
+    "S4regAnySlotParent"
+  )))
+
+  setClass("S4regAnySlotParent", slots = list(x = "ANY"))
+  S4regAnySlotChild := new_class(
+    parent = getClass("S4regAnySlotParent"),
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+
+  object <- S4regAnySlotChild(x = 1)
+  expect_equal(prop(object, "x"), 1)
+  expect_true(methods::validObject(object))
 })
 
 test_that("converts S4 unions to S7 unions", {
@@ -1505,6 +1539,40 @@ test_that("S4 subclasses of S7-over-S4 classes run S4 parent validity", {
   object <- methods::new("S4regSubValidityShim", x = 1, y = "a")
   expect_snapshot(error = TRUE, {
     methods::initialize(object, x = numeric())
+  })
+})
+
+test_that("S4 subclasses of S7 classes run concrete S4 validity", {
+  defer(S4_remove_classes(c(
+    "S4regConcreteValidityParent",
+    "S4regConcreteValidityChild"
+  )))
+
+  S4regConcreteValidityParent := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regConcreteValidityParent)
+  setClass(
+    "S4regConcreteValidityChild",
+    contains = S4_contains(S4regConcreteValidityParent)
+  )
+  methods::setValidity("S4regConcreteValidityChild", function(object) {
+    if (length(prop(object, "x")) != 1) {
+      "x must have length 1"
+    } else {
+      TRUE
+    }
+  })
+
+  object <- methods::new("S4regConcreteValidityChild", x = 1)
+  expect_snapshot(error = TRUE, {
+    prop(object, "x") <- numeric()
+  })
+
+  object <- methods::new("S4regConcreteValidityChild", x = 1)
+  expect_snapshot(error = TRUE, {
+    props(object) <- list(x = numeric())
   })
 })
 

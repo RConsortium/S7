@@ -519,6 +519,8 @@ S4_reified_parent_class <- function(class, env) {
       return(NULL)
     }
     return(S4_register(parent_class, env))
+  } else if (is_base_class(parent_class)) {
+    return(S4_class(parent_class, env))
   } else if (is_S4_class(parent_class)) {
     return(S4_class(parent_class, env))
   }
@@ -868,6 +870,7 @@ S4_slot_prototype_default <- function(class, name) {
 S4_basic_classes <- function() {
   list(
     NULL = NULL,
+    ANY = class_any,
     logical = class_logical,
     integer = class_integer,
     double = class_double,
