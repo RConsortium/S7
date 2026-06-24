@@ -397,7 +397,7 @@ test_that("S4_contains rejects abstract S7 classes", {
   )
 })
 
-test_that("S4_register uses S7 property defaults as S4 prototypes", {
+test_that("S4_register uses S7 property defaults for S4 objects", {
   on.exit(S4_remove_classes(c(
     "S4regPrototype",
     "S4regPrototypeChild",
@@ -429,6 +429,33 @@ test_that("S4_register uses S7 property defaults as S4 prototypes", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S4_register evaluates expression defaults for each S4 object", {
+  defer(S4_remove_classes(c(
+    "S4regPrototypeExpr",
+    "S4regPrototypeExprChild"
+  )))
+
+  S4regPrototypeExpr <- new_class(
+    "S4regPrototypeExpr",
+    properties = list(
+      x = new_property(
+        class_environment,
+        default = quote(new.env(parent = emptyenv()))
+      )
+    ),
+    package = NULL
+  )
+  S4_register(S4regPrototypeExpr)
+  S4regPrototypeExpr_S4 <- S4_contains(S4regPrototypeExpr)
+  methods::setClass("S4regPrototypeExprChild", contains = S4regPrototypeExpr_S4)
+
+  object1 <- methods::new("S4regPrototypeExprChild")
+  object2 <- methods::new("S4regPrototypeExprChild")
+
+  prop(object1, "x")$value <- 1
+  expect_null(prop(object2, "x")$value)
+})
+
 test_that("S4 parents preserve slot prototypes in S7 constructors", {
   defer(S4_remove_classes(c(
     "S4regSlotPrototypeParent",
@@ -450,6 +477,40 @@ test_that("S4 parents preserve slot prototypes in S7 constructors", {
 
   expect_equal(methods::slot(object, "x"), 10)
   expect_equal(prop(object, "x"), 10)
+})
+
+test_that("S7 constructors delegate to S4 parent initialize methods", {
+  defer(S4_remove_classes(c(
+    "S4regInitializeParent",
+    "S4regInitializeChild"
+  )))
+
+  setClass("S4regInitializeParent", slots = list(x = "numeric"))
+  methods::setMethod(
+    "initialize",
+    "S4regInitializeParent",
+    function(.Object, x = 1, ...) {
+      .Object <- callNextMethod(.Object, ...)
+      .Object@x <- x * 10
+      .Object
+    }
+  )
+  S4regInitializeChild <- new_class(
+    "S4regInitializeChild",
+    parent = getClass("S4regInitializeParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  object <- S4regInitializeChild(x = 2, y = "a")
+
+  expect_equal(prop(object, "x"), 20)
+  expect_equal(methods::slot(object, "x"), 20)
+  expect_equal(prop(object, "y"), "a")
+
+  object <- S4regInitializeChild(y = "b")
+  expect_equal(prop(object, "x"), 10)
+  expect_equal(prop(object, "y"), "b")
 })
 
 test_that("S4 prototypes use overridden inherited S7 property defaults", {

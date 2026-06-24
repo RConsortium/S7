@@ -6,6 +6,10 @@ new_constructor <- function(
 ) {
   properties <- as_properties(properties)
 
+  if (is_S4_class(parent) && !parent@virtual) {
+    return(new_S4_constructor(parent, properties, envir, package))
+  }
+
   if (
     identical(parent, S7_object) ||
       is_S4_class(parent) ||
@@ -13,8 +17,13 @@ new_constructor <- function(
   ) {
     # There's no parent constructor to delegate to, so the constructor must
     # handle all properties: inherited and newly declared (which win).
+    parent_props <- if (is_S4_class(parent)) {
+      class_properties(parent)
+    } else {
+      attr(parent, "properties", exact = TRUE)
+    }
     all_props <- modify_list(
-      attr(parent, "properties", exact = TRUE),
+      parent_props,
       properties
     )
 
@@ -110,6 +119,74 @@ new_constructor <- function(
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
   new_function(constr_args[constr_nms], child_call, env)
+}
+
+new_S4_constructor <- function(parent, properties, envir, package) {
+  parent_props <- class_properties(parent)
+  parent_nms <- names2(parent_props)
+  override_nms <- intersect(names2(properties), parent_nms)
+  self_props <- properties[setdiff(names2(properties), parent_nms)]
+
+  parent_args <- as.pairlist(lapply(
+    setNames(, parent_nms),
+    function(name) {
+      if (name %in% override_nms) {
+        prop_default(properties[[name]], envir, package)
+      } else {
+        quote(expr = )
+      }
+    }
+  ))
+  self_args <- constructor_args(S7_object, self_props, envir, package)$self
+  constr_args <- modify_list(parent_args, self_args)
+
+  parent_arg_exprs <- lapply(parent_nms, function(name) {
+    value <- as.name(name)
+    if (name %in% override_nms) {
+      bquote(.parent_args[.(name)] <- list(.(value)))
+    } else {
+      bquote(if (!missing(.(value))) .parent_args[.(name)] <- list(.(value)))
+    }
+  })
+
+  parent_value_nms <- setdiff(parent_nms, ".Data")
+  parent_value_args <- lapply(parent_value_nms, function(name) {
+    bquote(.parent_values[[.(name)]])
+  })
+  names(parent_value_args) <- parent_value_nms
+
+  self_value_args <- as_names(names2(self_args))
+  parent_seed <- if (".Data" %in% parent_nms) {
+    quote(.parent_values[[".Data"]])
+  } else {
+    quote(.S7_object())
+  }
+  new_object_call <- as.call(c(
+    list(quote(.S7_new_object), parent_seed),
+    parent_value_args,
+    self_value_args
+  ))
+
+  env <- new.env(parent = envir)
+  env$.S4_parent <- class_constructor(parent)
+  env$.S4_initialize_values <- S4_initialize_values
+  env$.S7_new_object <- new_object
+  env$.S7_object <- S7_object
+
+  new_function(
+    constr_args,
+    as.call(c(
+      quote(`{`),
+      quote(.parent_args <- list()),
+      parent_arg_exprs,
+      list(
+        quote(.parent <- do.call(.S4_parent, .parent_args)),
+        quote(.parent_values <- .S4_initialize_values(.parent)),
+        new_object_call
+      )
+    )),
+    env
+  )
 }
 
 constructor_args <- function(

@@ -159,10 +159,9 @@ new_class <- function(
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
-    constructor_props <- if (is_S4_class(parent)) all_props else new_props
     constructor <- new_constructor(
       parent,
-      constructor_props,
+      new_props,
       envir = parent.frame(),
       package = package
     )

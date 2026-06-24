@@ -284,9 +284,29 @@ S4_property_prototype <- function(prop, env, package) {
       value <- prop_default(prop, env, package)
       value <- S4_decode_pseudo_null(value)
       if (is.call(value) || is.symbol(value)) {
-        value <- eval(value, env)
-        value <- S4_decode_pseudo_null(value)
+        return(list())
       }
+      list(value)
+    },
+    error = function(cnd) {
+      if (!is.null(prop$default)) {
+        stop(cnd)
+      }
+      list()
+    }
+  )
+}
+
+S4_property_deferred_default <- function(prop, env, package) {
+  tryCatch(
+    {
+      value <- prop_default(prop, env, package)
+      value <- S4_decode_pseudo_null(value)
+      if (!is.call(value) && !is.symbol(value)) {
+        return(list())
+      }
+      value <- eval(value, env)
+      value <- S4_decode_pseudo_null(value)
       list(value)
     },
     error = function(cnd) {
@@ -363,7 +383,12 @@ S4_register_class <- function(class, env = parent.frame()) {
   methods::setOldClass(old_classes, S4Class = class_name, where = where)
   S4_set_S3_class_prototype(class_name, old_classes, where)
   methods::setValidity(class_name, S4_validate_class, where = where)
-  methods::setMethod("initialize", class_name, S4_initialize, where = where)
+  methods::setMethod(
+    "initialize",
+    class_name,
+    S4_initialize_method(where),
+    where = where
+  )
 
   class_name
 }
@@ -449,16 +474,19 @@ S4_validate <- function(object) {
   )
 }
 
-S4_initialize <- function(.Object, ...) {
+S4_initialize_method <- function(env) {
+  force(env)
+  function(.Object, ...) {
+    S4_initialize(.Object, ..., .S4_default_env = env)
+  }
+}
+
+S4_initialize <- function(.Object, ..., .S4_default_env = parent.frame()) {
   if (isS4(.Object) && has_S7_class(.Object)) {
     S4_check_contains(S7_class(.Object))
   }
 
   args <- list(...)
-  if (length(args) == 0) {
-    return(.Object)
-  }
-
   nms <- names2(args)
   prop_nms <- prop_names(.Object)
   vals <- list()
@@ -497,11 +525,47 @@ S4_initialize <- function(.Object, ...) {
     .Object <- S4_initialize_data_part(data_part, .Object)
   }
 
-  props(.Object) <- vals
+  vals <- modify_list(
+    S4_initialize_default_values(.Object, names(vals), .S4_default_env),
+    vals
+  )
+  if (length(vals) > 0L) {
+    props(.Object) <- vals
+  }
   for (name in names(s4_vals)) {
     methods::slot(.Object, name) <- s4_vals[[name]]
   }
   .Object
+}
+
+S4_initialize_default_values <- function(object, supplied, env) {
+  class <- S7_class(object)
+  properties <- class@properties
+  properties <- properties[!vlapply(properties, prop_is_dynamic)]
+  properties <- properties[names(properties) %in% methods::slotNames(object)]
+  properties <- properties[setdiff(names(properties), supplied)]
+
+  values <- list()
+  for (name in names(properties)) {
+    if (!S4_slot_has_prototype_value(object, name)) {
+      next
+    }
+
+    value <- S4_property_deferred_default(
+      properties[[name]],
+      env,
+      class@package
+    )
+    if (length(value) != 0L) {
+      values[[name]] <- value[[1L]]
+    }
+  }
+  values
+}
+
+S4_slot_has_prototype_value <- function(object, name) {
+  prototype <- methods::getClass(class(object)[1L])@prototype
+  identical(methods::slot(object, name), methods::slot(prototype, name))
 }
 
 S4_initialize_values <- function(object) {
