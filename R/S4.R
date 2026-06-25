@@ -1222,7 +1222,7 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
 
 S4_slot_properties <- function(class) {
   slots <- class@slots
-  slots <- slots[!names(slots) %in% S4_internal_slot_names()]
+  slots <- slots[!names(slots) %in% S4_slot_property_internal_names(class)]
   slot_names <- names(slots)
   property_names <- S4_slot_property_names(class, slot_names)
   properties <- Map(
@@ -1234,6 +1234,22 @@ S4_slot_properties <- function(class) {
   )
   names(properties) <- property_names
   properties
+}
+
+S4_slot_property_internal_names <- function(class) {
+  if (S4_has_reified_S7_old_class_slot(class)) {
+    S4_internal_slot_names()
+  } else {
+    "_S7_class"
+  }
+}
+
+S4_has_reified_S7_old_class_slot <- function(class) {
+  S4_is_reified_S7_class(class) ||
+    any(vlapply(class@contains, function(extension) {
+      super <- methods::getClass(extension@superClass)
+      S4_is_reified_S7_class(super)
+    }))
 }
 
 S4_slot_property_names <- function(class, slot_names) {

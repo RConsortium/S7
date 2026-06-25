@@ -560,6 +560,12 @@ inherits_S4_class <- function(x, what) {
   if (identical(as.character(what@className), "ANY")) {
     return(TRUE)
   }
+  if (has_S7_class(x)) {
+    class <- S7_class(x)
+    if (is_class(class) && class_extends(class, what)) {
+      return(TRUE)
+    }
+  }
   if (!inherits_S4(x) && is.object(x)) {
     return(FALSE)
   }

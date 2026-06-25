@@ -206,6 +206,10 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     } else {
       class(from) <- class_dispatch(to)
     }
+  } else if (
+    is_S4_class(to) && is_class(from_class) && class_extends(from_class, to)
+  ) {
+    from <- S4_as_validity_class(from, to)
   } else if (is_S4_coerce(from, to)) {
     from <- convert_S4(from, to)
   } else {

@@ -3083,6 +3083,37 @@ test_that("S7 classes preserve special-named properties inherited through S4", {
   expect_identical(methods::validObject(object), TRUE)
 })
 
+test_that("S7 classes preserve .S3Class slots inherited from S4 parents", {
+  defer(S4_remove_classes(c(
+    "S4regS3ClassSlotChild",
+    "S4regS3ClassSlotParent",
+    "S4regS3ClassSlotOld",
+    "S4regS3ClassSlotBase"
+  )))
+
+  old_classes <- c("S4regS3ClassSlotOld", "S4regS3ClassSlotBase")
+  methods::setOldClass(old_classes)
+  methods::setClass(
+    "S4regS3ClassSlotParent",
+    contains = "S4regS3ClassSlotOld"
+  )
+  S4regS3ClassSlotChild := new_class(
+    parent = methods::getClass("S4regS3ClassSlotParent"),
+    package = NULL
+  )
+
+  object <- S4regS3ClassSlotChild()
+
+  expect_equal(prop(object, ".S3Class"), old_classes)
+  expect_equal(
+    S7_inherits(object, methods::getClass("S4regS3ClassSlotParent")),
+    TRUE
+  )
+  parent <- convert(object, to = methods::getClass("S4regS3ClassSlotParent"))
+  expect_s4_class(parent, "S4regS3ClassSlotParent")
+  expect_equal(methods::slot(parent, ".S3Class"), old_classes)
+})
+
 test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
   on.exit(S4_remove_classes(c("Parent2", "Child2", "S4Child2")))
   setClass("Parent2", slots = list(x = "numeric"))
