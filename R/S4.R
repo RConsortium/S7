@@ -285,13 +285,12 @@ S4_register_union_member_extension <- function(class, member, union, S4_env) {
     return(invisible())
   }
 
-  package <- attr(class@className, "package", exact = TRUE)
   suppressWarnings(methods::setIs(
     class@className,
     member,
     where = S4_env,
     classDef = class,
-    test = S4_class_package_test(package)
+    test = S4_class_identity_test(class@className)
   ))
   S4_prune_union_subclass(union, class@className, S4_env)
   invisible()
@@ -300,7 +299,6 @@ S4_register_union_member_extension <- function(class, member, union, S4_env) {
 S4_union_member_needs_identity <- function(class) {
   package <- attr(class, "package", exact = TRUE)
   !is.null(package) &&
-    !identical(package, ".GlobalEnv") &&
     !(identical(package, "methods") && class %in% S4_methods_class_names())
 }
 
@@ -319,12 +317,68 @@ S4_prune_union_subclass <- function(union, class, S4_env) {
   invisible()
 }
 
-S4_class_package_test <- function(package) {
+S4_class_identity_test <- function(target) {
+  target <- S4_class_identity_expr(target)
   new_function(
     alist(object = ),
-    bquote(identical(attr(class(object), "package", exact = TRUE), .(package))),
-    baseenv()
+    bquote({
+      class <- S4_object_class_def(base::class(object))
+      if (is.null(class)) {
+        return(FALSE)
+      }
+
+      S4_class_extends_identity(class, .(target))
+    })
   )
+}
+
+S4_class_identity_expr <- function(class) {
+  package <- attr(class, "package", exact = TRUE)
+  class <- as.character(class)
+  if (is.null(package)) {
+    return(class)
+  }
+
+  bquote(structure(.(class), package = .(package)))
+}
+
+S4_object_class_def <- function(class) {
+  name <- class[[1L]]
+  package <- attr(class, "package", exact = TRUE)
+  if (!is.null(package)) {
+    where <- if (identical(package, ".GlobalEnv")) {
+      .GlobalEnv
+    } else {
+      asNamespace(package)
+    }
+    return(methods::getClass(name, where = where))
+  }
+
+  methods::getClassDef(name, inherits = FALSE)
+}
+
+S4_class_extends_identity <- function(class, target) {
+  if (S4_same_class_identity(class@className, target)) {
+    return(TRUE)
+  }
+
+  any(vlapply(
+    class@contains,
+    function(extension) S4_same_class_identity(extension@superClass, target)
+  ))
+}
+
+S4_same_class_identity <- function(x, y) {
+  identical(S4_class_identity_key(x), S4_class_identity_key(y))
+}
+
+S4_class_identity_key <- function(class) {
+  package <- attr(class, "package", exact = TRUE)
+  if (is.null(package) && class %in% S4_methods_class_names()) {
+    package <- "methods"
+  }
+
+  paste0(package %||% "", "::", as.character(class))
 }
 
 S4_find_union <- function(members, S4_env) {

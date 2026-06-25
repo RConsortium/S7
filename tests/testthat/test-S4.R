@@ -330,6 +330,72 @@ test_that("S4_register preserves package-qualified S4 classes", {
   expect_equal(S4regPackageClassGeneric(pkg_object), "package")
 })
 
+test_that("S4_register allows S4 subclasses of package union members", {
+  parent_env <- local_package("s4regunionparentpkg")
+  child_env <- local_package("s4regunionchildpkg")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "s4regunionparentpkg::S4regUnionParent_OR_character",
+        "S4/s4regunionparentpkg::S4regUnionParent"
+      ))
+      S4_remove_classes("S4regUnionParent", parent_env)
+      S4_remove_classes("S4regUnionChild", child_env)
+    })
+  })
+
+  parent <- methods::setClass(
+    "S4regUnionParent",
+    slots = list(x = "numeric"),
+    where = parent_env
+  )
+  parent_def <- methods::getClass(parent@className, where = parent_env)
+  union_name <- S4_register(parent_def | class_character)
+  child <- methods::setClass(
+    "S4regUnionChild",
+    contains = parent_def@className,
+    where = child_env
+  )
+
+  parent_object <- parent(x = 1)
+  child_object <- child(x = 2)
+
+  expect_equal(methods::is(parent_object, union_name), TRUE)
+  expect_equal(methods::is(child_object, union_name), TRUE)
+})
+
+test_that("S4_register keeps global S4 union members distinct", {
+  pkg_env <- local_package("s4regglobalunionpkg")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "S4regGlobalUnionFoo_OR_character",
+        "S4/S4regGlobalUnionFoo",
+        "S4regGlobalUnionFoo"
+      ))
+      S4_remove_classes("S4regGlobalUnionFoo", pkg_env)
+    })
+  })
+
+  global_foo <- methods::setClass(
+    "S4regGlobalUnionFoo",
+    slots = list(x = "character")
+  )
+  pkg_foo <- methods::setClass(
+    "S4regGlobalUnionFoo",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+  global_def <- methods::getClass(global_foo@className)
+
+  union_name <- S4_register(global_def | class_character)
+  global_object <- global_foo(x = "x")
+  pkg_object <- pkg_foo(x = 1)
+
+  expect_equal(methods::is(global_object, union_name), TRUE)
+  expect_equal(methods::is(pkg_object, union_name), FALSE)
+})
+
 test_that("S4_register gives package S4 unions distinct names", {
   pkg_a_env <- local_package("s4regunionnamea")
   pkg_b_env <- local_package("s4regunionnameb")
