@@ -153,10 +153,11 @@ new_S4_constructor <- function(parent, properties, envir, package) {
   })
 
   parent_value_nms <- setdiff(parent_nms, ".Data")
+  parent_value_storage_nms <- prop_storage_rename(parent_value_nms)
   parent_value_args <- if (parent@virtual) {
     as_names(parent_value_nms)
   } else {
-    lapply(parent_value_nms, function(name) {
+    lapply(parent_value_storage_nms, function(name) {
       bquote(.parent_values[[.(name)]])
     })
   }

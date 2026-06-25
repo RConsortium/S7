@@ -1156,21 +1156,50 @@ S4_to_S7_class <- function(x, error_base = "", call = sys.call(-1L)) {
 S4_slot_properties <- function(class) {
   slots <- class@slots
   slots <- slots[!names(slots) %in% S4_internal_slot_names()]
+  slot_names <- names(slots)
+  property_names <- S4_slot_property_names(class, slot_names)
   properties <- Map(
     S4_slot_property,
     slots,
-    names(slots),
+    slot_names,
+    property_names,
     MoreArgs = list(owner = class)
   )
-  names(properties) <- names(slots)
+  names(properties) <- property_names
   properties
 }
 
-S4_slot_property <- function(class, name, owner) {
+S4_slot_property_names <- function(class, slot_names) {
+  property_names <- slot_names
+  inherited <- S4_inherited_S7_property_names(class)
+  idx <- match(slot_names, names(inherited))
+  property_names[!is.na(idx)] <- inherited[idx[!is.na(idx)]]
+  property_names
+}
+
+S4_inherited_S7_property_names <- function(class) {
+  properties <- character()
+  for (extension in class@contains) {
+    super <- methods::getClass(extension@superClass)
+    if (!S4_is_reified_S7_class(super)) {
+      next
+    }
+
+    s7_class <- methods::slot(super@prototype, "_S7_class")
+    property_names <- names(s7_class@properties)
+    storage_names <- prop_storage_rename(property_names)
+    names(property_names) <- storage_names
+    properties <- c(properties, property_names)
+  }
+
+  properties[!duplicated(names(properties))]
+}
+
+S4_slot_property <- function(class, slot_name, property_name, owner) {
   new_property(
     class = S4_to_S7_class(methods::getClass(class)),
-    default = S4_slot_prototype_default(owner, name),
-    name = name
+    default = S4_slot_prototype_default(owner, slot_name),
+    name = property_name
   )
 }
 

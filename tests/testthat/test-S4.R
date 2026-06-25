@@ -2845,6 +2845,36 @@ test_that("S4_register keeps direct S7 special-name property slots valid", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S7 classes preserve special-named properties inherited through S4", {
+  defer(S4_remove_classes(c(
+    "S4regSpecialSlotGrand",
+    "S4regSpecialSlotMiddle",
+    "S4regSpecialSlotParent"
+  )))
+
+  S4regSpecialSlotParent := new_class(
+    properties = list(names = class_character),
+    package = NULL
+  )
+  S4_register(S4regSpecialSlotParent)
+  methods::setClass(
+    "S4regSpecialSlotMiddle",
+    contains = S4_contains(S4regSpecialSlotParent)
+  )
+  S4regSpecialSlotGrand := new_class(
+    parent = methods::getClass("S4regSpecialSlotMiddle"),
+    package = NULL
+  )
+
+  object <- S4regSpecialSlotGrand(names = "n")
+
+  expect_equal(prop_names(object), "names")
+  expect_equal(prop(object, "names"), "n")
+  expect_equal(methods::slot(object, "_names"), "n")
+  expect_equal(S7_inherits(object, S4regSpecialSlotParent), TRUE)
+  expect_identical(methods::validObject(object), TRUE)
+})
+
 test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
   on.exit(S4_remove_classes(c("Parent2", "Child2", "S4Child2")))
   setClass("Parent2", slots = list(x = "numeric"))
