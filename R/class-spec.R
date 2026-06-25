@@ -298,8 +298,9 @@ S4_as_validity_class <- function(object, class) {
 }
 
 S4_new_object <- function(class) {
-  C_new_object <- get("C_new_object", envir = asNamespace("methods"))
-  .Call(C_new_object, class)
+  value <- class@prototype
+  attr(value, "class") <- S4_class_coerce_name(class)
+  base::asS4(value, TRUE)
 }
 
 S4_class_coerce_name <- function(class) {
