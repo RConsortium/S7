@@ -2923,6 +2923,33 @@ test_that("S7_data() reads and writes S4 subclass data parts", {
   expect_identical(methods::validObject(object), TRUE)
 })
 
+test_that("S7_data() preserves S4 data-part attributes on direct S7 children", {
+  defer(S4_remove_classes(c(
+    "S4regS7FactorChild",
+    "S4regS7FactorParent"
+  )))
+
+  setClass("S4regS7FactorParent", contains = "factor")
+  suppressWarnings({
+    S4regS7FactorChild := new_class(
+      parent = getClass("S4regS7FactorParent"),
+      package = NULL
+    )
+  })
+
+  object <- S4regS7FactorChild(
+    .Data = 1:2,
+    levels = c("a", "b"),
+    .S3Class = "factor"
+  )
+
+  expect_equal(S7_data(object), factor(c("a", "b")))
+
+  S7_data(object) <- factor("b", levels = c("a", "b", "c"))
+
+  expect_equal(S7_data(object), factor("b", levels = c("a", "b", "c")))
+})
+
 test_that("S7_data() keeps data attributes that match renamed S7 properties", {
   defer(S4_remove_classes(c(
     "S4regS7DataNameAttrChild",

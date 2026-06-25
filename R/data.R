@@ -77,7 +77,17 @@ base_parent <- function(class) {
 }
 
 is_S4_data_part_object <- function(object) {
-  isS4(object) && ".Data" %in% methods::slotNames(object)
+  if (isS4(object)) {
+    return(".Data" %in% methods::slotNames(object))
+  }
+
+  if (!S7_inherits(object)) {
+    return(FALSE)
+  }
+
+  class <- S7_class(object)
+  parent <- if (is_class(class)) S4_ancestor(class)
+  !is.null(parent) && ".Data" %in% names(parent@slots)
 }
 
 S4_data_part <- function(object) {

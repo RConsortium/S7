@@ -1131,9 +1131,13 @@ S4_initialize_data_part <- function(value, object) {
 }
 
 S4_data_part_protected_attributes <- function(object) {
+  attribute_names <- S4_data_part_attribute_names(object)
+
   c(
-    setdiff(methods::slotNames(object), S4_data_part_attribute_names(object)),
-    if (has_S7_class(object)) prop_storage_names(object),
+    setdiff(methods::slotNames(object), attribute_names),
+    if (has_S7_class(object)) {
+      setdiff(prop_storage_names(object), attribute_names)
+    },
     "class",
     "_S7_class",
     "S7_class"
@@ -1170,7 +1174,9 @@ S4_data_part_S3_class <- function(object) {
     if (is_S3_class(base)) {
       return(base$class)
     }
-    return(NULL)
+    if (!is_S4_class(base) || !".S3Class" %in% names(base@slots)) {
+      return(NULL)
+    }
   }
 
   attr(object, ".S3Class", exact = TRUE)
