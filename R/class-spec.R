@@ -228,7 +228,7 @@ S4_validate_old_class <- function(class, object, skip = character()) {
     if (isTRUE(x)) character() else x
   }
 
-  errors <- character()
+  errors <- S4_validate_slots(class, object)
   extends <- rev(class@contains)
   for (ext in extends) {
     super_class <- ext@superClass
@@ -288,6 +288,84 @@ S4_validate_old_class <- function(class, object, skip = character()) {
   } else {
     errors
   }
+}
+
+S4_validate_slots <- function(class, object) {
+  errors <- character()
+  slot_types <- class@slots
+  slot_names <- names(slot_types)
+  attr_names <- c(".Data", ".S3Class", names(attributes(object)))
+
+  missing <- is.na(match(slot_names, attr_names))
+  if (any(missing)) {
+    errors <- c(
+      errors,
+      paste(
+        "slots in class definition but not in object:",
+        paste0("\"", slot_names[missing], "\"", collapse = ", ")
+      )
+    )
+    slot_types <- slot_types[!missing]
+    slot_names <- slot_names[!missing]
+  }
+
+  where <- get(".classEnv", envir = asNamespace("methods"))(class)
+  S3Class <- get("S3Class", envir = asNamespace("methods"))
+  for (i in seq_along(slot_types)) {
+    slot_class <- slot_types[[i]]
+    slot_class_def <- methods::getClassDef(slot_class, where = where)
+    if (is.null(slot_class_def)) {
+      errors <- c(
+        errors,
+        paste0(
+          "undefined class for slot \"",
+          slot_names[[i]],
+          "\" (\"",
+          slot_class,
+          "\")"
+        )
+      )
+      next
+    }
+
+    slot_name <- slot_names[[i]]
+    value <- tryCatch(
+      switch(
+        slot_name,
+        .S3Class = S3Class(object),
+        methods::slot(object, slot_name)
+      ),
+      error = function(cnd) cnd
+    )
+    if (inherits(value, "error")) {
+      errors <- c(errors, conditionMessage(value))
+      next
+    }
+
+    ok <- methods::possibleExtends(
+      class(value),
+      slot_class,
+      ClassDef2 = slot_class_def
+    )
+    if (isFALSE(ok)) {
+      errors <- c(
+        errors,
+        paste0(
+          "invalid object for slot \"",
+          slot_name,
+          "\" in class \"",
+          class(object)[[1L]],
+          "\": got class \"",
+          class(value)[[1L]],
+          "\", should be or extend class \"",
+          slot_class,
+          "\""
+        )
+      )
+    }
+  }
+
+  errors
 }
 
 S4_validate_reified_S7_class <- function(class, object) {

@@ -2270,6 +2270,28 @@ test_that("S4 subclasses of S7 classes run concrete S4 validity", {
   })
 })
 
+test_that("S4 subclasses of S7 classes check concrete slot types", {
+  defer(S4_remove_classes(c(
+    "S4regConcreteSlotParent",
+    "S4regConcreteSlotChild"
+  )))
+
+  S4regConcreteSlotParent := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regConcreteSlotParent)
+  setClass(
+    "S4regConcreteSlotChild",
+    contains = S4_contains(S4regConcreteSlotParent),
+    slots = list(x = "integer")
+  )
+
+  expect_snapshot(error = TRUE, {
+    methods::new("S4regConcreteSlotChild", x = 1)
+  })
+})
+
 test_that("S4 subclass validation preserves concrete class package", {
   pkg_env <- local_package("s4regvalidpkg")
   defer({
