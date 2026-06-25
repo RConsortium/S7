@@ -330,12 +330,19 @@ S4_class_identity_test <- function(target) {
   new_function(
     alist(object = ),
     bquote({
-      class <- S4_object_class_def(base::class(object))
+      S7_namespace <- base::asNamespace("S7")
+      class <- base::get(
+        "S4_object_class_def",
+        envir = S7_namespace
+      )(base::class(object))
       if (is.null(class)) {
         return(FALSE)
       }
 
-      S4_class_extends_identity(class, .(target))
+      base::get(
+        "S4_class_extends_identity",
+        envir = S7_namespace
+      )(class, .(target))
     })
   )
 }

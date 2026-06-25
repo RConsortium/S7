@@ -1,0 +1,9 @@
+Package: t5parent
+Title: Test Provider Of A Foreign S4 Class
+Version: 0.0.0.9000
+Authors@R:
+    person("Jim", "Hester", , "james.f.hester@gmail.com", role = c("aut", "cre"))
+Description: Provides an S4 class used by installed-package S7 compatibility tests.
+Imports: methods
+License: MIT + file LICENSE
+Encoding: UTF-8

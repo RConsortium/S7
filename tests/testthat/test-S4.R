@@ -364,6 +364,62 @@ test_that("S4_register allows S4 subclasses of package union members", {
   expect_equal(methods::is(child_object, union_name), TRUE)
 })
 
+test_that("S4 compatibility works from an installed S7 namespace", {
+  skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
+  skip_if(quick_test())
+
+  tmp_lib <- local_libpath()
+  opts <- c(
+    "--data-compress=none",
+    "--no-byte-compile",
+    "--no-data",
+    "--no-demo",
+    "--no-docs",
+    "--no-help",
+    "--no-html",
+    "--use-vanilla"
+  )
+  install.packages(
+    pkgs = normalizePath(test_path("../..")),
+    lib = tmp_lib,
+    repos = NULL,
+    type = "source",
+    quiet = TRUE,
+    INSTALL_opts = paste(opts, collapse = " ")
+  )
+  quick_install(test_path("t5parent"), tmp_lib)
+
+  expect_no_error(callr::r(
+    function(lib) {
+      .libPaths(c(lib, .libPaths()))
+      library(S7)
+
+      methods::setClass("T5ValidityParent", slots = list(x = "numeric"))
+      methods::setValidity("T5ValidityParent", function(object) {
+        if (identical(as.character(class(object)), "T5ValidityParent")) {
+          TRUE
+        } else {
+          "parent validity must see parent class"
+        }
+      })
+      T5ValidityChild <- S7::new_class(
+        name = "T5ValidityChild",
+        parent = methods::getClass("T5ValidityParent"),
+        package = NULL
+      )
+      stopifnot(methods::validObject(T5ValidityChild(x = 1)))
+
+      union <- S7::S4_register(
+        t5parent::identity_parent_class() | S7::class_character
+      )
+      stopifnot(methods::is(t5parent::new_identity_parent(x = 1), union))
+
+      NULL
+    },
+    args = list(lib = tmp_lib)
+  ))
+})
+
 test_that("S4_register keeps global S4 union members distinct", {
   pkg_env <- local_package("s4regglobalunionpkg")
   defer({

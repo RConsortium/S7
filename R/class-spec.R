@@ -297,10 +297,10 @@ S4_as_validity_class <- function(object, class) {
   value
 }
 
-S4_new_object <- local({
+S4_new_object <- function(class) {
   C_new_object <- get("C_new_object", envir = asNamespace("methods"))
-  function(class) .Call(C_new_object, class)
-})
+  .Call(C_new_object, class)
+}
 
 S4_class_coerce_name <- function(class) {
   name <- class@className
