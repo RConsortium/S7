@@ -498,7 +498,11 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
 
 check_prop_storage_names <- function(properties, call = sys.call(-1L)) {
   nms <- names2(properties)
-  storage_nms <- prop_storage_rename_static(nms)
+  if (length(nms) == 0L) {
+    return(invisible())
+  }
+
+  storage_nms <- prop_storage_rename(nms)
   if (!anyDuplicated(storage_nms)) {
     return(invisible())
   }
@@ -511,22 +515,6 @@ check_prop_storage_names <- function(properties, call = sys.call(-1L)) {
     dQuote(storage_name)
   )
   stop2(msg, call = call)
-}
-
-prop_storage_rename_static <- function(nms) {
-  special <- c(
-    names = "_names",
-    dim = "_dim",
-    dimnames = "_dimnames",
-    class = "_class",
-    tsp = "_tsp",
-    comment = "_comment",
-    row.names = "_row.names"
-  )
-  idx <- match(nms, names(special))
-  out <- nms
-  out[!is.na(idx)] <- unname(special[idx[!is.na(idx)]])
-  out
 }
 
 check_prop_overrides <- function(

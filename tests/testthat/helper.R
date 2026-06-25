@@ -1,4 +1,4 @@
-quick_install <- function(package, lib, quiet = TRUE) {
+quick_install <- function(package, lib, quiet = TRUE, libs = FALSE) {
   opts <- c(
     "--data-compress=none",
     "--no-byte-compile",
@@ -7,7 +7,7 @@ quick_install <- function(package, lib, quiet = TRUE) {
     "--no-docs",
     "--no-help",
     "--no-html",
-    "--no-libs",
+    if (!libs) "--no-libs",
     "--use-vanilla",
     NULL
   )

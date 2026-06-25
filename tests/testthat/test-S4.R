@@ -477,24 +477,7 @@ test_that("S4 compatibility works from an installed S7 namespace", {
   skip_if(quick_test())
 
   tmp_lib <- local_libpath()
-  opts <- c(
-    "--data-compress=none",
-    "--no-byte-compile",
-    "--no-data",
-    "--no-demo",
-    "--no-docs",
-    "--no-help",
-    "--no-html",
-    "--use-vanilla"
-  )
-  install.packages(
-    pkgs = normalizePath(test_path("../..")),
-    lib = tmp_lib,
-    repos = NULL,
-    type = "source",
-    quiet = TRUE,
-    INSTALL_opts = paste(opts, collapse = " ")
-  )
+  quick_install(normalizePath(test_path("../..")), tmp_lib, libs = TRUE)
   quick_install(test_path("t5parent"), tmp_lib)
 
   expect_no_error(callr::r(
@@ -2200,6 +2183,34 @@ test_that("S4 subclasses of S7-over-S4 classes run S4 parent validity", {
   expect_snapshot(error = TRUE, {
     methods::initialize(object, x = numeric())
   })
+})
+
+test_that("S4 subclass validation reports inherited S4 slot errors once", {
+  defer(S4_remove_classes(c(
+    "S4regSubSlotErrorParent",
+    "S4regSubSlotErrorChild",
+    "S4regSubSlotErrorShim"
+  )))
+
+  setClass("S4regSubSlotErrorParent", slots = list(x = "numeric"))
+  S4regSubSlotErrorChild := new_class(
+    parent = getClass("S4regSubSlotErrorParent"),
+    package = NULL
+  )
+  S4regSubSlotErrorChild_S4 <- S4_contains(S4regSubSlotErrorChild)
+  setClass("S4regSubSlotErrorShim", contains = S4regSubSlotErrorChild_S4)
+
+  object <- methods::new("S4regSubSlotErrorShim", x = 1)
+  attr(object, "x") <- "bad"
+  error <- tryCatch(validate(object, properties = FALSE), error = identity)
+  matches <- gregexpr(
+    "invalid object for slot",
+    conditionMessage(error),
+    fixed = TRUE
+  )
+
+  expect_s3_class(error, "S7_error_validation_failed")
+  expect_equal(lengths(regmatches(conditionMessage(error), matches)), 1L)
 })
 
 test_that("S7-over-S4 classes run S7 validators inherited through S4", {

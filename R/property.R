@@ -309,17 +309,9 @@ prop <- function(object, name) {
 }
 
 prop_is_S4_data_part <- function(object, name) {
-  if (!identical(name, ".Data") || isS4(object) || !S7_inherits(object)) {
-    return(FALSE)
-  }
-
-  class <- S7_class(object)
-  if (!is_class(class)) {
-    return(FALSE)
-  }
-
-  parent <- S4_ancestor(class)
-  !is.null(parent) && ".Data" %in% names(parent@slots)
+  identical(name, ".Data") &&
+    !isS4(object) &&
+    is_S4_data_part_object(object)
 }
 
 # called from src/prop.c

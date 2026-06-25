@@ -165,11 +165,8 @@ S4_registered_S7_class_matches <- function(class, x) {
     return(FALSE)
   }
   registered <- methods::slot(class@prototype, "_S7_class")
-  is_class(registered) && S4_registered_S7_class_object_matches(registered, x)
-}
-
-S4_registered_S7_class_object_matches <- function(registered, x) {
-  identical(registered, x) || isTRUE(all.equal(registered, x))
+  is_class(registered) &&
+    (identical(registered, x) || isTRUE(all.equal(registered, x)))
 }
 
 S4_registered_old_class_matches <- function(class, x) {
@@ -289,7 +286,7 @@ S4_register_union_member_extension <- function(class, member, union, S4_env) {
   subclasses <- base::Filter(function(x) x@distance == 1, member_def@subclasses)
   if (
     S4_class_key(class@className) %in%
-      S4_class_keys(S4_extension_subclasses(subclasses))
+      S4_class_keys(S4_subclasses(subclasses))
   ) {
     return(invisible())
   }
@@ -318,7 +315,7 @@ S4_register_union_member_subclasses <- function(class, member, union, S4_env) {
   )
   union_def <- methods::getClass(union, where = S4_env)
   union_subclass_keys <- S4_class_keys(
-    S4_extension_subclasses(union_def@subclasses)
+    S4_subclasses(union_def@subclasses)
   )
 
   for (subclass in subclasses) {
@@ -342,7 +339,7 @@ S4_get_class <- function(class, S4_env) {
 }
 
 S4_class_env <- function(class, S4_env) {
-  package <- attr(class, "package", exact = TRUE)
+  package <- S4_class_package(class, methods = FALSE)
   if (is.null(package) || identical(package, ".GlobalEnv")) {
     return(S4_env)
   }
@@ -351,13 +348,13 @@ S4_class_env <- function(class, S4_env) {
 }
 
 S4_union_member_needs_identity <- function(class) {
-  package <- attr(class, "package", exact = TRUE)
+  package <- S4_class_package(class, methods = FALSE)
   !is.null(package) &&
     !(identical(package, "methods") && class %in% S4_methods_class_names())
 }
 
 S4_union_member_same_package <- function(class, S4_env) {
-  package <- attr(class, "package", exact = TRUE)
+  package <- S4_class_package(class, methods = FALSE)
   !is.null(package) && identical(package, methods::getPackageName(S4_env))
 }
 
@@ -439,12 +436,7 @@ S4_same_class_identity <- function(x, y) {
 }
 
 S4_class_identity_key <- function(class) {
-  package <- attr(class, "package", exact = TRUE)
-  if (is.null(package) && class %in% S4_methods_class_names()) {
-    package <- "methods"
-  }
-
-  paste0(package %||% "", "::", as.character(class))
+  S4_class_key(class, bare_missing = FALSE, bare_global = FALSE)
 }
 
 S4_find_union <- function(members, S4_env) {
@@ -485,28 +477,40 @@ S4_union_matches <- function(class, members, S4_env) {
 
 S4_union_members <- function(class) {
   subclasses <- base::Filter(function(x) x@distance == 1, class@subclasses)
-  S4_extension_subclasses(subclasses)
+  S4_subclasses(subclasses)
 }
 
-S4_extension_subclasses <- function(x) {
-  lapply(x, function(x) x@subClass)
+S4_subclasses <- function(x) {
+  lapply(x, methods::slot, "subClass")
 }
 
 S4_class_keys <- function(classes) {
   vcapply(classes, S4_class_key)
 }
 
-S4_class_key <- function(class) {
-  package <- attr(class, "package", exact = TRUE)
+S4_class_key <- function(
+  class,
+  bare_missing = TRUE,
+  bare_global = TRUE
+) {
+  package <- S4_class_package(class)
   class <- as.character(class)
-  if (is.null(package) && class %in% S4_methods_class_names()) {
-    package <- "methods"
-  }
-  if (is.null(package) || identical(package, ".GlobalEnv")) {
+  if (
+    (is.null(package) && bare_missing) ||
+      (identical(package, ".GlobalEnv") && bare_global)
+  ) {
     class
   } else {
-    paste0(package, "::", class)
+    paste0(package %||% "", "::", class)
   }
+}
+
+S4_class_package <- function(class, methods = TRUE) {
+  package <- attr(class, "package", exact = TRUE)
+  if (methods && is.null(package) && class %in% S4_methods_class_names()) {
+    package <- "methods"
+  }
+  package
 }
 
 S4_methods_class_names <- function() {
@@ -596,7 +600,7 @@ S4_properties_prototype <- function(
 ) {
   args <- list()
   for (name in names(properties)) {
-    value <- S4_property_prototype(properties[[name]], env, class@package)
+    value <- S4_property_default_value(properties[[name]], env, class@package)
     if (length(value) != 0L) {
       slot_name <- prop_storage_rename(name)
       args[slot_name] <- value
@@ -608,41 +612,25 @@ S4_properties_prototype <- function(
   do.call(methods::prototype, args)
 }
 
-S4_property_prototype <- function(prop, env, package) {
-  tryCatch(
-    {
-      value <- prop_default(prop, env, package)
-      value <- S4_decode_pseudo_null(value)
-      if (is.call(value) || is.symbol(value)) {
-        return(list())
-      }
-      list(value)
-    },
-    error = function(cnd) {
-      if (!is.null(prop$default)) {
-        stop(cnd)
-      }
-      list()
-    }
-  )
-}
-
-S4_property_deferred_default <- function(
+S4_property_default_value <- function(
   prop,
   env,
   package,
+  deferred = FALSE,
   allow_simple = FALSE
 ) {
   tryCatch(
     {
       value <- prop_default(prop, env, package)
       value <- S4_decode_pseudo_null(value)
-      if (!is.call(value) && !is.symbol(value)) {
-        if (allow_simple) {
-          return(list(value))
-        }
+      is_deferred <- is.call(value) || is.symbol(value)
+      if (!is_deferred) {
+        return(if (!deferred || allow_simple) list(value) else list())
+      }
+      if (!deferred) {
         return(list())
       }
+
       value <- eval(value, env)
       value <- S4_decode_pseudo_null(value)
       list(value)
@@ -1054,10 +1042,11 @@ S4_initialize_default_values <- function(object, supplied, S4_env) {
     }
 
     prop <- properties[[name]]
-    value <- S4_property_deferred_default(
+    value <- S4_property_default_value(
       prop,
       env,
       class@package,
+      deferred = TRUE,
       allow_simple = identical(name, ".Data")
     )
     if (length(value) != 0L) {

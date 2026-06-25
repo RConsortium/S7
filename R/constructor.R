@@ -10,18 +10,10 @@ new_constructor <- function(
     return(new_S4_constructor(parent, properties, envir, package))
   }
 
-  if (
-    identical(parent, S7_object) ||
-      is_S4_class(parent) ||
-      (is_class(parent) && parent@abstract)
-  ) {
+  if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     # There's no parent constructor to delegate to, so the constructor must
     # handle all properties: inherited and newly declared (which win).
-    parent_props <- if (is_S4_class(parent)) {
-      class_properties(parent)
-    } else {
-      attr(parent, "properties", exact = TRUE)
-    }
+    parent_props <- attr(parent, "properties", exact = TRUE)
     all_props <- modify_list(
       parent_props,
       properties
@@ -30,7 +22,7 @@ new_constructor <- function(
     arg_info <- constructor_args(parent, all_props, envir, package)
     force_args <- as_names(names(arg_info$self))
 
-    s4_parent <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+    s4_parent <- S4_ancestor(parent)
     s4_data_part <- !is.null(s4_parent) && ".Data" %in% names(s4_parent@slots)
     self_arg_names <- names(arg_info$self)
     parent_call <- if (s4_data_part) {

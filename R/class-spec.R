@@ -223,7 +223,12 @@ class_validate <- function(class, object) {
   }
 }
 
-S4_validate_old_class <- function(class, object, skip = character()) {
+S4_validate_old_class <- function(
+  class,
+  object,
+  skip = character(),
+  skip_slots = character()
+) {
   any_strings <- function(x) {
     if (isTRUE(x)) character() else x
   }
@@ -233,7 +238,7 @@ S4_validate_old_class <- function(class, object, skip = character()) {
     return(errors)
   }
 
-  errors <- S4_validate_slots(class, object)
+  errors <- S4_validate_slots(class, object, skip = skip_slots)
   extends <- rev(class@contains)
   for (ext in extends) {
     super_class <- ext@superClass
@@ -319,9 +324,10 @@ S4_direct_reified_S7_contains <- function(class) {
   lapply(supers, function(x) methods::slot(x@prototype, "_S7_class"))
 }
 
-S4_validate_slots <- function(class, object) {
+S4_validate_slots <- function(class, object, skip = character()) {
   errors <- character()
   slot_types <- class@slots
+  slot_types <- slot_types[!names(slot_types) %in% skip]
   slot_names <- names(slot_types)
   attr_names <- c(".Data", ".S3Class", names(attributes(object)))
 

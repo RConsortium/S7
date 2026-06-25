@@ -163,7 +163,8 @@ validate_S4_subclass <- function(object) {
 
   ancestor <- S4_ancestor(S7_class(object))
   skip <- if (is.null(ancestor)) character() else S4_validity_classes(ancestor)
-  S4_validate_old_class(class, object, skip = skip)
+  skip_slots <- if (is.null(ancestor)) character() else names(ancestor@slots)
+  S4_validate_old_class(class, object, skip = skip, skip_slots = skip_slots)
 }
 
 S4_validity_classes <- function(class) {
