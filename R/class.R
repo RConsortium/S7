@@ -492,6 +492,19 @@ check_prop_overrides <- function(
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
 
+    if (
+      is_S4_class(parent) &&
+        (prop_is_dynamic(child_prop) || prop_has_setter(child_prop))
+    ) {
+      msg <- sprintf(
+        "Can't override inherited S4 slot %s@%s with a custom %s.",
+        class_desc(parent),
+        prop,
+        if (prop_is_dynamic(child_prop)) "getter" else "setter"
+      )
+      stop2(msg, call = call)
+    }
+
     # Dynamic properties are computed, not stored, so they're never validated
     # against the parent's type
     if (prop_is_dynamic(child_prop)) {
