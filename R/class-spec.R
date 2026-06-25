@@ -288,7 +288,7 @@ S4_as_validity_class <- function(object, class) {
     return(methods::as(object, S4_class_coerce_name(class)))
   }
 
-  value <- methods::new(class)
+  value <- S4_new_object(class)
   values <- S4_initialize_values(object)
   slots <- intersect(names(values), methods::slotNames(value))
   for (name in slots) {
@@ -296,6 +296,11 @@ S4_as_validity_class <- function(object, class) {
   }
   value
 }
+
+S4_new_object <- local({
+  C_new_object <- get("C_new_object", envir = asNamespace("methods"))
+  function(class) .Call(C_new_object, class)
+})
 
 S4_class_coerce_name <- function(class) {
   name <- class@className

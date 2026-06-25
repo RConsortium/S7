@@ -2433,6 +2433,44 @@ test_that("S7 subclasses validate S4 parents as the parent representation", {
   expect_no_error(S4regValidityConcreteChild(.Data = 1))
 })
 
+test_that("S7 subclasses validate initialized S4 parents without reinitializing", {
+  defer(S4_remove_classes(c(
+    "S4regRequiredInitializeParent",
+    "S4regRequiredInitializeChild"
+  )))
+
+  setClass("S4regRequiredInitializeParent", slots = list(x = "numeric"))
+  methods::setMethod(
+    "initialize",
+    "S4regRequiredInitializeParent",
+    function(.Object, x, ...) {
+      .Object <- callNextMethod(.Object, ...)
+      .Object@x <- x
+      .Object
+    }
+  )
+  methods::setValidity("S4regRequiredInitializeParent", function(object) {
+    if (
+      identical(as.character(class(object)), "S4regRequiredInitializeParent")
+    ) {
+      if (identical(methods::slot(object, "x"), 1)) {
+        return(TRUE)
+      }
+      return("parent validity must see initialized slot value")
+    } else {
+      "parent validity must see parent class"
+    }
+  })
+  S4regRequiredInitializeChild := new_class(
+    parent = getClass("S4regRequiredInitializeParent"),
+    package = NULL
+  )
+
+  object <- S4regRequiredInitializeChild(x = 1)
+
+  expect_equal(prop(object, "x"), 1)
+})
+
 test_that("S4 data part constructors use overridden .Data defaults", {
   defer(S4_remove_classes(c(
     "S4regDataDefaultParent",
