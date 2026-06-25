@@ -83,8 +83,8 @@ S4_contains <- function(class, env = parent.frame()) {
 }
 
 S4_register_union <- function(class, env) {
-  name <- S4_union_name(class, env)
   members <- S4_union_member_classes(class, env, register = TRUE)
+  name <- S4_union_name(class, env)
   methods::setClassUnion(
     name,
     members,
@@ -226,6 +226,13 @@ S4_union_member_classes <- function(x, S4_env, register = FALSE) {
 
 S4_union_member_class <- function(x, S4_env, register = FALSE) {
   if (!is_S4_class(x)) {
+    if (register && class_type(x) %in% c("S7", "S7_S3")) {
+      registered <- S4_registered_class_or_null(x, S4_env)
+      if (!is.null(registered)) {
+        return(registered@className)
+      }
+      return(S4_register(x, S4_env))
+    }
     return(S4_class(x, S4_env))
   }
 

@@ -250,6 +250,34 @@ test_that("S4_register registers an S7 union so it can be used with S4 methods",
   expect_equal(S4regUnionGeneric("x"), "union")
 })
 
+test_that("S4_register registers unregistered S7 and S3 union members", {
+  defer(S4_remove_classes(c(
+    "S4regUnionAutoS7",
+    "S4regUnionAutoS7_OR_character",
+    "S4regUnionAutoS3",
+    "S4regUnionAutoS3_OR_character"
+  )))
+
+  S4regUnionAutoS7 := new_class(
+    package = NULL
+  )
+  S4regUnionAutoS3 <- new_S3_class(class = "S4regUnionAutoS3")
+
+  expect_false(methods::isClass("S4regUnionAutoS7"))
+  expect_false(methods::isClass("S4regUnionAutoS3"))
+
+  expect_equal(
+    S4_register(S4regUnionAutoS7 | class_character),
+    "S4regUnionAutoS7_OR_character"
+  )
+  expect_equal(
+    S4_register(S4regUnionAutoS3 | class_character),
+    "S4regUnionAutoS3_OR_character"
+  )
+  expect_true(methods::isClass("S4regUnionAutoS7"))
+  expect_true(methods::isClass("S4regUnionAutoS3"))
+})
+
 test_that("S4_register preserves package-qualified S4 classes", {
   pkg_env <- local_package("s4regpkgclasses")
   defer({
@@ -1881,6 +1909,81 @@ test_that("S4 subclass validation preserves concrete class package", {
   expect_match(
     methods::validObject(object, test = TRUE),
     "x must have length 1"
+  )
+  expect_snapshot(error = TRUE, {
+    validate(object)
+  })
+})
+
+test_that("S4 subclass validation preserves skipped superclass packages", {
+  pkg_a_env <- local_package("s4regvalidskipa")
+  pkg_b_env <- local_package("s4regvalidskipb")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "S4regValiditySkip",
+        "S4regValiditySkipS7",
+        "S4regValiditySkipChild"
+      ))
+      S4_remove_classes(
+        c(
+          "S4regValiditySkip",
+          "S4regValiditySkipPkgAChild"
+        ),
+        pkg_a_env
+      )
+      S4_remove_classes("S4regValiditySkip", pkg_b_env)
+    })
+  })
+
+  pkg_a_base <- methods::setClass(
+    "S4regValiditySkip",
+    slots = list(x = "numeric"),
+    prototype = list(x = 1),
+    where = pkg_a_env
+  )
+  pkg_a_parent <- methods::setClass(
+    "S4regValiditySkipPkgAChild",
+    contains = pkg_a_base@className,
+    where = pkg_a_env
+  )
+  pkg_b_parent <- methods::setClass(
+    "S4regValiditySkip",
+    slots = list(x = "numeric"),
+    prototype = list(x = 1),
+    where = pkg_b_env
+  )
+  methods::setValidity(
+    pkg_b_parent@className,
+    function(object) {
+      if (length(methods::slot(object, "x")) != 1) {
+        "package B x must have length 1"
+      } else {
+        TRUE
+      }
+    },
+    where = pkg_b_env
+  )
+  S4regValiditySkipS7 := new_class(
+    parent = pkg_a_parent,
+    package = NULL
+  )
+  suppressWarnings(methods::setClass(
+    "S4regValiditySkipChild",
+    contains = list(
+      S4_contains(S4regValiditySkipS7),
+      pkg_b_parent@className
+    ),
+    slots = list(x = "numeric"),
+    prototype = list(x = 1)
+  ))
+
+  object <- methods::new("S4regValiditySkipChild")
+  methods::slot(object, "x") <- numeric()
+
+  expect_match(
+    methods::validObject(object, test = TRUE),
+    "package B x must have length 1"
   )
   expect_snapshot(error = TRUE, {
     validate(object)

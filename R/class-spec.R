@@ -232,7 +232,7 @@ S4_validate_old_class <- function(class, object, skip = character()) {
   extends <- rev(class@contains)
   for (ext in extends) {
     super_class <- ext@superClass
-    if (super_class %in% skip) {
+    if (S4_class_key(super_class) %in% skip) {
       next
     }
     if (!ext@simple && !methods::is(object, super_class)) {
@@ -266,7 +266,7 @@ S4_validate_old_class <- function(class, object, skip = character()) {
     }
   }
 
-  if (!as.character(class@className) %in% skip) {
+  if (!S4_class_key(class@className) %in% skip) {
     validity <- methods::getValidity(class)
     if (length(errors) == 0L && is.function(validity)) {
       errors <- c(
