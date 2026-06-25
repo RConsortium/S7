@@ -90,6 +90,21 @@ test_that("S7 classes reject S4 parents with implicit data parts", {
   })
 })
 
+test_that("S7 classes reject duplicate property storage names", {
+  defer(S4_remove_classes("StorageNameParent"))
+
+  setClass("StorageNameParent", slots = list(`_names` = "character"))
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      "StorageNameChild",
+      parent = getClass("StorageNameParent"),
+      properties = list(names = class_character),
+      package = NULL
+    )
+  })
+})
+
 test_that("S7_class can be used as a property name", {
   foo <- new_class(
     "foo",

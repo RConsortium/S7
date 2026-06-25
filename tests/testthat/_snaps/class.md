@@ -116,6 +116,15 @@
       ! Can't extend S4 class S4<matrix> because it has an implicit data part.
       Only S4 classes with data parts stored in an explicit `.Data` slot are supported.
 
+# S7 classes reject duplicate property storage names
+
+    Code
+      new_class("StorageNameChild", parent = getClass("StorageNameParent"),
+      properties = list(names = class_character), package = NULL)
+    Condition
+      Error in `new_class()`:
+      ! Properties "_names", "names" must not use the same storage name "_names".
+
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code

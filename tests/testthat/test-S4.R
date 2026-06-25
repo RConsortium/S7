@@ -65,6 +65,21 @@ test_that("S4_register constructs S4 subclasses with S3 data-part parents", {
   expect_equal(methods::slot(child, "y"), "child")
 })
 
+test_that("S4_register registers S7 classes with custom S3 data parents", {
+  defer(S4_remove_classes("S4regS7S3Integer"))
+
+  S4regS3Integer <- new_S3_class(
+    c("S4regS3Integer", "integer"),
+    constructor = function(.data = integer()) {
+      structure(.data, class = c("S4regS3Integer", "integer"))
+    }
+  )
+  S4regS7S3Integer := new_class(parent = S4regS3Integer, package = NULL)
+
+  expect_equal(S4_register(S4regS7S3Integer), "S4regS7S3Integer")
+  expect_contains(methods::slotNames("S4regS7S3Integer"), ".S3Class")
+})
+
 test_that("S4_register registers S7 property classes", {
   defer(S4_remove_classes(c(
     "S4regS7PropParent",

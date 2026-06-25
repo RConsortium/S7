@@ -658,7 +658,7 @@ S4_register_class <- function(class, env = parent.frame()) {
   if (needs_S7_class_slot) {
     slots$`_S7_class` <- "S7_class"
   }
-  if (S4_needs_S3_class_slot(class, parent_slot_names, old_classes)) {
+  if (S4_needs_S3_class_slot(class, parent_slot_names, old_classes, where)) {
     slots$.S3Class <- "character"
   }
   contains <- S4_contains_classes(parent_class_name, where)
@@ -699,12 +699,54 @@ S4_register_class <- function(class, env = parent.frame()) {
   class_name
 }
 
-S4_needs_S3_class_slot <- function(class, parent_slot_names, old_classes) {
+S4_needs_S3_class_slot <- function(
+  class,
+  parent_slot_names,
+  old_classes,
+  where
+) {
   if (!"S7_object" %in% old_classes || ".S3Class" %in% parent_slot_names) {
     return(FALSE)
   }
 
-  is_base_class(base_parent(class)) || ".Data" %in% parent_slot_names
+  is_base_class(base_parent(class)) ||
+    S4_has_S3_data_parent(class, where) ||
+    ".Data" %in% parent_slot_names
+}
+
+S4_has_S3_data_parent <- function(class, where) {
+  parent <- base_parent(class)
+  if (!is_S3_class(parent)) {
+    return(FALSE)
+  }
+
+  any(vlapply(parent$class, S4_class_has_data_part, where = where))
+}
+
+S4_class_has_data_part <- function(class, where) {
+  if (class %in% S4_old_class_data_part_names()) {
+    return(TRUE)
+  }
+
+  class_def <- methods::getClassDef(class, where = where)
+  !is.null(class_def) && ".Data" %in% names(class_def@slots)
+}
+
+S4_old_class_data_part_names <- function() {
+  c(
+    "logical",
+    "integer",
+    "numeric",
+    "complex",
+    "character",
+    "raw",
+    "list",
+    "expression",
+    "name",
+    "call",
+    "function",
+    "environment"
+  )
 }
 
 S4_set_S7_object_extension <- function(class_name, old_classes, where) {

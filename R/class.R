@@ -157,6 +157,7 @@ new_class <- function(
   # Combine properties from parent, overriding as needed
   all_props <- parent_props
   all_props[names(new_props)] <- new_props
+  check_prop_storage_names(all_props)
 
   if (is.null(constructor)) {
     constructor <- new_constructor(
@@ -493,6 +494,39 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
   }
+}
+
+check_prop_storage_names <- function(properties, call = sys.call(-1L)) {
+  nms <- names2(properties)
+  storage_nms <- prop_storage_rename_static(nms)
+  if (!anyDuplicated(storage_nms)) {
+    return(invisible())
+  }
+
+  storage_name <- storage_nms[duplicated(storage_nms)][[1L]]
+  prop_nms <- nms[storage_nms == storage_name]
+  msg <- sprintf(
+    "Properties %s must not use the same storage name %s.",
+    paste(dQuote(prop_nms), collapse = ", "),
+    dQuote(storage_name)
+  )
+  stop2(msg, call = call)
+}
+
+prop_storage_rename_static <- function(nms) {
+  special <- c(
+    names = "_names",
+    dim = "_dim",
+    dimnames = "_dimnames",
+    class = "_class",
+    tsp = "_tsp",
+    comment = "_comment",
+    row.names = "_row.names"
+  )
+  idx <- match(nms, names(special))
+  out <- nms
+  out[!is.na(idx)] <- unname(special[idx[!is.na(idx)]])
+  out
 }
 
 check_prop_overrides <- function(
