@@ -83,8 +83,12 @@ is_S4_data_part_object <- function(object) {
 S4_data_part <- function(object) {
   data <- methods::slot(object, ".Data")
   attrs <- attributes(object) %||% list()
+  S3_class <- S4_data_part_S3_class(object)
   attrs[c(S4_data_part_protected_attributes(object), ".S3Class")] <- NULL
   attributes(data) <- modify_list(attributes(data), attrs)
+  if (!is.null(S3_class)) {
+    class(data) <- S3_class
+  }
   data
 }
 

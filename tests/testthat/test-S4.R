@@ -65,6 +65,58 @@ test_that("S4_register constructs S4 subclasses with S3 data-part parents", {
   expect_equal(methods::slot(child, "y"), "child")
 })
 
+test_that("S4_register preserves S3 data attributes for S4 subclasses", {
+  defer(S4_remove_classes(c(
+    "S4regS7DataFrameChild",
+    "S4regS7DataFrame",
+    "S4regS7FactorAttrsChild",
+    "S4regS7FactorAttrs"
+  )))
+
+  S4regS7FactorAttrs := new_class(parent = class_factor, package = NULL)
+  S4_register(S4regS7FactorAttrs)
+  methods::setClass(
+    "S4regS7FactorAttrsChild",
+    contains = S4_contains(S4regS7FactorAttrs),
+    slots = list(y = "character")
+  )
+  factor_child <- methods::new(
+    "S4regS7FactorAttrsChild",
+    .Data = 1L,
+    levels = "a",
+    y = "child"
+  )
+
+  expect_equal(S7_data(factor_child), factor("a"))
+
+  S7_data(factor_child) <- factor("b")
+
+  expect_equal(S7_data(factor_child), factor("b"))
+  expect_equal(methods::slot(factor_child, "y"), "child")
+
+  S4regS7DataFrame := new_class(parent = class_data.frame, package = NULL)
+  S4_register(S4regS7DataFrame)
+  methods::setClass(
+    "S4regS7DataFrameChild",
+    contains = S4_contains(S4regS7DataFrame),
+    slots = list(y = "character")
+  )
+  df_child <- methods::new(
+    "S4regS7DataFrameChild",
+    .Data = list(a = 1),
+    names = "a",
+    row.names = 1L,
+    y = "child"
+  )
+
+  expect_equal(S7_data(df_child), data.frame(a = 1))
+
+  S7_data(df_child) <- data.frame(b = 2)
+
+  expect_equal(S7_data(df_child), data.frame(b = 2))
+  expect_equal(methods::slot(df_child, "y"), "child")
+})
+
 test_that("S4_register registers S7 classes with custom S3 data parents", {
   defer(S4_remove_classes("S4regS7S3Integer"))
 
@@ -635,6 +687,57 @@ test_that("S4_register dispatches union methods for same-package S4 subclasses",
 
   expect_equal(generic(pkg_object), "union")
   expect_equal(methods::is(global_object, union_name), FALSE)
+})
+
+test_that("S4_register dispatches union methods for existing S4 subclasses", {
+  pkg_env <- local_package("s4regunionexistingsubpkg")
+  defer({
+    if (methods::isGeneric("S4regUnionExistingSubGeneric", where = pkg_env)) {
+      methods::removeGeneric("S4regUnionExistingSubGeneric", where = pkg_env)
+    }
+    suppressMessages({
+      S4_remove_classes(
+        c(
+          "s4regunionexistingsubpkg::S4regUnionExistingSubFoo_OR_character",
+          "S4/s4regunionexistingsubpkg::S4regUnionExistingSubFoo",
+          "S4regUnionExistingSubChild",
+          "S4regUnionExistingSubFoo_OR_character"
+        ),
+        pkg_env
+      )
+      S4_remove_classes("S4regUnionExistingSubFoo", pkg_env)
+    })
+  })
+
+  pkg_foo <- methods::setClass(
+    "S4regUnionExistingSubFoo",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+  child <- methods::setClass(
+    "S4regUnionExistingSubChild",
+    contains = "S4regUnionExistingSubFoo",
+    where = pkg_env
+  )
+
+  union_name <- S4_register(pkg_foo | class_character, env = pkg_env)
+  methods::setGeneric(
+    "S4regUnionExistingSubGeneric",
+    function(x) standardGeneric("S4regUnionExistingSubGeneric"),
+    where = pkg_env
+  )
+  methods::setMethod(
+    "S4regUnionExistingSubGeneric",
+    union_name,
+    function(x) "union",
+    where = pkg_env
+  )
+
+  generic <- get("S4regUnionExistingSubGeneric", envir = pkg_env)
+  child_object <- child(x = 1)
+
+  expect_equal(methods::is(child_object, union_name), TRUE)
+  expect_equal(generic(child_object), "union")
 })
 
 test_that("S7 dispatch preserves package-qualified S4 parents", {

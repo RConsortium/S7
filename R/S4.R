@@ -296,7 +296,49 @@ S4_register_union_member_extension <- function(class, member, union, S4_env) {
   }
   suppressWarnings(do.call(methods::setIs, setIs_args))
   S4_prune_union_subclass(union, class@className, S4_env)
+  S4_register_union_member_subclasses(class@className, member, union, S4_env)
   invisible()
+}
+
+S4_register_union_member_subclasses <- function(class, member, union, S4_env) {
+  member_def <- methods::getClass(member, where = S4_env)
+  subclasses <- member_def@subclasses
+  subclasses <- base::Filter(
+    function(x) !identical(S4_class_key(x@subClass), S4_class_key(class)),
+    subclasses
+  )
+  union_def <- methods::getClass(union, where = S4_env)
+  union_subclass_keys <- S4_class_keys(
+    S4_extension_subclasses(union_def@subclasses)
+  )
+
+  for (subclass in subclasses) {
+    if (S4_class_key(subclass@subClass) %in% union_subclass_keys) {
+      next
+    }
+
+    subclass_def <- S4_get_class(subclass@subClass, S4_env)
+    suppressWarnings(methods::setIs(
+      subclass_def@className,
+      union,
+      where = S4_class_env(subclass_def@className, S4_env),
+      classDef = subclass_def
+    ))
+  }
+  invisible()
+}
+
+S4_get_class <- function(class, S4_env) {
+  methods::getClass(as.character(class), where = S4_class_env(class, S4_env))
+}
+
+S4_class_env <- function(class, S4_env) {
+  package <- attr(class, "package", exact = TRUE)
+  if (is.null(package) || identical(package, ".GlobalEnv")) {
+    return(S4_env)
+  }
+
+  asNamespace(package)
 }
 
 S4_union_member_needs_identity <- function(class) {
@@ -1099,12 +1141,48 @@ S4_initialize_data_part <- function(value, object) {
 
 S4_data_part_protected_attributes <- function(object) {
   c(
-    methods::slotNames(object),
+    setdiff(methods::slotNames(object), S4_data_part_attribute_names(object)),
     if (has_S7_class(object)) prop_storage_names(object),
     "class",
     "_S7_class",
     "S7_class"
   )
+}
+
+S4_data_part_attribute_names <- function(object) {
+  S3_class <- S4_data_part_S3_class(object)
+  if (is.null(S3_class)) {
+    return(character())
+  }
+
+  unique(unlist(
+    lapply(S3_class, S4_old_class_data_attribute_names),
+    use.names = FALSE
+  ))
+}
+
+S4_old_class_data_attribute_names <- function(class) {
+  class <- tryCatch(
+    methods::getClass(class),
+    error = function(cnd) NULL
+  )
+  if (is.null(class) || !methods::extends(class, "oldClass")) {
+    return(character())
+  }
+
+  setdiff(names(class@slots), c(".Data", ".S3Class"))
+}
+
+S4_data_part_S3_class <- function(object) {
+  if (has_S7_class(object)) {
+    base <- base_parent(S7_class(object))
+    if (is_S3_class(base)) {
+      return(base$class)
+    }
+    return(NULL)
+  }
+
+  attr(object, ".S3Class", exact = TRUE)
 }
 
 is_S4_class <- function(x) inherits(x, "classRepresentation")
