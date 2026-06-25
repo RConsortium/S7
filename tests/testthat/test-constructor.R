@@ -120,6 +120,72 @@ test_that("can use `...` in parent constructor", {
   expect_equal(bar(y = 2)@x, list())
 })
 
+test_that("subclass forwards `...` to a custom parent constructor (#609)", {
+  # The parent default references a symbol from the parent's own environment,
+  # which the child can't see -- so it must be evaluated by the parent.
+  Parent <- local({
+    secret <- 42L
+    new_class(
+      name = "Parent",
+      properties = list(x = class_integer),
+      constructor = function(x = secret) new_object(S7_object(), x = x)
+    )
+  })
+  Child := new_class(
+    parent = Parent,
+    properties = list(y = class_double)
+  )
+
+  expect_named(formals(Child), c("...", "y"))
+  expect_equal(Child()@x, 42L)
+  expect_equal(Child(10L)@x, 10L) # positional arg forwarded to the parent
+  expect_equal(Child(y = 2)@y, 2) # named child arg is not forwarded
+})
+
+test_that("subclass of a custom S3 parent forwards `...`", {
+  rle2 <- new_S3_class(
+    "rle2",
+    constructor = function(.data = list(), n = integer()) {
+      structure(.data, n = n, class = "rle2")
+    }
+  )
+
+  Child := new_class(parent = rle2, properties = list(z = class_double))
+  expect_named(formals(Child), c("...", "z"))
+  expect_equal(Child(z = 1)@z, 1)
+
+  # S7's own S3 wrappers stay on the inline path
+  Factor := new_class(parent = class_factor)
+  expect_named(formals(Factor), c(".data", "levels"))
+})
+
+test_that("forwarding constructor passes overrides to both parent and object", {
+  P := new_class(
+    package = NULL,
+    properties = list(a = new_property(class_double, default = 1)),
+    constructor = function(a = 1) new_object(S7_object(), a = a)
+  )
+
+  expect_snapshot(
+    new_constructor(
+      P,
+      as_properties(list(
+        a = new_property(class_double, default = 99),
+        b = class_double
+      ))
+    ),
+    transform = scrub_environment
+  )
+
+  C := new_class(
+    parent = P,
+    package = NULL,
+    properties = list(a = new_property(class_double, default = 99))
+  )
+  expect_equal(C()@a, 99) # child default wins over parent default
+  expect_equal(C(a = 5)@a, 5)
+})
+
 test_that("subclass can override simple parent property defaults", {
   foo := new_class(
     properties = list(x = new_property(class_numeric, default = 1))

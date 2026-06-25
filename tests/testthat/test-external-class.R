@@ -121,3 +121,61 @@ test_that("external class property validation reports validator errors", {
 
   expect_snapshot(Holder(child = invalid), error = TRUE)
 })
+
+test_that("an external class can be used as a parent (#317)", {
+  dep := local_package({
+    Animal := new_class(
+      properties = list(name = class_character, legs = class_integer)
+    )
+  })
+
+  Animal := new_external_class(package = "dep")
+  Dog := new_class(
+    parent = Animal,
+    properties = list(breed = class_character)
+  )
+  # parent properties are captured statically; construction forwards `...`
+  expect_named(Dog@properties, c("name", "legs", "breed"))
+  expect_named(formals(Dog), c("...", "breed"))
+
+  d <- Dog(name = "Rex", legs = 4L, breed = "lab")
+  expect_equal(d@name, "Rex")
+  expect_equal(d@legs, 4L)
+  expect_equal(d@breed, "lab")
+  expect_s3_class(d, "dep::Animal")
+  expect_true(S7_inherits(d, Animal))
+})
+
+test_that("subclass constructs against the parent's run-time definition (#317)", {
+  dep := local_package({
+    Animal := new_class(
+      properties = list(legs = new_property(class_integer, default = 4L))
+    )
+  })
+  Animal := new_external_class(package = "dep")
+
+  Dog := new_class(
+    parent = Animal,
+    properties = list(breed = class_character)
+  )
+  expect_equal(Dog()@legs, 4L)
+
+  # The parent package changes the default and is reloaded; the subclass is
+  # *not* rebuilt, yet its constructor picks up the new definition.
+  dep$Animal <- new_class(
+    name = "Animal",
+    package = "dep",
+    properties = list(legs = new_property(class_integer, default = 6L))
+  )
+  expect_equal(Dog()@legs, 6L)
+  # explicit values are still forwarded to the parent
+  expect_equal(Dog(legs = 2L, breed = "x")@legs, 2L)
+})
+
+test_that("subclassing errors when the external parent can't be resolved", {
+  dep := local_package(version = "1.0.0", {
+    Animal := new_class()
+  })
+  Animal := new_external_class(package = "dep", version = "2.0.0")
+  expect_snapshot(new_class(name = "Dog", parent = Animal), error = TRUE)
+})

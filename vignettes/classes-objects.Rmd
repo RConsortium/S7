@@ -410,4 +410,14 @@ A constructor must always end with a call to `new_object()`.
 The first argument to `new_object()` should be an object of the `parent` class (if you haven't specified a `parent` argument to `new_class()`, then you should use `S7_object()` as the parent here).
 That argument should be followed by one named argument for each property.
 
-There's one drawback of custom constructors that you should be aware of: any subclass will also require a custom constructor.
+A subclass of a class with a custom constructor doesn't need its own custom constructor.
+Its default constructor takes `...` and forwards it to the parent constructor, followed by one named argument for each property the subclass adds:
+
+```{r}
+PositiveRange := new_class(
+  parent = Range,
+  properties = list(positive = class_logical)
+)
+# `...` is forwarded to Range()'s custom constructor
+PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
+```

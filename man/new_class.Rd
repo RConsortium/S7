@@ -27,11 +27,12 @@ with this name, i.e. \code{Foo <- new_class("Foo", ...)} or
 to construct new instances of the class.}
 
 \item{parent}{The parent class to inherit behavior from.
-There are three options:
+There are four options:
 \itemize{
 \item An S7 class, like \link{S7_object}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
+\item A class from another package, wrapped by \code{\link[=new_external_class]{new_external_class()}}.
 }}
 
 \item{package}{Package name. This is automatically resolved if the class is
