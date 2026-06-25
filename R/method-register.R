@@ -234,7 +234,7 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
 
   if (is_plain_list(signature)) {
     S4_signature <- S3_generic_S4_signature(generic)
-    if (length(signature) == length(S4_signature)) {
+    if (!is.null(S4_signature) && length(signature) == length(S4_signature)) {
       n <- length(S4_signature)
     }
   }

@@ -200,11 +200,12 @@ class_constructor <- function(.x) {
 
 class_validate <- function(class, object) {
   if (is_S4_class(class)) {
-    if (isS4(object)) {
-      check <- methods::validObject(object, test = TRUE)
-      return(if (isTRUE(check)) NULL else check)
+    if (has_S7_class(object)) {
+      return(S4_validate_old_class(class, object))
     }
-    return(NULL)
+
+    check <- methods::validObject(object, test = TRUE)
+    return(if (isTRUE(check)) NULL else check)
   }
 
   validator <- switch(
@@ -220,6 +221,246 @@ class_validate <- function(class, object) {
   } else {
     validator(object)
   }
+}
+
+S4_validate_old_class <- function(
+  class,
+  object,
+  skip = character(),
+  skip_slots = character()
+) {
+  any_strings <- function(x) {
+    if (isTRUE(x)) character() else x
+  }
+
+  errors <- S4_validate_single_reified_S7_contains(class)
+  if (length(errors) > 0L) {
+    return(errors)
+  }
+
+  errors <- S4_validate_slots(class, object, skip = skip_slots)
+  extends <- rev(class@contains)
+  for (ext in extends) {
+    super_class <- ext@superClass
+    if (S4_class_key(super_class) %in% skip) {
+      next
+    }
+    if (!ext@simple && !methods::is(object, super_class)) {
+      next
+    }
+
+    super_def <- methods::getClassDef(super_class)
+    if (is.null(super_def)) {
+      errors <- c(
+        errors,
+        sprintf(
+          "superclass %s not defined in the environment of the object's class",
+          dQuote(super_class)
+        )
+      )
+      break
+    }
+    if (S4_is_reified_S7_class(super_def)) {
+      super_S7 <- methods::slot(super_def@prototype, "_S7_class")
+      if (!S7_extends_via_S7_parent(S7_class(object), super_S7)) {
+        errors <- c(errors, S4_validate_reified_S7_class(super_S7, object))
+        if (length(errors)) {
+          break
+        }
+      }
+      next
+    }
+
+    validity <- methods::getValidity(super_def)
+    if (is.function(validity)) {
+      errors <- c(
+        errors,
+        any_strings(validity(S4_as_validity_class(object, super_def)))
+      )
+      if (length(errors)) {
+        break
+      }
+    }
+  }
+
+  if (!S4_class_key(class@className) %in% skip) {
+    validity <- methods::getValidity(class)
+    if (length(errors) == 0L && is.function(validity)) {
+      errors <- c(
+        errors,
+        any_strings(validity(S4_as_validity_class(object, class)))
+      )
+    }
+  }
+
+  if (length(errors) == 0L) {
+    NULL
+  } else {
+    errors
+  }
+}
+
+S4_validate_single_reified_S7_contains <- function(class) {
+  classes <- S4_direct_reified_S7_contains(class)
+  if (length(classes) <= 1L) {
+    return(character())
+  }
+
+  class_names <- vcapply(classes, class_desc)
+  sprintf(
+    "%s directly contains multiple S7 classes via S4_contains(): %s",
+    class_desc(class),
+    paste(class_names, collapse = ", ")
+  )
+}
+
+S4_direct_reified_S7_contains <- function(class) {
+  contains <- base::Filter(function(x) x@distance == 1, class@contains)
+  supers <- lapply(contains, function(x) methods::getClassDef(x@superClass))
+  supers <- base::Filter(
+    function(x) !is.null(x) && S4_is_reified_S7_class(x),
+    supers
+  )
+  lapply(supers, function(x) methods::slot(x@prototype, "_S7_class"))
+}
+
+S4_validate_slots <- function(class, object, skip = character()) {
+  errors <- character()
+  slot_types <- class@slots
+  slot_types <- slot_types[!names(slot_types) %in% skip]
+  slot_names <- names(slot_types)
+  attr_names <- c(".Data", ".S3Class", names(attributes(object)))
+
+  missing <- is.na(match(slot_names, attr_names))
+  if (any(missing)) {
+    errors <- c(
+      errors,
+      paste(
+        "slots in class definition but not in object:",
+        paste0("\"", slot_names[missing], "\"", collapse = ", ")
+      )
+    )
+    slot_types <- slot_types[!missing]
+    slot_names <- slot_names[!missing]
+  }
+
+  where <- get(".classEnv", envir = asNamespace("methods"))(class)
+  S3Class <- get("S3Class", envir = asNamespace("methods"))
+  for (i in seq_along(slot_types)) {
+    slot_class <- slot_types[[i]]
+    slot_class_def <- methods::getClassDef(slot_class, where = where)
+    if (is.null(slot_class_def)) {
+      errors <- c(
+        errors,
+        paste0(
+          "undefined class for slot \"",
+          slot_names[[i]],
+          "\" (\"",
+          slot_class,
+          "\")"
+        )
+      )
+      next
+    }
+
+    slot_name <- slot_names[[i]]
+    value <- tryCatch(
+      switch(
+        slot_name,
+        .S3Class = S3Class(object),
+        methods::slot(object, slot_name)
+      ),
+      error = function(cnd) cnd
+    )
+    if (inherits(value, "error")) {
+      errors <- c(errors, conditionMessage(value))
+      next
+    }
+
+    ok <- methods::possibleExtends(
+      class(value),
+      slot_class,
+      ClassDef2 = slot_class_def
+    )
+    if (isFALSE(ok)) {
+      errors <- c(
+        errors,
+        paste0(
+          "invalid object for slot \"",
+          slot_name,
+          "\" in class \"",
+          class(object)[[1L]],
+          "\": got class \"",
+          class(value)[[1L]],
+          "\", should be or extend class \"",
+          slot_class,
+          "\""
+        )
+      )
+    }
+  }
+
+  errors
+}
+
+S4_validate_reified_S7_class <- function(class, object) {
+  errors <- validate_properties(object, class, parent_class = class@parent)
+  if (length(errors) > 0L) {
+    return(errors)
+  }
+
+  error <- class_validate(class, object)
+  if (is.null(error)) {
+    character()
+  } else if (is.character(error)) {
+    error
+  } else {
+    stop2(
+      sprintf(
+        "%s validator must return NULL or a character, not <%s>.",
+        obj_desc(class),
+        typeof(error)
+      ),
+      call = NULL
+    )
+  }
+}
+
+S7_extends_via_S7_parent <- function(child, parent) {
+  while (is_class(child)) {
+    if (identical(child, parent) || isTRUE(all.equal(child, parent))) {
+      return(TRUE)
+    }
+    child <- child@parent
+  }
+
+  FALSE
+}
+
+S4_as_validity_class <- function(object, class) {
+  if (isS4(object) || !has_S7_class(object) || class@virtual) {
+    return(methods::as(object, S4_class_coerce_name(class)))
+  }
+
+  value <- S4_new_object(class)
+  values <- S4_initialize_values(object)
+  slots <- intersect(names(values), methods::slotNames(value))
+  for (name in slots) {
+    methods::slot(value, name) <- values[[name]]
+  }
+  value
+}
+
+S4_new_object <- function(class) {
+  value <- class@prototype
+  attr(value, "class") <- S4_class_coerce_name(class)
+  base::asS4(value, TRUE)
+}
+
+S4_class_coerce_name <- function(class) {
+  name <- class@className
+  attr(name, "package") <- class@package
+  name
 }
 
 #' Format a class specification as a string
@@ -265,12 +506,20 @@ class_dispatch <- function(x) {
     NULL = "NULL",
     missing = "MISSING",
     any = character(),
-    S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(
-      S7_class_name(x),
-      class_dispatch(x@parent),
-      if (is_S4_class(x@parent)) "S7_object"
-    ),
+    S4 = S4_class_dispatch(x),
+    S7 = {
+      parent <- class_dispatch(x@parent)
+      c(
+        S7_class_name(x),
+        parent,
+        if (
+          is_S4_class(x@parent) &&
+            !identical(utils::tail(parent, 1), "S7_object")
+        ) {
+          "S7_object"
+        }
+      )
+    },
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     stop2("Unsupported class type.", call = NULL)
@@ -316,7 +565,7 @@ class_inherits <- function(x, what) {
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
-    S4 = methods::is(x, what),
+    S4 = inherits_S4_class(x, what),
     S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = any(vlapply(what$classes, class_inherits, x = x)),
@@ -345,10 +594,18 @@ class_extends <- function(child, parent) {
   } else if (is.null(parent)) {
     # as a parent, NULL only accepts NULL
     is.null(child)
+  } else if (is_S4_class(child) && is_class(parent)) {
+    parent_class <- S4_registered_class_or_null(parent, environment(parent))
+    !is.null(parent_class) &&
+      methods::extends(child@className, parent_class@className)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
-    is_S4_class(child) &&
-      is_S4_class(parent) &&
-      methods::extends(child@className, parent@className)
+    if (!is_S4_class(parent)) {
+      FALSE
+    } else {
+      child <- if (is_S4_class(child)) child else S4_ancestor(child)
+      !is.null(child) &&
+        methods::extends(child@className, parent@className)
+    }
   } else if (is_class(parent) && parent@name == "S7_object") {
     is_class(child)
   } else {
@@ -412,5 +669,22 @@ union_contains_any <- function(x) {
   is_union(x) && any(vlapply(x$classes, is_class_any))
 }
 
-# Suppress @className false positive
-globalVariables("className")
+inherits_S4_class <- function(x, what) {
+  if (identical(as.character(what@className), "ANY")) {
+    return(TRUE)
+  }
+  if (has_S7_class(x)) {
+    class <- S7_class(x)
+    if (is_class(class) && class_extends(class, what)) {
+      return(TRUE)
+    }
+  }
+  if (!inherits_S4(x) && is.object(x)) {
+    return(FALSE)
+  }
+
+  methods::is(x, what)
+}
+
+# Suppress direct S4 representation slot false positives
+globalVariables(c("className", "contains", "simple"))

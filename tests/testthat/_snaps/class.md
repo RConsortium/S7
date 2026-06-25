@@ -107,6 +107,24 @@
       Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
+# S7 classes reject S4 parents with implicit data parts
+
+    Code
+      new_class("Child", parent = methods::getClass("matrix"), package = NULL)
+    Condition
+      Error in `new_class()`:
+      ! Can't extend S4 class S4<matrix> because it has an implicit data part.
+      Only S4 classes with data parts stored in an explicit `.Data` slot are supported.
+
+# S7 classes reject duplicate property storage names
+
+    Code
+      new_class("StorageNameChild", parent = getClass("StorageNameParent"),
+      properties = list(names = class_character), package = NULL)
+    Condition
+      Error in `new_class()`:
+      ! Properties "_names", "names" must not use the same storage name "_names".
+
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code
@@ -178,6 +196,22 @@
     Condition
       Error in `new_object()`:
       ! `_parent` must be an instance of <integer>, not <character>.
+
+# new_object() rejects S4 parent objects in custom constructors
+
+    Code
+      Child()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must not be an S4 object when class has an S4 parent.
+
+# new_object() rejects non-S7 seeds for S4 parents without data parts
+
+    Code
+      Child()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must be an <S7_object> when class has an S4 parent without a data part.
 
 # new_object() errors if `_parent` is supplied but class has no parent
 

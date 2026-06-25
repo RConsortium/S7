@@ -80,8 +80,10 @@ validate_parent <- function(object, recursive) {
     return(S7_class(object)@parent)
   }
 
-  if (isS4(object) && has_S7_class(object)) {
-    return(S4_ancestor(S7_class(object)) %||% S7_object)
+  if (
+    isS4(object) && has_S7_class(object) && !S7_extends_S4(S7_class(object))
+  ) {
+    return(S7_object)
   }
 
   NULL
@@ -137,6 +139,8 @@ validate_from <- function(
     class <- class@parent
   }
 
+  errors <- c(errors, validate_S4_subclass(object))
+
   # If needed, report errors
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
@@ -145,6 +149,30 @@ validate_from <- function(
   }
 
   invisible(object)
+}
+
+validate_S4_subclass <- function(object) {
+  if (!isS4(object) || !has_S7_class(object)) {
+    return(NULL)
+  }
+
+  class <- methods::getClass(class(object))
+  if (S4_is_reified_S7_class(class)) {
+    return(NULL)
+  }
+
+  ancestor <- S4_ancestor(S7_class(object))
+  skip <- if (is.null(ancestor)) character() else S4_validity_classes(ancestor)
+  skip_slots <- if (is.null(ancestor)) character() else names(ancestor@slots)
+  S4_validate_old_class(class, object, skip = skip, skip_slots = skip_slots)
+}
+
+S4_validity_classes <- function(class) {
+  classes <- c(
+    lapply(class@contains, methods::slot, "superClass"),
+    list(class@className)
+  )
+  S4_class_keys(classes)
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {

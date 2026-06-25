@@ -73,6 +73,50 @@ test_that("S7 classes can inherit from S4 but not class unions", {
   )
 })
 
+test_that("S7 classes accept ordinary values for S4 parent slots", {
+  Parent := local_S4_class(slots = list(x = "ANY", y = "matrix"))
+  Child := new_class(parent = Parent, package = NULL)
+
+  y <- matrix(1, nrow = 1)
+  obj <- Child(x = 1, y = y)
+
+  expect_equal(obj@x, 1)
+  expect_equal(obj@y, y)
+})
+
+test_that("S7 classes reject S4 parents with implicit data parts", {
+  expect_snapshot(error = TRUE, {
+    new_class("Child", parent = methods::getClass("matrix"), package = NULL)
+  })
+})
+
+test_that("S7 classes reject duplicate property storage names", {
+  defer(S4_remove_classes("StorageNameParent"))
+
+  setClass("StorageNameParent", slots = list(`_names` = "character"))
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      "StorageNameChild",
+      parent = getClass("StorageNameParent"),
+      properties = list(names = class_character),
+      package = NULL
+    )
+  })
+})
+
+test_that("S7_class can be used as a property name", {
+  foo <- new_class(
+    "foo",
+    properties = list(S7_class = class_numeric),
+    package = NULL
+  )
+  object <- foo(S7_class = 1)
+
+  expect_equal(prop(object, "S7_class"), 1)
+  expect_equal(S7_class(object), foo)
+})
+
 test_that("inheritance combines properties for parent classes", {
   foo1 := new_class(properties = list(x = class_double))
   foo2 := new_class(foo1, properties = list(y = class_double))
@@ -116,6 +160,76 @@ test_that("inheritance lets child properties narrow with S4 inheritance", {
 
   x <- methods::new("S4PropertyChild", x = 1)
   expect_s4_class(Child(x = x)@x, "S4PropertyChild")
+})
+
+test_that("inheritance lets child properties narrow S4 slots with S7-over-S4 classes", {
+  Animal := local_S4_class()
+  Kennel := local_S4_class(slots = list(dog = "Animal"))
+  Dog := new_class(parent = Animal, package = NULL)
+
+  DogKennel := new_class(
+    parent = Kennel,
+    properties = list(dog = Dog),
+    package = NULL
+  )
+  dog <- Dog()
+
+  expect_equal(prop(DogKennel(dog = dog), "dog"), dog)
+})
+
+test_that("inheritance lets child properties narrow to S4 subclasses of S7 classes", {
+  defer(S4_remove_classes(c(
+    "S4PropertyS7Parent",
+    "S4PropertyS7Child"
+  )))
+
+  S4PropertyS7Parent := new_class(package = NULL)
+  S4_register(S4PropertyS7Parent)
+  setClass(
+    "S4PropertyS7Child",
+    contains = S4_contains(S4PropertyS7Parent)
+  )
+  S4PropertyParent := new_class(
+    properties = list(x = S4PropertyS7Parent),
+    package = NULL
+  )
+  S4PropertyChild := new_class(
+    parent = S4PropertyParent,
+    properties = list(x = getClass("S4PropertyS7Child")),
+    package = NULL
+  )
+
+  x <- methods::new("S4PropertyS7Child")
+  expect_s4_class(S4PropertyChild(x = x)@x, "S4PropertyS7Child")
+})
+
+test_that("inheritance lets S7-over-S4 children narrow to original S7 parents", {
+  defer(S4_remove_classes(c(
+    "S4PropertyS7Bridge",
+    "S4PropertyS7Descendant",
+    "S4PropertyS7Ancestor"
+  )))
+
+  S4PropertyS7Ancestor := new_class(package = NULL)
+  S4_register(S4PropertyS7Ancestor)
+  setClass("S4PropertyS7Bridge", contains = S4_contains(S4PropertyS7Ancestor))
+  S4PropertyS7Descendant := new_class(
+    parent = getClass("S4PropertyS7Bridge"),
+    package = NULL
+  )
+
+  Parent := new_class(
+    properties = list(x = S4PropertyS7Ancestor),
+    package = NULL
+  )
+
+  expect_no_error({
+    Child := new_class(
+      parent = Parent,
+      properties = list(x = S4PropertyS7Descendant),
+      package = NULL
+    )
+  })
 })
 
 test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
@@ -260,6 +374,32 @@ test_that("new_object() errors if `_parent` doesn't inherit from the parent clas
     Foo()
     Baz()
   })
+})
+
+test_that("new_object() rejects S4 parent objects in custom constructors", {
+  Parent := local_S4_class(slots = list(x = "numeric"))
+  Child := new_class(
+    parent = Parent,
+    package = NULL,
+    constructor = function() {
+      new_object(methods::new("Parent", x = 1))
+    }
+  )
+
+  expect_snapshot(Child(), error = TRUE)
+})
+
+test_that("new_object() rejects non-S7 seeds for S4 parents without data parts", {
+  Parent := local_S4_class(slots = list(x = "numeric"))
+  Child := new_class(
+    parent = Parent,
+    package = NULL,
+    constructor = function() {
+      new_object(1, x = 1)
+    }
+  )
+
+  expect_snapshot(Child(), error = TRUE)
 })
 
 test_that("new_object() allows S7_object placeholder for abstract parents", {

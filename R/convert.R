@@ -181,18 +181,36 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     from <- zap_attr(from, c(from_props, "_S7_class", "S7_class"))
     class(from) <- to$class
   } else if (is_class(to)) {
-    to_props <- prop_storage_rename(names(to@properties))
+    to_prop_nms <- names(to@properties)
+    to_props <- prop_storage_rename(to_prop_nms)
     if (to@abstract) {
       msg <- sprintf("Can't convert to abstract class <%s>.", to@name)
       stop2(msg, call = call)
     }
 
+    is_s4_subclass <- isS4(from) &&
+      is_class(from_class) &&
+      !identical(class(from)[[1L]], S7_class_name(from_class))
+    s4_slot_attrs <- if (is_s4_subclass) {
+      setdiff(methods::slotNames(from), c(to_props, ".Data"))
+    } else {
+      character()
+    }
+    class_attrs <- c("_S7_class", setdiff("S7_class", to_props))
     from <- zap_attr(
       from,
-      c(setdiff(from_props, to_props), "_S7_class", "S7_class")
+      c(setdiff(from_props, to_props), s4_slot_attrs, class_attrs)
     )
     attr(from, "_S7_class") <- to
-    class(from) <- class_dispatch(to)
+    if (is_s4_subclass) {
+      from <- suppressWarnings(`class<-`(from, class_dispatch(to)))
+    } else {
+      class(from) <- class_dispatch(to)
+    }
+  } else if (
+    is_S4_class(to) && is_class(from_class) && class_extends(from_class, to)
+  ) {
+    from <- S4_as_validity_class(from, to)
   } else if (is_S4_coerce(from, to)) {
     from <- convert_S4(from, to)
   } else {
@@ -209,6 +227,20 @@ convert_down <- function(from, to, user_args = list()) {
   from_class <- S7_class(from)
 
   if (!is_class(from_class)) {
+    if (isS4(from)) {
+      from_slot_values <- S4_initialize_values(from)
+      from_slot_names <- names(from_slot_values)
+
+      to_constructor_arg_names <- names(formals(to))
+      if (!"..." %in% to_constructor_arg_names) {
+        from_slot_names <- intersect(from_slot_names, to_constructor_arg_names)
+      }
+
+      from_slot_names <- setdiff(from_slot_names, names(user_args))
+      constructor_args <- c(from_slot_values[from_slot_names], user_args)
+      return(do.call(to, constructor_args))
+    }
+
     # `from` is a base or S3 object; pass it as `.data` to the constructor
     user_args$.data <- from
     return(do.call(to, user_args))
@@ -237,7 +269,16 @@ convert_down <- function(from, to, user_args = list()) {
 }
 
 s4_to_name <- function(x) {
-  if (is_S4_class(x)) x@className else class_register(x)
+  if (is_S4_class(x)) {
+    return(x@className)
+  }
+
+  class <- S4_registered_class_or_null(x, environment(x))
+  if (is.null(class)) {
+    NULL
+  } else {
+    class@className
+  }
 }
 
 is_S4_coerce <- function(from, to) {
@@ -245,7 +286,9 @@ is_S4_coerce <- function(from, to) {
   if (!inherits_S4(from) && !is_S4_class(to)) {
     return(FALSE)
   }
-  methods::canCoerce(from, s4_to_name(to))
+
+  to_name <- s4_to_name(to)
+  !is.null(to_name) && methods::canCoerce(from, to_name)
 }
 
 convert_S4 <- function(from, to, ...) {

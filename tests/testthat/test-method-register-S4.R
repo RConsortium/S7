@@ -11,6 +11,22 @@ test_that("can register S7 method for S4 generic", {
   expect_equal(bar(S4foo()), "foo")
 })
 
+test_that("can register S3 method for S4 generic", {
+  methods::setGeneric("s4_s3", function(x) standardGeneric("s4_s3"))
+  defer({
+    suppressMessages(methods::removeGeneric("s4_s3"))
+    S4_remove_classes("S4regS3Method")
+  })
+
+  S4regS3Method <- new_S3_class("S4regS3Method")
+  S4_register(S4regS3Method)
+
+  method(s4_s3, S4regS3Method) <- function(x) "s3"
+
+  object <- structure(list(), class = "S4regS3Method")
+  expect_equal(s4_s3(object), "s3")
+})
+
 test_that("can register S4 methods for base types, class_any, class_missing, and NULL", {
   methods::setGeneric("s4_gen", function(x) standardGeneric("s4_gen"))
   method(s4_gen, class_character) <- function(x) "char"

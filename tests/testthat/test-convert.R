@@ -69,6 +69,27 @@ test_that("fallback convert can convert to super class", {
   expect_equal(attr(obj, "y"), NULL)
 })
 
+test_that("fallback convert preserves S7_class property when upcasting", {
+  local_methods(convert)
+  Parent := new_class(
+    properties = list(S7_class = class_numeric),
+    package = NULL
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(x = class_character),
+    package = NULL
+  )
+
+  child <- Child(S7_class = 1, x = "a")
+  parent <- convert(child, to = Parent)
+
+  expect_equal(S7_class(parent), Parent)
+  expect_equal(prop(parent, "S7_class"), 1)
+  expect_equal(props(parent), list(S7_class = 1))
+  expect_null(attr(parent, "x", exact = TRUE))
+})
+
 test_that("fallback convert can convert to subclass", {
   local_methods(convert)
   Foo := new_class(properties = list(x = class_numeric))
@@ -155,6 +176,84 @@ test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 ob
   expect_equal(methods::slot(parent, "x"), 10)
 })
 
+test_that("fallback convert can convert_down() an S4 object to an S7 child", {
+  local_methods(convert)
+  on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
+  setClass("ParentS4", slots = list(x = "numeric"))
+
+  ChildS7 := new_class(
+    parent = getClass("ParentS4"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  parent <- methods::new("ParentS4", x = 10)
+  child <- convert(parent, to = ChildS7, y = "a")
+
+  expect_true(S7_inherits(child, ChildS7))
+  expect_equal(prop(child, "x"), 10)
+  expect_equal(prop(child, "y"), "a")
+})
+
+test_that("fallback convert drops S4-only slots when upcasting S4 subclasses", {
+  defer(S4_remove_classes(c(
+    "ConvertS4OnlyChild",
+    "ConvertS4OnlyParent"
+  )))
+
+  ConvertS4OnlyParent := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4_register(ConvertS4OnlyParent)
+  ConvertS4OnlyParent_S4 <- S4_contains(ConvertS4OnlyParent)
+  methods::setClass(
+    "ConvertS4OnlyChild",
+    contains = ConvertS4OnlyParent_S4,
+    slots = list(y = "character")
+  )
+
+  child <- methods::new("ConvertS4OnlyChild", x = 1, y = "a")
+  parent <- convert(child, to = ConvertS4OnlyParent)
+
+  expect_identical(isS4(parent), FALSE)
+  expect_equal(S7_class(parent), ConvertS4OnlyParent)
+  expect_equal(prop(parent, "x"), 1)
+  expect_null(attr(parent, "y", exact = TRUE))
+  expect_null(attr(parent, ".S3Class", exact = TRUE))
+})
+
+test_that("fallback convert preserves renamed S7 property slots when upcasting", {
+  defer(S4_remove_classes(c(
+    "ConvertS4SpecialChild",
+    "ConvertS4SpecialParent"
+  )))
+
+  ConvertS4SpecialParent := new_class(
+    properties = list(names = class_character),
+    package = NULL
+  )
+  S4_register(ConvertS4SpecialParent)
+  ConvertS4SpecialParent_S4 <- S4_contains(ConvertS4SpecialParent)
+  methods::setClass(
+    "ConvertS4SpecialChild",
+    contains = ConvertS4SpecialParent_S4,
+    slots = list(extra = "character")
+  )
+
+  child <- methods::new(
+    "ConvertS4SpecialChild",
+    names = "n",
+    extra = "old"
+  )
+  parent <- convert(child, to = ConvertS4SpecialParent)
+
+  expect_identical(isS4(parent), FALSE)
+  expect_equal(S7_class(parent), ConvertS4SpecialParent)
+  expect_equal(prop(parent, "names"), "n")
+  expect_null(attr(parent, "extra", exact = TRUE))
+})
+
 test_that("fallback convert can use explicit S4 coercion via methods::as", {
   on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
   setClass("ParentS4", slots = list(x = "numeric"))
@@ -177,6 +276,30 @@ test_that("fallback convert can use explicit S4 coercion via methods::as", {
   expect_true(isS4(res))
   expect_equal(class(res)[1L], "UnrelatedS4")
   expect_equal(methods::slot(res, "z"), "42")
+})
+
+test_that("fallback convert rejects unrelated S4 name matches for S7 targets", {
+  defer(S4_remove_classes(c(
+    "ConvertS4NameCollisionFrom",
+    "ConvertS4NameCollisionTo"
+  )))
+
+  setClass("ConvertS4NameCollisionFrom", slots = list(x = "numeric"))
+  setClass("ConvertS4NameCollisionTo", slots = list(y = "numeric"))
+  ConvertS4NameCollisionTo := new_class(package = NULL)
+
+  setAs(
+    "ConvertS4NameCollisionFrom",
+    "ConvertS4NameCollisionTo",
+    function(from) {
+      new("ConvertS4NameCollisionTo", y = methods::slot(from, "x"))
+    }
+  )
+
+  from <- methods::new("ConvertS4NameCollisionFrom", x = 1)
+  expect_snapshot(error = TRUE, {
+    convert(from, to = ConvertS4NameCollisionTo)
+  })
 })
 
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {

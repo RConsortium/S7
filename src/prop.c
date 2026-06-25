@@ -220,16 +220,28 @@ SEXP pseudo_null(void) {
 }
 
 static inline
+Rboolean prop_has_storage_slot(SEXP object, SEXP storage_sym) {
+  return Rf_isS4(object) && R_has_slot(object, storage_sym);
+}
+
+static inline
 SEXP prop_get_storage(SEXP object, SEXP name_sym) {
-  SEXP value = Rf_getAttrib(object, name_sym);
+  SEXP storage_sym = prop_storage_sym(name_sym);
+  SEXP value = prop_has_storage_slot(object, storage_sym) ?
+    R_do_slot(object, storage_sym) :
+    Rf_getAttrib(object, storage_sym);
   return value == pseudo_null() ? R_NilValue : value;
 }
 
 static inline
 SEXP prop_set_storage(SEXP object, SEXP name_sym, SEXP value) {
+  SEXP storage_sym = prop_storage_sym(name_sym);
   if (value == R_NilValue)
     value = pseudo_null();
-  Rf_setAttrib(object, name_sym, value);
+  if (prop_has_storage_slot(object, storage_sym))
+    R_do_slot_assign(object, storage_sym, value);
+  else
+    Rf_setAttrib(object, storage_sym, value);
   return object;
 }
 
@@ -525,7 +537,7 @@ SEXP prop_(SEXP object, SEXP name) {
   }
 
   // try to resolve property from the object attributes
-  SEXP value = prop_get_storage(object, prop_storage_sym(name_sym));
+  SEXP value = prop_get_storage(object, name_sym);
 
   // This is commented out because we currently have no way to distinguish between
   // a prop with a value of NULL, and a prop value that is unset/missing.
@@ -610,7 +622,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     // don't use setter()
     if (should_validate_prop)
       prop_validate(property, value, object, name);
-    object = PROTECT(prop_set_storage(object, prop_storage_sym(name_sym), value));
+    object = PROTECT(prop_set_storage(object, name_sym, value));
     n_protected++;
   }
 

@@ -1,3 +1,12 @@
+# S4 class checks reject spoofed S3 objects
+
+    Code
+      holder(x = spoof)
+    Condition
+      Error in `holder()`:
+      ! <holder> object properties are invalid:
+      - @x must be S4<Foo>, not S3<Foo>
+
 # checks that input is a class
 
     Code

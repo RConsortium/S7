@@ -277,6 +277,10 @@ class_default_desc <- function(class, package = NULL) {
 #' lexington@height <- 14
 #' prop(lexington, "height") <- 15
 prop <- function(object, name) {
+  if (prop_is_S4_data_part(object, name)) {
+    return(S7_data(object))
+  }
+
   .Call(prop_, object, name)
 }
 
@@ -285,7 +289,29 @@ prop <- function(object, name) {
 #'   [validate()] on the object before returning.
 #' @export
 `prop<-` <- function(object, name, check = TRUE, value) {
+  if (prop_is_S4_data_part(object, name)) {
+    property <- S7_class(object)@properties[[name]]
+    if (isTRUE(check)) {
+      error <- prop_validate(property, value, object)
+      if (!is.null(error)) {
+        signal_prop_error(error, object, name)
+      }
+    }
+
+    object <- `S7_data<-`(object, check = FALSE, value = value)
+    if (isTRUE(check)) {
+      validate(object)
+    }
+    return(object)
+  }
+
   .Call(prop_set_, object, name, check, value)
+}
+
+prop_is_S4_data_part <- function(object, name) {
+  identical(name, ".Data") &&
+    !isS4(object) &&
+    is_S4_data_part_object(object)
 }
 
 # called from src/prop.c
@@ -361,7 +387,15 @@ prop_call <- function(object, name) {
 #' @usage object@name
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object)
 #' @name prop
-`@.S7_object` <- prop
+prop_or_slot <- function(object, name) {
+  if (isS4(object) && !name %in% names(S7_class(object)@properties)) {
+    return(methods::slot(object, name))
+  }
+
+  prop(object, name)
+}
+
+`@.S7_object` <- prop_or_slot
 
 #' @rawNamespace S3method("@<-",S7_object)
 `@<-.S7_object` <- function(object, name, value) {
@@ -595,6 +629,10 @@ as_property <- function(x, name, i, call = sys.call(-1L)) {
 
 prop_storage_rename <- function(names) {
   .Call(prop_storage_rename_, names)
+}
+
+prop_encode_pseudo_null <- function(value) {
+  if (is.null(value)) as.name("\001NULL\001") else value
 }
 
 prop_storage_names <- function(object) {

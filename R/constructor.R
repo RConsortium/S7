@@ -6,31 +6,34 @@ new_constructor <- function(
 ) {
   properties <- as_properties(properties)
 
-  if (
-    identical(parent, S7_object) ||
-      is_S4_class(parent) ||
-      (is_class(parent) && parent@abstract)
-  ) {
+  if (is_S4_class(parent)) {
+    return(new_S4_constructor(parent, properties, envir, package))
+  }
+
+  if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
     # There's no parent constructor to delegate to, so the constructor must
     # handle all properties: inherited and newly declared (which win).
+    parent_props <- attr(parent, "properties", exact = TRUE)
     all_props <- modify_list(
-      attr(parent, "properties", exact = TRUE),
+      parent_props,
       properties
     )
 
     arg_info <- constructor_args(parent, all_props, envir, package)
-    self_args <- as_names(names(arg_info$self))
+    force_args <- as_names(names(arg_info$self))
 
-    s4_data_part <- is_S4_class(parent) && ".Data" %in% names(parent@slots)
+    s4_parent <- S4_ancestor(parent)
+    s4_data_part <- !is.null(s4_parent) && ".Data" %in% names(s4_parent@slots)
+    self_arg_names <- names(arg_info$self)
     parent_call <- if (s4_data_part) {
-      bquote(
-        methods::getClass(.(as.character(parent@className)))@prototype@.Data
-      )
+      self_arg_names <- setdiff(self_arg_names, ".Data")
+      quote(.Data)
     } else if (has_S7_symbols(envir, "S7_object")) {
       quote(S7_object())
     } else {
       quote(S7::S7_object())
     }
+    self_args <- as_names(self_arg_names)
     new_object_call <-
       if (has_S7_symbols(envir, "new_object")) {
         bquote(new_object(.(parent_call), ..(self_args)), splice = TRUE)
@@ -44,7 +47,7 @@ new_constructor <- function(
         quote(`{`),
         # Force all promises here so that any errors are signaled from
         # the constructor() call instead of the new_object() call.
-        unname(self_args),
+        unname(force_args),
         new_object_call
       )),
       env = envir
@@ -109,6 +112,126 @@ new_constructor <- function(
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
   new_function(constr_args[constr_nms], child_call, env)
+}
+
+new_S4_constructor <- function(parent, properties, envir, package) {
+  parent_props <- class_properties(parent)
+  parent_nms <- names2(parent_props)
+  override_nms <- intersect(names2(properties), parent_nms)
+  self_props <- properties[setdiff(names2(properties), parent_nms)]
+
+  parent_args <- as.pairlist(lapply(
+    setNames(, parent_nms),
+    function(name) {
+      if (name %in% override_nms) {
+        prop_default(properties[[name]], envir, package)
+      } else if (parent@virtual) {
+        prop_default(parent_props[[name]], envir, package)
+      } else {
+        quote(expr = )
+      }
+    }
+  ))
+  self_args <- constructor_args(S7_object, self_props, envir, package)$self
+  constr_args <- modify_list(parent_args, self_args)
+
+  parent_arg_exprs <- lapply(parent_nms, function(name) {
+    value <- as.name(name)
+    if (name %in% override_nms) {
+      bquote(.parent_args[.(name)] <- list(.(value)))
+    } else {
+      bquote(if (!missing(.(value))) .parent_args[.(name)] <- list(.(value)))
+    }
+  })
+
+  parent_value_nms <- setdiff(parent_nms, ".Data")
+  parent_value_storage_nms <- prop_storage_rename(parent_value_nms)
+  parent_value_args <- if (parent@virtual) {
+    as_names(parent_value_nms)
+  } else {
+    lapply(parent_value_storage_nms, function(name) {
+      bquote(.parent_values[[.(name)]])
+    })
+  }
+  names(parent_value_args) <- parent_value_nms
+
+  self_value_args <- as_names(names2(self_args))
+  parent_seed <- if (parent@virtual) {
+    quote(.parent_seed)
+  } else if (".Data" %in% parent_nms) {
+    quote(.parent_values[[".Data"]])
+  } else {
+    quote(.S7_object())
+  }
+  virtual_parent_seed <- if (".Data" %in% parent_nms) {
+    quote(.Data)
+  } else {
+    quote(.S7_object())
+  }
+  new_object_call <- as.call(c(
+    list(quote(.S7_new_object), parent_seed),
+    parent_value_args,
+    self_value_args
+  ))
+
+  env <- new.env(parent = envir)
+  env$.S4_parent <- class_constructor(parent)
+  env$.S4_initialize_parent <- S4_initialize_parent(parent@className)
+  env$.S4_initialize_values <- S4_initialize_values
+  env$.S7_new_object <- new_object
+  env$.S7_object <- S7_object
+
+  body <- if (parent@virtual) {
+    as.call(c(
+      quote(`{`),
+      quote(.parent_args <- list()),
+      parent_arg_exprs,
+      list(
+        bquote(.parent_seed <- .(virtual_parent_seed)),
+        quote(attr(.parent_seed, ".should_validate") <- FALSE),
+        bquote(.object <- .(new_object_call)),
+        quote(attr(.object, ".should_validate") <- NULL),
+        quote(do.call(.S4_initialize_parent, c(list(.object), .parent_args)))
+      )
+    ))
+  } else {
+    as.call(c(
+      quote(`{`),
+      quote(.parent_args <- list()),
+      parent_arg_exprs,
+      list(
+        quote(.parent <- do.call(.S4_parent, .parent_args)),
+        quote(.parent_values <- .S4_initialize_values(.parent)),
+        new_object_call
+      )
+    ))
+  }
+
+  new_function(
+    constr_args,
+    body,
+    env
+  )
+}
+
+S4_initialize_parent <- function(class) {
+  force(class)
+  function(.Object, ...) {
+    method <- methods::selectMethod("initialize", class)
+    if (methods::is(method, "derivedDefaultMethod")) {
+      attr(.Object, ".should_validate") <- NULL
+      validate(.Object)
+      return(.Object)
+    }
+
+    object_class <- class(.Object)
+    class(.Object) <- class
+    out <- method(.Object, ...)
+    class(out) <- object_class
+    attr(out, ".should_validate") <- NULL
+    validate(out)
+    out
+  }
 }
 
 constructor_args <- function(

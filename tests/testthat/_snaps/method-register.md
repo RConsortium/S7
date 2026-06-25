@@ -24,6 +24,16 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+    Code
+      method(foo, list()) <- (function(x) ...)
+    Condition
+      Error in `as_class()`:
+      ! Can't convert `signature` to a valid class.
+      Class specification must be one of the following, not a <list>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
 
 # method unregistration removes an S7 method via NULL assignment
 

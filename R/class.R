@@ -145,6 +145,10 @@ new_class <- function(
     }
   }
 
+  if (is_S4_class(parent)) {
+    S4_check_slot_storage(parent, call = sys.call())
+  }
+
   parent_props <- class_properties(parent)
   new_props <- as_properties(properties)
   check_prop_names(new_props)
@@ -153,12 +157,12 @@ new_class <- function(
   # Combine properties from parent, overriding as needed
   all_props <- parent_props
   all_props[names(new_props)] <- new_props
+  check_prop_storage_names(all_props)
 
   if (is.null(constructor)) {
-    constructor_props <- if (is_S4_class(parent)) all_props else new_props
     constructor <- new_constructor(
       parent,
-      constructor_props,
+      new_props,
       envir = parent.frame(),
       package = package
     )
@@ -322,6 +326,21 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
   # class attributes, at which point methods::validObject() can see the
   # registered oldClass structure.
   if (is_S4_class(parent_class)) {
+    if (isS4(parent)) {
+      stop2(
+        "`_parent` must not be an S4 object when class has an S4 parent.",
+        call = call
+      )
+    }
+    if (
+      !".Data" %in% names(parent_class@slots) &&
+        !is_S7_type(parent)
+    ) {
+      stop2(
+        "`_parent` must be an <S7_object> when class has an S4 parent without a data part.",
+        call = call
+      )
+    }
     return()
   }
 
@@ -366,7 +385,7 @@ new_object <- function(`_parent`, ...) {
   args <- collect_dots(...)
 
   has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
-  self_attrs <- args[!has_setter]
+  self_attrs <- lapply(args[!has_setter], prop_encode_pseudo_null)
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
   # We must awkwardly operate on `_parent` rather than binding to a local
@@ -475,15 +494,27 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
   }
+}
 
-  if ("S7_class" %in% nms) {
-    msg <- paste0(
-      "Property can't use S7 reserved name: ",
-      "S7_class",
-      "."
-    )
-    stop2(msg, call = call)
+check_prop_storage_names <- function(properties, call = sys.call(-1L)) {
+  nms <- names2(properties)
+  if (length(nms) == 0L) {
+    return(invisible())
   }
+
+  storage_nms <- prop_storage_rename(nms)
+  if (!anyDuplicated(storage_nms)) {
+    return(invisible())
+  }
+
+  storage_name <- storage_nms[duplicated(storage_nms)][[1L]]
+  prop_nms <- nms[storage_nms == storage_name]
+  msg <- sprintf(
+    "Properties %s must not use the same storage name %s.",
+    paste(dQuote(prop_nms), collapse = ", "),
+    dQuote(storage_name)
+  )
+  stop2(msg, call = call)
 }
 
 check_prop_overrides <- function(
@@ -494,9 +525,25 @@ check_prop_overrides <- function(
   call = sys.call(-1L)
 ) {
   overridden <- intersect(names(child_props), names(parent_props))
+  s4_parent <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+  s4_slots <- if (is.null(s4_parent)) character() else names(s4_parent@slots)
 
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
+
+    if (
+      prop %in%
+        s4_slots &&
+        (prop_is_dynamic(child_prop) || prop_has_setter(child_prop))
+    ) {
+      msg <- sprintf(
+        "Can't override inherited S4 slot %s@%s with a custom %s.",
+        class_desc(s4_parent),
+        prop,
+        if (prop_is_dynamic(child_prop)) "getter" else "setter"
+      )
+      stop2(msg, call = call)
+    }
 
     # Dynamic properties are computed, not stored, so they're never validated
     # against the parent's type
