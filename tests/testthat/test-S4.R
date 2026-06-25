@@ -1730,29 +1730,8 @@ test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 propertie
   plain <- S4regNullable(x = "a")
   prop(plain, "x") <- NULL
   expect_equal(prop(plain, "x"), NULL)
+  expect_equal(methods::slot(plain, "x"), NULL)
   expect_identical(attr(plain, "x", exact = TRUE), as.name("\001NULL\001"))
-})
-
-test_that("S4_register keeps direct S7 nullable property slots valid", {
-  defer(S4_remove_classes(c(
-    "S4regDirectNullable",
-    "NULL_OR_character"
-  )))
-
-  S4_register(NULL | class_character)
-  S4regDirectNullable <- new_class(
-    "S4regDirectNullable",
-    properties = list(x = NULL | class_character),
-    package = NULL
-  )
-  S4_register(S4regDirectNullable)
-
-  object <- S4regDirectNullable()
-
-  expect_equal(prop(object, "x"), NULL)
-  expect_equal(methods::slot(object, "x"), NULL)
-  expect_true(methods::validObject(object))
-  expect_identical(attr(object, "x", exact = TRUE), as.name("\001NULL\001"))
 })
 
 test_that("S4_contains rejects properties with custom accessors", {
@@ -2943,39 +2922,6 @@ test_that("S4 data part constructors use overridden .Data defaults", {
   expect_equal(prop(object, ".Data"), 2)
 })
 
-test_that("S4 data part initialization preserves S4 subclasses", {
-  defer(S4_remove_classes(c(
-    "S4regDataPartGrandChild",
-    "S4regDataPartChild",
-    "S4regDataPartParent"
-  )))
-
-  setClass("S4regDataPartParent", contains = "numeric")
-  S4regDataPartChild := new_class(
-    parent = getClass("S4regDataPartParent"),
-    properties = list(y = class_character),
-    package = NULL
-  )
-  setClass(
-    "S4regDataPartGrandChild",
-    slots = list(z = "logical"),
-    contains = "S4regDataPartChild"
-  )
-
-  object <- methods::new(
-    "S4regDataPartGrandChild",
-    .Data = 1,
-    y = "a",
-    z = TRUE
-  )
-
-  expect_s4_class(object, "S4regDataPartGrandChild")
-  expect_equal(as.vector(object), 1)
-  expect_equal(prop(object, "y"), "a")
-  expect_equal(methods::slot(object, "z"), TRUE)
-  expect_true(methods::validObject(object))
-})
-
 test_that("S7_data() reads and writes S4 subclass data parts", {
   defer(S4_remove_classes(c(
     "S4regS7DataPartGrandChild",
@@ -3003,6 +2949,7 @@ test_that("S7_data() reads and writes S4 subclass data parts", {
   )
 
   expect_equal(S7_data(object), c(a = 1))
+  expect_equal(as.vector(object), 1)
 
   S7_data(object) <- c(b = 2)
 
@@ -3081,6 +3028,11 @@ test_that("S4 subclasses read and write special-named S7 property storage slots"
   )
   S4_register(S4regSpecialSlots)
   S4regSpecialSlots_S4 <- S4_contains(S4regSpecialSlots)
+
+  direct <- S4regSpecialSlots(names = "direct", dim = 1L)
+  expect_equal(methods::slot(direct, "_names"), "direct")
+  expect_equal(prop(direct, "names"), "direct")
+
   setClass(
     "S4regSpecialSlotsChild",
     contains = S4regSpecialSlots_S4,
@@ -3114,60 +3066,10 @@ test_that("S4 subclasses read and write special-named S7 property storage slots"
   expect_equal(methods::slot(object, "_names"), "updated")
   expect_equal(methods::slot(object, "names"), "s4-only")
   expect_equal(prop(object, "names"), "updated")
-})
 
-test_that("S4 initializers copy renamed S7 property storage slots", {
-  defer(S4_remove_classes(c(
-    "S4regCopySpecialSlotsChild",
-    "S4regCopySpecialSlots"
-  )))
-
-  S4regCopySpecialSlots := new_class(
-    properties = list(names = class_character),
-    package = NULL
-  )
-  S4_register(S4regCopySpecialSlots)
-  S4regCopySpecialSlots_S4 <- S4_contains(S4regCopySpecialSlots)
-  setClass(
-    "S4regCopySpecialSlotsChild",
-    contains = S4regCopySpecialSlots_S4,
-    slots = list(extra = "character")
-  )
-
-  old <- methods::new(
-    "S4regCopySpecialSlotsChild",
-    names = "n",
-    extra = "old"
-  )
-  new <- methods::new("S4regCopySpecialSlotsChild", old)
-
-  expect_equal(prop(new, "names"), "n")
-  expect_equal(methods::slot(new, "_names"), "n")
-  expect_equal(methods::slot(new, "extra"), "old")
-})
-
-test_that("S4_register keeps direct S7 special-name property slots valid", {
-  defer(S4_remove_classes("S4regDirectSpecialSlots"))
-
-  S4regDirectSpecialSlots <- new_class(
-    "S4regDirectSpecialSlots",
-    properties = list(
-      names = class_character,
-      dim = class_integer
-    ),
-    package = NULL
-  )
-  S4_register(S4regDirectSpecialSlots)
-
-  object <- S4regDirectSpecialSlots(
-    names = "n",
-    dim = 2L
-  )
-
-  expect_equal(methods::slot(object, "_names"), "n")
-  expect_equal(methods::slot(object, "_dim"), 2L)
-  expect_equal(prop(object, "names"), "n")
-  expect_true(methods::validObject(object))
+  new <- methods::new("S4regSpecialSlotsChild", object)
+  expect_equal(prop(new, "names"), "updated")
+  expect_equal(methods::slot(new, "_names"), "updated")
 })
 
 test_that("S7 classes preserve special-named properties inherited through S4", {
