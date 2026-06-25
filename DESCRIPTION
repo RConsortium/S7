@@ -26,7 +26,7 @@ License: MIT + file LICENSE
 URL: https://rconsortium.github.io/S7/, https://github.com/RConsortium/S7
 BugReports: https://github.com/RConsortium/S7/issues
 Depends:
-    R (>= 3.5.0)
+    R (>= 4.2.0)
 Imports:
     utils
 Suggests:
