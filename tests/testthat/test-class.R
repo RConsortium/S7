@@ -84,6 +84,12 @@ test_that("S7 classes accept ordinary values for S4 parent slots", {
   expect_equal(obj@y, y)
 })
 
+test_that("S7 classes reject S4 parents with implicit data parts", {
+  expect_snapshot(error = TRUE, {
+    new_class("Child", parent = methods::getClass("matrix"), package = NULL)
+  })
+})
+
 test_that("S7_class can be used as a property name", {
   foo <- new_class(
     "foo",

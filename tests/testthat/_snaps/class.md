@@ -107,6 +107,15 @@
       Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
+# S7 classes reject S4 parents with implicit data parts
+
+    Code
+      new_class("Child", parent = methods::getClass("matrix"), package = NULL)
+    Condition
+      Error in `new_class()`:
+      ! Can't extend S4 class S4<matrix> because it has an implicit data part.
+      Only S4 classes with data parts stored in an explicit `.Data` slot are supported.
+
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code

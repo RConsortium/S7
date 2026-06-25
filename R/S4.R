@@ -726,6 +726,17 @@ S4_contains_classes <- function(parent_class_name, where) {
 }
 
 S4_check_slot_storage <- function(class, call = sys.call(-1L)) {
+  if (S4_has_implicit_data_part(class)) {
+    msg <- c(
+      sprintf(
+        "Can't extend S4 class %s because it has an implicit data part.",
+        class_desc(class)
+      ),
+      "Only S4 classes with data parts stored in an explicit `.Data` slot are supported."
+    )
+    stop2(msg, call = call)
+  }
+
   nms <- names(class@slots)
   renamed <- nms[prop_storage_rename(nms) != nms & nms != ".Data"]
   if (length(renamed) == 0L) {
@@ -744,6 +755,15 @@ S4_check_slot_storage <- function(class, call = sys.call(-1L)) {
     "These S4 slots can not be represented safely on direct S7 child objects."
   )
   stop2(msg, call = call)
+}
+
+S4_has_implicit_data_part <- function(class) {
+  if (".Data" %in% names(class@slots)) {
+    return(FALSE)
+  }
+
+  identical(as.character(class@className), "vector") ||
+    "vector" %in% names(class@contains)
 }
 
 S4_reified_parent_class <- function(class, env) {
