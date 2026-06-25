@@ -355,6 +355,19 @@ test_that("new_object() errors if `_parent` doesn't inherit from the parent clas
   })
 })
 
+test_that("new_object() rejects S4 parent objects in custom constructors", {
+  Parent := local_S4_class(slots = list(x = "numeric"))
+  Child := new_class(
+    parent = Parent,
+    package = NULL,
+    constructor = function() {
+      new_object(methods::new("Parent", x = 1))
+    }
+  )
+
+  expect_snapshot(Child(), error = TRUE)
+})
+
 test_that("new_object() allows S7_object placeholder for abstract parents", {
   Abstract := new_class(
     package = NULL,

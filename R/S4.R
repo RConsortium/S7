@@ -1188,6 +1188,7 @@ globalVariables(c(
   "package",
   "prototype",
   "slots",
+  "subclasses",
   "subClass",
   "superClass",
   "virtual"

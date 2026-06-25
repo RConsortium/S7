@@ -179,6 +179,14 @@
       Error in `new_object()`:
       ! `_parent` must be an instance of <integer>, not <character>.
 
+# new_object() rejects S4 parent objects in custom constructors
+
+    Code
+      Child()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must not be an S4 object when class has an S4 parent.
+
 # new_object() errors if `_parent` is supplied but class has no parent
 
     Code

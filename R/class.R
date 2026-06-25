@@ -325,6 +325,12 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
   # class attributes, at which point methods::validObject() can see the
   # registered oldClass structure.
   if (is_S4_class(parent_class)) {
+    if (isS4(parent)) {
+      stop2(
+        "`_parent` must not be an S4 object when class has an S4 parent.",
+        call = call
+      )
+    }
     return()
   }
 
