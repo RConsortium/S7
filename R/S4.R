@@ -508,9 +508,7 @@ S4_property_class <- function(prop, S4_env) {
 }
 
 S4_register_property_class <- function(class, S4_env) {
-  if (
-    is_class(class) && !methods::isClass(class_register(class), where = S4_env)
-  ) {
+  if (is_class(class) && is.null(S4_registered_class_or_null(class, S4_env))) {
     S4_register(class, S4_env)
   }
   invisible()

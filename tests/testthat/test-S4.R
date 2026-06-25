@@ -122,6 +122,33 @@ test_that("S4_register registers S7 property classes", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S4_register refreshes stale S7 property classes", {
+  defer(S4_remove_classes(c(
+    "S4regS7PropStaleHolder",
+    "S4regS7PropStale"
+  )))
+
+  S4regS7PropStale := new_class(package = NULL)
+  S4_register(S4regS7PropStale)
+
+  S4regS7PropStale := new_class(
+    properties = list(x = new_property(class_numeric, default = 1)),
+    package = NULL
+  )
+  S4regS7PropStaleHolder := new_class(
+    properties = list(prop = S4regS7PropStale),
+    package = NULL
+  )
+
+  expect_no_error(S4_register(S4regS7PropStaleHolder))
+  expect_identical(
+    methods::validObject(S4regS7PropStaleHolder(
+      prop = S4regS7PropStale()
+    )),
+    TRUE
+  )
+})
+
 test_that("S4 parent slots declared as registered S7 classes use S7 classes", {
   defer(S4_remove_classes(c(
     "S4regSlotS7Child",
