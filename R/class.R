@@ -331,6 +331,15 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
         call = call
       )
     }
+    if (
+      !".Data" %in% names(parent_class@slots) &&
+        !is_S7_type(parent)
+    ) {
+      stop2(
+        "`_parent` must be an <S7_object> when class has an S4 parent without a data part.",
+        call = call
+      )
+    }
     return()
   }
 
@@ -494,17 +503,20 @@ check_prop_overrides <- function(
   call = sys.call(-1L)
 ) {
   overridden <- intersect(names(child_props), names(parent_props))
+  s4_parent <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+  s4_slots <- if (is.null(s4_parent)) character() else names(s4_parent@slots)
 
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
 
     if (
-      is_S4_class(parent) &&
+      prop %in%
+        s4_slots &&
         (prop_is_dynamic(child_prop) || prop_has_setter(child_prop))
     ) {
       msg <- sprintf(
         "Can't override inherited S4 slot %s@%s with a custom %s.",
-        class_desc(parent),
+        class_desc(s4_parent),
         prop,
         if (prop_is_dynamic(child_prop)) "getter" else "setter"
       )

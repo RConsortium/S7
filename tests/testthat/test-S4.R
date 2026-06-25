@@ -2741,6 +2741,42 @@ test_that("S4 parents reject accessor overrides of inherited slots", {
   })
 })
 
+test_that("S7 subclasses reject accessor overrides of inherited S4 slots", {
+  defer(S4_remove_classes(c(
+    "S4regS7AccessorSlotGetterChild",
+    "S4regS7AccessorSlotParent",
+    "S4regS7AccessorSlotSetterChild"
+  )))
+
+  setClass("S4regS7AccessorSlotParent", slots = list(x = "numeric"))
+  Parent := new_class(
+    parent = getClass("S4regS7AccessorSlotParent"),
+    package = NULL
+  )
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      "S4regS7AccessorSlotGetterChild",
+      parent = Parent,
+      properties = list(
+        x = new_property(class_numeric, getter = function(self) 1)
+      ),
+      package = NULL
+    )
+  })
+
+  expect_snapshot(error = TRUE, {
+    new_class(
+      "S4regS7AccessorSlotSetterChild",
+      parent = Parent,
+      properties = list(
+        x = new_property(class_numeric, setter = function(self, value) self)
+      ),
+      package = NULL
+    )
+  })
+})
+
 test_that("S7 property narrowing rejects unrelated S4 name matches", {
   defer(S4_remove_classes(c(
     "S4regPropertyNameCollisionChild",

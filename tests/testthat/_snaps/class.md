@@ -187,6 +187,14 @@
       Error in `new_object()`:
       ! `_parent` must not be an S4 object when class has an S4 parent.
 
+# new_object() rejects non-S7 seeds for S4 parents without data parts
+
+    Code
+      Child()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must be an <S7_object> when class has an S4 parent without a data part.
+
 # new_object() errors if `_parent` is supplied but class has no parent
 
     Code
