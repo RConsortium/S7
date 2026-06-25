@@ -28,6 +28,10 @@ S7_data <- function(object) {
   check_is_S7(object)
   check_not_environment(object, "S7_data()")
 
+  if (is_S4_data_part_object(object)) {
+    return(S4_data_part(object))
+  }
+
   out <- zap_attr(
     object,
     c(prop_storage_names(object), "class", "_S7_class", "S7_class")
@@ -54,6 +58,14 @@ base_parent <- function(class) {
   check_is_S7(object)
   check_not_environment(object, "S7_data<-")
 
+  if (is_S4_data_part_object(object)) {
+    object <- S4_initialize_data_part(value, object)
+    if (isTRUE(check)) {
+      validate(object)
+    }
+    return(invisible(object))
+  }
+
   s7_attrs <- c(prop_storage_names(object), "class", "_S7_class", "S7_class")
   for (name in s7_attrs) {
     attr(value, name) <- attr(object, name, exact = TRUE)
@@ -62,6 +74,18 @@ base_parent <- function(class) {
     validate(value)
   }
   return(invisible(value))
+}
+
+is_S4_data_part_object <- function(object) {
+  isS4(object) && ".Data" %in% methods::slotNames(object)
+}
+
+S4_data_part <- function(object) {
+  data <- methods::slot(object, ".Data")
+  attrs <- attributes(object) %||% list()
+  attrs[c(S4_data_part_protected_attributes(object), ".S3Class")] <- NULL
+  attributes(data) <- modify_list(attributes(data), attrs)
+  data
 }
 
 zap_attr <- function(x, names) {

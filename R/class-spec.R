@@ -269,7 +269,10 @@ S4_validate_old_class <- function(class, object, skip = character()) {
   if (!as.character(class@className) %in% skip) {
     validity <- methods::getValidity(class)
     if (length(errors) == 0L && is.function(validity)) {
-      errors <- c(errors, any_strings(validity(object)))
+      errors <- c(
+        errors,
+        any_strings(validity(methods::as(object, class@className)))
+      )
     }
   }
 

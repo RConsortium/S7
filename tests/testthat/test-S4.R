@@ -2034,6 +2034,28 @@ test_that("S4 data part constructors use the .Data argument", {
   expect_true(methods::validObject(object))
 })
 
+test_that("S7 subclasses validate S4 parents as the parent representation", {
+  defer(S4_remove_classes(c(
+    "S4regValidityConcreteParent",
+    "S4regValidityConcreteChild"
+  )))
+
+  setClass("S4regValidityConcreteParent", contains = "numeric")
+  methods::setValidity("S4regValidityConcreteParent", function(object) {
+    if (identical(as.character(class(object)), "S4regValidityConcreteParent")) {
+      TRUE
+    } else {
+      "parent validity must see parent class"
+    }
+  })
+  S4regValidityConcreteChild := new_class(
+    parent = getClass("S4regValidityConcreteParent"),
+    package = NULL
+  )
+
+  expect_no_error(S4regValidityConcreteChild(.Data = 1))
+})
+
 test_that("S4 data part constructors use overridden .Data defaults", {
   defer(S4_remove_classes(c(
     "S4regDataDefaultParent",
@@ -2095,6 +2117,43 @@ test_that("S4 data part initialization preserves S4 subclasses", {
   expect_equal(prop(object, "y"), "a")
   expect_equal(methods::slot(object, "z"), TRUE)
   expect_true(methods::validObject(object))
+})
+
+test_that("S7_data() reads and writes S4 subclass data parts", {
+  defer(S4_remove_classes(c(
+    "S4regS7DataPartGrandChild",
+    "S4regS7DataPartChild",
+    "S4regS7DataPartParent"
+  )))
+
+  setClass("S4regS7DataPartParent", contains = "numeric")
+  S4regS7DataPartChild := new_class(
+    parent = getClass("S4regS7DataPartParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+  setClass(
+    "S4regS7DataPartGrandChild",
+    slots = list(z = "logical"),
+    contains = "S4regS7DataPartChild"
+  )
+
+  object <- methods::new(
+    "S4regS7DataPartGrandChild",
+    .Data = c(a = 1),
+    y = "a",
+    z = TRUE
+  )
+
+  expect_equal(S7_data(object), c(a = 1))
+
+  S7_data(object) <- c(b = 2)
+
+  expect_s4_class(object, "S4regS7DataPartGrandChild")
+  expect_equal(S7_data(object), c(b = 2))
+  expect_equal(prop(object, "y"), "a")
+  expect_equal(methods::slot(object, "z"), TRUE)
+  expect_identical(methods::validObject(object), TRUE)
 })
 
 test_that("S4 subclasses read and write special-named S7 property storage slots", {
