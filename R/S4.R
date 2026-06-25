@@ -75,9 +75,18 @@ S4_contains <- function(class, env = parent.frame()) {
     stop2("S4 classes can not extend abstract S7 classes.", call = sys.call())
   }
 
-  class_name <- as.character(
-    S4_registered_class(class, where, call = sys.call())@className
-  )
+  registered <- S4_registered_class(class, where, call = sys.call())
+  if (!S4_registered_S7_class_matches(registered, class)) {
+    msg <- sprintf(
+      paste0(
+        "Class has not been registered as a reified S7 class; ",
+        "please call S4_register(%s)."
+      ),
+      class_deparse(class)
+    )
+    stop2(msg, call = sys.call())
+  }
+  class_name <- as.character(registered@className)
   S4_check_contains(class)
   class_name
 }
@@ -1059,7 +1068,7 @@ S4_initialize_default_values <- function(object, supplied, S4_env) {
 }
 
 S4_slot_has_prototype_value <- function(object, name, S4_env) {
-  prototype <- S4_object_class(object, S4_env)@prototype
+  prototype <- S4_registered_class(S7_class(object), S4_env)@prototype
   value <- methods::slot(object, name)
   prototype_value <- methods::slot(prototype, name)
   if (identical(value, prototype_value)) {
@@ -1073,24 +1082,6 @@ S4_slot_has_prototype_value <- function(object, name, S4_env) {
     S4_strip_data_part_identity(value),
     S4_strip_data_part_identity(prototype_value)
   )
-}
-
-S4_object_class <- function(object, S4_env) {
-  class <- class(object)
-  name <- class[[1L]]
-  package <- attr(class, "package", exact = TRUE)
-  if (!is.null(package)) {
-    class_def <- methods::getClassDef(
-      name,
-      package = package,
-      inherits = FALSE
-    )
-    if (!is.null(class_def)) {
-      return(class_def)
-    }
-  }
-
-  methods::getClass(name, where = S4_env)
 }
 
 S4_strip_data_part_identity <- function(x) {

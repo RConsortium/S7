@@ -251,6 +251,13 @@ S4_validate_old_class <- function(class, object, skip = character()) {
       break
     }
     if (S4_is_reified_S7_class(super_def)) {
+      super_S7 <- methods::slot(super_def@prototype, "_S7_class")
+      if (!S7_extends_via_S7_parent(S7_class(object), super_S7)) {
+        errors <- c(errors, S4_validate_reified_S7_class(super_S7, object))
+        if (length(errors)) {
+          break
+        }
+      }
       next
     }
 
@@ -281,6 +288,40 @@ S4_validate_old_class <- function(class, object, skip = character()) {
   } else {
     errors
   }
+}
+
+S4_validate_reified_S7_class <- function(class, object) {
+  errors <- validate_properties(object, class, parent_class = class@parent)
+  if (length(errors) > 0L) {
+    return(errors)
+  }
+
+  error <- class_validate(class, object)
+  if (is.null(error)) {
+    character()
+  } else if (is.character(error)) {
+    error
+  } else {
+    stop2(
+      sprintf(
+        "%s validator must return NULL or a character, not <%s>.",
+        obj_desc(class),
+        typeof(error)
+      ),
+      call = NULL
+    )
+  }
+}
+
+S7_extends_via_S7_parent <- function(child, parent) {
+  while (is_class(child)) {
+    if (identical(child, parent) || isTRUE(all.equal(child, parent))) {
+      return(TRUE)
+    }
+    child <- child@parent
+  }
+
+  FALSE
 }
 
 S4_as_validity_class <- function(object, class) {

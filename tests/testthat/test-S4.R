@@ -243,6 +243,20 @@ test_that("S4_contains requires prior S4 registration", {
   )
 })
 
+test_that("S4_contains rejects old-style S7 registrations", {
+  defer(S4_remove_classes("S4regContainsOldStyle"))
+
+  S4regContainsOldStyle := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  methods::setOldClass(c("S4regContainsOldStyle", "S7_object"))
+
+  expect_snapshot(error = TRUE, {
+    S4_contains(S4regContainsOldStyle)
+  })
+})
+
 test_that("S4_contains rejects unrelated S4 classes with the same name", {
   defer(S4_remove_classes("S4regContainsCollision"))
   setClass("S4regContainsCollision", slots = list(x = "numeric"))
@@ -1298,6 +1312,36 @@ test_that("S4_register evaluates expression defaults for each S4 object", {
   expect_null(prop(object2, "x")$value)
 })
 
+test_that("S4 subclass prototypes override deferred S7 defaults", {
+  defer(S4_remove_classes(c(
+    "S4regPrototypeDeferred",
+    "S4regPrototypeDeferredChild"
+  )))
+
+  S4regPrototypeDeferred := new_class(
+    properties = list(
+      x = new_property(
+        class = class_numeric,
+        default = quote({
+          1
+        })
+      )
+    ),
+    package = NULL
+  )
+  S4_register(S4regPrototypeDeferred)
+  methods::setClass(
+    Class = "S4regPrototypeDeferredChild",
+    contains = S4_contains(S4regPrototypeDeferred),
+    prototype = list(x = 5)
+  )
+
+  object <- methods::new("S4regPrototypeDeferredChild")
+
+  expect_equal(methods::slot(object, "x"), 5)
+  expect_equal(prop(object, "x"), 5)
+})
+
 test_that("S4_register evaluates deferred defaults in the constructor environment", {
   defer(S4_remove_classes(c(
     "S4regDefaultEnv",
@@ -2155,6 +2199,40 @@ test_that("S4 subclasses of S7-over-S4 classes run S4 parent validity", {
   object <- methods::new("S4regSubValidityShim", x = 1, y = "a")
   expect_snapshot(error = TRUE, {
     methods::initialize(object, x = numeric())
+  })
+})
+
+test_that("S7-over-S4 classes run S7 validators inherited through S4", {
+  defer(S4_remove_classes(c(
+    "S4regS7HopParent",
+    "S4regS7HopMid",
+    "S4regS7HopChild"
+  )))
+
+  S4regS7HopParent := new_class(
+    properties = list(x = class_numeric),
+    validator = function(self) {
+      if (length(prop(self, "x")) != 1) {
+        "x must have length 1"
+      }
+    },
+    package = NULL
+  )
+  S4_register(S4regS7HopParent)
+  methods::setClass(
+    Class = "S4regS7HopMid",
+    contains = S4_contains(S4regS7HopParent)
+  )
+  S4regS7HopChild := new_class(
+    parent = methods::getClass("S4regS7HopMid"),
+    package = NULL
+  )
+
+  object <- S4regS7HopChild(x = 1)
+  expect_equal(S7_inherits(object, S4regS7HopParent), TRUE)
+
+  expect_snapshot(error = TRUE, {
+    prop(object, "x") <- numeric()
   })
 })
 
