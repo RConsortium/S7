@@ -285,13 +285,16 @@ S4_register_union_member_extension <- function(class, member, union, S4_env) {
     return(invisible())
   }
 
-  suppressWarnings(methods::setIs(
+  setIs_args <- list(
     class@className,
     member,
     where = S4_env,
-    classDef = class,
-    test = S4_class_identity_test(class@className)
-  ))
+    classDef = class
+  )
+  if (!S4_union_member_same_package(class@className, S4_env)) {
+    setIs_args$test <- S4_class_identity_test(class@className)
+  }
+  suppressWarnings(do.call(methods::setIs, setIs_args))
   S4_prune_union_subclass(union, class@className, S4_env)
   invisible()
 }
@@ -302,9 +305,14 @@ S4_union_member_needs_identity <- function(class) {
     !(identical(package, "methods") && class %in% S4_methods_class_names())
 }
 
+S4_union_member_same_package <- function(class, S4_env) {
+  package <- attr(class, "package", exact = TRUE)
+  !is.null(package) && identical(package, methods::getPackageName(S4_env))
+}
+
 # setIs() adds a transitive bare-class subclass entry to the union. Class
-# unions match those names without respecting the conditional package test, so
-# remove it and let objects reach the union through the identity shim.
+# unions match those names without respecting package identity, so remove it
+# and let objects reach the union through the package-qualified shim.
 S4_prune_union_subclass <- function(union, class, S4_env) {
   class <- as.character(class)
   union_def <- methods::getClass(union, where = S4_env)
@@ -629,6 +637,9 @@ S4_register_class <- function(class, env = parent.frame()) {
     ".Data"
   )]
   slot_properties <- stored_properties
+  if (!".Data" %in% parent_slot_names) {
+    slot_properties <- slot_properties[setdiff(names(slot_properties), ".Data")]
+  }
   if (!parent_needs_identity) {
     slot_properties <- slot_properties[
       !prop_storage_rename(names(slot_properties)) %in% parent_slot_names

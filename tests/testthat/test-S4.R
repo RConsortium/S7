@@ -482,6 +482,63 @@ test_that("S4_register keeps package-local S4 union members distinct", {
   expect_equal(methods::is(global_object, union_name), FALSE)
 })
 
+test_that("S4_register dispatches union methods for same-package S4 subclasses", {
+  pkg_env <- local_package("s4regunionlocalsubpkg")
+  defer({
+    if (methods::isGeneric("S4regUnionLocalSubGeneric", where = pkg_env)) {
+      methods::removeGeneric("S4regUnionLocalSubGeneric", where = pkg_env)
+    }
+    suppressMessages({
+      S4_remove_classes("S4regUnionLocalSubFoo")
+      S4_remove_classes(
+        c(
+          "s4regunionlocalsubpkg::S4regUnionLocalSubFoo_OR_character",
+          "S4/s4regunionlocalsubpkg::S4regUnionLocalSubFoo",
+          "S4regUnionLocalSubChild",
+          "S4regUnionLocalSubFoo_OR_character"
+        ),
+        pkg_env
+      )
+      S4_remove_classes("S4regUnionLocalSubFoo", pkg_env)
+    })
+  })
+
+  global_foo <- methods::setClass(
+    "S4regUnionLocalSubFoo",
+    slots = list(x = "character")
+  )
+  pkg_foo <- methods::setClass(
+    "S4regUnionLocalSubFoo",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+
+  union_name <- S4_register(pkg_foo | class_character, env = pkg_env)
+  child <- methods::setClass(
+    "S4regUnionLocalSubChild",
+    contains = "S4regUnionLocalSubFoo",
+    where = pkg_env
+  )
+  methods::setGeneric(
+    "S4regUnionLocalSubGeneric",
+    function(x) standardGeneric("S4regUnionLocalSubGeneric"),
+    where = pkg_env
+  )
+  methods::setMethod(
+    "S4regUnionLocalSubGeneric",
+    union_name,
+    function(x) "union",
+    where = pkg_env
+  )
+
+  generic <- get("S4regUnionLocalSubGeneric", envir = pkg_env)
+  pkg_object <- child(x = 1)
+  global_object <- global_foo(x = "x")
+
+  expect_equal(generic(pkg_object), "union")
+  expect_equal(methods::is(global_object, union_name), FALSE)
+})
+
 test_that("S7 dispatch preserves package-qualified S4 parents", {
   pkg_env <- local_package("s4regdispatchpkg")
   defer({
@@ -2349,6 +2406,22 @@ test_that("S4 initialize ignores data-part attributes that collide with slots", 
   expect_equal(prop(out, "z"), "slot")
   expect_equal(attr(out, "other", exact = TRUE), "keep")
   expect_identical(methods::validObject(out), TRUE)
+})
+
+test_that("S4_register keeps direct .Data properties as ordinary properties", {
+  defer(S4_remove_classes("S4regDirectDataProperty"))
+
+  S4regDirectDataProperty := new_class(
+    properties = list(.Data = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regDirectDataProperty)
+
+  object <- S4regDirectDataProperty(.Data = 1)
+
+  expect_equal(intersect(methods::slotNames(object), ".Data"), character())
+  expect_equal(prop(object, ".Data"), 1)
+  expect_identical(methods::validObject(object, test = TRUE), TRUE)
 })
 
 test_that("S4 data part constructors use the .Data argument", {
