@@ -228,6 +228,11 @@ S4_validate_old_class <- function(class, object, skip = character()) {
     if (isTRUE(x)) character() else x
   }
 
+  errors <- S4_validate_single_reified_S7_contains(class)
+  if (length(errors) > 0L) {
+    return(errors)
+  }
+
   errors <- S4_validate_slots(class, object)
   extends <- rev(class@contains)
   for (ext in extends) {
@@ -288,6 +293,30 @@ S4_validate_old_class <- function(class, object, skip = character()) {
   } else {
     errors
   }
+}
+
+S4_validate_single_reified_S7_contains <- function(class) {
+  classes <- S4_direct_reified_S7_contains(class)
+  if (length(classes) <= 1L) {
+    return(character())
+  }
+
+  class_names <- vcapply(classes, class_desc)
+  sprintf(
+    "%s directly contains multiple S7 classes via S4_contains(): %s",
+    class_desc(class),
+    paste(class_names, collapse = ", ")
+  )
+}
+
+S4_direct_reified_S7_contains <- function(class) {
+  contains <- base::Filter(function(x) x@distance == 1, class@contains)
+  supers <- lapply(contains, function(x) methods::getClassDef(x@superClass))
+  supers <- base::Filter(
+    function(x) !is.null(x) && S4_is_reified_S7_class(x),
+    supers
+  )
+  lapply(supers, function(x) methods::slot(x@prototype, "_S7_class"))
 }
 
 S4_validate_slots <- function(class, object) {

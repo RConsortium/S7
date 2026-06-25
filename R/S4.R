@@ -1115,6 +1115,9 @@ S4_initialize_values <- function(object) {
 }
 
 S4_initialize_data_part <- function(value, object) {
+  if (is_S4_data_part_object(value)) {
+    value <- S4_data_part(value)
+  }
   protected <- S4_data_part_protected_attributes(object)
   incoming <- attributes(value) %||% list()
   incoming[protected] <- NULL

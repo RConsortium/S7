@@ -2292,6 +2292,36 @@ test_that("S4 subclasses of S7 classes check concrete slot types", {
   })
 })
 
+test_that("S4 subclasses reject multiple S4_contains() parents", {
+  defer(S4_remove_classes(c(
+    "S4regMultipleS7ContainsFoo",
+    "S4regMultipleS7ContainsBar",
+    "S4regMultipleS7ContainsBoth"
+  )))
+
+  S4regMultipleS7ContainsFoo := new_class(
+    properties = list(x = class_numeric),
+    package = NULL
+  )
+  S4regMultipleS7ContainsBar := new_class(
+    properties = list(y = class_numeric),
+    package = NULL
+  )
+  S4_register(S4regMultipleS7ContainsFoo)
+  S4_register(S4regMultipleS7ContainsBar)
+  setClass(
+    "S4regMultipleS7ContainsBoth",
+    contains = c(
+      S4_contains(S4regMultipleS7ContainsFoo),
+      S4_contains(S4regMultipleS7ContainsBar)
+    )
+  )
+
+  expect_snapshot(error = TRUE, {
+    methods::new("S4regMultipleS7ContainsBoth", x = 1, y = 2)
+  })
+})
+
 test_that("S4 subclass validation preserves concrete class package", {
   pkg_env <- local_package("s4regvalidpkg")
   defer({
@@ -2678,6 +2708,33 @@ test_that("S4 data-part initialization preserves data attributes", {
   source <- methods::new("S4regDataPartAttrsParent", .Data = c(b = 2))
   out <- methods::initialize(object, source)
   expect_equal(S7_data(out), c(b = 2))
+})
+
+test_that("S4 initialize unwraps S4 data-part replacements", {
+  defer(S4_remove_classes(c(
+    "S4regDataPartObjectValueChild",
+    "S4regDataPartObjectValueParent"
+  )))
+
+  setClass("S4regDataPartObjectValueParent", contains = "numeric")
+  S4regDataPartObjectValueChild := new_class(
+    parent = getClass("S4regDataPartObjectValueParent"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  object <- S4regDataPartObjectValueChild(.Data = c(a = 1), y = "target")
+  source <- methods::new(
+    "S4regDataPartObjectValueParent",
+    .Data = c(b = 2)
+  )
+
+  out <- methods::initialize(object, .Data = source)
+
+  expect_equal(S7_class(out), S4regDataPartObjectValueChild)
+  expect_equal(S7_data(out), c(b = 2))
+  expect_equal(prop(out, "y"), "target")
+  expect_identical(methods::validObject(out), TRUE)
 })
 
 test_that("S4 initialize ignores data-part attributes that collide with slots", {
