@@ -263,6 +263,92 @@ test_that("S4_register preserves package-qualified S4 classes", {
   expect_equal(S4regPackageClassGeneric(pkg_object), "package")
 })
 
+test_that("S4_register gives package S4 unions distinct names", {
+  pkg_a_env <- local_package("s4regunionnamea")
+  pkg_b_env <- local_package("s4regunionnameb")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "s4regunionnamea::S4regUnionNameFoo_OR_character",
+        "s4regunionnameb::S4regUnionNameFoo_OR_character",
+        "S4/s4regunionnamea::S4regUnionNameFoo",
+        "S4/s4regunionnameb::S4regUnionNameFoo",
+        "S4regUnionNameFoo_OR_character"
+      ))
+      S4_remove_classes("S4regUnionNameFoo", pkg_a_env)
+      S4_remove_classes("S4regUnionNameFoo", pkg_b_env)
+    })
+  })
+
+  pkg_a_foo <- methods::setClass(
+    "S4regUnionNameFoo",
+    slots = list(x = "numeric"),
+    where = pkg_a_env
+  )
+  pkg_b_foo <- methods::setClass(
+    "S4regUnionNameFoo",
+    slots = list(x = "character"),
+    where = pkg_b_env
+  )
+
+  union_a <- S4_register(pkg_a_foo | class_character)
+  union_b <- S4_register(pkg_b_foo | class_character)
+  pkg_a_object <- pkg_a_foo(x = 1)
+  pkg_b_object <- pkg_b_foo(x = "x")
+
+  expect_equal(
+    union_a,
+    "s4regunionnamea::S4regUnionNameFoo_OR_character"
+  )
+  expect_equal(
+    union_b,
+    "s4regunionnameb::S4regUnionNameFoo_OR_character"
+  )
+  expect_equal(methods::is(pkg_a_object, union_a), TRUE)
+  expect_equal(methods::is(pkg_b_object, union_a), FALSE)
+  expect_equal(methods::is(pkg_b_object, union_b), TRUE)
+  expect_equal(methods::is(pkg_a_object, union_b), FALSE)
+})
+
+test_that("S4_register keeps package-local S4 union members distinct", {
+  pkg_env <- local_package("s4regunionlocalpkg")
+  defer({
+    suppressMessages({
+      S4_remove_classes("S4regUnionLocalFoo")
+      S4_remove_classes(
+        c(
+          "s4regunionlocalpkg::S4regUnionLocalFoo_OR_character",
+          "S4/s4regunionlocalpkg::S4regUnionLocalFoo",
+          "S4regUnionLocalFoo_OR_character"
+        ),
+        pkg_env
+      )
+      S4_remove_classes("S4regUnionLocalFoo", pkg_env)
+    })
+  })
+
+  global_foo <- methods::setClass(
+    "S4regUnionLocalFoo",
+    slots = list(x = "character")
+  )
+  pkg_foo <- methods::setClass(
+    "S4regUnionLocalFoo",
+    slots = list(x = "numeric"),
+    where = pkg_env
+  )
+
+  union_name <- S4_register(pkg_foo | class_character, env = pkg_env)
+  pkg_object <- pkg_foo(x = 1)
+  global_object <- global_foo(x = "x")
+
+  expect_equal(
+    union_name,
+    "s4regunionlocalpkg::S4regUnionLocalFoo_OR_character"
+  )
+  expect_equal(methods::is(pkg_object, union_name), TRUE)
+  expect_equal(methods::is(global_object, union_name), FALSE)
+})
+
 test_that("S7 dispatch preserves package-qualified S4 parents", {
   pkg_env <- local_package("s4regdispatchpkg")
   defer({

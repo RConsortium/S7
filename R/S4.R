@@ -90,7 +90,7 @@ S4_register_union <- function(class, env) {
     members,
     where = env
   )
-  S4_register_union_member_extensions(class$classes, members, env)
+  S4_register_union_member_extensions(class$classes, members, name, env)
   name
 }
 
@@ -201,7 +201,18 @@ S4_union_class <- function(x, S4_env) {
 }
 
 S4_union_name <- function(x, S4_env) {
-  paste0(vcapply(x$classes, S4_class, S4_env = S4_env), collapse = "_OR_")
+  paste0(
+    vcapply(x$classes, S4_union_name_member, S4_env = S4_env),
+    collapse = "_OR_"
+  )
+}
+
+S4_union_name_member <- function(x, S4_env) {
+  if (is_S4_class(x)) {
+    return(S4_class_key(x@className))
+  }
+
+  S4_class(x, S4_env)
 }
 
 S4_union_member_classes <- function(x, S4_env, register = FALSE) {
@@ -218,28 +229,43 @@ S4_union_member_class <- function(x, S4_env, register = FALSE) {
     return(S4_class(x, S4_env))
   }
 
-  if (!S4_class_needs_identity(x@className, S4_env)) {
+  if (!S4_union_member_needs_identity(x@className)) {
     return(x@className)
   }
 
   name <- S4_class_name(x)
-  if (register && !methods::isClass(name, where = S4_env)) {
-    methods::setClass(name, contains = "VIRTUAL", where = S4_env)
+  if (register) {
+    if (!methods::isClass(name, where = S4_env)) {
+      methods::setClass(name, contains = "VIRTUAL", where = S4_env)
+    }
+    return(name)
   }
-  name
+  if (methods::isClass(name, where = S4_env)) {
+    return(name)
+  }
+
+  x@className
 }
 
-S4_register_union_member_extensions <- function(classes, members, S4_env) {
+S4_register_union_member_extensions <- function(
+  classes,
+  members,
+  union,
+  S4_env
+) {
   for (i in seq_along(classes)) {
-    S4_register_union_member_extension(classes[[i]], members[[i]], S4_env)
+    S4_register_union_member_extension(
+      classes[[i]],
+      members[[i]],
+      union,
+      S4_env
+    )
   }
   invisible()
 }
 
-S4_register_union_member_extension <- function(class, member, S4_env) {
-  if (
-    !is_S4_class(class) || !S4_class_needs_identity(class@className, S4_env)
-  ) {
+S4_register_union_member_extension <- function(class, member, union, S4_env) {
+  if (!is_S4_class(class) || !S4_union_member_needs_identity(class@className)) {
     return(invisible())
   }
 
@@ -260,6 +286,29 @@ S4_register_union_member_extension <- function(class, member, S4_env) {
     classDef = class,
     test = S4_class_package_test(package)
   ))
+  S4_prune_union_subclass(union, class@className, S4_env)
+  invisible()
+}
+
+S4_union_member_needs_identity <- function(class) {
+  package <- attr(class, "package", exact = TRUE)
+  !is.null(package) &&
+    !identical(package, ".GlobalEnv") &&
+    !(identical(package, "methods") && class %in% S4_methods_class_names())
+}
+
+# setIs() adds a transitive bare-class subclass entry to the union. Class
+# unions match those names without respecting the conditional package test, so
+# remove it and let objects reach the union through the identity shim.
+S4_prune_union_subclass <- function(union, class, S4_env) {
+  class <- as.character(class)
+  union_def <- methods::getClass(union, where = S4_env)
+  if (!class %in% names(union_def@subclasses)) {
+    return(invisible())
+  }
+
+  union_def@subclasses[[class]] <- NULL
+  methods::setClass(Class = union, representation = union_def, where = S4_env)
   invisible()
 }
 
