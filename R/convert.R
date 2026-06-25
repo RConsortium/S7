@@ -196,9 +196,10 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     } else {
       character()
     }
+    class_attrs <- c("_S7_class", setdiff("S7_class", to_props))
     from <- zap_attr(
       from,
-      c(setdiff(from_props, to_props), s4_slot_attrs, "_S7_class", "S7_class")
+      c(setdiff(from_props, to_props), s4_slot_attrs, class_attrs)
     )
     attr(from, "_S7_class") <- to
     if (is_s4_subclass) {

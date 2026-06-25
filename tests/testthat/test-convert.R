@@ -69,6 +69,27 @@ test_that("fallback convert can convert to super class", {
   expect_equal(attr(obj, "y"), NULL)
 })
 
+test_that("fallback convert preserves S7_class property when upcasting", {
+  local_methods(convert)
+  Parent := new_class(
+    properties = list(S7_class = class_numeric),
+    package = NULL
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(x = class_character),
+    package = NULL
+  )
+
+  child <- Child(S7_class = 1, x = "a")
+  parent <- convert(child, to = Parent)
+
+  expect_equal(S7_class(parent), Parent)
+  expect_equal(prop(parent, "S7_class"), 1)
+  expect_equal(props(parent), list(S7_class = 1))
+  expect_null(attr(parent, "x", exact = TRUE))
+})
+
 test_that("fallback convert can convert to subclass", {
   local_methods(convert)
   Foo := new_class(properties = list(x = class_numeric))
