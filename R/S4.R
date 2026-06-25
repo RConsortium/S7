@@ -841,7 +841,14 @@ S4_strip_data_part_identity <- function(x) {
 S4_initialize_values <- function(object) {
   if (isS4(object)) {
     slots <- methods::slotNames(object)
-    stats::setNames(lapply(slots, methods::slot, object = object), slots)
+    values <- stats::setNames(
+      lapply(slots, methods::slot, object = object),
+      slots
+    )
+    if (is_S4_data_part_object(object)) {
+      values$.Data <- S4_data_part(object)
+    }
+    values
   } else if (S7_inherits(object)) {
     props(object)
   } else {
@@ -873,8 +880,7 @@ S4_initialize_data_part <- function(value, object) {
 S4_data_part_protected_attributes <- function(object) {
   c(
     methods::slotNames(object),
-    prop_storage_names(object),
-    prop_names(object),
+    if (has_S7_class(object)) prop_storage_names(object),
     "class",
     "_S7_class",
     "S7_class"

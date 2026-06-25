@@ -1762,6 +1762,43 @@ test_that("S4 subclass validation preserves concrete class package", {
   })
 })
 
+test_that("S7 validation preserves S4 parent package during coercion", {
+  pkg_env <- local_package("s4regvalidcoercepkg")
+  defer({
+    suppressMessages({
+      S4_remove_classes(c(
+        "S4regValidityCoerceParent",
+        "S4regValidityCoerceChild"
+      ))
+      S4_remove_classes("S4regValidityCoerceParent", pkg_env)
+    })
+  })
+
+  setClass("S4regValidityCoerceParent", slots = list(x = "character"))
+  pkg_parent <- methods::setClass(
+    "S4regValidityCoerceParent",
+    contains = "numeric",
+    where = pkg_env
+  )
+  methods::setValidity(
+    pkg_parent@className,
+    function(object) {
+      if (!identical(as.vector(object), 1)) {
+        "package parent saw wrong data"
+      } else {
+        TRUE
+      }
+    },
+    where = pkg_env
+  )
+  S4regValidityCoerceChild := new_class(
+    parent = pkg_parent,
+    package = NULL
+  )
+
+  expect_no_error(S4regValidityCoerceChild(.Data = 1))
+})
+
 test_that("S4 initialization validates after S4-only slots are set", {
   defer(S4_remove_classes(c(
     "S4regInitValidityParent",
@@ -1971,6 +2008,26 @@ test_that("S4 initialize strips S7 metadata from data parts", {
   expect_identical(methods::validObject(out), TRUE)
 })
 
+test_that("S4 data-part initialization preserves data attributes", {
+  defer(S4_remove_classes(c(
+    "S4regDataPartAttrsChild",
+    "S4regDataPartAttrsParent"
+  )))
+
+  setClass("S4regDataPartAttrsParent", contains = "numeric")
+  S4regDataPartAttrsChild := new_class(
+    parent = getClass("S4regDataPartAttrsParent"),
+    package = NULL
+  )
+
+  object <- S4regDataPartAttrsChild(.Data = c(a = 1))
+  expect_equal(S7_data(object), c(a = 1))
+
+  source <- methods::new("S4regDataPartAttrsParent", .Data = c(b = 2))
+  out <- methods::initialize(object, source)
+  expect_equal(S7_data(out), c(b = 2))
+})
+
 test_that("S4 initialize ignores data-part attributes that collide with slots", {
   defer(S4_remove_classes(c(
     "S4regDataAttrParent",
@@ -2030,6 +2087,32 @@ test_that("S4 data part constructors use the .Data argument", {
   prop(object, ".Data") <- 2
   expect_equal(as.vector(object), 2)
   expect_equal(prop(object, ".Data"), 2)
+  expect_null(attr(object, ".Data", exact = TRUE))
+  expect_true(methods::validObject(object))
+})
+
+test_that("S4 data part constructors seed abstract descendants with .Data", {
+  defer(S4_remove_classes(c(
+    "S4regAbstractDataPartChild",
+    "S4regAbstractDataPart",
+    "S4regAbstractDataPartParent"
+  )))
+
+  setClass("S4regAbstractDataPartParent", contains = c("numeric", "VIRTUAL"))
+  S4regAbstractDataPart := new_class(
+    parent = getClass("S4regAbstractDataPartParent"),
+    abstract = TRUE,
+    package = NULL
+  )
+  S4regAbstractDataPartChild := new_class(
+    parent = S4regAbstractDataPart,
+    package = NULL
+  )
+
+  object <- S4regAbstractDataPartChild(.Data = 1)
+
+  expect_equal(as.vector(object), 1)
+  expect_equal(prop(object, ".Data"), 1)
   expect_null(attr(object, ".Data", exact = TRUE))
   expect_true(methods::validObject(object))
 })
@@ -2153,6 +2236,31 @@ test_that("S7_data() reads and writes S4 subclass data parts", {
   expect_equal(S7_data(object), c(b = 2))
   expect_equal(prop(object, "y"), "a")
   expect_equal(methods::slot(object, "z"), TRUE)
+  expect_identical(methods::validObject(object), TRUE)
+})
+
+test_that("S7_data() keeps data attributes that match renamed S7 properties", {
+  defer(S4_remove_classes(c(
+    "S4regS7DataNameAttrChild",
+    "S4regS7DataNameAttrParent"
+  )))
+
+  setClass("S4regS7DataNameAttrParent", contains = "numeric")
+  S4regS7DataNameAttrChild := new_class(
+    parent = getClass("S4regS7DataNameAttrParent"),
+    properties = list(names = class_character),
+    package = NULL
+  )
+
+  object <- S4regS7DataNameAttrChild(.Data = c(a = 1), names = "prop")
+
+  expect_equal(S7_data(object), c(a = 1))
+  expect_equal(prop(object, "names"), "prop")
+
+  S7_data(object) <- c(b = 2)
+
+  expect_equal(S7_data(object), c(b = 2))
+  expect_equal(prop(object, "names"), "prop")
   expect_identical(methods::validObject(object), TRUE)
 })
 

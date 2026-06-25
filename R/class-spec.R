@@ -258,7 +258,7 @@ S4_validate_old_class <- function(class, object, skip = character()) {
     if (is.function(validity)) {
       errors <- c(
         errors,
-        any_strings(validity(methods::as(object, super_class)))
+        any_strings(validity(S4_as_validity_class(object, super_def)))
       )
       if (length(errors)) {
         break
@@ -271,7 +271,7 @@ S4_validate_old_class <- function(class, object, skip = character()) {
     if (length(errors) == 0L && is.function(validity)) {
       errors <- c(
         errors,
-        any_strings(validity(methods::as(object, class@className)))
+        any_strings(validity(S4_as_validity_class(object, class)))
       )
     }
   }
@@ -281,6 +281,26 @@ S4_validate_old_class <- function(class, object, skip = character()) {
   } else {
     errors
   }
+}
+
+S4_as_validity_class <- function(object, class) {
+  if (isS4(object) || !has_S7_class(object) || class@virtual) {
+    return(methods::as(object, S4_class_coerce_name(class)))
+  }
+
+  value <- methods::new(class)
+  values <- S4_initialize_values(object)
+  slots <- intersect(names(values), methods::slotNames(value))
+  for (name in slots) {
+    methods::slot(value, name) <- values[[name]]
+  }
+  value
+}
+
+S4_class_coerce_name <- function(class) {
+  name <- class@className
+  attr(name, "package") <- class@package
+  name
 }
 
 #' Format a class specification as a string

@@ -30,7 +30,8 @@ new_constructor <- function(
     arg_info <- constructor_args(parent, all_props, envir, package)
     force_args <- as_names(names(arg_info$self))
 
-    s4_data_part <- is_S4_class(parent) && ".Data" %in% names(parent@slots)
+    s4_parent <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+    s4_data_part <- !is.null(s4_parent) && ".Data" %in% names(s4_parent@slots)
     self_arg_names <- names(arg_info$self)
     parent_call <- if (s4_data_part) {
       self_arg_names <- setdiff(self_arg_names, ".Data")
