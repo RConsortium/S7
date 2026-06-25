@@ -12,7 +12,7 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
 })
 
 test_that("S4_register registers S7 classes with base parents", {
-  defer(S4_remove_classes("S4regS7Integer"))
+  defer(S4_remove_classes(c("S4regS7IntegerChild", "S4regS7Integer")))
 
   S4regS7Integer := new_class(parent = class_integer, package = NULL)
 
@@ -24,6 +24,45 @@ test_that("S4_register registers S7 classes with base parents", {
   expect_true(methods::is(object, "integer"))
   expect_true(methods::is(object, "S7_object"))
   expect_true(methods::validObject(object))
+
+  methods::setClass(
+    "S4regS7IntegerChild",
+    contains = S4_contains(S4regS7Integer),
+    slots = list(y = "character")
+  )
+  child <- methods::new("S4regS7IntegerChild", .Data = 2L, y = "child")
+
+  expect_equal(S7_class(child), S4regS7Integer)
+  expect_equal(S7_inherits(child, S4regS7Integer), TRUE)
+  expect_equal(methods::is(child, "S7_object"), TRUE)
+  expect_equal(S7_data(child), 2L)
+  expect_equal(methods::slot(child, "y"), "child")
+  expect_equal(methods::validObject(child), TRUE)
+})
+
+test_that("S4_register constructs S4 subclasses with S3 data-part parents", {
+  defer(S4_remove_classes(c("S4regS7FactorChild", "S4regS7Factor")))
+
+  S4regS7Factor := new_class(parent = class_factor, package = NULL)
+  S4_register(S4regS7Factor)
+  methods::setClass(
+    "S4regS7FactorChild",
+    contains = S4_contains(S4regS7Factor),
+    slots = list(y = "character")
+  )
+  child <- methods::new(
+    "S4regS7FactorChild",
+    .Data = 1L,
+    levels = "a",
+    y = "child"
+  )
+
+  expect_equal(S7_class(child), S4regS7Factor)
+  expect_equal(S7_inherits(child, S4regS7Factor), TRUE)
+  expect_equal(methods::is(child, "S7_object"), TRUE)
+  expect_equal(methods::slot(child, ".Data"), 1L)
+  expect_equal(methods::slot(child, "levels"), "a")
+  expect_equal(methods::slot(child, "y"), "child")
 })
 
 test_that("S4_register registers S7 property classes", {

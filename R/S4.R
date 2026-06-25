@@ -554,6 +554,7 @@ S4_register_class <- function(class, env = parent.frame()) {
   where <- topenv(env)
   class_name <- S7_class_name(class)
   parent_class_name <- S4_reified_parent_class(class, where)
+  old_classes <- S4_reified_old_classes(class)
   parent_slot_names <- character()
   if (!is.null(parent_class_name)) {
     parent_slot_names <- S4_slot_names(parent_class_name, where)
@@ -578,6 +579,9 @@ S4_register_class <- function(class, env = parent.frame()) {
   if (needs_S7_class_slot) {
     slots$`_S7_class` <- "S7_class"
   }
+  if (S4_needs_S3_class_slot(class, parent_slot_names, old_classes)) {
+    slots$.S3Class <- "character"
+  }
   contains <- S4_contains_classes(parent_class_name, where)
 
   methods::setClass(
@@ -593,16 +597,17 @@ S4_register_class <- function(class, env = parent.frame()) {
     where = where
   )
 
-  old_classes <- S4_reified_old_classes(class)
   if (class@abstract) {
     if (!S7_extends_S4(class)) {
       methods::setOldClass(old_classes, S4Class = class_name, where = where)
+      S4_set_S7_object_extension(class_name, old_classes, where)
       S4_set_S3_class_prototype(class_name, old_classes, where)
     }
     return(class_name)
   }
 
   methods::setOldClass(old_classes, S4Class = class_name, where = where)
+  S4_set_S7_object_extension(class_name, old_classes, where)
   S4_set_S3_class_prototype(class_name, old_classes, where)
   methods::setValidity(class_name, S4_validate_class, where = where)
   methods::setMethod(
@@ -613,6 +618,33 @@ S4_register_class <- function(class, env = parent.frame()) {
   )
 
   class_name
+}
+
+S4_needs_S3_class_slot <- function(class, parent_slot_names, old_classes) {
+  if (!"S7_object" %in% old_classes || ".S3Class" %in% parent_slot_names) {
+    return(FALSE)
+  }
+
+  is_base_class(base_parent(class)) || ".Data" %in% parent_slot_names
+}
+
+S4_set_S7_object_extension <- function(class_name, old_classes, where) {
+  if (!"S7_object" %in% old_classes) {
+    return(invisible())
+  }
+
+  class <- methods::getClass(class_name, where = where)
+  if (methods::extends(class, "S7_object")) {
+    return(invisible())
+  }
+
+  methods::setIs(
+    class_name,
+    "S7_object",
+    where = where,
+    classDef = class
+  )
+  invisible()
 }
 
 S4_class_needs_identity <- function(class, where) {
