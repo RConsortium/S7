@@ -131,14 +131,13 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 # hooks -------------------------------------------------------------------
 
 .onAttach <- function(libname, pkgname) {
-  env <- as.environment(paste0("package:", pkgname))
-  if (getRversion() < "4.3.0") {
-    env[[".conflicts.OK"]] <- TRUE
-  }
+  activate_bind_compatibility()
+  activate_attach_compatibility(pkgname)
 }
 
 .onLoad <- function(...) {
   activate_backward_compatiblility()
+  activate_bind_compatibility()
 
   on_load_define_environment()
   on_load_define_S7_generic()

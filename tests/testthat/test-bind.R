@@ -42,3 +42,76 @@ test_that(":= validates its inputs", {
     foo := no_name()
   })
 })
+
+test_that("S7 := wins search-path conflicts without attach warnings", {
+  skip_if(quick_test())
+
+  tmp_lib <- local_libpath()
+  install.packages(
+    pkgs = normalizePath(test_path("..", "..")),
+    lib = tmp_lib,
+    repos = NULL,
+    type = "source",
+    quiet = TRUE,
+    INSTALL_opts = c(
+      "--data-compress=none",
+      "--no-byte-compile",
+      "--no-data",
+      "--no-demo",
+      "--no-docs",
+      "--no-help",
+      "--no-html",
+      "--use-vanilla"
+    )
+  )
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  check_order <- function(package, order) {
+    expect_no_error(callr::r(
+      function(package, order) {
+        messages <- character()
+        warnings <- character()
+
+        withCallingHandlers(
+          {
+            if (identical(order, "S7-first")) {
+              library(S7)
+              library(package, character.only = TRUE)
+            } else {
+              library(package, character.only = TRUE)
+              library(S7)
+            }
+          },
+          packageStartupMessage = function(cnd) {
+            messages <<- c(messages, conditionMessage(cnd))
+            invokeRestart("muffleMessage")
+          },
+          warning = function(cnd) {
+            warnings <<- c(warnings, conditionMessage(cnd))
+            invokeRestart("muffleWarning")
+          }
+        )
+
+        stopifnot(exprs = {
+          identical(get(":=", mode = "function"), S7::`:=`)
+          !any(grepl(":=", messages, fixed = TRUE))
+          !any(grepl(":=", warnings, fixed = TRUE))
+        })
+      },
+      args = list(package = package, order = order)
+    ))
+  }
+
+  for (package in packages) {
+    check_order(package, "S7-first")
+    check_order(package, "alias-first")
+  }
+})
