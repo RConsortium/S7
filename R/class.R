@@ -274,7 +274,7 @@ class_is_abstract <- function(class) {
   if (is_class(class)) {
     class@abstract
   } else if (is_S3_class(class)) {
-    class$abstract %||% is_S3_stub_constructor(class$constructor)
+    class$abstract %||% is_default_constructor(class$constructor)
   } else {
     FALSE
   }
