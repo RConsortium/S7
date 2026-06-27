@@ -220,8 +220,9 @@ class_validate <- function(class, object) {
     if (isS4(object)) {
       check <- methods::validObject(object, test = TRUE)
       return(if (isTRUE(check)) NULL else check)
+    } else {
+      return(NULL)
     }
-    return(NULL)
   }
 
   validator <- switch(
