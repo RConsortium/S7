@@ -2,24 +2,49 @@
 % Please edit documentation in R/S4.R
 \name{S4_register}
 \alias{S4_register}
-\title{Register an S7 or S3 class with S4}
+\alias{S4_contains}
+\title{Register an S7, S3, or union class with S4}
 \usage{
 S4_register(class, env = parent.frame())
+
+S4_contains(class, env = parent.frame())
 }
 \arguments{
-\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or an S3 class created
-with \code{\link[=new_S3_class]{new_S3_class()}}.}
+\item{class}{An S7 class created with \code{\link[=new_class]{new_class()}}, or, for
+\code{S4_register()} only, an S3 class created with \code{\link[=new_S3_class]{new_S3_class()}} or an S7
+union created with \code{\link[=new_union]{new_union()}}.}
 
 \item{env}{Expert use only. Environment where S4 class will be registered.}
 }
 \value{
-Nothing; the function is called for its side-effect.
+Called for its side effects and invisibly returns the registered S4 class
+name.
 }
 \description{
 If you want to use \link{method<-} to register a method for an S4 generic with
-an S7 class or an S3 class (created by \code{\link[=new_S3_class]{new_S3_class()}}), you need to call
-\code{S4_register()} once.
+an S7 class that does not extend an S4 class, or an S3 class created by
+\code{\link[=new_S3_class]{new_S3_class()}}, you need to call \code{S4_register()} once. Classes created by
+\code{\link[=new_class]{new_class()}} with an S4 parent are registered automatically.
 }
+\section{Details}{
+
+\code{S4_register()} registers an S7 class, S3 class, or S7 union with S4 and
+invisibly returns the registered S4 class name.
+For S7 classes, this creates a virtual S4 old class that exposes stored S7
+properties as S4 slots and carries the \code{_S7_class} slot needed for S7 dispatch
+and validation.
+
+After registration, \code{S4_contains()} returns the virtual S4 class name to use
+when an S4 class should extend an S7 class with
+\code{methods::setClass(contains = )}. It asserts that the S7 properties can
+safely cross the S4 inheritance boundary.
+
+Register S7 unions with \code{S4_register()} before using them in S4 slots or
+method signatures unless an equivalent S4 union already exists.
+
+See \code{vignette("compatibility")} for examples and caveats.
+}
+
 \examples{
 methods::setGeneric("S4_generic", function(x) {
   standardGeneric("S4_generic")
@@ -30,4 +55,9 @@ S4_register(Foo)
 method(S4_generic, Foo) <- function(x) "Hello"
 
 S4_generic(Foo())
+
+S4Foo := new_class(properties = list(x = class_numeric), package = "S7")
+S4_register(S4Foo)
+S4Foo_S4 <- S4_contains(S4Foo)
+methods::setClass("S4Child", contains = S4Foo_S4)
 }

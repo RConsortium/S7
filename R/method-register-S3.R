@@ -29,6 +29,10 @@ register_S3_method <- function(
     envir <- environment(generic$generic) %||% envir
     registerS3method(generic$name, class, method, envir)
   }
+
+  if (should_register_S4_method(generic, signature)) {
+    register_S4_method(generic$name, signature, method, envir, call = call)
+  }
 }
 
 # `registerS3method()` registers into the S3 methods table of

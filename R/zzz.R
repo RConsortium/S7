@@ -22,6 +22,7 @@ S7_object <- new_class(
   }
 )
 methods::setOldClass("S7_object")
+methods::setOldClass(c("S7_class", "S7_object"))
 
 .S7_type <- NULL
 # Defined onLoad because it depends on R version
