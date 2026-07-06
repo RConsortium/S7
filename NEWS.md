@@ -2,6 +2,7 @@
 
 * New `:=` operator creates and names an object in one step, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")` (#658).
 * The class object that S7 stores on each instance now lives in the `_S7_class` attribute (previously `S7_class`), moving it into the `_`-prefixed namespace reserved for S7 internals so it can't collide with a user-defined property. Objects created by an older version of S7 (e.g. serialised to disk or baked into another package's lazy-load database) continue to work, as S7 falls back to the old attribute name when reading them (#677).
+* S7 and S4 now interoperate through inheritance. `new_class()` can use an S4 class as a parent, mapping S4 slots to S7 properties and registering the class with S4 automatically. Conversely, `S4_register()` registers an S7 class with S4, and `S4_contains()` returns an S4 class name suitable for `methods::setClass(contains = )`, exposing stored S7 properties as S4 slots for S4 subclasses. This support includes S4 initialization and validity integration, and S4/internal generic registration where needed; see `vignette("compatibility")` for caveats (#456).
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).

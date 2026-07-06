@@ -6,7 +6,11 @@ new_constructor <- function(
 ) {
   properties <- as_properties(properties)
 
-  if (identical(parent, S7_object) || (is_class(parent) && parent@abstract)) {
+  if (
+    identical(parent, S7_object) ||
+      is_S4_class(parent) ||
+      (is_class(parent) && parent@abstract)
+  ) {
     # There's no parent constructor to delegate to, so the constructor must
     # handle all properties: inherited and newly declared (which win).
     all_props <- modify_list(
@@ -17,11 +21,21 @@ new_constructor <- function(
     arg_info <- constructor_args(parent, all_props, envir, package)
     self_args <- as_names(names(arg_info$self))
 
+    s4_data_part <- is_S4_class(parent) && ".Data" %in% names(parent@slots)
+    parent_call <- if (s4_data_part) {
+      bquote(
+        methods::getClass(.(as.character(parent@className)))@prototype@.Data
+      )
+    } else if (has_S7_symbols(envir, "S7_object")) {
+      quote(S7_object())
+    } else {
+      quote(S7::S7_object())
+    }
     new_object_call <-
-      if (has_S7_symbols(envir, "new_object", "S7_object")) {
-        bquote(new_object(S7_object(), ..(self_args)), splice = TRUE)
+      if (has_S7_symbols(envir, "new_object")) {
+        bquote(new_object(.(parent_call), ..(self_args)), splice = TRUE)
       } else {
-        bquote(S7::new_object(S7::S7_object(), ..(self_args)), splice = TRUE)
+        bquote(S7::new_object(.(parent_call), ..(self_args)), splice = TRUE)
       }
 
     return(new_function(

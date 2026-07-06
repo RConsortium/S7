@@ -107,24 +107,6 @@
       Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
-# S7 classes can't inherit from S4 or class unions
-
-    Code
-      new_class("test", parent = parentS4)
-    Condition
-      Error in `new_class()`:
-      ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
-    Code
-      new_class("test", parent = new_union("character"))
-    Condition
-      Error in `as_class()`:
-      ! Can't convert `..1` to a valid class.
-      Class specification must be one of the following, not a <character>:
-       * An S7 class object
-       * An S3 class object (from `new_S3_class()`)
-       * An S4 class object
-       * A base class
-
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code
@@ -322,4 +304,3 @@
     Condition
       Error:
       ! No S7 class for base type <pairlist>.
-
