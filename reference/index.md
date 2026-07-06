@@ -46,6 +46,8 @@
 
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md) :
   Convert an object from one type to another
+- [`convert_lazy()`](https://rconsortium.github.io/S7/reference/convert_lazy.md)
+  : Non-strict conversion
 - [`class_missing`](https://rconsortium.github.io/S7/reference/class_missing.md)
   : Dispatch on a missing argument
 - [`class_any`](https://rconsortium.github.io/S7/reference/class_any.md)

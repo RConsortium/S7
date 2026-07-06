@@ -50,6 +50,13 @@
   class that inherits from `from`’s class. The base/S3 value is now
   passed as `.data` to the `to` constructor
   ([\#537](https://github.com/RConsortium/S7/issues/537)).
+- New
+  [`convert_lazy()`](https://rconsortium.github.io/S7/reference/convert_lazy.md)
+  is a non-strict variant of
+  [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  that returns `from` unchanged if it already inherits from `to`,
+  preserving any extra properties instead of stripping them
+  ([\#428](https://github.com/RConsortium/S7/issues/428)).
 - `method<-` now works for double-dispatch operators (e.g. `+`, `==`,
   `%*%`) with plain S3 or S4 classes, even when neither operand is an S7
   object ([\#544](https://github.com/RConsortium/S7/issues/544)).

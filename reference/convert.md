@@ -82,6 +82,12 @@ convert(from, to, ...)
 Either `from` coerced to class `to`, or an error if the coercion is not
 possible.
 
+## See also
+
+[`convert_lazy()`](https://rconsortium.github.io/S7/reference/convert_lazy.md)
+for a non-strict variant that leaves `from` unchanged when it already
+inherits from `to`.
+
 ## Examples
 
 ``` r
