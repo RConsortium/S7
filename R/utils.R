@@ -136,6 +136,10 @@ str_nest <- function(
 
 str_function <- function(object, ..., nest.lev = 0) {
   attr(object, "srcref") <- NULL
+  # Display S7-generated constructors like any other function
+  if (inherits(object, "S7_constructor")) {
+    class(object) <- NULL
+  }
   if (identical(class(object), "function")) {
     cat(" ")
   }

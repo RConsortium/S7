@@ -97,12 +97,13 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     check_S3_constructor(constructor)
   } else {
     abstract <- TRUE
-    constructor <- function(.data) {
-      stop2(
-        sprintf("S3 class <%s> doesn't have a constructor.", class[[1]]),
+    constructor <- new_S7_constructor(new_function(
+      args = alist(.data = ),
+      body = bquote(stop2(
+        sprintf("S3 class <%s> doesn't have a constructor.", .(class[[1]])),
         call = NULL
-      )
-    }
+      ))
+    ))
   }
 
   out <- list(
@@ -145,21 +146,6 @@ check_S3_constructor <- function(constructor, call = sys.call(-1L)) {
 
 is_S3_class <- function(x) {
   inherits(x, "S7_S3_class")
-}
-
-# Detect the stub constructor that `new_S3_class()` inserts when no constructor
-# is supplied. Needed as a fallback for `S7_S3_class` objects created by older
-# versions of S7.
-is_S3_stub_constructor <- function(constructor) {
-  if (!is.function(constructor)) {
-    return(FALSE)
-  }
-  call <- find_call(body(constructor), quote(sprintf))
-  if (is.null(call)) {
-    return(FALSE)
-  }
-  fmt <- call[[2]]
-  is.character(fmt) && grepl("doesn't have a constructor", fmt, fixed = TRUE)
 }
 
 # -------------------------------------------------------------------------
@@ -324,10 +310,10 @@ validate_formula <- function(self) {
 #' @order 3
 class_factor <- new_S3_class(
   "factor",
-  constructor = function(.data = integer(), levels = NULL) {
+  constructor = new_S7_constructor(function(.data = integer(), levels = NULL) {
     levels <- levels %||% attr(.data, "levels", TRUE) %||% character()
     structure(.data, levels = levels, class = "factor")
-  },
+  }),
   validator = validate_factor
 )
 
@@ -337,9 +323,9 @@ class_factor <- new_S3_class(
 #' @order 3
 class_Date <- new_S3_class(
   "Date",
-  constructor = function(.data = double()) {
+  constructor = new_S7_constructor(function(.data = double()) {
     .Date(.data)
-  },
+  }),
   validator = validate_date
 )
 
@@ -349,9 +335,9 @@ class_Date <- new_S3_class(
 #' @order 3
 class_POSIXct <- new_S3_class(
   c("POSIXct", "POSIXt"),
-  constructor = function(.data = double(), tz = "") {
+  constructor = new_S7_constructor(function(.data = double(), tz = "") {
     .POSIXct(.data, tz = tz)
-  },
+  }),
   validator = validate_POSIXct
 )
 
@@ -361,9 +347,9 @@ class_POSIXct <- new_S3_class(
 #' @order 3
 class_POSIXlt <- new_S3_class(
   c("POSIXlt", "POSIXt"),
-  constructor = function(.data = NULL, tz = "") {
+  constructor = new_S7_constructor(function(.data = NULL, tz = "") {
     as.POSIXlt(.data, tz = tz)
-  },
+  }),
   validator = validate_POSIXlt
 )
 
@@ -379,7 +365,7 @@ class_POSIXt <- new_S3_class("POSIXt") # abstract class
 #' @order 3
 class_data.frame <- new_S3_class(
   "data.frame",
-  constructor = function(.data = list(), row.names = NULL) {
+  constructor = new_S7_constructor(function(.data = list(), row.names = NULL) {
     if (is.null(row.names)) {
       list2DF(.data)
     } else {
@@ -387,7 +373,7 @@ class_data.frame <- new_S3_class(
       attr(out, "row.names") <- row.names
       out
     }
-  },
+  }),
   validator = validate_data.frame
 )
 
@@ -397,7 +383,7 @@ class_data.frame <- new_S3_class(
 #  @order 3
 class_matrix <- new_S3_class(
   "matrix",
-  constructor = function(
+  constructor = new_S7_constructor(function(
     .data = logical(),
     nrow = NULL,
     ncol = NULL,
@@ -412,7 +398,7 @@ class_matrix <- new_S3_class(
       }
     }
     matrix(.data, nrow, ncol, byrow, dimnames)
-  },
+  }),
   validator = validate_matrix
 )
 
@@ -422,13 +408,13 @@ class_matrix <- new_S3_class(
 #  @order 3
 class_array <- new_S3_class(
   "array",
-  constructor = function(
+  constructor = new_S7_constructor(function(
     .data = logical(),
     dim = base::dim(.data) %||% length(.data),
     dimnames = base::dimnames(.data)
   ) {
     array(.data, dim, dimnames)
-  },
+  }),
   validator = validate_array
 )
 
@@ -438,8 +424,10 @@ class_array <- new_S3_class(
 #' @order 3
 class_formula <- new_S3_class(
   "formula",
-  constructor = function(.data = NULL, env = parent.frame()) {
-    stats::formula(.data, env = env)
-  },
+  constructor = new_S7_constructor(
+    function(.data = NULL, env = parent.frame()) {
+      stats::formula(.data, env = env)
+    }
+  ),
   validator = validate_formula
 )
