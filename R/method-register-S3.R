@@ -5,6 +5,7 @@ register_S3_method <- function(
   envir = parent.frame(),
   call = sys.call(-1L)
 ) {
+  S4_envir <- envir
   sig <- signature[[1]]
 
   class <- switch(
@@ -31,7 +32,7 @@ register_S3_method <- function(
   }
 
   if (should_register_S4_method(generic, signature)) {
-    register_S4_method(generic$name, signature, method, envir, call = call)
+    register_S4_method(generic$name, signature, method, S4_envir, call = call)
   }
 }
 
