@@ -299,6 +299,15 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
+test_that("new_object() can be forced lazily from a constructor", {
+  Foo := new_class(
+    constructor = function() identity(new_object(S7_object())),
+    package = NULL
+  )
+
+  expect_equal(S7_class(Foo()), Foo)
+})
+
 test_that("new_object() errors if `_parent` doesn't inherit from the parent class (#409)", {
   Bar := new_class(package = NULL)
   # `_parent` should be `Bar()`, not the class spec `Bar`
