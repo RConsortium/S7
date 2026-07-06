@@ -18,6 +18,7 @@
 #'   There are four options:
 #'
 #'   * An S7 class, like [S7_object].
+#'   * An S4 class, like the result of [methods::getClass()].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
 #'   * A class from another package, wrapped by [new_external_class()].
@@ -56,6 +57,17 @@
 #'   belong to each instance of the class. Each element of the list can
 #'   either be a type specification (processed by [as_class()]) or a
 #'   full property specification created [new_property()].
+#' @section S4 compatibility:
+#' `new_class()` can use an S4 class definition or class generator as its
+#' `parent`. S4 parent slots become S7 properties, the class is registered with
+#' S4 automatically, and S4 generics can dispatch through the S4 parent.
+#'
+#' S7 objects that directly extend S4 are represented as S3 old-class objects,
+#' so `isS4()` is `FALSE` even though [methods::is()] and S4 dispatch see the
+#' S4 parent. S4 classes can extend S7 classes by calling
+#' [S4_contains()] in `methods::setClass(contains = )`.
+#'
+#' See `vignette("compatibility")` for examples and caveats.
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
@@ -135,23 +147,28 @@ new_class <- function(
     }
     if (
       abstract &&
-        (!is_class(parent_resolved) ||
-          !(parent_resolved@abstract || parent_resolved@name == "S7_object"))
+        !((is_class(parent_resolved) &&
+          (parent_resolved@abstract || parent_resolved@name == "S7_object")) ||
+          (is_S4_class(parent_resolved) && parent_resolved@virtual))
     ) {
       stop2("Abstract classes must have abstract parents.")
     }
   }
 
-  # Combine properties from parent, overriding as needed
-  parent_props <- attr(parent_resolved, "properties", exact = TRUE) %||% list()
+  parent_props <- class_properties(parent_resolved)
   new_props <- as_properties(properties)
   check_prop_names(new_props)
   check_prop_overrides(new_props, parent_props, name, parent)
 
+  # Combine properties from parent, overriding as needed
+  all_props <- parent_props
+  all_props[names(new_props)] <- new_props
+
   if (is.null(constructor)) {
+    constructor_props <- if (is_S4_class(parent)) all_props else new_props
     constructor <- new_constructor(
       parent,
-      new_props,
+      constructor_props,
       envir = parent.frame(),
       package = package
     )
@@ -162,13 +179,17 @@ new_class <- function(
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
-  attr(object, "properties") <- modify_list(parent_props, new_props)
+  attr(object, "properties") <- all_props
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
 
-  global_variables(names(new_props))
+  if (S7_extends_S4(object)) {
+    S4_register_subclass(object, env = parent.frame())
+  }
+
+  global_variables(names(all_props))
   object
 }
 globalVariables(c(
@@ -261,7 +282,11 @@ c.S7_class <- function(...) {
 }
 
 can_inherit <- function(x) {
-  is_base_class(x) || is_S3_class(x) || is_class(x) || is_external_class(x)
+  is_base_class(x) ||
+    is_S3_class(x) ||
+    is_class(x) ||
+    is_S4_class(x) ||
+    is_external_class(x)
 }
 
 check_can_inherit <- function(
@@ -271,7 +296,7 @@ check_can_inherit <- function(
 ) {
   if (!can_inherit(x)) {
     msg <- sprintf(
-      "`%s` must be an S7 class, S3 class, or base type, not %s.",
+      "`%s` must be an S7 class, S4 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
@@ -304,6 +329,13 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 
   # Ignore abstract classes since you can't supply an instance
   if (class_is_abstract(parent_class)) {
+    return()
+  }
+
+  # S4 parent compatibility is checked after new_object() installs the S7
+  # class attributes, at which point methods::validObject() can see the
+  # registered oldClass structure.
+  if (is_S4_class(parent_class)) {
     return()
   }
 
@@ -439,7 +471,11 @@ S7_class <- function(object) {
     obj_type(object),
     missing = class_missing,
     S7 = .Call(S7_class_, object),
-    S4 = methods::getClass(class(object)),
+    S4 = if (has_S7_class(object)) {
+      .Call(S7_class_, object)
+    } else {
+      methods::getClass(class(object))
+    },
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
   )

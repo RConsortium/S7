@@ -60,12 +60,17 @@ test_that("S7 classes check inputs", {
   })
 })
 
-test_that("S7 classes can't inherit from S4 or class unions", {
+test_that("S7 classes can inherit from S4 but not class unions", {
   parentS4 := local_S4_class(slots = c(x = "numeric"))
-  expect_snapshot(error = TRUE, {
-    new_class("test", parent = parentS4)
-    new_class("test", parent = new_union("character"))
-  })
+
+  child <- new_class("test", parent = parentS4, package = NULL)
+  expect_s3_class(child, "S7_class")
+  expect_s4_class(child@parent, "classRepresentation")
+  expect_equal(as.character(child@parent@className), "parentS4")
+  expect_error(
+    new_class("test", parent = new_union(class_character)),
+    "`parent` must be an S7 class, S4 class, S3 class, or base type"
+  )
 })
 
 test_that("inheritance combines properties for parent classes", {

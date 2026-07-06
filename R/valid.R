@@ -66,13 +66,25 @@
 validate <- function(object, recursive = TRUE, properties = TRUE) {
   check_is_S7(object)
 
-  parent <- if (!recursive) S7_class(object)@parent
+  parent <- validate_parent(object, recursive)
   validate_from(
     object,
     parent = parent,
     properties = properties,
     call = sys.call()
   )
+}
+
+validate_parent <- function(object, recursive) {
+  if (!recursive) {
+    return(S7_class(object)@parent)
+  }
+
+  if (isS4(object) && has_S7_class(object)) {
+    return(S4_ancestor(S7_class(object)) %||% S7_object)
+  }
+
+  NULL
 }
 
 # validates `object` assuming `parent` (if supplied) has been validated

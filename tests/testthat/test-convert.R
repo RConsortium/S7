@@ -136,6 +136,49 @@ test_that("fallback convert can convert to base type", {
   expect_equal(attr(obj, "x"), NULL)
 })
 
+test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 object", {
+  on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
+  setClass("ParentS4", slots = list(x = "numeric"))
+
+  ChildS7 <- new_class(
+    "ChildS7",
+    parent = getClass("ParentS4"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  child <- ChildS7(x = 10, y = "a")
+  parent <- convert(child, to = getClass("ParentS4"))
+
+  expect_true(isS4(parent))
+  expect_equal(class(parent)[1L], "ParentS4")
+  expect_equal(methods::slot(parent, "x"), 10)
+})
+
+test_that("fallback convert can use explicit S4 coercion via methods::as", {
+  on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
+  setClass("ParentS4", slots = list(x = "numeric"))
+  setClass("UnrelatedS4", slots = list(z = "character"))
+
+  ChildS7 <- new_class(
+    "ChildS7",
+    parent = getClass("ParentS4"),
+    properties = list(y = class_character),
+    package = NULL
+  )
+
+  setAs("ChildS7", "UnrelatedS4", function(from) {
+    new("UnrelatedS4", z = as.character(methods::slot(from, "x")))
+  })
+
+  child <- ChildS7(x = 42, y = "a")
+  res <- convert(child, to = getClass("UnrelatedS4"))
+
+  expect_true(isS4(res))
+  expect_equal(class(res)[1L], "UnrelatedS4")
+  expect_equal(methods::slot(res, "z"), "42")
+})
+
 test_that("is_down_cast() is TRUE only when `to` descends from `from` (#509)", {
   Base := new_class(package = NULL)
   A := new_class(
@@ -244,4 +287,25 @@ test_that("base type fallback sits below user methods and inheritance", {
   expect_false(S7_inherits(obj))
   expect_null(attributes(obj))
   expect_identical(obj, "hi")
+})
+
+test_that("convert_lazy() leaves `from` untouched if it inherits from `to` (#428)", {
+  foo1 := new_class(properties = list(x = class_double))
+  foo2 := new_class(foo1, properties = list(y = class_double))
+
+  obj <- foo2(x = 1, y = 2)
+  expect_identical(convert_lazy(obj, to = foo1), obj)
+  expect_identical(convert_lazy(obj, to = foo2), obj)
+})
+
+test_that("convert_lazy() falls back to convert() when not a subtype", {
+  foo1 := new_class(properties = list(x = class_double))
+  foo2 := new_class(foo1, properties = list(y = class_double))
+
+  # Downcasting still works
+  obj <- convert_lazy(foo1(x = 1), to = foo2, y = 2.5)
+  expect_equal(obj, foo2(x = 1, y = 2.5))
+
+  # As does casting to a different class
+  expect_identical(convert_lazy(1.5, class_character), "1.5")
 })
