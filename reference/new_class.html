@@ -95,7 +95,8 @@ to construct new instances of the class.</p></dd>
 
 <dt id="arg-parent">parent<a class="anchor" aria-label="anchor" href="#arg-parent"></a></dt>
 <dd><p>The parent class to inherit behavior from.
-There are three options:</p><ul><li><p>An S7 class, like <a href="S7_object.html">S7_object</a>.</p></li>
+There are four options:</p><ul><li><p>An S7 class, like <a href="S7_object.html">S7_object</a>.</p></li>
+<li><p>An S4 class, like the result of <code><a href="https://rdrr.io/r/methods/getClass.html" class="external-link">methods::getClass()</a></code>.</p></li>
 <li><p>An S3 class wrapped by <code><a href="new_S3_class.html">new_S3_class()</a></code>.</p></li>
 <li><p>A base type, like <a href="base_classes.html">class_logical</a>, <a href="base_classes.html">class_integer</a>, etc.</p></li>
 </ul></dd>
@@ -158,6 +159,19 @@ programmatically construct an object from a list of property values.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A object constructor, a function that can be used to create objects
 of the given class.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="s-compatibility">S4 compatibility<a class="anchor" aria-label="anchor" href="#s-compatibility"></a></h2>
+
+
+<p><code>new_class()</code> can use an S4 class definition or class generator as its
+<code>parent</code>. S4 parent slots become S7 properties, the class is registered with
+S4 automatically, and S4 generics can dispatch through the S4 parent.</p>
+<p>S7 objects that directly extend S4 are represented as S3 old-class objects,
+so <code><a href="https://rdrr.io/r/base/isS4.html" class="external-link">isS4()</a></code> is <code>FALSE</code> even though <code><a href="https://rdrr.io/r/methods/is.html" class="external-link">methods::is()</a></code> and S4 dispatch see the
+S4 parent. S4 classes can extend S7 classes by calling
+<code><a href="S4_register.html">S4_contains()</a></code> in <code>methods::setClass(contains = )</code>.</p>
+<p>See <code><a href="../articles/compatibility.html">vignette("compatibility")</a></code> for examples and caveats.</p>
     </div>
 
     <div class="section level2">

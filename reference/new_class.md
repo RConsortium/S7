@@ -37,10 +37,13 @@ new_object(`_parent`, ...)
 
 - parent:
 
-  The parent class to inherit behavior from. There are three options:
+  The parent class to inherit behavior from. There are four options:
 
   - An S7 class, like
     [S7_object](https://rconsortium.github.io/S7/reference/S7_object.md).
+
+  - An S4 class, like the result of
+    [`methods::getClass()`](https://rdrr.io/r/methods/getClass.html).
 
   - An S3 class wrapped by
     [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md).
@@ -117,6 +120,24 @@ new_object(`_parent`, ...)
 
 A object constructor, a function that can be used to create objects of
 the given class.
+
+## S4 compatibility
+
+`new_class()` can use an S4 class definition or class generator as its
+`parent`. S4 parent slots become S7 properties, the class is registered
+with S4 automatically, and S4 generics can dispatch through the S4
+parent.
+
+S7 objects that directly extend S4 are represented as S3 old-class
+objects, so [`isS4()`](https://rdrr.io/r/base/isS4.html) is `FALSE` even
+though [`methods::is()`](https://rdrr.io/r/methods/is.html) and S4
+dispatch see the S4 parent. S4 classes can extend S7 classes by calling
+[`S4_contains()`](https://rconsortium.github.io/S7/reference/S4_register.md)
+in `methods::setClass(contains = )`.
+
+See
+[`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md)
+for examples and caveats.
 
 ## Examples
 

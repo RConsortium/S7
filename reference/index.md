@@ -124,4 +124,5 @@ for more details.
 - [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
   : Declare an S3 class
 - [`S4_register()`](https://rconsortium.github.io/S7/reference/S4_register.md)
-  : Register an S7 or S3 class with S4
+  [`S4_contains()`](https://rconsortium.github.io/S7/reference/S4_register.md)
+  : Register an S7, S3, or union class with S4

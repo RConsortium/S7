@@ -94,7 +94,7 @@ of S3. There are two main differences between an S7 object and an S3
 object:</p>
 <ul>
 <li><p>As well as the <code>class</code> attribute possessed by S3
-objects, S7 objects have an additional <code>S7_class</code> attribute
+objects, S7 objects have an additional <code>_S7_class</code> attribute
 that contains the object that defines the class.</p></li>
 <li><p>S7 objects have properties; S3 objects have attributes.
 Properties are implemented on top of attributes, so you can access them
@@ -219,25 +219,160 @@ to be converted to S7 as well.</p>
 <div class="section level2">
 <h2 id="s4">S4<a class="anchor" aria-label="anchor" href="#s4"></a>
 </h2>
-<p>S7 properties are equivalent to S4 slots. The chief difference is
-that they can be dynamic.</p>
+<p>S7 properties play a role similar to S4 slots. The chief difference
+is that S7 properties can be dynamic, while S4 slots are stored fields
+with a declared S4 class.</p>
+<p>S7 and S4 can interoperate in both directions:</p>
 <ul>
-<li>S7 classes can not extend S4 classes</li>
-<li>S4 classes can extend S3 classes</li>
-<li>S7 can register methods for S4 generics and S4 classes</li>
+<li>S7 classes can extend S4 classes.</li>
+<li>S4 classes can extend S7 classes.</li>
+<li>S7 can register methods for S4 generics and S4 classes.</li>
 </ul>
+<div class="section level3">
+<h3 id="s7-classes-that-extend-s4-classes">S7 classes that extend S4 classes<a class="anchor" aria-label="anchor" href="#s7-classes-that-extend-s4-classes"></a>
+</h3>
+<p>To extend an S4 class, supply its class definition or class generator
+as the <code>parent</code> of a new S7 class. The S4 parent slots become
+S7 properties on the new class, and <code><a href="../reference/new_class.html">new_class()</a></code>
+automatically registers the S7 class with S4.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">methods</span><span class="fu">::</span><span class="kw"><a href="https://rdrr.io/r/methods/setClass.html" class="external-link">setClass</a></span><span class="op">(</span><span class="st">"S4Point"</span>,</span>
+<span>  slots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"numeric"</span>, y <span class="op">=</span> <span class="st">"numeric"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">ColoredPoint</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"ColoredPoint"</span>,</span>
+<span>  parent <span class="op">=</span> <span class="fu">methods</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/methods/getClass.html" class="external-link">getClass</a></span><span class="op">(</span><span class="st">"S4Point"</span><span class="op">)</span>,</span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="va">class_character</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pt</span> <span class="op">&lt;-</span> <span class="fu">ColoredPoint</span><span class="op">(</span>x <span class="op">=</span> <span class="fl">1</span>, y <span class="op">=</span> <span class="fl">2</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span></span>
+<span><span class="va">pt</span><span class="op">@</span><span class="va">x</span></span>
+<span><span class="co">#&gt; [1] 1</span></span>
+<span><span class="va">pt</span><span class="op">@</span><span class="va">color</span></span>
+<span><span class="co">#&gt; [1] "red"</span></span>
+<span><span class="fu">methods</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/methods/is.html" class="external-link">is</a></span><span class="op">(</span><span class="va">pt</span>, <span class="st">"S4Point"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>S4 dispatch follows the S4 parent hierarchy, so S4 methods defined
+for the parent can be called on the S7 child.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">methods</span><span class="fu">::</span><span class="kw"><a href="https://rdrr.io/r/methods/setGeneric.html" class="external-link">setGeneric</a></span><span class="op">(</span><span class="st">"radius"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/standardGeneric.html" class="external-link">standardGeneric</a></span><span class="op">(</span><span class="st">"radius"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "radius"</span></span>
+<span><span class="fu">methods</span><span class="fu">::</span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"radius"</span>, <span class="st">"S4Point"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">x</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">x</span><span class="op">@</span><span class="va">y</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">radius</span><span class="op">(</span><span class="va">pt</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 2.236068</span></span></code></pre></div>
+<p>S4 code that updates an existing object should use
+<code>initialize()</code> rather than constructing a new object from
+<code>class(x)</code>. The S7 <code>initialize()</code> method accepts
+stored S7 properties and S4 slots, and later arguments override earlier
+ones.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pt</span> <span class="op">&lt;-</span> <span class="fu">methods</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/methods/new.html" class="external-link">initialize</a></span><span class="op">(</span><span class="va">pt</span>, x <span class="op">=</span> <span class="fl">3</span>, color <span class="op">=</span> <span class="st">"blue"</span><span class="op">)</span></span>
+<span><span class="va">pt</span><span class="op">@</span><span class="va">x</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="va">pt</span><span class="op">@</span><span class="va">color</span></span>
+<span><span class="co">#&gt; [1] "blue"</span></span></code></pre></div>
+<p>There are a few important caveats:</p>
+<ul>
+<li>An S7 object that directly extends S4 is represented as an S3
+old-class object, so <code>isS4(pt)</code> is <code>FALSE</code>. Use
+<code><a href="https://rdrr.io/r/methods/is.html" class="external-link">methods::is()</a></code> to ask about S4 inheritance.</li>
+<li>The class vector is not scalar. S4 code that needs one primary class
+name should use <code>class(x)[1L]</code>, or
+<code>methods::class1(x)</code> when available.</li>
+<li>
+<code><a href="https://rdrr.io/r/methods/slot.html" class="external-link">methods::slot()</a></code> and <code>methods::slot&lt;-()</code>
+can read and write stored properties, but they bypass custom S7 getters,
+setters, and ordinary S7 validation. Call
+<code><a href="https://rdrr.io/r/methods/validObject.html" class="external-link">methods::validObject()</a></code> after direct slot updates when the
+object should satisfy the S7 contract.</li>
+<li>Properties with custom getters or setters cannot cross the S4
+inheritance boundary as S4 slots.</li>
+<li>
+<code>NULL</code> properties are stored using the same sentinel that
+S4 uses for <code>NULL</code> slots. <code><a href="../reference/prop.html">prop()</a></code>,
+<code>@</code>, and <code><a href="https://rdrr.io/r/methods/slot.html" class="external-link">methods::slot()</a></code> translate this back to
+<code>NULL</code>; raw attributes should be treated as an implementation
+detail.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="s4-classes-that-extend-s7-classes">S4 classes that extend S7 classes<a class="anchor" aria-label="anchor" href="#s4-classes-that-extend-s7-classes"></a>
+</h3>
+<p>After calling <code><a href="../reference/S4_register.html">S4_register()</a></code>, use
+<code><a href="../reference/S4_register.html">S4_contains()</a></code> when an S4 class should extend an S7 class.
+It returns the virtual S4 class name for
+<code>methods::setClass(contains = )</code>. This class exposes stored
+S7 properties as formal S4 slots and carries the <code>_S7_class</code>
+slot that S7 uses for dispatch and validation.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Sample</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"Sample"</span>,</span>
+<span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    name <span class="op">=</span> <span class="va">class_character</span>,</span>
+<span>    score <span class="op">=</span> <span class="va">class_numeric</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  validator <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">score</span><span class="op">)</span> <span class="op">!=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="st">"@score must have length 1"</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">self</span><span class="op">@</span><span class="va">score</span> <span class="op">&lt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="st">"@score must be non-negative"</span></span>
+<span>    <span class="op">}</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/S4_register.html">S4_register</a></span><span class="op">(</span><span class="va">Sample</span><span class="op">)</span></span>
+<span><span class="va">Sample_S4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/S4_register.html">S4_contains</a></span><span class="op">(</span><span class="va">Sample</span><span class="op">)</span></span>
+<span><span class="fu">methods</span><span class="fu">::</span><span class="kw"><a href="https://rdrr.io/r/methods/setClass.html" class="external-link">setClass</a></span><span class="op">(</span><span class="st">"ReplicatedSample"</span>,</span>
+<span>  contains <span class="op">=</span> <span class="va">Sample_S4</span>,</span>
+<span>  slots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>replicate <span class="op">=</span> <span class="st">"integer"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu">methods</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/methods/new.html" class="external-link">new</a></span><span class="op">(</span><span class="st">"ReplicatedSample"</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"A"</span>,</span>
+<span>  score <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  replicate <span class="op">=</span> <span class="fl">1L</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/isS4.html" class="external-link">isS4</a></span><span class="op">(</span><span class="va">rs</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span><span class="va">rs</span><span class="op">@</span><span class="va">name</span></span>
+<span><span class="co">#&gt; [1] "A"</span></span>
+<span><span class="fu"><a href="../reference/prop.html">prop</a></span><span class="op">(</span><span class="va">rs</span>, <span class="st">"score"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="fu">methods</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/methods/validObject.html" class="external-link">validObject</a></span><span class="op">(</span><span class="va">rs</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>S7 dispatch still sees the S7 class, even though the concrete object
+is an S4 object.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sample_label</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"sample_label"</span>, <span class="st">"x"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">sample_label</span>, <span class="va">Sample</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">name</span>, <span class="st">": "</span>, <span class="va">x</span><span class="op">@</span><span class="va">score</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">sample_label</span><span class="op">(</span><span class="va">rs</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "A: 3"</span></span></code></pre></div>
+<p>The class returned by <code><a href="../reference/S4_register.html">S4_contains()</a></code> is a compatibility
+layer, not a user-facing class. Do not instantiate it directly; use it
+only as a superclass for another S4 class. Since S4 subclasses are real
+S4 objects, S4 code can access the S7 properties as slots. This is
+necessary for compatibility, but it also means S4 code can bypass S7
+property setters until validation is run.</p>
+</div>
 <div class="section level3">
 <h3 id="unions">Unions<a class="anchor" aria-label="anchor" href="#unions"></a>
 </h3>
-<p>S4 unions are automatically converted to S7 unions. There’s an
-important difference in the way that class unions are handled in S4 and
-S7. In S4, they’re handled at method dispatch time, so when you create
+<p>S4 unions are automatically converted to S7 unions when they are used
+as S7 property classes. There’s an important difference in the way that
+class unions are handled in S4 and S7. In S4, they’re handled at method
+dispatch time, so when you create
 <code>setUnion("u1", c("class1", "class2"))</code>, <code>class1</code>
 and <code>class2</code> now extend <code>u1</code>. In S7, unions are
 handled at method registration time so that registering a method for a
 union is just short-hand for registering a method for each of the
 classes.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Class1</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">Class2</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">Union1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_union.html">new_union</a></span><span class="op">(</span><span class="va">Class1</span>, <span class="va">Class2</span><span class="op">)</span></span>
@@ -249,7 +384,9 @@ classes.</p>
 <span><span class="co">#&gt; 1: method(foo, Class2)</span></span>
 <span><span class="co">#&gt; 2: method(foo, Class1)</span></span></code></pre></div>
 <p>S7 unions allow you to restrict the type of a property in the same
-way that S4 unions allow you to restrict the type of a slot.</p>
+way that S4 unions allow you to restrict the type of a slot. S7 unions
+can also be registered with <code><a href="../reference/S4_register.html">S4_register()</a></code> for use in S4
+slots and method signatures.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

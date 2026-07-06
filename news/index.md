@@ -13,6 +13,20 @@
   database) continue to work, as S7 falls back to the old attribute name
   when reading them
   ([\#677](https://github.com/RConsortium/S7/issues/677)).
+- S7 and S4 now interoperate through inheritance.
+  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  can use an S4 class as a parent, mapping S4 slots to S7 properties and
+  registering the class with S4 automatically. Conversely,
+  [`S4_register()`](https://rconsortium.github.io/S7/reference/S4_register.md)
+  registers an S7 class with S4, and
+  [`S4_contains()`](https://rconsortium.github.io/S7/reference/S4_register.md)
+  returns an S4 class name suitable for
+  `methods::setClass(contains = )`, exposing stored S7 properties as S4
+  slots for S4 subclasses. This support includes S4 initialization and
+  validity integration, and S4/internal generic registration where
+  needed; see
+  [`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md)
+  for caveats ([\#456](https://github.com/RConsortium/S7/issues/456)).
 - Errors thrown by S7 now report the function where they occurred,
   making it easier to track down the source of a problem
   ([\#646](https://github.com/RConsortium/S7/issues/646)).
