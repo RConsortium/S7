@@ -54,6 +54,8 @@
 #'   programmatically.
 #' @return Either `from` coerced to class `to`, or an error if the coercion
 #'   is not possible.
+#' @seealso [convert_lazy()] for a non-strict variant that leaves `from`
+#'   unchanged when it already inherits from `to`.
 #' @export
 #' @examples
 #' Foo1 := new_class(properties = list(x = class_integer))
@@ -135,6 +137,45 @@ convert <- function(from, to, ...) {
       c("- to  : ", class_desc(to))
     )
     stop2(msg)
+  }
+}
+
+#' Non-strict conversion
+#'
+#' @description
+#' `convert_lazy()` is a non-strict variant of [convert()] that guarantees
+#' that the result inherits from `to`, without forcing `from` to become an exact
+#' instance of `to`, i.e. it never upcasts.
+#'
+#' @inheritParams convert
+#' @return `from`, unchanged, if it already inherits from `to`; otherwise the
+#'   result of `convert(from, to, ...)`.
+#' @seealso [convert()] for the strict variant that always returns an exact
+#'   instance of `to`.
+#' @export
+#' @examples
+#' Foo1 := new_class(properties = list(x = class_integer))
+#' Foo2 := new_class(Foo1, properties = list(y = class_double))
+#'
+#' # `convert()` upcasts by stripping the extra properties of `from`:
+#' convert(Foo2(x = 1L, y = 2), to = Foo1)
+#'
+#' # `convert_lazy()` never upcasts: because the object already inherits from
+#' # Foo1, it's returned unchanged, keeping `y`:
+#' convert_lazy(Foo2(x = 1L, y = 2), to = Foo1)
+#'
+#' # When `from` doesn't inherit from `to`, `convert_lazy()` falls back to
+#' # `convert()`, so it can still downcast or coerce to a base type:
+#' convert_lazy(Foo1(x = 1L), to = Foo2, y = 2.5)
+#' convert_lazy(1.5, to = class_character)
+convert_lazy <- function(from, to, ...) {
+  to <- as_class(to)
+  check_can_inherit(to)
+
+  if (class_inherits(from, to)) {
+    from
+  } else {
+    convert(from, to, ...)
   }
 }
 
