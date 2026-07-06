@@ -416,6 +416,18 @@ S4_initialize <- function(.Object, ...) {
     S4_check_contains(S7_class(.Object))
   }
 
+  if (!isS4(.Object)) {
+    class <- S7_class(.Object)
+    parent <- S4_ancestor(class)
+    parent_initialize <- methods::selectMethod(
+      "initialize",
+      parent@className
+    )
+    if (!inherits(parent_initialize, "derivedDefaultMethod")) {
+      return(parent_initialize(.Object, ...))
+    }
+  }
+
   args <- list(...)
   if (length(args) == 0) {
     return(.Object)

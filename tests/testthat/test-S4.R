@@ -702,6 +702,65 @@ test_that("S7 classes can extend S4 classes", {
   expect_error(Child(x = "x", y = "a"))
 })
 
+test_that("S7 constructors dispatch to S4 parent initialize methods", {
+  defer(S4_remove_classes(c(
+    "S4regParentInitialize",
+    "S4regChildInitialize",
+    "S4regVirtualInitialize",
+    "S4regVirtualChildInitialize"
+  )))
+  setClass("S4regParentInitialize", slots = list(x = "ANY", y = "matrix"))
+  setMethod(
+    "initialize",
+    "S4regParentInitialize",
+    function(.Object, x = NULL, y, value = x) {
+      .Object@x <- list(value)
+      .Object@y <- y + 1
+      .Object
+    }
+  )
+  S4regChildInitialize := new_class(
+    parent = getClass("S4regParentInitialize"),
+    package = NULL
+  )
+
+  y <- matrix(1, nrow = 1)
+  object <- S4regChildInitialize(x = 1, y = y)
+
+  expect_equal(object@x, list(1))
+  expect_equal(object@y, y + 1)
+  expect_identical(methods::validObject(object), TRUE)
+
+  object <- methods::initialize(object, value = 2, y = y)
+  expect_equal(object@x, list(2))
+  expect_equal(object@y, y + 1)
+
+  setClass(
+    "S4regVirtualInitialize",
+    contains = "VIRTUAL",
+    slots = list(x = "ANY", y = "matrix")
+  )
+  setMethod(
+    "initialize",
+    "S4regVirtualInitialize",
+    function(.Object, x = NULL, y, value = x) {
+      .Object@x <- list(value)
+      .Object@y <- y + 1
+      .Object
+    }
+  )
+  S4regVirtualChildInitialize := new_class(
+    parent = getClass("S4regVirtualInitialize"),
+    package = NULL
+  )
+
+  object <- S4regVirtualChildInitialize(x = 1, y = y)
+
+  expect_equal(object@x, list(1))
+  expect_equal(object@y, y + 1)
+  expect_identical(methods::validObject(object), TRUE)
+})
+
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
   on.exit(S4_remove_classes(c(
     "ParentForSlots",
