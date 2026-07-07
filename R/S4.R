@@ -239,15 +239,14 @@ S4_check_contains <- function(class, call = sys.call(-1L)) {
   }
 
   for (prop in class@properties) {
-    if (prop_is_dynamic(prop) || prop_has_setter(prop)) {
+    if (prop_is_encapsulated(prop)) {
       msg <- sprintf(
         paste0(
           "Can't extend S7 class %s with S4 because property %s has a ",
-          "custom %s."
+          "custom getter or setter."
         ),
         class_desc(class),
-        prop$name,
-        if (prop_is_dynamic(prop)) "getter" else "setter"
+        prop$name
       )
       stop2(msg, call = call)
     }

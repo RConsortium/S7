@@ -464,7 +464,7 @@ test_that("S4_contains rejects properties with custom accessors", {
   expect_no_error(S4_register(S4regContainsDynamic))
   expect_error(
     S4_contains(S4regContainsDynamic),
-    "custom getter"
+    "custom getter or setter"
   )
   methods::setClass(
     "S4regContainsDynamicChild",
@@ -472,7 +472,7 @@ test_that("S4_contains rejects properties with custom accessors", {
   )
   expect_error(
     methods::new("S4regContainsDynamicChild"),
-    "custom getter"
+    "custom getter or setter"
   )
 
   S4regContainsSetter <- new_class(
@@ -491,7 +491,7 @@ test_that("S4_contains rejects properties with custom accessors", {
   expect_no_error(S4_register(S4regContainsSetter))
   expect_error(
     S4_contains(S4regContainsSetter),
-    "custom setter"
+    "custom getter or setter"
   )
   methods::setClass(
     "S4regContainsSetterChild",
@@ -499,7 +499,7 @@ test_that("S4_contains rejects properties with custom accessors", {
   )
   expect_error(
     methods::new("S4regContainsSetterChild"),
-    "custom setter"
+    "custom getter or setter"
   )
 })
 
@@ -761,6 +761,45 @@ test_that("S7 constructors dispatch to S4 parent initialize methods", {
   expect_identical(methods::validObject(object), TRUE)
 })
 
+test_that("S7 classes can not override S4 slots with custom accessors", {
+  defer(S4_remove_classes(c(
+    "S4regAccessorParent",
+    "S4regAccessorMiddle"
+  )))
+  setClass("S4regAccessorParent", slots = list(x = "numeric"))
+
+  expect_error(
+    new_class(
+      "S4regAccessorChild",
+      parent = getClass("S4regAccessorParent"),
+      properties = list(
+        x = new_property(class_numeric, getter = function(self) 1)
+      ),
+      package = NULL
+    ),
+    "custom getter or setter"
+  )
+
+  S4regAccessorMiddle := new_class(
+    parent = getClass("S4regAccessorParent"),
+    package = NULL
+  )
+  expect_error(
+    new_class(
+      "S4regAccessorChild",
+      parent = S4regAccessorMiddle,
+      properties = list(
+        x = new_property(
+          class_numeric,
+          setter = function(self, value) self
+        )
+      ),
+      package = NULL
+    ),
+    "custom getter or setter"
+  )
+})
+
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
   on.exit(S4_remove_classes(c(
     "ParentForSlots",
@@ -864,13 +903,13 @@ test_that("S4 classes can not extend S7-over-S4 classes with property setters", 
   expect_true(attr(Child2(x = 1, y = "a"), "setter_called", exact = TRUE))
   expect_error(
     S4_contains(Child2),
-    "custom setter"
+    "custom getter or setter"
   )
 
   methods::setClass("S4Child2", contains = "Child2")
   expect_error(
     methods::new("S4Child2"),
-    "custom setter"
+    "custom getter or setter"
   )
 })
 
