@@ -485,10 +485,7 @@ check_prop_overrides <- function(
   call = sys.call(-1L)
 ) {
   overridden <- intersect(names(child_props), names(parent_props))
-  parent_S4 <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
-  if (!is.null(parent_S4)) {
-    check_S4_slot_overrides(child_props, parent_S4, call = call)
-  }
+  check_S4_slot_overrides(child_props, parent, call = call)
 
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
@@ -523,9 +520,14 @@ check_prop_overrides <- function(
 
 check_S4_slot_overrides <- function(
   child_props,
-  parent_S4,
+  parent,
   call = sys.call(-1L)
 ) {
+  parent_S4 <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+  if (is.null(parent_S4)) {
+    return(invisible())
+  }
+
   overridden <- intersect(names(child_props), names(parent_S4@slots))
 
   for (prop in overridden) {
@@ -543,4 +545,6 @@ check_S4_slot_overrides <- function(
     )
     stop2(msg, call = call)
   }
+
+  invisible()
 }
