@@ -413,7 +413,7 @@ class_extends_S4_name <- function(class) {
   } else if (is_class(class)) {
     S7_class_name(class)
   } else {
-     NULL
+    NULL
   }
 }
 
