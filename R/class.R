@@ -347,7 +347,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class <- sys.function(-1)
+  class <- sys.function(sys.parent())
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
@@ -485,6 +485,7 @@ check_prop_overrides <- function(
   call = sys.call(-1L)
 ) {
   overridden <- intersect(names(child_props), names(parent_props))
+  check_S4_slot_overrides(child_props, parent, call = call)
 
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
@@ -515,4 +516,35 @@ check_prop_overrides <- function(
       stop2(msg, call = call)
     }
   }
+}
+
+check_S4_slot_overrides <- function(
+  child_props,
+  parent,
+  call = sys.call(-1L)
+) {
+  parent_S4 <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+  if (is.null(parent_S4)) {
+    return(invisible())
+  }
+
+  overridden <- intersect(names(child_props), names(parent_S4@slots))
+
+  for (prop in overridden) {
+    child_prop <- child_props[[prop]]
+    if (!prop_is_encapsulated(child_prop)) {
+      next
+    }
+
+    msg <- sprintf(
+      paste0(
+        "Can't override inherited S4 slot %s with a property that has a ",
+        "custom getter or setter."
+      ),
+      prop
+    )
+    stop2(msg, call = call)
+  }
+
+  invisible()
 }

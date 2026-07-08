@@ -116,6 +116,47 @@ test_that("inheritance lets child properties narrow with S4 inheritance", {
   expect_s4_class(Child(x = x)@x, "S4PropertyChild")
 })
 
+test_that("inheritance lets S7 children narrow S4 parent properties", {
+  Animal := local_S4_class()
+  Kennel := local_S4_class(slots = list(dog = "Animal"))
+  Dog := new_class(parent = Animal, package = NULL)
+
+  DogKennel := new_class(
+    parent = Kennel,
+    properties = list(dog = Dog),
+    package = NULL
+  )
+  dog <- Dog()
+
+  expect_equal(prop(DogKennel(dog = dog), "dog"), dog)
+})
+
+test_that("inheritance lets S4 children narrow S7 parent properties", {
+  defer(S4_remove_classes(c(
+    "S4PropertyS7Parent",
+    "S4PropertyS7Child"
+  )))
+
+  S4PropertyS7Parent := new_class(package = NULL)
+  S4_register(S4PropertyS7Parent)
+  setClass(
+    "S4PropertyS7Child",
+    contains = S4_contains(S4PropertyS7Parent)
+  )
+  S4PropertyParent := new_class(
+    properties = list(x = S4PropertyS7Parent),
+    package = NULL
+  )
+  S4PropertyChild := new_class(
+    parent = S4PropertyParent,
+    properties = list(x = getClass("S4PropertyS7Child")),
+    package = NULL
+  )
+
+  x <- methods::new("S4PropertyS7Child")
+  expect_s4_class(S4PropertyChild(x = x)@x, "S4PropertyS7Child")
+})
+
 test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
   Parent := new_class(
     properties = list(x = S7_object),
@@ -297,6 +338,15 @@ test_that("abstract classes can use inherited validator from abstract class", {
 
 test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
+})
+
+test_that("new_object() can be forced lazily from a constructor", {
+  Foo := new_class(
+    constructor = function() identity(new_object(S7_object())),
+    package = NULL
+  )
+
+  expect_equal(S7_class(Foo()), Foo)
 })
 
 test_that("new_object() errors if `_parent` doesn't inherit from the parent class (#409)", {

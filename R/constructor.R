@@ -38,6 +38,14 @@ new_constructor <- function(
         bquote(S7::new_object(.(parent_call), ..(self_args)), splice = TRUE)
       }
 
+    if (is_S4_class(parent)) {
+      parent_nms <- names2(class_properties(parent))
+      new_object_call <- as.call(c(
+        list(quote(methods::initialize), new_object_call),
+        as_names(parent_nms)
+      ))
+    }
+
     return(new_S7_constructor(
       new_function(
         args = arg_info$self,
