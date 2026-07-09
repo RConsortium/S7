@@ -1,6 +1,25 @@
 test_that("can work with classGenerators", {
-  Foo := local_S4_class()
+  local_S4_classes()
+  Foo <- setClass("Foo")
   expect_equal(S4_to_S7_class(Foo), getClass("Foo"))
+})
+
+test_that("local_S4_classes cleans up S4 classes registered during scope", {
+  env <- new.env(parent = globalenv())
+
+  local({
+    local_S4_classes(where = env)
+    setClass("CleanupClass", where = env)
+    setClassUnion("CleanupUnion", "CleanupClass", where = env)
+    setOldClass(c("CleanupOldChild", "CleanupOld"), where = env)
+
+    expect_setequal(
+      methods::getClasses(where = env, inherits = FALSE),
+      c("CleanupClass", "CleanupUnion", "CleanupOldChild", "CleanupOld")
+    )
+  })
+
+  expect_equal(methods::getClasses(where = env, inherits = FALSE), character())
 })
 
 test_that("S4_register registers an S7 class so it can be used with S4 methods", {
@@ -530,15 +549,7 @@ test_that("S4_register uses registered S7 unions as S4 slots", {
 
 test_that("S4_register uses matching S4 unions as S4 slots", {
   env <- topenv(environment())
-  on.exit(S4_remove_classes(
-    c(
-      "S4regContainsExistingUnion",
-      "S4regExistingUnion",
-      "S4regUnionMember2",
-      "S4regUnionMember1"
-    ),
-    env
-  ))
+  local_S4_classes(where = env)
 
   setClass("S4regUnionMember1", where = env)
   setClass("S4regUnionMember2", where = env)
@@ -586,17 +597,18 @@ test_that("converts S4 base classes to S7 base classes", {
 })
 
 test_that("converts S4 unions to S7 unions", {
-  Foo1 := local_S4_class(slots = "x")
-  Foo2 := local_S4_class(slots = "x")
+  local_S4_classes()
+  setClass("Foo1", slots = "x")
+  setClass("Foo2", slots = "x")
 
-  Union1 := local_S4_union(c("Foo1", "Foo2"))
+  setClassUnion("Union1", c("Foo1", "Foo2"))
   expect_equal(
     S4_to_S7_class(getClass("Union1")),
     new_union(getClass("Foo1"), getClass("Foo2"))
   )
 
-  Foo3 := local_S4_class(slots = "x")
-  Union2 := local_S4_union(c("Union1", "Foo3"))
+  setClass("Foo3", slots = "x")
+  setClassUnion("Union2", c("Union1", "Foo3"))
   expect_equal(
     S4_to_S7_class(getClass("Union2")),
     new_union(getClass("Foo1"), getClass("Foo2"), getClass("Foo3"))
@@ -605,14 +617,7 @@ test_that("converts S4 unions to S7 unions", {
 
 test_that("S4 slot properties convert S4 class unions to S7 unions", {
   env <- topenv(environment())
-  on.exit(S4_remove_classes(
-    c(
-      "S4regUnionSlotChild",
-      "S4regUnionSlotParent",
-      "S4regUnionSlot"
-    ),
-    env
-  ))
+  local_S4_classes(where = env)
 
   setClassUnion("S4regUnionSlot", c("character", "NULL"), where = env)
   setClass(
@@ -915,14 +920,16 @@ test_that("S4 classes can not extend S7-over-S4 classes with property setters", 
 
 
 test_that("S4_class_dispatch returns name of base class", {
-  Foo1 := local_S4_class(slots = list("x" = "numeric"))
+  local_S4_classes()
+  setClass("Foo1", slots = list("x" = "numeric"))
   expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
 })
 
 test_that("S4_class_dispatch respects single inheritance hierarchy", {
-  Foo1 := local_S4_class(slots = list("x" = "numeric"))
-  Foo2 := local_S4_class(contains = "Foo1")
-  Foo3 := local_S4_class(contains = "Foo2")
+  local_S4_classes()
+  setClass("Foo1", slots = list("x" = "numeric"))
+  setClass("Foo2", contains = "Foo1")
+  setClass("Foo3", contains = "Foo2")
   expect_equal(
     S4_class_dispatch("Foo3"),
     c("S4/S7::Foo3", "S4/S7::Foo2", "S4/S7::Foo1")
@@ -930,11 +937,12 @@ test_that("S4_class_dispatch respects single inheritance hierarchy", {
 })
 
 test_that("S4_class_dispatch performs breadth first search for multiple dispatch", {
-  Foo1a := local_S4_class(slots = list("x" = "numeric"))
-  Foo1b := local_S4_class(contains = "Foo1a")
-  Foo2a := local_S4_class(slots = list("x" = "numeric"))
-  Foo2b := local_S4_class(contains = "Foo2a")
-  Foo3 := local_S4_class(contains = c("Foo1b", "Foo2b"))
+  local_S4_classes()
+  setClass("Foo1a", slots = list("x" = "numeric"))
+  setClass("Foo1b", contains = "Foo1a")
+  setClass("Foo2a", slots = list("x" = "numeric"))
+  setClass("Foo2b", contains = "Foo2a")
+  setClass("Foo3", contains = c("Foo1b", "Foo2b"))
   expect_equal(
     S4_class_dispatch("Foo3"),
     c(
@@ -948,15 +956,16 @@ test_that("S4_class_dispatch performs breadth first search for multiple dispatch
 })
 
 test_that("S4_class_dispatch handles extensions of base classes", {
-  Foo1 := local_S4_class(contains = "character")
+  local_S4_classes()
+  setClass("Foo1", contains = "character")
   expect_equal(S4_class_dispatch("Foo1"), c("S4/S7::Foo1", "character"))
 })
 
 test_that("S4_class_dispatch handles extensions of S3 classes", {
+  local_S4_classes()
   setOldClass(c("Soo1", "Soo"))
-  defer(S4_remove_classes("Soo1"))
-  Foo2 := local_S4_class(contains = "Soo1")
-  Foo3 := local_S4_class(contains = "Foo2")
+  setClass("Foo2", contains = "Soo1")
+  setClass("Foo3", contains = "Foo2")
   expect_equal(
     S4_class_dispatch("Foo3"),
     c("S4/S7::Foo3", "S4/S7::Foo2", "Soo1", "Soo")
@@ -964,17 +973,18 @@ test_that("S4_class_dispatch handles extensions of S3 classes", {
 })
 
 test_that("S4_class_dispatch ignores unions", {
-  Foo1 := local_S4_class(slots = list("x" = "numeric"))
-  Foo2 := local_S4_class(slots = list("x" = "numeric"))
-  Foo3 := local_S4_union(c("Foo1", "Foo2"))
+  local_S4_classes()
+  setClass("Foo1", slots = list("x" = "numeric"))
+  setClass("Foo2", slots = list("x" = "numeric"))
+  setClassUnion("Foo3", c("Foo1", "Foo2"))
 
   expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
   expect_equal(S4_class_dispatch("Foo2"), "S4/S7::Foo2")
 })
 
 test_that("S4_class_dispatch dispatches through the full S3 old-class hierarchy", {
+  local_S4_classes()
   setOldClass(c("S4OldS3a", "S4OldS3b"))
-  defer(S4_remove_classes(c("S4OldS3Child", "S4OldS3a", "S4OldS3b")))
   setClass("S4OldS3Child", contains = "S4OldS3a")
 
   generic <- new_generic("S4OldS3Generic", "x")
@@ -987,22 +997,25 @@ test_that("S4_class_dispatch dispatches through the full S3 old-class hierarchy"
 })
 
 test_that("S4_class_dispatch includes virtual classes", {
-  Foo1 := local_S4_class()
-  Foo2 := local_S4_class(contains = "Foo1")
+  local_S4_classes()
+  setClass("Foo1")
+  setClass("Foo2", contains = "Foo1")
 
   expect_equal(S4_class_dispatch("Foo1"), "S4/S7::Foo1")
   expect_equal(S4_class_dispatch("Foo2"), c("S4/S7::Foo2", "S4/S7::Foo1"))
 })
 
 test_that("S4_class_dispatch captures explicit package name", {
-  Foo1 := local_S4_class(package = "pkg")
+  local_S4_classes()
+  setClass("Foo1", package = "pkg")
   expect_equal(S4_class_dispatch("Foo1"), "S4/pkg::Foo1")
 })
 
 test_that("S4_class_dispatch captures implicit package name", {
   env <- new.env()
   env$.packageName <- "mypkg"
-  Foo1 := local_S4_class(where = env)
+  local_S4_classes(where = env)
+  setClass("Foo1", where = env)
   expect_equal(S4_class_dispatch("Foo1"), "S4/mypkg::Foo1")
 })
 
