@@ -61,7 +61,8 @@ test_that("S7 classes check inputs", {
 })
 
 test_that("S7 classes can inherit from S4 but not class unions", {
-  parentS4 := local_S4_class(slots = c(x = "numeric"))
+  local_S4_classes()
+  parentS4 <- setClass("parentS4", slots = c(x = "numeric"))
 
   child <- new_class("test", parent = parentS4, package = NULL)
   expect_s3_class(child, "S7_class")
@@ -99,8 +100,9 @@ test_that("inheritance lets child properties narrow the parent's type", {
 })
 
 test_that("inheritance lets child properties narrow with S4 inheritance", {
-  S4PropertyParent := local_S4_class(slots = c(x = "numeric"))
-  S4PropertyChild := local_S4_class(contains = "S4PropertyParent")
+  local_S4_classes()
+  S4PropertyParent <- setClass("S4PropertyParent", slots = c(x = "numeric"))
+  S4PropertyChild <- setClass("S4PropertyChild", contains = "S4PropertyParent")
 
   Parent := new_class(
     properties = list(x = S4PropertyParent),
@@ -117,8 +119,9 @@ test_that("inheritance lets child properties narrow with S4 inheritance", {
 })
 
 test_that("inheritance lets S7 children narrow S4 parent properties", {
-  Animal := local_S4_class()
-  Kennel := local_S4_class(slots = list(dog = "Animal"))
+  local_S4_classes()
+  Animal <- setClass("Animal")
+  Kennel <- setClass("Kennel", slots = list(dog = "Animal"))
   Dog := new_class(parent = Animal, package = NULL)
 
   DogKennel := new_class(
@@ -132,10 +135,7 @@ test_that("inheritance lets S7 children narrow S4 parent properties", {
 })
 
 test_that("inheritance lets S4 children narrow S7 parent properties", {
-  defer(S4_remove_classes(c(
-    "S4PropertyS7Parent",
-    "S4PropertyS7Child"
-  )))
+  local_S4_classes()
 
   S4PropertyS7Parent := new_class(package = NULL)
   S4_register(S4PropertyS7Parent)
