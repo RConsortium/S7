@@ -56,14 +56,10 @@ test_that("can register S7 method for S3 generic with S3 class signature", {
 })
 
 test_that("internal generics register S4 methods for S4-backed S7 classes", {
-  on.exit({
+  local_S4_classes()
+  defer({
     try(methods::removeMethod("dim", "S4regDimParent"), silent = TRUE)
     try(methods::removeMethod("dim", "S4regDimChild"), silent = TRUE)
-    S4_remove_classes(c(
-      "S4regDimParent",
-      "S4regDimChild",
-      "S4regDimShim"
-    ))
   })
 
   setClass("S4regDimParent", contains = "VIRTUAL")
@@ -87,13 +83,9 @@ test_that("internal generics register S4 methods for S4-backed S7 classes", {
 })
 
 test_that("base closures register S4 methods for S4-backed S7 classes", {
+  local_S4_classes()
   defer({
     try(methods::removeMethod("unlist", "S4regUnlistChild"), silent = TRUE)
-    S4_remove_classes(c(
-      "S4regUnlistParent",
-      "S4regUnlistChild",
-      "S4regUnlistShim"
-    ))
   })
 
   setClass("S4regUnlistParent", contains = "VIRTUAL")
@@ -119,7 +111,8 @@ test_that("base closures register S4 methods for S4-backed S7 classes", {
 })
 
 test_that("internal replacement generics can register full S4 signatures", {
-  on.exit({
+  local_S4_classes()
+  defer({
     try(
       methods::removeMethod(
         "dimnames<-",
@@ -127,11 +120,6 @@ test_that("internal replacement generics can register full S4 signatures", {
       ),
       silent = TRUE
     )
-    S4_remove_classes(c(
-      "S4regDimnamesParent",
-      "S4regDimnamesChild",
-      "S4regDimnamesShim"
-    ))
   })
 
   setClass("S4regDimnamesParent", contains = "VIRTUAL")
@@ -161,10 +149,7 @@ test_that("internal replacement generics can register full S4 signatures", {
 })
 
 test_that("sentinels for internal replacement generics keep full S4 signatures", {
-  on.exit(S4_remove_classes(c(
-    "S4regDimnamesSentinelParent",
-    "S4regDimnamesSentinelChild"
-  )))
+  local_S4_classes()
 
   setClass("S4regDimnamesSentinelParent", contains = "VIRTUAL")
   S4regDimnamesSentinelChild <- new_class(
@@ -183,13 +168,11 @@ test_that("sentinels for internal replacement generics keep full S4 signatures",
       package = NULL
     )
   )
-  on.exit(
+  defer(
     methods::removeMethod(
       "dimnames<-",
       c("S4regDimnamesSentinelChild", "list")
-    ),
-    add = TRUE,
-    after = FALSE
+    )
   )
   expect_true(methods::hasMethod(
     "dimnames<-",

@@ -23,7 +23,7 @@ test_that("local_S4_classes cleans up S4 classes registered during scope", {
 })
 
 test_that("S4_register registers an S7 class so it can be used with S4 methods", {
-  defer(S4_remove_classes("S4regS7"))
+  local_S4_classes()
   S4regS7 := new_class(package = NULL)
   S4regS7_S4 <- S4_register(S4regS7)
   expect_equal(S4regS7_S4, "S4regS7")
@@ -31,7 +31,7 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
 })
 
 test_that("S4_contains requires prior S4 registration", {
-  on.exit(S4_remove_classes("S4regContainsUnregistered"))
+  local_S4_classes()
   S4regContainsUnregistered := new_class(package = NULL)
 
   expect_error(
@@ -48,7 +48,7 @@ test_that("S4_contains requires prior S4 registration", {
 })
 
 test_that("S4_register registers S4 old classes as virtual S7_object descendants", {
-  on.exit(S4_remove_classes(c("S4regParent", "S4regS7New")))
+  local_S4_classes()
   setClass("S4regParent", slots = list(x = "numeric"))
   S4regS7New <- new_class(
     "S4regS7New",
@@ -66,7 +66,7 @@ test_that("S4_register registers S4 old classes as virtual S7_object descendants
 })
 
 test_that("S4_register registers an S3 class so it can be used with S4 methods", {
-  defer(S4_remove_classes(c("S4regS3a", "S4regS3b")))
+  local_S4_classes()
   S4regS3_S4 <- S4_register(new_S3_class(c("S4regS3a", "S4regS3b")))
   expect_equal(S4regS3_S4, "S4regS3a")
   # Must not extend S7_object — that was a silent bug pre-fix
@@ -77,14 +77,11 @@ test_that("S4_register registers an S3 class so it can be used with S4 methods",
 })
 
 test_that("S4_register registers an S7 union so it can be used with S4 methods", {
-  on.exit({
+  local_S4_classes()
+  defer({
     if (methods::isGeneric("S4regUnionGeneric")) {
       methods::removeGeneric("S4regUnionGeneric")
     }
-    S4_remove_classes(c(
-      "S4regUnionFoo",
-      "S4regUnionFoo_OR_character"
-    ))
   })
 
   S4regUnionFoo <- new_class("S4regUnionFoo", package = NULL)
@@ -104,15 +101,11 @@ test_that("S4_register registers an S7 union so it can be used with S4 methods",
 })
 
 test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
-  on.exit({
+  local_S4_classes()
+  defer({
     if (methods::isGeneric("S4regContainsGeneric")) {
       methods::removeGeneric("S4regContainsGeneric")
     }
-    S4_remove_classes(c(
-      "S4regContainsS4Child",
-      "S7::S4regContains",
-      "S7::S4regContainsChild"
-    ))
   })
 
   S4regContains <- new_class(
@@ -204,12 +197,7 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
 })
 
 test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 classes", {
-  on.exit(S4_remove_classes(c(
-    "S4regNewParent",
-    "S4regNewMiddle",
-    "S4regNewChild",
-    "S4regNewGrandChild"
-  )))
+  local_S4_classes()
   setClass(
     "S4regNewParent",
     slots = list(assays = "list", rowData = "character")
@@ -302,14 +290,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
 })
 
 test_that("S4_validate_class validates only matching S7 classes for S4 upcasts", {
-  on.exit(S4_remove_classes(c(
-    "S4regShimRoot",
-    "S4regShimParent",
-    "S4regShimChild",
-    "S4regShimGrandChild",
-    "S7::S4regShimParent",
-    "S7::S4regShimChild"
-  )))
+  local_S4_classes()
 
   setClass("S4regShimRoot", slots = list(root = "numeric"))
   S4regShimParent <- new_class(
@@ -343,14 +324,9 @@ test_that("S4_validate_class validates only matching S7 classes for S4 upcasts",
 })
 
 test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
-  on.exit({
+  local_S4_classes()
+  defer({
     try(methods::removeMethod("dim", "S4regAbstractConcrete"), silent = TRUE)
-    S4_remove_classes(c(
-      "S4regAbstractParent",
-      "S4regAbstract",
-      "S4regAbstractConcrete",
-      "S4regAbstractShim"
-    ))
   })
 
   setClass("S4regAbstractParent", contains = "VIRTUAL")
@@ -397,11 +373,7 @@ test_that("S4_register registers abstract S7 classes as virtual S4 classes", {
 })
 
 test_that("S4_register uses S7 property defaults as S4 prototypes", {
-  on.exit(S4_remove_classes(c(
-    "S4regPrototype",
-    "S4regPrototypeChild",
-    "NULL_OR_character"
-  )))
+  local_S4_classes()
 
   S4_register(NULL | class_character)
   S4regPrototype <- new_class(
@@ -429,11 +401,7 @@ test_that("S4_register uses S7 property defaults as S4 prototypes", {
 })
 
 test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 properties", {
-  on.exit(S4_remove_classes(c(
-    "S4regNullable",
-    "S4regNullableChild",
-    "NULL_OR_character"
-  )))
+  local_S4_classes()
 
   S4_register(NULL | class_character)
   S4regNullable <- new_class(
@@ -466,12 +434,7 @@ test_that("S4_register treats S4 NULL slot sentinels as NULL-valued S7 propertie
 })
 
 test_that("S4_contains rejects properties with custom accessors", {
-  on.exit(S4_remove_classes(c(
-    "S4regContainsDynamicChild",
-    "S7::S4regContainsDynamic",
-    "S4regContainsSetterChild",
-    "S7::S4regContainsSetter"
-  )))
+  local_S4_classes()
 
   S4regContainsDynamic <- new_class(
     "S4regContainsDynamic",
@@ -523,10 +486,7 @@ test_that("S4_contains rejects properties with custom accessors", {
 })
 
 test_that("S4_register uses registered S7 unions as S4 slots", {
-  on.exit(S4_remove_classes(c(
-    "S7::S4regContainsUnion",
-    "integer_OR_numeric_OR_character"
-  )))
+  local_S4_classes()
 
   S4regContainsUnion <- new_class(
     "S4regContainsUnion",
@@ -652,7 +612,7 @@ test_that("errors on non-S4 classes", {
 })
 
 test_that("S7 classes can extend S4 classes", {
-  on.exit(S4_remove_classes(c("Parent", "Child")))
+  local_S4_classes()
   setClass("Parent", slots = list(x = "numeric"))
 
   Child <- new_class(
@@ -708,12 +668,7 @@ test_that("S7 classes can extend S4 classes", {
 })
 
 test_that("S7 constructors dispatch to S4 parent initialize methods", {
-  defer(S4_remove_classes(c(
-    "S4regParentInitialize",
-    "S4regChildInitialize",
-    "S4regVirtualInitialize",
-    "S4regVirtualChildInitialize"
-  )))
+  local_S4_classes()
   setClass("S4regParentInitialize", slots = list(x = "ANY", y = "matrix"))
   setMethod(
     "initialize",
@@ -767,10 +722,7 @@ test_that("S7 constructors dispatch to S4 parent initialize methods", {
 })
 
 test_that("S7 classes can not override S4 slots with custom accessors", {
-  defer(S4_remove_classes(c(
-    "S4regAccessorParent",
-    "S4regAccessorMiddle"
-  )))
+  local_S4_classes()
   setClass("S4regAccessorParent", slots = list(x = "numeric"))
 
   expect_error(
@@ -806,11 +758,7 @@ test_that("S7 classes can not override S4 slots with custom accessors", {
 })
 
 test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
-  on.exit(S4_remove_classes(c(
-    "ParentForSlots",
-    "ChildForSlots",
-    "S4ChildForSlots"
-  )))
+  local_S4_classes()
   setClass("ParentForSlots", slots = list(x = "numeric"))
 
   ChildForSlots <- new_class(
@@ -842,7 +790,7 @@ test_that("S4 initialization sets S4 slots on subclasses of S7 classes", {
 })
 
 test_that("@<- sets S4-only slots on subclasses of S7 classes", {
-  on.exit(S4_remove_classes(c("ParentForAt", "ChildForAt", "S4ChildForAt")))
+  local_S4_classes()
   setClass("ParentForAt", slots = list(x = "numeric"))
 
   ChildForAt <- new_class(
@@ -867,7 +815,7 @@ test_that("@<- sets S4-only slots on subclasses of S7 classes", {
 })
 
 test_that("S4 initialize supports S3 data parts", {
-  on.exit(S4_remove_classes(c("ParentNum", "ChildNum")))
+  local_S4_classes()
   setClass("ParentNum", contains = "numeric", slots = list(y = "character"))
 
   ChildNum <- new_class(
@@ -890,7 +838,7 @@ test_that("S4 initialize supports S3 data parts", {
 })
 
 test_that("S4 classes can not extend S7-over-S4 classes with property setters", {
-  on.exit(S4_remove_classes(c("Parent2", "Child2", "S4Child2")))
+  local_S4_classes()
   setClass("Parent2", slots = list(x = "numeric"))
 
   Child2 <- new_class(
@@ -1020,13 +968,7 @@ test_that("S4_class_dispatch captures implicit package name", {
 })
 
 test_that("S7 class extending S4 class with multiple parents works", {
-  on.exit(S4_remove_classes(c(
-    "MultiParent1",
-    "MultiParent2",
-    "MultiChild",
-    "S7MultiChild",
-    "S7MultiChild2"
-  )))
+  local_S4_classes()
 
   setClass("MultiParent1", slots = list(x = "numeric"))
   setClass("MultiParent2", slots = list(y = "numeric"))
