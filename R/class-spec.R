@@ -288,11 +288,12 @@ class_dispatch <- function(x) {
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(
-      S7_class_name(x),
-      class_dispatch(x@parent),
-      if (is_S4_class(x@parent)) "S7_object"
-    ),
+    S7 = attr(x, "_S7_dispatch", exact = TRUE) %||%
+      c(
+        S7_class_name(x),
+        class_dispatch(x@parent),
+        if (is_S4_class(x@parent)) "S7_object"
+      ),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     S7_external = class_dispatch(resolve_external_class_req(x)),

@@ -34,6 +34,23 @@ test_that("can work with S7 classes in packages", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("S7 class dispatch is cached", {
+  parent := new_class(package = "pkg")
+  child := new_class(parent = parent, package = "pkg")
+
+  expect_identical(
+    attr(child, "_S7_dispatch", exact = TRUE),
+    c("pkg::child", "pkg::parent", "S7_object")
+  )
+
+  # Classes created by older versions of S7 don't have a cache
+  attr(child, "_S7_dispatch") <- NULL
+  expect_identical(
+    class_dispatch(child),
+    c("pkg::child", "pkg::parent", "S7_object")
+  )
+})
+
 test_that("can work with unions", {
   text := new_class(class_character, package = NULL)
   number := new_class(class_double, package = NULL)

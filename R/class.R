@@ -174,6 +174,16 @@ new_class <- function(
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
+  if (identical(name, "S7_object")) {
+    dispatch <- "S7_object"
+  } else {
+    dispatch <- c(
+      paste(c(package, name), collapse = "::"),
+      class_dispatch(parent),
+      if (is_S4_class(parent)) "S7_object"
+    )
+  }
+  attr(object, "_S7_dispatch") <- dispatch
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
