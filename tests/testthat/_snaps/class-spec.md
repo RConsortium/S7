@@ -19,7 +19,6 @@
        * An S4 class object
        * A base class
 
-
 # as_class gives informative errors
 
     Code
@@ -42,3 +41,4 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+
