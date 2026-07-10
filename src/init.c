@@ -12,7 +12,9 @@ extern SEXP prop_(SEXP, SEXP);
 extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP prop_storage_rename_(SEXP);
 extern SEXP S7_eval_bare_(SEXP, SEXP);
+extern SEXP class_type_(SEXP);
 extern void prop_init(void);
+extern void class_type_init(void);
 
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
@@ -24,6 +26,7 @@ static const R_CallMethodDef CallEntries[] = {
     CALLDEF(prop_set_, 4),
     CALLDEF(prop_storage_rename_, 1),
     CALLDEF(S7_eval_bare_, 2),
+    CALLDEF(class_type_, 1),
     {NULL, NULL, 0}
 };
 
@@ -133,6 +136,7 @@ void R_init_S7(DllInfo *dll)
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
     prop_init();
+    class_type_init();
     R_PreserveObject(s7_proto_object = make_s7_proto_object());
     R_PreserveObject(missing_call = Rf_lang2(fn_base_missing, R_NilValue));
 }

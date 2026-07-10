@@ -72,6 +72,16 @@ test_that("class_inherits() handles special S7 objects", {
   expect_equal(class_inherits(structure(1, class = "Child"), Child), FALSE)
 })
 
+test_that("class_type() recognizes special class specifications", {
+  expect_identical(class_type(class_missing), "missing")
+  expect_identical(class_type(class_any), "any")
+  expect_identical(
+    class_type(structure(list(), class = c("S7_external_class", "S7_any"))),
+    "any"
+  )
+  expect_snapshot(class_type(1), error = TRUE)
+})
+
 test_that("can work with unions", {
   text := new_class(class_character, package = NULL)
   number := new_class(class_double, package = NULL)

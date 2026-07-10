@@ -59,30 +59,15 @@ is_foundation_class <- function(x) {
 }
 
 class_type <- function(x) {
-  if (is.null(x)) {
-    "NULL"
-  } else if (is_class_missing(x)) {
-    "missing"
-  } else if (is_class_any(x)) {
-    "any"
-  } else if (is_base_class(x)) {
-    "S7_base"
-  } else if (is_class(x)) {
-    "S7"
-  } else if (is_union(x)) {
-    "S7_union"
-  } else if (is_S3_class(x)) {
-    "S7_S3"
-  } else if (is_external_class(x)) {
-    "S7_external"
-  } else if (is_S4_class(x)) {
-    "S4"
-  } else {
-    stop2("`x` is not a standard S7 class.", call = NULL)
-  }
+  .Call(class_type_, x)
 }
 
 class_properties <- function(x) {
+  # Needed to bootstrap S7 before DLL registered
+  if (is.null(x)) {
+    return(list())
+  }
+
   switch(
     class_type(x),
     S7 = attr(x, "properties", exact = TRUE) %||% list(),
