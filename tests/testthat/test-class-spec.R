@@ -37,11 +37,23 @@ test_that("can work with S7 classes in packages", {
 test_that("S7 class dispatch is cached", {
   parent := new_class(package = "pkg")
   child := new_class(parent = parent, package = "pkg")
+  obj <- child()
 
   expect_identical(
     attr(child, "_S7_dispatch", exact = TRUE),
     c("pkg::child", "pkg::parent", "S7_object")
   )
+
+  local_mocked_bindings(
+    S7_class_name = function(...) stop("Recomputed class name")
+  )
+  expect_equal(class_inherits(obj, parent), TRUE)
+})
+
+test_that("S7 class dispatch supports classes without a cache", {
+  parent := new_class(package = "pkg")
+  child := new_class(parent = parent, package = "pkg")
+  obj <- child()
 
   # Classes created by older versions of S7 don't have a cache
   attr(child, "_S7_dispatch") <- NULL
@@ -49,6 +61,15 @@ test_that("S7 class dispatch is cached", {
     class_dispatch(child),
     c("pkg::child", "pkg::parent", "S7_object")
   )
+  expect_equal(class_inherits(obj, child), TRUE)
+})
+
+test_that("class_inherits() handles special S7 objects", {
+  Child := new_class(package = NULL)
+
+  expect_equal(class_inherits(S7_object(), S7_object), TRUE)
+  expect_equal(class_inherits(Child, S7_object), TRUE)
+  expect_equal(class_inherits(structure(1, class = "Child"), Child), FALSE)
 })
 
 test_that("can work with unions", {

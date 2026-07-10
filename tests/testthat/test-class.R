@@ -372,6 +372,18 @@ test_that("new_object() errors if `_parent` doesn't inherit from the parent clas
   })
 })
 
+test_that("new_object() accepts an instance of a subclass of the parent", {
+  Parent := new_class(package = NULL)
+  Sibling := new_class(parent = Parent, package = NULL)
+  Child := new_class(
+    parent = Parent,
+    package = NULL,
+    constructor = function(parent) new_object(parent)
+  )
+
+  expect_identical(S7_class(Child(Sibling())), Child)
+})
+
 test_that("new_object() allows S7_object placeholder for abstract parents", {
   Abstract := new_class(
     package = NULL,
