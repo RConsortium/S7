@@ -324,12 +324,8 @@ class_inherits <- function(x, what) {
     if (!has_S7_class(x)) {
       return(FALSE)
     } else {
-      dispatch <- attr(what, "_S7_dispatch", exact = TRUE)
-      class_name <- if (is.null(dispatch)) {
+      class_name <- attr(what, "_S7_dispatch", exact = TRUE)[[1]] %||%
         S7_class_name(what)
-      } else {
-        dispatch[[1]]
-      }
       return(inherits(x, class_name))
     }
   }
