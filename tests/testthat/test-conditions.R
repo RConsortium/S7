@@ -5,6 +5,10 @@ test_that("base condition classes have the right class vectors", {
     class(class_construct(class_warning)),
     c("warning", "condition")
   )
+  expect_equal(
+    class(class_construct(class_message)),
+    c("message", "condition")
+  )
 })
 
 test_that("can construct condition subclasses with S7 properties", {

@@ -5,6 +5,7 @@
 \alias{class_condition}
 \alias{class_error}
 \alias{class_warning}
+\alias{class_message}
 \title{S7 wrappers for base condition classes}
 \usage{
 class_condition
@@ -12,6 +13,8 @@ class_condition
 class_error
 
 class_warning
+
+class_message
 }
 \value{
 S7 classes wrapping around the base condition classes.
@@ -23,6 +26,7 @@ making it easier to use S7 to define custom condition classes:
 \item \code{class_condition} for conditions, the parent class of all conditions.
 \item \code{class_error} for errors, as signalled by \code{\link[=stop]{stop()}}.
 \item \code{class_warning} for warnings, as signalled by \code{\link[=warning]{warning()}}.
+\item \code{class_message} for messages, as signalled by \code{\link[=message]{message()}}.
 }
 
 These classes are lists with \code{message} and \code{call} elements, since base

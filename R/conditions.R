@@ -7,6 +7,7 @@
 #' * `class_condition` for conditions, the parent class of all conditions.
 #' * `class_error` for errors, as signalled by [stop()].
 #' * `class_warning` for warnings, as signalled by [warning()].
+#' * `class_message` for messages, as signalled by [message()].
 #'
 #' These classes are lists with `message` and `call` elements, since base
 #' accessors like [conditionMessage()] and [conditionCall()] retrieve these
@@ -65,5 +66,15 @@ class_error <- new_S3_class(
 class_warning <- new_S3_class(
   c("warning", "condition"),
   constructor = new_condition_constructor(c("warning", "condition")),
+  validator = validate_condition
+)
+
+#' @export
+#' @rdname base_condition_classes
+#' @format NULL
+#' @order 1
+class_message <- new_S3_class(
+  c("message", "condition"),
+  constructor = new_condition_constructor(c("message", "condition")),
   validator = validate_condition
 )
