@@ -6,3 +6,4 @@ docs
 compile_commands.json
 .cache
 .vscode
+tools/evolution/logs
