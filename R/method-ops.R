@@ -17,12 +17,11 @@ on_load_define_ops <- function() {
 #' @export
 Ops.S7_object <- function(e1, e2) {
   cnd <- tryCatch(
-    return(
-      if (missing(e2))
-        base_ops[[.Generic]](e1)
-      else
-        base_ops[[.Generic]](e1, e2)
-    ),
+    if (missing(e2)) {
+      return(base_ops[[.Generic]](e1))
+    } else {
+      return(base_ops[[.Generic]](e1, e2))
+    },
     S7_error_method_not_found = function(cnd) cnd
   )
 
