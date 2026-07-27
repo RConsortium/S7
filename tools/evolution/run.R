@@ -118,6 +118,7 @@ check_pkg <- function(pkg_dir, libs, dir) {
       value = TRUE
     )[[1]]
   )
+  dir.create(file.path(dir, "check"), showWarnings = FALSE)
   run_cmd(
     r_bin,
     c(
@@ -169,7 +170,9 @@ write_package <- function(
     file.path(dir, "NAMESPACE")
   )
 
-  writeLines(code, file.path(dir, "R", "code.R"))
+  # `code` may be NULL, e.g. when evoA 2.0.0 is nothing but NAMESPACE
+  # re-exports
+  writeLines(code %||% character(), file.path(dir, "R", "code.R"))
   writeLines(
     c(
       ".onLoad <- function(...) S7::S7_on_load()",
@@ -215,12 +218,23 @@ excerpt <- function(res, n = 6) {
   }
   lines <- sort(unique(c(interesting, interesting + 1)))
   lines <- lines[lines <= length(res$output)]
-  utils::head(res$output[lines], n)
+  scrub(utils::head(res$output[lines], n))
+}
+
+# Strip the session-specific work directory so results.md diffs cleanly
+# between runs.
+scrub <- function(lines) {
+  gsub(work, "<lab>", lines, fixed = TRUE)
 }
 
 # Setup ----------------------------------------------------------------------
 
-work <- file.path(tempdir(), "S7-evolution-lab")
+# Set S7_EVOLUTION_WORK to keep the work directory across runs (handy when
+# debugging a scenario: the fixture libraries survive the runner process).
+work <- Sys.getenv(
+  "S7_EVOLUTION_WORK",
+  file.path(tempdir(), "S7-evolution-lab")
+)
 base_lib <- file.path(work, "base-lib")
 dir.create(base_lib, recursive = TRUE, showWarnings = FALSE)
 
@@ -266,7 +280,28 @@ run_scenario <- function(sc) {
   stages[["evoB install (v1)"]] <- install_pkg(b_dir, lib, libs)
   stages[["evoB test (v1)"]] <- run_script(sc$b_test, libs, dir)
 
-  write_package(a_dir, "evoA", "2.0.0", "S7", sc$a_v2, exports = TRUE)
+  if (!is.null(sc$a_core)) {
+    core_dir <- file.path(dir, "evoACore")
+    write_package(
+      core_dir,
+      "evoACore",
+      "2.0.0",
+      "S7",
+      sc$a_core,
+      exports = TRUE
+    )
+    stages[["evoACore 2.0.0: install"]] <- install_pkg(core_dir, lib, libs)
+  }
+  a2_imports <- c("S7", if (!is.null(sc$a_core)) "evoACore")
+  write_package(
+    a_dir,
+    "evoA",
+    "2.0.0",
+    a2_imports,
+    sc$a_v2,
+    exports = TRUE,
+    extra_ns = sc$a_ns
+  )
   stages[["evoA 2.0.0: install"]] <- install_pkg(a_dir, lib, libs)
   stages[["evoB test (v2, stale)"]] <- run_script(sc$b_test, libs, dir)
 

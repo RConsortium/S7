@@ -12,7 +12,22 @@
 # another package's generic requires importing the generic, since
 # `method(evoA::gen, ...) <- f` is a replacement call and can't assign to
 # `evoA::gen`.
-scenario <- function(name, expect, a_v1, a_v2, b, b_test, b_ns = NULL) {
+#
+# `a_core` gives code for a third package, evoACore, that exists only at
+# version 2.0.0 (it's installed just before evoA 2.0.0, which imports it).
+# Use it to model evoA moving a generic or class to a lower-level package.
+scenario <- function(
+  name,
+  expect,
+  a_v1,
+  a_v2,
+  b,
+  b_test,
+  b_ns = NULL,
+  a_core = NULL,
+  a_ns = NULL
+) {
+  a_core <- substitute(a_core)
   list(
     name = name,
     expect = expect,
@@ -20,7 +35,9 @@ scenario <- function(name, expect, a_v1, a_v2, b, b_test, b_ns = NULL) {
     a_v2 = deparse_code(substitute(a_v2)),
     b = deparse_code(substitute(b)),
     b_test = deparse_code(substitute(b_test)),
-    b_ns = b_ns
+    b_ns = b_ns,
+    a_core = if (!is.null(a_core)) deparse_code(a_core),
+    a_ns = a_ns
   )
 }
 
@@ -230,6 +247,36 @@ scenarios <- list(
   ),
 
   scenario(
+    name = "gen-rename-wrapper",
+    expect = paste(
+      "A renames a generic and turns the old name into a deprecating wrapper",
+      "function. Callers of the old name keep working (with a warning), but",
+      "does downstream method registration on the old name still work, given",
+      "that the wrapper is not a generic?"
+    ),
+    a_v1 = {
+      gen1 := new_generic("x")
+    },
+    a_v2 = {
+      gen2 := new_generic("x")
+      gen1 <- function(x, ...) {
+        .Deprecated("gen2")
+        gen2(x, ...)
+      }
+    },
+    b = {
+      BClass := new_class(properties = list(val = class_double))
+      method(gen1, BClass) <- function(x, ...) paste0("B:", x@val)
+    },
+    b_test = {
+      library(evoB)
+      x <- evoB:::BClass(val = 1)
+      stopifnot(identical(suppressWarnings(evoA::gen1(x)), "B:1"))
+    },
+    b_ns = "importFrom(evoA, gen1)"
+  ),
+
+  scenario(
     name = "gen-add-dispatch-arg",
     expect = paste(
       "A converts a single-dispatch generic to double dispatch. Expect evoB",
@@ -241,6 +288,65 @@ scenarios <- list(
     },
     a_v2 = {
       gen := new_generic(c("x", "y"))
+    },
+    b = {
+      BClass := new_class(properties = list(val = class_double))
+      method(gen, BClass) <- function(x, ...) paste0("B:", x@val)
+    },
+    b_test = {
+      library(evoB)
+      x <- evoB:::BClass(val = 1)
+      stopifnot(identical(evoA::gen(x), "B:1"))
+    },
+    b_ns = "importFrom(evoA, gen)"
+  ),
+
+  scenario(
+    name = "gen-move-package",
+    expect = paste(
+      "A moves a generic to a lower-level package (evoACore) and re-exports",
+      "it. Expect B (which imports the generic from evoA) to keep working:",
+      "registration follows the generic object to its home package."
+    ),
+    a_v1 = {
+      gen := new_generic("x")
+    },
+    a_core = {
+      gen := new_generic("x")
+    },
+    a_v2 = {},
+    a_ns = c("importFrom(evoACore, gen)", "export(gen)"),
+    b = {
+      BClass := new_class(properties = list(val = class_double))
+      method(gen, BClass) <- function(x, ...) paste0("B:", x@val)
+    },
+    b_test = {
+      library(evoB)
+      x <- evoB:::BClass(val = 1)
+      stopifnot(identical(evoA::gen(x), "B:1"))
+      if (requireNamespace("evoACore", quietly = TRUE)) {
+        stopifnot(identical(evoACore::gen(x), "B:1"))
+      }
+    },
+    b_ns = "importFrom(evoA, gen)"
+  ),
+
+  scenario(
+    name = "gen-move-package-copy",
+    expect = paste(
+      "As gen-move-package, but evoA re-exports with a binding copy",
+      "(`gen <- evoACore::gen`) instead of a NAMESPACE re-export. Expect",
+      "dispatch to fail: the copy serialized into evoA has its own methods",
+      "table, separate from the one B registers into."
+    ),
+    a_v1 = {
+      gen := new_generic("x")
+    },
+    a_core = {
+      gen := new_generic("x")
+    },
+    a_v2 = {
+      gen <- evoACore::gen
     },
     b = {
       BClass := new_class(properties = list(val = class_double))
