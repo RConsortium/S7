@@ -158,6 +158,15 @@
   creating self-referential or mutually recursive classes
   ([\#250](https://github.com/RConsortium/S7/issues/250)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  is now substantially faster, because each class caches its own name
+  and dispatch vector, and class type detection has moved to C.
+  Construction is 1.4x faster for a class that directly extends
+  `S7_object`, rising to 2.4x faster for a class with 10 ancestors;
+  [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  is 1.5x faster and
+  [`super()`](https://rconsortium.github.io/S7/reference/super.md) is
+  2.1x faster ([\#723](https://github.com/RConsortium/S7/issues/723)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
