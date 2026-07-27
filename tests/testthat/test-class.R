@@ -285,6 +285,29 @@ test_that("inheritance doesn't let child properties widen or change the parent's
   })
 })
 
+test_that("dynamic child properties must also narrow the parent's type (#708)", {
+  foo1 := new_class(
+    properties = list(x = class_integer),
+    package = NULL
+  )
+
+  widen <- new_property(
+    class = class_character,
+    getter = function(self) "x"
+  )
+  expect_snapshot(
+    error = TRUE,
+    new_class(name = "foo2", parent = foo1, properties = list(x = widen))
+  )
+
+  narrow <- new_property(
+    class = class_integer,
+    getter = function(self) 1L
+  )
+  expect_no_error(
+    new_class(name = "foo3", parent = foo1, properties = list(x = narrow))
+  )
+})
 
 test_that("subclassing an external class defers errors until construction", {
   Ext := new_external_class("notloaded.pkg")
@@ -294,12 +317,6 @@ test_that("subclassing an external class defers errors until construction", {
   # error only surfaces when the property default is constructed.
   Child := new_class(parent = Parent, properties = list(x = Ext))
   expect_snapshot(Child(), error = TRUE)
-})
-
-test_that("inheritance lets dynamic child properties override any parent type", {
-  foo1 := new_class(properties = list(x = class_integer))
-  readonly <- new_property(class_character, getter = function(self) "x")
-  expect_no_error(new_class("foo2", foo1, properties = list(x = readonly)))
 })
 
 test_that("abstract classes can't be instantiated", {
