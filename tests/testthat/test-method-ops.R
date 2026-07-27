@@ -120,6 +120,7 @@ test_that("Ops generics falls back to base behaviour", {
   local_methods(base_ops[["+"]])
 
   foo := new_class(parent = class_double)
+  expect_equal(+foo(1), foo(+1))
   expect_equal(foo(1) + 1, foo(2))
   expect_equal(foo(1) + 1:2, 2:3)
   expect_equal(1 + foo(1), foo(2))
@@ -132,6 +133,9 @@ test_that("Ops generics falls back to base behaviour", {
   expect_equal(foo(1) + 1:2, "foo-numeric")
   expect_equal(1 + foo(1), "numeric-foo")
   expect_equal(1:2 + foo(1), "numeric-foo")
+
+  method(`+`, list(foo, class_missing)) <- function(e1, e2) "foo"
+  expect_equal(+foo(), "foo")
 })
 
 test_that("`%*%` dispatches to S7 methods", {
