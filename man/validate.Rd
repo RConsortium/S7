@@ -23,7 +23,8 @@ executing the validator.}
 \item{fun}{A function to call on the object before validation.}
 }
 \value{
-Either \code{object} invisibly if valid, otherwise an error.
+Either \code{object} invisibly if valid, otherwise an error of
+class \code{S7_error_validation_failed}
 }
 \description{
 \code{validate()} ensures that an S7 object is valid by calling the \code{validator}
@@ -42,7 +43,7 @@ you are certain a sequence of operations cannot produce an invalid object.
 }
 \examples{
 # A range class might validate that the start is less than the end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(start = class_double, end = class_double),
   validator = function(self) {
     if (self@start >= self@end) "start must be smaller than end"

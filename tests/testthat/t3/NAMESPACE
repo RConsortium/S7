@@ -1,0 +1,4 @@
+export(t3_s3)
+export(t3_s4)
+exportMethods(t3_s4)
+import(methods)

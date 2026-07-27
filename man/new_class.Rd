@@ -15,17 +15,22 @@ new_class(
   validator = NULL
 )
 
-new_object(.parent, ...)
+new_object(`_parent`, ...)
 }
 \arguments{
-\item{name}{The name of the class, as a string. The result of calling
-\code{new_class()} should always be assigned to a variable with this name,
-i.e. \code{Foo <- new_class("Foo")}.}
+\item{name}{The name of the class, as a string. (We recommend using
+CamelCase for S7 class names, but it is not required.)
+
+The result of calling \code{new_class()} should always be assigned to a variable
+with this name, i.e. \code{Foo <- new_class("Foo", ...)} or
+\code{Foo := new_class(...)}. This object both represents the class and is used
+to construct new instances of the class.}
 
 \item{parent}{The parent class to inherit behavior from.
-There are three options:
+There are four options:
 \itemize{
 \item An S7 class, like \link{S7_object}.
+\item An S4 class, like the result of \code{\link[methods:getClass]{methods::getClass()}}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
@@ -70,8 +75,12 @@ problem, using \verb{@prop_name} to describe where the problem lies.
 See \code{validate()} for more details, examples, and how to temporarily
 suppress validation when needed.}
 
-\item{.parent, ...}{Parent object and named properties used to construct the
-object.}
+\item{_parent, ...}{Parent object and named properties used to construct the
+object.
+
+As a convenience, if \code{...} is a single unnamed list, then the elements of
+that list are used as the properties. This makes it easy to
+programmatically construct an object from a list of property values.}
 }
 \value{
 A object constructor, a function that can be used to create objects
@@ -84,9 +93,23 @@ when an object is passed to a generic.
 
 Learn more in \code{vignette("classes-objects")}
 }
+\section{S4 compatibility}{
+
+\code{new_class()} can use an S4 class definition or class generator as its
+\code{parent}. S4 parent slots become S7 properties, the class is registered with
+S4 automatically, and S4 generics can dispatch through the S4 parent.
+
+S7 objects that directly extend S4 are represented as S3 old-class objects,
+so \code{isS4()} is \code{FALSE} even though \code{\link[methods:is]{methods::is()}} and S4 dispatch see the
+S4 parent. S4 classes can extend S7 classes by calling
+\code{\link[=S4_contains]{S4_contains()}} in \code{methods::setClass(contains = )}.
+
+See \code{vignette("compatibility")} for examples and caveats.
+}
+
 \examples{
 # Create an class that represents a range using a numeric start and end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric
@@ -104,7 +127,7 @@ try(Range(start = "hello", end = 20))
 
 # But we might also want to use a validator to ensure that start and end
 # are length 1, and that start is < end
-Range <- new_class("Range",
+Range := new_class(
   properties = list(
     start = class_numeric,
     end = class_numeric

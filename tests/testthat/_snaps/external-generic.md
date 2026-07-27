@@ -41,5 +41,5 @@
       new_class("Foo", properties = list(bar = modified_class))
     Condition
       Error:
-      ! `t0::An S7 Class` is not identical to the class with the same @package and @name properties
+      ! `t0::An S7 Class` is not identical to the class with the same @package and @name properties.
 

@@ -1,6 +1,4 @@
-#define R_NO_REMAP
-#include <R.h>
-#include <Rinternals.h>
+#include "compat.h"
 
 extern SEXP parent_sym;
 extern SEXP sym_ANY;
@@ -13,8 +11,10 @@ extern SEXP sym_name;
 
 extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
+extern SEXP missing_call;
 
 extern SEXP R_TRUE;
+extern SEXP s7_proto_object;
 
 
 static inline
@@ -50,7 +50,7 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
 
   for (R_xlen_t i = 0; i < Rf_xlength(classes); ++i) {
     SEXP klass = Rf_install(CHAR(STRING_ELT(classes, i)));
-    SEXP val = Rf_findVarInFrame(table, klass);
+    SEXP val = s7_get_var_in_frame(table, klass, R_NilValue);
     if (TYPEOF(val) == ENVSXP) {
       PROTECT(val); // no really necessary, but rchk flags spuriously
       val = method_rec(val, signature, signature_itr + 1);
@@ -62,7 +62,7 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   }
 
   // ANY fallback
-  SEXP val = Rf_findVarInFrame(table, sym_ANY);
+  SEXP val = s7_get_var_in_frame(table, sym_ANY, R_NilValue);
   if (TYPEOF(val) == ENVSXP) {
     PROTECT(val);
     val = method_rec(val, signature, signature_itr + 1);
@@ -86,12 +86,11 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   // Allocate a list to store the arguments
   SEXP args = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
-  SEXP missing_call = PROTECT(Rf_lang2(fn_base_missing, R_NilValue));
   PROTECT_INDEX pi;
   PROTECT_WITH_INDEX(R_NilValue, &pi);
 
   // Find the value of each argument.
-  SEXP formals = FORMALS(generic);
+  SEXP formals = getClosureFormals(generic);
   for (R_xlen_t i = 0; i < n_dispatch; ++i) {
     SEXP name = TAG(formals);
 
@@ -110,7 +109,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   }
   Rf_setAttrib(args, R_NamesSymbol, dispatch_args);
 
-  UNPROTECT(3);
+  UNPROTECT(2);
 
   return args;
 }
@@ -134,7 +133,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
 
   SEXP table = Rf_getAttrib(generic, sym_methods);
   if (TYPEOF(table) != ENVSXP) {
-    Rf_error("Corrupt S7_generic: @methods isn't an environment");
+    Rf_error("Corrupt S7_generic: @methods isn't an environment.");
   }
 
   SEXP m = method_rec(table, signature, 0);
@@ -157,11 +156,7 @@ SEXP S7_obj_dispatch(SEXP object) {
 }
 
 SEXP S7_object_(void) {
-  SEXP obj = PROTECT(Rf_allocSExp(S4SXP));
-  Rf_classgets(obj, Rf_mkString("S7_object"));
-  UNPROTECT(1);
-
-  return obj;
+  return Rf_duplicate(s7_proto_object);
 }
 
 SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
@@ -169,8 +164,14 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
 
+  if (!Rf_inherits(generic, "S7_generic")) {
+    SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
+    Rf_eval(err_call, ns_S7);
+    UNPROTECT(1); // never reached
+  }
+
   // Get the number of arguments to the generic
-  SEXP formals = FORMALS(generic);
+  SEXP formals = getClosureFormals(generic);
   R_xlen_t n_args = Rf_xlength(formals);
   // And how many are used for dispatch
   SEXP dispatch_args = Rf_getAttrib(generic, sym_dispatch_args);
@@ -195,9 +196,13 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
     if (i < n_dispatch) {
 
       SEXP arg = Rf_findVarInFrame(envir, name);
-      if (arg == R_MissingArg) {
 
-        APPEND_NODE(mcall_tail, name, arg);
+      SETCADR(missing_call, name);
+      int is_missing = Rf_asLogical(Rf_eval(missing_call, envir));
+
+      if (is_missing) {
+
+        APPEND_NODE(mcall_tail, name, R_MissingArg);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
 
       } else { // arg not missing, is a PROMSXP

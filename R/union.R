@@ -30,12 +30,12 @@
 #' # or with shortcut syntax
 #' logical_or_character <- class_logical | class_character
 #'
-#' Foo <- new_class("Foo", properties = list(x = logical_or_character))
+#' Foo := new_class(properties = list(x = logical_or_character))
 #' Foo(x = TRUE)
 #' Foo(x = letters[1:5])
 #' try(Foo(1:3))
 #'
-#' bar <- new_generic("bar", "x")
+#' bar := new_generic("x")
 #' # Use built-in union
 #' method(bar, class_atomic) <- function(x) "Hi!"
 #' bar
@@ -60,6 +60,7 @@ on_load_define_or_methods <- function() {
   registerS3method("|", "S7_union", `|.S7_class`)
   registerS3method("|", "S7_base_class", `|.S7_class`)
   registerS3method("|", "S7_S3_class", `|.S7_class`)
+  registerS3method("|", "S7_external_class", `|.S7_class`)
   registerS3method("|", "S7_any", `|.S7_class`)
   registerS3method("|", "S7_missing", `|.S7_class`)
   registerS3method("|", "classGeneratorFunction", `|.S7_class`)
@@ -82,7 +83,10 @@ str.S7_union <- function(object, ..., nest.lev = 0) {
 }
 
 class_flatten <- function(x) {
-  x <- lapply(x, as_class)
+  x <- lapply(
+    seq_along(x),
+    function(i) as_class(x[[i]], arg = sprintf("..%i", i))
+  )
 
   # Flatten unions
   is_union <- vlapply(x, is_union)

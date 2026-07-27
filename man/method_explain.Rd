@@ -7,9 +7,9 @@
 method_explain(generic, class = NULL, object = NULL)
 }
 \arguments{
-\item{generic}{A generic function, i.e. an \link[=new_generic]{S7 generic},
-an \link[=new_external_generic]{external generic}, an \link[=UseMethod]{S3 generic},
-or an \link[methods:setGeneric]{S4 generic}.}
+\item{generic}{An S7 generic, i.e. the result of \code{\link[=new_generic]{new_generic()}}. Unlike
+\link{method<-}, \code{method()} only works with S7 generics; it does not look up
+methods registered on S3 or S4 generics.}
 
 \item{class, object}{Perform introspection either with a \code{class}
 (processed with \code{\link[=as_class]{as_class()}}) or a concrete \code{object}. If \code{generic} uses
@@ -33,10 +33,10 @@ to avoid ambiguity.
 }
 }
 \examples{
-Foo1 <- new_class("Foo1")
-Foo2 <- new_class("Foo2", Foo1)
+Foo1 := new_class()
+Foo2 := new_class(Foo1)
 
-add <- new_generic("add", c("x", "y"))
+add := new_generic(c("x", "y"))
 method(add, list(Foo2, Foo1)) <- function(x, y) c(2, 1)
 method(add, list(Foo1, Foo1)) <- function(x, y) c(1, 1)
 

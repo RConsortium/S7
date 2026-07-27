@@ -1,13 +1,23 @@
-# super(): checks to
+# super() checks to
 
     Code
-      foo <- new_class("foo", package = NULL)
+      foo := new_class(package = NULL)
       super(foo(), class_character)
     Condition
       Error in `super()`:
-      ! <foo> doesn't inherit from <character>
+      ! <foo> doesn't inherit from <character>.
+    Code
+      super(foo(), class_numeric)
+    Condition
+      Error in `super()`:
+      ! `to` must be an S7, S3, S4, or base class, not an S7 union.
+    Code
+      super(foo(), NULL)
+    Condition
+      Error in `super()`:
+      ! `to` must be an S7, S3, S4, or base class, not NULL.
 
-# super(): displays nicely
+# super() displays nicely
 
     Code
       f1 <- super(foo2(), foo1)

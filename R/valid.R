@@ -19,11 +19,12 @@
 #' @param recursive If `TRUE`, calls validator of parent classes recursively.
 #' @param properties If `TRUE`, the default, checks property types before
 #'   executing the validator.
-#' @returns Either `object` invisibly if valid, otherwise an error.
+#' @returns Either `object` invisibly if valid, otherwise an error of
+#'   class `S7_error_validation_failed`
 #' @export
 #' @examples
 #' # A range class might validate that the start is less than the end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(start = class_double, end = class_double),
 #'   validator = function(self) {
 #'     if (self@start >= self@end) "start must be smaller than end"
@@ -65,6 +66,34 @@
 validate <- function(object, recursive = TRUE, properties = TRUE) {
   check_is_S7(object)
 
+  parent <- validate_parent(object, recursive)
+  validate_from(
+    object,
+    parent = parent,
+    properties = properties,
+    call = sys.call()
+  )
+}
+
+validate_parent <- function(object, recursive) {
+  if (!recursive) {
+    return(S7_class(object)@parent)
+  }
+
+  if (isS4(object) && has_S7_class(object)) {
+    return(S4_ancestor(S7_class(object)) %||% S7_object)
+  }
+
+  NULL
+}
+
+# validates `object` assuming `parent` (if supplied) has been validated
+validate_from <- function(
+  object,
+  parent = NULL,
+  properties = TRUE,
+  call = sys.call(-1L)
+) {
   if (!is.null(attr(object, ".should_validate"))) {
     return(invisible(object))
   }
@@ -74,29 +103,37 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   # First, check property types - if these are incorrect, the validator
   # is likely to return spurious errors
   if (properties) {
-    errors <- validate_properties(object, class)
+    errors <- validate_properties(object, class, parent_class = parent)
     if (length(errors) > 0) {
       bullets <- paste0("- ", errors, collapse = "\n")
-      msg <- sprintf("%s object properties are invalid:\n%s", obj_desc(object), bullets)
-      stop(msg, call. = FALSE)
+      msg <- sprintf(
+        "%s object properties are invalid:\n%s",
+        obj_desc(object),
+        bullets
+      )
+      stop2(msg, call = call, class = "S7_error_validation_failed")
     }
   }
 
-  # Next, recursively validate the object
+  # Next, walk up the class hierarchy and run validators, stopping at `parent`
   errors <- character()
   repeat {
     error <- class_validate(class, object)
-    if (is.null(error)) {
-
-    } else if (is.character(error)) {
+    if (is.null(error)) {} else if (is.character(error)) {
       append(errors) <- error
     } else {
-      stop(sprintf(
-        "%s validator must return NULL or a character, not <%s>.",
-        obj_desc(class), typeof(error)
-      ))
+      stop2(
+        sprintf(
+          "%s validator must return NULL or a character, not <%s>.",
+          obj_desc(class),
+          typeof(error)
+        ),
+        call = call
+      )
     }
-    if (!is_class(class) || !recursive) break
+    if (!is_class(class) || identical(class@parent, parent)) {
+      break
+    }
     class <- class@parent
   }
 
@@ -104,18 +141,23 @@ validate <- function(object, recursive = TRUE, properties = TRUE) {
   if (length(errors) > 0) {
     bullets <- paste0("- ", errors, collapse = "\n")
     msg <- sprintf("%s object is invalid:\n%s", obj_desc(object), bullets)
-    stop(msg, call. = FALSE)
+    stop2(msg, call = call, class = "S7_error_validation_failed")
   }
 
   invisible(object)
 }
 
-validate_properties <- function(object, class) {
+validate_properties <- function(object, class, parent_class = NULL) {
   errors <- character()
+  parent_props <- if (is_class(parent_class)) parent_class@properties
 
   for (prop_obj in class@properties) {
     # Don't validate dynamic properties
     if (!is.null(prop_obj$getter)) {
+      next
+    }
+    # Skip properties inherited unchanged from an already-validated parent
+    if (identical(parent_props[[prop_obj$name]], prop_obj)) {
       next
     }
 

@@ -1,4 +1,4 @@
-# S7 classes: print nicely
+# S7 classes print nicely
 
     Code
       foo2
@@ -8,8 +8,8 @@
       @ constructor: function(x, y) {...}
       @ validator  : <NULL>
       @ properties :
-       $ x: <integer>
-       $ y: <integer>
+       $ x: <integer> = integer(0)
+       $ y: <integer> = integer(0)
     Code
       str(foo2)
     Output
@@ -41,7 +41,7 @@
       List of 1
        $ : <foo2/foo1/S7_object> constructor
 
-# S7 classes: prints @package and @abstract details
+# S7 classes print @package and @abstract details
 
     Code
       foo
@@ -52,111 +52,175 @@
       @ validator  : <NULL>
       @ properties :
 
-# S7 classes: checks inputs
+# S7 classes show property defaults and read-only annotations
+
+    Code
+      Person
+    Output
+      <S7::Person> class
+      @ parent     : <S7_object>
+      @ constructor: function(implicit_default, implicit_complex, implicit_S7, default_value, default_expr) {...}
+      @ validator  : <NULL>
+      @ properties :
+       $ implicit_default: <character> = character(0)
+       $ implicit_complex: S3<Date>
+       $ implicit_S7: <S7::Address> = Address()
+       $ default_value: <character> = ""
+       $ default_expr: S3<Date> = Sys.Date()
+       $ read_only: <ANY> [read-only]
+
+# S7 classes check inputs
 
     Code
       new_class(1)
     Condition
-      Error:
-      ! `name` must be a single string
+      Error in `new_class()`:
+      ! `name` must be a single string.
     Code
       new_class("foo", 1)
     Condition
-      Error:
-      ! Can't convert `parent` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Error in `as_class()`:
+      ! Can't convert `parent` to a valid class.
+      Class specification must be one of the following, not a <double>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
     Code
       new_class("foo", package = 1)
     Condition
-      Error:
-      ! `package` must be a single string
+      Error in `new_class()`:
+      ! `package` must be a single string.
     Code
       new_class("foo", constructor = 1)
     Condition
-      Error:
-      ! `constructor` must be a function
+      Error in `new_class()`:
+      ! `constructor` must be a function.
     Code
       new_class("foo", constructor = function() { })
     Condition
-      Error:
-      ! `constructor` must contain a call to `new_object()`
+      Error in `new_class()`:
+      ! `constructor` must contain a call to `new_object()`.
     Code
       new_class("foo", validator = function() { })
     Condition
-      Error:
-      ! `validator` must be function(self), not function()
+      Error in `new_class()`:
+      ! `validator` must be function(self), not function().
 
-# S7 classes: can't inherit from S4 or class unions
+# inheritance doesn't let child properties widen or change the parent's type
 
     Code
-      new_class("test", parent = parentS4)
+      new_class("foo2", foo1, properties = list(x = class_character))
     Condition
-      Error:
-      ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
+      Error in `new_class()`:
+      ! <foo2>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo2>@x is <character>.
     Code
-      new_class("test", parent = new_union("character"))
+      new_class("foo3", foo1, properties = list(x = class_numeric))
     Condition
-      Error:
-      ! Can't convert `X[[i]]` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <character>.
-
-# S7 classes: can't inherit from an environment
-
+      Error in `new_class()`:
+      ! <foo3>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo3>@x is <integer> or <double>.
     Code
-      new_class("test", parent = class_environment)
+      new_class("foo4", foo1, properties = list(x = class_any))
     Condition
-      Error:
-      ! Can't inherit from an environment.
+      Error in `new_class()`:
+      ! <foo4>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo4>@x is <ANY>.
 
-# abstract classes: can't be instantiated
+# dynamic child properties must also narrow the parent's type (#708)
 
     Code
-      foo <- new_class("foo", abstract = TRUE)
+      new_class(name = "foo2", parent = foo1, properties = list(x = widen))
+    Condition
+      Error in `new_class()`:
+      ! <foo2>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo2>@x is <character>.
+
+# subclassing an external class defers errors until construction
+
+    Code
+      Child()
+    Condition
+      Error in `loadNamespace()`:
+      ! there is no package called 'notloaded.pkg'
+
+# abstract classes can't be instantiated
+
+    Code
+      foo := new_class(abstract = TRUE)
       foo()
     Condition
       Error in `S7::new_object()`:
-      ! Can't construct an object from abstract class <foo>
+      ! Can't construct an object from abstract class <foo>.
 
-# abstract classes: can't inherit from concrete class
+# abstract classes can't inherit from concrete class
 
     Code
-      foo1 <- new_class("foo1")
+      foo1 := new_class()
       new_class("foo2", parent = foo1, abstract = TRUE)
     Condition
       Error in `new_class()`:
-      ! Abstract classes must have abstract parents
+      ! Abstract classes must have abstract parents.
 
-# abstract classes: can use inherited validator from abstract class
+# abstract classes can use inherited validator from abstract class
 
     Code
       foo2(x = 2)
     Condition
-      Error:
+      Error in `foo2()`:
       ! <foo2> object is invalid:
       - @x has bad value
 
-# new_object(): gives useful error if called directly
+# new_object() gives useful error if called directly
 
     Code
       new_object()
     Condition
       Error in `new_object()`:
-      ! `new_object()` must be called from within a constructor
+      ! `new_object()` must be called from within a constructor.
 
-# new_object(): validates object
+# new_object() errors if `_parent` doesn't inherit from the parent class (#409)
+
+    Code
+      Foo()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must be an instance of <Bar>, not S3<S7_base_class>.
+    Code
+      Baz()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must be an instance of <integer>, not <character>.
+
+# new_object() errors if `_parent` is supplied but class has no parent
+
+    Code
+      NoParent()
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must not be supplied when class has no parent.
+
+# new_object() validates object
 
     Code
       foo("x")
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object properties are invalid:
       - @x must be <double>, not <character>
     Code
       foo(-1)
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object is invalid:
       - x must be positive
 
-# new_object(): runs each parent validator exactly once
+# new_object() runs each parent validator exactly once
 
     Code
       . <- A()
@@ -171,10 +235,10 @@
     Output
       A B C 
 
-# S7 object: displays nicely
+# S7 object displays nicely
 
     Code
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
+      foo := new_class(properties = list(x = class_double, y = class_double),
       package = NULL)
       foo()
     Output
@@ -189,10 +253,10 @@
         ..@ x: num(0) 
         ..@ y: num(0) 
 
-# S7 object: displays objects with data nicely
+# S7 object displays objects with data nicely
 
     Code
-      text <- new_class("text", class_character, package = NULL)
+      text := new_class(class_character, package = NULL)
       text("x")
     Output
       <text> chr "x"
@@ -202,7 +266,17 @@
       List of 1
        $ : <text> chr "x"
 
-# S7 object: displays list objects nicely
+# S7 object displays data.frame subclasses without error (#494)
+
+    Code
+      str(mydf(data.frame(a = 1:2, b = 1:2)))
+    Output
+      Classes 'mydf', 'S7_object' and 'data.frame':	2 obs. of  2 variables:
+      <mydf> 'data.frame':	2 obs. of  2 variables:
+       $ a: int  1 2
+       $ b: int  1 2
+
+# S7 object displays list objects nicely
 
     Code
       foo1(list(x = 1, y = list(a = 21, b = 22)), x = 3, y = list(a = 41, b = 42))
@@ -222,24 +296,21 @@
     Code
       c(foo1, foo1)
     Condition
+      Error in `c.S7_class()`:
+      ! Can not combine S7 class objects.
+
+# can't create class with `...` property name
+
+    Code
+      new_class("foo", properties = list(... = class_character))
+    Condition
+      Error in `new_class()`:
+      ! Properties can't be named "...".
+
+# S7_class() gives informative error if no S7 spec available
+
+    Code
+      S7_class(pairlist(x = 1))
+    Condition
       Error:
-      ! Can not combine S7 class objects
-
-# can't create class with reserved property names
-
-    Code
-      new_class("foo", properties = list(names = class_character))
-    Condition
-      Error in `new_class()`:
-      ! property can't be named: names
-    Code
-      new_class("foo", properties = list(dim = NULL | class_integer))
-    Condition
-      Error in `new_class()`:
-      ! property can't be named: dim
-    Code
-      new_class("foo", properties = list(dim = NULL | class_integer, dimnames = class_list))
-    Condition
-      Error in `new_class()`:
-      ! property can't be named: dim, dimnames
-
+      ! No S7 class for base type <pairlist>.

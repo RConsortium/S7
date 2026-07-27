@@ -49,13 +49,13 @@
       - x: <logical>
       - y: <logical>
 
-# method dispatch works for class_missing
+# dispatch fails cleanly when generic is not an S7 generic
 
     Code
-      foo_wrapper()
+      f()
     Condition
-      Error in `foo_wrapper()`:
-      ! argument "xx" is missing, with no default
+      Error in `S7_dispatch()`:
+      ! Must be called from within an S7 generic.
 
 # errors from dispatched methods have reasonable tracebacks
 

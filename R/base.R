@@ -3,18 +3,21 @@ new_base_class <- function(name, constructor_name = name) {
 
   constructor <- new_function(
     args = list(.data = base_default(name)),
-    body = quote(.data),
-    env = baseenv()
+    body = quote(.data)
   )
 
-  validator <- function(object) {
-    if (base_class(object) != name) {
-      sprintf("Underlying data must be <%s> not <%s>",
-              name, base_class(object))
-    }
-  }
-
-  validator <- utils::removeSource(validator)
+  validator <- new_function(
+    args = alist(object = ),
+    body = bquote(
+      if (base_class(object) != .(name)) {
+        sprintf(
+          "Underlying data must be <%s> not <%s>",
+          .(name),
+          base_class(object)
+        )
+      }
+    )
+  )
 
   out <- list(
     class = name,
@@ -27,12 +30,14 @@ new_base_class <- function(name, constructor_name = name) {
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass,S7_base_class)
+#' @exportS3Method NULL
 nameOfClass.S7_base_class <- function(x) {
   x[["class"]]
 }
 
 base_default <- function(type) {
-  switch(type,
+  switch(
+    type,
     logical = logical(),
     integer = integer(),
     double = double(),
@@ -46,10 +51,63 @@ base_default <- function(type) {
 
     `function` = quote(function() NULL),
     environment = quote(new.env(parent = emptyenv()))
-)}
+  )
+}
 
+base_class <- function(x) {
+  switch(
+    typeof(x),
+    closure = "function",
+    special = "function",
+    builtin = "function",
+    language = "call",
+    symbol = "name",
+    typeof(x)
+  )
+}
+
+base_S7_class <- function(x) {
+  switch(
+    base_class(x),
+    NULL = NULL,
+    logical = class_logical,
+    integer = class_integer,
+    double = class_double,
+    complex = class_complex,
+    character = class_character,
+    raw = class_raw,
+    list = class_list,
+    expression = class_expression,
+    name = class_name,
+    call = class_call,
+    `function` = class_function,
+    environment = class_environment,
+    stop2(sprintf("No S7 class for base type <%s>.", typeof(x)), call = NULL)
+  )
+}
 
 is_base_class <- function(x) inherits(x, "S7_base_class")
+
+# Default coercion to a base type via the corresponding `as.*()`. `convert()`
+# uses this as a last resort, so a base type target works without a registered
+# method, but only after any user method and the inheritance-based defaults.
+base_coerce <- function(from, to, ...) {
+  switch(
+    to$class,
+    logical = as.logical(from, ...),
+    integer = as.integer(from, ...),
+    double = as.double(from, ...),
+    complex = as.complex(from, ...),
+    character = as.character(from, ...),
+    raw = as.raw(from, ...),
+    list = as.list(from, ...),
+    expression = as.expression(from, ...),
+    name = as.name(from, ...),
+    call = as.call(from, ...),
+    `function` = as.function(from, ...),
+    environment = as.environment(from, ...)
+  )
+}
 
 #' @export
 print.S7_base_class <- function(x, ...) {
@@ -80,7 +138,11 @@ str.S7_base_class <- function(object, ..., nest.lev = 0) {
 #' * `class_name`
 #' * `class_call`
 #' * `class_function`
-#' * `class_environment` (can only be used for properties)
+#'
+#' For method registration and properties, you can use `NULL` directly.
+#'
+#' See also [class_environment] which is documented separately due to the
+#' complexities introduced by their reference semantics.
 #'
 #' We also include three union types to model numerics, atomics, and vectors
 #' respectively:
@@ -171,12 +233,6 @@ class_function <- new_base_class("function", "fun")
 #' @export
 #' @rdname base_classes
 #' @format NULL
-#' @order 1
-class_environment <- new_base_class("environment")
-
-#' @export
-#' @rdname base_classes
-#' @format NULL
 #' @order 2
 class_numeric <- NULL
 
@@ -201,7 +257,13 @@ class_language <- NULL
 # Define onload to avoid dependencies between files
 on_load_define_union_classes <- function() {
   class_numeric <<- new_union(class_integer, class_double)
-  class_atomic <<- new_union(class_logical, class_numeric, class_complex, class_character, class_raw)
+  class_atomic <<- new_union(
+    class_logical,
+    class_numeric,
+    class_complex,
+    class_character,
+    class_raw
+  )
   class_vector <<- new_union(class_atomic, class_expression, class_list)
   class_language <<- new_union(class_name, class_call)
 }

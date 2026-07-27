@@ -8,9 +8,9 @@
 \usage{
 props(object, names = prop_names(object))
 
-props(object) <- value
+props(object, check = TRUE) <- value
 
-set_props(object, ...)
+set_props(`_object`, ..., .check = TRUE)
 }
 \arguments{
 \item{object}{An object from a S7 class}
@@ -18,10 +18,17 @@ set_props(object, ...)
 \item{names}{A character vector of property names to retrieve. Default is all
 properties.}
 
+\item{check, .check}{If \code{TRUE}, run \code{\link[=validate]{validate()}} on the object
+before returning.}
+
 \item{value}{A named list of values. The object is checked for validity
 only after all replacements are performed.}
 
-\item{...}{Name-value pairs given property to modify and new value.}
+\item{_object}{The object to modify.}
+
+\item{...}{Name-value pairs given property to modify and new value. As a
+convenience, you can supply a single unnamed list instead of individual
+name-value pairs, which makes it easy to set properties programmatically.}
 }
 \value{
 A named list of property values.
@@ -36,7 +43,7 @@ object with new values for the specified properties.
 }
 }
 \examples{
-Horse <- new_class("Horse", properties = list(
+Horse := new_class(properties = list(
   name = class_character,
   colour = class_character,
   height = class_numeric

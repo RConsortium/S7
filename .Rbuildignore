@@ -18,3 +18,9 @@
 ^compile_commands\.json$
 ^\.cache$
 ^\.vscode$
+^revdep$
+^[.]?air[.]toml$
+^\.claude$
+^\.git-blame-ignore-revs$
+^AGENTS\.md$
+^\.lintr\.R$

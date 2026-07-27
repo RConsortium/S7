@@ -1,13 +1,12 @@
 test_that("can get and append methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_package("testpkg")
 
-  expect_equal(S7_methods_table("S7"), list())
+  expect_equal(S7_methods_table("testpkg"), list())
 
-  bar <- new_external_generic("foo", "bar", "x")
-  external_methods_add("S7", bar, list(), function() {})
+  bar := new_external_generic("foo", dispatch_args = "x")
+  external_methods_add("testpkg", bar, list(), function() {})
   expect_equal(
-    S7_methods_table("S7"),
+    S7_methods_table("testpkg"),
     list(
       list(
         generic = bar,
@@ -18,28 +17,53 @@ test_that("can get and append methods", {
   )
 })
 
-test_that("displays nicely", {
-  bar <- new_external_generic("foo", "bar", "x")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+test_that("re-adding a method replaces the existing entry", {
+  local_package("testpkg")
 
+  bar := new_external_generic("foo", dispatch_args = "x")
+  external_methods_add("testpkg", bar, list("A"), function() "a")
+  external_methods_add("testpkg", bar, list("A"), function() "b")
+  expect_length(S7_methods_table("testpkg"), 1)
+  expect_equal(S7_methods_table("testpkg")[[1]]$method(), "b")
+})
+
+test_that("can remove methods", {
+  local_package("testpkg")
+
+  bar := new_external_generic("foo", dispatch_args = "x")
+  baz := new_external_generic("foo", dispatch_args = "x")
+  external_methods_add("testpkg", bar, list("A"), function() "a")
+  external_methods_add("testpkg", baz, list("B"), function() "b")
+  expect_length(S7_methods_table("testpkg"), 2)
+
+  external_methods_remove("testpkg", bar, list("A"))
+  expect_length(S7_methods_table("testpkg"), 1)
+  expect_equal(S7_methods_table("testpkg")[[1]]$generic, baz)
+
+  # No-op when entry doesn't exist
+  external_methods_remove("testpkg", bar, list("A"))
+  expect_length(S7_methods_table("testpkg"), 1)
+})
+
+test_that("displays nicely", {
+  bar := new_external_generic("foo", dispatch_args = "x")
   expect_snapshot({
     print(bar)
   })
 })
 
 test_that("can convert existing generics to external", {
-  foo_S7 <- new_generic("foo_S7", "x")
-  env <- new.env()
-  env$.packageName <- "test"
-  environment(foo_S7) <- env
+  ns <- local_package("test", {
+    foo_S7 := new_generic("x")
+  })
 
   expect_equal(
-    as_external_generic(foo_S7),
+    as_external_generic(ns$foo_S7),
     new_external_generic("test", "foo_S7", "x")
   )
 
-  foo_ext <- new_external_generic("pkg", "foo", "x")
-  expect_equal(as_external_generic(foo_ext), foo_ext)
+  foo := new_external_generic("pkg", dispatch_args = "x")
+  expect_equal(as_external_generic(foo), foo)
 
   expect_equal(
     as_external_generic(as_S3_generic(sum)),
@@ -59,30 +83,15 @@ test_that("new_method works with both hard and soft dependencies", {
   skip_if(getRversion() < "4.1" && Sys.info()[["sysname"]] == "Windows")
   skip_if(quick_test())
 
-
-  on.exit({
-    .libPaths(old_libpaths)
-    try(detach("package:t2", unload = TRUE), silent = TRUE)
-    try(detach("package:t1", unload = TRUE), silent = TRUE)
-    try(detach("package:t0", unload = TRUE), silent = TRUE)
-    unlink(tmp_lib, recursive = TRUE)
-    # remove.packages(c("t1", "t0", "t2"))
-  })
-
-  tmp_lib <- tempfile()
-  dir.create(tmp_lib)
-  old_libpaths <- .libPaths()
-  .libPaths(c(tmp_lib, old_libpaths))
+  tmp_lib <- local_libpath()
 
   # t2 has a hard dependency on t0
   # t2 has a soft dependency on t1
 
   # First, ensure that t2 can install and run successfully without t1 installed
-  quick_install(test_path("t0"), tmp_lib)
-  quick_install(test_path("t2"), tmp_lib)
+  local_install_and_attach(test_path("t0"), tmp_lib)
+  local_install_and_attach(test_path("t2"), tmp_lib)
 
-  library("t2")
-  library("t0")
   expect_equal(an_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(an_s7_generic("x"), "foo")
 
@@ -90,12 +99,19 @@ test_that("new_method works with both hard and soft dependencies", {
   # to t0::AnS7Class() (and not inline the full class object).
   # As these tests grow, consider splitting this into a separate context like:
   #   test_that("package exported classes are not inlined in constructor formals", {...})
-  Foo <- new_class("Foo", properties = list(bar = t0::`An S7 Class`))
-  expect_identical(formals(Foo)                , as.pairlist(alist(bar = t0::`An S7 Class`())))
-  expect_identical(formals(t2::`An S7 Class 2`), as.pairlist(alist(bar = t0::`An S7 Class`())))
-  expect_identical(formals(t2:::`An Internal Class`), as.pairlist(alist(
-    foo = t0::`An S7 Class`(), bar = `An S7 Class 2`()
-  )))
+  Foo := new_class(properties = list(bar = t0::`An S7 Class`))
+  expect_identical(formals(Foo), as.pairlist(alist(bar = t0::`An S7 Class`())))
+  expect_identical(
+    formals(t2::`An S7 Class 2`),
+    as.pairlist(alist(bar = t0::`An S7 Class`()))
+  )
+  expect_identical(
+    formals(t2:::`An Internal Class`),
+    as.pairlist(alist(
+      foo = t0::`An S7 Class`(),
+      bar = `An S7 Class 2`()
+    ))
+  )
 
   expect_snapshot({
     args(Foo)
@@ -107,12 +123,18 @@ test_that("new_method works with both hard and soft dependencies", {
   # external class dependency is malformed.
   # https://github.com/RConsortium/S7/issues/477
   expect_snapshot(error = TRUE, {
-    new_class("Foo", properties = list(
-      bar = new_class("Made Up Class", package = "t0")
-    ))
-    new_class("Foo", properties = list(
-      bar = new_class("Made Up Class", package = "Made Up Package")
-    ))
+    new_class(
+      "Foo",
+      properties = list(
+        bar = new_class("Made Up Class", package = "t0")
+      )
+    )
+    new_class(
+      "Foo",
+      properties = list(
+        bar = new_class("Made Up Class", package = "Made Up Package")
+      )
+    )
 
     modified_class <- t0::`An S7 Class`
     attr(modified_class, "xyz") <- "abc"
@@ -120,12 +142,9 @@ test_that("new_method works with both hard and soft dependencies", {
   })
 
   # Now install the soft dependency
-  quick_install(test_path("t1"), tmp_lib)
-
-  library("t1")
+  local_install_and_attach(test_path("t1"), tmp_lib)
   expect_equal(another_s3_generic(t2::an_s7_class()), "foo")
   expect_equal(another_s7_generic("x"), "foo")
-
 
   ## Check again in a fresh session, with everything installed
   expect_no_error(callr::r(function() {
@@ -136,8 +155,9 @@ test_that("new_method works with both hard and soft dependencies", {
       t0::an_s7_generic("x") == "foo"
     })
 
-    if(isNamespaceLoaded("t1"))
+    if (isNamespaceLoaded("t1")) {
       stop("Prematurely loaded {t1}")
+    }
 
     stopifnot(exprs = {
       t1::another_s3_generic(an_s7_class()) == "foo"
@@ -146,5 +166,4 @@ test_that("new_method works with both hard and soft dependencies", {
 
     NULL
   }))
-
 })

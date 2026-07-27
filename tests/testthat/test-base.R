@@ -8,6 +8,11 @@ test_that("validation uses typeof", {
   expect_equal(class_function$validator(mean), NULL)
 })
 
+test_that("constructor and validator live in the S7 namespace (#553)", {
+  expect_identical(environment(class_integer$constructor), asNamespace("S7"))
+  expect_identical(environment(class_integer$validator), asNamespace("S7"))
+})
+
 test_that("base class display as expected", {
   expect_snapshot({
     class_integer
@@ -19,83 +24,82 @@ test_that("classes can inherit from base types", {
   base_classes <- c(class_vector$classes, list(class_function))
 
   for (class in base_classes) {
-    foo <- new_class("foo", parent = class)
+    foo := new_class(parent = class)
     expect_error(foo(), NA)
   }
 })
 
 
 test_that("Base classes can be a parent class", {
-
   expect_no_error({
     Foo := new_class(class_logical)
     Foo()
     Foo(TRUE)
   })
-  expect_error(Foo(1), "must be <logical> not <double>")
+  expect_error(Foo(1), "must be an instance of <logical>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_integer)
     Foo()
     Foo(1L)
   })
-  expect_error(Foo(1), "must be <integer> not <double>")
+  expect_error(Foo(1), "must be an instance of <integer>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_double)
     Foo()
     Foo(1)
   })
-  expect_error(Foo(1L), "must be <double> not <integer>")
+  expect_error(Foo(1L), "must be an instance of <double>, not <integer>")
 
   expect_no_error({
     Foo := new_class(class_complex)
     Foo()
     Foo(1 + 1i)
   })
-  expect_error(Foo(1), "must be <complex> not <double>")
+  expect_error(Foo(1), "must be an instance of <complex>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_character)
     Foo()
     Foo("a")
   })
-  expect_error(Foo(1), "must be <character> not <double>")
+  expect_error(Foo(1), "must be an instance of <character>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_raw)
     Foo()
     Foo(charToRaw("a"))
   })
-  expect_error(Foo(1), "must be <raw> not <double>")
+  expect_error(Foo(1), "must be an instance of <raw>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_list)
     Foo()
     Foo(list())
   })
-  expect_error(Foo(1), "must be <list> not <double>")
+  expect_error(Foo(1), "must be an instance of <list>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_expression)
     Foo()
     Foo(expression(1))
   })
-  expect_error(Foo(1), "must be <expression> not <double>")
+  expect_error(Foo(1), "must be an instance of <expression>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_call)
     Foo()
     Foo(quote(a()))
   })
-  expect_error(Foo(1), "must be <call> not <double>")
+  expect_error(Foo(1), "must be an instance of <call>, not <double>")
 
   expect_no_error({
     Foo := new_class(class_function)
     Foo()
     Foo(identity)
   })
-  expect_error(Foo(1), "must be <function> not <double>")
+  expect_error(Foo(1), "must be an instance of <function>, not <double>")
 
   # union types cannot be a parent:
   #
@@ -109,7 +113,6 @@ test_that("Base classes can be a parent class", {
 
   # class_environment cannot currently be a parent
   # (this is expected to change in the future)
-
 })
 
 
@@ -209,12 +212,10 @@ test_that("All base classes can be a property class", {
     Foo(x = 1)
   })
   expect_error(Foo(x = TRUE), "@x must be .*, not <logical>")
-
 })
 
 
 test_that("Base S3 classes can be parents", {
-
   expect_no_error({
     Foo := new_class(class_factor)
     Foo()
@@ -247,8 +248,10 @@ test_that("Base S3 classes can be parents", {
     Foo(list(x = 1))
     Foo(list(x = 1), "rowname")
   })
-  expect_error(Foo(list(x = 1:3, y = 1:4)),
-               "all variables should have the same length")
+  expect_error(
+    Foo(list(x = 1:3, y = 1:4)),
+    "All variables should have the same length."
+  )
 
   # expect_no_error({
   #   Foo := new_class(class_matrix)
@@ -272,16 +275,14 @@ test_that("Base S3 classes can be parents", {
 
   expect_no_error({
     Foo := new_class(class_formula)
-    Foo(~ x)
+    Foo(~x)
     Foo("~ x")
     Foo(call("~", 1, 2))
     Foo(quote(~x))
   })
-
 })
 
 test_that("Base S3 classes can be properties", {
-
   expect_no_error({
     Foo := new_class(properties = list(x = class_factor))
     Foo(x = factor())
@@ -308,7 +309,7 @@ test_that("Base S3 classes can be properties", {
 
   expect_no_error({
     Foo := new_class(properties = list(x = class_formula))
-    Foo(x = ~ x)
+    Foo(x = ~x)
   })
   expect_error(Foo(x = 1), "@x must be S3<formula>, not <double>")
 
@@ -336,9 +337,28 @@ test_that("Base S3 classes can be properties", {
     Foo(x = as.POSIXlt(Sys.time()))
   })
   expect_error(Foo(x = 1), "@x must be S3<POSIXt>, not <double>")
-
 })
 
+
+test_that("ALTREP vectors aren't materialised (#607)", {
+  skip_on_cran()
+
+  # The bug only triggers when `new_object()` is byte-compiled, which is the
+  # case for the installed package but not under `devtools::load_all()`. Force
+  # compilation here so the test reproduces in both contexts.
+  local_mocked_bindings(new_object = compiler::cmpfun(new_object))
+
+  # parent
+  myint := new_class(parent = class_integer)
+  expect_true(is_altrep_preserved(myint(seq_len(1e6))))
+
+  # properties, set during construction and via @<-
+  Foo := new_class(properties = list(x = class_integer))
+  y <- Foo(x = seq_len(1e6))
+  expect_true(is_altrep_preserved(y@x))
+  y@x <- seq_len(1e6)
+  expect_true(is_altrep_preserved(y@x))
+})
 
 test_that("inherits() works with S7_base_class", {
   # nameOfClass() introduced in R 4.3

@@ -10,7 +10,7 @@
 #' dependency, and sometimes you want a soft dependency, only registering the
 #' method if the package is already installed. `new_external_generic()` allows
 #' you to provide the minimal needed information about a generic so that methods
-#' can be registered at run time, as needed, using [methods_register()].
+#' can be registered at run time, as needed, using [S7_on_load()].
 #'
 #' Note that in tests, you'll need to explicitly call the generic from the
 #' external package with `pkg::generic()`.
@@ -24,7 +24,7 @@
 #'   `S7_external_generic`.
 #' @export
 #' @examples
-#' MyClass <- new_class("MyClass")
+#' MyClass := new_class()
 #'
 #' your_generic <- new_external_generic("stats", "median", "x")
 #' method(your_generic, MyClass) <- function(x) "Hi!"
@@ -40,8 +40,13 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
   out
 }
 
-as_external_generic <- function(x) {
-  if (is_S7_generic(x)) {
+as_external_generic <- function(x, env = parent.frame()) {
+  if (is_generic_sentinel(x)) {
+    # Sentinels are external generic specs with an extra marker class; keep
+    # this in sync with generic_sentinel().
+    class(x) <- "S7_external_generic"
+    x
+  } else if (is_S7_generic(x)) {
     pkg <- package_name(x)
     new_external_generic(pkg, x@name, x@dispatch_args)
   } else if (is_external_generic(x)) {
@@ -50,7 +55,8 @@ as_external_generic <- function(x) {
     pkg <- package_name(x$generic)
     new_external_generic(pkg, x$name, "__S3__")
   } else if (is_S4_generic(x)) {
-    new_external_generic(x@package, as.vector(x@generic), x@signature)
+    pkg <- S4_package_name(x, env)
+    new_external_generic(pkg, as.vector(x@generic), x@signature)
   }
 }
 
@@ -58,7 +64,12 @@ as_external_generic <- function(x) {
 print.S7_external_generic <- function(x, ...) {
   cat(
     "<S7_external_generic> ",
-    x$package, "::", x$name, "(", paste(x$dispatch_args, collapse = ", "), ")",
+    x$package,
+    "::",
+    x$name,
+    "(",
+    paste(x$dispatch_args, collapse = ", "),
+    ")",
     if (!is.null(x$version)) paste0(" (>= ", x$version, ")"),
     "\n",
     sep = ""
@@ -70,58 +81,51 @@ is_external_generic <- function(x) {
   inherits(x, "S7_external_generic")
 }
 
-#' Register methods in a package
-#'
-#' When using S7 in a package you should always call `methods_register()` when
-#' your package is loaded. This ensures that methods are registered as needed
-#' when you implement methods for generics (S3, S4, and S7) in other packages.
-#' (This is not strictly necessary if you only register methods for generics
-#' in your package, but it's better to include it and not need it than forget
-#' to include it and hit weird errors.)
-#'
-#' @importFrom utils getFromNamespace packageName
-#' @export
-#' @returns Nothing; called for its side-effects.
-#' @examples
-#' .onLoad <- function(...) {
-#'   S7::methods_register()
-#' }
-methods_register <- function() {
-  package <- packageName(parent.frame())
-  ns <- topenv(parent.frame())
-  # TODO?: check/enforce that methods_register() is being called from .onLoad()
-
-  tbl <- S7_methods_table(package)
-
-  for (x in tbl) {
-    register <- registrar(x$generic, x$signature, x$method, ns)
-
-    if (isNamespaceLoaded(x$generic$package)) {
-      register()
-    } else {
-      setHook(packageEvent(x$generic$package, "onLoad"), register)
-    }
-  }
-
-  invisible()
+external_generic_available <- function(generic) {
+  is_external_generic(generic) && dep_available(generic)
 }
 
 registrar <- function(generic, signature, method, env) {
   # Force all arguments
-  generic; signature; method; env;
+  generic
+  signature
+  method
+  env
 
   function(...) {
-    ns <- asNamespace(generic$package)
-    if (is.null(generic$version) || getNamespaceVersion(ns) >= generic$version) {
-      if (!exists(generic$name, envir = ns, inherits = FALSE)) {
-        msg <- sprintf("[S7] Failed to find generic %s() in package %s", generic$name, generic$package)
-        warning(msg, call. = FALSE)
-      } else {
-        generic_fun <- get(generic$name, envir = ns, inherits = FALSE)
-        register_method(generic_fun, signature, method, env, package = NULL)
-      }
+    deps <- method_deps(generic, signature)
+    if (!every(deps, dep_available)) {
+      return(invisible())
     }
+
+    generic_fun <- resolve_generic(generic)
+    if (is.null(generic_fun)) {
+      return(invisible())
+    }
+
+    signature <- resolve_signature(signature, packageName(env))
+    register_method(generic_fun, signature, method, env, package = NULL)
+    invisible()
   }
+}
+
+method_deps <- function(generic, signature) {
+  c(list(generic), signature_deps(signature))
+}
+method_deps_packages <- function(deps) {
+  unique(vcapply(deps, function(dep) dep$package))
+}
+signature_deps <- function(signature) {
+  deps <- lapply(signature, function(x) {
+    if (is_external_class(x)) {
+      list(x)
+    } else if (is_union(x)) {
+      signature_deps(x$classes)
+    } else {
+      list()
+    }
+  })
+  unlist(deps, recursive = FALSE, use.names = FALSE)
 }
 
 external_methods_reset <- function(package) {
@@ -129,14 +133,59 @@ external_methods_reset <- function(package) {
   invisible()
 }
 
-external_methods_add <- function(package, generic, signature, method) {
-  tbl <- S7_methods_table(package)
 
-  append1(tbl) <- list(generic = generic,
-                       signature = signature,
-                       method = method)
+resolve_generic <- function(generic) {
+  generic <- resolve_generic_opt(generic)
+  if (is.null(generic)) {
+    warning(
+      sprintf(
+        "[S7] Failed to find generic %s() in package %s",
+        generic$name,
+        generic$package
+      ),
+      call. = FALSE
+    )
+  }
+  generic
+}
+resolve_generic_opt <- function(generic) {
+  ns <- asNamespace(generic$package)
+  get(generic$name, envir = ns, inherits = FALSE)
+}
+
+
+external_methods_add <- function(
+  package,
+  generic,
+  signature,
+  method
+) {
+  # Remove any existing entries
+  external_methods_remove(package, generic, signature)
+
+  entry <- list(
+    generic = generic,
+    signature = signature,
+    method = method
+  )
+
+  tbl <- S7_methods_table(package)
+  append1(tbl) <- entry
 
   S7_methods_table(package) <- tbl
+  invisible()
+}
+
+external_methods_remove <- function(package, generic, signature) {
+  tbl <- S7_methods_table(package)
+  if (length(tbl) == 0) {
+    return(invisible())
+  }
+
+  keep <- !vlapply(tbl, function(x) {
+    identical(x$generic, generic) && identical(x$signature, signature)
+  })
+  S7_methods_table(package) <- tbl[keep]
   invisible()
 }
 

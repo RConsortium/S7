@@ -1,5 +1,5 @@
 test_that("can standardise generics", {
-  foo_S7 <- new_generic("foo", "x")
+  foo_S7 := new_generic("x")
   methods::setGeneric("foo_S4", function(x) {})
 
   expect_equal(as_generic(foo_S7), foo_S7)
@@ -14,6 +14,7 @@ test_that("can standardise generics", {
 
 test_that("base ops use S7 shim", {
   expect_equal(as_generic(`+`), base_ops[["+"]])
-  if(getRversion() >= "4.3.0")
+  if (getRversion() >= "4.3.0") {
     expect_equal(as_generic(`%*%`), base_matrix_ops[["%*%"]])
+  }
 })

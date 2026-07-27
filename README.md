@@ -9,7 +9,7 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/RConsortium/S7/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/RConsortium/S7/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/RConsortium/S7/branch/main/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/S7?branch=main)
+coverage](https://codecov.io/gh/RConsortium/S7/graph/badge.svg)](https://app.codecov.io/gh/RConsortium/S7)
 <!-- badges: end -->
 
 The S7 package is a new OOP system designed to be a successor to S3 and
@@ -47,10 +47,12 @@ library(S7)
 ### Classes and objects
 
 S7 classes have a formal definition, which includes a list of properties
-and an optional validator. Use `new_class()` to define a class:
+and an optional validator. Use `new_class()` to define a class, with the
+`:=` operator supplying its name from the variable that you assign the
+result to:
 
 ``` r
-range <- new_class("range",
+Range := new_class(
   properties = list(
     start = class_double,
     end = class_double
@@ -71,9 +73,9 @@ range <- new_class("range",
 you use to create instances of the class:
 
 ``` r
-x <- range(start = 1, end = 10)
+x <- Range(start = 1, end = 10)
 x
-#> <range>
+#> <Range>
 #>  @ start: num 1
 #>  @ end  : num 10
 ```
@@ -88,7 +90,7 @@ x@start
 #> [1] 1
 x@end <- 20
 x
-#> <range>
+#> <Range>
 #>  @ start: num 1
 #>  @ end  : num 20
 ```
@@ -98,9 +100,11 @@ Properties are automatically validated against the type declared in
 
 ``` r
 x@end <- "x"
-#> Error: <range>@end must be <double>, not <character>
+#> Error in `<Range>@end`:
+#> ! <Range>@end must be <double>, not <character>
 x@end <- -1
-#> Error: <range> object is invalid:
+#> Error:
+#> ! <Range> object is invalid:
 #> - @end must be greater than or equal to @start
 ```
 
@@ -112,14 +116,14 @@ calls: `generic(object, arg2, arg3)`. This style is called functional
 because from the outside it looks like a regular function call, and
 internally the components are also functions.
 
-Use `new_generic()` to create a new generic: the first argument is the
-generic name (used in error messages) and the second gives the arguments
-used for dispatch. The third, and optional argument, supplies the body
-of the generic. This is only needed if your generic has additional
-arguments that aren’t used for method dispatch.
+Use `new_generic()` to create a new generic: it needs the generic’s name
+(again supplied with `:=`, and used in error messages) and the arguments
+used for dispatch. The optional `fun` argument supplies the body of the
+generic. This is only needed if your generic has additional arguments
+that aren’t used for method dispatch.
 
 ``` r
-inside <- new_generic("inside", "x")
+inside := new_generic("x")
 ```
 
 Once you have a generic, you can define a method for a specific class
@@ -127,7 +131,7 @@ with `method<-`:
 
 ``` r
 # Add a method for our class
-method(inside, range) <- function(x, y) {
+method(inside, Range) <- function(x, y) {
   y >= x@start & y <= x@end
 }
 

@@ -26,7 +26,7 @@
 #' For example, imagine that you have made a subclass of "integer":
 #'
 #' ```{r}
-#' MyInt <- new_class("MyInt", parent = class_integer, package = NULL)
+#' MyInt := new_class(parent = class_integer, package = NULL)
 #' ```
 #'
 #' Now you go to write a custom print method:
@@ -55,17 +55,19 @@
 #' MyInt(10L)
 #' ```
 #'
-#' @param from An S7 object to cast.
-#' @param to An S7 class specification, passed to [as_class()]. Must be a
-#'   superclass of `object`.
+#' @param from An object to cast. Usually an S7 object, but `super()` also
+#'   works with S3 and S4 objects, as long as their dispatch chain includes
+#'   `to`.
+#' @param to A class specification, passed to [as_class()]. Must be a
+#'   superclass of `from`.
 #' @returns An `S7_super` object which should always be passed
 #'   immediately to a generic. It has no other special behavior.
 #' @export
 #' @examples
-#' Foo1 <- new_class("Foo1", properties = list(x = class_numeric, y = class_numeric))
-#' Foo2 <- new_class("Foo2", Foo1, properties = list(z = class_numeric))
+#' Foo1 := new_class(properties = list(x = class_numeric, y = class_numeric))
+#' Foo2 := new_class(Foo1, properties = list(z = class_numeric))
 #'
-#' total <- new_generic("total", "x")
+#' total := new_generic("x")
 #' method(total, Foo1) <- function(x) x@x + x@y
 #'
 #' # This won't work because it'll be stuck in an infinite loop:
@@ -83,11 +85,11 @@
 #' # To see the difference between convert() and super() we need a
 #' # method that calls another generic
 #'
-#' bar1 <- new_generic("bar1", "x")
+#' bar1 := new_generic("x")
 #' method(bar1, Foo1) <- function(x) 1
 #' method(bar1, Foo2) <- function(x) 2
 #'
-#' bar2 <- new_generic("bar2", "x")
+#' bar2 := new_generic("x")
 #' method(bar2, Foo1) <- function(x) c(1, bar1(x))
 #' method(bar2, Foo2) <- function(x) c(2, bar1(x))
 #'
@@ -98,17 +100,21 @@
 #' # super() only affects the _next_ call to a generic:
 #' bar2(super(obj, to = Foo1))
 super <- function(from, to) {
-  check_is_S7(from)
-
   to <- as_class(to)
-  check_can_inherit(to)
+  if (!class_type(to) %in% c("S7", "S7_base", "S7_S3", "S4")) {
+    msg <- sprintf(
+      "`to` must be an S7, S3, S4, or base class, not %s.",
+      class_friendly(to)
+    )
+    stop2(msg)
+  }
   if (!class_inherits(from, to)) {
     msg <- sprintf(
-      "%s doesn't inherit from %s",
+      "%s doesn't inherit from %s.",
       obj_desc(from),
       class_desc(to)
     )
-    stop(msg)
+    stop2(msg)
   }
 
   # Must not change order of these fields as C code indexes by position
@@ -129,5 +135,12 @@ print.S7_super <- function(x, ...) {
 #' @export
 str.S7_super <- function(object, ..., nest.lev = 0) {
   cat(if (nest.lev > 0) " ")
-  cat("super(", obj_desc(object$object), ", <", object$dispatch[[1]], ">)", sep = "")
+  cat(
+    "super(",
+    obj_desc(object$object),
+    ", <",
+    object$dispatch[[1]],
+    ">)",
+    sep = ""
+  )
 }

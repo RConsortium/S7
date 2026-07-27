@@ -7,10 +7,12 @@
 super(from, to)
 }
 \arguments{
-\item{from}{An S7 object to cast.}
+\item{from}{An object to cast. Usually an S7 object, but \code{super()} also
+works with S3 and S4 objects, as long as their dispatch chain includes
+\code{to}.}
 
-\item{to}{An S7 class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
-superclass of \code{object}.}
+\item{to}{A class specification, passed to \code{\link[=as_class]{as_class()}}. Must be a
+superclass of \code{from}.}
 }
 \value{
 An \code{S7_super} object which should always be passed
@@ -24,7 +26,7 @@ superclass.
 \subsection{S3 & S4}{
 
 \code{super()} performs a similar role to \code{\link[=NextMethod]{NextMethod()}} in S3 or
-\code{\link[methods:NextMethod]{methods::callNextMethod()}} in S4, but is much more explicit:
+\code{\link[methods:callNextMethod]{methods::callNextMethod()}} in S4, but is much more explicit:
 \itemize{
 \item The super class that \code{super()} will use is known when write \code{super()}
 (i.e. statically) as opposed to when the generic is called
@@ -42,7 +44,7 @@ understand and reason about.
 Note that you can't use \code{super()} in methods for an S3 generic.
 For example, imagine that you have made a subclass of "integer":
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{MyInt <- new_class("MyInt", parent = class_integer, package = NULL)
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{MyInt := new_class(parent = class_integer, package = NULL)
 }\if{html}{\out{</div>}}
 
 Now you go to write a custom print method:
@@ -73,10 +75,10 @@ MyInt(10L)
 }
 }
 \examples{
-Foo1 <- new_class("Foo1", properties = list(x = class_numeric, y = class_numeric))
-Foo2 <- new_class("Foo2", Foo1, properties = list(z = class_numeric))
+Foo1 := new_class(properties = list(x = class_numeric, y = class_numeric))
+Foo2 := new_class(Foo1, properties = list(z = class_numeric))
 
-total <- new_generic("total", "x")
+total := new_generic("x")
 method(total, Foo1) <- function(x) x@x + x@y
 
 # This won't work because it'll be stuck in an infinite loop:
@@ -94,11 +96,11 @@ total(Foo2(1, 2, 3))
 # To see the difference between convert() and super() we need a
 # method that calls another generic
 
-bar1 <- new_generic("bar1", "x")
+bar1 := new_generic("x")
 method(bar1, Foo1) <- function(x) 1
 method(bar1, Foo2) <- function(x) 2
 
-bar2 <- new_generic("bar2", "x")
+bar2 := new_generic("x")
 method(bar2, Foo1) <- function(x) c(1, bar1(x))
 method(bar2, Foo2) <- function(x) c(2, bar1(x))
 

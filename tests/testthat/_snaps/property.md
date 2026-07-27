@@ -1,64 +1,112 @@
-# property retrieval: retrieves the properties that exist & errors otherwise
+# property retrieval retrieves the properties that exist & errors otherwise
 
-    Can't find property <foo>@x
+    Code
+      prop(obj, "x")
+    Condition
+      Error in `<foo>@x`:
+      ! Property not found.
+    Code
+      obj@x
+    Condition
+      Error in `<foo>@x`:
+      ! Property not found.
 
----
-
-    Can't find property <foo>@x
-
-# prop setting: can't set read-only properties
+# prop setting can't set read-only properties
 
     Code
       obj@x <- 1
     Condition
-      Error:
-      ! Can't set read-only property <foo>@x
+      Error in `<foo>@x`:
+      ! Can't set read-only property.
 
-# prop setting: errors if the property doesn't exist or is wrong class
+# prop setting errors if the property doesn't exist or is wrong class
 
     Code
       obj <- foo(123)
       obj@foo <- 10
     Condition
-      Error:
-      ! Can't find property <foo>@foo
+      Error in `<foo>@foo`:
+      ! Property not found.
     Code
       obj@x <- "x"
     Condition
-      Error:
+      Error in `<foo>@x`:
       ! <foo>@x must be <double>, not <character>
 
-# prop setting: validates all attributes if custom setter
+# prop setting validates all attributes if custom setter
 
     Code
       obj <- foo(y = 123, x = 123)
       obj@x <- "x"
     Condition
-      Error:
+      Error in `<foo>@y`:
       ! <foo>@y must be <double>, not <character>
 
-# new_property(): validates getter and settor
+# prop setting gives informative error if setter doesn't return an S7 object (#416)
+
+    Code
+      foo(x = 1.1)
+    Condition
+      Error in `<foo>@x`:
+      ! Custom setter must return an <S7_object>, not <integer>.
+
+# props<- with `check = FALSE` skips validation
+
+    Code
+      validate(obj)
+    Condition
+      Error in `validate()`:
+      ! <S7::foo> object is invalid:
+      - bad
+
+# props<- set_props() skips validation with `.check = FALSE`
+
+    Code
+      validate(obj2)
+    Condition
+      Error in `validate()`:
+      ! <S7::foo> object is invalid:
+      - bad
+
+# new_property() validates getter and setter
 
     Code
       new_property(getter = function(x) { })
     Condition
-      Error:
-      ! `getter` must be function(self), not function(x)
+      Error in `new_property()`:
+      ! `getter` must be function(self), not function(x).
     Code
       new_property(setter = function(x, y, z) { })
     Condition
-      Error:
-      ! `setter` must be function(self, value), not function(x, y, z)
+      Error in `new_property()`:
+      ! `setter` must be function(self, value) or function(self, name, value), not function(x, y, z).
 
-# new_property(): validates default
+# new_property() validates default
 
     Code
       new_property(class_integer, default = "x")
     Condition
       Error in `new_property()`:
-      ! `default` must be an instance of <integer>, not a <character>
+      ! `default` must be an instance of <integer>, not a <character>.
 
-# new_property(): displays nicely
+# new_property() warns if default is not a scalar or quoted call
+
+    Code
+      . <- new_property(class_integer, default = c(any = 1L))
+    Condition
+      Warning in `new_property()`:
+      `default` should be a scalar or a quoted call, not a <integer>.
+      * Did you mean `default = quote(c(any = 1L))`?
+      * This warning will become an error in a future release.
+    Code
+      . <- new_property(class_POSIXct, default = Sys.time())
+    Condition
+      Warning in `new_property()`:
+      `default` should be a scalar or a quoted call, not a S3<POSIXct/POSIXt>.
+      * Did you mean `default = quote(Sys.time())`?
+      * This warning will become an error in a future release.
+
+# new_property() displays nicely
 
     Code
       print(x)
@@ -92,45 +140,45 @@
       @ constructor: function(anything, null, base, S3, S4, S7, S7_union) {...}
       @ validator  : <NULL>
       @ properties :
-       $ anything: <ANY>                 
-       $ null    : <NULL>                
-       $ base    : <integer>             
-       $ S3      : S3<factor>            
-       $ S4      : S4<class_S4>          
-       $ S7      : <class_S7>            
-       $ S7_union: <integer> or <logical>
+       $ anything: <ANY>
+       $ null: <NULL> = NULL
+       $ base: <integer> = integer(0)
+       $ S3: S3<factor>
+       $ S4: S4<class_S4> = class_S4()
+       $ S7: <class_S7> = class_S7()
+       $ S7_union: <integer> or <logical> = integer(0)
 
 ---
 
     Code
       my_obj@null <- "x"
     Condition
-      Error:
+      Error in `<my_class>@null`:
       ! <my_class>@null must be <NULL>, not <character>
     Code
       my_obj@base <- "x"
     Condition
-      Error:
+      Error in `<my_class>@base`:
       ! <my_class>@base must be <integer>, not <character>
     Code
       my_obj@S3 <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S3`:
       ! <my_class>@S3 must be S3<factor>, not <character>
     Code
       my_obj@S4 <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S4`:
       ! <my_class>@S4 must be S4<class_S4>, not <character>
     Code
       my_obj@S7 <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S7`:
       ! <my_class>@S7 must be <class_S7>, not <character>
     Code
       my_obj@S7_union <- "x"
     Condition
-      Error:
+      Error in `<my_class>@S7_union`:
       ! <my_class>@S7_union must be <integer> or <logical>, not <character>
 
 # as_properties() gives useful error messages
@@ -139,7 +187,7 @@
       as_properties(1)
     Condition
       Error:
-      ! `properties` must be a list
+      ! `properties` must be a list.
     Code
       as_properties(list(1))
     Condition
@@ -153,13 +201,18 @@
     Code
       as_properties(list(x = 1))
     Condition
-      Error:
-      ! Can't convert `property$x` to a valid class. Class specification must be an S7 class object, the result of `new_S3_class()`, an S4 class object, or a base class, not a <double>.
+      Error in `as_class()`:
+      ! Can't convert `property$x` to a valid class.
+      Class specification must be one of the following, not a <double>:
+       * An S7 class object
+       * An S3 class object (from `new_S3_class()`)
+       * An S4 class object
+       * A base class
     Code
       as_properties(list(x = class_character, x = class_character))
     Condition
       Error:
-      ! `properties` names must be unique
+      ! `properties` names must be unique.
 
 # can validate with custom validator
 
@@ -167,14 +220,32 @@
       f <- foo(x = 1L)
       f@x <- 1:2
     Condition
-      Error:
+      Error in `<foo>@x`:
       ! <foo>@x must be length 1
     Code
       foo(x = 1:2)
     Condition
-      Error:
+      Error in `foo()`:
       ! <foo> object properties are invalid:
       - @x must be length 1
+
+# property validation runs the class's own validator
+
+    Code
+      Foo(x = bad)
+    Condition
+      Error in `Foo()`:
+      ! <Foo> object properties are invalid:
+      - @x: Not enough 'levels' for underlying data
+
+# property validation runs an S4 class's validity method
+
+    Code
+      Foo(x = bad)
+    Condition
+      Error in `Foo()`:
+      ! <Foo> object properties are invalid:
+      - @x: n must be positive
 
 # prop<- won't infinitly recurse on a custom setter
 

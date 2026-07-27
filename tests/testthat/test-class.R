@@ -1,242 +1,579 @@
-describe("S7 classes", {
-  it("possess expected properties", {
-    foo <- new_class("foo", package = "S7", validator = function(self) NULL)
+test_that("S7 classes possess expected properties", {
+  foo := new_class(package = "S7", validator = function(self) NULL)
 
-    expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
-    expect_type(foo@name, "character")
-    expect_equal(foo@parent, S7_object)
-    expect_type(foo@constructor, "closure")
-    expect_type(foo@validator, "closure")
-    expect_type(foo@properties, "list")
-  })
+  expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
+  expect_type(foo@name, "character")
+  expect_equal(foo@parent, S7_object)
+  expect_type(foo@constructor, "closure")
+  expect_type(foo@validator, "closure")
+  expect_type(foo@properties, "list")
+})
 
-  it("print nicely", {
-    foo1 <- new_class("foo1", properties = list(x = class_integer, y = class_integer), package = NULL)
-    foo2 <- new_class("foo2", foo1, package = NULL)
+test_that("S7 classes print nicely", {
+  foo1 := new_class(
+    properties = list(x = class_integer, y = class_integer),
+    package = NULL
+  )
+  foo2 := new_class(foo1, package = NULL)
 
-    expect_snapshot({
-      foo2
+  expect_snapshot({
+    foo2
 
-      str(foo2)
-      # Omit details when nested
-      str(list(foo2))
-    })
-  })
-
-  it("prints @package and @abstract details", {
-    foo <- new_class("foo", package = "S7", abstract = TRUE)
-    expect_snapshot(foo)
-  })
-
-  it("checks inputs", {
-    expect_snapshot(error = TRUE, {
-      new_class(1)
-      new_class("foo", 1)
-
-      new_class("foo", package = 1)
-
-      new_class("foo", constructor = 1)
-      new_class("foo", constructor = function() {})
-
-      new_class("foo", validator = function() {})
-    })
-  })
-
-  it("can't inherit from S4 or class unions", {
-    parentS4 <- methods::setClass("parentS4", slots = c(x = "numeric"))
-    expect_snapshot(error = TRUE, {
-      new_class("test", parent = parentS4)
-      new_class("test", parent = new_union("character"))
-    })
-  })
-
-  it("can't inherit from an environment", {
-    expect_snapshot(error = TRUE, {
-      new_class("test", parent = class_environment)
-    })
+    str(foo2)
+    # Omit details when nested
+    str(list(foo2))
   })
 })
 
-describe("inheritance", {
-  it("combines properties for parent classes", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
-    expect_equal(names(foo2@properties), c("x", "y"))
-  })
-  it("child properties override parent", {
-    foo1 <- new_class("foo1", properties = list(x = class_numeric))
-    foo2 <- new_class("foo2", foo1, properties = list(x = class_double))
-    expect_equal(names(foo2@properties), "x")
-    expect_equal(foo2@properties$x$class, class_double)
+test_that("S7 classes print @package and @abstract details", {
+  foo := new_class(package = "S7", abstract = TRUE)
+  expect_snapshot(foo)
+})
+
+test_that("S7 classes show property defaults and read-only annotations", {
+  Address := new_class(package = "S7")
+  Person := new_class(
+    properties = list(
+      implicit_default = new_property(class_character),
+      implicit_complex = new_property(class_Date),
+      implicit_S7 = new_property(Address),
+      default_value = new_property(class_character, default = ""),
+      default_expr = new_property(class_Date, default = quote(Sys.Date())),
+      read_only = new_property(getter = \(self) Sys.Date() - self@birthdate)
+    ),
+    package = "S7"
+  )
+  expect_snapshot(Person)
+})
+
+test_that("S7 classes check inputs", {
+  expect_snapshot(error = TRUE, {
+    new_class(1)
+    new_class("foo", 1)
+
+    new_class("foo", package = 1)
+
+    new_class("foo", constructor = 1)
+    new_class("foo", constructor = function() {})
+
+    new_class("foo", validator = function() {})
   })
 })
 
-describe("abstract classes", {
-  it("can't be instantiated", {
-    expect_snapshot(error = TRUE, {
-      foo <- new_class("foo", abstract = TRUE)
-      foo()
-    })
+test_that("S7 classes can inherit from S4 but not class unions", {
+  local_S4_classes()
+  parentS4 <- setClass("parentS4", slots = c(x = "numeric"))
+
+  child <- new_class("test", parent = parentS4, package = NULL)
+  expect_s3_class(child, "S7_class")
+  expect_s4_class(child@parent, "classRepresentation")
+  expect_equal(as.character(child@parent@className), "parentS4")
+  expect_error(
+    new_class("test", parent = new_union(class_character)),
+    "`parent` must be an S7 class, S4 class, S3 class, or base type"
+  )
+})
+
+test_that("inheritance combines properties for parent classes", {
+  foo1 := new_class(properties = list(x = class_double))
+  foo2 := new_class(foo1, properties = list(y = class_double))
+  expect_equal(names(foo2@properties), c("x", "y"))
+})
+
+test_that("inheritance lets child properties override parent", {
+  foo1 := new_class(properties = list(x = class_numeric))
+  foo2 := new_class(foo1, properties = list(x = class_double))
+  expect_equal(names(foo2@properties), "x")
+  expect_equal(foo2@properties$x$class, class_double)
+})
+
+test_that("inheritance lets child properties narrow the parent's type", {
+  Parent := new_class(package = NULL)
+  Child := new_class(parent = Parent, package = NULL)
+  foo1 := new_class(properties = list(x = Parent))
+  expect_no_error(new_class("foo2", foo1, properties = list(x = Child)))
+  expect_no_error(new_class(
+    "foo3",
+    foo1,
+    properties = list(x = new_property(Child, default = quote(Child())))
+  ))
+})
+
+test_that("inheritance lets child properties narrow with S4 inheritance", {
+  local_S4_classes()
+  S4PropertyParent <- setClass("S4PropertyParent", slots = c(x = "numeric"))
+  S4PropertyChild <- setClass("S4PropertyChild", contains = "S4PropertyParent")
+
+  Parent := new_class(
+    properties = list(x = S4PropertyParent),
+    package = NULL
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(x = S4PropertyChild),
+    package = NULL
+  )
+
+  x <- methods::new("S4PropertyChild", x = 1)
+  expect_s4_class(Child(x = x)@x, "S4PropertyChild")
+})
+
+test_that("inheritance lets S7 children narrow S4 parent properties", {
+  local_S4_classes()
+  Animal <- setClass("Animal")
+  Kennel <- setClass("Kennel", slots = list(dog = "Animal"))
+  Dog := new_class(parent = Animal, package = NULL)
+
+  DogKennel := new_class(
+    parent = Kennel,
+    properties = list(dog = Dog),
+    package = NULL
+  )
+  dog <- Dog()
+
+  expect_equal(prop(DogKennel(dog = dog), "dog"), dog)
+})
+
+test_that("inheritance lets S4 children narrow S7 parent properties", {
+  local_S4_classes()
+
+  S4PropertyS7Parent := new_class(package = NULL)
+  S4_register(S4PropertyS7Parent)
+  setClass(
+    "S4PropertyS7Child",
+    contains = S4_contains(S4PropertyS7Parent)
+  )
+  S4PropertyParent := new_class(
+    properties = list(x = S4PropertyS7Parent),
+    package = NULL
+  )
+  S4PropertyChild := new_class(
+    parent = S4PropertyParent,
+    properties = list(x = getClass("S4PropertyS7Child")),
+    package = NULL
+  )
+
+  x <- methods::new("S4PropertyS7Child")
+  expect_s4_class(S4PropertyChild(x = x)@x, "S4PropertyS7Child")
+})
+
+test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
+  Parent := new_class(
+    properties = list(x = S7_object),
+    package = NULL,
+    abstract = TRUE
+  )
+
+  expect_error(
+    new_class(
+      "IntegerChild",
+      Parent,
+      properties = list(x = class_integer),
+      package = NULL
+    ),
+    "must narrow"
+  )
+  expect_error(
+    new_class(
+      "FormulaChild",
+      Parent,
+      properties = list(x = class_formula),
+      package = NULL
+    ),
+    "must narrow"
+  )
+})
+
+test_that("inheritance lets child properties narrow parent unions that include any", {
+  Parent := new_class(
+    properties = list(x = class_any | class_integer),
+    package = NULL
+  )
+  expect_no_error(new_class(
+    "Child",
+    Parent,
+    properties = list(x = class_any)
+  ))
+})
+
+test_that("inheritance handles external class property specs", {
+  dep := local_package({
+    External := new_class()
   })
-  it("can't inherit from concrete class", {
-    expect_snapshot(error = TRUE, {
-      foo1 <- new_class("foo1")
-      new_class("foo2", parent = foo1, abstract = TRUE)
-    })
+  External := new_external_class(package = "dep")
+
+  ParentObject := new_class(
+    properties = list(x = S7_object)
+  )
+  ChildObject := new_class(
+    parent = ParentObject,
+    properties = list(x = External)
+  )
+  expect_s3_class(ChildObject()@x, "dep::External")
+
+  Ext := new_external_class(package = "notloaded.pkg")
+  prop <- new_property(class = Ext)
+  ParentSame := new_class(properties = list(x = prop))
+  expect_no_error(new_class(
+    name = "ChildSame",
+    parent = ParentSame,
+    properties = list(x = prop),
+  ))
+
+  Missing := new_external_class(package = "S7testthatmissing")
+  ParentUnion := new_class(
+    properties = list(x = Missing | S7_object)
+  )
+  ChildUnion := new_class(
+    parent = ParentUnion,
+    properties = list(x = S7_object)
+  )
+  expect_no_error(ChildUnion())
+})
+
+test_that("inheritance lets child properties narrow external parent classes", {
+  dep <- local_package("dep_external_subclass", {
+    Base := new_class()
+    Sub := new_class(parent = Base)
   })
-  it("can construct concrete subclasses", {
-    foo1 <- new_class("foo1", abstract = TRUE, package = NULL)
-    foo2 <- new_class("foo2", parent = foo1, package = NULL)
-    expect_s3_class(foo2(), "foo2")
+  Base := new_external_class(package = "dep_external_subclass")
+
+  Parent := new_class(
+    properties = list(x = Base)
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      x = new_property(class = dep$Sub, default = quote(dep$Sub()))
+    )
+  )
+
+  expect_s3_class(Child()@x, "dep_external_subclass::Sub")
+})
+
+test_that("inheritance lets child properties narrow optional union properties with NULL", {
+  Parent := new_class(
+    properties = list(x = NULL | class_numeric),
+    package = NULL
+  )
+
+  NullChild := new_class(
+    parent = Parent,
+    properties = list(x = NULL),
+    package = NULL
+  )
+  expect_equal(NullChild()@x, NULL)
+
+  OptionalIntegerChild := new_class(
+    parent = Parent,
+    properties = list(x = NULL | class_integer),
+    package = NULL
+  )
+  expect_equal(OptionalIntegerChild()@x, NULL)
+  expect_equal(OptionalIntegerChild(x = 1L)@x, 1L)
+})
+
+test_that("inheritance doesn't let child properties widen or change the parent's type", {
+  foo1 := new_class(
+    properties = list(x = class_integer),
+    package = NULL
+  )
+  expect_snapshot(error = TRUE, {
+    new_class("foo2", foo1, properties = list(x = class_character))
+    new_class("foo3", foo1, properties = list(x = class_numeric))
+    new_class("foo4", foo1, properties = list(x = class_any))
   })
-  it("can use inherited validator from abstract class", {
-    foo1 <- new_class(
-      "foo1",
-      properties = list(x = class_double),
-      abstract = TRUE,
-      validator = function(self) {
-        if (self@x == 2) "@x has bad value"
-      },
+})
+
+test_that("dynamic child properties must also narrow the parent's type (#708)", {
+  foo1 := new_class(
+    properties = list(x = class_integer),
+    package = NULL
+  )
+
+  widen <- new_property(
+    class = class_character,
+    getter = function(self) "x"
+  )
+  expect_snapshot(
+    error = TRUE,
+    new_class(name = "foo2", parent = foo1, properties = list(x = widen))
+  )
+
+  narrow <- new_property(
+    class = class_integer,
+    getter = function(self) 1L
+  )
+  expect_no_error(
+    new_class(name = "foo3", parent = foo1, properties = list(x = narrow))
+  )
+})
+
+test_that("subclassing an external class defers errors until construction", {
+  Ext := new_external_class("notloaded.pkg")
+  Parent := new_class(properties = list(x = NULL | Ext), package = NULL)
+
+  # Defining the subclass works even though the package isn't loaded; the
+  # error only surfaces when the property default is constructed.
+  Child := new_class(parent = Parent, properties = list(x = Ext))
+  expect_snapshot(Child(), error = TRUE)
+})
+
+test_that("abstract classes can't be instantiated", {
+  expect_snapshot(error = TRUE, {
+    foo := new_class(abstract = TRUE)
+    foo()
+  })
+})
+
+test_that("abstract classes can't inherit from concrete class", {
+  expect_snapshot(error = TRUE, {
+    foo1 := new_class()
+    new_class("foo2", parent = foo1, abstract = TRUE)
+  })
+})
+
+test_that("abstract classes can construct concrete subclasses", {
+  foo1 := new_class(abstract = TRUE, package = NULL)
+  foo2 := new_class(parent = foo1, package = NULL)
+  expect_s3_class(foo2(), "foo2")
+})
+
+test_that("abstract classes can use inherited validator from abstract class", {
+  foo1 := new_class(
+    properties = list(x = class_double),
+    abstract = TRUE,
+    validator = function(self) {
+      if (self@x == 2) "@x has bad value"
+    },
+    package = NULL
+  )
+  foo2 := new_class(parent = foo1, package = NULL)
+  expect_no_error(foo2(x = 1))
+  expect_snapshot(foo2(x = 2), error = TRUE)
+})
+
+test_that("new_object() gives useful error if called directly", {
+  expect_snapshot(new_object(), error = TRUE)
+})
+
+test_that("new_object() can be forced lazily from a constructor", {
+  Foo := new_class(
+    constructor = function() identity(new_object(S7_object())),
+    package = NULL
+  )
+
+  expect_equal(S7_class(Foo()), Foo)
+})
+
+test_that("new_object() errors if `_parent` doesn't inherit from the parent class (#409)", {
+  Bar := new_class(package = NULL)
+  # `_parent` should be `Bar()`, not the class spec `Bar`
+  Foo := new_class(
+    parent = Bar,
+    package = NULL,
+    constructor = function() new_object(class_integer)
+  )
+  # wrong-type instance
+  Baz := new_class(
+    parent = class_integer,
+    package = NULL,
+    constructor = function() new_object("hello")
+  )
+  expect_snapshot(error = TRUE, {
+    Foo()
+    Baz()
+  })
+})
+
+test_that("new_object() allows S7_object placeholder for abstract parents", {
+  Abstract := new_class(
+    package = NULL,
+    properties = list(x = class_integer),
+    abstract = TRUE
+  )
+  Concrete := new_class(parent = Abstract, package = NULL)
+  expect_no_error(Concrete(x = 1L))
+})
+
+test_that("new_object() allows arbitrary placeholder for abstract S3 parents (#686)", {
+  Concrete := new_class(
+    parent = class_POSIXt,
+    constructor = function(x) new_object(x)
+  )
+  expect_no_error(Concrete(list(1, "A")))
+})
+
+test_that("new_object() has fallback for S3 classes created by older S7 (#686)", {
+  old_s3 <- class_POSIXt
+  old_s3$abstract <- NULL
+  Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
+  expect_no_error(Foo(list(1, "A")))
+})
+
+test_that("new_object() errors if `_parent` is supplied but class has no parent", {
+  NoParent := new_class(
+    package = NULL,
+    parent = NULL,
+    constructor = function() new_object(42L)
+  )
+  expect_snapshot(NoParent(), error = TRUE)
+})
+
+test_that("new_object() can set a property named `.parent` (#423)", {
+  foo := new_class(
+    properties = list(.parent = class_double),
+    package = NULL,
+    constructor = function(.parent) new_object(S7_object(), .parent = .parent)
+  )
+  obj <- foo(.parent = 1)
+  expect_equal(obj@.parent, 1)
+})
+
+test_that("new_object() validates object", {
+  foo := new_class(
+    properties = list(x = new_property(class_double)),
+    validator = function(self) if (self@x < 0) "x must be positive",
+    package = NULL
+  )
+
+  expect_snapshot(error = TRUE, {
+    foo("x")
+    foo(-1)
+  })
+})
+
+test_that("new_object() accepts a single unnamed named list of properties (#497)", {
+  Foo := new_class(
+    properties = list(x = class_double, y = class_double),
+    package = NULL,
+    constructor = function(props) new_object(S7_object(), props)
+  )
+  obj <- Foo(list(x = 1, y = 2))
+  expect_equal(obj@x, 1)
+  expect_equal(obj@y, 2)
+})
+
+test_that("new_object() runs each parent validator exactly once", {
+  A := new_class(validator = function(self) cat("A "))
+  B := new_class(parent = A, validator = function(self) cat("B "))
+  C := new_class(parent = B, validator = function(self) cat("C "))
+
+  expect_snapshot({
+    . <- A()
+    . <- B()
+    . <- C()
+  })
+})
+
+test_that("S7 object has an S7 and S3 class", {
+  foo := new_class(package = NULL)
+  x <- foo()
+  expect_equal(S7_class(x), foo)
+  expect_equal(class(x), c("foo", "S7_object"))
+})
+
+test_that("S7 object displays nicely", {
+  expect_snapshot({
+    foo := new_class(
+      properties = list(x = class_double, y = class_double),
       package = NULL
     )
-    foo2 <- new_class("foo2", parent = foo1, package = NULL)
-    expect_no_error(foo2(x = 1))
-    expect_snapshot(foo2(x = 2), error = TRUE)
+    foo()
+    str(list(foo()))
   })
 })
 
-describe("new_object()", {
-  it("gives useful error if called directly",{
-    expect_snapshot(new_object(), error = TRUE)
-  })
-
-  it("validates object", {
-    foo <- new_class("foo",
-      properties = list(x = new_property(class_double)),
-      validator = function(self) if (self@x < 0) "x must be positive",
-      package = NULL
-    )
-
-    expect_snapshot(error = TRUE, {
-      foo("x")
-      foo(-1)
-    })
-  })
-
-  it("runs each parent validator exactly once", {
-    A <- new_class("A", validator = function(self) cat("A "))
-    B <- new_class("B", parent = A, validator = function(self) cat("B "))
-    C <- new_class("C", parent = B, validator = function(self) cat("C "))
-
-    expect_snapshot({
-      . <- A()
-      . <- B()
-      . <- C()
-    })
+test_that("S7 object displays objects with data nicely", {
+  expect_snapshot({
+    text := new_class(class_character, package = NULL)
+    text("x")
+    str(list(text("x")))
   })
 })
 
-describe("S7 object", {
-  it("has an S7 and S3 class", {
-    foo <- new_class("foo", package = NULL)
-    x <- foo()
-    expect_equal(S7_class(x), foo)
-    expect_equal(class(x), c("foo", "S7_object"))
-  })
-
-  it("displays nicely", {
-    expect_snapshot({
-      foo <- new_class("foo", properties = list(x = class_double, y = class_double),
-                       package = NULL)
-      foo()
-      str(list(foo()))
-    })
-  })
-
-  it("displays objects with data nicely", {
-    expect_snapshot({
-      text <- new_class("text", class_character, package = NULL)
-      text("x")
-      str(list(text("x")))
-    })
-  })
-
-  it("displays list objects nicely", {
-    foo1 <- new_class(
-      "foo1",
-      parent = class_list,
-      properties = list(x = class_double, y = class_list),
-      package = NULL
-    )
-    expect_snapshot(
-      foo1(
-        list(
-          x = 1,
-          y = list(a = 21, b = 22)
-        ),
-        x = 3,
-        y = list(a = 41, b = 42)
-      )
-    )
-  })
+test_that("S7 object displays data.frame subclasses without error (#494)", {
+  mydf := new_class(class_data.frame, package = NULL)
+  expect_snapshot(str(mydf(data.frame(a = 1:2, b = 1:2))))
 })
 
-describe("default constructor", {
-  it("initializes properties with defaults", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
-    expect_equal(props(foo1()), list(x = double()))
+test_that("S7 object displays list objects nicely", {
+  foo1 := new_class(
+    parent = class_list,
+    properties = list(x = class_double, y = class_list),
+    package = NULL
+  )
+  expect_snapshot(
+    foo1(
+      list(
+        x = 1,
+        y = list(a = 21, b = 22)
+      ),
+      x = 3,
+      y = list(a = 41, b = 42)
+    )
+  )
+})
 
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
-    expect_equal(props(foo2()), list(x = double(), y = double()))
-  })
+test_that("default constructor initializes properties with defaults", {
+  foo1 := new_class(properties = list(x = class_double))
+  expect_equal(props(foo1()), list(x = double()))
 
-  it("overrides properties with arguments", {
-    foo1 <- new_class("foo1", properties = list(x = class_double))
-    foo2 <- new_class("foo2", foo1, properties = list(y = class_double))
-    expect_equal(props(foo2(x = 1)), list(x = 1, y = double()))
-    expect_equal(props(foo2(x = 1, y = 2)), list(x = 1, y = 2))
-  })
+  foo2 := new_class(foo1, properties = list(y = class_double))
+  expect_equal(props(foo2()), list(x = double(), y = double()))
+})
 
-  it("can initialise a property to NULL", {
-    foo <- new_class("foo", properties = list(
+test_that("default constructor overrides properties with arguments", {
+  foo1 := new_class(properties = list(x = class_double))
+  foo2 := new_class(foo1, properties = list(y = class_double))
+  expect_equal(props(foo2(x = 1)), list(x = 1, y = double()))
+  expect_equal(props(foo2(x = 1, y = 2)), list(x = 1, y = 2))
+})
+
+test_that("default constructor can initialise a property to NULL", {
+  foo := new_class(
+    properties = list(
       x = new_property(default = 10)
-    ))
-    x <- foo(x = NULL)
-    expect_equal(x@x, NULL)
-  })
+    )
+  )
+  x <- foo(x = NULL)
+  expect_equal(x@x, NULL)
+})
 
-  it("initializes data with defaults", {
-    text1 <- new_class("text1", parent = class_character)
-    obj <- text1()
-    expect_equal(S7_data(obj), character())
-  })
+test_that("default constructor initializes data with defaults", {
+  text1 := new_class(parent = class_character)
+  obj <- text1()
+  expect_equal(S7_data(obj), character())
+})
 
-  it("overrides data with defaults", {
-    text1 <- new_class("text1", parent = class_character)
-    expect_equal(S7_data(text1("x")), "x")
-  })
+test_that("default constructor overrides data with defaults", {
+  text1 := new_class(parent = class_character)
+  expect_equal(S7_data(text1("x")), "x")
+})
 
-  it("initializes property with S7 object", {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", properties = list(x = foo1), package = NULL)
-    x <- foo2()
-    expect_s3_class(x@x, "foo1")
-  })
+test_that("default constructor initializes property with S7 object", {
+  foo1 := new_class(package = NULL)
+  foo2 := new_class(properties = list(x = foo1), package = NULL)
+  x <- foo2()
+  expect_s3_class(x@x, "foo1")
 })
 
 test_that("c(<S7_class>, ...) gives error", {
-  foo1 <- new_class("foo1")
+  foo1 := new_class()
   expect_snapshot(error = TRUE, {
     c(foo1, foo1)
   })
 })
 
 test_that("can round trip to disk and back", {
-  eval(quote({
-    foo1 <- new_class("foo1", properties = list(y = class_integer))
-    foo2 <- new_class("foo2", properties = list(x = foo1))
-    f <- foo2(x = foo1(y = 1L))
-  }), globalenv())
+  eval(
+    quote({
+      foo1 := new_class(properties = list(y = class_integer))
+      foo2 := new_class(properties = list(x = foo1))
+      f <- foo2(x = foo1(y = 1L))
+    }),
+    globalenv()
+  )
 
   f <- globalenv()[["f"]]
   path <- tempfile()
@@ -247,12 +584,47 @@ test_that("can round trip to disk and back", {
   rm(foo1, foo2, f, envir = globalenv())
 })
 
+test_that("objects from a previous version of S7 still work (#677)", {
+  # Older versions of S7 stored the class object in the `S7_class` attribute
+  # rather than `_S7_class`.
+  Foo := new_class(
+    parent = class_double,
+    properties = list(x = class_numeric)
+  )
+  obj <- Foo(1, x = 2)
+  attr(obj, "S7_class") <- attr(obj, "_S7_class", exact = TRUE)
+  attr(obj, "_S7_class") <- NULL
 
-test_that("can't create class with reserved property names", {
+  expect_equal(S7_class(obj), Foo)
+  expect_equal(obj@x, 2)
+  expect_equal(prop(obj, "x"), 2)
+
+  obj@x <- 3
+  expect_equal(obj@x, 3)
+
+  expect_equal(S7_data(obj), 1)
+  expect_equal(convert(obj, to = class_double), 1)
+})
+
+test_that("can't create class with `...` property name", {
   expect_snapshot(error = TRUE, {
-    new_class("foo", properties = list(names = class_character))
-    new_class("foo", properties = list(dim = NULL | class_integer))
-    new_class("foo", properties = list(dim = NULL | class_integer,
-                                       dimnames = class_list))
+    new_class("foo", properties = list(... = class_character))
   })
+})
+
+test_that("S7_class() returns a usable spec for any object (#559)", {
+  # base types
+  expect_equal(S7_class(1L), class_integer)
+  expect_equal(S7_class(NULL), NULL)
+
+  # S3
+  expect_equal(S7_class(factor("a")), new_S3_class("factor"))
+  expect_equal(S7_class(Sys.time()), new_S3_class(c("POSIXct", "POSIXt")))
+
+  # NULL and missing
+  expect_equal(S7_class(quote(expr = )), class_missing)
+})
+
+test_that("S7_class() gives informative error if no S7 spec available", {
+  expect_snapshot(error = TRUE, S7_class(pairlist(x = 1)))
 })

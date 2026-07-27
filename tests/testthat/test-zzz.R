@@ -4,7 +4,7 @@ test_that("S7_class validates its underlying data", {
 })
 
 test_that("$ gives useful error", {
-  foo <- new_class("foo")
+  foo := new_class()
   x <- foo()
   expect_snapshot(error = TRUE, {
     x$y
@@ -12,7 +12,7 @@ test_that("$ gives useful error", {
   })
 
   # But works as expected if inheriting from list
-  foo <- new_class("foo", class_list)
+  foo := new_class(class_list)
   x <- foo()
   x$x <- 1
   expect_equal(x$x, 1)

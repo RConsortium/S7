@@ -21,8 +21,9 @@
 #' arguments to the generic and if the generic uses `...`, it must occur
 #' immediately after the dispatch arguments.
 #'
-#' @param name The name of the generic. This should be the same as the object
-#'   that you assign it to.
+#' @param name The name of the generic. The result of calling `new_generic()`
+#'   should always be assigned to a variable with this name, i.e.
+#'   `bar <- new_generic("bar", ...)` or `bar := new_generic(...)`.
 #' @param dispatch_args A character vector giving the names of one or more
 #'   arguments used to find the method.
 #' @param fun An optional specification of the generic, which must call
@@ -40,7 +41,7 @@
 #' @order 1
 #' @examples
 #' # A simple generic with methods for some base types and S3 classes
-#' type_of <- new_generic("type_of", dispatch_args = "x")
+#' type_of := new_generic(dispatch_args = "x")
 #' method(type_of, class_character) <- function(x, ...) "A character vector"
 #' method(type_of, new_S3_class("data.frame")) <- function(x, ...) "A data frame"
 #' method(type_of, class_function) <- function(x, ...) "A function"
@@ -51,7 +52,7 @@
 #'
 #' # If you want to require that methods implement additional arguments,
 #' # you can use a custom function:
-#' mean2 <- new_generic("mean2", "x", function(x, ..., na.rm = FALSE) {
+#' mean2 := new_generic("x", function(x, ..., na.rm = FALSE) {
 #'    S7_dispatch()
 #' })
 #'
@@ -82,28 +83,38 @@ new_generic <- function(name, dispatch_args, fun = NULL) {
   S7_generic(fun, name = name, dispatch_args = dispatch_args)
 }
 
-check_dispatch_args <- function(dispatch_args, fun = NULL) {
+check_dispatch_args <- function(
+  dispatch_args,
+  fun = NULL,
+  call = sys.call(-1L)
+) {
   if (!is.character(dispatch_args)) {
-    stop("`dispatch_args` must be a character vector", call. = FALSE)
+    stop2("`dispatch_args` must be a character vector.", call = call)
   }
   if (length(dispatch_args) == 0) {
-    stop("`dispatch_args` must have at least one component", call. = FALSE)
+    stop2("`dispatch_args` must have at least one component.", call = call)
   }
   if (anyDuplicated(dispatch_args)) {
-    stop("`dispatch_args` must be unique", call. = FALSE)
+    stop2("`dispatch_args` must be unique.", call = call)
   }
   if (any(is.na(dispatch_args) | dispatch_args == "")) {
-    stop("`dispatch_args` must not be missing or the empty string")
+    stop2(
+      "`dispatch_args` must not be missing or the empty string.",
+      call = call
+    )
   }
   if ("..." %in% dispatch_args) {
-    stop("Can't dispatch on `...`", call. = FALSE)
+    stop2("Can't dispatch on `...`.", call = call)
   }
 
   if (!is.null(fun)) {
     arg_names <- names(formals(fun))
 
     if (!is_prefix(dispatch_args, arg_names)) {
-      stop("`dispatch_args` must be a prefix of the generic arguments", call. = FALSE)
+      stop2(
+        "`dispatch_args` must be a prefix of the generic arguments.",
+        call = call
+      )
     }
   }
 
@@ -114,7 +125,10 @@ check_dispatch_args <- function(dispatch_args, fun = NULL) {
 print.S7_generic <- function(x, ...) {
   methods <- methods(x)
   formals <- show_args(formals(x), x@name)
-  cat(sprintf("<S7_generic> %s with %i methods:\n", formals, length(methods)), sep = "")
+  cat(
+    sprintf("<S7_generic> %s with %i methods:\n", formals, length(methods)),
+    sep = ""
+  )
 
   if (length(methods) > 0) {
     signatures <- lapply(methods, prop, "signature")
@@ -126,14 +140,14 @@ print.S7_generic <- function(x, ...) {
   invisible(x)
 }
 
-check_generic <- function(fun) {
+check_generic <- function(fun, call = sys.call(-1L)) {
   if (!is.function(fun)) {
-    stop("`fun` must be a function", call. = FALSE)
+    stop2("`fun` must be a function.", call = call)
   }
 
   dispatch_call <- find_call(body(fun), quote(S7_dispatch), packageName())
   if (is.null(dispatch_call)) {
-    stop("`fun` must contain a call to `S7_dispatch()`", call. = FALSE)
+    stop2("`fun` must contain a call to `S7_dispatch()`.", call = call)
   }
 }
 
@@ -168,7 +182,9 @@ find_call <- function(x, name, ns = NULL) {
 }
 
 is_ns_call <- function(x, name, ns = NULL) {
-  if (is.null(ns)) return(FALSE)
+  if (is.null(ns)) {
+    return(FALSE)
+  }
 
   length(x) == 3 &&
     identical(x[[2]], as.symbol(ns)) &&
@@ -185,7 +201,9 @@ methods_rec <- function(x, signature) {
   }
 
   # Recursively collapse environments to a list
-  methods <- lapply(names(x), function(class) methods_rec(x[[class]], c(signature, class)))
+  methods <- lapply(names(x), function(class) {
+    methods_rec(x[[class]], c(signature, class))
+  })
   unlist(methods, recursive = FALSE)
 }
 
@@ -193,8 +211,9 @@ generic_add_method <- function(generic, signature, method) {
   p_tbl <- generic@methods
   chr_signature <- vcapply(signature, class_register)
 
-  if (is.null(attr(method, "name", TRUE)))
+  if (is.null(attr(method, "name", TRUE))) {
     attr(method, "name") <- as.name(method_signature(generic, signature))
+  }
 
   for (i in seq_along(chr_signature)) {
     class_name <- chr_signature[[i]]
@@ -207,10 +226,44 @@ generic_add_method <- function(generic, signature, method) {
       }
       p_tbl <- tbl
     } else {
-      if (!is.null(p_tbl[[class_name]])) {
+      existing <- p_tbl[[class_name]]
+      if (!is.null(existing) && !identical(existing, method)) {
         message("Overwriting method ", method_name(generic, signature))
       }
       p_tbl[[class_name]] <- method
     }
   }
+}
+
+generic_remove_method <- function(generic, signature) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, class_register)
+
+  for (i in seq_along(chr_signature)) {
+    class_name <- chr_signature[[i]]
+    if (i != length(chr_signature)) {
+      tbl <- p_tbl[[class_name]]
+      if (is.null(tbl)) {
+        return(invisible())
+      }
+      p_tbl <- tbl
+    } else if (exists(class_name, envir = p_tbl, inherits = FALSE)) {
+      rm(list = class_name, envir = p_tbl)
+    }
+  }
+  invisible()
+}
+
+generic_get_method <- function(generic, signature) {
+  p_tbl <- generic@methods
+  chr_signature <- vcapply(signature, class_register)
+
+  for (class_name in chr_signature) {
+    p_tbl <- p_tbl[[class_name]]
+    if (is.null(p_tbl)) {
+      return(NULL)
+    }
+  }
+
+  p_tbl
 }

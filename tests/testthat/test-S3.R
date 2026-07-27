@@ -3,19 +3,20 @@ test_that("new_S3_class has a print method", {
 })
 
 test_that("can construct objects that extend S3 classes", {
-  ordered2 <- new_class("ordered2", parent = class_factor, package = NULL)
+  ordered2 := new_class(parent = class_factor, package = NULL)
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
   expect_equal(class(x), c("ordered2", "factor", "S7_object"))
   expect_equal(prop_names(x), character())
-  expect_error(x@levels, "Can't find property")
+  expect_error(x@levels, "Property not found")
 })
 
 test_that("subclasses inherit validator", {
-  foo <- new_S3_class("foo",
+  foo <- new_S3_class(
+    "foo",
     function(.data) structure(.data, class = "foo"),
     function(x) if (!is.double(x)) "Underlying data must be a double"
   )
-  foo2 <- new_class("foo2", foo, package = NULL)
+  foo2 := new_class(foo, package = NULL)
 
   expect_snapshot(error = TRUE, foo2("a"))
 })
@@ -37,9 +38,17 @@ test_that("default new_S3_class constructor errors", {
 })
 
 test_that("can construct data frame subclass", {
-  dataframe2 <- new_class("dataframe2", class_data.frame)
+  dataframe2 := new_class(class_data.frame)
   df <- dataframe2(list(x = 1:3))
   expect_s3_class(df, "data.frame")
+})
+
+test_that("inherits() works with S7_S3_class", {
+  skip_unless_r("> 4.3.0")
+
+  expect_true(inherits(factor("a"), class_factor))
+  expect_false(inherits(1, class_factor))
+  expect_true(inherits(Sys.Date(), new_S3_class("Date")))
 })
 
 # Basic tests of validators -----------------------------------------------
@@ -58,9 +67,10 @@ test_that("catches invalid dates", {
 
 test_that("catches invalid POSIXct", {
   expect_snapshot({
-    validate_POSIXct(structure("x", tz = "UTC"))
-    validate_POSIXct(structure(1, tz = 1))
+    validate_POSIXct(structure("x", tzone = "UTC"))
+    validate_POSIXct(structure(1, tzone = 1))
   })
+  expect_null(validate_POSIXct(Sys.time()))
 })
 
 test_that("catches invalid data.frame", {
