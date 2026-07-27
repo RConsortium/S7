@@ -123,9 +123,9 @@
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now errors if a child class overrides a parent property with a type
   that doesn’t extend the parent’s type, since such a class could never
-  be instantiated. Narrowing the type is still allowed, as are dynamic
-  (getter) properties
-  ([\#352](https://github.com/RConsortium/S7/issues/352)).
+  be instantiated
+  ([\#352](https://github.com/RConsortium/S7/issues/352),
+  [\#708](https://github.com/RConsortium/S7/issues/708)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now allows properties named `names`, `dim`, `dimnames`, `class`,
   `comment`, `tsp`, and `row.names`. But property names beginning with

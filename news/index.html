@@ -91,7 +91,7 @@
 <li>
 <code>method&lt;-</code> no longer emits an “Overwriting method” message when re-registering an identical method, eliminating spurious messages from <code>devtools::load_all()</code> (<a href="https://github.com/RConsortium/S7/issues/474" class="external-link">#474</a>).</li>
 <li>
-<code><a href="../reference/new_class.html">new_class()</a></code> now errors if a child class overrides a parent property with a type that doesn’t extend the parent’s type, since such a class could never be instantiated. Narrowing the type is still allowed, as are dynamic (getter) properties (<a href="https://github.com/RConsortium/S7/issues/352" class="external-link">#352</a>).</li>
+<code><a href="../reference/new_class.html">new_class()</a></code> now errors if a child class overrides a parent property with a type that doesn’t extend the parent’s type, since such a class could never be instantiated (<a href="https://github.com/RConsortium/S7/issues/352" class="external-link">#352</a>, <a href="https://github.com/RConsortium/S7/issues/708" class="external-link">#708</a>).</li>
 <li>
 <code><a href="../reference/new_class.html">new_class()</a></code> now allows properties named <code>names</code>, <code>dim</code>, <code>dimnames</code>, <code>class</code>, <code>comment</code>, <code>tsp</code>, and <code>row.names</code>. But property names beginning with <code>_</code> are now reserved for internal use (<a href="https://github.com/RConsortium/S7/issues/579" class="external-link">#579</a>).</li>
 <li>
