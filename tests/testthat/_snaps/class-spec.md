@@ -1,3 +1,11 @@
+# class_type() recognizes special class specifications
+
+    Code
+      class_type(1)
+    Condition
+      Error in `class_type()`:
+      ! `x` is not a standard S7 class.
+
 # S7_class_desc() formats every supported class spec
 
     Code

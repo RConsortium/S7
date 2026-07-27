@@ -59,30 +59,15 @@ is_foundation_class <- function(x) {
 }
 
 class_type <- function(x) {
-  if (is.null(x)) {
-    "NULL"
-  } else if (is_class_missing(x)) {
-    "missing"
-  } else if (is_class_any(x)) {
-    "any"
-  } else if (is_base_class(x)) {
-    "S7_base"
-  } else if (is_class(x)) {
-    "S7"
-  } else if (is_union(x)) {
-    "S7_union"
-  } else if (is_S3_class(x)) {
-    "S7_S3"
-  } else if (is_external_class(x)) {
-    "S7_external"
-  } else if (is_S4_class(x)) {
-    "S4"
-  } else {
-    stop2("`x` is not a standard S7 class.", call = NULL)
-  }
+  .Call(class_type_, x)
 }
 
 class_properties <- function(x) {
+  # Needed to bootstrap S7 before DLL registered
+  if (is.null(x)) {
+    return(list())
+  }
+
   switch(
     class_type(x),
     S7 = attr(x, "properties", exact = TRUE) %||% list(),
@@ -278,21 +263,14 @@ class_desc <- function(x) {
 
 # Vector of class names; used in method introspection
 class_dispatch <- function(x) {
-  if (is_class(x) && x@name == "S7_object") {
-    return("S7_object")
-  }
-
   switch(
     class_type(x),
     NULL = "NULL",
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(
-      S7_class_name(x),
-      class_dispatch(x@parent),
-      if (is_S4_class(x@parent)) "S7_object"
-    ),
+    S7 = attr(x, "S7_dispatch", exact = TRUE) %||%
+      S7_class_dispatch(S7_class_name(x), x@parent),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     S7_external = class_dispatch(resolve_external_class_req(x)),
