@@ -38,6 +38,32 @@ The failures described here were verified with a small harness that builds real 
 library(S7)
 ```
 
+## Designing for evolution
+
+Most of the advice in this vignette boils down to a few design rules that are cheap on day one and pay for themselves the first time you need to change anything:
+
+* **Give every generic `...`** (the default).
+  A generic without `...` can never gain an argument without breaking every downstream method.
+
+* **Keep generics minimal.**
+  Every non-dispatch argument in the generic's signature is part of a contract that all methods are checked against; in particular its default can never change quietly.
+  When an argument is only meaningful to some methods, leave it out of the generic and let those methods take it via `...`.
+
+* **Treat names as permanent.**
+  Generics can be renamed with `deprecated_generic()`, and class renames are survivable for downstream packages via an alias, but serialized objects keep the old class identity forever, and a class can never change its `package`.
+  Spend naming effort accordingly, and set `package` once, correctly.
+
+* **Pass properties by name** to constructors, always.
+
+* **Prefer composition for volatile details.**
+  Fields you expect to churn can live in a helper class stored as one property, so the enclosing class's contract — and every subclass — is insulated from the churn.
+
+* **Deprecate, then remove.**
+  Almost every change below has a two-release shape: one release that supports both forms (alias, dynamic property, warning validator), and a later one that drops the old form.
+  Your reverse dependency checks tell you when it's safe to take the second step.
+
+And when a change genuinely can't be made compatible — dispatch changes, class renames, property narrowing — the best tool is social, not technical: work with your downstream maintainers, send PRs, and sequence the releases.
+
 ## How S7 couples packages
 
 To predict what breaks, you need to know when downstream code actually runs:
@@ -200,23 +226,11 @@ gen1 <- deprecated_generic(gen2) # export both
 `deprecated_generic()` returns an object that still counts as the generic for registration purposes — `method(gen1, MyClass) <- f` lands on the shared `gen2`, so pkgB keeps installing and both names dispatch to the same methods — while calls through the old name warn that it's time to move on.
 (If you plan to keep the old name indefinitely, a plain alias `gen1 <- gen2` is completely transparent and signals nothing.)
 
-Don't reach for an ordinary wrapper function (`gen1 <- function(x, ...) { .Deprecated("gen2"); gen2(x, ...) }`): it warns callers nicely, but a plain function is not a generic, so every downstream `method(gen1, ...) <- ` errors and pkgB can't even be installed — the very packages you're trying to migrate gently.
-
-Once your reverse dependency checks show that no package uses the old name, remove the alias.
-An already-installed pkgB whose deferred registrations still mention `gen1` degrades gracefully at that point: it still loads, with a `"[S7] Failed to find generic"` warning, and only calls to the removed name fail.
-
-> **TODO:** that last sentence assumes [#729](https://github.com/RConsortium/S7/issues/729) is fixed; today the stale pkgB fails to load outright.
-
 ### Changing dispatch
 
-Changing a generic's dispatch arguments — renaming them, reordering them, or moving between single and multiple dispatch — invalidates every downstream method and method registration errors, so downstream packages fail to install.
+Changing a generic's dispatch arguments — renaming them, reordering them, or moving between single and multiple dispatch — invalidates every downstream method and method registration, so downstream packages fail to install.
 There is no transition trick: a generic's dispatch arguments are its identity.
 If you need different dispatch, create a generic with a new name, implement the old one in terms of the new one (deprecating it), and follow the rename recipe above.
-
-Within your own package, these registration errors have a second cost: they make `devtools::load_all()` fail until *every* method matches the changed generic.
-During interactive development S7 relaxes them to warnings, so you can re-source the package and fix methods one at a time.
-
-> **TODO:** that relaxation is [#726](https://github.com/RConsortium/S7/issues/726); describe the actual mechanism once it's implemented.
 
 ### Moving a generic to another package
 
@@ -356,70 +370,3 @@ Subclasses are unaffected: even though a subclass with an external parent builds
 
 > **TODO:** that assumes the abstract-external-parent gap reported in [#717's review](https://github.com/RConsortium/S7/pull/717#issuecomment-5097344414) is fixed; today the subclass's constructor fails with `Can't construct an object from abstract class`.
 > Verify with the `class-make-abstract` lab scenario.
-
-## Designing for evolution
-
-Most of the advice above follows a few design rules that are cheap on day one and pay for themselves the first time you need to change anything:
-
-* **Give every generic `...`** (the default).
-  A generic without `...` can never gain an argument without breaking every downstream method.
-
-* **Keep generics minimal.**
-  Every non-dispatch argument in the generic's signature is part of a contract that all methods are checked against; in particular its default can never change quietly.
-  When an argument is only meaningful to some methods, leave it out of the generic and let those methods take it via `...`.
-
-* **Treat names as permanent.**
-  Generics can be renamed with `deprecated_generic()`, and class renames are survivable for downstream packages via an alias, but serialized objects keep the old class identity forever, and a class can never change its `package`.
-  Spend naming effort accordingly, and set `package` once, correctly.
-
-* **Refer to other packages' classes with `new_external_class()`**, for both method signatures and parents.
-  Your package then builds against the installed version of the upstream package at run time, instead of freezing a copy of its class at install time.
-  Use the `version` argument (also on `new_external_generic()`) when you depend on behavior introduced in a specific release.
-
-* **Pass properties by name** to constructors, always.
-
-* **Prefer composition for volatile details.**
-  Fields you expect to churn can live in a helper class stored as one property, so the enclosing class's contract — and every subclass — is insulated from the churn.
-
-* **Deprecate, then remove.**
-  Almost every change above has a two-release shape: one release that supports both forms (alias, dynamic property, warning validator), and a later one that drops the old form.
-  Your reverse dependency checks tell you when it's safe to take the second step.
-
-And when a change genuinely can't be made compatible — dispatch changes, class renames, property narrowing — the best tool is social, not technical: work with your downstream maintainers, send PRs, and sequence the releases.
-
-## Summary: what R CMD check sees
-
-The table below summarizes when each change to pkgA is detected in pkgB's `R CMD check`, assuming pkgB was written against the old pkgA and checked against the new one.
-
-| Change in pkgA | pkgB install | pkgB load | pkgB tests/examples |
-|---|---|---|---|
-| Generic: add argument (with `...`) | warning | warning | — |
-| Generic: add argument (no `...`) | **error** | — | — |
-| Generic: remove argument | ok | ok | ok |
-| Generic: change default (method pins old default) | warning | warning | — |
-| Generic: rename, no alias | **error** | — | — |
-| Generic: rename with `deprecated_generic()`¹ | ok | ok | warning |
-| Generic: rename with plain alias | ok | ok | ok |
-| Generic: rename with a wrapper function | **error** | — | — |
-| Generic: move to another package, with re-export | ok | ok | ok |
-| Generic: change dispatch args | **error** | — | — |
-| Class: add property | ok | ok | ok |
-| Class: add property clashing with subclass | **error** | — | — |
-| Class: remove property | ok | ok | **failure** |
-| Class: deprecate property (dynamic) | ok | ok | warning |
-| Class: narrow property type | ok | ok | **failure** |
-| Class: rename, no alias | **error** | — | — |
-| Class: rename with alias² | ok | ok | ok |
-| Class: make abstract³ | ok | ok | **failure** |
-
-¹ Assumes [#730](https://github.com/RConsortium/S7/issues/730); the warning comes from pkgB's own calls to the old name.
-² Assumes [#727](https://github.com/RConsortium/S7/issues/727); today only packages that used `parent = pkgA::Foo` directly recover, and `new_external_class()` users still fail to install.
-³ Only where pkgB itself calls `pkgA::Foo()`; subclasses keep working (assumes the [#717 fix](https://github.com/RConsortium/S7/pull/717#issuecomment-5097344414)).
-
-> **TODO:** the footnoted rows describe intended behavior once the linked fixes land; `tools/evolution/results.md` records what the current S7 actually does.
-> Reconcile before release.
-
-Install-time warnings and errors are the loudest: an error means pkgB (and everything downstream of *it*) can't even be installed, and warnings recur at every load.
-Test failures are quieter but still produce a check ERROR.
-Warnings during tests (like deprecation warnings) don't affect the check result at all.
-"ok" means `R CMD check` is silent — which cuts both ways: nothing is broken, but nothing will remind downstream authors to catch up, either.
