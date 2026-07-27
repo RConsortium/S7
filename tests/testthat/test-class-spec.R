@@ -34,20 +34,21 @@ test_that("can work with S7 classes in packages", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
-test_that("S7 class dispatch is cached", {
+test_that("S7 class name and dispatch are cached", {
   parent := new_class(package = "pkg")
   child := new_class(parent = parent, package = "pkg")
-  obj <- child()
 
+  expect_identical(attr(child, "S7_class_name", exact = TRUE), "pkg::child")
   expect_identical(
-    attr(child, "_S7_dispatch", exact = TRUE),
+    attr(child, "S7_dispatch", exact = TRUE),
     c("pkg::child", "pkg::parent", "S7_object")
   )
 
-  local_mocked_bindings(
-    S7_class_name = function(...) stop("Recomputed class name")
-  )
-  expect_equal(class_inherits(obj, parent), TRUE)
+  # the caches are used, not recomputed
+  attr(child, "S7_class_name") <- "cached name"
+  attr(child, "S7_dispatch") <- "cached dispatch"
+  expect_identical(S7_class_name(child), "cached name")
+  expect_identical(class_dispatch(child), "cached dispatch")
 })
 
 test_that("S7 class dispatch supports classes without a cache", {
@@ -56,7 +57,9 @@ test_that("S7 class dispatch supports classes without a cache", {
   obj <- child()
 
   # Classes created by older versions of S7 don't have a cache
-  attr(child, "_S7_dispatch") <- NULL
+  attr(child, "S7_class_name") <- NULL
+  attr(child, "S7_dispatch") <- NULL
+  expect_identical(S7_class_name(child), "pkg::child")
   expect_identical(
     class_dispatch(child),
     c("pkg::child", "pkg::parent", "S7_object")

@@ -269,8 +269,8 @@ class_dispatch <- function(x) {
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = attr(x, "_S7_dispatch", exact = TRUE) %||%
-      S7_class_dispatch(x@name, x@package, x@parent),
+    S7 = attr(x, "S7_dispatch", exact = TRUE) %||%
+      S7_class_dispatch(S7_class_name(x), x@parent),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     S7_external = class_dispatch(resolve_external_class_req(x)),
@@ -320,22 +320,13 @@ class_deparse <- function(x) {
 }
 
 class_inherits <- function(x, what) {
-  if (is_class(what)) {
-    if (!has_S7_class(x)) {
-      return(FALSE)
-    } else {
-      class_name <- attr(what, "_S7_dispatch", exact = TRUE)[[1]] %||%
-        S7_class_name(what)
-      return(inherits(x, class_name))
-    }
-  }
-
   switch(
     class_type(what),
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
     S4 = methods::is(x, what),
+    S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = some(what$classes, class_inherits, x = x),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
