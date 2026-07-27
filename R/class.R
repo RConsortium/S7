@@ -174,16 +174,7 @@ new_class <- function(
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
   class(object) <- c("S7_class", "S7_object")
-  if (identical(name, "S7_object")) {
-    dispatch <- "S7_object"
-  } else {
-    dispatch <- c(
-      paste(c(package, name), collapse = "::"),
-      class_dispatch(parent),
-      if (is_S4_class(parent)) "S7_object"
-    )
-  }
-  attr(object, "_S7_dispatch") <- dispatch
+  attr(object, "_S7_dispatch") <- S7_class_dispatch(name, package, parent)
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -205,6 +196,19 @@ globalVariables(c(
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
 S7_class_name <- function(x) {
   paste(c(x@package, x@name), collapse = "::")
+}
+
+# Dispatch vector for an S7 class; cached in the `_S7_dispatch` attribute
+S7_class_dispatch <- function(name, package, parent) {
+  if (identical(name, "S7_object")) {
+    return("S7_object")
+  }
+
+  c(
+    paste(c(package, name), collapse = "::"),
+    class_dispatch(parent),
+    if (is_S4_class(parent)) "S7_object"
+  )
 }
 
 check_S7_constructor <- function(constructor, call = sys.call(-1L)) {

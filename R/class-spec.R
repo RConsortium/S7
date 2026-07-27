@@ -263,10 +263,6 @@ class_desc <- function(x) {
 
 # Vector of class names; used in method introspection
 class_dispatch <- function(x) {
-  if (is_class(x) && x@name == "S7_object") {
-    return("S7_object")
-  }
-
   switch(
     class_type(x),
     NULL = "NULL",
@@ -274,11 +270,7 @@ class_dispatch <- function(x) {
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
     S7 = attr(x, "_S7_dispatch", exact = TRUE) %||%
-      c(
-        S7_class_name(x),
-        class_dispatch(x@parent),
-        if (is_S4_class(x@parent)) "S7_object"
-      ),
+      S7_class_dispatch(x@name, x@package, x@parent),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     S7_external = class_dispatch(resolve_external_class_req(x)),
