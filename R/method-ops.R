@@ -7,6 +7,9 @@ on_load_define_ops <- function() {
     new_generic,
     dispatch_args = c("e1", "e2")
   )
+  # R dispatches `!` through the `Ops` group, but it's always unary
+  base_ops[["!"]] <<- new_generic("!", dispatch_args = "e1")
+
   base_matrix_ops <<- lapply(
     setNames(, group_generics()$matrixOps),
     new_generic,
