@@ -55,12 +55,18 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
-# Simulate a package with namesapce
-local_package <- function(name, ..., frame = parent.frame()) {
+# Simulate a package with namespace
+local_package <- function(
+  name,
+  code = {},
+  version = "0.0.0",
+  frame = parent.frame()
+) {
   ns <- new.env(parent = asNamespace("S7"))
 
   info <- new.env(parent = emptyenv())
-  info$spec <- c(name = name, version = "0.0.0")
+  info$spec <- c(name = name, version = version)
+  info$exports <- new.env(parent = emptyenv())
   ns[[".__NAMESPACE__."]] <- info
   ns[[".packageName"]] <- name
   ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())
@@ -71,8 +77,11 @@ local_package <- function(name, ..., frame = parent.frame()) {
   defer(internal(unregisterNamespace(name)), frame = frame)
   defer(S7_on_unload_(ns), frame = frame)
 
-  for (expr in eval(substitute(alist(...)))) {
-    eval(expr, ns)
+  eval(substitute(code), ns)
+
+  # export everything defined by the code block so `pkg::name` works
+  for (nm in ls(ns)) {
+    assign(nm, nm, envir = info$exports)
   }
 
   ns
@@ -86,21 +95,18 @@ package_hooks <- function(package, event = "onLoad") {
   Filter(function(hook) !is_ide_hook(hook), hooks)
 }
 
-local_S4_class <- function(
-  name,
-  ...,
-  env = parent.frame(),
-  where = topenv(env)
-) {
-  out <- methods::setClass(name, ..., where = where)
-  defer(S4_remove_classes(name, env), env)
-  out
-}
-
-local_S4_union <- function(name, members, env = parent.frame()) {
-  out <- methods::setClassUnion(name, members, where = topenv(env))
-  defer(S4_remove_classes(name, env), env)
-  out
+local_S4_classes <- function(env = parent.frame(), where = topenv(env)) {
+  old <- methods::getClasses(where = where, inherits = FALSE)
+  defer(
+    {
+      new <- setdiff(methods::getClasses(where = where, inherits = FALSE), old)
+      for (class in new) {
+        methods::removeClass(class, where = where)
+      }
+    },
+    env
+  )
+  invisible()
 }
 
 # Create a temporary library, prepend it to .libPaths(), and restore the
@@ -178,15 +184,13 @@ named_list <- function(...) {
   x
 }
 
-`add<-` <- `+`
-
 dbg <- function(..., .display = utils::str, .file = NULL) {
   out <- NULL
   exprs <- as.list(substitute(list(...)))[-1L]
 
   if (!is.null(.file)) {
     sink(.file, append = TRUE)
-    on.exit(sink())
+    defer(sink())
   }
 
   for (i in seq_len(...length())) {

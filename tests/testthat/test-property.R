@@ -97,7 +97,6 @@ test_that("prop setting validates all attributes if custom setter", {
 
 test_that("prop setting validates once after custom setter", {
   times_validated <- 0L
-  `add<-` <- `+`
   custom_setter <- function(self, value) {
     self@x <- as.double(value)
     self
@@ -105,7 +104,7 @@ test_that("prop setting validates once after custom setter", {
   foo2 := new_class(
     properties = list(x = new_property(class_double, setter = custom_setter)),
     validator = function(self) {
-      add(times_validated) <<- 1L
+      times_validated <<- times_validated + 1L
       character()
     }
   )
@@ -117,7 +116,6 @@ test_that("prop setting validates once after custom setter", {
 
 test_that("prop setting validates once with recursive property setters", {
   times_validated <- 0L
-  `add<-` <- `+`
   foo := new_class(
     properties = list(
       x = new_property(setter = function(self, value) {
@@ -133,7 +131,7 @@ test_that("prop setting validates once with recursive property setters", {
       z = new_property(class_character)
     ),
     validator = function(self) {
-      add(times_validated) <<- 1L
+      times_validated <<- times_validated + 1L
       NULL
     }
   )
@@ -453,8 +451,9 @@ test_that("new_property() displays nicely", {
 })
 
 test_that("properties can be base, S3, S4, S7, or S7 union", {
+  local_S4_classes()
   class_S7 := new_class(package = NULL)
-  class_S4 := local_S4_class(slots = c(x = "numeric"))
+  class_S4 <- setClass("class_S4", slots = c(x = "numeric"))
 
   my_class := new_class(
     package = NULL,
@@ -556,7 +555,9 @@ test_that("property validation runs the class's own validator", {
 })
 
 test_that("property validation runs an S4 class's validity method", {
-  PosNum := local_S4_class(
+  local_S4_classes()
+  PosNum <- setClass(
+    "PosNum",
     slots = c(n = "numeric"),
     validity = function(object) {
       if (object@n <= 0) "n must be positive" else TRUE

@@ -1,6 +1,8 @@
 # S7 (development version)
 
 * New `:=` operator creates and names an object in one step, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")` (#658).
+* The class object that S7 stores on each instance now lives in the `_S7_class` attribute (previously `S7_class`), moving it into the `_`-prefixed namespace reserved for S7 internals so it can't collide with a user-defined property. Objects created by an older version of S7 (e.g. serialised to disk or baked into another package's lazy-load database) continue to work, as S7 falls back to the old attribute name when reading them (#677).
+* S7 and S4 now interoperate through inheritance. `new_class()` can use an S4 class as a parent, mapping S4 slots to S7 properties and registering the class with S4 automatically. Conversely, `S4_register()` registers an S7 class with S4, and `S4_contains()` returns an S4 class name suitable for `methods::setClass(contains = )`, exposing stored S7 properties as S4 slots for S4 subclasses. This support includes S4 initialization and validity integration, and S4/internal generic registration where needed; see `vignette("compatibility")` for caveats (#456).
 * Errors thrown by S7 now report the function where they occurred, making it easier to track down the source of a problem (#646).
 * `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it to be absent (#401).
 * Base type wrappers like `class_integer` now define their constructor and validator in the S7 namespace. (#553).
@@ -10,6 +12,7 @@
 * `convert()` now falls back to the corresponding `as.*()` function (e.g. `as.character()`) when converting to a base type like `class_character` and no method or inheritance-based default applies, so `convert(1, class_character)` works out of the box (#472).
 * `convert()` accepts a single unnamed list of property overrides when downcasting, as a shortcut for individual name-value pairs (#497).
 * `convert()` no longer errors when `from` is a base or S3 object and `to` is an S7 class that inherits from `from`'s class. The base/S3 value is now passed as `.data` to the `to` constructor (#537).
+* New `convert_lazy()` is a non-strict variant of `convert()` that returns `from` unchanged if it already inherits from `to`, preserving any extra properties instead of stripping them (#428).
 * `method<-` now works for double-dispatch operators (e.g. `+`, `==`, `%*%`) with plain S3 or S4 classes, even when neither operand is an S7 object (#544).
 * `method<-` no longer embeds a copy of a generic owned by another package in your package namespace. Instead it returns a sentinel value that the new `S7_on_build()` removes from the namespace at build time; call `S7_on_build()` at the top level of `zzz.R` (see `vignette("packages")`) (#364).
 * `method<-` now accepts `NULL` to unregister an existing method, e.g. `method(foo, class_character) <- NULL` (#613).
@@ -23,6 +26,7 @@
 * `new_class()` now allows properties named `names`, `dim`, `dimnames`, `class`, `comment`, `tsp`, and `row.names`. But property names beginning with `_` are now reserved for internal use (#579).
 * `new_class()` experimentally allows `class_environment` as a parent again, so you can build S7 objects that share R's reference semantics for environments. This support is provisional: because environments are mutated in place, some operations behave differently than for value-typed S7 objects, and the API may change. `S7_data()` and `S7_data<-()` error on environment-based objects, since they would otherwise destroy the object's S7 attributes in place (#590).
 * `new_class()`'s default constructor now respects properties overridden in a subclass: the subclass's default is used (#467) and its setter is run during construction (#585). Values for overridden properties are passed to both the parent constructor and the new object, so a subclass can override a parent property whose default is mandatory.
+* `new_external_class()` creates a delayed reference to an S7 class in another package (or your own package, but not yet defined). It is useful for registering methods on classes from suggested packages (#573) and for creating self-referential or mutually recursive classes (#250).
 * `new_object()` now gives an informative error when `.parent` is a class specification rather than an instance of the parent class (#409).
 * `new_object()` no longer materialises ALTREP parent values (e.g. `seq_len()`), so constructing an S7 object that wraps a large compact integer sequence is now O(1) in memory instead of O(n) (@kschaubroeck, #607).
 * `new_object()` no longer re-runs property validators for properties inherited unchanged from an already-validated parent class, so constructing an instance of a deeply nested class hierarchy validates each property exactly once (#539).

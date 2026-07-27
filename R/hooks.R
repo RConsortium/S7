@@ -69,25 +69,21 @@ S7_on_unload_ <- function(env) {
 
   tbl <- S7_methods_table(package)
   for (x in tbl) {
-    if (!isNamespaceLoaded(x$generic$package)) {
+    if (!dep_available(x$generic)) {
       next
     }
 
-    ns <- asNamespace(x$generic$package)
-    if (!external_generic_version_ok(x$generic, ns)) {
-      next
-    }
-
-    generic <- get0(x$generic$name, envir = ns, inherits = FALSE)
+    generic <- resolve_generic_opt(x$generic)
     if (is.null(generic)) {
       next
     }
     generic <- as_generic(generic)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
+      signature <- resolve_signature_available(x$signature, package)
       unregister_own_S7_method(
         generic,
-        x$signature,
+        signature,
         x$method,
         package
       )
@@ -97,33 +93,34 @@ S7_on_unload_ <- function(env) {
   invisible()
 }
 
-# Add a hook for each method that registers it when its generic's package is
-# loaded. Returns the added hooks, named by the package they're attached to.
+# Add a hook for each method that registers it when any of its dependency
+# packages are loaded. Returns the added hooks, named by the package they're
+# attached to.
 hooks_add <- function(package) {
   ns <- asNamespace(package)
-  tbl <- S7_methods_table(package)
-  pkgs <- vcapply(tbl, function(x) x$generic$package)
+  hooks <- list()
+  pkgs <- character()
 
-  hooks <- lapply(tbl, function(x) {
+  for (x in S7_methods_table(package)) {
+    deps <- method_deps(x$generic, x$signature)
     register <- registrar(x$generic, x$signature, x$method, ns)
-    hook <- S7_hook(register, package)
-    setHook(packageEvent(x$generic$package, "onLoad"), hook)
-    hook
-  })
+
+    for (pkg in method_deps_packages(deps)) {
+      hook <- S7_hook(register, package)
+      setHook(packageEvent(pkg, "onLoad"), hook)
+      append1(hooks) <- hook
+      append1(pkgs) <- pkg
+    }
+  }
+
   names(hooks) <- pkgs
-  hooks_packages(package) <- union(hooks_packages(package), pkgs)
+  hooks_packages(package) <- unique(pkgs)
   hooks
 }
 
 # Remove our hooks for `package`.
 hooks_remove <- function(package) {
-  tbl <- S7_methods_table(package)
-  pkgs <- unique(c(
-    hooks_packages(package),
-    vcapply(tbl, function(x) x$generic$package)
-  ))
-
-  for (pkg in pkgs) {
+  for (pkg in hooks_packages(package)) {
     event <- packageEvent(pkg, "onLoad")
     hooks <- getHook(event)
     ours <- vlapply(hooks, is_S7_hook, package = package)
@@ -202,11 +199,19 @@ unregister_own_S7_method <- function(
   for (i in seq_along(signatures)) {
     sig <- signatures[[i]]
     current <- generic_get_method(generic, sig)
-    own <- S7_method_for_signature(method, generic, sig, package = package)
+    if (is.null(current)) {
+      next
+    }
+    own <- S7_method_for_signature(
+      method,
+      generic,
+      current@signature,
+      package = package
+    )
     # Unload only removes the method this package currently owns. It does not
     # remember or restore any method that was overwritten during loading.
     if (identical(current, own)) {
-      generic_remove_method(generic, sig)
+      generic_remove_method(generic, current@signature)
     }
   }
   invisible()

@@ -364,7 +364,15 @@ prop_call <- function(object, name) {
 `@.S7_object` <- prop
 
 #' @rawNamespace S3method("@<-",S7_object)
-`@<-.S7_object` <- `prop<-`
+`@<-.S7_object` <- function(object, name, value) {
+  if (isS4(object) && !name %in% names(S7_class(object)@properties)) {
+    methods::slot(object, name) <- value
+    return(object)
+  }
+
+  prop(object, name) <- value
+  object
+}
 
 
 #' Property introspection
@@ -598,3 +606,9 @@ prop_is_read_only <- function(prop) {
 }
 
 prop_has_setter <- function(prop) is.function(prop$setter)
+
+prop_is_dynamic <- function(prop) is.function(prop$getter)
+
+prop_is_encapsulated <- function(prop) {
+  prop_is_dynamic(prop) || prop_has_setter(prop)
+}

@@ -24,6 +24,11 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+    Code
+      method(foo, ext) <- (function(y) "x")
+    Condition
+      Error in `method<-`:
+      ! foo() dispatches on `x`, but foo(<notloaded.pkg::ext>) has arguments `y`.
 
 # method unregistration removes an S7 method via NULL assignment
 

@@ -27,9 +27,10 @@ with this name, i.e. \code{Foo <- new_class("Foo", ...)} or
 to construct new instances of the class.}
 
 \item{parent}{The parent class to inherit behavior from.
-There are three options:
+There are four options:
 \itemize{
 \item An S7 class, like \link{S7_object}.
+\item An S4 class, like the result of \code{\link[methods:getClass]{methods::getClass()}}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }}
@@ -92,6 +93,20 @@ when an object is passed to a generic.
 
 Learn more in \code{vignette("classes-objects")}
 }
+\section{S4 compatibility}{
+
+\code{new_class()} can use an S4 class definition or class generator as its
+\code{parent}. S4 parent slots become S7 properties, the class is registered with
+S4 automatically, and S4 generics can dispatch through the S4 parent.
+
+S7 objects that directly extend S4 are represented as S3 old-class objects,
+so \code{isS4()} is \code{FALSE} even though \code{\link[methods:is]{methods::is()}} and S4 dispatch see the
+S4 parent. S4 classes can extend S7 classes by calling
+\code{\link[=S4_contains]{S4_contains()}} in \code{methods::setClass(contains = )}.
+
+See \code{vignette("compatibility")} for examples and caveats.
+}
+
 \examples{
 # Create an class that represents a range using a numeric start and end
 Range := new_class(

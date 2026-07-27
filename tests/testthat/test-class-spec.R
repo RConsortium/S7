@@ -103,8 +103,8 @@ test_that("class_inherits handles variation in class names", {
 })
 
 test_that("class_extends checks subclass relationship between classes", {
-  Parent <- new_class("Parent", package = NULL)
-  Child <- new_class("Child", parent = Parent, package = NULL)
+  Parent := new_class(package = NULL)
+  Child := new_class(parent = Parent, package = NULL)
 
   expect_true(class_extends(Child, Parent))
   expect_true(class_extends(Child, Child))
@@ -215,10 +215,11 @@ test_that("can work with S7 classes that extend S3 classes", {
 # S4 ----------------------------------------------------------------------
 
 test_that("can work with S4 classes", {
-  Foo1 := local_S4_class(contains = "character")
-  Foo2 := local_S4_class(contains = "Foo1")
-  Foo3 := local_S4_class(slots = list(x = "numeric"))
-  Foo4 := local_S4_class(contains = c("Foo2", "Foo3"))
+  local_S4_classes()
+  setClass("Foo1", contains = "character")
+  setClass("Foo2", contains = "Foo1")
+  setClass("Foo3", slots = list(x = "numeric"))
+  setClass("Foo4", contains = c("Foo2", "Foo3"))
 
   klass <- methods::getClass("Foo4")
 
@@ -237,6 +238,47 @@ test_that("can work with S4 classes", {
   expect_equal(obj_desc(obj), "S4<Foo4>")
   expect_equal(obj_dispatch(obj), class_dispatch(klass))
   expect_equal(class_inherits(obj, klass), TRUE)
+})
+
+# external ----------------------------------------------------------------
+
+test_that("can work with external classes", {
+  dep := local_package({
+    Ext := new_class(properties = list(x = class_integer))
+  })
+  Ext := new_external_class(package = "dep")
+  expect_equal(as_class(Ext), Ext)
+
+  expect_equal(class_type(Ext), "S7_external")
+  expect_equal(class_dispatch(Ext), c("dep::Ext", "S7_object"))
+  expect_equal(class_register(Ext), "dep::Ext")
+  expect_s3_class(class_construct(Ext, x = 1L), "dep::Ext")
+  expect_equal(class_desc(Ext), "<dep::Ext>")
+  expect_equal(class_deparse(Ext), 'new_external_class("dep", "Ext")')
+
+  obj <- dep$Ext(x = 1L)
+  expect_equal(obj_type(obj), "S7")
+  expect_equal(obj_desc(obj), "<dep::Ext>")
+  expect_equal(obj_dispatch(obj), c("dep::Ext", "S7_object"))
+  expect_equal(class_inherits(obj, Ext), TRUE)
+})
+
+test_that("class_construct_expr() defers external classes to a `pkg::name()` call", {
+  Ext := new_external_class("pkg")
+  expect_equal(class_construct_expr(Ext), quote(pkg::Ext()))
+  expect_equal(class_construct_expr(Ext | NULL), quote(pkg::Ext()))
+
+  expect_equal(class_construct_expr(Ext, package = "pkg"), quote(Ext()))
+  expect_equal(class_construct_expr(Ext | NULL, package = "pkg"), quote(Ext()))
+})
+
+
+test_that("class_deparse() includes external class version", {
+  klass := new_external_class("pkg", version = "1.0")
+  expect_equal(
+    class_deparse(klass),
+    'new_external_class("pkg", "klass", version = "1.0")'
+  )
 })
 
 test_that("S7_class_desc() formats every supported class spec", {

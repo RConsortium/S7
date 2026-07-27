@@ -15,6 +15,22 @@ global_variables <- function(names) {
 vlapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
 }
+every <- function(X, FUN, ...) {
+  for (x in X) {
+    if (!FUN(x, ...)) {
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+some <- function(X, FUN, ...) {
+  for (x in X) {
+    if (FUN(x, ...)) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
 vcapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
 }
@@ -120,6 +136,10 @@ str_nest <- function(
 
 str_function <- function(object, ..., nest.lev = 0) {
   attr(object, "srcref") <- NULL
+  # Display S7-generated constructors like any other function
+  if (inherits(object, "S7_constructor")) {
+    class(object) <- NULL
+  }
   if (identical(class(object), "function")) {
     cat(" ")
   }
@@ -227,6 +247,9 @@ deparse_trunc <- function(x, width, collapse = "\n") {
   x
 }
 
+is_plain_list <- function(x) {
+  is.list(x) && !is.object(x)
+}
 
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {

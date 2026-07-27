@@ -36,9 +36,10 @@ test_that("single dispatch works for S3 objects", {
 })
 
 test_that("single dispatch works for S4 objects", {
+  local_S4_classes()
   foo := new_generic("x")
 
-  my_S4 := local_S4_class(contains = "numeric")
+  my_S4 <- setClass("my_S4", contains = "numeric")
   method(foo, my_S4) <- function(x) "S4"
 
   expect_equal(foo(my_S4(1)), "S4")
@@ -162,10 +163,11 @@ test_that("can dispatch on base 'union' types", {
 })
 
 test_that("single dispatch fails with informative messages", {
+  local_S4_classes()
   fail := new_generic("x")
 
   foo := new_class(package = NULL)
-  Foo := local_S4_class(slots = list("x" = "numeric"))
+  Foo <- setClass("Foo", slots = list("x" = "numeric"))
 
   expect_snapshot(error = TRUE, {
     fail(TRUE)
@@ -178,10 +180,11 @@ test_that("single dispatch fails with informative messages", {
 })
 
 test_that("multiple dispatch fails with informative messages", {
+  local_S4_classes()
   fail := new_generic(c("x", "y"))
 
   foo := new_class()
-  Foo := local_S4_class(slots = list("x" = "numeric"))
+  Foo <- setClass("Foo", slots = list("x" = "numeric"))
 
   expect_snapshot(error = TRUE, {
     fail(TRUE)

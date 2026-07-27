@@ -107,24 +107,6 @@
       Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
-# S7 classes can't inherit from S4 or class unions
-
-    Code
-      new_class("test", parent = parentS4)
-    Condition
-      Error in `new_class()`:
-      ! `parent` must be an S7 class, S3 class, or base type, not an S4 class.
-    Code
-      new_class("test", parent = new_union("character"))
-    Condition
-      Error in `as_class()`:
-      ! Can't convert `..1` to a valid class.
-      Class specification must be one of the following, not a <character>:
-       * An S7 class object
-       * An S3 class object (from `new_S3_class()`)
-       * An S4 class object
-       * A base class
-
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code
@@ -152,12 +134,20 @@
 # dynamic child properties must also narrow the parent's type (#708)
 
     Code
-      new_class("foo2", foo1, properties = list(x = widen))
+      new_class(name = "foo2", parent = foo1, properties = list(x = widen))
     Condition
       Error in `new_class()`:
       ! <foo2>@x must narrow <foo1>@x.
       - <foo1>@x is <integer>.
       - <foo2>@x is <character>.
+
+# subclassing an external class defers errors until construction
+
+    Code
+      Child()
+    Condition
+      Error in `loadNamespace()`:
+      ! there is no package called 'notloaded.pkg'
 
 # abstract classes can't be instantiated
 
@@ -324,4 +314,3 @@
     Condition
       Error:
       ! No S7 class for base type <pairlist>.
-

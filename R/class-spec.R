@@ -53,6 +53,7 @@ is_foundation_class <- function(x) {
     is_union(x) ||
     is_base_class(x) ||
     is_S3_class(x) ||
+    is_external_class(x) ||
     is_class_missing(x) ||
     is_class_any(x)
 }
@@ -72,11 +73,22 @@ class_type <- function(x) {
     "S7_union"
   } else if (is_S3_class(x)) {
     "S7_S3"
+  } else if (is_external_class(x)) {
+    "S7_external"
   } else if (is_S4_class(x)) {
     "S4"
   } else {
     stop2("`x` is not a standard S7 class.", call = NULL)
   }
+}
+
+class_properties <- function(x) {
+  switch(
+    class_type(x),
+    S7 = attr(x, "properties", exact = TRUE) %||% list(),
+    S4 = S4_slot_properties(x),
+    list()
+  )
 }
 
 class_friendly <- function(x) {
@@ -90,6 +102,7 @@ class_friendly <- function(x) {
     S7_base = "a base type",
     S7_union = "an S7 union",
     S7_S3 = "an S3 class",
+    S7_external = "an external S7 class",
   )
 }
 
@@ -99,6 +112,18 @@ class_construct <- function(.x, ...) {
 
 
 class_construct_expr <- function(.x, envir = NULL, package = NULL) {
+  # External classes get a quoted call so the default is built when the object
+  # is constructed rather than when the class is defined.
+  ctor_class <- if (is_union(.x)) .x$classes[[1L]] else .x
+  if (is_external_class(ctor_class)) {
+    if (identical(package, ctor_class$package)) {
+      return(call(ctor_class$name))
+    } else {
+      cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
+      return(as.call(list(cl)))
+    }
+  }
+
   f <- class_constructor(.x)
 
   # For S7 class constructors with a non-NULL @package property
@@ -185,20 +210,29 @@ class_constructor <- function(.x) {
     S7_base = .x$constructor,
     S7_union = class_constructor(.x$classes[[1]]),
     S7_S3 = .x$constructor,
+    S7_external = class_constructor(resolve_external_class_req(.x)),
     stop2(sprintf("Can't construct %s.", class_friendly(.x)), call = NULL)
   )
 }
 
 class_validate <- function(class, object) {
+  if (is_S4_class(class)) {
+    if (isS4(object)) {
+      check <- methods::validObject(object, test = TRUE)
+      return(if (isTRUE(check)) NULL else check)
+    } else {
+      return(NULL)
+    }
+  }
+
   validator <- switch(
     class_type(class),
-    S4 = function(object) {
-      check <- methods::validObject(object, test = TRUE)
-      if (isTRUE(check)) NULL else check
-    },
     S7 = class@validator,
     S7_base = class$validator,
     S7_S3 = class$validator,
+    S7_external = function(object) {
+      class_validate(resolve_external_class_req(class), object)
+    },
     NULL
   )
 
@@ -238,6 +272,7 @@ class_desc <- function(x) {
     S7_base = paste0("<", x$class, ">"),
     S7_union = oxford_or(unlist(lapply(x$classes, class_desc))),
     S7_S3 = paste0("S3<", paste0(x$class, collapse = "/"), ">"),
+    S7_external = paste0("<", x$class_name, ">"),
   )
 }
 
@@ -253,9 +288,14 @@ class_dispatch <- function(x) {
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(S7_class_name(x), class_dispatch(x@parent)),
+    S7 = c(
+      S7_class_name(x),
+      class_dispatch(x@parent),
+      if (is_S4_class(x@parent)) "S7_object"
+    ),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
+    S7_external = class_dispatch(resolve_external_class_req(x)),
     stop2("Unsupported class type.", call = NULL)
   )
 }
@@ -271,6 +311,7 @@ class_register <- function(x) {
     S7 = S7_class_name(x),
     S7_base = x$class,
     S7_S3 = x$class[[1]],
+    S7_external = x$class_name,
     stop2("Unsupported class type.", call = NULL)
   )
 }
@@ -290,6 +331,13 @@ class_deparse <- function(x) {
       paste0("new_union(", paste(classes, collapse = ", "), ")")
     },
     S7_S3 = paste0("new_S3_class(", deparse1(x$class), ")"),
+    S7_external = {
+      args <- c(deparse1(x$package), deparse1(x$name))
+      if (!is.null(x$version)) {
+        args <- c(args, paste0("version = ", deparse1(x$version)))
+      }
+      sprintf("new_external_class(%s)", paste(args, collapse = ", "))
+    },
   )
 }
 
@@ -299,18 +347,21 @@ class_inherits <- function(x, what) {
     "NULL" = is.null(x),
     missing = FALSE,
     any = TRUE,
-    S4 = isS4(x) && methods::is(x, what),
-    S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
+    S4 = methods::is(x, what),
+    S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
-    S7_union = any(vlapply(what$classes, class_inherits, x = x)),
+    S7_union = some(what$classes, class_inherits, x = x),
     S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
+    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
 
 # Is every instance of `child` guaranteed to also be an instance of `parent`?
 # Used to check that a child class only narrows the type of a property
 class_extends <- function(child, parent) {
-  if (is_class_any(parent) || union_contains_any(parent)) {
+  if (identical(child, parent)) {
+    TRUE
+  } else if (is_class_any(parent) || union_contains_any(parent)) {
     # as a parent, `class_any` accepts every child class
     TRUE
   } else if (is_class_any(child)) {
@@ -318,35 +369,61 @@ class_extends <- function(child, parent) {
     FALSE
   } else if (is_union(child)) {
     # A union child extends `parent` only if every one of its members does.
-    all(vlapply(child$classes, class_extends, parent = parent))
+    every(child$classes, class_extends, parent = parent)
   } else if (is_union(parent)) {
     # A non-union child extends a union parent if it extends any of its members.
-    any(vlapply(parent$classes, class_extends, child = child))
+    some(parent$classes, class_extends, child = child)
   } else if (is.null(child) && !is.null(parent)) {
     # as a child, NULL can only extend NULL
     FALSE
   } else if (is.null(parent)) {
     # as a parent, NULL only accepts NULL
     is.null(child)
-  } else if (is_S4_class(child) || is_S4_class(parent)) {
-    is_S4_class(child) &&
-      is_S4_class(parent) &&
-      methods::extends(child@className, parent@className)
   } else if (is_class(parent) && parent@name == "S7_object") {
-    is_class(child)
+    is_class(child) || is_external_class(child)
+  } else if (is_external_class(child)) {
+    child <- resolve_external_class_req(child)
+    class_extends(child, parent)
+  } else if (is_class(child) && is_external_class(parent)) {
+    if (!class_dispatch_extends(parent$class_name, class_dispatch(child))) {
+      return(FALSE)
+    }
+    if (!is.null(parent$version)) {
+      resolve_external_class_req(parent)
+    }
+    TRUE
+  } else if (is_external_class(parent)) {
+    parent <- resolve_external_class_req(parent)
+    class_extends(child, parent)
+  } else if (is_S4_class(child) || is_S4_class(parent)) {
+    child <- class_extends_S4_name(child)
+    parent <- class_extends_S4_name(parent)
+    !is.null(child) &&
+      !is.null(parent) &&
+      methods::extends(child, parent)
   } else {
     # handle S7, S3, and base types.
     class_dispatch_extends(class_dispatch(parent), class_dispatch(child))
   }
 }
 
+class_extends_S4_name <- function(class) {
+  if (is_S4_class(class)) {
+    class@className
+  } else if (is_class(class)) {
+    S7_class_name(class)
+  } else {
+    NULL
+  }
+}
+
 obj_type <- function(x) {
   if (identical(x, quote(expr = ))) {
     "missing"
-  } else if (inherits(x, "S7_object")) {
-    "S7"
   } else if (isS4(x)) {
     "S4"
+  } else if (has_S7_class(x)) {
+    "S7"
   } else if (is.object(x)) {
     "S3"
   } else {
@@ -392,7 +469,7 @@ drop_S7_object <- function(x) {
 }
 
 union_contains_any <- function(x) {
-  is_union(x) && any(vlapply(x$classes, is_class_any))
+  is_union(x) && some(x$classes, is_class_any)
 }
 
 # Suppress @className false positive

@@ -2,6 +2,7 @@
 #include <string.h>
 
 extern SEXP sym_S7_class;
+extern SEXP sym_S7_class_legacy;
 
 extern SEXP sym_name;
 extern SEXP sym_parent;
@@ -30,6 +31,22 @@ extern SEXP fn_base_quote;
 
 extern SEXP R_TRUE;
 extern SEXP R_FALSE;
+
+// Read the stored S7 class object, falling back to the legacy "S7_class"
+// attribute name so objects created with an older version of S7 keep working.
+// Can be removed >1 year after S7 0.3.0
+static inline
+SEXP get_S7_class(SEXP object) {
+  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  if (S7_class == R_NilValue)
+    S7_class = Rf_getAttrib(object, sym_S7_class_legacy);
+  return S7_class;
+}
+
+// R-callable wrapper around get_S7_class().
+SEXP S7_class_(SEXP object) {
+  return get_S7_class(object);
+}
 
 static inline
 SEXP eval_here(SEXP lang) {
@@ -149,10 +166,25 @@ SEXP prop_storage_rename_(SEXP names) {
 
 
 static inline
+SEXP object_class(SEXP object) {
+  if (Rf_isS4(object)) {
+    static SEXP sym_dot_S3Class = NULL;
+    if (sym_dot_S3Class == NULL)
+      sym_dot_S3Class = Rf_install(".S3Class");
+
+    return R_has_slot(object, sym_dot_S3Class) ?
+      R_do_slot(object, sym_dot_S3Class) :
+      R_NilValue;
+  }
+
+  return Rf_getAttrib(object, R_ClassSymbol);
+}
+
+static inline
 Rboolean inherits2(SEXP object, const char* name) {
   // like inherits in R, but iterates over the class STRSXP vector
   // in reverse, since S7_* is typically at the tail.
-  SEXP klass = Rf_getAttrib(object, R_ClassSymbol);
+  SEXP klass = object_class(object);
   if (TYPEOF(klass) == STRSXP) {
     for (int i = Rf_length(klass)-1; i >= 0; i--) {
       if (strcmp(CHAR(STRING_ELT(klass, i)), name) == 0)
@@ -177,6 +209,28 @@ void check_is_S7(SEXP object) {
   if (is_s7_object(object))
     return;
   signal_is_not_S7(object);
+}
+
+static inline
+SEXP pseudo_null(void) {
+  static SEXP pseudo_NULL = NULL;
+  if (pseudo_NULL == NULL)
+    pseudo_NULL = Rf_install("\001NULL\001");
+  return pseudo_NULL;
+}
+
+static inline
+SEXP prop_get_storage(SEXP object, SEXP name_sym) {
+  SEXP value = Rf_getAttrib(object, name_sym);
+  return value == pseudo_null() ? R_NilValue : value;
+}
+
+static inline
+SEXP prop_set_storage(SEXP object, SEXP name_sym, SEXP value) {
+  if (value == R_NilValue)
+    value = pseudo_null();
+  Rf_setAttrib(object, name_sym, value);
+  return object;
 }
 
 
@@ -455,7 +509,7 @@ SEXP prop_(SEXP object, SEXP name) {
   SEXP name_rchar = STRING_ELT(name, 0);
   SEXP name_sym = Rf_installTrChar(name_rchar);
 
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP S7_class = get_S7_class(object);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
 
   // try getter() if appropriate
@@ -471,7 +525,7 @@ SEXP prop_(SEXP object, SEXP name) {
   }
 
   // try to resolve property from the object attributes
-  SEXP value = Rf_getAttrib(object, prop_storage_sym(name_sym));
+  SEXP value = prop_get_storage(object, prop_storage_sym(name_sym));
 
   // This is commented out because we currently have no way to distinguish between
   // a prop with a value of NULL, and a prop value that is unset/missing.
@@ -526,7 +580,7 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
   Rboolean should_validate_obj = check;
   Rboolean should_validate_prop = check;
 
-  SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
+  SEXP S7_class = get_S7_class(object);
   SEXP properties = Rf_getAttrib(S7_class, sym_properties);
   SEXP property = extract_name(properties, name_rchar);
 
@@ -556,7 +610,8 @@ SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
     // don't use setter()
     if (should_validate_prop)
       prop_validate(property, value, object, name);
-    Rf_setAttrib(object, prop_storage_sym(name_sym), value);
+    object = PROTECT(prop_set_storage(object, prop_storage_sym(name_sym), value));
+    n_protected++;
   }
 
   if (should_validate_obj)

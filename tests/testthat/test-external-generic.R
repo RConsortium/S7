@@ -3,7 +3,7 @@ test_that("can get and append methods", {
 
   expect_equal(S7_methods_table("testpkg"), list())
 
-  bar <- new_external_generic("foo", "bar", "x")
+  bar := new_external_generic("foo", dispatch_args = "x")
   external_methods_add("testpkg", bar, list(), function() {})
   expect_equal(
     S7_methods_table("testpkg"),
@@ -20,7 +20,7 @@ test_that("can get and append methods", {
 test_that("re-adding a method replaces the existing entry", {
   local_package("testpkg")
 
-  bar <- new_external_generic("foo", "bar", "x")
+  bar := new_external_generic("foo", dispatch_args = "x")
   external_methods_add("testpkg", bar, list("A"), function() "a")
   external_methods_add("testpkg", bar, list("A"), function() "b")
   expect_length(S7_methods_table("testpkg"), 1)
@@ -30,8 +30,8 @@ test_that("re-adding a method replaces the existing entry", {
 test_that("can remove methods", {
   local_package("testpkg")
 
-  bar <- new_external_generic("foo", "bar", "x")
-  baz <- new_external_generic("foo", "baz", "x")
+  bar := new_external_generic("foo", dispatch_args = "x")
+  baz := new_external_generic("foo", dispatch_args = "x")
   external_methods_add("testpkg", bar, list("A"), function() "a")
   external_methods_add("testpkg", baz, list("B"), function() "b")
   expect_length(S7_methods_table("testpkg"), 2)
@@ -46,22 +46,24 @@ test_that("can remove methods", {
 })
 
 test_that("displays nicely", {
-  bar <- new_external_generic("foo", "bar", "x")
+  bar := new_external_generic("foo", dispatch_args = "x")
   expect_snapshot({
     print(bar)
   })
 })
 
 test_that("can convert existing generics to external", {
-  ns <- local_package("test", foo_S7 := new_generic("x"))
+  ns <- local_package("test", {
+    foo_S7 := new_generic("x")
+  })
 
   expect_equal(
     as_external_generic(ns$foo_S7),
     new_external_generic("test", "foo_S7", "x")
   )
 
-  foo_ext <- new_external_generic("pkg", "foo", "x")
-  expect_equal(as_external_generic(foo_ext), foo_ext)
+  foo := new_external_generic("pkg", dispatch_args = "x")
+  expect_equal(as_external_generic(foo), foo)
 
   expect_equal(
     as_external_generic(as_S3_generic(sum)),
