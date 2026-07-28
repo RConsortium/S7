@@ -41,6 +41,10 @@ new_external_generic <- function(package, name, dispatch_args, version = NULL) {
 }
 
 as_external_generic <- function(x, env = parent.frame()) {
+  if (is_deprecated_generic(x)) {
+    x <- deprecated_target(x)
+  }
+
   if (is_generic_sentinel(x)) {
     # Sentinels are external generic specs with an extra marker class; keep
     # this in sync with generic_sentinel().

@@ -34,6 +34,7 @@ Suggests:
     callr,
     covr,
     knitr,
+    lifecycle,
     methods,
     rmarkdown,
     testthat (>= 3.2.0),
