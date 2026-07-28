@@ -171,6 +171,61 @@ unregister_s3_methods <- function(envir, generic) {
   invisible()
 }
 
+# Lightweight equivalent of withr::local_envvar(); use NA to unset a variable
+local_envvar <- function(..., frame = parent.frame()) {
+  new <- c(...)
+  old <- Sys.getenv(names(new), unset = NA, names = TRUE)
+  set_envvar(new)
+  defer(set_envvar(old), frame = frame)
+  invisible()
+}
+
+# Simulate the contexts that in_dev() distinguishes: an active load_all(),
+# R CMD check checking `package`, or an end user loading installed packages
+local_load_all <- function(frame = parent.frame()) {
+  local_envvar(
+    DEVTOOLS_LOAD = "S7",
+    "_R_CHECK_PACKAGE_NAME_" = NA,
+    frame = frame
+  )
+}
+
+local_R_CMD_check <- function(package = "S7", frame = parent.frame()) {
+  local_envvar(
+    DEVTOOLS_LOAD = NA,
+    "_R_CHECK_PACKAGE_NAME_" = package,
+    frame = frame
+  )
+}
+
+local_end_user <- function(frame = parent.frame()) {
+  local_envvar(
+    DEVTOOLS_LOAD = NA,
+    "_R_CHECK_PACKAGE_NAME_" = NA,
+    frame = frame
+  )
+}
+
+set_envvar <- function(vars) {
+  unset <- is.na(vars)
+  if (any(unset)) {
+    Sys.unsetenv(names(vars)[unset])
+  }
+  if (any(!unset)) {
+    do.call(Sys.setenv, as.list(vars[!unset]))
+  }
+}
+
+# Create a function whose environment reports the given package name, or no
+# package at all when `package` is NULL
+function_in_package <- function(package) {
+  env <- new.env(parent = globalenv())
+  env$.packageName <- package
+  f <- function(x, ...) NULL
+  environment(f) <- env
+  f
+}
+
 # Lightweight equivalent of withr::defer()
 defer <- function(expr, frame = parent.frame(), after = FALSE) {
   thunk <- as.call(list(function() expr))
