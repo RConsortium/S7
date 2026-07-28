@@ -451,8 +451,9 @@ test_that("new_property() displays nicely", {
 })
 
 test_that("properties can be base, S3, S4, S7, or S7 union", {
+  local_S4_classes()
   class_S7 := new_class(package = NULL)
-  class_S4 := local_S4_class(slots = c(x = "numeric"))
+  class_S4 <- setClass("class_S4", slots = c(x = "numeric"))
 
   my_class := new_class(
     package = NULL,
@@ -554,7 +555,9 @@ test_that("property validation runs the class's own validator", {
 })
 
 test_that("property validation runs an S4 class's validity method", {
-  PosNum := local_S4_class(
+  local_S4_classes()
+  PosNum <- setClass(
+    "PosNum",
     slots = c(n = "numeric"),
     validity = function(object) {
       if (object@n <= 0) "n must be positive" else TRUE

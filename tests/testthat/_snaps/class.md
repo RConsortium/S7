@@ -131,6 +131,16 @@
       - <foo1>@x is <integer>.
       - <foo4>@x is <ANY>.
 
+# dynamic child properties must also narrow the parent's type (#708)
+
+    Code
+      new_class(name = "foo2", parent = foo1, properties = list(x = widen))
+    Condition
+      Error in `new_class()`:
+      ! <foo2>@x must narrow <foo1>@x.
+      - <foo1>@x is <integer>.
+      - <foo2>@x is <character>.
+
 # subclassing an external class defers errors until construction
 
     Code

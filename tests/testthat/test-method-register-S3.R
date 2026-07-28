@@ -56,14 +56,10 @@ test_that("can register S7 method for S3 generic with S3 class signature", {
 })
 
 test_that("internal generics register S4 methods for S4-backed S7 classes", {
-  on.exit({
+  local_S4_classes()
+  defer({
     try(methods::removeMethod("dim", "S4regDimParent"), silent = TRUE)
     try(methods::removeMethod("dim", "S4regDimChild"), silent = TRUE)
-    S4_remove_classes(c(
-      "S4regDimParent",
-      "S4regDimChild",
-      "S4regDimShim"
-    ))
   })
 
   setClass("S4regDimParent", contains = "VIRTUAL")
@@ -86,8 +82,37 @@ test_that("internal generics register S4 methods for S4-backed S7 classes", {
   expect_equal(dim(object), c(1L, 2L))
 })
 
+test_that("base closures register S4 methods for S4-backed S7 classes", {
+  local_S4_classes()
+  defer({
+    try(methods::removeMethod("unlist", "S4regUnlistChild"), silent = TRUE)
+  })
+
+  setClass("S4regUnlistParent", contains = "VIRTUAL")
+  S4regUnlistChild := new_class(
+    parent = getClass("S4regUnlistParent"),
+    properties = list(x = class_integer),
+    package = NULL
+  )
+  method(unlist, S4regUnlistChild) <- function(
+    x,
+    recursive = TRUE,
+    use.names = TRUE
+  ) {
+    x@x
+  }
+  S4regUnlistChild_S4 <- S4_contains(S4regUnlistChild)
+  setClass("S4regUnlistShim", contains = S4regUnlistChild_S4)
+
+  object <- methods::new("S4regUnlistShim", x = 1L)
+
+  expect_equal(unlist(object), 1L)
+  expect_true(methods::hasMethod("unlist", "S4regUnlistChild"))
+})
+
 test_that("internal replacement generics can register full S4 signatures", {
-  on.exit({
+  local_S4_classes()
+  defer({
     try(
       methods::removeMethod(
         "dimnames<-",
@@ -95,11 +120,6 @@ test_that("internal replacement generics can register full S4 signatures", {
       ),
       silent = TRUE
     )
-    S4_remove_classes(c(
-      "S4regDimnamesParent",
-      "S4regDimnamesChild",
-      "S4regDimnamesShim"
-    ))
   })
 
   setClass("S4regDimnamesParent", contains = "VIRTUAL")
@@ -129,10 +149,7 @@ test_that("internal replacement generics can register full S4 signatures", {
 })
 
 test_that("sentinels for internal replacement generics keep full S4 signatures", {
-  on.exit(S4_remove_classes(c(
-    "S4regDimnamesSentinelParent",
-    "S4regDimnamesSentinelChild"
-  )))
+  local_S4_classes()
 
   setClass("S4regDimnamesSentinelParent", contains = "VIRTUAL")
   S4regDimnamesSentinelChild <- new_class(
@@ -151,13 +168,11 @@ test_that("sentinels for internal replacement generics keep full S4 signatures",
       package = NULL
     )
   )
-  on.exit(
+  defer(
     methods::removeMethod(
       "dimnames<-",
       c("S4regDimnamesSentinelChild", "list")
-    ),
-    add = TRUE,
-    after = FALSE
+    )
   )
   expect_true(methods::hasMethod(
     "dimnames<-",
