@@ -146,6 +146,18 @@ test_that("an external class can be used as a parent (#317)", {
   expect_true(S7_inherits(d, Animal))
 })
 
+test_that("an external parent can be unexported in the same package", {
+  pkg := local_package({
+    Tree_ref <- new_external_class(package = "pkg", name = "Tree")
+    Tree := new_class(properties = list(child = NULL | Tree_ref))
+    SpecialTree := new_class(parent = Tree_ref)
+  })
+
+  tree <- pkg$SpecialTree()
+  expect_s3_class(tree, "pkg::SpecialTree")
+  expect_null(tree@child)
+})
+
 test_that("subclass constructs against the parent's run-time definition (#317)", {
   dep := local_package({
     Animal := new_class(
