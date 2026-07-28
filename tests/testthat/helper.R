@@ -196,6 +196,10 @@ local_R_CMD_check <- function(package = "S7", frame = parent.frame()) {
     "_R_CHECK_PACKAGE_NAME_" = package,
     frame = frame
   )
+  testthat::local_mocked_bindings(
+    is_testing = function() FALSE,
+    .env = frame
+  )
 }
 
 local_end_user <- function(frame = parent.frame()) {

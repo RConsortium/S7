@@ -33,6 +33,17 @@ test_that("in_dev() is TRUE when R CMD check checks an involved package", {
   expect_false(in_dev(method, generic, signature))
 })
 
+test_that("in_dev() is FALSE inside package tests, even under R CMD check", {
+  local_envvar(
+    DEVTOOLS_LOAD = NA,
+    TESTTHAT = "true",
+    "_R_CHECK_PACKAGE_NAME_" = "methodPkg"
+  )
+  method <- function_in_package("methodPkg")
+  generic <- function_in_package("genericPkg")
+  expect_false(in_dev(method, generic))
+})
+
 test_that("in_dev() with no arguments only detects load_all()", {
   local_end_user()
   expect_false(in_dev())
