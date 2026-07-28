@@ -62,7 +62,10 @@ local_package <- function(
   version = "0.0.0",
   frame = parent.frame()
 ) {
-  ns <- new.env(parent = asNamespace("S7"))
+  # The intermediate environment plays the role of the imports environment
+  # of a real namespace, e.g. so tests can simulate re-exports.
+  imports <- new.env(parent = asNamespace("S7"))
+  ns <- new.env(parent = imports)
 
   info <- new.env(parent = emptyenv())
   info$spec <- c(name = name, version = version)
