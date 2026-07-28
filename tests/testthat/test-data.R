@@ -66,6 +66,17 @@ test_that("S7_data preserves S3 class from grandparent", {
   expect_equal(S7_data(mydf2(df)), df)
 })
 
+test_that("S7_data preserves S3 class from an external parent", {
+  dep := local_package({
+    MyDF := new_class(parent = class_data.frame)
+  })
+  MyDF := new_external_class(package = "dep")
+  Sub := new_class(parent = MyDF)
+
+  df <- data.frame(x = 1, y = 2)
+  expect_equal(S7_data(Sub(df)), df)
+})
+
 test_that("S7_data does not add class when parent is a base type", {
   text := new_class(class_character)
   mychar := new_class(class_character)

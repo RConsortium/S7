@@ -21,6 +21,7 @@
 #'   * An S4 class, like the result of [methods::getClass()].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
+#'   * A class from another package, wrapped by [new_external_class()].
 #' @param package Package name. This is automatically resolved if the class is
 #'   defined in a package, and `NULL` otherwise.
 #'
@@ -123,6 +124,15 @@ new_class <- function(
 
   parent <- as_class(parent)
 
+  # We have to resolve at build-time to validate the properties we know.
+  # But we otherwise avoid embedding the resolved parent because its definition
+  # may have changed in between package build time and run time.
+  if (is_external_class(parent)) {
+    parent_resolved <- resolve_external_class_req(parent, package)
+  } else {
+    parent_resolved <- parent
+  }
+
   # Don't check arguments for S7_object
   if (!is.null(parent)) {
     check_can_inherit(parent)
@@ -137,15 +147,15 @@ new_class <- function(
     }
     if (
       abstract &&
-        !((is_class(parent) &&
-          (parent@abstract || parent@name == "S7_object")) ||
-          (is_S4_class(parent) && parent@virtual))
+        !((is_class(parent_resolved) &&
+          (parent_resolved@abstract || parent_resolved@name == "S7_object")) ||
+          (is_S4_class(parent_resolved) && parent_resolved@virtual))
     ) {
       stop2("Abstract classes must have abstract parents.")
     }
   }
 
-  parent_props <- class_properties(parent)
+  parent_props <- class_properties(parent_resolved)
   new_props <- as_properties(properties)
   check_prop_names(new_props)
   check_prop_overrides(new_props, parent_props, name, parent)
@@ -175,7 +185,7 @@ new_class <- function(
   attr(object, "validator") <- validator
   class_name <- paste(c(package, name), collapse = "::")
   attr(object, "S7_class_name") <- class_name
-  attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent)
+  attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
 
   if (S7_extends_S4(object)) {
@@ -290,7 +300,11 @@ c.S7_class <- function(...) {
 }
 
 can_inherit <- function(x) {
-  is_base_class(x) || is_S3_class(x) || is_class(x) || is_S4_class(x)
+  is_base_class(x) ||
+    is_S3_class(x) ||
+    is_class(x) ||
+    is_S4_class(x) ||
+    is_external_class(x)
 }
 
 check_can_inherit <- function(
@@ -369,15 +383,16 @@ new_object <- function(`_parent`, ...) {
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
-  if (class@abstract) {
+  if (class@abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
     )
-    stop2(msg)
+    stop2(msg, class = "S7_error_abstract_class")
   }
 
   if (!missing(`_parent`)) {
+    local_constructing(class)
     check_parent(`_parent`, class)
   }
 
@@ -565,4 +580,25 @@ check_S4_slot_overrides <- function(
   }
 
   invisible()
+}
+
+# Abstract classes ----------------------------------------------
+
+# While a constructor's `new_object()` call runs, the class under construction
+# is recorded here so that the constructors of abstract ancestors know they're
+# building the parent part of a concrete subclass, and hence are allowed to
+# run.
+constructing <- new.env(parent = emptyenv())
+
+# Record `class` as under construction until `frame` exits.
+local_constructing <- function(class, frame = parent.frame()) {
+  old <- constructing$class
+  constructing$class <- class
+  defer(constructing$class <- old, frame = frame)
+  invisible(old)
+}
+
+is_constructing_parent_part <- function(class) {
+  child <- constructing$class
+  !is.null(child) && S7_class_name(class) %in% class_dispatch(child)[-1]
 }
