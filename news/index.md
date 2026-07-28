@@ -141,6 +141,16 @@
   and `S7_data<-()` error on environment-based objects, since they would
   otherwise destroy the object’s S7 attributes in place
   ([\#590](https://github.com/RConsortium/S7/issues/590)).
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  generates a working default constructor for a subclass of a class with
+  a custom constructor: the subclass takes `...` and forwards it to the
+  parent constructor (followed by a named argument for each property the
+  subclass adds), so the parent’s argument defaults are matched and
+  evaluated by the parent itself. This is a breaking change: such a
+  subclass constructor no longer exposes the parent’s properties as
+  named or positional arguments, only via `...`
+  ([\#609](https://github.com/RConsortium/S7/issues/609),
+  [\#317](https://github.com/RConsortium/S7/issues/317)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)’s
   default constructor now respects properties overridden in a subclass:
   the subclass’s default is used
@@ -154,9 +164,18 @@
   creates a delayed reference to an S7 class in another package (or your
   own package, but not yet defined). It is useful for registering
   methods on classes from suggested packages
-  ([\#573](https://github.com/RConsortium/S7/issues/573)) and for
-  creating self-referential or mutually recursive classes
-  ([\#250](https://github.com/RConsortium/S7/issues/250)).
+  ([\#573](https://github.com/RConsortium/S7/issues/573)), for creating
+  self-referential or mutually recursive classes
+  ([\#250](https://github.com/RConsortium/S7/issues/250)), and for
+  extending class from other packages
+  ([\#317](https://github.com/RConsortium/S7/issues/317)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now allows an abstract class’s constructor to run when it is building
+  the parent part of a subclass, so a subclass of an abstract class from
+  another package (via
+  [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md))
+  can be constructed
+  ([\#717](https://github.com/RConsortium/S7/issues/717)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   is now substantially faster, because each class caches its own name
   and dispatch vector, and class type detection has moved to C.

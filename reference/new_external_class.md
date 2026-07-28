@@ -5,7 +5,7 @@ in another package (or in your own package and needed before it's fully
 defined). It carries only the package and class name, and is resolved to
 the real S7 class when needed.
 
-External classes are useful in two situations:
+External classes are useful in three situations:
 
 - To register a method for a generic in your package, dispatching on a
   class from a soft dependency. The method will be registered when `pkg`
@@ -21,14 +21,18 @@ External classes are useful in two situations:
       tree_stub <- new_external_class("mypkg", "tree")
       new_class("tree", properties = list(child = NULL | tree_stub))
 
+- To use a class from another package as the `parent` of your own class.
+  The parent's properties are captured when your class is defined, but
+  its constructor is called at run time, so your subclass always builds
+  on the installed version of the parent package.
+
+      TheirClass <- new_external_class("theirpkg", "TheirClass")
+      new_class("MyClass", parent = TheirClass)
+
 Make sure to call
 [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
 in your package's `.onLoad()` so that deferred method registrations fire
 when the relevant package is loaded.
-
-External classes can not currently be used as parents in
-[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md).
-We hope to relax that restriction in the near future.
 
 ## Usage
 

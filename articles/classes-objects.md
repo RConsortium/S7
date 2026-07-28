@@ -547,5 +547,21 @@ then you should use
 as the parent here). That argument should be followed by one named
 argument for each property.
 
-There’s one drawback of custom constructors that you should be aware of:
-any subclass will also require a custom constructor.
+A subclass of a class with a custom constructor doesn’t need its own
+custom constructor. Its default constructor takes `...` and forwards it
+to the parent constructor, followed by one named argument for each
+property the subclass adds:
+
+``` r
+
+PositiveRange := new_class(
+  parent = Range,
+  properties = list(positive = class_logical)
+)
+# `...` is forwarded to Range()'s custom constructor
+PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
+#> <PositiveRange>
+#>  @ start   : num 0
+#>  @ end     : num 10
+#>  @ positive: logi TRUE
+```

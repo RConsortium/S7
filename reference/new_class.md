@@ -53,6 +53,9 @@ new_object(`_parent`, ...)
     [class_integer](https://rconsortium.github.io/S7/reference/base_classes.md),
     etc.
 
+  - A class from another package, wrapped by
+    [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md).
+
 - package:
 
   Package name. This is automatically resolved if the class is defined
