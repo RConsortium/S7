@@ -608,3 +608,7 @@ prop_is_read_only <- function(prop) {
 prop_has_setter <- function(prop) is.function(prop$setter)
 
 prop_is_dynamic <- function(prop) is.function(prop$getter)
+
+prop_is_encapsulated <- function(prop) {
+  prop_is_dynamic(prop) || prop_has_setter(prop)
+}

@@ -183,6 +183,9 @@ new_class <- function(
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
+  class_name <- paste(c(package, name), collapse = "::")
+  attr(object, "S7_class_name") <- class_name
+  attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
 
   if (S7_extends_S4(object)) {
@@ -203,8 +206,23 @@ globalVariables(c(
 ))
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
+# Fully qualified class name; cached in the `S7_class_name` attribute
 S7_class_name <- function(x) {
-  paste(c(x@package, x@name), collapse = "::")
+  attr(x, "S7_class_name", exact = TRUE) %||%
+    paste(c(x@package, x@name), collapse = "::")
+}
+
+# Vector of class names used for dispatch; cached in the `S7_dispatch` attribute
+S7_class_dispatch <- function(class_name, parent) {
+  if (identical(class_name, "S7_object")) {
+    return("S7_object")
+  }
+
+  c(
+    class_name,
+    class_dispatch(parent),
+    if (is_S4_class(parent)) "S7_object"
+  )
 }
 
 check_S7_constructor <- function(constructor, call = sys.call(-1L)) {
@@ -361,7 +379,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class <- sys.function(-1)
+  class <- sys.function(sys.parent())
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
@@ -500,18 +518,19 @@ check_prop_overrides <- function(
   call = sys.call(-1L)
 ) {
   overridden <- intersect(names(child_props), names(parent_props))
+  check_S4_slot_overrides(child_props, parent, call = call)
 
   for (prop in overridden) {
     child_prop <- child_props[[prop]]
 
-    # Dynamic properties are computed, not stored, so they're never validated
-    # against the parent's type
-    if (prop_is_dynamic(child_prop)) {
-      next
-    }
-
     child_class <- child_prop$class
     parent_class <- parent_props[[prop]]$class
+
+    # Read-only properties are computed, not stored, so when the user hasn't
+    # declared a type there's nothing to narrow.
+    if (prop_is_read_only(child_prop) && is_class_any(child_class)) {
+      next
+    }
 
     if (!class_extends(child_class, parent_class)) {
       child_desc <- paste0("<", name, ">")
@@ -530,6 +549,37 @@ check_prop_overrides <- function(
       stop2(msg, call = call)
     }
   }
+}
+
+check_S4_slot_overrides <- function(
+  child_props,
+  parent,
+  call = sys.call(-1L)
+) {
+  parent_S4 <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+  if (is.null(parent_S4)) {
+    return(invisible())
+  }
+
+  overridden <- intersect(names(child_props), names(parent_S4@slots))
+
+  for (prop in overridden) {
+    child_prop <- child_props[[prop]]
+    if (!prop_is_encapsulated(child_prop)) {
+      next
+    }
+
+    msg <- sprintf(
+      paste0(
+        "Can't override inherited S4 slot %s with a property that has a ",
+        "custom getter or setter."
+      ),
+      prop
+    )
+    stop2(msg, call = call)
+  }
+
+  invisible()
 }
 
 # Abstract classes ----------------------------------------------

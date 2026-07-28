@@ -1,7 +1,13 @@
 test_that("S7 classes possess expected properties", {
   foo := new_class(package = "S7", validator = function(self) NULL)
 
-  expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
+  expect_equal(
+    prop_names(foo),
+    setdiff(
+      names(attributes(foo)),
+      c("class", "S7_class_name", "S7_dispatch")
+    )
+  )
   expect_type(foo@name, "character")
   expect_equal(foo@parent, S7_object)
   expect_type(foo@constructor, "closure")
@@ -61,7 +67,8 @@ test_that("S7 classes check inputs", {
 })
 
 test_that("S7 classes can inherit from S4 but not class unions", {
-  parentS4 := local_S4_class(slots = c(x = "numeric"))
+  local_S4_classes()
+  parentS4 <- setClass("parentS4", slots = c(x = "numeric"))
 
   child <- new_class("test", parent = parentS4, package = NULL)
   expect_s3_class(child, "S7_class")
@@ -99,8 +106,9 @@ test_that("inheritance lets child properties narrow the parent's type", {
 })
 
 test_that("inheritance lets child properties narrow with S4 inheritance", {
-  S4PropertyParent := local_S4_class(slots = c(x = "numeric"))
-  S4PropertyChild := local_S4_class(contains = "S4PropertyParent")
+  local_S4_classes()
+  S4PropertyParent <- setClass("S4PropertyParent", slots = c(x = "numeric"))
+  S4PropertyChild <- setClass("S4PropertyChild", contains = "S4PropertyParent")
 
   Parent := new_class(
     properties = list(x = S4PropertyParent),
@@ -114,6 +122,45 @@ test_that("inheritance lets child properties narrow with S4 inheritance", {
 
   x <- methods::new("S4PropertyChild", x = 1)
   expect_s4_class(Child(x = x)@x, "S4PropertyChild")
+})
+
+test_that("inheritance lets S7 children narrow S4 parent properties", {
+  local_S4_classes()
+  Animal <- setClass("Animal")
+  Kennel <- setClass("Kennel", slots = list(dog = "Animal"))
+  Dog := new_class(parent = Animal, package = NULL)
+
+  DogKennel := new_class(
+    parent = Kennel,
+    properties = list(dog = Dog),
+    package = NULL
+  )
+  dog <- Dog()
+
+  expect_equal(prop(DogKennel(dog = dog), "dog"), dog)
+})
+
+test_that("inheritance lets S4 children narrow S7 parent properties", {
+  local_S4_classes()
+
+  S4PropertyS7Parent := new_class(package = NULL)
+  S4_register(S4PropertyS7Parent)
+  setClass(
+    "S4PropertyS7Child",
+    contains = S4_contains(S4PropertyS7Parent)
+  )
+  S4PropertyParent := new_class(
+    properties = list(x = S4PropertyS7Parent),
+    package = NULL
+  )
+  S4PropertyChild := new_class(
+    parent = S4PropertyParent,
+    properties = list(x = getClass("S4PropertyS7Child")),
+    package = NULL
+  )
+
+  x <- methods::new("S4PropertyS7Child")
+  expect_s4_class(S4PropertyChild(x = x)@x, "S4PropertyS7Child")
 })
 
 test_that("inheritance doesn't let child properties narrow S7_object with base or S3 classes", {
@@ -244,6 +291,29 @@ test_that("inheritance doesn't let child properties widen or change the parent's
   })
 })
 
+test_that("dynamic child properties must also narrow the parent's type (#708)", {
+  foo1 := new_class(
+    properties = list(x = class_integer),
+    package = NULL
+  )
+
+  widen <- new_property(
+    class = class_character,
+    getter = function(self) "x"
+  )
+  expect_snapshot(
+    error = TRUE,
+    new_class(name = "foo2", parent = foo1, properties = list(x = widen))
+  )
+
+  narrow <- new_property(
+    class = class_integer,
+    getter = function(self) 1L
+  )
+  expect_no_error(
+    new_class(name = "foo3", parent = foo1, properties = list(x = narrow))
+  )
+})
 
 test_that("subclassing an external class defers errors until construction", {
   Ext := new_external_class("notloaded.pkg")
@@ -253,12 +323,6 @@ test_that("subclassing an external class defers errors until construction", {
   # error only surfaces when the property default is constructed.
   Child := new_class(parent = Parent, properties = list(x = Ext))
   expect_snapshot(Child(), error = TRUE)
-})
-
-test_that("inheritance lets dynamic child properties override any parent type", {
-  foo1 := new_class(properties = list(x = class_integer))
-  readonly <- new_property(class_character, getter = function(self) "x")
-  expect_no_error(new_class("foo2", foo1, properties = list(x = readonly)))
 })
 
 test_that("abstract classes can't be instantiated", {
@@ -299,6 +363,15 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
+test_that("new_object() can be forced lazily from a constructor", {
+  Foo := new_class(
+    constructor = function() identity(new_object(S7_object())),
+    package = NULL
+  )
+
+  expect_equal(S7_class(Foo()), Foo)
+})
+
 test_that("new_object() errors if `_parent` doesn't inherit from the parent class (#409)", {
   Bar := new_class(package = NULL)
   # `_parent` should be `Bar()`, not the class spec `Bar`
@@ -317,6 +390,18 @@ test_that("new_object() errors if `_parent` doesn't inherit from the parent clas
     Foo()
     Baz()
   })
+})
+
+test_that("new_object() accepts an instance of a subclass of the parent", {
+  Parent := new_class(package = NULL)
+  Sibling := new_class(parent = Parent, package = NULL)
+  Child := new_class(
+    parent = Parent,
+    package = NULL,
+    constructor = function(parent) new_object(parent)
+  )
+
+  expect_identical(S7_class(Child(Sibling())), Child)
 })
 
 test_that("new_object() allows S7_object placeholder for abstract parents", {

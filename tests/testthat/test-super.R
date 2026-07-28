@@ -58,8 +58,9 @@ test_that("super() works with abstract S3 classes (#686)", {
 })
 
 test_that("super() works with S4 objects", {
-  Foo1 := local_S4_class(representation(x = "numeric"))
-  Foo2 := local_S4_class(contains = "Foo1")
+  local_S4_classes()
+  setClass("Foo1", representation(x = "numeric"))
+  setClass("Foo2", contains = "Foo1")
   obj <- methods::new("Foo2", x = 5)
 
   gen := new_generic("x")

@@ -239,15 +239,14 @@ S4_check_contains <- function(class, call = sys.call(-1L)) {
   }
 
   for (prop in class@properties) {
-    if (prop_is_dynamic(prop) || prop_has_setter(prop)) {
+    if (prop_is_encapsulated(prop)) {
       msg <- sprintf(
         paste0(
           "Can't extend S7 class %s with S4 because property %s has a ",
-          "custom %s."
+          "custom getter or setter."
         ),
         class_desc(class),
-        prop$name,
-        if (prop_is_dynamic(prop)) "getter" else "setter"
+        prop$name
       )
       stop2(msg, call = call)
     }
@@ -414,6 +413,18 @@ S4_validate <- function(object) {
 S4_initialize <- function(.Object, ...) {
   if (isS4(.Object) && has_S7_class(.Object)) {
     S4_check_contains(S7_class(.Object))
+  }
+
+  if (!isS4(.Object)) {
+    class <- S7_class(.Object)
+    parent <- S4_ancestor(class)
+    parent_initialize <- methods::selectMethod(
+      "initialize",
+      parent@className
+    )
+    if (!inherits(parent_initialize, "derivedDefaultMethod")) {
+      return(parent_initialize(.Object, ...))
+    }
   }
 
   args <- list(...)
@@ -641,15 +652,6 @@ find_package_with_symbol <- function(name, env, exclude = NULL) {
         name %in% imports[[pkg]]
     ) {
       return(pkg)
-    }
-  }
-}
-
-S4_remove_classes <- function(classes, where = parent.frame()) {
-  where <- topenv(where)
-  for (class in classes) {
-    if (methods::isClass(class, where = where)) {
-      methods::removeClass(class, where)
     }
   }
 }

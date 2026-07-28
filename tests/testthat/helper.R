@@ -95,21 +95,18 @@ package_hooks <- function(package, event = "onLoad") {
   Filter(function(hook) !is_ide_hook(hook), hooks)
 }
 
-local_S4_class <- function(
-  name,
-  ...,
-  env = parent.frame(),
-  where = topenv(env)
-) {
-  out <- methods::setClass(name, ..., where = where)
-  defer(S4_remove_classes(name, where), env)
-  out
-}
-
-local_S4_union <- function(name, members, env = parent.frame()) {
-  out <- methods::setClassUnion(name, members, where = topenv(env))
-  defer(S4_remove_classes(name, topenv(env)), env)
-  out
+local_S4_classes <- function(env = parent.frame(), where = topenv(env)) {
+  old <- methods::getClasses(where = where, inherits = FALSE)
+  defer(
+    {
+      new <- setdiff(methods::getClasses(where = where, inherits = FALSE), old)
+      for (class in new) {
+        methods::removeClass(class, where = where)
+      }
+    },
+    env
+  )
+  invisible()
 }
 
 # Create a temporary library, prepend it to .libPaths(), and restore the

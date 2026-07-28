@@ -137,7 +137,7 @@ test_that("fallback convert can convert to base type", {
 })
 
 test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 object", {
-  on.exit(S4_remove_classes(c("ParentS4", "ChildS7")))
+  local_S4_classes()
   setClass("ParentS4", slots = list(x = "numeric"))
 
   ChildS7 <- new_class(
@@ -156,7 +156,7 @@ test_that("fallback convert can convert_up() an S4-derived S7 object to an S4 ob
 })
 
 test_that("fallback convert can use explicit S4 coercion via methods::as", {
-  on.exit(S4_remove_classes(c("ParentS4", "ChildS7", "UnrelatedS4")))
+  local_S4_classes()
   setClass("ParentS4", slots = list(x = "numeric"))
   setClass("UnrelatedS4", slots = list(z = "character"))
 
