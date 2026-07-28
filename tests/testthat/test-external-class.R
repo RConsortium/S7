@@ -146,6 +146,49 @@ test_that("an external class can be used as a parent (#317)", {
   expect_true(S7_inherits(d, Animal))
 })
 
+test_that("can construct a subclass of an abstract external parent (#717)", {
+  dep := local_package({
+    Animal := new_class(
+      abstract = TRUE,
+      properties = list(name = class_character)
+    )
+  })
+  Animal := new_external_class(package = "dep")
+  Dog := new_class(
+    parent = Animal,
+    properties = list(breed = class_character)
+  )
+
+  d <- Dog(name = "Rex", breed = "lab")
+  expect_equal(d@name, "Rex")
+  expect_equal(d@breed, "lab")
+
+  # but direct construction of the abstract class still errors
+  expect_error(dep$Animal(name = "Rex"), class = "S7_error_abstract_class")
+})
+
+test_that("subclass survives external parent becoming abstract (#717)", {
+  dep := local_package({
+    Animal := new_class(properties = list(legs = class_integer))
+  })
+  Animal := new_external_class(package = "dep")
+  Dog := new_class(
+    parent = Animal,
+    properties = list(breed = class_character)
+  )
+  expect_equal(Dog(legs = 4L)@legs, 4L)
+
+  # The parent package makes the class abstract and is reloaded; the subclass
+  # is *not* rebuilt, yet construction still works.
+  dep$Animal <- new_class(
+    name = "Animal",
+    package = "dep",
+    abstract = TRUE,
+    properties = list(legs = class_integer)
+  )
+  expect_equal(Dog(legs = 4L)@legs, 4L)
+})
+
 test_that("subclass constructs against the parent's run-time definition (#317)", {
   dep := local_package({
     Animal := new_class(

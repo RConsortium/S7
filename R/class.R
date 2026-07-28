@@ -365,15 +365,16 @@ new_object <- function(`_parent`, ...) {
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
-  if (class@abstract) {
+  if (class@abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
     )
-    stop2(msg)
+    stop2(msg, class = "S7_error_abstract_class")
   }
 
   if (!missing(`_parent`)) {
+    local_constructing(class)
     check_parent(`_parent`, class)
   }
 
@@ -529,4 +530,25 @@ check_prop_overrides <- function(
       stop2(msg, call = call)
     }
   }
+}
+
+# Abstract classes ----------------------------------------------
+
+# While a constructor's `new_object()` call runs, the class under construction
+# is recorded here so that the constructors of abstract ancestors know they're
+# building the parent part of a concrete subclass, and hence are allowed to
+# run.
+constructing <- new.env(parent = emptyenv())
+
+# Record `class` as under construction until `frame` exits.
+local_constructing <- function(class, frame = parent.frame()) {
+  old <- constructing$class
+  constructing$class <- class
+  defer(constructing$class <- old, frame = frame)
+  invisible(old)
+}
+
+is_constructing_parent_part <- function(class) {
+  child <- constructing$class
+  !is.null(child) && S7_class_name(class) %in% class_dispatch(child)[-1]
 }
