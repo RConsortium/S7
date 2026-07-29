@@ -311,6 +311,14 @@
   ([\#615](https://github.com/RConsortium/S7/issues/615)). It no longer
   accumulates duplicate registration hooks when a package is loaded
   repeatedly ([\#316](https://github.com/RConsortium/S7/issues/316)).
+- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  no longer makes a package unloadable when a generic it registers a
+  method for has been renamed or removed from the upstream package; it
+  now warns and skips the registration. It also resolves generics
+  through the upstream package’s exports, so a generic can move to
+  another package and be re-exported without breaking already-installed
+  downstream packages
+  ([\#729](https://github.com/RConsortium/S7/issues/729)).
 - New
   [`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
   to be called from `.onUnload()`, unregisters active methods and
