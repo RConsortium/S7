@@ -34,8 +34,10 @@
 #'   argument for each property.
 #'
 #'   A custom constructor should call `new_object()` to create the S7 object.
-#'   The first argument, `.data`, should be an instance of the parent class
-#'   (if used). The subsequent arguments are used to set the properties.
+#'   `new_class()` automatically associates a custom constructor with its class,
+#'   so no additional class argument is needed. The first argument to
+#'   `new_object()`, `_parent`, should be an instance of the parent class (if
+#'   used). The subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.
 #'
@@ -174,6 +176,12 @@ new_class <- function(
     )
   }
 
+  class_ref <- new.env(parent = emptyenv())
+  class(class_ref) <- "S7_class_ref"
+  constructor_env <- new.env(parent = environment(constructor))
+  constructor_env$.S7_class_ref <- class_ref
+  environment(constructor) <- constructor_env
+
   object <- constructor
   # Must synchronise with prop_names
   attr(object, "name") <- name
@@ -187,6 +195,7 @@ new_class <- function(
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
+  class_ref$class <- object
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -379,7 +388,17 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class <- sys.function(sys.parent())
+  class_ref <- get0(
+    ".S7_class_ref",
+    envir = parent.frame(),
+    inherits = TRUE,
+    ifnotfound = NULL
+  )
+  if (inherits(class_ref, "S7_class_ref")) {
+    class <- class_ref$class
+  } else {
+    class <- sys.function(sys.parent())
+  }
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
@@ -406,7 +425,10 @@ new_object <- function(`_parent`, ...) {
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
-    list(class = class_dispatch(class), `_S7_class` = class),
+    list(
+      class = class_dispatch(class),
+      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+    ),
     self_attrs,
     attributes(`_parent`)
   )
@@ -497,6 +519,15 @@ S7_class <- function(object) {
     },
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
+  )
+}
+
+S7_class_storage <- function(class) {
+  get0(
+    ".S7_class_ref",
+    envir = environment(class),
+    inherits = TRUE,
+    ifnotfound = class
   )
 }
 

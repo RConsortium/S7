@@ -363,6 +363,87 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
+test_that("new_object() stores a shared class reference (#742)", {
+  Foo := new_class(package = NULL)
+  x <- Foo()
+  y <- Foo()
+
+  x_ref <- attr(x, "_S7_class", exact = TRUE)
+  y_ref <- attr(y, "_S7_class", exact = TRUE)
+  expect_type(x_ref, "environment")
+  expect_equal(obj_addr(x_ref), obj_addr(y_ref))
+  expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("custom constructors use a shared class reference (#742)", {
+  Foo := new_class(
+    constructor = function(x) new_object(S7_object(), x = x),
+    properties = list(x = class_double),
+    package = NULL
+  )
+
+  x <- Foo(1)
+  y <- Foo(2)
+  expect_equal(
+    obj_addr(attr(x, "_S7_class", exact = TRUE)),
+    obj_addr(attr(y, "_S7_class", exact = TRUE))
+  )
+  expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("serialisation preserves shared class references (#742)", {
+  Foo := new_class(package = NULL)
+  xy <- unserialize(serialize(list(Foo(), Foo()), NULL))
+
+  expect_equal(
+    obj_addr(attr(xy[[1]], "_S7_class", exact = TRUE)),
+    obj_addr(attr(xy[[2]], "_S7_class", exact = TRUE))
+  )
+  expect_equal(
+    obj_addr(S7_class(xy[[1]])),
+    obj_addr(S7_class(xy[[2]]))
+  )
+
+  Foo_rds <- unserialize(serialize(Foo, NULL))
+  x <- Foo_rds()
+  y <- Foo_rds()
+  expect_equal(
+    obj_addr(attr(x, "_S7_class", exact = TRUE)),
+    obj_addr(attr(y, "_S7_class", exact = TRUE))
+  )
+  expect_equal(
+    obj_addr(S7_class(x)),
+    obj_addr(S7_class(y))
+  )
+})
+
+test_that("classes in namespaces use shared class references (#742)", {
+  pkg := local_package({
+    Foo := new_class()
+  })
+  Foo <- pkg$Foo
+  x <- Foo()
+  y <- Foo()
+
+  expect_equal(
+    obj_addr(attr(x, "_S7_class", exact = TRUE)),
+    obj_addr(attr(y, "_S7_class", exact = TRUE))
+  )
+  expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("new_object() supports constructors without a class reference", {
+  Foo := new_class(package = NULL)
+  environment(Foo) <- parent.env(environment(Foo))
+
+  x <- Foo()
+  expect_type(attr(x, "_S7_class", exact = TRUE), "closure")
+  expect_equal(S7_class(x), Foo)
+})
+
 test_that("new_object() can be forced lazily from a constructor", {
   Foo := new_class(
     constructor = function() identity(new_object(S7_object())),
