@@ -212,7 +212,7 @@ class_validate <- function(class, object) {
 
   validator <- switch(
     class_type(class),
-    S7 = class@validator,
+    S7 = attr(class, "validator"), # runs on every construction
     S7_base = class$validator,
     S7_S3 = class$validator,
     S7_external = function(object) {

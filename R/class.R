@@ -175,7 +175,13 @@ new_class <- function(
   }
 
   object <- constructor
-  # Must synchronise with prop_names
+  # A class's metadata is stored as plain attributes on the class object.
+  # Must synchronise with prop_names().
+  #
+  # IMPORTANT: no name below may be a prefix of another since we use `attr()`
+  # to access properties in performance hot paths (avoiding the S3 dispatch
+  # that `@` requires). This shortcut is only safe for class metadata, which we
+  # control.
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
@@ -328,7 +334,7 @@ is_class <- function(x) inherits(x, "S7_class")
 # registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
 class_is_abstract <- function(class) {
   if (is_class(class)) {
-    class@abstract
+    attr(class, "abstract") # called on construction
   } else if (is_S3_class(class)) {
     class$abstract %||% is_default_constructor(class$constructor)
   } else {
@@ -337,7 +343,7 @@ class_is_abstract <- function(class) {
 }
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
-  parent_class <- class@parent
+  parent_class <- attr(class, "parent")  # called on construction
   if (is.null(parent_class)) {
     stop2(
       "`_parent` must not be supplied when class has no parent.",
@@ -383,7 +389,13 @@ new_object <- function(`_parent`, ...) {
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
-  if (class@abstract && !is_constructing_parent_part(class)) {
+  # This is the hottest function in S7, so read the class metadata we need once,
+  # up front.
+  class_abstract <- attr(class, "abstract")
+  class_props <- attr(class, "properties")
+  class_parent <- attr(class, "parent")
+
+  if (class_abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
@@ -398,7 +410,7 @@ new_object <- function(`_parent`, ...) {
 
   args <- collect_dots(...)
 
-  has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
+  has_setter <- vlapply(class_props[names(args)], prop_has_setter)
   self_attrs <- args[!has_setter]
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
@@ -421,13 +433,15 @@ new_object <- function(`_parent`, ...) {
 
   # Don't need to validate the parent class if it's already validated and none
   # of its properties were reset by this call.
-  parent_validated <- inherits(class@parent, "S7_object") &&
-    !class@parent@abstract
+  parent_validated <- inherits(class_parent, "S7_object") &&
+    !attr(class_parent, "abstract")
   parent_props_reset <- parent_validated &&
-    any(names2(args) %in% names2(class@parent@properties))
+    any(
+      names2(args) %in% names2(attr(class_parent, "properties"))
+    )
   validate_from(
     `_parent`,
-    parent = if (parent_validated && !parent_props_reset) class@parent,
+    parent = if (parent_validated && !parent_props_reset) class_parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )
