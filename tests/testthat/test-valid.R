@@ -35,6 +35,13 @@ test_that("validate() validates object and type recursively", {
   })
 })
 
+test_that("validate() accepts objects that carry no class metadata", {
+  Foo := new_class(package = NULL)
+
+  expect_equal(validate(S7_object()), S7_object())
+  expect_equal(validate(Foo), Foo)
+})
+
 test_that("validate checks base type", {
   Double := new_class(package = NULL, parent = class_double)
   x <- Double(10)
