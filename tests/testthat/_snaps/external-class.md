@@ -60,6 +60,21 @@
       ! <S7::Holder> object properties are invalid:
       - @child: x must be non-negative
 
+# the validator of an external parent runs
+
+    Code
+      Dog(legs = -1L, breed = "lab")
+    Condition
+      Error in `dep::Animal()`:
+      ! <dep::Animal> object is invalid:
+      - @legs must be non-negative
+    Code
+      validate(d)
+    Condition
+      Error in `validate()`:
+      ! <S7::Dog> object is invalid:
+      - @legs must be non-negative
+
 # subclassing errors when the external parent can't be resolved
 
     Code

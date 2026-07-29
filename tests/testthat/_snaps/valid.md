@@ -45,6 +45,28 @@
       ! <Double> object is invalid:
       - Underlying data must be <double> not <character>
 
+# validate() runs the validator of every ancestor
+
+    Code
+      validate(x)
+    Condition
+      Error in `validate()`:
+      ! <Child> object is invalid:
+      - Underlying data must be <double> not <character>
+
+# validators must return NULL or a character vector
+
+    Code
+      validate(bar)
+    Condition
+      Error in `validate()`:
+      ! <Foo> validator must return NULL or a character, not <double>.
+    Code
+      validate(foo, recursive = FALSE)
+    Condition
+      Error in `validate()`:
+      ! <Foo> validator must return NULL or a character, not <double>.
+
 # validate checks the type of setters
 
     Code

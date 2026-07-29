@@ -167,6 +167,35 @@ test_that("can construct a subclass of an abstract external parent (#717)", {
   expect_error(dep$Animal(name = "Rex"), class = "S7_error_abstract_class")
 })
 
+test_that("the validator of an external parent runs", {
+  # The validators of an external parent can only be found at validation time,
+  # so they can't be cached on the subclass
+  dep := local_package({
+    Animal := new_class(
+      properties = list(legs = class_integer),
+      validator = function(self) {
+        if (length(self@legs) > 0 && self@legs < 0L) {
+          "@legs must be non-negative"
+        }
+      }
+    )
+  })
+  Animal := new_external_class(package = "dep")
+  Dog := new_class(
+    parent = Animal,
+    properties = list(breed = class_character)
+  )
+
+  d <- Dog(legs = 4L, breed = "lab")
+  expect_equal(d@legs, 4L)
+  attr(d, "legs") <- -1L
+
+  expect_snapshot(error = TRUE, {
+    Dog(legs = -1L, breed = "lab")
+    validate(d)
+  })
+})
+
 test_that("subclass survives external parent becoming abstract (#717)", {
   dep := local_package({
     Animal := new_class(properties = list(legs = class_integer))

@@ -115,30 +115,43 @@ validate_from <- function(
     }
   }
 
-  # Next, walk up the class hierarchy and run validators, stopping at `parent`
+  # Next, run the validators of the class and its ancestors, stopping at
+  # `parent`. When validating the whole hierarchy we can use the validators
+  # cached on the class, avoiding the cost of walking it.
   errors <- character()
-  repeat {
-    error <- class_validate(class, object)
-    if (is.null(error)) {} else if (is.character(error)) {
-      append(errors) <- error
-    } else {
-      stop2(
-        sprintf(
-          "%s validator must return NULL or a character, not <%s>.",
-          obj_desc(class),
-          typeof(error)
-        ),
-        call = call
-      )
+  validators <- if (is.null(parent)) {
+    attr(class, "S7_validators", exact = TRUE)
+  }
+
+  if (!is.null(validators)) {
+    descs <- names(validators)
+    for (i in seq_along(validators)) {
+      error <- validators[[i]](object)
+      if (!is.null(error)) {
+        errors <- validate_error(error, descs[[i]], errors, call = call)
+      }
     }
-    if (!is_class(class)) {
-      break
+  } else {
+    repeat {
+      if (is_class(class)) {
+        validator <- attr(class, "validator", TRUE)
+        error <- if (is.null(validator)) NULL else validator(object)
+      } else {
+        error <- class_validate(class, object)
+      }
+      if (!is.null(error)) {
+        errors <- validate_error(error, class_desc(class), errors, call = call)
+      }
+
+      if (!is_class(class)) {
+        break
+      }
+      parent_class <- attr(class, "parent", TRUE)
+      if (identical(parent_class, parent)) {
+        break
+      }
+      class <- parent_class
     }
-    class_parent <- attr(class, "parent", TRUE) # runs on every construction
-    if (identical(class_parent, parent)) {
-      break
-    }
-    class <- class_parent
   }
 
   # If needed, report errors
@@ -149,6 +162,24 @@ validate_from <- function(
   }
 
   invisible(object)
+}
+
+# Accumulate the result of a single validator, erroring if it's not a
+# character vector. `desc` describes the class that owns the validator and is
+# only used if it returned an invalid value, so is lazily evaluated.
+validate_error <- function(error, desc, errors, call) {
+  if (is.character(error)) {
+    c(errors, error)
+  } else {
+    stop2(
+      sprintf(
+        "%s validator must return NULL or a character, not <%s>.",
+        desc,
+        typeof(error)
+      ),
+      call = call
+    )
+  }
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {

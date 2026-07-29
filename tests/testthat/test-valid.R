@@ -50,6 +50,56 @@ test_that("validate checks base type", {
   expect_snapshot(error = TRUE, validate(x))
 })
 
+test_that("validate() runs the validator of every ancestor", {
+  calls <- character()
+  Grandparent := new_class(
+    package = NULL,
+    parent = class_double,
+    validator = function(self) {
+      calls <<- c(calls, "Grandparent")
+      NULL
+    }
+  )
+  Parent := new_class(
+    package = NULL,
+    parent = Grandparent,
+    validator = function(self) {
+      calls <<- c(calls, "Parent")
+      NULL
+    }
+  )
+  # Defined after its ancestors, so its cached validators must come from them
+  Child := new_class(package = NULL, parent = Parent)
+
+  x <- Child(1)
+  calls <- character()
+  validate(x)
+  expect_equal(calls, c("Parent", "Grandparent"))
+
+  # The base type validator of the root is still reached
+  mode(x) <- "character"
+  expect_snapshot(error = TRUE, validate(x))
+})
+
+test_that("validators must return NULL or a character vector", {
+  Foo := new_class(
+    package = NULL,
+    properties = list(x = class_double),
+    validator = function(self) if (self@x > 0) 1.5
+  )
+  Bar := new_class(package = NULL, parent = Foo)
+
+  foo <- Foo(x = 0)
+  attr(foo, "x") <- 1
+  bar <- Bar(x = 0)
+  attr(bar, "x") <- 1
+
+  expect_snapshot(error = TRUE, {
+    validate(bar)
+    validate(foo, recursive = FALSE)
+  })
+})
+
 test_that("validate checks the type of setters", {
   foo := new_class(
     package = NULL,

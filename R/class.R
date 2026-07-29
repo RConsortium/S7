@@ -191,6 +191,11 @@ new_class <- function(
   class_name <- paste(c(package, name), collapse = "::")
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
+  attr(object, "S7_validators") <- S7_class_validators(
+    validator,
+    class_name,
+    parent
+  )
   class(object) <- c("S7_class", "S7_object")
 
   if (S7_extends_S4(object)) {
@@ -228,6 +233,50 @@ S7_class_dispatch <- function(class_name, parent) {
     class_dispatch(parent),
     if (is_S4_class(parent)) "S7_object"
   )
+}
+
+# Every validator that must run to validate an instance of a class: the
+# class's own validator, then those of its ancestors, ordered from the closest
+# parent up to the root, and named with the description of the class that owns
+# them. Cached in the `S7_validators` attribute so that `validate_from()`
+# doesn't have to walk the hierarchy.
+#
+# `NULL` means that the hierarchy contains a class whose validator can only be
+# determined at validation time (an S4 or external class), so `validate_from()`
+# must fall back to walking the hierarchy. (We store the validator functions,
+# rather than the classes that own them, because the class is duplicated every
+# time an object is constructed, and duplicating a function is cheap.)
+S7_class_validators <- function(validator, class_name, parent) {
+  ancestors <- if (is.null(parent)) {
+    # Can't use class_type() here because S7_object is created at build time,
+    # before the DLL is available
+    list()
+  } else {
+    switch(
+      class_type(parent),
+      S7 = attr(parent, "S7_validators", exact = TRUE),
+      S7_base = ,
+      S7_S3 = validator_list(parent$validator, class_desc(parent)),
+      NULL
+    )
+  }
+
+  if (is.null(ancestors) || is.null(validator)) {
+    ancestors
+  } else {
+    c(validator_list(validator, paste0("<", class_name, ">")), ancestors)
+  }
+}
+
+# A one element list naming the class that owns `validator`, or an empty list
+# if the class has no validator
+validator_list <- function(validator, desc) {
+  if (is.null(validator)) {
+    return(list())
+  }
+  out <- list(validator)
+  names(out) <- desc
+  out
 }
 
 check_S7_constructor <- function(constructor, call = sys.call(-1L)) {

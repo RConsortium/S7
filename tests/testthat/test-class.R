@@ -5,7 +5,7 @@ test_that("S7 classes possess expected properties", {
     prop_names(foo),
     setdiff(
       names(attributes(foo)),
-      c("class", "S7_class_name", "S7_dispatch")
+      c("class", "S7_class_name", "S7_dispatch", "S7_validators")
     )
   )
   expect_type(foo@name, "character")

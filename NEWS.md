@@ -57,7 +57,9 @@
 * `set_props()` now names its first argument `_object` to minimise the chances of a clash with a property (#423). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (#497).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
+* `validate()` is 1.7x faster because each class now caches the validators of its whole hierarchy, so validating an object no longer walks it. Constructing an object of a class with 10 ancestors is 1.5x faster (#723).
 * `validate()` now signals validation errors with class `S7_error_validation_failed`, so they can be caught with `tryCatch()` (#602, #605).
+* `validate()` now names the class that owns the validator when a validator returns something other than `NULL` or a character vector, instead of the uninformative `<S7_class>` (#723).
 
 # S7 0.2.2
 
