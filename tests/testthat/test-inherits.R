@@ -12,17 +12,14 @@ test_that("it works", {
 test_that("has_S7_class() recognises objects that don't store a class", {
   foo := new_class()
 
-  # instances store their class, bare S7_object()s and classes don't
-  expect_all_true(c(
-    has_S7_class(foo()),
-    has_S7_class(S7_object()),
-    has_S7_class(foo),
-    has_S7_class(S7_object)
-  ))
-  expect_all_equal(
-    c(has_S7_class(1), has_S7_class(factor("a")), has_S7_class(NULL)),
-    FALSE
-  )
+  expect_true(has_S7_class(foo()))
+  expect_true(has_S7_class(S7_object()))
+  expect_true(has_S7_class(foo))
+  expect_true(has_S7_class(S7_object))
+
+  expect_false(has_S7_class(1))
+  expect_false(has_S7_class(factor("a")))
+  expect_false(has_S7_class(NULL))
 })
 
 test_that("accepts any class specification (#556)", {

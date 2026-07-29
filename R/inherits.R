@@ -48,9 +48,7 @@ S7_inherits <- function(x, class = NULL) {
 
 has_S7_class <- function(x) {
   # Reading the stored class is the cheapest test and covers every instance of
-  # a user-defined class, so it goes first. The other two branches are still
-  # needed: bare `S7_object()` instances and class objects themselves don't
-  # store a class.
+  # a user-defined class, so it goes first.
   !is.null(.Call(S7_class_, x)) ||
     identical(class(x), "S7_object") ||
     inherits(x, "S7_class")
