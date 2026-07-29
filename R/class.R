@@ -343,7 +343,7 @@ class_is_abstract <- function(class) {
 }
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
-  parent_class <- attr(class, "parent")  # called on construction
+  parent_class <- attr(class, "parent") # called on construction
   if (is.null(parent_class)) {
     stop2(
       "`_parent` must not be supplied when class has no parent.",
