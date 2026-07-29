@@ -28,8 +28,7 @@
   : Define a new property
 - [`prop()`](https://rconsortium.github.io/S7/reference/prop.md)
   [`` `prop<-`() ``](https://rconsortium.github.io/S7/reference/prop.md)
-  [`` `@`() ``](https://rconsortium.github.io/S7/reference/prop.md) :
-  Get/set a property
+  : Get/set a property
 - [`prop_names()`](https://rconsortium.github.io/S7/reference/prop_names.md)
   [`prop_exists()`](https://rconsortium.github.io/S7/reference/prop_names.md)
   [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)

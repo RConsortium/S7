@@ -12,8 +12,6 @@
 prop(object, name)
 
 prop(object, name, check = TRUE) <- value
-
-object@name
 ```
 
 ## Arguments

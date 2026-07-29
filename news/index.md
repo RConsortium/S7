@@ -186,6 +186,16 @@
   [`super()`](https://rconsortium.github.io/S7/reference/super.md) is
   2.1x faster ([\#723](https://github.com/RConsortium/S7/issues/723)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  and
+  [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
+  are 25-30% faster because the handful of places that run on every
+  construction now read class metadata (`parent`, `properties`,
+  `abstract`, and `validator`) straight from the attributes where it is
+  stored, rather than going through `@`. On R 4.3 and later S7 also no
+  longer defines its own `@`, so the remaining internal uses resolve to
+  base’s generic directly
+  ([\#723](https://github.com/RConsortium/S7/issues/723)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now gives an informative error when `.parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
