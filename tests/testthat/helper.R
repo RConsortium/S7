@@ -171,12 +171,6 @@ unregister_s3_methods <- function(envir, generic) {
   invisible()
 }
 
-# Lightweight equivalent of withr::defer()
-defer <- function(expr, frame = parent.frame(), after = FALSE) {
-  thunk <- as.call(list(function() expr))
-  do.call(on.exit, list(thunk, TRUE, after), envir = frame)
-}
-
 # always returns a named list, even in the empty case.
 named_list <- function(...) {
   x <- list(...)

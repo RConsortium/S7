@@ -6,7 +6,7 @@
 #' defined). It carries only the package and class name, and is resolved to
 #' the real S7 class when needed.
 #'
-#' External classes are useful in two situations:
+#' External classes are useful in three situations:
 #'
 #' * To register a method for a generic in your package, dispatching on a class
 #'   from a soft dependency. The method will be registered when `pkg` is loaded
@@ -25,11 +25,18 @@
 #'   new_class("tree", properties = list(child = NULL | tree_stub))
 #'   ```
 #'
+#' * To use a class from another package as the `parent` of your own class.
+#'   The parent's properties are captured when your class is defined, but its
+#'   constructor is called at run time, so your subclass always builds on the
+#'   installed version of the parent package.
+#'
+#'   ```R
+#'   TheirClass <- new_external_class("theirpkg", "TheirClass")
+#'   new_class("MyClass", parent = TheirClass)
+#'   ```
+#'
 #' Make sure to call [S7_on_load()] in your package's `.onLoad()` so that
 #' deferred method registrations fire when the relevant package is loaded.
-#'
-#' External classes can not currently be used as parents in [new_class()].
-#' We hope to relax that restriction in the near future.
 #'
 #' @param package Package the class is defined in.
 #' @param name Name of the class, as a string.
