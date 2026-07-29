@@ -86,6 +86,9 @@ names2 <- function(x) {
 # spliced in so its elements become the values, making it easy to supply
 # values programmatically. All values must be named.
 collect_dots <- function(..., call = sys.call(-1)) {
+  if (...length() == 0L) {
+    return(list())
+  }
   args <- list(...)
 
   is_single_list <- length(args) == 1L &&

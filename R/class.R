@@ -186,6 +186,7 @@ new_class <- function(
   class_name <- paste(c(package, name), collapse = "::")
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
+  attr(object, "S7_setter_props") <- S7_setter_props(all_props)
   class(object) <- c("S7_class", "S7_object")
 
   if (S7_extends_S4(object)) {
@@ -210,6 +211,14 @@ globalVariables(c(
 S7_class_name <- function(x) {
   attr(x, "S7_class_name", exact = TRUE) %||%
     paste(c(x@package, x@name), collapse = "::")
+}
+
+# Names of the properties that have a custom setter; cached in the
+# `S7_setter_props` attribute so that `new_object()` doesn't have to scan every
+# property on every construction. Always a character vector, so that a missing
+# attribute unambiguously means "class built by an older version of S7".
+S7_setter_props <- function(properties) {
+  as.character(names(properties)[vlapply(properties, prop_has_setter)])
 }
 
 # Vector of class names used for dispatch; cached in the `S7_dispatch` attribute
@@ -338,6 +347,22 @@ class_is_abstract <- function(class) {
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
   parent_class <- class@parent
+
+  # Fast path for what the generated constructors always produce: `parent` is
+  # an S7 object whose class is exactly the parent class, so there's nothing
+  # to work out. Testing for the S7 class first means `oldClass()` is never
+  # `NULL` here, so a non-S7 `parent_class` (with no cached dispatch) can't
+  # match. (Note that `class()` can't be used, because `class` is an argument.)
+  if (
+    !is.null(.Call(S7_class_, parent)) &&
+      identical(
+        oldClass(parent),
+        attr(parent_class, "S7_dispatch", exact = TRUE)
+      )
+  ) {
+    return()
+  }
+
   if (is.null(parent_class)) {
     stop2(
       "`_parent` must not be supplied when class has no parent.",
@@ -398,36 +423,61 @@ new_object <- function(`_parent`, ...) {
 
   args <- collect_dots(...)
 
-  has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
-  self_attrs <- args[!has_setter]
-  names(self_attrs) <- prop_storage_rename(names(self_attrs))
+  setter_props <- attr(class, "S7_setter_props", exact = TRUE)
+  if (is.null(setter_props)) {
+    # Class built by a version of S7 that didn't cache this
+    setter_props <- S7_setter_props(class@properties)
+  }
+
+  if (length(args) == 0L) {
+    # No properties supplied, so there's nothing to split, rename, or set
+    self_attrs <- NULL
+    prop_setter_vals <- NULL
+  } else if (length(setter_props) == 0L) {
+    # No property of this class has a custom setter, by far the common case
+    self_attrs <- args
+    prop_setter_vals <- NULL
+    names(self_attrs) <- prop_storage_rename(names(args))
+  } else {
+    has_setter <- names(args) %in% setter_props
+    self_attrs <- args[!has_setter]
+    names(self_attrs) <- prop_storage_rename(names(self_attrs))
+    prop_setter_vals <- args[has_setter]
+  }
 
   # We must awkwardly operate on `_parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
-    list(class = class_dispatch(class), `_S7_class` = class),
+    list(
+      class = attr(class, "S7_dispatch", exact = TRUE) %||%
+        class_dispatch(class),
+      `_S7_class` = class
+    ),
     self_attrs,
     attributes(`_parent`)
   )
-  attrs <- attrs[!duplicated(names(attrs))]
+  # `duplicated.default()` rather than `duplicated()` to skip S3 dispatch:
+  # `names()` is always a character vector here.
+  attrs <- attrs[!duplicated.default(names(attrs))]
   attributes(`_parent`) <- attrs
 
   # invoke custom property setters
-  prop_setter_vals <- args[has_setter]
   for (name in names(prop_setter_vals)) {
     prop(`_parent`, name, check = FALSE) <- prop_setter_vals[[name]]
   }
 
   # Don't need to validate the parent class if it's already validated and none
   # of its properties were reset by this call.
-  parent_validated <- inherits(class@parent, "S7_object") &&
-    !class@parent@abstract
+  parent_class <- class@parent
+  parent_validated <- inherits(parent_class, "S7_object") &&
+    !parent_class@abstract
   parent_props_reset <- parent_validated &&
-    any(names2(args) %in% names2(class@parent@properties))
+    length(args) > 0L &&
+    any(names(args) %in% names2(parent_class@properties))
   validate_from(
     `_parent`,
-    parent = if (parent_validated && !parent_props_reset) class@parent,
+    parent = if (parent_validated && !parent_props_reset) parent_class,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )

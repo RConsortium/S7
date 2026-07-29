@@ -5,7 +5,7 @@ test_that("S7 classes possess expected properties", {
     prop_names(foo),
     setdiff(
       names(attributes(foo)),
-      c("class", "S7_class_name", "S7_dispatch")
+      c("class", "S7_class_name", "S7_dispatch", "S7_setter_props")
     )
   )
   expect_type(foo@name, "character")
@@ -427,6 +427,22 @@ test_that("new_object() has fallback for S3 classes created by older S7 (#686)",
   old_s3$abstract <- NULL
   Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
   expect_no_error(Foo(list(1, "A")))
+})
+
+test_that("new_object() runs setters for classes created by older S7 (#723)", {
+  Foo := new_class(
+    properties = list(
+      x = new_property(
+        class_double,
+        setter = function(self, value) {
+          attr(self, "x") <- value * 2
+          self
+        }
+      )
+    )
+  )
+  attr(Foo, "S7_setter_props") <- NULL
+  expect_equal(Foo(x = 1)@x, 2)
 })
 
 test_that("new_object() errors if `_parent` is supplied but class has no parent", {
