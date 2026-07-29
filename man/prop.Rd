@@ -11,7 +11,7 @@ prop(object, name)
 
 prop(object, name, check = TRUE) <- value
 
-object@name
+\method{@}{S7_object}(object, name)
 }
 \arguments{
 \item{object}{An object from a S7 class}
