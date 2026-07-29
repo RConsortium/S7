@@ -178,9 +178,8 @@ new_class <- function(
   # A class's metadata is stored as plain attributes on the class object.
   # Must synchronise with prop_names().
   #
-  # IMPORTANT: no name below may be a prefix of another since we use `attr()`
-  # to access properties in performance hot paths (avoiding the S3 dispatch
-  # that `@` requires). This shortcut is only safe for class metadata, which we
+  # We access these attributes directly in performance hot paths to avoid the
+  # S3 dispatch that `@` requires. This is safe for class metadata, which we
   # control.
   attr(object, "name") <- name
   attr(object, "parent") <- parent
@@ -334,7 +333,7 @@ is_class <- function(x) inherits(x, "S7_class")
 # registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
 class_is_abstract <- function(class) {
   if (is_class(class)) {
-    attr(class, "abstract") # called on construction
+    attr(class, "abstract", TRUE) # called on construction
   } else if (is_S3_class(class)) {
     class$abstract %||% is_default_constructor(class$constructor)
   } else {
@@ -343,7 +342,7 @@ class_is_abstract <- function(class) {
 }
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
-  parent_class <- attr(class, "parent") # called on construction
+  parent_class <- attr(class, "parent", TRUE) # called on construction
   if (is.null(parent_class)) {
     stop2(
       "`_parent` must not be supplied when class has no parent.",
@@ -391,9 +390,9 @@ new_object <- function(`_parent`, ...) {
   }
   # This is the hottest function in S7, so read the class metadata we need once,
   # up front.
-  class_abstract <- attr(class, "abstract")
-  class_props <- attr(class, "properties")
-  class_parent <- attr(class, "parent")
+  class_abstract <- attr(class, "abstract", TRUE)
+  class_props <- attr(class, "properties", TRUE)
+  class_parent <- attr(class, "parent", TRUE)
 
   if (class_abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
@@ -433,11 +432,12 @@ new_object <- function(`_parent`, ...) {
 
   # Don't need to validate the parent class if it's already validated and none
   # of its properties were reset by this call.
-  parent_validated <- inherits(class_parent, "S7_object") &&
-    !attr(class_parent, "abstract")
+  parent_validated <-
+    inherits(class_parent, "S7_object") &&
+    !attr(class_parent, "abstract", TRUE)
   parent_props_reset <- parent_validated &&
     any(
-      names2(args) %in% names2(attr(class_parent, "properties"))
+      names2(args) %in% names2(attr(class_parent, "properties", TRUE))
     )
   validate_from(
     `_parent`,
