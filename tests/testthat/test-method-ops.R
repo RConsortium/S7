@@ -120,6 +120,7 @@ test_that("Ops generics falls back to base behaviour", {
   local_methods(base_ops[["+"]])
 
   foo := new_class(parent = class_double)
+  expect_equal(+foo(1), foo(+1))
   expect_equal(foo(1) + 1, foo(2))
   expect_equal(foo(1) + 1:2, 2:3)
   expect_equal(1 + foo(1), foo(2))
@@ -132,6 +133,9 @@ test_that("Ops generics falls back to base behaviour", {
   expect_equal(foo(1) + 1:2, "foo-numeric")
   expect_equal(1 + foo(1), "numeric-foo")
   expect_equal(1:2 + foo(1), "numeric-foo")
+
+  method(`+`, list(foo, class_missing)) <- function(e1, e2) "foo"
+  expect_equal(+foo(), "foo")
 })
 
 test_that("`%*%` dispatches to S7 methods", {
@@ -163,4 +167,68 @@ test_that("Ops methods can use super", {
   }
 
   expect_equal(foo2(1L) + 1, foo2(2L))
+})
+
+
+test_that("Unary Ops methods work", {
+  Double := new_class(class_double)
+  method(`-`, list(Double, class_missing)) <- function(e1, e2) {
+    Double(-as.double(e1))
+  }
+
+  expect_identical(-Double(1), Double(-1))
+})
+
+test_that("`!` dispatches on a single argument", {
+  local_methods(base_ops[["!"]])
+
+  Logical := new_class(class_logical)
+  method(`!`, Logical) <- function(e1) Logical(!as.logical(e1))
+
+  expect_identical(!Logical(TRUE), Logical(FALSE))
+})
+
+test_that("`!` requires a length-1 signature", {
+  local_methods(base_ops[["!"]])
+
+  Logical := new_class(class_logical)
+  expect_snapshot(error = TRUE, {
+    method(`!`, list(Logical, class_missing)) <- function(e1, e2) e1
+  })
+})
+
+test_that("`!` can use super", {
+  local_methods(base_ops[["!"]])
+
+  Logical := new_class(class_logical)
+  Logical2 := new_class(Logical)
+  method(`!`, Logical) <- function(e1) "Logical"
+  method(`!`, Logical2) <- function(e1) paste0(!super(e1, Logical), "2")
+
+  expect_equal(!Logical2(TRUE), "Logical2")
+})
+
+test_that("`!` dispatches to S7 methods for S3 and S4 classes", {
+  local_methods(base_ops[["!"]])
+  local_S4_classes()
+  defer(unregister_s3_methods(baseenv(), "Ops"))
+
+  method(`!`, new_S3_class("myS3")) <- function(e1) "myS3"
+  expect_equal(!structure(TRUE, class = "myS3"), "myS3")
+
+  fooS4 <- setClass("fooS4", contains = "logical")
+  method(`!`, fooS4) <- function(e1) "fooS4"
+  expect_equal(!fooS4(TRUE), "fooS4")
+})
+
+test_that("`!` falls back to base behaviour", {
+  local_methods(base_ops[["!"]], base_ops[["+"]])
+
+  foo := new_class(parent = class_logical)
+  expect_identical(!foo(TRUE), foo(FALSE))
+
+  # including when the class has a method for a binary operator, which
+  # registers an `Ops` group method that also catches `!`
+  method(`+`, list(foo, class_any)) <- function(e1, e2) "foo-any"
+  expect_identical(!foo(TRUE), foo(FALSE))
 })

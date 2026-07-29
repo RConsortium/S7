@@ -275,7 +275,8 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
   if (n == 1) {
     # Accept a bare list of length 1 too, for symmetry with multi-dispatch
     # generics where a list is required (#555).
-    if (is_plain_list(signature) && length(signature) == 1) {
+    if (is_plain_list(signature)) {
+      check_signature_list(signature, 1, call = call)
       signature <- signature[[1]]
     }
     new_signature(list(as_class(signature, arg = "signature")))
