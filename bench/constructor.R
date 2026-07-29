@@ -14,69 +14,33 @@
 #
 # Run a subset with --only=calls,memory (default: both).
 #
-# Methodology notes
-# -----------------
-# These are the traps that produced wrong answers while working on #723.
-#
-# * Each table is produced by a *single* `bench::mark()` call, listing every
-#   expression at once. `mark()` interleaves and randomises the order of the
-#   expressions it is given, so thermal drift, background load, and GC land on
-#   all of them roughly equally. Timing each case in its own `mark()` call
-#   forfeits that. Add new cases to the existing call, don't add a call.
-#
-# * Absolute timings drift by up to ~8% between R sessions, which is larger than
-#   many effects worth chasing here. Compare within a run, or via two `--save`
-#   runs made back to back on an idle machine. Never compare against a figure
-#   pasted from an older session.
-#
-# * Everything here is at microsecond scale, which is the scale that decisions
-#   actually get made at. Sub-microsecond primitives (a single attribute read,
-#   say) are not covered, because `bench::mark()` appears to quantise somewhere
-#   around 40ns.
-#
-# * `class_double` properties reject integers, so fixtures must use `as.double()`
-#   or construction fails validation instead of being measured.
-#
-# * `pkgload::load_all()` defaults to `export_all = TRUE`, which puts S7's
-#   internal `@` on the search path where it shadows base's primitive. Any
-#   measurement of `@` is therefore optimistic about S7's overhead relative to an
-#   installed package; for `@` specifically, install to a temporary library and
-#   measure that instead.
-
 pkgload::load_all(quiet = TRUE)
 
 # helpers ---------------------------------------------------------------------
 
-# Bytes retained per object, from the gc() delta over `n` live instances.
-# Crude, but it is the only measure that catches an object holding a private
-# copy of something shared: `object.size()` follows closure environments, so it
-# reports numbers that are wildly too large.
-bytes_per_object <- function(f, n = 5000) {
-  # Ncells (cons cells) are 56 bytes on 64-bit, Vcells 8. Approximate; the
-  # comparison between depths is the point, not the absolute figure.
-  used <- function() {
-    gc(full = TRUE)
-    sum(gc()[, "used"] * c(56, 8))
-  }
-  invisible(f())
-  before <- used()
-  keep <- lapply(seq_len(n), function(i) f())
-  after <- used()
-  rm(keep)
-  (after - before) / n
+# Marginal bytes retained per object. The first value includes the shared class
+# graph; the second includes only the new object's contribution.
+bytes_per_object <- function(f) {
+  as.numeric(lobstr::obj_sizes(f(), f())[[2]])
 }
 
-# A chain of `depth` classes, each adding nothing, so cost scales with the
-# number of `new_object()` calls rather than the number of properties. Built
-# programmatically, hence `new_class(name = )` rather than `:=`.
-deep_class <- function(depth, abstract = FALSE) {
+# A chain of `depth` classes. By default each level adds nothing, so cost scales
+# with the number of `new_object()` calls rather than the number of properties.
+# With `add_property = TRUE`, each level adds one uniquely named property.
+# Built programmatically, hence `new_class(name = )` rather than `:=`.
+deep_class <- function(depth, abstract = FALSE, add_property = FALSE) {
   class <- S7_object
   for (i in seq_len(depth)) {
+    properties <- if (add_property) {
+      setNames(list(class_double), paste0("x", i))
+    } else {
+      list()
+    }
     class <- new_class(
       name = paste0("Deep", i),
       parent = class,
       abstract = abstract,
-      properties = list(x = class_double, y = class_double)
+      properties = properties
     )
   }
   class
@@ -95,12 +59,11 @@ wide_args <- function(n) {
   setNames(as.list(as.double(seq_len(n))), paste0("p", seq_len(n)))
 }
 
-# fixtures --------------------------------------------------------------------
+# benchmarks ------------------------------------------------------------------
 
-# Returns the expressions to benchmark plus the environment holding the classes
-# they refer to. Every class is built here, once, so the expressions only
-# construct; building inside them would time class definition too.
-call_fixtures <- function() {
+# Whole operations, at microsecond scale. Every class is built once before the
+# single randomised `bench::mark()` call, so class definition is not timed.
+bench_calls <- function() {
   Deep1 <- deep_class(1)
   Deep5 <- deep_class(5)
   Deep10 <- deep_class(10)
@@ -126,8 +89,6 @@ call_fixtures <- function() {
     )
   )
 
-  # A custom constructor takes the stack-inspecting path in `new_object()`,
-  # unlike the generated ones.
   Custom <- new_class(
     name = "Custom",
     properties = list(x = class_double),
@@ -141,13 +102,14 @@ call_fixtures <- function() {
     parent = deep_class(5, abstract = TRUE)
   )
 
-  obj5 <- Deep5(x = 1, y = 2)
+  obj5 <- Deep5()
+  obj2 <- Wide2(p1 = 1, p2 = 2)
 
   exprs <- list(
-    depth1 = quote(Deep1(x = 1, y = 2)),
-    depth5 = quote(Deep5(x = 1, y = 2)),
-    depth10 = quote(Deep10(x = 1, y = 2)),
-    oneshot5 = quote(OneShot(x = 1, y = 2)),
+    depth1 = quote(Deep1()),
+    depth5 = quote(Deep5()),
+    depth10 = quote(Deep10()),
+    oneshot5 = quote(OneShot()),
     wide0 = quote(Wide0()),
     wide2 = quote(Wide2(p1 = 1, p2 = 2)),
     wide10 = quote(do.call(Wide10, args10)),
@@ -159,49 +121,30 @@ call_fixtures <- function() {
     # a particular step. All are comfortably above the resolution floor.
     dispatch = quote(class_dispatch(Deep5)),
     inherits = quote(S7_inherits(obj5)),
-    prop_at = quote(obj5@x),
-    prop_fn = quote(prop(obj5, "x"))
+    prop_at = quote(obj2@p1),
+    prop_fn = quote(prop(obj2, "p1"))
   )
-  list(env = environment(), exprs = exprs)
-}
 
-# benchmarks ------------------------------------------------------------------
-
-# Whole operations, at microsecond scale. One randomised bench::mark() call.
-bench_calls <- function() {
-  fix <- call_fixtures()
   res <- bench::mark(
-    exprs = fix$exprs,
-    env = fix$env,
+    exprs = exprs,
+    env = environment(),
     check = FALSE,
     filter_gc = FALSE,
     min_iterations = 200
   )
   data.frame(
-    case = names(fix$exprs),
+    case = names(exprs),
     us = round(as.numeric(res$median) * 1e6, 1),
     row.names = NULL
   )
 }
 
 # Per-instance memory, by hierarchy depth. Flat is correct: every instance
-# should reference one shared class object. Growth of roughly a kilobyte per
-# level means each instance carries a private copy of its class and every
-# ancestor (see #723).
+# should reference one shared class object.
 bench_memory <- function() {
   depths <- c(1, 5, 10, 20)
-  # Deliberately not named `class`: binding an S7 class to that name shadows
-  # base::class(), which is how a stray class() call inside new_object() once
-  # recursed until it blew the C stack.
-  bytes <- vapply(
-    depths,
-    function(d) {
-      cls <- deep_class(d)
-      bytes_per_object(function() cls(x = 1, y = 2))
-    },
-    numeric(1)
-  )
-  data.frame(depth = depths, bytes_per_object = round(bytes), row.names = NULL)
+  bytes <- vapply(depths, \(d) bytes_per_object(\() deep_class(d)), numeric(1))
+  data.frame(depth = depths, bytes_per_object = round(bytes))
 }
 
 # reporting -------------------------------------------------------------------
