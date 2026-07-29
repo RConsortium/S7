@@ -184,6 +184,14 @@
       Error in `new_object()`:
       ! `new_object()` must be called from within a constructor.
 
+---
+
+    Code
+      eval(as.call(list(new_object, S7_object())), emptyenv())
+    Condition
+      Error:
+      ! `new_object()` must be called from within a constructor.
+
 # new_object() errors if `_parent` doesn't inherit from the parent class (#409)
 
     Code

@@ -175,6 +175,20 @@ new_class <- function(
   }
 
   object <- constructor
+
+  # `new_object()` needs the class that's currently being constructed. Getting
+  # it with `sys.function()` is expensive, because R duplicates the closure and
+  # `duplicate()` deep-copies attributes; since S7 stores all class metadata in
+  # attributes, that copies the class and (via `parent`) its whole ancestry,
+  # once per inheritance level. So we also stash the class in a fresh
+  # environment interposed between the constructor and its enclosure, where
+  # `new_object()` can find it by reference.
+  #
+  # `environment(constructor)` may be a namespace or the user's environment, so
+  # we must never write into it directly.
+  class_env <- new.env(parent = environment(constructor))
+  environment(object) <- class_env
+
   # Must synchronise with prop_names
   attr(object, "name") <- name
   attr(object, "parent") <- parent
@@ -187,6 +201,13 @@ new_class <- function(
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
+
+  # Must come last: the binding has to be the finished class object, and any
+  # later modification of `object` would copy it and break the sharing.
+  # `_S7_class` matches the attribute of the same name, and isn't a
+  # syntactically valid R name, so it can't collide with a symbol that the
+  # constructor body (user-written or generated) could refer to.
+  class_env[["_S7_class"]] <- object
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -379,7 +400,27 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class <- sys.function(sys.parent())
+  # `new_class()` stashes the class in an environment interposed between the
+  # constructor and its enclosure, so `parent.env()` of the constructor's
+  # evaluation frame gives us the class by reference. `sys.function()` would
+  # also work, but it duplicates the closure, deep-copying the class and all of
+  # its ancestors on every construction (both slow and, since every instance
+  # then holds a private copy of its class, expensive in memory).
+  #
+  # The fallback is still needed when `new_object()` is called from somewhere
+  # other than the constructor's own frame (e.g. a nested helper), for classes
+  # created by an older version of S7, and to generate the error below when
+  # it's called outside a constructor entirely.
+  frame <- parent.frame()
+  class <- if (identical(frame, emptyenv())) {
+    # `parent.env(emptyenv())` is an error
+    NULL
+  } else {
+    get0("_S7_class", envir = parent.env(frame), inherits = FALSE)
+  }
+  if (is.null(class)) {
+    class <- sys.function(sys.parent())
+  }
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }

@@ -361,6 +361,32 @@ test_that("abstract classes can use inherited validator from abstract class", {
 
 test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
+  # `parent.frame()` is `emptyenv()`, which has no parent
+  expect_snapshot(
+    eval(as.call(list(new_object, S7_object())), emptyenv()),
+    error = TRUE
+  )
+})
+
+test_that("instances share one class object rather than a copy each (#723)", {
+  Foo := new_class(properties = list(x = class_double), package = NULL)
+  Bar := new_class(parent = Foo, properties = list(y = class_double))
+
+  expect_equal(obj_address(S7_class(Foo(x = 1))), obj_address(Foo))
+  expect_equal(obj_address(S7_class(Bar(x = 1, y = 2))), obj_address(Bar))
+  expect_equal(
+    obj_address(S7_class(Bar(x = 1, y = 2))),
+    obj_address(S7_class(Bar(x = 3, y = 4)))
+  )
+})
+
+test_that("new_object() falls back to sys.function() if the class isn't stashed", {
+  # Classes built by S7 <= 0.2.1 have no class stashed in the constructor's
+  # environment, so `new_object()` must still find it via `sys.function()`.
+  Foo := new_class(properties = list(x = class_double), package = NULL)
+  environment(Foo) <- parent.env(environment(Foo))
+
+  expect_equal(Foo(x = 1)@x, 1)
 })
 
 test_that("new_object() can be forced lazily from a constructor", {

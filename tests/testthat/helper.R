@@ -261,3 +261,12 @@ is_altrep_preserved <- function(x) {
   out <- utils::capture.output(internal(inspect(x)))
   any(grepl("compact|wrapper", out))
 }
+
+# The memory address of `x`, for checking that two values are the same object
+# and not merely equal. Accesses `.Internal` indirectly so R CMD check doesn't
+# flag it.
+obj_address <- function(x) {
+  internal <- get(".Internal", envir = baseenv())
+  out <- utils::capture.output(internal(inspect(x)))[[1]]
+  sub("^[^@]*(@[0-9a-fA-F]+).*$", "\\1", out)
+}
