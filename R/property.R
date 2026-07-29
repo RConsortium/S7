@@ -304,18 +304,24 @@ signal_setter_error <- function(value, object, name) {
 
 # called from src/prop.c
 prop_validate <- function(prop, value, object = NULL) {
-  if (!class_inherits(value, prop$class)) {
+  class <- prop$class
+
+  if (!class_inherits(value, class)) {
     return(sprintf(
       "%s must be %s, not %s",
       prop_label(object, prop$name),
-      class_desc(prop$class),
+      class_desc(class),
       obj_desc(value)
     ))
   }
 
-  class_error <- class_validate(prop$class, value)
-  if (length(class_error) > 0) {
-    return(paste0(prop_label(object, prop$name), ": ", class_error))
+  # A base class's validator does nothing but re-check the underlying type,
+  # which `class_inherits()` has just done.
+  if (!is_base_class(class)) {
+    class_error <- class_validate(class, value)
+    if (length(class_error) > 0) {
+      return(paste0(prop_label(object, prop$name), ": ", class_error))
+    }
   }
 
   if (is.null(validator <- prop$validator)) {
