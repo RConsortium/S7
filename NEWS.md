@@ -49,6 +49,7 @@
 * `S7_data()` now preserves the S3 class when the S7 class inherits from an S3 class, so e.g. `S7_data()` on a data.frame subclass now returns a data.frame (#380).
 * `S7_data<-()` now preserves attributes (like `names` or `dim`) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (#478).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
+* `S7_inherits()` and `check_is_S7()` are 4.6x faster for instances of S7 classes, which are now detected by reading the stored class first rather than after two other tests (#723).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).
 * `S7_on_load()` is the new name for `methods_register()`, giving it a nicer symmetry with `S7_on_build()`; `methods_register()` remains available for backward compatibility (#615). It no longer accumulates duplicate registration hooks when a package is loaded repeatedly (#316).
 * `S7_on_load()` no longer makes a package unloadable when a generic it registers a method for has been renamed or removed from the upstream package; it now warns and skips the registration. It also resolves generics through the upstream package's exports, so a generic can move to another package and be re-exported without breaking already-installed downstream packages (#729).
