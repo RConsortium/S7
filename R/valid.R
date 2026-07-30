@@ -176,18 +176,12 @@ validate_properties <- function(object, class, parent_class = NULL) {
 
     value <- prop(object, name)
 
-    # The common case: a base type property, already the right type, with no
-    # validator of its own. Nothing for prop_validate() to find.
-    prop_class <- prop_obj$class
-    if (
-      is_base_class(prop_class) &&
-        is.null(prop_obj$validator) &&
-        prop_class$class == base_class(value)
-    ) {
+    err <- prop_validate(prop_obj, value)
+    if (is.null(err)) {
       next
     }
 
-    errors <- c(errors, prop_validate(prop_obj, value))
+    errors <- c(errors, err)
   }
 
   errors
