@@ -94,7 +94,7 @@ validate_from <- function(
   properties = TRUE,
   call = sys.call(-1L)
 ) {
-  if (!is.null(attr(object, ".should_validate"))) {
+  if (!is.null(attr(object, ".should_validate", TRUE))) {
     return(invisible(object))
   }
 
@@ -131,10 +131,14 @@ validate_from <- function(
         call = call
       )
     }
-    if (!is_class(class) || identical(class@parent, parent)) {
+    if (!is_class(class)) {
       break
     }
-    class <- class@parent
+    class_parent <- attr(class, "parent", TRUE) # runs on every construction
+    if (identical(class_parent, parent)) {
+      break
+    }
+    class <- class_parent
   }
 
   # If needed, report errors
@@ -148,21 +152,36 @@ validate_from <- function(
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {
-  errors <- character()
-  parent_props <- if (is_class(parent_class)) parent_class@properties
+  props <- attr(class, "properties", TRUE)
+  if (length(props) == 0) {
+    return(character())
+  }
 
-  for (prop_obj in class@properties) {
+  # runs on every construction
+  parent_props <- if (is_class(parent_class)) {
+    attr(parent_class, "properties", TRUE)
+  }
+  errors <- character()
+
+  for (prop_obj in props) {
     # Don't validate dynamic properties
     if (!is.null(prop_obj$getter)) {
       next
     }
+    name <- prop_obj$name
     # Skip properties inherited unchanged from an already-validated parent
-    if (identical(parent_props[[prop_obj$name]], prop_obj)) {
+    if (!is.null(parent_props) && identical(parent_props[[name]], prop_obj)) {
       next
     }
 
-    value <- prop(object, prop_obj$name)
-    errors <- c(errors, prop_validate(prop_obj, value))
+    value <- prop(object, name)
+
+    err <- prop_validate(prop_obj, value)
+    if (is.null(err)) {
+      next
+    }
+
+    errors <- c(errors, err)
   }
 
   errors
@@ -171,7 +190,7 @@ validate_properties <- function(object, class, parent_class = NULL) {
 #' @rdname validate
 #' @export
 valid_eventually <- function(object, fun) {
-  old <- attr(object, ".should_validate")
+  old <- attr(object, ".should_validate", TRUE)
   attr(object, ".should_validate") <- FALSE
   out <- fun(object)
   attr(out, ".should_validate") <- old
@@ -183,7 +202,7 @@ valid_eventually <- function(object, fun) {
 #' @rdname validate
 #' @export
 valid_implicitly <- function(object, fun) {
-  old <- attr(object, ".should_validate")
+  old <- attr(object, ".should_validate", TRUE)
   attr(object, ".should_validate") <- FALSE
   out <- fun(object)
   attr(out, ".should_validate") <- old

@@ -9,6 +9,19 @@ test_that("it works", {
   expect_false(S7_inherits(1, NULL))
 })
 
+test_that("has_S7_class() recognises objects that don't store a class", {
+  foo := new_class()
+
+  expect_true(has_S7_class(foo()))
+  expect_true(has_S7_class(S7_object()))
+  expect_true(has_S7_class(foo))
+  expect_true(has_S7_class(S7_object))
+
+  expect_false(has_S7_class(1))
+  expect_false(has_S7_class(factor("a")))
+  expect_false(has_S7_class(NULL))
+})
+
 test_that("accepts any class specification (#556)", {
   # base
   expect_true(S7_inherits(1L, class_integer))
