@@ -12,7 +12,7 @@
 #     git stash pop && Rscript bench/constructor.R --save=/tmp/after.rds
 #     Rscript bench/constructor.R --compare=/tmp/before.rds,/tmp/after.rds
 #
-# Run a subset with --only=calls,memory (default: both).
+# Run a subset with --only=calls,classes,memory (default: all).
 #
 pkgload::load_all(quiet = TRUE)
 
@@ -133,6 +133,33 @@ bench_calls <- function() {
   )
 }
 
+bench_classes <- function() {
+  Class <- deep_class(5)
+  x <- Class()
+  y <- Class()
+  x_class <- S7_class(x)
+  y_class <- S7_class(y)
+
+  exprs <- list(
+    get = quote(S7_class(x)),
+    identical = quote(identical(x_class, y_class)),
+    extends = quote(class_extends(x_class, y_class))
+  )
+
+  res <- bench::mark(
+    exprs = exprs,
+    env = environment(),
+    check = FALSE,
+    filter_gc = FALSE,
+    min_iterations = 200
+  )
+  data.frame(
+    case = names(exprs),
+    us = round(as.numeric(res$median) * 1e6, 1),
+    row.names = NULL
+  )
+}
+
 # Per-instance memory, by hierarchy depth. Flat is correct: every instance
 # should reference one shared class object.
 bench_memory <- function() {
@@ -152,12 +179,15 @@ bench_memory <- function() {
 
 # reporting -------------------------------------------------------------------
 
-all_benchmarks <- c("calls", "memory")
+all_benchmarks <- c("calls", "classes", "memory")
 
 run_all <- function(only = all_benchmarks) {
   out <- list()
   if ("calls" %in% only) {
     out$calls <- bench_calls()
+  }
+  if ("classes" %in% only) {
+    out$classes <- bench_classes()
   }
   if ("memory" %in% only) {
     out$memory <- bench_memory()

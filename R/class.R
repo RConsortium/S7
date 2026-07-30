@@ -176,8 +176,7 @@ new_class <- function(
     )
   }
 
-  class_ref <- new.env(parent = emptyenv())
-  class(class_ref) <- "S7_class_ref"
+  class_ref <- new_class_ref()
   constructor_env <- new.env(parent = environment(constructor))
   constructor_env$.S7_class_ref <- class_ref
   environment(constructor) <- constructor_env
@@ -393,12 +392,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class_ref <- get0(
-    ".S7_class_ref",
-    envir = parent.frame(),
-    inherits = TRUE,
-    ifnotfound = NULL
-  )
+  class_ref <- get_class_ref(parent.frame())
   if (inherits(class_ref, "S7_class_ref")) {
     class <- class_ref$class
   } else {
@@ -537,11 +531,29 @@ S7_class <- function(object) {
 }
 
 S7_class_storage <- function(class) {
+  get_class_ref(environment(class), default = class)
+}
+
+# Class objects are closures, which leads to two problems:
+# * `sys.function()` does deep copies
+# * `serialize()`/`saveRDS()` only de-dups environments
+# We solve both problems with an environment-backed class reference. The
+# reference is bound as `.S7_class_ref` in the constructor's environment and
+# points back to the completed class through `$class`. Ordinary S7 objects store
+# the reference instead of the closure, avoiding `sys.function()` and ensuring
+# that objects serialized together share a single copy of their class.
+new_class_ref <- function() {
+  ref <- new.env(parent = emptyenv())
+  class(ref) <- "S7_class_ref"
+  ref
+}
+
+get_class_ref <- function(env, default = NULL) {
   get0(
     ".S7_class_ref",
-    envir = environment(class),
+    envir = env,
     inherits = TRUE,
-    ifnotfound = class
+    ifnotfound = default
   )
 }
 
