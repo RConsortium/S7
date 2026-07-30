@@ -201,6 +201,12 @@ new_class <- function(
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
   class_ref$class <- object
+  class_ref$construction <- new_construction_metadata(
+    parent = parent_resolved,
+    properties = all_props,
+    new_properties = new_props,
+    validator = validator
+  )
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -208,6 +214,72 @@ new_class <- function(
 
   global_variables(names(all_props))
   object
+}
+
+new_construction_metadata <- function(
+  parent,
+  properties,
+  new_properties,
+  validator
+) {
+  stored <- properties[vlapply(properties, \(x) is.null(x$getter))]
+  setter_names <- names(properties)[vlapply(properties, prop_has_setter)]
+  storage_names <- prop_storage_names_r(names(properties))
+  stored_storage_names <- prop_storage_names_r(names(stored))
+
+  base_types <- lapply(stored, function(prop) {
+    if (is_base_class(prop$class) && is.null(prop$validator)) {
+      prop$class$class
+    } else {
+      NULL
+    }
+  })
+
+  list(
+    setter_names = setter_names,
+    storage_names = setNames(storage_names, names(properties)),
+    parent_property_names = names(class_properties(parent)),
+    validation_properties = stored,
+    validation_storage_names = stored_storage_names,
+    validation_base_types = base_types,
+    direct_property_access = !is_S4_class(parent) &&
+      !(is_class(parent) && S7_extends_S4(parent)),
+    validates_nothing = length(new_properties) == 0 &&
+      is.null(validator)
+  )
+}
+
+prop_storage_names_r <- function(names) {
+  special <- c(
+    names = "_names",
+    dim = "_dim",
+    dimnames = "_dimnames",
+    class = "_class",
+    tsp = "_tsp",
+    comment = "_comment",
+    row.names = "_row_names"
+  )
+  replace <- match(names, names(special), nomatch = 0L)
+  names[replace > 0L] <- unname(special[replace])
+  names
+}
+
+class_construction_metadata <- function(class) {
+  class_storage <- S7_class_storage(class)
+  metadata <- if (inherits(class_storage, "S7_class_ref")) {
+    class_storage$construction
+  }
+  if (!is.null(metadata)) {
+    return(metadata)
+  }
+
+  properties <- attr(class, "properties", TRUE)
+  new_construction_metadata(
+    parent = attr(class, "parent", TRUE),
+    properties = properties,
+    new_properties = properties,
+    validator = attr(class, "validator", TRUE)
+  )
 }
 globalVariables(c(
   "name",
@@ -410,8 +482,8 @@ new_object <- function(`_parent`, ...) {
   # This is the hottest function in S7, so read the class metadata we need once,
   # up front.
   class_abstract <- attr(class, "abstract", TRUE)
-  class_props <- attr(class, "properties", TRUE)
   class_parent <- attr(class, "parent", TRUE)
+  metadata <- class_construction_metadata(class)
 
   if (class_abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
@@ -428,9 +500,9 @@ new_object <- function(`_parent`, ...) {
 
   args <- collect_dots(...)
 
-  has_setter <- vlapply(class_props[names(args)], prop_has_setter)
+  has_setter <- names(args) %in% metadata$setter_names
   self_attrs <- args[!has_setter]
-  names(self_attrs) <- prop_storage_rename(names(self_attrs))
+  names(self_attrs) <- metadata$storage_names[names(self_attrs)]
 
   # We must awkwardly operate on `_parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
@@ -458,15 +530,19 @@ new_object <- function(`_parent`, ...) {
     inherits(class_parent, "S7_object") &&
     !attr(class_parent, "abstract", TRUE)
   parent_props_reset <- parent_validated &&
-    any(
-      names2(args) %in% names2(attr(class_parent, "properties", TRUE))
+    any(names2(args) %in% metadata$parent_property_names)
+  if (
+    !metadata$validates_nothing ||
+      !parent_validated ||
+      parent_props_reset
+  ) {
+    validate_from(
+      `_parent`,
+      parent = if (parent_validated && !parent_props_reset) class_parent,
+      # Attribute validation failures to the constructor call, not new_object()
+      call = sys.call(-1L)
     )
-  validate_from(
-    `_parent`,
-    parent = if (parent_validated && !parent_props_reset) class_parent,
-    # Attribute validation failures to the constructor call, not new_object()
-    call = sys.call(-1L)
-  )
+  }
 
   `_parent`
 }

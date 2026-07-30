@@ -152,7 +152,8 @@ validate_from <- function(
 }
 
 validate_properties <- function(object, class, parent_class = NULL) {
-  props <- attr(class, "properties", TRUE)
+  metadata <- class_construction_metadata(class)
+  props <- metadata$validation_properties
   if (length(props) == 0) {
     return(character())
   }
@@ -163,27 +164,24 @@ validate_properties <- function(object, class, parent_class = NULL) {
   }
   errors <- character()
 
-  for (prop_obj in props) {
-    # Don't validate dynamic properties
-    if (!is.null(prop_obj$getter)) {
-      next
-    }
+  for (i in seq_along(props)) {
+    prop_obj <- props[[i]]
     name <- prop_obj$name
     # Skip properties inherited unchanged from an already-validated parent
     if (!is.null(parent_props) && identical(parent_props[[name]], prop_obj)) {
       next
     }
 
-    value <- prop(object, name)
+    value <- if (metadata$direct_property_access && !isS4(object)) {
+      attr(object, metadata$validation_storage_names[[i]], exact = TRUE)
+    } else {
+      prop(object, name)
+    }
 
     # The common case: a base type property, already the right type, with no
     # validator of its own. Nothing for prop_validate() to find.
-    prop_class <- prop_obj$class
-    if (
-      is_base_class(prop_class) &&
-        is.null(prop_obj$validator) &&
-        prop_class$class == base_class(value)
-    ) {
+    base_type <- metadata$validation_base_types[[i]]
+    if (!is.null(base_type) && base_type == base_class(value)) {
       next
     }
 

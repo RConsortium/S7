@@ -15,6 +15,31 @@ test_that("S7 classes possess expected properties", {
   expect_type(foo@properties, "list")
 })
 
+test_that("classes cache construction metadata", {
+  Parent := new_class(
+    properties = list(x = class_double)
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      names = class_character,
+      computed = new_property(
+        getter = \(self) self@x
+      )
+    )
+  )
+
+  metadata <- class_construction_metadata(Child)
+  expect_equal(metadata$storage_names[["names"]], "_names")
+  expect_named(metadata$validation_properties, c("x", "names"))
+  expect_equal(
+    metadata$validation_base_types,
+    list(x = "double", names = "character")
+  )
+  expect_equal(metadata$parent_property_names, "x")
+  expect_identical(metadata$validates_nothing, FALSE)
+})
+
 test_that("S7 classes print nicely", {
   foo1 := new_class(
     properties = list(x = class_integer, y = class_integer),
