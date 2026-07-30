@@ -83,6 +83,7 @@ There are three possible ways to run code, listed in rough order of desirability
 - Put all expressions being compared in a single `bench::mark()` call. `bench::mark()` interleaves and randomizes them so that thermal drift, background load, and garbage collection affect the expressions roughly equally.
 - Absolute timings can drift by ~10% between R sessions. So don't pursue changes smaller than this threshold.
 - Always benchmark both pre- and post-timings locally; don't assume timings posted in a GitHub issue are applicable to the current machine.
+- When reporting benchmark results, always include both the absolute pre- and post-timings and the relative change.
 - We care at most about microsecond scale. In the rare cases where they are important, batch 1000s of ns operations to get to around 1µs. On macOS, the timer used by `bench::mark()` has ~40 ns granularity.
 - Use `lobstr::obj_sizes()` to measure marginal memory usage when objects share references. Pass two equivalent objects to `obj_sizes()`: the first result includes the shared graph, while the second includes only the new object's contribution.
 
