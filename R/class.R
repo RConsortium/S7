@@ -176,7 +176,7 @@ new_class <- function(
     )
   }
 
-  class_ref <- new_class_ref()
+  class_ref <- new_class_ref(name = name, package = package)
   constructor_env <- new.env(parent = environment(constructor))
   constructor_env$.S7_class_ref <- class_ref
   environment(constructor) <- constructor_env
@@ -199,7 +199,17 @@ new_class <- function(
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
-  class_ref$class <- object
+  if (typeof(class_ref) == "externalptr") {
+    if (is.null(package)) {
+      holder <- new.env(parent = emptyenv())
+      holder$class <- object
+      .Call(class_ref_set_serialized_, class_ref, object, holder)
+    } else {
+      .Call(class_ref_set_weak_, class_ref, object)
+    }
+  } else {
+    class_ref$class <- object
+  }
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -394,7 +404,15 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 new_object <- function(`_parent`, ...) {
   class_ref <- get_class_ref(parent.frame())
   if (inherits(class_ref, "S7_class_ref")) {
-    class <- class_ref$class
+    if (typeof(class_ref) == "externalptr") {
+      class <- .Call(class_ref_get_, class_ref)
+      if (is.null(class)) {
+        class <- sys.function(sys.parent())
+        .Call(class_ref_set_weak_, class_ref, class)
+      }
+    } else {
+      class <- class_ref$class
+    }
   } else {
     class <- sys.function(sys.parent())
   }
@@ -432,7 +450,11 @@ new_object <- function(`_parent`, ...) {
   attrs <- c(
     list(
       class = class_dispatch(class),
-      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+      `_S7_class` = if (S7_extends_S4(class)) {
+        class
+      } else {
+        class_ref_storage(class_ref, class)
+      }
     ),
     self_attrs,
     attributes(`_parent`)
@@ -531,19 +553,32 @@ S7_class <- function(object) {
 }
 
 S7_class_storage <- function(class) {
-  get_class_ref(environment(class), default = class)
+  class_ref <- get_class_ref(environment(class))
+  class_ref_storage(class_ref, class)
 }
 
 # Class objects are closures, which leads to two problems:
 # * `sys.function()` does deep copies
 # * `serialize()`/`saveRDS()` only de-dups environments
-# We solve both problems with an environment-backed class reference. The
-# reference is bound as `.S7_class_ref` in the constructor's environment and
-# points back to the completed class through `$class`. Ordinary S7 objects store
-# the reference instead of the closure, avoiding `sys.function()` and ensuring
-# that objects serialized together share a single copy of their class.
-new_class_ref <- function() {
-  ref <- new.env(parent = emptyenv())
+# We solve both problems with an external-pointer class reference. The reference
+# is bound as `.S7_class_ref` in the constructor's environment and points to the
+# completed class. Each object stores its own reference. On unserialization, the
+# pointer is null and its tag is used to find the current package class
+# definition. The object is validated once before the resolved class is cached
+# in the pointer. Classes with `package = NULL` cannot be looked up, so they are
+# stored in the pointer's protected field and serialized with it.
+new_class_ref <- function(name, package) {
+  # Needed while S7's own classes are created before the DLL is loaded.
+  if (!exists("class_ref_new_", inherits = TRUE)) {
+    ref <- new.env(parent = emptyenv())
+    class(ref) <- "S7_class_ref"
+    return(ref)
+  }
+
+  ref <- .Call(
+    class_ref_new_,
+    list(name = name, package = package)
+  )
   class(ref) <- "S7_class_ref"
   ref
 }
@@ -555,6 +590,46 @@ get_class_ref <- function(env, default = NULL) {
     inherits = TRUE,
     ifnotfound = default
   )
+}
+
+class_ref_storage <- function(ref, class) {
+  if (typeof(ref) == "externalptr") {
+    clone <- .Call(class_ref_clone_, ref)
+    class(clone) <- "S7_class_ref"
+    clone
+  } else {
+    ref %||% class
+  }
+}
+
+class_ref_resolve <- function(object, ref) {
+  identity <- .Call(class_ref_tag_, ref)
+  package <- identity$package
+  name <- identity$name
+
+  class <- if (is.null(package)) {
+    .Call(class_ref_serialized_, ref)$class
+  } else {
+    get0(name, envir = asNamespace(package), inherits = FALSE)
+  }
+
+  if (!inherits(class, "S7_class")) {
+    class_name <- paste(c(package, name), collapse = "::")
+    stop2(
+      sprintf("Can't restore an object of class <%s>.", class_name),
+      call = NULL
+    )
+  }
+
+  .Call(class_ref_resolve_set_, object, ref, class)
+  tryCatch(
+    validate(object),
+    error = function(cnd) {
+      .Call(class_ref_clear_, ref)
+      stop(cnd)
+    }
+  )
+  class
 }
 
 

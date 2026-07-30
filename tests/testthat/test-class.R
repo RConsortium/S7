@@ -363,20 +363,20 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
-test_that("new_object() stores a shared class reference (#742)", {
+test_that("new_object() stores an external class reference (#742)", {
   Foo := new_class(package = NULL)
   x <- Foo()
   y <- Foo()
 
   x_ref <- attr(x, "_S7_class", exact = TRUE)
   y_ref <- attr(y, "_S7_class", exact = TRUE)
-  expect_type(x_ref, "environment")
-  expect_equal(obj_addr(x_ref), obj_addr(y_ref))
+  expect_type(x_ref, "externalptr")
+  expect_type(y_ref, "externalptr")
   expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
   expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
 })
 
-test_that("custom constructors use a shared class reference (#742)", {
+test_that("custom constructors use external class references (#742)", {
   Foo := new_class(
     constructor = function(x) new_object(S7_object(), x = x),
     properties = list(x = class_double),
@@ -385,41 +385,33 @@ test_that("custom constructors use a shared class reference (#742)", {
 
   x <- Foo(1)
   y <- Foo(2)
-  expect_equal(
-    obj_addr(attr(x, "_S7_class", exact = TRUE)),
-    obj_addr(attr(y, "_S7_class", exact = TRUE))
-  )
+  expect_type(attr(x, "_S7_class", exact = TRUE), "externalptr")
+  expect_type(attr(y, "_S7_class", exact = TRUE), "externalptr")
   expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
   expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
 })
 
-test_that("serialisation preserves shared class references (#742)", {
+test_that("serialisation lazily restores class references (#742)", {
   Foo := new_class(package = NULL)
   xy <- unserialize(serialize(list(Foo(), Foo()), NULL))
 
-  expect_equal(
-    obj_addr(attr(xy[[1]], "_S7_class", exact = TRUE)),
-    obj_addr(attr(xy[[2]], "_S7_class", exact = TRUE))
-  )
-  expect_equal(
-    obj_addr(S7_class(xy[[1]])),
-    obj_addr(S7_class(xy[[2]]))
-  )
+  x_ref <- attr(xy[[1]], "_S7_class", exact = TRUE)
+  y_ref <- attr(xy[[2]], "_S7_class", exact = TRUE)
+  expect_null(.Call(class_ref_get_, x_ref))
+  expect_null(.Call(class_ref_get_, y_ref))
+  expect_equal(obj_addr(S7_class(xy[[1]])), obj_addr(S7_class(xy[[2]])))
+  expect_equal(S7_class(xy[[1]])@name, Foo@name)
 
   Foo_rds <- unserialize(serialize(Foo, NULL))
   x <- Foo_rds()
   y <- Foo_rds()
-  expect_equal(
-    obj_addr(attr(x, "_S7_class", exact = TRUE)),
-    obj_addr(attr(y, "_S7_class", exact = TRUE))
-  )
   expect_equal(
     obj_addr(S7_class(x)),
     obj_addr(S7_class(y))
   )
 })
 
-test_that("classes in namespaces use shared class references (#742)", {
+test_that("classes in namespaces use external class references (#742)", {
   pkg := local_package({
     Foo := new_class()
   })
@@ -427,12 +419,82 @@ test_that("classes in namespaces use shared class references (#742)", {
   x <- Foo()
   y <- Foo()
 
-  expect_equal(
-    obj_addr(attr(x, "_S7_class", exact = TRUE)),
-    obj_addr(attr(y, "_S7_class", exact = TRUE))
-  )
+  expect_type(attr(x, "_S7_class", exact = TRUE), "externalptr")
+  expect_type(attr(y, "_S7_class", exact = TRUE), "externalptr")
   expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
   expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("external class references keep local classes alive", {
+  Foo := new_class(package = NULL)
+  class_address <- obj_addr(Foo)
+  x <- Foo()
+  rm(Foo)
+  gc()
+
+  expect_equal(obj_addr(S7_class(x)), class_address)
+})
+
+test_that("restored objects resolve and validate the current class once", {
+  pkg := local_package({
+    Foo := new_class(properties = list(x = class_double))
+  })
+  raw <- serialize(list(pkg$Foo(x = 1), pkg$Foo(x = 2)), NULL)
+
+  counter <- new.env(parent = emptyenv())
+  counter$n <- 0
+  pkg$counter <- counter
+  eval(
+    quote({
+      Parent := new_class()
+      Foo := new_class(
+        parent = Parent,
+        properties = list(x = class_double),
+        validator = function(self) {
+          counter$n <- counter$n + 1
+          NULL
+        }
+      )
+    }),
+    pkg
+  )
+
+  restored <- unserialize(raw)
+  x <- restored[[1]]
+  y <- restored[[2]]
+  ref <- attr(x, "_S7_class", exact = TRUE)
+  expect_null(.Call(class_ref_get_, ref))
+  expect_equal(obj_addr(S7_class(x)), obj_addr(pkg$Foo))
+  expect_equal(class(x), class_dispatch(pkg$Foo))
+  expect_equal(counter$n, 1)
+
+  expect_equal(obj_addr(S7_class(x)), obj_addr(pkg$Foo))
+  expect_equal(counter$n, 1)
+
+  expect_equal(obj_addr(S7_class(y)), obj_addr(pkg$Foo))
+  expect_equal(counter$n, 2)
+  expect_equal(obj_addr(S7_class(y)), obj_addr(pkg$Foo))
+  expect_equal(counter$n, 2)
+})
+
+test_that("restored objects must be valid under the current class", {
+  pkg := local_package({
+    Foo := new_class(properties = list(x = class_double))
+  })
+  raw <- serialize(pkg$Foo(x = 1), NULL)
+
+  eval(
+    quote(
+      Foo := new_class(
+        properties = list(x = class_double),
+        validator = function(self) "x is no longer valid"
+      )
+    ),
+    pkg
+  )
+
+  x <- unserialize(raw)
+  expect_snapshot(S7_class(x), error = TRUE)
 })
 
 test_that("new_object() supports constructors without a class reference", {
@@ -679,7 +741,8 @@ test_that("can round trip to disk and back", {
   saveRDS(f, path)
   f2 <- readRDS(path)
 
-  expect_equal(f, f2)
+  expect_equal(f2@x@y, 1L)
+  expect_equal(S7_class(f2)@name, globalenv()[["foo2"]]@name)
   rm(foo1, foo2, f, envir = globalenv())
 })
 

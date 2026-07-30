@@ -13,6 +13,7 @@ extern SEXP sym_properties;
 extern SEXP sym_abstract;
 extern SEXP sym_constructor;
 extern SEXP sym_validator;
+extern SEXP sym_S7_dispatch;
 
 extern SEXP ns_S7;
 
@@ -34,6 +35,94 @@ extern SEXP fn_base_quote;
 extern SEXP R_TRUE;
 extern SEXP R_FALSE;
 
+static
+void class_ref_finalizer(SEXP ref) {
+  SEXP class = (SEXP) R_ExternalPtrAddr(ref);
+  if (class == NULL)
+    return;
+
+  R_ReleaseObject(class);
+  R_ClearExternalPtr(ref);
+}
+
+SEXP class_ref_new_(SEXP tag) {
+  return R_MakeExternalPtr(NULL, tag, R_NilValue);
+}
+
+SEXP class_ref_get_(SEXP ref) {
+  SEXP class = (SEXP) R_ExternalPtrAddr(ref);
+  return class == NULL ? R_NilValue : class;
+}
+
+SEXP class_ref_set_(SEXP ref, SEXP class) {
+  SEXP old = (SEXP) R_ExternalPtrAddr(ref);
+  if (old == NULL) {
+    R_RegisterCFinalizerEx(ref, class_ref_finalizer, TRUE);
+  } else {
+    R_ReleaseObject(old);
+  }
+
+  R_SetExternalPtrAddr(ref, class);
+  R_PreserveObject(class);
+  return ref;
+}
+
+SEXP class_ref_set_weak_(SEXP ref, SEXP class) {
+  R_SetExternalPtrAddr(ref, class);
+  return ref;
+}
+
+SEXP class_ref_set_serialized_(SEXP ref, SEXP class, SEXP holder) {
+  class_ref_set_weak_(ref, class);
+  R_SetExternalPtrProtected(ref, holder);
+  return ref;
+}
+
+SEXP class_ref_resolve_set_(SEXP object, SEXP ref, SEXP class) {
+  class_ref_set_(ref, class);
+  SEXP dispatch = Rf_getAttrib(class, sym_S7_dispatch);
+  Rf_setAttrib(object, R_ClassSymbol, dispatch);
+  return ref;
+}
+
+SEXP class_ref_clear_(SEXP ref) {
+  class_ref_finalizer(ref);
+  return ref;
+}
+
+SEXP class_ref_tag_(SEXP ref) {
+  return R_ExternalPtrTag(ref);
+}
+
+SEXP class_ref_serialized_(SEXP ref) {
+  return R_ExternalPtrProtected(ref);
+}
+
+SEXP class_ref_clone_(SEXP ref) {
+  SEXP clone = PROTECT(R_MakeExternalPtr(
+    NULL,
+    R_ExternalPtrTag(ref),
+    R_ExternalPtrProtected(ref)
+  ));
+  SEXP class = class_ref_get_(ref);
+  if (class != R_NilValue)
+    class_ref_set_(clone, class);
+  UNPROTECT(1);
+  return clone;
+}
+
+static
+SEXP class_ref_resolve(SEXP object, SEXP ref) {
+  SEXP call = PROTECT(Rf_lang3(
+    Rf_install("class_ref_resolve"),
+    object,
+    ref
+  ));
+  SEXP class = Rf_eval(call, ns_S7);
+  UNPROTECT(1);
+  return class;
+}
+
 // Read the stored S7 class object, falling back to the legacy "S7_class"
 // attribute name so objects created with an older version of S7 keep working.
 // Can be removed >1 year after S7 0.3.0
@@ -42,8 +131,15 @@ SEXP get_S7_class(SEXP object) {
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   if (S7_class == R_NilValue)
     S7_class = Rf_getAttrib(object, sym_S7_class_legacy);
-  if (TYPEOF(S7_class) == ENVSXP && Rf_inherits(S7_class, "S7_class_ref"))
+  if (TYPEOF(S7_class) == ENVSXP && Rf_inherits(S7_class, "S7_class_ref")) {
     S7_class = s7_get_var_in_frame(S7_class, sym_class, R_NilValue);
+  }
+  if (TYPEOF(S7_class) == EXTPTRSXP && Rf_inherits(S7_class, "S7_class_ref")) {
+    SEXP ref = S7_class;
+    S7_class = class_ref_get_(ref);
+    if (S7_class == R_NilValue)
+      S7_class = class_ref_resolve(object, ref);
+  }
   return S7_class;
 }
 

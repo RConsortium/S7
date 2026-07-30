@@ -184,6 +184,15 @@
       Error in `new_object()`:
       ! `new_object()` must be called from within a constructor.
 
+# restored objects must be valid under the current class
+
+    Code
+      S7_class(x)
+    Condition
+      Error in `validate()`:
+      ! <pkg::Foo> object is invalid:
+      - x is no longer valid
+
 # new_object() errors if `_parent` doesn't inherit from the parent class (#409)
 
     Code
