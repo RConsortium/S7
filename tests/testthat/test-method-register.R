@@ -46,6 +46,7 @@ test_that("method registration can register a method for an external generic", {
 })
 
 test_that("method registration checks argument types", {
+  local_R_CMD_check()
   foo := new_generic("x")
   ext := new_external_class("notloaded.pkg")
 
@@ -243,6 +244,7 @@ test_that("check_method returns TRUE if the functions are compatible", {
 })
 
 test_that("check_method complains if the functions are not compatible", {
+  local_R_CMD_check()
   expect_snapshot(error = TRUE, {
     foo := new_generic("x")
     check_method(1, foo)
@@ -265,11 +267,42 @@ test_that("check_method rejects primitive functions", {
 })
 
 test_that("check_method warn if default arguments don't match", {
+  local_load_all()
   expect_snapshot({
     foo := new_generic("x", function(x, ..., z = 2, y = 1) S7_dispatch())
     check_method(function(x, ..., y = 1) {}, foo)
     check_method(function(x, ..., y = 1, z = 1) {}, foo)
   })
+})
+
+test_that("check_method only checks defaults in development contexts (#728)", {
+  local_end_user()
+  foo := new_generic("x", function(x, ..., y = 1) S7_dispatch())
+  expect_no_warning(method(foo, class_character) <- function(x, ..., y = 2) x)
+})
+
+test_that("check_method skips all checks outside of development (#726)", {
+  local_end_user()
+  foo := new_generic("x", function(x) S7_dispatch())
+  expect_true(check_method(function(x, y) {}, foo))
+})
+
+test_that("check_method errors become warnings during load_all() (#726)", {
+  local_load_all()
+  expect_snapshot({
+    foo := new_generic("x", function(x) S7_dispatch())
+    check_method(function(x, y) {}, foo)
+    bar := new_generic("x", function(x, ...) S7_dispatch())
+    check_method(function(y, ...) {}, bar)
+    check_method(function(x = 1, ...) {}, bar)
+  })
+})
+
+test_that("stale methods are skipped during load_all() (#726)", {
+  local_load_all()
+  foo := new_generic("x", function(x) S7_dispatch())
+  suppressWarnings(method(foo, class_character) <- function(x, y) "method")
+  expect_length(methods(foo), 0)
 })
 
 test_that("S7_method printing", {
