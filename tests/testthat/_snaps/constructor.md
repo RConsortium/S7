@@ -81,3 +81,13 @@
       new_object(foo(...), y = y)
       <environment: 0x0>
 
+# forwarding constructor passes overrides to both parent and object
+
+    Code
+      new_constructor(P, as_properties(list(a = new_property(class_double, default = 99),
+      b = class_double)))
+    Output
+      function (..., a = 99, b = numeric(0)) 
+      new_object(P(a = a, ...), a = a, b = b)
+      <environment: 0x0>
+

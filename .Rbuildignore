@@ -25,3 +25,4 @@
 ^AGENTS\.md$
 ^\.lintr\.R$
 ^tools$
+^bench$

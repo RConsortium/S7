@@ -1,7 +1,13 @@
 test_that("S7 classes possess expected properties", {
   foo := new_class(package = "S7", validator = function(self) NULL)
 
-  expect_equal(prop_names(foo), setdiff(names(attributes(foo)), "class"))
+  expect_equal(
+    prop_names(foo),
+    setdiff(
+      names(attributes(foo)),
+      c("class", "S7_class_name", "S7_dispatch")
+    )
+  )
   expect_type(foo@name, "character")
   expect_equal(foo@parent, S7_object)
   expect_type(foo@constructor, "closure")
@@ -384,6 +390,18 @@ test_that("new_object() errors if `_parent` doesn't inherit from the parent clas
     Foo()
     Baz()
   })
+})
+
+test_that("new_object() accepts an instance of a subclass of the parent", {
+  Parent := new_class(package = NULL)
+  Sibling := new_class(parent = Parent, package = NULL)
+  Child := new_class(
+    parent = Parent,
+    package = NULL,
+    constructor = function(parent) new_object(parent)
+  )
+
+  expect_identical(S7_class(Child(Sibling())), Child)
 })
 
 test_that("new_object() allows S7_object placeholder for abstract parents", {

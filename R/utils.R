@@ -39,6 +39,12 @@ paste_c <- function(...) {
   paste(c(...), collapse = "")
 }
 
+# Lightweight equivalent of withr::defer()
+defer <- function(expr, frame = parent.frame(), after = FALSE) {
+  thunk <- as.call(list(function() expr))
+  do.call(on.exit, list(thunk, TRUE, after), envir = frame)
+}
+
 stop2 <- function(message, call = sys.call(-1L), class = NULL) {
   stop(errorCondition(
     message = paste(message, collapse = "\n"),

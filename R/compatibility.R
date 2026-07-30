@@ -11,12 +11,16 @@ activate_backward_compatiblility <- function() {
 #' @usage NULL
 #' @rawNamespace if (getRversion() < "4.3.0") export(`@`)
 #' @name prop
-`@` <- function(object, name) {
-  if (inherits(object, "S7_object")) {
-    name <- as.character(substitute(name))
-    prop(object, name)
-  } else {
-    name <- substitute(name)
-    do.call(base::`@`, list(object, name))
+NULL
+
+if (getRversion() < "4.3.0") {
+  `@` <- function(object, name) {
+    if (inherits(object, "S7_object")) {
+      name <- as.character(substitute(name))
+      prop(object, name)
+    } else {
+      name <- substitute(name)
+      do.call(base::`@`, list(object, name))
+    }
   }
 }
