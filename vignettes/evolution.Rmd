@@ -46,7 +46,7 @@ Most of the advice in this vignette boils down to a few design rules that are ch
   A generic without `...` can never gain an argument without breaking every downstream method.
 
 * **Keep generics minimal.**
-  Every non-dispatch argument in the generic's signature is part of a contract that all methods are checked against; in particular its default can never change quietly.
+  Every non-dispatch argument in the generic's signature is part of a contract that all methods are checked against, and its default belongs to the generic: dispatch supplies it, so no method can override it.
   When an argument is only meaningful to some methods, leave it out of the generic and let those methods take it via `...`.
 
 * **Treat names as permanent.**
@@ -74,7 +74,7 @@ To predict what breaks, you need to know when downstream code actually runs:
 
 * **Method registrations are replayed at load time.**
   When pkgB registers a method for a generic in pkgA, the registration is also replayed every time pkgB is loaded (that's what `S7_on_load()` does; see `vignette("packages")`).
-  The consistency checks between generic and method run each time, so a mismatch that only warrants a warning will appear both when pkgB is installed *and* every time it's loaded — including in every reverse dependency check.
+  So a method that pkgB recorded against the old pkgA is re-registered against whatever pkgA is installed now.
 
 * **Everything else happens at run time.**
   Constructing instances, validating properties, and dispatching methods all use the definitions of the currently installed pkgA.
@@ -94,6 +94,22 @@ When a method is registered, S7 compares the method's formals to the generic's:
 
 That last rule is the single most useful tool for coordinating change, because it means a method can be written for a *future* version of its generic.
 We'll use it repeatedly below.
+
+These checks only run where someone can act on them, i.e. in **development contexts**:
+
+* Under `devtools::load_all()`.
+* Under `R CMD check`, but only when the package being checked owns the method, the generic, or one of the classes in the signature.
+* When the method isn't in a package at all — registered in a script or interactively, as in this vignette's examples.
+
+Everywhere else the checks are skipped and the method is registered as-is: plain `R CMD INSTALL`, an ordinary `library()` call, and `R CMD check` of some *other* package that merely depends on pkgB.
+This shapes almost everything below.
+When pkgA breaks the contract, the mismatch is reported to pkgB's author, and to you when you run reverse dependency checks (those check pkgB itself), but not to pkgB's users, and not to pkgB's own downstream packages.
+
+The price is that the two **error** cases no longer stop an end user from installing or loading pkgB.
+The mismatched method is registered anyway, and the failure resurfaces at run time when the generic is called.
+
+One extra affordance while `load_all()` is active: the errors are demoted to warnings, and the offending method isn't registered.
+That means you can re-source a package whose generic you just changed and fix its methods one at a time, instead of having to update them all before the package will load again.
 
 ### How pkgB should refer to pkgA
 
@@ -140,8 +156,15 @@ BClass := new_class()
 method(gen, BClass) <- gen_BClass
 ```
 
-This warning appears when pkgB is installed and again every time it's loaded, so `R CMD check` reports it twice: as a WARNING ("significant warnings" during installation) and as a NOTE (from loading the namespace).
-pkgB's author will hear about it — and so will you, when you run reverse dependency checks.
+Because the check only runs in development contexts, pkgB's users see nothing: installing and loading pkgB are both silent, and calls keep working.
+The warning surfaces under `load_all()`, and as a single NOTE in `R CMD check` of pkgB:
+
+```
+* checking whether the namespace can be loaded with stated dependencies ... NOTE
+Warning: gen(<pkgB::BClass>) doesn't have argument `verbose`
+```
+
+So pkgB's author will hear about it — and so will you, when you run reverse dependency checks, since those check pkgB itself.
 
 The fix is pleasingly asymmetric: because methods may have arguments the generic lacks, pkgB can add the argument **before** pkgA releases:
 
@@ -163,9 +186,9 @@ So the transition recipe is:
 2. Each downstream package adds the argument to its methods, and can release whenever convenient.
 3. You release.
 
-If you skip step 1–2, nothing breaks outright — downstream packages just get check warnings until they catch up.
+If you skip steps 1–2, nothing breaks outright — downstream packages just get a check NOTE until they catch up.
 
-If your generic *doesn't* have `...`, adding an argument is an error for every downstream method, there is no version of the method that satisfies both the old and new generic, and downstream packages can't even be installed:
+If your generic *doesn't* have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic:
 
 ```{r, error = TRUE}
 gen_strict := new_generic("x", fun = function(x) S7_dispatch())
@@ -176,7 +199,15 @@ gen_strict := new_generic("x", fun = function(x, verbose = FALSE) S7_dispatch())
 method(gen_strict, BClass) <- function(x) "old"
 ```
 
-A generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename (below).
+Since that error is only raised in development contexts, pkgB still installs and loads for its users; the mismatched method is registered, and the call blows up when it's made:
+
+```
+Error in `method(gen_strict, pkgB::BClass)`(x = <object>, verbose = FALSE) :
+  unused argument (verbose = FALSE)
+```
+
+pkgB's own `R CMD check` fails earlier and says something more useful, at `checking whether the package can be loaded`.
+Either way there is no fix on pkgB's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename (below).
 
 ### Removing an argument
 
@@ -188,25 +219,22 @@ So before removing an argument, deprecate it: keep it in the generic, and warn w
 
 ### Changing a default
 
-Changing the default value of a non-dispatch argument produces a warning for every method whose default doesn't match:
+Changing the default value of a non-dispatch argument warns for every method whose default doesn't match — and, more consequentially, changes what those methods actually receive.
+The default belongs to the generic, not to the method: dispatch passes on all of the generic's arguments, so when a caller supplies nothing, the method gets the *generic's* default and its own is never reached.
 
+```{r}
+gen := new_generic("x", fun = function(x, drop = TRUE, ...) S7_dispatch())
+method(gen, BClass) <- function(x, drop = FALSE, ...) drop
+gen(BClass())
 ```
-Warning: In gen(<pkgB::BClass>), default value of `drop` is not the same as the generic
-- Generic: TRUE
-- Method:  FALSE
-```
 
-A method that *pins* a default can't agree with both versions of pkgA at once, so pkgB's escape hatch is to not pin it: a method can omit the default and inherit whichever default the installed generic declares.
-That spelling is valid — and warning-free — under both the old and new pkgA, so the transition recipe mirrors the one for added arguments: downstream methods switch to the inherited default ahead of your release, and can re-pin a default later if they genuinely want to override yours.
+(A method's default is only used when the generic's argument has no default at all.)
+So changing a default changes behavior immediately, for every caller — including callers of methods that thought they had pinned the old value.
 
-> **TODO:** this assumes [#728](https://github.com/RConsortium/S7/issues/728) is implemented.
-> Show the actual mechanism here (and re-run `tools/evolution/`) once the design is settled.
+Unlike an added argument, there's no spelling of the method that agrees with both versions of pkgA: whichever default it names disagrees with one of them, and omitting the default disagrees with both.
+So the mitigation here isn't a transition recipe, it's the scoping described in [The generic–method contract]: the warning fires only in development contexts, which costs pkgB one check NOTE and costs pkgB's users nothing.
 
-There's a subtlety here that makes changing defaults doubly treacherous: when a caller doesn't supply the argument, dispatch means the *method's* default is what's actually used.
-The default in the generic is documentation plus a consistency check, and the warning above exists precisely because methods with a different default silently change behavior.
-
-Our advice: still change defaults rarely; ideally, keep non-dispatch arguments (and especially their defaults) out of the generic entirely, and let methods own them.
-Methods that deliberately pin the old default will warn until their authors decide what to do, which is exactly the right signal.
+Our advice: change defaults rarely, and prefer to keep non-dispatch arguments (and especially their defaults) out of the generic entirely, so that the methods that care about them own both the argument and its default.
 
 ### Renaming a generic
 
@@ -245,8 +273,6 @@ pkgAcore::gen
 
 pkgB's `importFrom(pkgA, gen)` still resolves, and method registration follows the generic object to its new home package automatically, so pkgB works without any changes — even an already-*installed* pkgB, whose deferred registrations resolve through the re-export the next time it's loaded.
 
-> **TODO:** the already-installed case assumes [#729](https://github.com/RConsortium/S7/issues/729) is fixed; today a stale pkgB fails to load until reinstalled (`R CMD check` always reinstalls, so checks pass regardless).
-
 There is a trap here: a binding *copy* (`gen <- pkgAcore::gen` in pkgA's code, the idiom that works fine for a within-package rename) is not a re-export.
 It runs when pkgA is installed, and serializes a *duplicate* of the generic — with its own private methods table — into pkgA's namespace.
 The result is a split brain: pkgB's registrations follow the generic's home package and land on pkgAcore's original, while calls through `pkgA::gen()` dispatch using the duplicate's empty table and fail with `Can't find method`.
@@ -254,7 +280,7 @@ A `NAMESPACE` re-export resolves to the one true generic at load time, so use ex
 
 Should the re-export signal deprecation?
 Since a re-export costs nothing to maintain, keeping it forever is a fine choice.
-If you do want to retire the old home, the same tool as for renames applies: replace the re-export with `gen <- deprecated_generic(pkgAcore::gen)` so callers get nudged while method registrations keep working, then remove it once your reverse dependency checks come back clean (see [Renaming a generic] above, including its TODOs).
+If you do want to retire the old home, the same tool as for renames applies: replace the re-export with `gen <- deprecated_generic(pkgAcore::gen)` so callers get nudged while method registrations keep working, then remove it once your reverse dependency checks come back clean (see [Renaming a generic] above, including its TODO).
 
 ## Changing a class
 
@@ -352,8 +378,9 @@ Keeping `Foo <- Bar` as an exported alias makes the rename survivable for downst
 * pkgB packages using `parent = pkgA::Foo` directly work again once rebuilt (they now extend `pkgA::Bar`).
 * pkgB packages using `new_external_class("pkgA", "Foo")` also recover: resolution follows the exported alias to the renamed class.
 
-> **TODO:** the second bullet assumes [#727](https://github.com/RConsortium/S7/issues/727) is implemented; today external-class resolution rejects the alias and those packages fail to install.
-> Re-run `tools/evolution/` and check whether a *stale* pkgB also recovers.
+> **TODO:** the second bullet assumes [#727](https://github.com/RConsortium/S7/issues/727) is implemented.
+> Today external-class resolution rejects the alias, so those packages fail to install, and a *stale* pkgB fails at run time too (`` `_parent` must be an instance of <pkgA::Foo>, not <pkgA::Bar> ``).
+> Re-run `tools/evolution/` once it's fixed, and check whether a stale pkgB recovers.
 
 What no alias can fix is data: objects serialized (or still lying around in sessions) with the old class string no longer dispatch as `pkgA::Foo`, and instances created under the two versions of pkgA have different `class()` vectors.
 So a rename still calls for `convert()` support or a re-save story wherever instances outlive an R session.
@@ -366,7 +393,4 @@ Treat a cross-package class move as a coordinated, breaking change.
 
 Making an existing class abstract breaks every direct `pkgA::Foo()` call at run time, which is presumably the point of the change — give downstream packages a deprecation window by first making the constructor warn, and only later making the class abstract.
 
-Subclasses are unaffected: even though a subclass with an external parent builds its parent part by calling `pkgA::Foo()` at run time, that call is allowed when it's constructing the parent part of a subclass.
-
-> **TODO:** that assumes the abstract-external-parent gap reported in [#717's review](https://github.com/RConsortium/S7/pull/717#issuecomment-5097344414) is fixed; today the subclass's constructor fails with `Can't construct an object from abstract class`.
-> Verify with the `class-make-abstract` lab scenario.
+Subclasses are unaffected, including already-installed ones: even though a subclass with an external parent builds its parent part by calling `pkgA::Foo()` at run time, an abstract class's constructor is allowed to run when it's constructing the parent part of a concrete subclass.
