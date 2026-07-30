@@ -18,12 +18,6 @@ pkgload::load_all(quiet = TRUE)
 
 # helpers ---------------------------------------------------------------------
 
-# Marginal bytes retained per object. The first value includes the shared class
-# graph; the second includes only the new object's contribution.
-bytes_per_object <- function(f) {
-  as.numeric(lobstr::obj_sizes(f(), f())[[2]])
-}
-
 # A chain of `depth` classes. By default each level adds nothing, so cost scales
 # with the number of `new_object()` calls rather than the number of properties.
 # With `add_property = TRUE`, each level adds one uniquely named property.
@@ -143,7 +137,16 @@ bench_calls <- function() {
 # should reference one shared class object.
 bench_memory <- function() {
   depths <- c(1, 5, 10, 20)
-  bytes <- vapply(depths, \(d) bytes_per_object(\() deep_class(d)), numeric(1))
+  bytes <- vapply(
+    depths,
+    function(d) {
+      Class <- deep_class(d)
+      # The first value includes the shared class graph; the second includes
+      # only the new object's contribution.
+      as.numeric(lobstr::obj_sizes(Class(), Class())[[2]])
+    },
+    numeric(1)
+  )
   data.frame(depth = depths, bytes_per_object = round(bytes))
 }
 
