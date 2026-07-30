@@ -350,6 +350,13 @@
   works with S3 and S4 objects, not just S7 objects
   ([\#500](https://github.com/RConsortium/S7/issues/500)).
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
+  now checks property types substantially faster, because a property
+  restricted to a base type (e.g. `class_double`) no longer has its
+  underlying type checked twice. Constructing an object with 10 base
+  type properties fell from 100 µs to 70 µs (1.4x faster), while
+  constructing one with 50 fell from 400 µs to 250 µs (1.6x faster)
+  ([\#723](https://github.com/RConsortium/S7/issues/723)).
+- [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
   now signals validation errors with class `S7_error_validation_failed`,
   so they can be caught with
   [`tryCatch()`](https://rdrr.io/r/base/conditions.html)

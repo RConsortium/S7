@@ -104,6 +104,10 @@ desirability:
 - Always benchmark both pre- and post-timings locally; don’t assume
   timings posted in a GitHub issue are applicable to the current
   machine.
+- When reporting benchmark results, always include both the absolute
+  pre- and post-timings and the relative change as “x faster”, not as a
+  percentage reduction in time. Round timings to two significant digits
+  (e.g. 100 µs, not 100.2 µs; 70 µs, not 69.4 µs).
 - We care at most about microsecond scale. In the rare cases where they
   are important, batch 1000s of ns operations to get to around 1µs. On
   macOS, the timer used by
