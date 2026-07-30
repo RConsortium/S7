@@ -120,6 +120,26 @@
   re-registering an identical method, eliminating spurious messages from
   `devtools::load_all()`
   ([\#474](https://github.com/RConsortium/S7/issues/474)).
+- `method<-` now only checks that a method is consistent with its
+  generic in development contexts (i.e. during
+  [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html),
+  when `R CMD check` is checking a package involved in the registration,
+  or when the method is registered outside of a package). This means
+  that when a package changes one of its generics, users of
+  already-installed downstream packages no longer see errors or warnings
+  that they can’t do anything about
+  ([\#726](https://github.com/RConsortium/S7/issues/726),
+  [\#728](https://github.com/RConsortium/S7/issues/728)). Methods
+  registered inside testthat tests are treated as an end-user context,
+  so tests give the same results under `R CMD check` as when run
+  locally.
+- `method<-` now reports an incompatible method signature with a warning
+  rather than an error while
+  [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html)
+  is active, and skips registering the method, so that a package remains
+  sourceable while its methods are out of sync with a changed generic,
+  letting you fix them one by one
+  ([\#726](https://github.com/RConsortium/S7/issues/726)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now errors if a child class overrides a parent property with a type
   that doesn’t extend the parent’s type, since such a class could never
