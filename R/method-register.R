@@ -341,15 +341,17 @@ check_method <- function(
     stop2(sprintf("%s must be a function.", name), call = call)
   }
 
-  # Mismatches between a method and its generic only actionable by developer
+  # Mismatches between a method and its generic only actionable by developer.
+  # We still register in the hope that they do still work (e.g. if it's just a
+  # change in default values).
   if (!in_dev(method, generic, signature)) {
     return(invisible(TRUE))
   }
 
-  # Only warn during while load_all() is active so you can see all at once
-  # The calls will still fail at run time.
+  # Warn instead of erroring during while load_all() is active so you can see
+  # all at once. But don't register to robustly surface failures.
   stop_or_warn <- function(message) {
-    if (in_dev()) {
+    if (in_load_all()) {
       warning2(message, call = NULL)
       invisible(FALSE)
     } else {

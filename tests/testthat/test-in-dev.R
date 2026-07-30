@@ -44,10 +44,10 @@ test_that("in_dev() is FALSE inside package tests, even under R CMD check", {
   expect_false(in_dev(method, generic))
 })
 
-test_that("in_dev() with no arguments only detects load_all()", {
+test_that("in_load_all() detects load_all()", {
   local_end_user()
-  expect_false(in_dev())
+  expect_false(in_load_all())
 
   local_load_all()
-  expect_true(in_dev())
+  expect_true(in_load_all())
 })

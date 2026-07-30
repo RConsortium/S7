@@ -1,16 +1,10 @@
-# Mismatches between a method and its generic (incompatible signature, missing
-# arguments, different defaults) are only actionable by the developer of one of
-# the packages involved, so we only check methods in development contexts
-# (#726, #728). Otherwise, when an upstream package changes a generic, every
-# user of an already-installed downstream package would see errors and
-# warnings that they can't do anything about.
-in_dev <- function(method = NULL, generic = NULL, signature = NULL) {
-  if (nzchar(Sys.getenv("DEVTOOLS_LOAD"))) {
+in_load_all <- function() {
+  nzchar(Sys.getenv("DEVTOOLS_LOAD"))
+}
+
+in_dev <- function(method, generic, signature = NULL) {
+  if (in_load_all()) {
     return(TRUE)
-  }
-  if (is.null(method)) {
-    # Nothing to inspect, so load_all() is the only development signal
-    return(FALSE)
   }
 
   method_package <- package_name(method)
