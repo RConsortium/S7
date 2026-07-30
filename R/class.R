@@ -200,8 +200,13 @@ new_class <- function(
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
   if (typeof(class_ref) == "externalptr") {
-    .Call(class_ref_set_weak_, class_ref, object)
-    register_class_ref(class_ref, object)
+    if (is.null(package)) {
+      holder <- new.env(parent = emptyenv())
+      holder$class <- object
+      .Call(class_ref_set_serialized_, class_ref, object, holder)
+    } else {
+      .Call(class_ref_set_weak_, class_ref, object)
+    }
   } else {
     class_ref$class <- object
   }
@@ -557,13 +562,11 @@ S7_class_storage <- function(class) {
 # * `serialize()`/`saveRDS()` only de-dups environments
 # We solve both problems with an external-pointer class reference. The reference
 # is bound as `.S7_class_ref` in the constructor's environment and points to the
-# completed class without serializing it. Each object stores its own reference.
-# On unserialization, the pointer is null and its tag is used to find the current
-# class definition. The object is validated once before the resolved class is
-# cached in the pointer.
-class_ref_registry <- new.env(parent = emptyenv())
-class_ref_registry$next_id <- 1
-
+# completed class. Each object stores its own reference. On unserialization, the
+# pointer is null and its tag is used to find the current package class
+# definition. The object is validated once before the resolved class is cached
+# in the pointer. Classes with `package = NULL` cannot be looked up, so they are
+# stored in the pointer's protected field and serialized with it.
 new_class_ref <- function(name, package) {
   # Needed while S7's own classes are created before the DLL is loaded.
   if (!exists("class_ref_new_", inherits = TRUE)) {
@@ -572,26 +575,12 @@ new_class_ref <- function(name, package) {
     return(ref)
   }
 
-  id <- if (is.null(package)) {
-    id <- as.character(class_ref_registry$next_id)
-    class_ref_registry$next_id <- class_ref_registry$next_id + 1
-    id
-  }
-
   ref <- .Call(
     class_ref_new_,
-    list(name = name, package = package, id = id)
+    list(name = name, package = package)
   )
   class(ref) <- "S7_class_ref"
   ref
-}
-
-register_class_ref <- function(ref, class) {
-  id <- .Call(class_ref_tag_, ref)$id
-  if (!is.null(id)) {
-    class_ref_registry[[id]] <- .Call(class_weakref_new_, ref, NULL)
-  }
-  invisible()
 }
 
 get_class_ref <- function(env, default = NULL) {
@@ -619,13 +608,7 @@ class_ref_resolve <- function(object, ref) {
   name <- identity$name
 
   class <- if (is.null(package)) {
-    weak_ref <- class_ref_registry[[identity$id]]
-    live_ref <- if (is.null(weak_ref)) {
-      NULL
-    } else {
-      .Call(class_weakref_key_, weak_ref)
-    }
-    if (is.null(live_ref)) NULL else .Call(class_ref_get_, live_ref)
+    .Call(class_ref_serialized_, ref)$class
   } else {
     get0(name, envir = asNamespace(package), inherits = FALSE)
   }

@@ -72,6 +72,12 @@ SEXP class_ref_set_weak_(SEXP ref, SEXP class) {
   return ref;
 }
 
+SEXP class_ref_set_serialized_(SEXP ref, SEXP class, SEXP holder) {
+  class_ref_set_weak_(ref, class);
+  R_SetExternalPtrProtected(ref, holder);
+  return ref;
+}
+
 SEXP class_ref_resolve_set_(SEXP object, SEXP ref, SEXP class) {
   class_ref_set_(ref, class);
   SEXP dispatch = Rf_getAttrib(class, sym_S7_dispatch);
@@ -88,21 +94,21 @@ SEXP class_ref_tag_(SEXP ref) {
   return R_ExternalPtrTag(ref);
 }
 
+SEXP class_ref_serialized_(SEXP ref) {
+  return R_ExternalPtrProtected(ref);
+}
+
 SEXP class_ref_clone_(SEXP ref) {
-  SEXP clone = PROTECT(class_ref_new_(R_ExternalPtrTag(ref)));
+  SEXP clone = PROTECT(R_MakeExternalPtr(
+    NULL,
+    R_ExternalPtrTag(ref),
+    R_ExternalPtrProtected(ref)
+  ));
   SEXP class = class_ref_get_(ref);
   if (class != R_NilValue)
     class_ref_set_(clone, class);
   UNPROTECT(1);
   return clone;
-}
-
-SEXP class_weakref_new_(SEXP key, SEXP value) {
-  return R_MakeWeakRef(key, value, R_NilValue, FALSE);
-}
-
-SEXP class_weakref_key_(SEXP ref) {
-  return R_WeakRefKey(ref);
 }
 
 static

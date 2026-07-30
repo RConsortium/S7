@@ -399,8 +399,8 @@ test_that("serialisation lazily restores class references (#742)", {
   y_ref <- attr(xy[[2]], "_S7_class", exact = TRUE)
   expect_null(.Call(class_ref_get_, x_ref))
   expect_null(.Call(class_ref_get_, y_ref))
-  expect_equal(obj_addr(S7_class(xy[[1]])), obj_addr(Foo))
-  expect_equal(obj_addr(S7_class(xy[[2]])), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(xy[[1]])), obj_addr(S7_class(xy[[2]])))
+  expect_equal(S7_class(xy[[1]])@name, Foo@name)
 
   Foo_rds <- unserialize(serialize(Foo, NULL))
   x <- Foo_rds()
@@ -742,10 +742,7 @@ test_that("can round trip to disk and back", {
   f2 <- readRDS(path)
 
   expect_equal(f2@x@y, 1L)
-  expect_equal(
-    obj_addr(S7_class(f2)),
-    obj_addr(globalenv()[["foo2"]])
-  )
+  expect_equal(S7_class(f2)@name, globalenv()[["foo2"]]@name)
   rm(foo1, foo2, f, envir = globalenv())
 })
 

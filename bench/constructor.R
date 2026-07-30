@@ -22,7 +22,12 @@ pkgload::load_all(quiet = TRUE)
 # with the number of `new_object()` calls rather than the number of properties.
 # With `add_property = TRUE`, each level adds one uniquely named property.
 # Built programmatically, hence `new_class(name = )` rather than `:=`.
-deep_class <- function(depth, abstract = FALSE, add_property = FALSE) {
+deep_class <- function(
+  depth,
+  abstract = FALSE,
+  add_property = FALSE,
+  package = NULL
+) {
   class <- S7_object
   for (i in seq_len(depth)) {
     properties <- if (add_property) {
@@ -34,7 +39,8 @@ deep_class <- function(depth, abstract = FALSE, add_property = FALSE) {
       name = paste0("Deep", i),
       parent = class,
       abstract = abstract,
-      properties = properties
+      properties = properties,
+      package = package
     )
   }
   class
@@ -178,13 +184,15 @@ bench_memory <- function() {
 }
 
 bench_serialization <- function() {
-  Deep1 <- deep_class(1)
-  Deep10 <- deep_class(10)
+  PackageDeep1 <- deep_class(1, package = "bench")
+  PackageDeep10 <- deep_class(10, package = "bench")
+  LocalDeep10 <- deep_class(10)
 
   objects <- list(
-    depth1 = Deep1(),
-    depth10 = Deep10(),
-    depth10_100 = replicate(100, Deep10(), simplify = FALSE)
+    package_depth1 = PackageDeep1(),
+    package_depth10 = PackageDeep10(),
+    package_depth10_100 = replicate(100, PackageDeep10(), simplify = FALSE),
+    local_depth10_100 = replicate(100, LocalDeep10(), simplify = FALSE)
   )
   data.frame(
     case = names(objects),
