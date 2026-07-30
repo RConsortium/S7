@@ -358,7 +358,7 @@ prop_call <- function(object, name) {
 # presence of a closure w/ the name of the generic (`@`) in the R7 namespace,
 # and incorrectly assumes that R7::`@` is the generic and registers the
 # method in the package namespace instead of base::.__S3MethodsTable__.
-#' @usage object@name
+#' @usage NULL
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(base::`@`, S7_object)
 #' @name prop
 `@.S7_object` <- prop
