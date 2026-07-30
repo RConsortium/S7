@@ -20,6 +20,7 @@
 * `method<-` now gives a clear error when assigning a primitive function (e.g. `log`) as a method (#608).
 * `method<-` and `method()` now accept a length-1 list as `signature` for single-dispatch generics, matching the list-of-classes form required for multi-dispatch (#555).
 * `new_object()` now names its first argument `_parent` to minimise the chance of a clash with a property (#423). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to programmatically construct an object from a list of properties (#497).
+* `new_object()` no longer copies an S7 class each time a default or custom constructor creates an object. New objects instead store a shared internal class reference, which also preserves sharing when multiple objects are serialised together. Constructors created by older versions of S7 continue to work through the previous fallback (#742).
 * `method<-` can now register methods on S3 and S4 generics with base types (e.g. `class_character`), S3 classes (`new_S3_class()`, `class_factor`, etc.), S7 unions (expanded to one registration per class), `class_any` (registered as the `default` method), and `NULL` (registered as the `NULL` method) (#455).
 * `method<-` no longer emits an "Overwriting method" message when re-registering an identical method, eliminating spurious messages from `devtools::load_all()` (#474).
 * `new_class()` now errors if a child class overrides a parent property with a type that doesn't extend the parent's type, since such a class could never be instantiated (#352, #708).
@@ -57,6 +58,7 @@
 * `set_props()` now names its first argument `_object` to minimise the chances of a clash with a property (#423). It also accepts a single unnamed named list as a shortcut for splicing property values, making it easier to set properties programmatically (#497).
 * `str()` on S7 objects that inherit from data.frame (or other S3 classes whose underlying data has a `dim` attribute incompatible with the bare base type) no longer errors (#494).
 * `super()` now works with S3 and S4 objects, not just S7 objects (#500).
+* `validate()` now checks property types substantially faster, because a property restricted to a base type (e.g. `class_double`) no longer has its underlying type checked twice. Constructing an object with 50 base type properties is 1.6x faster, and with 10 base type properties 1.4x faster (#723).
 * `validate()` now signals validation errors with class `S7_error_validation_failed`, so they can be caught with `tryCatch()` (#602, #605).
 
 # S7 0.2.2

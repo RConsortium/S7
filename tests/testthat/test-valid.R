@@ -50,6 +50,27 @@ test_that("validate checks base type", {
   expect_snapshot(error = TRUE, validate(x))
 })
 
+test_that("validate runs property validators for base type properties", {
+  Positive := new_class(
+    package = NULL,
+    properties = list(
+      x = new_property(
+        class_double,
+        validator = function(value) if (value < 0) "must be positive"
+      )
+    )
+  )
+  expect_snapshot(error = TRUE, Positive(x = -1))
+})
+
+test_that("validate runs class validators for non-base type properties", {
+  Wrapper := new_class(package = NULL, properties = list(x = class_factor))
+  obj <- Wrapper(x = factor("a"))
+  attr(obj, "x") <- structure(1L, class = "factor")
+
+  expect_snapshot(error = TRUE, validate(obj))
+})
+
 test_that("validate checks the type of setters", {
   foo := new_class(
     package = NULL,
