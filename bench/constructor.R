@@ -12,7 +12,7 @@
 #     git stash pop && Rscript bench/constructor.R --save=/tmp/after.rds
 #     Rscript bench/constructor.R --compare=/tmp/before.rds,/tmp/after.rds
 #
-# Run a subset with --only=calls,classes,memory (default: all).
+# Run a subset with --only=calls,classes,memory,serialization (default: all).
 #
 pkgload::load_all(quiet = TRUE)
 
@@ -177,9 +177,25 @@ bench_memory <- function() {
   data.frame(depth = depths, bytes_per_object = round(bytes))
 }
 
+bench_serialization <- function() {
+  Deep1 <- deep_class(1)
+  Deep10 <- deep_class(10)
+
+  objects <- list(
+    depth1 = Deep1(),
+    depth10 = Deep10(),
+    depth10_100 = replicate(100, Deep10(), simplify = FALSE)
+  )
+  data.frame(
+    case = names(objects),
+    bytes = vapply(objects, \(x) length(serialize(x, NULL)), integer(1)),
+    row.names = NULL
+  )
+}
+
 # reporting -------------------------------------------------------------------
 
-all_benchmarks <- c("calls", "classes", "memory")
+all_benchmarks <- c("calls", "classes", "memory", "serialization")
 
 run_all <- function(only = all_benchmarks) {
   out <- list()
@@ -191,6 +207,9 @@ run_all <- function(only = all_benchmarks) {
   }
   if ("memory" %in% only) {
     out$memory <- bench_memory()
+  }
+  if ("serialization" %in% only) {
+    out$serialization <- bench_serialization()
   }
   out
 }
