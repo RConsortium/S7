@@ -214,3 +214,15 @@ test_that("overridden property validators run during construction", {
   expect_equal(parent_calls, 1L)
   expect_equal(child_calls, 1L)
 })
+
+
+test_that("factors with missing values do not cause an error inside validate_factor", {
+  expect_null(validate_factor(factor(NA)))
+  expect_null(validate_factor(factor("something", NA)))
+
+  TestObj := new_class(
+    properties = list(val = class_factor)
+  )
+  expect_no_error(TestObj(val = factor(NA)))
+  expect_no_error(TestObj(val = factor("something", NA)))
+})

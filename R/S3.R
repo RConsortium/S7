@@ -160,7 +160,7 @@ validate_factor <- function(self) {
       "attr(, 'levels') must be a <character>"
     },
     {
-      rng <- range(0L, unclass(self))
+      rng <- range(0L, unclass(self), na.rm = TRUE)
       NULL
     },
     if (rng[1] < 0L) {
