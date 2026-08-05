@@ -217,12 +217,13 @@ test_that("overridden property validators run during construction", {
 
 
 test_that("factors with missing values do not cause an error inside validate_factor", {
-  expect_null(validate_factor(factor(NA)))
-  expect_null(validate_factor(factor("something", NA)))
+  factor_completely_empty <- factor(NA)
+  factor_mixed <- factor(c("something", NA))
 
-  TestObj := new_class(
-    properties = list(val = class_factor)
-  )
-  expect_no_error(TestObj(val = factor(NA)))
-  expect_no_error(TestObj(val = factor("something", NA)))
+  expect_null(validate_factor(factor_completely_empty))
+  expect_null(validate_factor(factor_mixed))
+
+  TestObj := new_class(properties = list(val = class_factor))
+  expect_no_error(TestObj(val = factor_completely_empty))
+  expect_no_error(TestObj(val = factor_mixed))
 })
