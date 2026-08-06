@@ -12,17 +12,11 @@
 #     git stash pop && Rscript bench/constructor.R --save=/tmp/after.rds
 #     Rscript bench/constructor.R --compare=/tmp/before.rds,/tmp/after.rds
 #
-# Run a subset with --only=calls,memory (default: both).
+# Run a subset with --only=calls,classes,memory (default: all).
 #
 pkgload::load_all(quiet = TRUE)
 
 # helpers ---------------------------------------------------------------------
-
-# Marginal bytes retained per object. The first value includes the shared class
-# graph; the second includes only the new object's contribution.
-bytes_per_object <- function(f) {
-  as.numeric(lobstr::obj_sizes(f(), f())[[2]])
-}
 
 # A chain of `depth` classes. By default each level adds nothing, so cost scales
 # with the number of `new_object()` calls rather than the number of properties.
@@ -139,22 +133,61 @@ bench_calls <- function() {
   )
 }
 
+bench_classes <- function() {
+  Class <- deep_class(5)
+  x <- Class()
+  y <- Class()
+  x_class <- S7_class(x)
+  y_class <- S7_class(y)
+
+  exprs <- list(
+    get = quote(S7_class(x)),
+    identical = quote(identical(x_class, y_class)),
+    extends = quote(class_extends(x_class, y_class))
+  )
+
+  res <- bench::mark(
+    exprs = exprs,
+    env = environment(),
+    check = FALSE,
+    filter_gc = FALSE,
+    min_iterations = 200
+  )
+  data.frame(
+    case = names(exprs),
+    us = round(as.numeric(res$median) * 1e6, 1),
+    row.names = NULL
+  )
+}
+
 # Per-instance memory, by hierarchy depth. Flat is correct: every instance
 # should reference one shared class object.
 bench_memory <- function() {
   depths <- c(1, 5, 10, 20)
-  bytes <- vapply(depths, \(d) bytes_per_object(\() deep_class(d)), numeric(1))
+  bytes <- vapply(
+    depths,
+    function(d) {
+      Class <- deep_class(d)
+      # The first value includes the shared class graph; the second includes
+      # only the new object's contribution.
+      as.numeric(lobstr::obj_sizes(Class(), Class())[[2]])
+    },
+    numeric(1)
+  )
   data.frame(depth = depths, bytes_per_object = round(bytes))
 }
 
 # reporting -------------------------------------------------------------------
 
-all_benchmarks <- c("calls", "memory")
+all_benchmarks <- c("calls", "classes", "memory")
 
 run_all <- function(only = all_benchmarks) {
   out <- list()
   if ("calls" %in% only) {
     out$calls <- bench_calls()
+  }
+  if ("classes" %in% only) {
+    out$classes <- bench_classes()
   }
   if ("memory" %in% only) {
     out$memory <- bench_memory()
