@@ -171,19 +171,18 @@ resolve_external_class_req <- function(x, package = NULL) {
     obj <- NULL
   }
 
-  is_match <- is_class(obj) &&
-    identical(obj@name, x$name) &&
-    identical(obj@package, x$package)
+  if (is_deprecated_class(obj)) {
+    obj <- deprecated_target(obj)
+  }
 
-  if (!is_match) {
+  if (!is_class(obj)) {
     verb <- if (same_package) "bind" else "export"
     stop2(
       sprintf(
-        "Package '%s' must %s `%s` as the S7 class <%s>.",
+        "Package '%s' must %s `%s` as an S7 class.",
         x$package,
         verb,
-        x$name,
-        x$class_name
+        x$name
       ),
       call = NULL,
       class = error_class

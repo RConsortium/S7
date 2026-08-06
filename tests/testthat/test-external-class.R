@@ -42,6 +42,26 @@ test_that("resolve_external_class_req() errors per failure mode", {
   })
 })
 
+test_that("resolve_external_class_req() resolves an alias to a renamed class (#727)", {
+  pkg <- local_package("renamepkg", {
+    Bar := new_class()
+    Foo <- Bar
+  })
+
+  Foo := new_external_class("renamepkg")
+  expect_identical(resolve_external_class_req(Foo), pkg$Bar)
+})
+
+test_that("resolve_external_class_req() resolves a deprecated_class() alias", {
+  pkg <- local_package("deprpkg", {
+    Bar := new_class()
+    Foo := deprecated_class(new = Bar, when = "2.0.0")
+  })
+
+  Foo := new_external_class("deprpkg")
+  expect_identical(resolve_external_class_req(Foo), pkg$Bar)
+})
+
 test_that("external class can be used as a union arm", {
   ec := new_external_class("foo")
   u <- NULL | ec
