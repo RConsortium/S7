@@ -210,8 +210,11 @@ validate_data.frame <- function(self) {
   }
 
   if (length(self) >= 1) {
+    # `lengths()` gives the wrong answer for data frame and matrix columns
+    col_lengths <- vapply(self, NROW, integer(1L), USE.NAMES = FALSE)
+
     # Avoid materialising compact row names
-    ns <- unique(c(lengths(self), .row_names_info(self, 2L)))
+    ns <- unique(c(col_lengths, .row_names_info(self, 2L)))
     if (length(ns) > 1) {
       return("All columns and row names must have the same length")
     }
