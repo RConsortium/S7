@@ -13,6 +13,7 @@ extern SEXP prop_set_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP prop_storage_rename_(SEXP);
 extern SEXP S7_eval_bare_(SEXP, SEXP);
 extern SEXP class_type_(SEXP);
+extern SEXP obj_addr_(SEXP);
 extern void prop_init(void);
 extern void class_type_init(void);
 
@@ -27,6 +28,7 @@ static const R_CallMethodDef CallEntries[] = {
     CALLDEF(prop_storage_rename_, 1),
     CALLDEF(S7_eval_bare_, 2),
     CALLDEF(class_type_, 1),
+    CALLDEF(obj_addr_, 1),
     {NULL, NULL, 0}
 };
 
@@ -38,6 +40,7 @@ static const R_ExternalMethodDef ExternalEntries[] = {
 SEXP sym_ANY;
 SEXP sym_S7_class;
 SEXP sym_S7_class_legacy;
+SEXP sym_class;
 
 SEXP sym_name;
 SEXP sym_parent;
@@ -102,6 +105,7 @@ void R_init_S7(DllInfo *dll)
     sym_S7_class = Rf_install("_S7_class");
     // Legacy name used by objects created with an older version of S7.
     sym_S7_class_legacy = Rf_install("S7_class");
+    sym_class = Rf_install("class");
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
     sym_package = Rf_install("package");
