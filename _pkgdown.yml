@@ -48,6 +48,15 @@ reference:
   - new_external_class
   - new_external_generic
 
+- title: Deprecation
+  desc: >
+    Helpers for gracefully retiring generics, classes, and properties:
+    old code keeps working, but warns users to update.
+  contents:
+  - deprecated_generic
+  - deprecated_class
+  - deprecated_property
+
 - title: Compatibility
   desc: >
     These tools provide a layer of compatibility between S7 and S3 classes, S4

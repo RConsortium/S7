@@ -23,6 +23,10 @@
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class.", arg)
 
+  if (is_deprecated_class(x)) {
+    x <- deprecated_target(x)
+  }
+
   if (is_foundation_class(x)) {
     x
   } else if (is.null(x)) {

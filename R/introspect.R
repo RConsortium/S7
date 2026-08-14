@@ -52,6 +52,9 @@ S7_generics <- function(env = parent.frame()) {
 #' S7_methods(class = Foo)
 S7_methods <- function(generic = NULL, class = NULL) {
   if (!is.null(generic)) {
+    if (is_deprecated_generic(generic)) {
+      generic <- deprecated_target(generic)
+    }
     if (!is_S7_generic(generic)) {
       stop("`generic` must be an S7 generic.")
     }
