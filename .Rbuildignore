@@ -24,4 +24,5 @@
 ^\.git-blame-ignore-revs$
 ^AGENTS\.md$
 ^\.lintr\.R$
+^tools$
 ^bench$
