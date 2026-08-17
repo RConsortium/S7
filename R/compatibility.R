@@ -108,6 +108,18 @@ activate_bind_compatibility <- function() {
     )
   }
 
+  # Declare S7's expected masks so that a strict conflicts.policy (which
+  # errors on undeclared conflicts and ignores `.conflicts.OK`) still lets
+  # S7 attach. library() reads conflictRules() before loading the namespace,
+  # so this only takes effect once S7's namespace is already loaded (e.g.
+  # imported by another package); attaching S7 cold under a strict policy
+  # requires the user to declare the rules, as that policy intends. Don't
+  # override rules the user has already declared.
+  rule <- conflictRules("S7")
+  if (is.null(rule$mask.ok)) {
+    conflictRules("S7", mask.ok = s7_expected_masks, exclude = rule$exclude)
+  }
+
   invisible()
 }
 

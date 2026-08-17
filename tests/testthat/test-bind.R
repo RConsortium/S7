@@ -147,3 +147,34 @@ test_that("unexpected conflicts are still reported when := masking is silenced",
     expect_identical(s7_attach_messages(bind_package = package), base_messages)
   }
 })
+
+test_that("S7 attaches over a := conflict under a strict conflicts.policy", {
+  skip_if(quick_test())
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  local_dev_S7_lib()
+
+  for (package in packages) {
+    expect_no_error(callr::r(
+      function(package) {
+        library(package, character.only = TRUE)
+        # library() reads conflictRules() before loading the namespace, so
+        # S7's rules only help once its namespace is already loaded, e.g.
+        # via another package that imports S7.
+        loadNamespace("S7")
+        options(conflicts.policy = "strict")
+        library(S7)
+        stopifnot(identical(get(":=", mode = "function"), S7::`:=`))
+      },
+      args = list(package = package)
+    ))
+  }
+})
