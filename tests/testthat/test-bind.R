@@ -99,7 +99,7 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
   }
 })
 
-test_that("unexpected conflicts are still reported when := masking is silenced", {
+test_that("other conflicts are still reported when := masking is silenced", {
   skip_if(quick_test())
 
   packages <- c("data.table", "rlang")
