@@ -42,3 +42,133 @@ test_that(":= validates its inputs", {
     foo := no_name()
   })
 })
+
+test_that("S7 := wins search-path conflicts without attach warnings", {
+  skip_if(quick_test())
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  local_dev_S7_lib()
+
+  check_order <- function(package, order) {
+    expect_no_error(callr::r(
+      function(package, order) {
+        messages <- character()
+        warnings <- character()
+
+        withCallingHandlers(
+          {
+            if (identical(order, "S7-first")) {
+              library(S7)
+              library(package, character.only = TRUE)
+            } else {
+              library(package, character.only = TRUE)
+              library(S7)
+            }
+          },
+          packageStartupMessage = function(cnd) {
+            messages <<- c(messages, conditionMessage(cnd))
+            invokeRestart("muffleMessage")
+          },
+          warning = function(cnd) {
+            warnings <<- c(warnings, conditionMessage(cnd))
+            invokeRestart("muffleWarning")
+          }
+        )
+
+        stopifnot(exprs = {
+          identical(get(":=", mode = "function"), S7::`:=`)
+          !any(grepl(":=", messages, fixed = TRUE))
+          !any(grepl(":=", warnings, fixed = TRUE))
+        })
+      },
+      args = list(package = package, order = order)
+    ))
+  }
+
+  for (package in packages) {
+    check_order(package, "S7-first")
+    check_order(package, "alias-first")
+  }
+})
+
+test_that("other conflicts are still reported when := masking is silenced", {
+  skip_if(quick_test())
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  local_dev_S7_lib()
+
+  s7_attach_messages <- function(bind_package = NULL) {
+    callr::r(
+      function(bind_package) {
+        if (!is.null(bind_package)) {
+          library(bind_package, character.only = TRUE)
+        }
+        attach(list(props = function(...) NULL), name = "shadow")
+
+        messages <- character()
+        withCallingHandlers(
+          library(S7),
+          packageStartupMessage = function(cnd) {
+            messages <<- c(messages, conditionMessage(cnd))
+            invokeRestart("muffleMessage")
+          }
+        )
+        messages
+      },
+      args = list(bind_package = bind_package)
+    )
+  }
+
+  base_messages <- s7_attach_messages()
+  expect_match(base_messages, "masked from .shadow.", all = FALSE)
+  expect_match(base_messages, "props", all = FALSE)
+
+  for (package in packages) {
+    expect_identical(s7_attach_messages(bind_package = package), base_messages)
+  }
+})
+
+test_that("S7 attaches over a := conflict under a strict conflicts.policy", {
+  skip_if(quick_test())
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  local_dev_S7_lib()
+
+  for (package in packages) {
+    expect_no_error(callr::r(
+      function(package) {
+        library(package, character.only = TRUE)
+        # S7's conflictRules() only take effect once its namespace is loaded.
+        loadNamespace("S7")
+        options(conflicts.policy = "strict")
+        library(S7)
+        stopifnot(identical(get(":=", mode = "function"), S7::`:=`))
+      },
+      args = list(package = package)
+    ))
+  }
+})

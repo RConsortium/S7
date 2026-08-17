@@ -132,14 +132,21 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 # hooks -------------------------------------------------------------------
 
 .onAttach <- function(libname, pkgname) {
-  env <- as.environment(paste0("package:", pkgname))
-  if (getRversion() < "4.3.0") {
+  activate_bind_compatibility()
+
+  # `.conflicts.OK` silences library()'s masking messages for `@` (base,
+  # R < 4.3.0) and `:=` (rlang/data.table attached before S7), but it is
+  # all-or-nothing, so re-emit the report minus S7's expected masks.
+  if (getRversion() < "4.3.0" || search_has_bind_conflict(pkgname)) {
+    env <- as.environment(paste0("package:", pkgname))
     env[[".conflicts.OK"]] <- TRUE
+    report_conflicts(pkgname)
   }
 }
 
 .onLoad <- function(...) {
   activate_backward_compatiblility()
+  activate_bind_compatibility()
 
   on_load_define_environment()
   on_load_define_S7_generic()
