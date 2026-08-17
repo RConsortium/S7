@@ -7,16 +7,6 @@ activate_backward_compatiblility <- function() {
   invisible()
 }
 
-activate_attach_compatibility <- function(pkgname) {
-  if (getRversion() >= "4.3.0" && !search_has_bind_conflict(pkgname)) {
-    return(invisible())
-  }
-
-  env <- as.environment(paste0("package:", pkgname))
-  env[[".conflicts.OK"]] <- TRUE
-  invisible()
-}
-
 search_has_bind_conflict <- function(pkgname) {
   pkg <- paste0("package:", pkgname)
   env <- as.environment(pkg)
