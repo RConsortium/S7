@@ -28,12 +28,9 @@ search_has_bind_conflict <- function(pkgname) {
   FALSE
 }
 
+# conflictRules() has been in base since R 3.6.0, so it is always available
+# given our R >= 4.2.0 requirement.
 activate_bind_compatibility <- function() {
-  conflictRules <- get0("conflictRules", envir = baseenv(), inherits = FALSE)
-  if (is.null(conflictRules)) {
-    return(invisible())
-  }
-
   for (package in c("data.table", "rlang")) {
     rule <- conflictRules(package)
     conflictRules(
