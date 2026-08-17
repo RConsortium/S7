@@ -7,6 +7,74 @@ activate_backward_compatiblility <- function() {
   invisible()
 }
 
+# The masking S7 performs deliberately: `@` over base (on R < 4.3.0, where
+# S7 exports its own `@`), and `:=` over rlang and data.table.
+s7_expected_masks <- list(
+  base = "@",
+  rlang = ":=",
+  data.table = ":="
+)
+
+# Re-emit the conflict report that library() would have produced (see
+# checkConflicts() in base's library()), minus S7's expected masks. Used when
+# `.conflicts.OK` makes library() skip its report, which is all-or-nothing.
+report_unexpected_conflicts <- function(pkgname) {
+  # A user-configured conflicts.policy takes over conflict handling in
+  # library(); don't second-guess it.
+  if (!is.null(getOption("conflicts.policy"))) {
+    return(invisible())
+  }
+
+  sp <- search()
+  lib.pos <- match(paste0("package:", pkgname), sp)
+  ob <- names(as.environment(lib.pos))
+  is_fun <- function(names, pos) {
+    vapply(names, exists, NA, where = pos, mode = "function", inherits = FALSE)
+  }
+  masked_msg <- get(".maskedMsg", envir = baseenv())
+
+  first <- TRUE
+  for (i in setdiff(
+    seq_along(sp),
+    c(lib.pos, match(c("Autoloads", "CheckExEnv"), sp, 0L))
+  )) {
+    same <- intersect(names(as.environment(i)), ob)
+    same <- setdiff(same, s7_expected_masks[[sub("^package:", "", sp[i])]])
+    same <- same[!startsWith(same, ".__")]
+    # Like library(), only report bindings of the same kind whose values
+    # actually differ.
+    same <- same[is_fun(same, i) == is_fun(same, lib.pos)]
+    same <- same[
+      vapply(
+        same,
+        \(nm) !identical(get(nm, pos = i), get(nm, pos = lib.pos)),
+        NA
+      )
+    ]
+    if (length(same) == 0L) {
+      next
+    }
+
+    if (first) {
+      first <- FALSE
+      packageStartupMessage(
+        gettextf(
+          "\nAttaching package: %s\n",
+          sQuote(pkgname),
+          domain = "R-base"
+        ),
+        domain = NA
+      )
+    }
+    packageStartupMessage(
+      masked_msg(sort(same), pkg = sQuote(sp[i]), by = i < lib.pos),
+      domain = NA
+    )
+  }
+
+  invisible()
+}
+
 search_has_bind_conflict <- function(pkgname) {
   pkg <- paste0("package:", pkgname)
   env <- as.environment(pkg)
