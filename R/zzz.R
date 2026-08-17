@@ -134,11 +134,9 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 .onAttach <- function(libname, pkgname) {
   activate_bind_compatibility()
 
-  # Setting `.conflicts.OK` makes library() skip masking messages for S7's
-  # exports: `@` masks base on R < 4.3.0, and `:=` masks rlang or data.table
-  # if they were attached first (conflictRules() only affects packages
-  # attached after S7). That suppression is all-or-nothing, so re-emit the
-  # report library() would have produced, minus S7's expected masks.
+  # `.conflicts.OK` silences library()'s masking messages for `@` (base,
+  # R < 4.3.0) and `:=` (rlang/data.table attached before S7), but it is
+  # all-or-nothing, so re-emit the report minus S7's expected masks.
   if (getRversion() < "4.3.0" || search_has_bind_conflict(pkgname)) {
     env <- as.environment(paste0("package:", pkgname))
     env[[".conflicts.OK"]] <- TRUE

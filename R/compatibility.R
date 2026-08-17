@@ -7,8 +7,6 @@ activate_backward_compatiblility <- function() {
   invisible()
 }
 
-# The masking S7 performs deliberately: `@` over base (on R < 4.3.0, where
-# S7 exports its own `@`), and `:=` over rlang and data.table.
 s7_expected_masks <- list(
   base = "@",
   rlang = ":=",
@@ -19,8 +17,7 @@ s7_expected_masks <- list(
 # checkConflicts() in base's library()), minus S7's expected masks. Used when
 # `.conflicts.OK` makes library() skip its report, which is all-or-nothing.
 report_conflicts <- function(pkgname) {
-  # A user-configured conflicts.policy takes over conflict handling in
-  # library(); don't second-guess it.
+  # A user-configured conflicts.policy takes over conflict handling.
   if (!is.null(getOption("conflicts.policy"))) {
     return(invisible())
   }
@@ -41,8 +38,6 @@ report_conflicts <- function(pkgname) {
     same <- intersect(names(as.environment(i)), ob)
     same <- setdiff(same, s7_expected_masks[[sub("^package:", "", sp[i])]])
     same <- same[!startsWith(same, ".__")]
-    # Like library(), only report bindings of the same kind whose values
-    # actually differ.
     same <- same[is_fun(same, i) == is_fun(same, lib.pos)]
     same <- same[
       vapply(
@@ -96,8 +91,7 @@ search_has_bind_conflict <- function(pkgname) {
   FALSE
 }
 
-# conflictRules() has been in base since R 3.6.0, so it is always available
-# given our R >= 4.2.0 requirement.
+# conflictRules() has been in base since R 3.6.0.
 activate_bind_compatibility <- function() {
   for (package in c("data.table", "rlang")) {
     rule <- conflictRules(package)
@@ -108,13 +102,9 @@ activate_bind_compatibility <- function() {
     )
   }
 
-  # Declare S7's expected masks so that a strict conflicts.policy (which
-  # errors on undeclared conflicts and ignores `.conflicts.OK`) still lets
-  # S7 attach. library() reads conflictRules() before loading the namespace,
-  # so this only takes effect once S7's namespace is already loaded (e.g.
-  # imported by another package); attaching S7 cold under a strict policy
-  # requires the user to declare the rules, as that policy intends. Don't
-  # override rules the user has already declared.
+  # Declare S7's masks for a strict conflicts.policy, which ignores
+  # `.conflicts.OK`. library() reads conflictRules() before loading the
+  # namespace, so this only helps once S7's namespace is already loaded.
   rule <- conflictRules("S7")
   if (is.null(rule$mask.ok)) {
     conflictRules("S7", mask.ok = s7_expected_masks, exclude = rule$exclude)

@@ -127,8 +127,7 @@ local_libpath <- function(frame = parent.frame()) {
 }
 
 # Install the development S7 into a session-scoped library (built once per
-# test process) and prepend that library to .libPaths() until `frame` exits,
-# so that callr subprocesses can `library(S7)`.
+# test process) and prepend that library to .libPaths() until `frame` exits.
 local_dev_S7_lib <- local({
   lib <- NULL
   function(frame = parent.frame()) {

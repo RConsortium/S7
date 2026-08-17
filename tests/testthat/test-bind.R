@@ -113,8 +113,6 @@ test_that("other conflicts are still reported when := masking is silenced", {
 
   local_dev_S7_lib()
 
-  # Attach an environment that shadows an unrelated S7 export, then attach S7
-  # and collect the startup messages library() emits.
   s7_attach_messages <- function(bind_package = NULL) {
     callr::r(
       function(bind_package) {
@@ -141,8 +139,6 @@ test_that("other conflicts are still reported when := masking is silenced", {
   expect_match(base_messages, "masked from .shadow.", all = FALSE)
   expect_match(base_messages, "props", all = FALSE)
 
-  # With a `:=` conflict present, `.conflicts.OK` silences library()'s own
-  # report; S7 must re-emit it minus the `:=` masking, matching it exactly.
   for (package in packages) {
     expect_identical(s7_attach_messages(bind_package = package), base_messages)
   }
@@ -166,9 +162,7 @@ test_that("S7 attaches over a := conflict under a strict conflicts.policy", {
     expect_no_error(callr::r(
       function(package) {
         library(package, character.only = TRUE)
-        # library() reads conflictRules() before loading the namespace, so
-        # S7's rules only help once its namespace is already loaded, e.g.
-        # via another package that imports S7.
+        # S7's conflictRules() only take effect once its namespace is loaded.
         loadNamespace("S7")
         options(conflicts.policy = "strict")
         library(S7)
