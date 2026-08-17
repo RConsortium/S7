@@ -91,7 +91,6 @@ search_has_bind_conflict <- function(pkgname) {
   FALSE
 }
 
-# conflictRules() has been in base since R 3.6.0.
 activate_bind_compatibility <- function() {
   for (package in c("data.table", "rlang")) {
     rule <- conflictRules(package)
@@ -102,9 +101,6 @@ activate_bind_compatibility <- function() {
     )
   }
 
-  # Declare S7's masks for a strict conflicts.policy, which ignores
-  # `.conflicts.OK`. library() reads conflictRules() before loading the
-  # namespace, so this only helps once S7's namespace is already loaded.
   rule <- conflictRules("S7")
   if (is.null(rule$mask.ok)) {
     conflictRules("S7", mask.ok = s7_expected_masks, exclude = rule$exclude)
