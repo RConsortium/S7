@@ -142,7 +142,7 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
   if (getRversion() < "4.3.0" || search_has_bind_conflict(pkgname)) {
     env <- as.environment(paste0("package:", pkgname))
     env[[".conflicts.OK"]] <- TRUE
-    report_other_conflicts(pkgname)
+    report_conflicts(pkgname)
   }
 }
 

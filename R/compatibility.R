@@ -18,7 +18,7 @@ s7_expected_masks <- list(
 # Re-emit the conflict report that library() would have produced (see
 # checkConflicts() in base's library()), minus S7's expected masks. Used when
 # `.conflicts.OK` makes library() skip its report, which is all-or-nothing.
-report_other_conflicts <- function(pkgname) {
+report_conflicts <- function(pkgname) {
   # A user-configured conflicts.policy takes over conflict handling in
   # library(); don't second-guess it.
   if (!is.null(getOption("conflicts.policy"))) {
