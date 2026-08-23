@@ -26,6 +26,16 @@ library(S7)
 
 First, add `S7` to the `Imports` field of your `DESCRIPTION`. We then recommend importing all S7 functions into your package `NAMESPACE` with `import(S7)`, or, if you're using roxygen2, `@import S7`.
 
+If your package also imports rlang or data.table, import `:=` from only S7. Otherwise, R warns that one import replaces the other when it loads your package. For example, to import all of rlang except `:=` with roxygen2:
+
+``` r
+#' @import S7
+#' @rawNamespace import(rlang, except = ":=")
+NULL
+```
+
+Use the same `except` argument when importing data.table.
+
 Next, create a `zzz.R` with a `.onLoad()` that calls `S7_on_load()`, an `.onUnload()` that calls `S7_on_unload()`, and a top-level call to `S7_on_build()`:
 
 ```{r}
