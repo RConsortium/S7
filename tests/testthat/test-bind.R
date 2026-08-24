@@ -67,9 +67,7 @@ test_that("S7 := wins without hiding unrelated attach conflicts", {
             name = "shadow",
             warn.conflicts = FALSE
           )
-          suppressPackageStartupMessages(
-            library(package, character.only = TRUE)
-          )
+          library(package, character.only = TRUE)
         }
 
         messages <- character()
