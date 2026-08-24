@@ -134,16 +134,15 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 .onAttach <- function(libname, pkgname) {
   activate_bind_compatibility()
 
-  bind_conflict <- any(
-    paste0("package:", bind_conflict_packages) %in% search()
-  )
-
-  # `.conflicts.OK` is all-or-nothing, so this also silences other conflicts
-  # reported while S7 attaches. There is no selective equivalent.
-  if (getRversion() < "4.3.0" || bind_conflict) {
+  if (getRversion() < "4.3.0") {
+    # S7_at already supplies @ without conflicting with base::@.
     env <- as.environment(paste0("package:", pkgname))
-    env[[".conflicts.OK"]] <- TRUE
+    rm(list = "@", envir = env)
   }
+}
+
+.onDetach <- function(...) {
+  restore_attached_bindings()
 }
 
 .onLoad <- function(...) {

@@ -9,14 +9,53 @@ activate_backward_compatiblility <- function() {
 
 bind_conflict_packages <- c("data.table", "rlang")
 
+set_attached_bind <- function(env, value) {
+  get("unlockBinding", baseenv())(":=", env)
+  defer(lockBinding(":=", env))
+  env[[":="]] <- value
+}
+
 activate_bind_compatibility <- function() {
   for (package in bind_conflict_packages) {
+    # These rules are session-wide. If S7 is detached, a package attached
+    # later may remain without its error-only := export on the search path.
     rule <- conflictRules(package)
     conflictRules(
       package,
       mask.ok = rule$mask.ok,
       exclude = union(rule$exclude, ":=")
     )
+
+    attached <- paste0("package:", package)
+    if (!attached %in% search()) {
+      next
+    }
+
+    env <- as.environment(attached)
+    if (
+      exists(":=", envir = env, inherits = FALSE) &&
+        identical(env[[":="]], getExportedValue(package, ":="))
+    ) {
+      # These exports are erroring sentinels for package-specific NSE syntax.
+      # An identical binding is not reported as a conflict by library().
+      set_attached_bind(env, `:=`)
+    }
+  }
+
+  invisible()
+}
+
+restore_attached_bindings <- function() {
+  for (package in bind_conflict_packages) {
+    attached <- paste0("package:", package)
+    if (!attached %in% search()) {
+      next
+    }
+
+    env <- as.environment(attached)
+    if (identical(env[[":="]], `:=`)) {
+      set_attached_bind(env, getExportedValue(package, ":="))
+    }
   }
 
   invisible()

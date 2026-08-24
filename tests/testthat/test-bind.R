@@ -43,7 +43,7 @@ test_that(":= validates its inputs", {
   })
 })
 
-test_that("S7 := wins search-path conflicts without attach warnings", {
+test_that("S7 := wins without hiding unrelated attach conflicts", {
   skip_if(quick_test())
 
   packages <- c("data.table", "rlang")
@@ -58,8 +58,20 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
   local_dev_S7_lib()
 
   check_order <- function(package, order) {
-    expect_no_error(callr::r(
+    output <- callr::r(
       function(package, order) {
+        if (identical(order, "package-first")) {
+          package_bind <- getExportedValue(package, ":=")
+          attach(
+            list(as_class = function(...) NULL),
+            name = "shadow",
+            warn.conflicts = FALSE
+          )
+          suppressPackageStartupMessages(
+            library(package, character.only = TRUE)
+          )
+        }
+
         messages <- character()
         warnings <- character()
 
@@ -69,7 +81,6 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
               library(S7)
               library(package, character.only = TRUE)
             } else {
-              library(package, character.only = TRUE)
               library(S7)
             }
           },
@@ -83,14 +94,27 @@ test_that("S7 := wins search-path conflicts without attach warnings", {
           }
         )
 
-        stopifnot(exprs = {
-          identical(get(":=", mode = "function"), S7::`:=`)
-          !any(grepl(":=", messages, fixed = TRUE))
-          !any(grepl(":=", warnings, fixed = TRUE))
-        })
+        stopifnot(identical(get(":=", mode = "function"), S7::`:=`))
+
+        if (identical(order, "package-first")) {
+          stopifnot(identical(getExportedValue(package, ":="), package_bind))
+          detach("package:S7")
+          stopifnot(identical(
+            get(":=", mode = "function"),
+            package_bind
+          ))
+        }
+
+        list(messages = messages, warnings = warnings)
       },
       args = list(package = package, order = order)
-    ))
+    )
+
+    expect_no_match(output$messages, ":=", fixed = TRUE)
+    expect_no_match(output$warnings, ":=", fixed = TRUE)
+    if (identical(order, "package-first")) {
+      expect_match(output$messages, "as_class", all = FALSE)
+    }
   }
 
   for (package in packages) {
