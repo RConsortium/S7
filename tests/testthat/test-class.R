@@ -422,9 +422,18 @@ test_that("new_object() allows arbitrary placeholder for abstract S3 parents (#6
   expect_no_error(Concrete(list(1, "A")))
 })
 
-test_that("new_object() has fallback for S3 classes created by older S7 (#686)", {
+test_that("new_object() supports legacy abstract S3 classes (#686, #747)", {
   old_s3 <- class_POSIXt
   old_s3$abstract <- NULL
+  old_s3$constructor <- local({
+    class <- old_s3$class
+    function(.data) {
+      stop(
+        sprintf("S3 class <%s> doesn't have a constructor", class[[1]]),
+        call. = FALSE
+      )
+    }
+  })
   Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
   expect_no_error(Foo(list(1, "A")))
 })
