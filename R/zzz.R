@@ -132,10 +132,17 @@ methods::setOldClass(c("S7_method", "function", "S7_object"))
 # hooks -------------------------------------------------------------------
 
 .onAttach <- function(libname, pkgname) {
-  env <- as.environment(paste0("package:", pkgname))
+  activate_bind_compatibility()
+
   if (getRversion() < "4.3.0") {
-    env[[".conflicts.OK"]] <- TRUE
+    # S7_at already supplies @ without conflicting with base::@.
+    env <- as.environment(paste0("package:", pkgname))
+    rm(list = "@", envir = env)
   }
+}
+
+.onDetach <- function(...) {
+  restore_attached_bindings()
 }
 
 .onLoad <- function(...) {
