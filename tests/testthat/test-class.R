@@ -105,6 +105,25 @@ test_that("inheritance lets child properties narrow the parent's type", {
   ))
 })
 
+test_that("inheritance lets S3 child properties retain shared base classes", {
+  Parent := new_class(
+    package = NULL,
+    properties = list(coordinates = new_S3_class("Coord"))
+  )
+
+  expect_no_error({
+    Child := new_class(
+      parent = Parent,
+      package = NULL,
+      properties = list(
+        coordinates = new_S3_class(
+          c("CoordCartesian", "Coord", "ggproto", "gg")
+        )
+      )
+    )
+  })
+})
+
 test_that("inheritance lets child properties narrow with S4 inheritance", {
   local_S4_classes()
   S4PropertyParent <- setClass("S4PropertyParent", slots = c(x = "numeric"))

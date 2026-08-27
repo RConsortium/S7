@@ -329,7 +329,7 @@ class_inherits <- function(x, what) {
     S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = some(what$classes, class_inherits, x = x),
-    S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
+    S7_S3 = !isS4(x) && class_dispatch_inherits(what$class, class(x)),
     S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
@@ -373,6 +373,8 @@ class_extends <- function(child, parent) {
   } else if (is_external_class(parent)) {
     parent <- resolve_external_class_req(parent)
     class_extends(child, parent)
+  } else if (is_S3_class(child) && is_S3_class(parent)) {
+    class_dispatch_inherits(parent$class, child$class)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     child <- class_extends_S4_name(child)
     parent <- class_extends_S4_name(parent)
@@ -430,6 +432,29 @@ obj_dispatch <- function(x) {
 }
 
 # helpers -----------------------------------------------------------------
+
+# Does `child`'s S3 dispatch inherit from `parent`'s? S3 systems may prepend
+# more specific classes and append shared base classes, so `parent` must appear
+# as a contiguous, ordered run in `child`.
+# S7 wrappers of base/S3 types append "S7_object", which we ignore.
+class_dispatch_inherits <- function(parent, child) {
+  parent <- drop_S7_object(parent)
+  child <- drop_S7_object(child)
+  n <- length(parent)
+  if (length(child) < n) {
+    return(FALSE)
+  }
+  if (n == 1L) {
+    return(parent[[1L]] %in% child)
+  }
+
+  for (start in seq_len(length(child) - n + 1L)) {
+    if (identical(child[seq.int(start, length.out = n)], parent)) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
 
 # Does `child`'s dispatch extend `parent`'s? Subclassing only ever prepends
 # more specific classes, so `parent`'s classes must form the tail of `child`'s.

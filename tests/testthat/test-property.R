@@ -497,6 +497,19 @@ test_that("properties can be base, S3, S4, S7, or S7 union", {
   })
 })
 
+test_that("S3 properties accept subclasses with shared base classes (#747)", {
+  Plot := new_class(
+    package = NULL,
+    properties = list(coordinates = new_S3_class("Coord"))
+  )
+  coord <- structure(
+    list(),
+    class = c("CoordCartesian", "Coord", "ggproto", "gg")
+  )
+
+  expect_no_error(Plot(coordinates = coord))
+})
+
 test_that("as_properties normalises properties", {
   expect_equal(as_properties(NULL), list())
   expect_equal(
