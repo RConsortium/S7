@@ -51,6 +51,20 @@ test_that("S7_data preserves S7 properties when setting data", {
   expect_equal(names(x), "z")
 })
 
+test_that("S7_data strips abstract S3 parents", {
+  marker <- new_S3_class("marker")
+  Wrapper := new_class(
+    parent = marker,
+    package = NULL,
+    constructor = \(x = list()) new_object(x)
+  )
+
+  expect_identical(
+    S7_data(Wrapper(x = list(a = 1))),
+    list(a = 1)
+  )
+})
+
 test_that("S7_data preserves S3 class from parent (#380)", {
   text := new_class(class_character)
   mydf := new_class(class_data.frame)
