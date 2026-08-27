@@ -22,6 +22,13 @@ test_that("has_S7_class() recognises objects that don't store a class", {
   expect_false(has_S7_class(NULL))
 })
 
+test_that("S7_inherits() recognises class-vector-only S7 objects", {
+  foo := new_class(parent = class_list, package = NULL)
+  x <- structure(list(), class = class(foo()))
+
+  expect_identical(S7_inherits(x, foo), TRUE)
+})
+
 test_that("accepts any class specification (#556)", {
   # base
   expect_true(S7_inherits(1L, class_integer))
