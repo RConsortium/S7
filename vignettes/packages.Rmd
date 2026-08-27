@@ -30,7 +30,7 @@ If your package also imports rlang or data.table, import `:=` from only S7. Othe
 
 ``` r
 #' @import S7
-#' @rawNamespace import(rlang, except = ":=")
+#' @import rlang, except = ":="
 NULL
 ```
 
