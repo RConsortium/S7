@@ -433,9 +433,14 @@ obj_dispatch <- function(x) {
 
 # helpers -----------------------------------------------------------------
 
-# Does `child`'s S3 dispatch inherit from `parent`'s? S3 systems may prepend
-# more specific classes and append shared base classes, so `parent` must appear
-# as a contiguous, ordered run in `child`.
+# Does `child`'s S3 dispatch inherit from `parent`'s?
+#
+# ggplot2 4.0.x relies on the S7 0.2.2 behavior where an S3 class
+# specification can match before shared trailing classes (#747), e.g. `"Coord"`
+# in c("CoordCartesian", "Coord", "ggproto", "gg"). Preserve that behavior for
+# backward compatibility, while requiring multi-class specifications to be
+# contiguous and ordered. `class_dispatch_extends()` remains tail-only for
+# downcasts.
 # S7 wrappers of base/S3 types append "S7_object", which we ignore.
 class_dispatch_inherits <- function(parent, child) {
   parent <- drop_S7_object(parent)

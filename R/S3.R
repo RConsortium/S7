@@ -112,6 +112,8 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     validator = validator,
     abstract = abstract
   )
+  # This tracks the class representation, not the S7 package version.
+  attr(out, "_version") <- 1L
   class(out) <- "S7_S3_class"
   out
 }
@@ -148,9 +150,9 @@ is_S3_class <- function(x) {
   inherits(x, "S7_S3_class")
 }
 
-# Detect the stub constructor that `new_S3_class()` inserted before abstract
-# S3 classes had explicit metadata. Needed for class definitions serialized by
-# older versions of S7.
+# Detect the stub constructor emitted before S3 class definitions recorded
+# whether they were abstract or had an explicit representation version. Used
+# only for unversioned class definitions.
 is_S3_stub_constructor <- function(constructor) {
   if (!is.function(constructor)) {
     return(FALSE)

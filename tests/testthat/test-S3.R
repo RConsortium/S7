@@ -2,6 +2,13 @@ test_that("new_S3_class has a print method", {
   expect_snapshot(new_S3_class(c("ordered", "factor")))
 })
 
+test_that("new_S3_class() records its representation version", {
+  expect_identical(
+    attr(new_S3_class("foo"), "_version", exact = TRUE),
+    1L
+  )
+})
+
 test_that("can construct objects that extend S3 classes", {
   ordered2 := new_class(parent = class_factor, package = NULL)
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
