@@ -18,6 +18,7 @@
 ^compile_commands\.json$
 ^\.cache$
 ^\.vscode$
+^\.mcp-console$
 ^revdep$
 ^[.]?air[.]toml$
 ^\.claude$
