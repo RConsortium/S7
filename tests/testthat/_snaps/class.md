@@ -107,6 +107,17 @@
       Error in `new_class()`:
       ! `validator` must be function(self), not function().
 
+# inheritance uses strict matching for current S3 classes
+
+    Code
+      Child := new_class(parent = Parent, package = NULL, properties = list(
+        coordinates = new_S3_class(c("CoordCartesian", "Coord", "ggproto", "gg"))))
+    Condition
+      Error in `new_class()`:
+      ! <Child>@coordinates must narrow <Parent>@coordinates.
+      - <Parent>@coordinates is S3<Coord>.
+      - <Child>@coordinates is S3<CoordCartesian/Coord/ggproto/gg>.
+
 # inheritance doesn't let child properties widen or change the parent's type
 
     Code

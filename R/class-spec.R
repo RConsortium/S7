@@ -326,10 +326,16 @@ class_inherits <- function(x, what) {
     missing = FALSE,
     any = TRUE,
     S4 = methods::is(x, what),
+    # Class-vector-only objects have no stored class for `has_S7_class()`.
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = some(what$classes, class_inherits, x = x),
-    S7_S3 = !isS4(x) && class_dispatch_inherits(what$class, class(x)),
+    S7_S3 = !isS4(x) &&
+      class_dispatch_inherits(
+        what$class,
+        class(x),
+        version = attr(what, "_version", exact = TRUE)
+      ),
     S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
@@ -374,7 +380,11 @@ class_extends <- function(child, parent) {
     parent <- resolve_external_class_req(parent)
     class_extends(child, parent)
   } else if (is_S3_class(child) && is_S3_class(parent)) {
-    class_dispatch_inherits(parent$class, child$class)
+    class_dispatch_inherits(
+      parent$class,
+      child$class,
+      version = attr(parent, "_version", exact = TRUE)
+    )
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     child <- class_extends_S4_name(child)
     parent <- class_extends_S4_name(parent)
@@ -437,12 +447,15 @@ obj_dispatch <- function(x) {
 #
 # ggplot2 4.0.x relies on the S7 0.2.2 behavior where an S3 class
 # specification can match before shared trailing classes (#747), e.g. `"Coord"`
-# in c("CoordCartesian", "Coord", "ggproto", "gg"). Preserve that behavior for
-# backward compatibility, while requiring multi-class specifications to be
-# contiguous and ordered. `class_dispatch_extends()` remains tail-only for
-# downcasts.
+# in c("CoordCartesian", "Coord", "ggproto", "gg"). Unversioned definitions
+# preserve that behavior for backward compatibility. Current definitions and
+# downcasts use strict tail matching.
 # S7 wrappers of base/S3 types append "S7_object", which we ignore.
-class_dispatch_inherits <- function(parent, child) {
+class_dispatch_inherits <- function(parent, child, version) {
+  if (!is.null(version)) {
+    return(class_dispatch_extends(parent, child))
+  }
+
   parent <- drop_S7_object(parent)
   child <- drop_S7_object(child)
   n <- length(parent)
