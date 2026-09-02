@@ -181,6 +181,15 @@
       Error in `<my_class>@S7_union`:
       ! <my_class>@S7_union must be <integer> or <logical>, not <character>
 
+# current S3 properties use strict class matching
+
+    Code
+      Plot(coordinates = coord)
+    Condition
+      Error in `Plot()`:
+      ! <Plot> object properties are invalid:
+      - @coordinates must be S3<Coord>, not S3<CoordCartesian/Coord/ggproto/gg>
+
 # as_properties() gives useful error messages
 
     Code

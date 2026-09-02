@@ -497,6 +497,34 @@ test_that("properties can be base, S3, S4, S7, or S7 union", {
   })
 })
 
+test_that("legacy S3 properties accept subclasses with shared base classes (#747)", {
+  coord_class <- new_S3_class("Coord")
+  attr(coord_class, "_version") <- NULL
+  Plot := new_class(
+    package = NULL,
+    properties = list(coordinates = coord_class)
+  )
+  coord <- structure(
+    list(),
+    class = c("CoordCartesian", "Coord", "ggproto", "gg")
+  )
+
+  expect_no_error(Plot(coordinates = coord))
+})
+
+test_that("current S3 properties use strict class matching", {
+  Plot := new_class(
+    package = NULL,
+    properties = list(coordinates = new_S3_class("Coord"))
+  )
+  coord <- structure(
+    list(),
+    class = c("CoordCartesian", "Coord", "ggproto", "gg")
+  )
+
+  expect_snapshot(Plot(coordinates = coord), error = TRUE)
+})
+
 test_that("as_properties normalises properties", {
   expect_equal(as_properties(NULL), list())
   expect_equal(

@@ -49,7 +49,7 @@
 * `S7_dispatch()` now gives a clear error when called from a function that is not an S7 generic, e.g. `unclass(generic)()`, instead of failing with a confusing message (#684).
 * `S7_class()` now returns a class specification for any R object, not just S7 objects. It returns the matching `class_*` for base types, a `new_S3_class()` wrapper for S3 objects, and the S4 class for S4 objects, so the result can be passed directly to `method()` or other S7 dispatch helpers (#559).
 * `S7_class_desc()` is a new exported helper that formats a class specification as a short human-readable string (#594).
-* `S7_data()` now preserves the S3 class when the S7 class inherits from an S3 class, so e.g. `S7_data()` on a data.frame subclass now returns a data.frame (#380).
+* `S7_data()` now preserves the S3 class when the S7 class inherits from a concrete S3 class, so e.g. `S7_data()` on a data.frame subclass now returns a data.frame (#380).
 * `S7_data<-()` now preserves attributes (like `names` or `dim`) from the replacement data instead of carrying over the originals, so resizing the underlying data works correctly (#478).
 * `S7_error_method_not_found` now has a correct class vector without a duplicate `"error"` entry (@jjjermiah, #604).
 * `S7_inherits()` and `check_is_S7()` now accept any class specification (S7 class, S7 union, S3 class, S4 class, or base type wrapper like `class_integer`), not just S7 classes (#556).

@@ -335,7 +335,11 @@ class_is_abstract <- function(class) {
   if (is_class(class)) {
     attr(class, "abstract", TRUE) # called on construction
   } else if (is_S3_class(class)) {
-    class$abstract %||% is_default_constructor(class$constructor)
+    class$abstract %||%
+      is_default_constructor(
+        class$constructor,
+        legacy_S3 = is.null(attr(class, "_version", exact = TRUE))
+      )
   } else {
     FALSE
   }

@@ -1,0 +1,55 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+name: test-ggplot2.yaml
+
+permissions: read-all
+
+jobs:
+  ggplot2:
+    runs-on: ubuntu-latest
+    name: ggplot2 (release)
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: any::ggplot2, local::.
+          install-pandoc: false
+
+      - name: Test ggplot2 compatibility
+        run: |
+          library(S7)
+          library(ggplot2)
+
+          output <- tempfile(fileext = ".png")
+          grDevices::png(filename = output)
+
+          plot <- ggplot(
+            data = mtcars,
+            mapping = aes(wt, mpg, colour = factor(cyl))
+          ) +
+            geom_point() +
+            theme(legend.key.spacing = grid::unit(1, "cm"))
+          built <- ggplot_build(plot)
+          grob <- ggplotGrob(plot)
+          print(plot)
+          invisible(grDevices::dev.off())
+
+          stopifnot(
+            inherits(plot, "ggplot"),
+            inherits(built, "ggplot_built"),
+            inherits(grob, "gtable"),
+            file.size(output) > 0
+          )
+        shell: Rscript {0}
