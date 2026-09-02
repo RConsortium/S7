@@ -35,8 +35,12 @@ jobs:
           output <- tempfile(fileext = ".png")
           grDevices::png(filename = output)
 
-          plot <- ggplot() +
-            geom_point(data = mtcars, mapping = aes(wt, mpg))
+          plot <- ggplot(
+            data = mtcars,
+            mapping = aes(wt, mpg, colour = factor(cyl))
+          ) +
+            geom_point() +
+            theme(legend.key.spacing = grid::unit(1, "cm"))
           built <- ggplot_build(plot)
           grob <- ggplotGrob(plot)
           print(plot)
