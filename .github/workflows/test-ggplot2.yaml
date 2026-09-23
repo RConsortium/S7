@@ -10,7 +10,13 @@ permissions: read-all
 jobs:
   ggplot2:
     runs-on: ubuntu-latest
-    name: ggplot2 (release)
+    # `binary` uses ggplot2 built against CRAN S7; `source` rebuilds it
+    # against this S7, which changes the stored S7 class definitions.
+    name: ggplot2 (release, ${{ matrix.ggplot2-build }})
+    strategy:
+      fail-fast: false
+      matrix:
+        ggplot2-build: [binary, source]
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
@@ -26,6 +32,17 @@ jobs:
           dependencies: '"hard"'
           extra-packages: any::ggplot2, local::.
           install-pandoc: false
+
+      - name: Rebuild ggplot2 from source
+        if: matrix.ggplot2-build == 'source'
+        run: |
+          install.packages(
+            "ggplot2",
+            repos = "https://cloud.r-project.org",
+            type = "source",
+            dependencies = FALSE
+          )
+        shell: Rscript {0}
 
       - name: Test ggplot2 compatibility
         run: |
