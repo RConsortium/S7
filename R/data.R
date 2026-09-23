@@ -2,10 +2,9 @@
 #'
 #' When an S7 class inherits from an existing base type, it can be useful
 #' to work with the underlying object, i.e. the S7 object stripped of its
-#' S7 class and properties. If the class inherits from a concrete S3 class,
-#' `S7_data()` preserves the S3 class so the result remains a valid object of
-#' that type. Abstract S3 marker classes are stripped because they cannot
-#' represent valid standalone objects.
+#' S7 class and properties. If the class inherits from an S3 class,
+#' `S7_data()` preserves the S3 class so the result remains a valid
+#' object of that type.
 #'
 #' @inheritParams prop
 #' @param value Object used to replace the underlying data.
@@ -35,7 +34,7 @@ S7_data <- function(object) {
   )
 
   base <- base_parent(S7_class(object))
-  if (is_S3_class(base) && !class_is_abstract(base)) {
+  if (is_S3_class(base)) {
     class(out) <- base$class
   }
   out
