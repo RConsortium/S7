@@ -105,12 +105,10 @@ test_that("inheritance lets child properties narrow the parent's type", {
   ))
 })
 
-test_that("inheritance supports legacy S3 classes with shared base classes", {
-  coord <- new_S3_class("Coord")
-  attr(coord, "_version") <- NULL
+test_that("inheritance lets S3 properties narrow to subclasses with shared base classes (#747)", {
   Parent := new_class(
     package = NULL,
-    properties = list(coordinates = coord)
+    properties = list(coordinates = new_S3_class("Coord"))
   )
 
   expect_no_error({
@@ -124,26 +122,6 @@ test_that("inheritance supports legacy S3 classes with shared base classes", {
       )
     )
   })
-})
-
-test_that("inheritance uses strict matching for current S3 classes", {
-  Parent := new_class(
-    package = NULL,
-    properties = list(coordinates = new_S3_class("Coord"))
-  )
-
-  expect_snapshot(
-    Child := new_class(
-      parent = Parent,
-      package = NULL,
-      properties = list(
-        coordinates = new_S3_class(
-          c("CoordCartesian", "Coord", "ggproto", "gg")
-        )
-      )
-    ),
-    error = TRUE
-  )
 })
 
 test_that("inheritance lets child properties narrow with S4 inheritance", {
