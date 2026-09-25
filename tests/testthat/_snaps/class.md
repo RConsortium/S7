@@ -197,6 +197,14 @@
       Error in `new_object()`:
       ! `_parent` must be an instance of <integer>, not <character>.
 
+# new_object() validates legacy concrete S3 parents
+
+    Code
+      Foo(list())
+    Condition
+      Error in `new_object()`:
+      ! `_parent` must be an instance of S3<foo>, not <list>.
+
 # new_object() errors if `_parent` is supplied but class has no parent
 
     Code
