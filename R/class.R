@@ -392,7 +392,8 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class_ref <- get_class_ref(parent.frame())
+  # Skip constructor arguments and local variables when finding the reference.
+  class_ref <- get_class_ref(parent.env(parent.frame()))
   if (inherits(class_ref, "S7_class_ref")) {
     class <- class_ref$class
   } else {
@@ -552,7 +553,7 @@ get_class_ref <- function(env, default = NULL) {
   get0(
     ".S7_class_ref",
     envir = env,
-    inherits = TRUE,
+    inherits = FALSE,
     ifnotfound = default
   )
 }
