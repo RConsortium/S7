@@ -5,6 +5,9 @@
 - New `:=` operator creates and names an object in one step, so
   `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")`
   ([\#658](https://github.com/RConsortium/S7/issues/658)).
+- The `:=` operator now stays ahead of rlang and data.table regardless
+  of attachment order, without emitting `:=` masking messages
+  ([\#697](https://github.com/RConsortium/S7/issues/697)).
 - The class object that S7 stores on each instance now lives in the
   `_S7_class` attribute (previously `S7_class`), moving it into the
   `_`-prefixed namespace reserved for S7 internals so it can’t collide
