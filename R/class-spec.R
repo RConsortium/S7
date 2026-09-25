@@ -106,11 +106,11 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   ctor_class <- if (is_union(.x)) .x$classes[[1L]] else .x
   if (is_external_class(ctor_class)) {
     if (identical(package, ctor_class$package)) {
-      return(call(ctor_class$name))
+      cl <- as.name(ctor_class$name)
     } else {
       cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
-      return(as.call(list(cl)))
     }
+    return(bquote(S7::as_class(.(cl))()))
   }
 
   f <- class_constructor(.x)
@@ -336,7 +336,10 @@ class_inherits <- function(x, what) {
     S7_union = some(what$classes, class_inherits, x = x),
     S7_S3 = !isS4(x) &&
       class_dispatch_inherits(what$class, class(x)),
-    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
+    S7_external = inherits(x, "S7_object") &&
+      (inherits(x, what$class_name) ||
+        (isNamespaceLoaded(what$package) &&
+          class_inherits(x, resolve_external_class_req(what)))),
   )
 }
 
@@ -370,6 +373,9 @@ class_extends <- function(child, parent) {
     class_extends(child, parent)
   } else if (is_class(child) && is_external_class(parent)) {
     if (!class_dispatch_extends(parent$class_name, class_dispatch(child))) {
+      if (isNamespaceLoaded(parent$package)) {
+        return(class_extends(child, resolve_external_class_req(parent)))
+      }
       return(FALSE)
     }
     if (!is.null(parent$version)) {
