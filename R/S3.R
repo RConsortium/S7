@@ -148,6 +148,20 @@ is_S3_class <- function(x) {
   inherits(x, "S7_S3_class")
 }
 
+# Detect the stub constructor emitted by S7 <= 0.2.2, before S3 class
+# definitions recorded whether they were abstract (#686, #747).
+is_S3_stub_constructor <- function(constructor) {
+  if (!is.function(constructor)) {
+    return(FALSE)
+  }
+  call <- find_call(body(constructor), quote(sprintf))
+  if (is.null(call)) {
+    return(FALSE)
+  }
+  fmt <- call[[2]]
+  is.character(fmt) && grepl("doesn't have a constructor", fmt, fixed = TRUE)
+}
+
 # -------------------------------------------------------------------------
 # Pull out validation functions so hit by code coverage
 

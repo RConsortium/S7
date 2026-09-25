@@ -7,3 +7,5 @@ compile_commands.json
 .cache
 .vscode
 .claude/worktrees
+.mcp-console/
+.agents/console/
