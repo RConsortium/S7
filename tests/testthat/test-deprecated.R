@@ -8,6 +8,84 @@ test_that("deprecated_generic() warns then delegates to the replacement", {
   expect_identical(formals(old_gen), formals(new_gen))
 })
 
+test_that("deprecated wrappers keep arguments separate from deprecation state", {
+  new_gen := new_generic(
+    "target",
+    \(target = -1, method, when, what, with, package, env, call) S7_dispatch()
+  )
+  method(new_gen, class_double) <- function(
+    target = -1,
+    method,
+    when,
+    what,
+    with,
+    package,
+    env,
+    call
+  ) {
+    list(target, method, when, what, with, package, env, call)
+  }
+  old_gen := deprecated_generic(new = new_gen, when = "1.0.0")
+
+  target <- -2
+  expect_snapshot(
+    out <- local({
+      target <- 1
+      old_gen(
+        target = target,
+        method = 2,
+        when = 3,
+        what = 4,
+        with = 5,
+        package = 6,
+        env = 7,
+        call = 8
+      )
+    })
+  )
+  expect_identical(out, list(1, 2, 3, 4, 5, 6, 7, 8))
+
+  Target := new_class(
+    properties = list(target = new_property(class_double, default = -1))
+  )
+  Old := deprecated_class(new = Target, when = "1.0.0")
+  expect_snapshot(
+    obj <- local({
+      target <- 1
+      Old(target = target)
+    })
+  )
+  expect_identical(obj, Target(target = 1))
+})
+
+test_that("deprecated wrappers preserve lazy arguments and target defaults", {
+  new_gen := new_generic(
+    "x",
+    \(x, unused = stop("unused"), y = x, ...) S7_dispatch()
+  )
+  method(new_gen, class_double) <- function(
+    x,
+    unused = stop("unused"),
+    y = x,
+    ...
+  ) {
+    list(x = x, y = y, dots = list(...))
+  }
+  old_gen := deprecated_generic(new = new_gen, when = "1.0.0")
+  calls <- 0L
+  expect_snapshot(
+    out <- old_gen(
+      {
+        calls <- calls + 1L
+        2
+      },
+      z = 3
+    )
+  )
+  expect_identical(out, list(x = 2, y = 2, dots = list(z = 3)))
+  expect_identical(calls, 1L)
+})
+
 test_that("method registration on a deprecated generic targets the replacement", {
   new_gen := new_generic("x")
   old_gen := deprecated_generic(new = new_gen, when = "1.1.0")
@@ -96,6 +174,17 @@ test_that("deprecated_class() without a replacement still constructs", {
   expect_equal(S7_class(felix)@name, "Cat")
 })
 
+test_that("deprecated classes work with the union operator", {
+  Pet := new_class()
+  Dog := deprecated_class(new = Pet, when = "1.0.0")
+  Cat := deprecated_class(new = Pet, when = "1.0.0")
+
+  expect_identical(Dog | NULL, Pet | NULL)
+  expect_identical(NULL | Dog, NULL | Pet)
+  expect_identical(Dog | Cat, Pet | Pet)
+  expect_identical(Dog | class_double, Pet | class_double)
+})
+
 test_that("deprecated_class() validates its inputs", {
   Pet := new_class()
   expect_snapshot(error = TRUE, {
@@ -151,6 +240,32 @@ test_that("deprecated_property() without a replacement still stores data", {
     h@brim <- 3
   })
   expect_equal(attr(h, "brim"), 3)
+})
+
+test_that("deprecated_property() without a replacement validates stored values", {
+  Hat := new_class(
+    properties = list(
+      deprecated_property("brim", when = "1.0.0", class = class_double)
+    )
+  )
+
+  h <- Hat(brim = 2)
+  expect_snapshot(error = TRUE, Hat(brim = "invalid"))
+  expect_snapshot(error = TRUE, h@brim <- "invalid")
+  expect_identical(attr(h, "brim"), 2)
+})
+
+test_that("deprecated_property() without a replacement preserves NULL", {
+  Hat := new_class(
+    properties = list(
+      deprecated_property("brim", when = "1.0.0", class = NULL | class_double)
+    )
+  )
+  expect_no_warning(h <- Hat(brim = NULL))
+  expect_snapshot(value <- h@brim)
+  expect_null(value)
+  expect_snapshot(h@brim <- 2)
+  expect_identical(attr(h, "brim"), 2)
 })
 
 test_that("deprecated_property() validates its inputs", {

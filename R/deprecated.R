@@ -294,7 +294,7 @@ deprecated_property <- function(
     storage <- prop_storage_rename(old)
     getter <- function(self) {
       signal(self, with = NULL)
-      attr(self, storage, exact = TRUE)
+      prop(self, old)
     }
     setter <- function(self, value) {
       current <- attr(self, storage, exact = TRUE)
@@ -302,7 +302,7 @@ deprecated_property <- function(
       if (!is.null(current) && !identical(value, current)) {
         signal(self, with = NULL)
       }
-      attr(self, storage) <- value
+      prop(self, old) <- value
       self
     }
   } else {
@@ -349,8 +349,9 @@ new_deprecated_fun <- function(
   env,
   class
 ) {
-  out <- function(...) {
-    call <- sys.call()
+  delegate <- function() {
+    call <- sys.call(-1L)
+    user_env <- parent.frame(2L)
     deprecate_signal(
       when = when,
       what = what,
@@ -359,14 +360,15 @@ new_deprecated_fun <- function(
       method = method,
       env = env,
       call = call,
-      user_env = parent.frame()
+      user_env = user_env
     )
     call[[1L]] <- target
-    eval(call, parent.frame())
+    eval(call, user_env)
   }
-  # The body ignores its formals, but the target's formals give informative
-  # introspection (args(), autocomplete) and identical argument matching errors
-  formals(out) <- formals(target)
+  # Keep the target's argument names out of the environment where deprecation
+  # state is read. Embed the delegate so even an argument named `delegate`
+  # cannot shadow it.
+  out <- new_function(formals(target), as.call(list(delegate)), environment())
   class(out) <- c(class, "function")
   out
 }
@@ -446,6 +448,9 @@ target_label <- function(target_package, target_name, package) {
 }
 
 check_when <- function(when, call = sys.call(-1L)) {
+  if (missing(when)) {
+    stop2('argument "when" is missing, with no default', call = call)
+  }
   if (!is_string(when)) {
     stop2("`when` must be a single string.", call = call)
   }

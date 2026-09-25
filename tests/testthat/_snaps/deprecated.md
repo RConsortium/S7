@@ -7,6 +7,43 @@
       `old_gen()` was deprecated in S7 1.1.0.
       Please use `new_gen()` instead.
 
+# deprecated wrappers keep arguments separate from deprecation state
+
+    Code
+      out <- local({
+        target <- 1
+        old_gen(target = target, method = 2, when = 3, what = 4, with = 5, package = 6,
+          env = 7, call = 8)
+      })
+    Condition
+      Warning in `old_gen()`:
+      `old_gen()` was deprecated in S7 1.0.0.
+      Please use `new_gen()` instead.
+
+---
+
+    Code
+      obj <- local({
+        target <- 1
+        Old(target = target)
+      })
+    Condition
+      Warning in `Old()`:
+      `Old()` was deprecated in S7 1.0.0.
+      Please use `Target()` instead.
+
+# deprecated wrappers preserve lazy arguments and target defaults
+
+    Code
+      out <- old_gen({
+        calls <- calls + 1L
+        2
+      }, z = 3)
+    Condition
+      Warning in `old_gen()`:
+      `old_gen()` was deprecated in S7 1.0.0.
+      Please use `new_gen()` instead.
+
 # deprecated_generic() without a replacement still dispatches
 
     Code
@@ -160,6 +197,40 @@
     Condition
       Warning:
       `<S7::Hat>@brim` was deprecated in S7 0.9.0.
+
+# deprecated_property() without a replacement validates stored values
+
+    Code
+      Hat(brim = "invalid")
+    Condition
+      Error in `<S7::Hat>@brim`:
+      ! <S7::Hat>@brim must be <double>, not <character>
+
+---
+
+    Code
+      h@brim <- "invalid"
+    Condition
+      Warning:
+      `<S7::Hat>@brim` was deprecated in S7 1.0.0.
+      Error in `<S7::Hat>@brim`:
+      ! <S7::Hat>@brim must be <double>, not <character>
+
+# deprecated_property() without a replacement preserves NULL
+
+    Code
+      value <- h@brim
+    Condition
+      Warning:
+      `<S7::Hat>@brim` was deprecated in S7 1.0.0.
+
+---
+
+    Code
+      h@brim <- 2
+    Condition
+      Warning:
+      `<S7::Hat>@brim` was deprecated in S7 1.0.0.
 
 # deprecated_property() validates its inputs
 
