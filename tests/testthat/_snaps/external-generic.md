@@ -1,3 +1,11 @@
+# resolve_generic() warns instead of erroring when generic is missing
+
+    Code
+      out <- resolve_generic(gen)
+    Condition
+      Warning:
+      [S7] Failed to find generic gen() in package testpkg
+
 # displays nicely
 
     Code

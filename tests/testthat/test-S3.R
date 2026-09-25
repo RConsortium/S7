@@ -79,5 +79,19 @@ test_that("catches invalid data.frame", {
     validate_data.frame(structure(list(x = 1, y = 1:2), row.names = 1L))
     validate_data.frame(structure(list(x = 1, y = 1), row.names = 1:2))
     validate_data.frame(structure(list(1), row.names = 1L))
+    validate_data.frame(structure(
+      list(y = 1:2, x = data.frame(x1 = 1:3)),
+      row.names = 1:2
+    ))
   })
+})
+
+test_that("data.frame accepts data.frame and matrix columns (#751)", {
+  packed <- data.frame(y = 1:3)
+  packed$x <- data.frame(x1 = 1:3, x2 = 4:6)
+  expect_null(validate_data.frame(packed))
+
+  mat <- data.frame(y = 1:3)
+  mat$m <- matrix(1:6, nrow = 3)
+  expect_null(validate_data.frame(mat))
 })

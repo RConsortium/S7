@@ -34,8 +34,10 @@
 #'   argument for each property.
 #'
 #'   A custom constructor should call `new_object()` to create the S7 object.
-#'   The first argument, `.data`, should be an instance of the parent class
-#'   (if used). The subsequent arguments are used to set the properties.
+#'   `new_class()` automatically associates a custom constructor with its class,
+#'   so no additional class argument is needed. The first argument to
+#'   `new_object()`, `_parent`, should be an instance of the parent class (if
+#'   used). The subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.
 #'
@@ -174,8 +176,18 @@ new_class <- function(
     )
   }
 
+  class_ref <- new_class_ref()
+  constructor_env <- new.env(parent = environment(constructor))
+  constructor_env$.S7_class_ref <- class_ref
+  environment(constructor) <- constructor_env
+
   object <- constructor
-  # Must synchronise with prop_names
+  # A class's metadata is stored as plain attributes on the class object.
+  # Must synchronise with prop_names().
+  #
+  # We access these attributes directly in performance hot paths to avoid the
+  # S3 dispatch that `@` requires. This is safe for class metadata, which we
+  # control.
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
@@ -187,6 +199,7 @@ new_class <- function(
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
+  class_ref$class <- object
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -328,16 +341,16 @@ is_class <- function(x) inherits(x, "S7_class")
 # registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
 class_is_abstract <- function(class) {
   if (is_class(class)) {
-    class@abstract
+    attr(class, "abstract", TRUE) # called on construction
   } else if (is_S3_class(class)) {
-    class$abstract %||% is_default_constructor(class$constructor)
+    class$abstract %||% is_S3_stub_constructor(class$constructor)
   } else {
     FALSE
   }
 }
 
 check_parent <- function(parent, class, call = sys.call(-1L)) {
-  parent_class <- class@parent
+  parent_class <- attr(class, "parent", TRUE) # called on construction
   if (is.null(parent_class)) {
     stop2(
       "`_parent` must not be supplied when class has no parent.",
@@ -379,11 +392,22 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class <- sys.function(sys.parent())
+  class_ref <- get_class_ref(parent.frame())
+  if (inherits(class_ref, "S7_class_ref")) {
+    class <- class_ref$class
+  } else {
+    class <- sys.function(sys.parent())
+  }
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
-  if (class@abstract && !is_constructing_parent_part(class)) {
+  # This is the hottest function in S7, so read the class metadata we need once,
+  # up front.
+  class_abstract <- attr(class, "abstract", TRUE)
+  class_props <- attr(class, "properties", TRUE)
+  class_parent <- attr(class, "parent", TRUE)
+
+  if (class_abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
@@ -398,7 +422,7 @@ new_object <- function(`_parent`, ...) {
 
   args <- collect_dots(...)
 
-  has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
+  has_setter <- vlapply(class_props[names(args)], prop_has_setter)
   self_attrs <- args[!has_setter]
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
@@ -406,7 +430,10 @@ new_object <- function(`_parent`, ...) {
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
-    list(class = class_dispatch(class), `_S7_class` = class),
+    list(
+      class = class_dispatch(class),
+      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+    ),
     self_attrs,
     attributes(`_parent`)
   )
@@ -421,13 +448,16 @@ new_object <- function(`_parent`, ...) {
 
   # Don't need to validate the parent class if it's already validated and none
   # of its properties were reset by this call.
-  parent_validated <- inherits(class@parent, "S7_object") &&
-    !class@parent@abstract
+  parent_validated <-
+    inherits(class_parent, "S7_object") &&
+    !attr(class_parent, "abstract", TRUE)
   parent_props_reset <- parent_validated &&
-    any(names2(args) %in% names2(class@parent@properties))
+    any(
+      names2(args) %in% names2(attr(class_parent, "properties", TRUE))
+    )
   validate_from(
     `_parent`,
-    parent = if (parent_validated && !parent_props_reset) class@parent,
+    parent = if (parent_validated && !parent_props_reset) class_parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )
@@ -497,6 +527,33 @@ S7_class <- function(object) {
     },
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
+  )
+}
+
+S7_class_storage <- function(class) {
+  get_class_ref(environment(class), default = class)
+}
+
+# Class objects are closures, which leads to two problems:
+# * `sys.function()` does deep copies
+# * `serialize()`/`saveRDS()` only de-dups environments
+# We solve both problems with an environment-backed class reference. The
+# reference is bound as `.S7_class_ref` in the constructor's environment and
+# points back to the completed class through `$class`. Ordinary S7 objects store
+# the reference instead of the closure, avoiding `sys.function()` and ensuring
+# that objects serialized together share a single copy of their class.
+new_class_ref <- function() {
+  ref <- new.env(parent = emptyenv())
+  class(ref) <- "S7_class_ref"
+  ref
+}
+
+get_class_ref <- function(env, default = NULL) {
+  get0(
+    ".S7_class_ref",
+    envir = env,
+    inherits = TRUE,
+    ifnotfound = default
   )
 }
 

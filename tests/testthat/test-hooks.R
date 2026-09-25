@@ -15,6 +15,18 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
   expect_length(package_hooks("upstream"), 1)
 })
 
+test_that("S7_on_load() warns instead of erroring when a generic no longer exists (#729)", {
+  upstream := local_package()
+  downstream := local_package()
+
+  # Simulate a stale install of downstream: its methods table records a
+  # generic that upstream has since renamed or removed
+  gen := new_external_generic(package = "upstream", dispatch_args = "x")
+  external_methods_add("downstream", gen, list(), function(x) x)
+
+  expect_snapshot(S7_on_load_(downstream))
+})
+
 test_that("S7_on_load() waits until all external union arms are available", {
   generic_pkg := local_package({
     gen := new_generic("x")
