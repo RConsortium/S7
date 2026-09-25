@@ -85,7 +85,9 @@ new_object(`_parent`, ...)
   property.
 
   A custom constructor should call `new_object()` to create the S7
-  object. The first argument, `.data`, should be an instance of the
+  object. `new_class()` automatically associates a custom constructor
+  with its class, so no additional class argument is needed. The first
+  argument to `new_object()`, `_parent`, should be an instance of the
   parent class (if used). The subsequent arguments are used to set the
   properties.
 

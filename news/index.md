@@ -109,6 +109,13 @@
   property values, making it easier to programmatically construct an
   object from a list of properties
   ([\#497](https://github.com/RConsortium/S7/issues/497)).
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  no longer copies an S7 class each time a default or custom constructor
+  creates an object. New objects instead store a shared internal class
+  reference, which also preserves sharing when multiple objects are
+  serialised together. Constructors created by older versions of S7
+  continue to work through the previous fallback
+  ([\#742](https://github.com/RConsortium/S7/issues/742)).
 - `method<-` can now register methods on S3 and S4 generics with base
   types (e.g. `class_character`), S3 classes
   ([`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md),

@@ -127,8 +127,10 @@ instantiated.</p></dd>
 on the default constructor, which will generate a function with one
 argument for each property.</p>
 <p>A custom constructor should call <code>new_object()</code> to create the S7 object.
-The first argument, <code>.data</code>, should be an instance of the parent class
-(if used). The subsequent arguments are used to set the properties.</p></dd>
+<code>new_class()</code> automatically associates a custom constructor with its class,
+so no additional class argument is needed. The first argument to
+<code>new_object()</code>, <code>_parent</code>, should be an instance of the parent class (if
+used). The subsequent arguments are used to set the properties.</p></dd>
 
 
 <dt id="arg-validator">validator<a class="anchor" aria-label="anchor" href="#arg-validator"></a></dt>
