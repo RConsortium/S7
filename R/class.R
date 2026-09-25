@@ -177,7 +177,7 @@ new_class <- function(
   }
 
   class_ref <- new_class_ref()
-  constructor_env <- new.env(parent = environment(constructor))
+  constructor_env <- new.env(hash = FALSE, parent = environment(constructor))
   constructor_env$.S7_class_ref <- class_ref
   environment(constructor) <- constructor_env
 
@@ -543,7 +543,7 @@ S7_class_storage <- function(class) {
 # the reference instead of the closure, avoiding `sys.function()` and ensuring
 # that objects serialized together share a single copy of their class.
 new_class_ref <- function() {
-  ref <- new.env(parent = emptyenv())
+  ref <- new.env(hash = FALSE, parent = emptyenv())
   class(ref) <- "S7_class_ref"
   ref
 }
