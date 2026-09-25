@@ -166,10 +166,7 @@ local_install_and_attach <- function(path, lib, frame = parent.frame()) {
   quick_install(path, lib)
   package <- basename(path)
   library(package, character.only = TRUE)
-  defer(
-    try(detach(paste0("package:", package), unload = TRUE), silent = TRUE),
-    frame = frame
-  )
+  defer(unloadNamespace(package), frame = frame)
   invisible(package)
 }
 
