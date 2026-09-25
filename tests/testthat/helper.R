@@ -126,6 +126,40 @@ local_libpath <- function(frame = parent.frame()) {
   lib
 }
 
+# Install the development S7 into a session-scoped library (built once per
+# test process) and prepend that library to .libPaths() until `frame` exits.
+local_dev_S7_lib <- local({
+  lib <- NULL
+  function(frame = parent.frame()) {
+    if (is.null(lib)) {
+      dir.create(new_lib <- tempfile("S7-dev-lib-"))
+      install.packages(
+        pkgs = normalizePath(test_path("..", "..")),
+        lib = new_lib,
+        repos = NULL,
+        type = "source",
+        quiet = TRUE,
+        INSTALL_opts = c(
+          "--data-compress=none",
+          "--no-byte-compile",
+          "--no-data",
+          "--no-demo",
+          "--no-docs",
+          "--no-help",
+          "--no-html",
+          "--use-vanilla"
+        )
+      )
+      lib <<- new_lib
+    }
+
+    old <- .libPaths()
+    .libPaths(c(lib, old))
+    defer(.libPaths(old), frame = frame)
+    lib
+  }
+})
+
 # Install the package at `path` into `lib`, attach it, and detach (and unload)
 # it when `frame` exits. The package name is taken from `basename(path)`.
 local_install_and_attach <- function(path, lib, frame = parent.frame()) {
