@@ -507,7 +507,7 @@ Range@constructor
 #>     S7::new_object(S7::S7_object(), start = start, end = end, 
 #>         length = length)
 #> }
-#> <environment: 0x557d52ccf4e0>
+#> <environment: 0x5592aecef7d0>
 ```
 
 In most cases, S7’s default constructor will be all you need. However,
