@@ -55,8 +55,10 @@ on the default constructor, which will generate a function with one
 argument for each property.
 
 A custom constructor should call \code{new_object()} to create the S7 object.
-The first argument, \code{.data}, should be an instance of the parent class
-(if used). The subsequent arguments are used to set the properties.}
+\code{new_class()} automatically associates a custom constructor with its class,
+so no additional class argument is needed. The first argument to
+\code{new_object()}, \verb{_parent}, should be an instance of the parent class (if
+used). The subsequent arguments are used to set the properties.}
 
 \item{validator}{A function taking a single argument, \code{self}, the object
 to validate.
