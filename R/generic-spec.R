@@ -126,11 +126,6 @@ internal_generics <- function() {
 
 group_generics <- function() {
   # S3 group generics can be defined by combining S4 group generics.
-  #
-  # This means `Ops` doesn't include `!`, since S4 has no group generic
-  # containing it. That suits us: every member of this group dispatches on
-  # `e1` and `e2`, but `!` is always unary. `on_load_define_ops()` gives it a
-  # single-dispatch generic of its own.
   groups <- list(
     Ops = c("Arith", "Compare", "Logic"),
     Math = c("Math", "Math2"),
@@ -139,6 +134,8 @@ group_generics <- function() {
   )
 
   out <- lapply(groups, function(x) unlist(lapply(x, methods::getGroupMembers)))
+  # S4 groups omit `!`, which belongs to the S3 Ops group.
+  out$Ops <- c(out$Ops, "!")
   if (getRversion() >= "4.3") {
     out$matrixOps <- c("%*%")
   }
@@ -147,10 +144,7 @@ group_generics <- function() {
 
 ops_group <- function(generic) {
   group <- group_generics()
-  # `!` isn't in `group$Ops` (S7 treats it as a standalone unary generic), but
-  # R still dispatches it through the S3 `Ops` group, so it needs the same
-  # bridge as the binary operators.
-  if (generic %in% group$Ops || generic == "!") {
+  if (generic %in% group$Ops) {
     "Ops"
   } else if (generic %in% group$matrixOps) {
     "matrixOps"
