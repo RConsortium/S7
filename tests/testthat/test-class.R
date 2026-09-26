@@ -412,6 +412,24 @@ test_that("custom constructors use a shared class reference (#742)", {
   expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
 })
 
+test_that("constructor properties don't shadow the shared class reference", {
+  Foo := new_class(properties = list(.S7_class_ref = class_double))
+
+  x <- Foo(.S7_class_ref = 1)
+  expect_equal(x@.S7_class_ref, 1)
+  expect_identical(S7_class(x), Foo)
+})
+
+test_that("constructor locals don't shadow the shared class reference", {
+  Other := new_class()
+  Foo := new_class(constructor = function() {
+    .S7_class_ref <- attr(Other(), "_S7_class", exact = TRUE)
+    new_object(S7_object())
+  })
+
+  expect_identical(S7_class(Foo()), Foo)
+})
+
 test_that("serialisation preserves shared class references (#742)", {
   Foo := new_class(package = NULL)
   xy <- unserialize(serialize(list(Foo(), Foo()), NULL))

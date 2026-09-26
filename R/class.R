@@ -177,7 +177,7 @@ new_class <- function(
   }
 
   class_ref <- new_class_ref()
-  constructor_env <- new.env(parent = environment(constructor))
+  constructor_env <- new.env(hash = FALSE, parent = environment(constructor))
   constructor_env$.S7_class_ref <- class_ref
   environment(constructor) <- constructor_env
 
@@ -392,7 +392,8 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class_ref <- get_class_ref(parent.frame())
+  # Skip constructor arguments and local variables when finding the reference.
+  class_ref <- get_class_ref(parent.env(parent.frame()))
   if (inherits(class_ref, "S7_class_ref")) {
     class <- class_ref$class
   } else {
@@ -543,7 +544,7 @@ S7_class_storage <- function(class) {
 # the reference instead of the closure, avoiding `sys.function()` and ensuring
 # that objects serialized together share a single copy of their class.
 new_class_ref <- function() {
-  ref <- new.env(parent = emptyenv())
+  ref <- new.env(hash = FALSE, parent = emptyenv())
   class(ref) <- "S7_class_ref"
   ref
 }
@@ -552,7 +553,7 @@ get_class_ref <- function(env, default = NULL) {
   get0(
     ".S7_class_ref",
     envir = env,
-    inherits = TRUE,
+    inherits = FALSE,
     ifnotfound = default
   )
 }
