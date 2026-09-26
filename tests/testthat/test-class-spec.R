@@ -314,13 +314,18 @@ test_that("can work with external classes", {
   expect_equal(class_inherits(obj, Ext), TRUE)
 })
 
-test_that("class_construct_expr() defers external classes to a `pkg::name()` call", {
+test_that("property defaults defer external class lookup until construction", {
   Ext := new_external_class("pkg")
-  expect_equal(class_construct_expr(Ext), quote(pkg::Ext()))
-  expect_equal(class_construct_expr(Ext | NULL), quote(pkg::Ext()))
+  Holder := new_class(properties = list(x = Ext, y = Ext | NULL))
+  expect_equal(formals(Holder)$x, quote(S7::as_class(pkg::Ext)()))
+  expect_equal(formals(Holder)$y, quote(S7::as_class(pkg::Ext)()))
 
-  expect_equal(class_construct_expr(Ext, package = "pkg"), quote(Ext()))
-  expect_equal(class_construct_expr(Ext | NULL, package = "pkg"), quote(Ext()))
+  Local := new_class(
+    package = "pkg",
+    properties = list(x = Ext, y = Ext | NULL)
+  )
+  expect_equal(formals(Local)$x, quote(S7::as_class(Ext)()))
+  expect_equal(formals(Local)$y, quote(S7::as_class(Ext)()))
 })
 
 

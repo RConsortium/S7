@@ -42,6 +42,63 @@ test_that("resolve_external_class_req() errors per failure mode", {
   })
 })
 
+test_that("external class inheritance resolves a renamed class (#727)", {
+  renamepkg := local_package({
+    Bar := new_class()
+    Foo <- Bar
+  })
+
+  Foo := new_external_class("renamepkg")
+  expect_identical(S7_inherits(renamepkg$Bar(), Foo), TRUE)
+})
+
+test_that("external class inheritance resolves a deprecated_class() alias", {
+  deprpkg := local_package({
+    Bar := new_class()
+    Foo := deprecated_class(new = Bar, when = "2.0.0")
+  })
+
+  Foo := new_external_class("deprpkg")
+  expect_identical(S7_inherits(deprpkg$Bar(), Foo), TRUE)
+})
+
+test_that("external deprecated parents construct subclasses silently", {
+  dep := local_package({
+    Pet := new_class(properties = list(name = class_character))
+    Dog := deprecated_class(new = Pet, when = "1.0.0")
+  })
+
+  Dog := new_external_class(package = "dep")
+  Child := new_class(parent = Dog)
+  expect_no_warning(child <- Child(name = "Fido"))
+  expect_equal(child@name, "Fido")
+  expect_identical(S7_inherits(child, dep$Pet), TRUE)
+})
+
+test_that("external class aliases allow narrowing property overrides", {
+  dep := local_package({
+    Pet := new_class()
+    Dog <- Pet
+  })
+  Dog := new_external_class(package = "dep")
+  Holder := new_class(properties = list(pet = Dog))
+  Narrow := new_class(parent = Holder, properties = list(pet = dep$Pet))
+
+  expect_identical(Narrow()@pet, dep$Pet())
+})
+
+test_that("external deprecated property classes construct defaults silently", {
+  dep := local_package({
+    Pet := new_class()
+    Dog := deprecated_class(new = Pet, when = "1.0.0")
+  })
+  Dog := new_external_class(package = "dep")
+  Holder := new_class(properties = list(pet = Dog))
+
+  expect_no_warning(holder <- Holder())
+  expect_identical(holder@pet, dep$Pet())
+})
+
 test_that("external class can be used as a union arm", {
   ec := new_external_class("foo")
   u <- NULL | ec
