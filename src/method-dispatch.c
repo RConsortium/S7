@@ -114,12 +114,12 @@ SEXP generic_args(SEXP generic, SEXP envir) {
 }
 
 __attribute__ ((noreturn))
-void S7_method_lookup_error(SEXP generic, SEXP envir, SEXP caller) {
+void S7_method_lookup_error(SEXP generic, SEXP envir) {
 
   SEXP name = Rf_getAttrib(generic, R_NameSymbol);
   SEXP args = generic_args(generic, envir);
 
-  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang4(Rf_install("method_lookup_error"), name, args, caller));
+  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang3(Rf_install("method_lookup_error"), name, args));
   Rf_eval(S7_method_lookup_error_call, ns_S7);
 
   while(1);
@@ -156,6 +156,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
+  SEXP fallback = CAR(args_);
 
   if (!Rf_inherits(generic, "S7_generic")) {
     SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
@@ -252,13 +253,12 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   // Now that we have all the classes, we can look up what method to call
   SEXP m = method_(generic, dispatch_classes);
   if (m == R_NilValue) {
-    // env_ is S7_dispatch()'s frame; its grandparent called the generic.
-    // Capture it only on failure, leaving successful dispatch unchanged.
-    SEXP caller_call = PROTECT(Rf_lang2(
-      Rf_findFun(Rf_install("parent.frame"), R_BaseEnv), Rf_ScalarInteger(2)
-    ));
-    SEXP caller = PROTECT(Rf_eval(caller_call, env_));
-    S7_method_lookup_error(generic, envir, caller);
+    // Operators can fall back without signalling a missing-method error.
+    if (fallback != R_NilValue) {
+      UNPROTECT(4);
+      return fallback;
+    }
+    S7_method_lookup_error(generic, envir);
   }
   REPROTECT(m, val_pi); // unnecessary, for rchk only
 

@@ -1,5 +1,6 @@
 base_ops <- NULL
 base_matrix_ops <- NULL
+ops_no_method <- new.env(parent = emptyenv())
 
 on_load_define_ops <- function() {
   # lapply() evaluates in a base environment, so the new generics inherit
@@ -24,29 +25,23 @@ on_load_define_ops <- function() {
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
-  frame <- environment()
-  cnd <- tryCatch(
-    if (missing(e2)) {
-      return(base_ops[[.Generic]](e1))
-    } else {
-      return(base_ops[[.Generic]](e1, e2))
-    },
-    S7_error_method_not_found = function(cnd) {
-      # Only fall back for this dispatch, not an error from a method's body.
-      if (!identical(cnd$dispatch_caller, frame)) {
-        stop(cnd)
-      }
-      cnd
-    }
-  )
+  out <- withVisible(ops_dispatch(base_ops[[.Generic]], e1, e2))
+  if (!identical(out$value, ops_no_method)) {
+    if (out$visible) return(out$value) else return(invisible(out$value))
+  }
 
   if (!missing(e2) && S7_inherits(e1) && S7_inherits(e2)) {
-    stop(cnd)
+    method_lookup_error(.Generic, list(e1 = e1, e2 = e2))
   } else {
     # Must call NextMethod() directly in the method, not wrapped in an
     # anonymous function.
     NextMethod()
   }
+}
+
+# Keep the generic's argument frame, including ..., for native dispatch.
+ops_dispatch <- function(generic, e1, e2, ...) {
+  .External2(method_call_, generic, environment(), ops_no_method)
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)

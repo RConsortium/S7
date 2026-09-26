@@ -7,16 +7,10 @@ dispatch_not_generic_error <- function() {
 }
 
 # Called from C
-method_lookup_error <- function(name, args, caller) {
+method_lookup_error <- function(name, args) {
   types <- vcapply(args, obj_desc)
   msg <- method_lookup_error_message(name, types)
-  # Preserve the originating caller across C dispatch and stack unwinding.
-  stop(errorCondition(
-    msg,
-    call = NULL,
-    class = "S7_error_method_not_found",
-    dispatch_caller = caller
-  ))
+  stop2(msg, call = NULL, class = "S7_error_method_not_found")
 }
 
 method_lookup_error_message <- function(name, types) {
@@ -38,5 +32,5 @@ method_lookup_error_message <- function(name, types) {
 #' @order 2
 #' @export
 S7_dispatch <- function() {
-  .External2(method_call_, sys.function(-1L), sys.frame(-1L))
+  .External2(method_call_, sys.function(-1L), sys.frame(-1L), NULL)
 }

@@ -233,6 +233,42 @@ test_that("Ops methods propagate missing-method errors from the same operator", 
   expect_snapshot(error = TRUE, -Number(1))
 })
 
+test_that("Ops methods preserve restarts when propagating method errors", {
+  local_methods(base_ops[["-"]])
+  Number := new_class(parent = class_double)
+  other := new_generic("x")
+  method(`-`, list(Number, class_missing)) <- function(e1, e2) {
+    withRestarts(other(e1), recover = \() "recovered")
+  }
+
+  out <- withCallingHandlers(
+    -Number(1),
+    S7_error_method_not_found = \(cnd) invokeRestart("recover")
+  )
+  expect_identical(out, "recovered")
+})
+
+test_that("Ops methods preserve NULL results and base operator visibility", {
+  local_methods(base_ops[["+"]], base_ops[["-"]], base_ops[["!"]])
+  Number := new_class(parent = class_double)
+  Flag := new_class(parent = class_logical)
+  method(`+`, list(Number, class_missing)) <- \(e1, e2) NULL
+  method(`-`, list(Number, class_missing)) <- \(e1, e2) invisible(NULL)
+  method(`+`, list(Number, Number)) <- \(e1, e2) invisible(3)
+  method(`!`, Flag) <- \(e1) invisible(FALSE)
+
+  expect_identical(withVisible(+Number(1)), list(value = NULL, visible = TRUE))
+  expect_identical(withVisible(-Number(1)), list(value = NULL, visible = TRUE))
+  expect_identical(
+    withVisible(Number(1) + Number(2)),
+    list(value = 3, visible = TRUE)
+  )
+  expect_identical(
+    withVisible(!Flag(TRUE)),
+    list(value = FALSE, visible = TRUE)
+  )
+})
+
 test_that("unary Ops fall back when no method is registered", {
   local_methods(base_ops[["+"]], base_ops[["-"]])
   Number := new_class(parent = class_double)
