@@ -14,7 +14,6 @@ new_S7_constructor <- function(f, env = asNamespace("S7")) {
   f
 }
 
-
 `append<-` <- function(x, after, value) {
   if (missing(after)) {
     c(x, value)

@@ -45,6 +45,41 @@ test_that("can remove methods", {
   expect_length(S7_methods_table("testpkg"), 1)
 })
 
+test_that("resolve_generic_opt() finds re-exported generics", {
+  testcore := local_package({
+    gen := new_generic("x")
+  })
+
+  # Simulate testpkg re-exporting testcore::gen: the binding lives in the
+  # imports environment and is listed in the exports, but is absent from the
+  # namespace proper
+  testpkg := local_package()
+  assign("gen", testcore$gen, envir = parent.env(testpkg))
+  assign("gen", "gen", envir = testpkg[[".__NAMESPACE__."]]$exports)
+
+  gen := new_external_generic(package = "testpkg", dispatch_args = "x")
+  expect_identical(resolve_generic_opt(gen), testcore$gen)
+})
+
+test_that("resolve_generic_opt() finds unexported generics", {
+  testpkg := local_package({
+    gen := new_generic("x")
+  })
+  rm(list = "gen", envir = testpkg[[".__NAMESPACE__."]]$exports)
+
+  gen := new_external_generic(package = "testpkg", dispatch_args = "x")
+  expect_identical(resolve_generic_opt(gen), testpkg$gen)
+})
+
+test_that("resolve_generic() warns instead of erroring when generic is missing", {
+  testpkg := local_package()
+
+  gen := new_external_generic(package = "testpkg", dispatch_args = "x")
+  expect_null(resolve_generic_opt(gen))
+  expect_snapshot(out <- resolve_generic(gen))
+  expect_null(out)
+})
+
 test_that("displays nicely", {
   bar := new_external_generic("foo", dispatch_args = "x")
   expect_snapshot({

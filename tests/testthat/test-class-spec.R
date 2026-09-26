@@ -34,6 +34,57 @@ test_that("can work with S7 classes in packages", {
   expect_equal(class_inherits(obj, klass), TRUE)
 })
 
+test_that("S7 class name and dispatch are cached", {
+  parent := new_class(package = "pkg")
+  child := new_class(parent = parent, package = "pkg")
+
+  expect_identical(attr(child, "S7_class_name", exact = TRUE), "pkg::child")
+  expect_identical(
+    attr(child, "S7_dispatch", exact = TRUE),
+    c("pkg::child", "pkg::parent", "S7_object")
+  )
+
+  # the caches are used, not recomputed
+  attr(child, "S7_class_name") <- "cached name"
+  attr(child, "S7_dispatch") <- "cached dispatch"
+  expect_identical(S7_class_name(child), "cached name")
+  expect_identical(class_dispatch(child), "cached dispatch")
+})
+
+test_that("S7 class dispatch supports classes without a cache", {
+  parent := new_class(package = "pkg")
+  child := new_class(parent = parent, package = "pkg")
+  obj <- child()
+
+  # Classes created by older versions of S7 don't have a cache
+  attr(child, "S7_class_name") <- NULL
+  attr(child, "S7_dispatch") <- NULL
+  expect_identical(S7_class_name(child), "pkg::child")
+  expect_identical(
+    class_dispatch(child),
+    c("pkg::child", "pkg::parent", "S7_object")
+  )
+  expect_equal(class_inherits(obj, child), TRUE)
+})
+
+test_that("class_inherits() handles special S7 objects", {
+  Child := new_class(package = NULL)
+
+  expect_equal(class_inherits(S7_object(), S7_object), TRUE)
+  expect_equal(class_inherits(Child, S7_object), TRUE)
+  expect_equal(class_inherits(structure(1, class = "Child"), Child), FALSE)
+})
+
+test_that("class_type() recognizes special class specifications", {
+  expect_identical(class_type(class_missing), "missing")
+  expect_identical(class_type(class_any), "any")
+  expect_identical(
+    class_type(structure(list(), class = c("S7_external_class", "S7_any"))),
+    "any"
+  )
+  expect_snapshot(class_type(1), error = TRUE)
+})
+
 test_that("can work with unions", {
   text := new_class(class_character, package = NULL)
   number := new_class(class_double, package = NULL)

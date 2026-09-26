@@ -23,7 +23,7 @@ another package (or in your own package and needed before it's fully
 defined). It carries only the package and class name, and is resolved to
 the real S7 class when needed.
 
-External classes are useful in two situations:
+External classes are useful in three situations:
 \itemize{
 \item To register a method for a generic in your package, dispatching on a class
 from a soft dependency. The method will be registered when \code{pkg} is loaded
@@ -38,13 +38,18 @@ self-referential or mutually recursive class.
 \if{html}{\out{<div class="sourceCode R">}}\preformatted{tree_stub <- new_external_class("mypkg", "tree")
 new_class("tree", properties = list(child = NULL | tree_stub))
 }\if{html}{\out{</div>}}
+\item To use a class from another package as the \code{parent} of your own class.
+The parent's properties are captured when your class is defined, but its
+constructor is called at run time, so your subclass always builds on the
+installed version of the parent package.
+
+\if{html}{\out{<div class="sourceCode R">}}\preformatted{TheirClass <- new_external_class("theirpkg", "TheirClass")
+new_class("MyClass", parent = TheirClass)
+}\if{html}{\out{</div>}}
 }
 
 Make sure to call \code{\link[=S7_on_load]{S7_on_load()}} in your package's \code{.onLoad()} so that
 deferred method registrations fire when the relevant package is loaded.
-
-External classes can not currently be used as parents in \code{\link[=new_class]{new_class()}}.
-We hope to relax that restriction in the near future.
 }
 \examples{
 # Refer to an S7 class in another package without taking a hard dependency:

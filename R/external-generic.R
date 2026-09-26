@@ -135,8 +135,8 @@ external_methods_reset <- function(package) {
 
 
 resolve_generic <- function(generic) {
-  generic <- resolve_generic_opt(generic)
-  if (is.null(generic)) {
+  fun <- resolve_generic_opt(generic)
+  if (is.null(fun)) {
     warning(
       sprintf(
         "[S7] Failed to find generic %s() in package %s",
@@ -146,11 +146,16 @@ resolve_generic <- function(generic) {
       call. = FALSE
     )
   }
-  generic
+  fun
 }
+
 resolve_generic_opt <- function(generic) {
   ns <- asNamespace(generic$package)
-  get(generic$name, envir = ns, inherits = FALSE)
+  if (generic$name %in% getNamespaceExports(ns)) {
+    getExportedValue(generic$package, generic$name)
+  } else {
+    get0(generic$name, envir = ns, inherits = FALSE)
+  }
 }
 
 

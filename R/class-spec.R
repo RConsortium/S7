@@ -59,30 +59,15 @@ is_foundation_class <- function(x) {
 }
 
 class_type <- function(x) {
-  if (is.null(x)) {
-    "NULL"
-  } else if (is_class_missing(x)) {
-    "missing"
-  } else if (is_class_any(x)) {
-    "any"
-  } else if (is_base_class(x)) {
-    "S7_base"
-  } else if (is_class(x)) {
-    "S7"
-  } else if (is_union(x)) {
-    "S7_union"
-  } else if (is_S3_class(x)) {
-    "S7_S3"
-  } else if (is_external_class(x)) {
-    "S7_external"
-  } else if (is_S4_class(x)) {
-    "S4"
-  } else {
-    stop2("`x` is not a standard S7 class.", call = NULL)
-  }
+  .Call(class_type_, x)
 }
 
 class_properties <- function(x) {
+  # Needed to bootstrap S7 before DLL registered
+  if (is.null(x)) {
+    return(list())
+  }
+
   switch(
     class_type(x),
     S7 = attr(x, "properties", exact = TRUE) %||% list(),
@@ -227,7 +212,7 @@ class_validate <- function(class, object) {
 
   validator <- switch(
     class_type(class),
-    S7 = class@validator,
+    S7 = attr(class, "validator", TRUE), # runs on every construction
     S7_base = class$validator,
     S7_S3 = class$validator,
     S7_external = function(object) {
@@ -278,21 +263,14 @@ class_desc <- function(x) {
 
 # Vector of class names; used in method introspection
 class_dispatch <- function(x) {
-  if (is_class(x) && x@name == "S7_object") {
-    return("S7_object")
-  }
-
   switch(
     class_type(x),
     NULL = "NULL",
     missing = "MISSING",
     any = character(),
     S4 = S4_class_dispatch(methods::extends(x)),
-    S7 = c(
-      S7_class_name(x),
-      class_dispatch(x@parent),
-      if (is_S4_class(x@parent)) "S7_object"
-    ),
+    S7 = attr(x, "S7_dispatch", exact = TRUE) %||%
+      S7_class_dispatch(S7_class_name(x), x@parent),
     S7_base = c(x$class, "S7_object"),
     S7_S3 = c(x$class, "S7_object"),
     S7_external = class_dispatch(resolve_external_class_req(x)),
@@ -348,10 +326,12 @@ class_inherits <- function(x, what) {
     missing = FALSE,
     any = TRUE,
     S4 = methods::is(x, what),
-    S7 = has_S7_class(x) && inherits(x, S7_class_name(what)),
+    # Class-vector-only objects have no stored class for `has_S7_class()`.
+    S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = some(what$classes, class_inherits, x = x),
-    S7_S3 = !isS4(x) && class_dispatch_extends(what$class, class(x)),
+    S7_S3 = !isS4(x) &&
+      class_dispatch_inherits(what$class, class(x)),
     S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
   )
 }
@@ -395,6 +375,8 @@ class_extends <- function(child, parent) {
   } else if (is_external_class(parent)) {
     parent <- resolve_external_class_req(parent)
     class_extends(child, parent)
+  } else if (is_S3_class(child) && is_S3_class(parent)) {
+    class_dispatch_inherits(parent$class, child$class)
   } else if (is_S4_class(child) || is_S4_class(parent)) {
     child <- class_extends_S4_name(child)
     parent <- class_extends_S4_name(parent)
@@ -452,6 +434,31 @@ obj_dispatch <- function(x) {
 }
 
 # helpers -----------------------------------------------------------------
+
+# Does `child`'s S3 class vector contain `parent`'s as a contiguous, ordered
+# run? An S3 class specification is often a partial class vector that omits
+# shared trailing classes, e.g. `new_S3_class("Coord")` for objects of class
+# c("CoordCartesian", "Coord", "ggproto", "gg") (#747). Downcasts instead need
+# the strict tail matching of `class_dispatch_extends()`.
+# S7 wrappers of base/S3 types append "S7_object", which we ignore.
+class_dispatch_inherits <- function(parent, child) {
+  parent <- drop_S7_object(parent)
+  child <- drop_S7_object(child)
+  n <- length(parent)
+  if (length(child) < n) {
+    return(FALSE)
+  }
+  if (n == 1L) {
+    return(parent[[1L]] %in% child)
+  }
+
+  for (start in seq_len(length(child) - n + 1L)) {
+    if (identical(child[seq.int(start, length.out = n)], parent)) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
 
 # Does `child`'s dispatch extend `parent`'s? Subclassing only ever prepends
 # more specific classes, so `parent`'s classes must form the tail of `child`'s.

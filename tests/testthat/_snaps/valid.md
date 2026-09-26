@@ -45,6 +45,25 @@
       ! <Double> object is invalid:
       - Underlying data must be <double> not <character>
 
+# validate runs property validators for base type properties
+
+    Code
+      Positive(x = -1)
+    Condition
+      Error in `Positive()`:
+      ! <Positive> object properties are invalid:
+      - @x must be positive
+
+# validate runs class validators for non-base type properties
+
+    Code
+      validate(obj)
+    Condition
+      Error in `validate()`:
+      ! <Wrapper> object properties are invalid:
+      - @x: attr(, 'levels') must be a <character>
+      - @x: Not enough 'levels' for underlying data
+
 # validate checks the type of setters
 
     Code
