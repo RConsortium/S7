@@ -170,13 +170,157 @@ test_that("Ops methods can use super", {
 })
 
 
-test_that("Unary Ops methods work", {
-  Double := new_class(class_double)
-  method(`-`, list(Double, class_missing)) <- function(e1, e2) {
-    Double(-as.double(e1))
+test_that("unary and binary Ops methods dispatch independently (#531)", {
+  local_methods(base_ops[["+"]], base_ops[["-"]])
+  Foo := new_class()
+  Child := new_class(parent = Foo)
+
+  method(`+`, list(Foo, class_missing)) <- function(e1, e2) {
+    expect_identical(missing(e2), TRUE)
+    "plus Foo"
+  }
+  method(`-`, list(Foo, class_missing)) <- function(e1, e2) {
+    expect_identical(missing(e2), TRUE)
+    "minus Foo"
+  }
+  method(`+`, list(Foo, Foo)) <- \(e1, e2) "Foo plus Foo"
+  method(`-`, list(Foo, Foo)) <- \(e1, e2) "Foo minus Foo"
+
+  expect_identical(+Foo(), "plus Foo")
+  expect_identical(-Foo(), "minus Foo")
+  expect_identical(+Child(), "plus Foo")
+  expect_identical(-Child(), "minus Foo")
+  expect_identical(Foo() + Foo(), "Foo plus Foo")
+  expect_identical(Foo() - Foo(), "Foo minus Foo")
+})
+
+test_that("unary Ops methods can use super", {
+  local_methods(base_ops[["-"]])
+  Number := new_class(parent = class_double)
+  Child := new_class(parent = Number)
+  method(`-`, list(Number, class_missing)) <- function(e1, e2) {
+    Number(-S7_data(e1))
+  }
+  method(`-`, list(Child, class_missing)) <- function(e1, e2) {
+    Child(-super(e1, Number))
   }
 
-  expect_identical(-Double(1), Double(-1))
+  expect_identical(-Child(1), Child(-1))
+})
+
+test_that("Ops methods propagate missing-method errors from their bodies", {
+  local_methods(base_ops[["+"]], base_ops[["-"]], base_ops[["!"]])
+  Number := new_class(parent = class_double)
+  Flag := new_class(parent = class_logical)
+  other := new_generic("x")
+  method(`+`, list(Number, class_missing)) <- \(e1, e2) other(e1)
+  method(`-`, list(Number, class_missing)) <- \(e1, e2) other(e1)
+  method(`+`, list(Number, class_double)) <- \(e1, e2) other(e1)
+  method(`!`, Flag) <- \(e1) other(e1)
+
+  expect_snapshot(error = TRUE, +Number(1))
+  expect_snapshot(error = TRUE, -Number(1))
+  expect_snapshot(error = TRUE, Number(1) + 1)
+  expect_snapshot(error = TRUE, !Flag(TRUE))
+})
+
+test_that("Ops methods propagate missing-method errors from the same operator", {
+  local_methods(base_ops[["-"]])
+  Number := new_class(parent = class_double)
+  Other := new_class()
+  method(`-`, list(Number, class_missing)) <- \(e1, e2) Other() - Other()
+
+  expect_snapshot(error = TRUE, -Number(1))
+})
+
+test_that("unary Ops fall back when no method is registered", {
+  local_methods(base_ops[["+"]], base_ops[["-"]])
+  Number := new_class(parent = class_double)
+  method(`+`, list(Number, Number)) <- \(e1, e2) "binary"
+  method(`-`, list(Number, Number)) <- \(e1, e2) "binary"
+
+  expect_identical(+Number(1), Number(1))
+  expect_identical(-Number(1), Number(-1))
+})
+
+test_that("unary Ops dispatch for S3 and S4 classes", {
+  local_methods(base_ops[["+"]], base_ops[["-"]])
+  local_S4_classes()
+  defer(unregister_s3_methods(baseenv(), "Ops"))
+  NumberS3 <- new_S3_class("NumberS3")
+  NumberS4 <- setClass("NumberS4", contains = "numeric")
+
+  method(`+`, list(NumberS3, class_missing)) <- \(e1, e2) "plus S3"
+  method(`-`, list(NumberS3, class_missing)) <- \(e1, e2) "minus S3"
+  method(`+`, list(NumberS4, class_missing)) <- \(e1, e2) "plus S4"
+  method(`-`, list(NumberS4, class_missing)) <- \(e1, e2) "minus S4"
+
+  expect_identical(+structure(1, class = "NumberS3"), "plus S3")
+  expect_identical(-structure(1, class = "NumberS3"), "minus S3")
+  expect_identical(+NumberS4(1), "plus S4")
+  expect_identical(-NumberS4(1), "minus S4")
+})
+
+test_that("packages can unload and reload unary operator methods", {
+  local_methods(base_ops[["+"]], base_ops[["-"]], base_ops[["!"]])
+  operators := local_package({
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    Number := new_class(parent = class_double)
+    Flag := new_class(parent = class_logical)
+    method(`+`, list(Number, class_missing)) <- \(e1, e2) "plus"
+    method(`-`, list(Number, class_missing)) <- \(e1, e2) "minus"
+    method(`!`, Flag) <- \(e1) "not"
+    S7_on_build()
+  })
+
+  operators$.onUnload()
+  expect_identical(+operators$Number(1), operators$Number(1))
+  expect_identical(-operators$Number(1), operators$Number(-1))
+  expect_identical(!operators$Flag(TRUE), operators$Flag(FALSE))
+
+  # Clear session registrations independently before testing the load hook.
+  method(`!`, operators$Flag) <- NULL
+  operators$.onLoad()
+  expect_identical(+operators$Number(1), "plus")
+  expect_identical(-operators$Number(1), "minus")
+  expect_identical(!operators$Flag(TRUE), "not")
+})
+
+test_that("installed packages register unary methods in a fresh session", {
+  skip_if(quick_test())
+  local_dev_S7_lib()
+  lib <- local_libpath()
+  quick_install(test_path("unaryops"), lib)
+
+  result <- callr::r(
+    function() {
+      options(warn = 2)
+      ns <- loadNamespace("unaryops")
+      number <- ns$Number(1)
+      flag <- ns$Flag(TRUE)
+      loaded <- c(+number, -number, !flag)
+      unloadNamespace("unaryops")
+      unloaded <- c(
+        S7::S7_data(+number),
+        S7::S7_data(-number),
+        S7::S7_data(!flag)
+      )
+      loadNamespace("unaryops")
+      reloaded <- c(+number, -number, !flag)
+      list(loaded = loaded, unloaded = unloaded, reloaded = reloaded)
+    },
+    libpath = .libPaths()
+  )
+
+  expect_identical(
+    result,
+    list(
+      loaded = c("plus", "minus", "not"),
+      unloaded = c(1, -1, 0),
+      reloaded = c("plus", "minus", "not")
+    )
+  )
 })
 
 test_that("`!` dispatches on a single argument", {
@@ -186,6 +330,9 @@ test_that("`!` dispatches on a single argument", {
   method(`!`, Logical) <- function(e1) Logical(!as.logical(e1))
 
   expect_identical(!Logical(TRUE), Logical(FALSE))
+  method(`!`, Logical) <- NULL
+  method(`!`, list(Logical)) <- \(e1) "length-1 list"
+  expect_identical(!Logical(TRUE), "length-1 list")
 })
 
 test_that("`!` requires a length-1 signature", {
@@ -223,12 +370,18 @@ test_that("`!` dispatches to S7 methods for S3 and S4 classes", {
 
 test_that("`!` falls back to base behaviour", {
   local_methods(base_ops[["!"]], base_ops[["+"]])
+  defer(unregister_s3_methods(baseenv(), "Ops"))
 
   foo := new_class(parent = class_logical)
   expect_identical(!foo(TRUE), foo(FALSE))
 
-  # including when the class has a method for a binary operator, which
-  # registers an `Ops` group method that also catches `!`
   method(`+`, list(foo, class_any)) <- function(e1, e2) "foo-any"
   expect_identical(!foo(TRUE), foo(FALSE))
+
+  # An S3 bridge installed for a binary operator also catches `!`.
+  method(`+`, list(new_S3_class("FlagS3"), class_any)) <- \(e1, e2) "S3-any"
+  expect_identical(
+    !structure(TRUE, class = "FlagS3"),
+    structure(FALSE, class = "FlagS3")
+  )
 })

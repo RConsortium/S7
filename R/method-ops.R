@@ -2,6 +2,8 @@ base_ops <- NULL
 base_matrix_ops <- NULL
 
 on_load_define_ops <- function() {
+  # lapply() evaluates in a base environment, so the new generics inherit
+  # that environment. This is intentional.
   base_ops <<- lapply(
     setNames(, group_generics()$Ops),
     new_generic,
@@ -9,6 +11,9 @@ on_load_define_ops <- function() {
   )
   # R dispatches `!` through the `Ops` group, but it's always unary
   base_ops[["!"]] <<- new_generic("!", dispatch_args = "e1")
+  # This direct call captures an S7 frame, so set base ownership explicitly.
+  # The generated body is only S7::S7_dispatch(), with no captured bindings.
+  environment(base_ops[["!"]]) <<- asNamespace("base")
 
   base_matrix_ops <<- lapply(
     setNames(, group_generics()$matrixOps),
@@ -19,13 +24,20 @@ on_load_define_ops <- function() {
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
+  frame <- environment()
   cnd <- tryCatch(
     if (missing(e2)) {
       return(base_ops[[.Generic]](e1))
     } else {
       return(base_ops[[.Generic]](e1, e2))
     },
-    S7_error_method_not_found = function(cnd) cnd
+    S7_error_method_not_found = function(cnd) {
+      # Only fall back for this dispatch, not an error from a method's body.
+      if (!identical(cnd$dispatch_caller, frame)) {
+        stop(cnd)
+      }
+      cnd
+    }
   )
 
   if (!missing(e2) && S7_inherits(e1) && S7_inherits(e2)) {

@@ -13,7 +13,6 @@ extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
 extern SEXP missing_call;
 
-extern SEXP R_TRUE;
 extern SEXP s7_proto_object;
 
 
@@ -115,18 +114,18 @@ SEXP generic_args(SEXP generic, SEXP envir) {
 }
 
 __attribute__ ((noreturn))
-void S7_method_lookup_error(SEXP generic, SEXP envir) {
+void S7_method_lookup_error(SEXP generic, SEXP envir, SEXP caller) {
 
   SEXP name = Rf_getAttrib(generic, R_NameSymbol);
   SEXP args = generic_args(generic, envir);
 
-  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang3(Rf_install("method_lookup_error"), name, args));
+  SEXP S7_method_lookup_error_call = PROTECT(Rf_lang4(Rf_install("method_lookup_error"), name, args, caller));
   Rf_eval(S7_method_lookup_error_call, ns_S7);
 
   while(1);
 }
 
-SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
+SEXP method_(SEXP generic, SEXP signature) {
   if (!Rf_inherits(generic, "S7_generic")) {
     return R_NilValue;
   }
@@ -136,13 +135,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
     Rf_error("Corrupt S7_generic: @methods isn't an environment.");
   }
 
-  SEXP m = method_rec(table, signature, 0);
-
-  if (m == R_NilValue && Rf_asLogical(error_)) {
-    S7_method_lookup_error(generic, envir);
-  }
-
-  return m;
+  return method_rec(table, signature, 0);
 }
 
 
@@ -257,7 +250,16 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes, envir, R_TRUE);
+  SEXP m = method_(generic, dispatch_classes);
+  if (m == R_NilValue) {
+    // env_ is S7_dispatch()'s frame; its grandparent called the generic.
+    // Capture it only on failure, leaving successful dispatch unchanged.
+    SEXP caller_call = PROTECT(Rf_lang2(
+      Rf_findFun(Rf_install("parent.frame"), R_BaseEnv), Rf_ScalarInteger(2)
+    ));
+    SEXP caller = PROTECT(Rf_eval(caller_call, env_));
+    S7_method_lookup_error(generic, envir, caller);
+  }
   REPROTECT(m, val_pi); // unnecessary, for rchk only
 
   /// Inlining the method closure in the call like `SETCAR(mcall, m);`

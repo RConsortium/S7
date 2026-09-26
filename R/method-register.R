@@ -16,6 +16,19 @@
 #' in your `.onLoad`. This ensures that all methods are dynamically registered
 #' when needed.
 #'
+#' @section Operators:
+#' Binary operators such as `+` and `-` dispatch on `e1` and `e2`. To define
+#' a unary method, use `list(Foo, class_missing)` as the signature and a
+#' function with arguments `e1` and `e2`; `e2` will be missing when called.
+#' This lets unary and binary methods coexist on the same class.
+#'
+#' The `!` operator is always unary. Use `Foo` (or `list(Foo)`) as its
+#' signature and a function with argument `e1`.
+#'
+#' If no unary method is registered, the operator falls back to R's base
+#' behavior for the underlying object. Errors raised inside a registered
+#' method are propagated.
+#'
 #' @param generic A generic function, i.e. an [S7 generic][new_generic],
 #'   an [external generic][new_external_generic], an [S3 generic][UseMethod],
 #'   or an [S4 generic][methods::setGeneric].
