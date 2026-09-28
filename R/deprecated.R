@@ -332,7 +332,7 @@ deprecated_property <- function(
     default = default,
     name = old
   )
-  class(out) <- c("S7_deprecated_property", "S7_property")
+  class(out) <- c("S7_deprecated_property", class(out))
   out
 }
 
