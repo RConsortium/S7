@@ -1,32 +1,45 @@
 base_ops <- NULL
 base_matrix_ops <- NULL
+ops_no_method <- new.env(parent = emptyenv())
 
 on_load_define_ops <- function() {
+  # Operator generics belong to base and accept only their operands
+  env <- asNamespace("base")
   base_ops <<- lapply(
     setNames(, group_generics()$Ops),
     new_generic,
-    dispatch_args = c("e1", "e2")
+    dispatch_args = c("e1", "e2"),
+    fun = new_function(alist(e1 = , e2 = ), quote(S7::S7_dispatch()), env)
   )
+  # R dispatches `!` through the `Ops` group, but it's always unary
+  base_ops[["!"]] <<- new_generic(
+    "!",
+    dispatch_args = "e1",
+    fun = new_function(alist(e1 = ), quote(S7::S7_dispatch()), env)
+  )
+
   base_matrix_ops <<- lapply(
     setNames(, group_generics()$matrixOps),
     new_generic,
-    dispatch_args = c("x", "y")
+    dispatch_args = c("x", "y"),
+    fun = new_function(alist(x = , y = ), quote(S7::S7_dispatch()), env)
   )
 }
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
-  cnd <- tryCatch(
-    return(base_ops[[.Generic]](e1, e2)),
-    S7_error_method_not_found = function(cnd) cnd
-  )
-
-  if (S7_inherits(e1) && S7_inherits(e2)) {
-    stop(cnd)
-  } else {
+  out <-
+    .External2(method_call_, base_ops[[.Generic]], environment(), ops_no_method)
+  if (identical(out, ops_no_method)) {
+    if (!missing(e2) && S7_inherits(e1) && S7_inherits(e2)) {
+      method_lookup_error(.Generic, list(e1 = e1, e2 = e2))
+    }
     # Must call NextMethod() directly in the method, not wrapped in an
     # anonymous function.
     NextMethod()
+  } else {
+    # R makes operator results visible, even when the method returns invisibly
+    out
   }
 }
 

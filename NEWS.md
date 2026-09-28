@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* Operator methods now propagate missing-method errors raised inside their bodies instead of silently falling back to base behavior (#490).
 * New `:=` operator creates and names an object in one step, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")` (#658).
 * The `:=` operator now stays ahead of rlang and data.table regardless of attachment order, without emitting `:=` masking messages (#697).
 * The class object that S7 stores on each instance now lives in the `_S7_class` attribute (previously `S7_class`), moving it into the `_`-prefixed namespace reserved for S7 internals so it can't collide with a user-defined property. Objects created by an older version of S7 (e.g. serialised to disk or baked into another package's lazy-load database) continue to work, as S7 falls back to the old attribute name when reading them (#677).
@@ -24,6 +25,7 @@
 * `new_object()` no longer copies an S7 class each time a default or custom constructor creates an object. New objects instead store a shared internal class reference, which also preserves sharing when multiple objects are serialised together. Constructors created by older versions of S7 continue to work through the previous fallback (#742).
 * `method<-` can now register methods on S3 and S4 generics with base types (e.g. `class_character`), S3 classes (`new_S3_class()`, `class_factor`, etc.), S7 unions (expanded to one registration per class), `class_any` (registered as the `default` method), and `NULL` (registered as the `NULL` method) (#455).
 * `method<-` no longer emits an "Overwriting method" message when re-registering an identical method, eliminating spurious messages from `devtools::load_all()` (#474).
+* `method<-` now supports unary `+`, `-`, and `!` methods (#531).
 * `method<-` now only checks that a method is consistent with its generic in development contexts (i.e. during `pkgload::load_all()`, when `R CMD check` is checking a package involved in the registration, or when the method is registered outside of a package). This means that when a package changes one of its generics, users of already-installed downstream packages no longer see errors or warnings that they can't do anything about (#726, #728). Methods registered inside testthat tests are treated as an end-user context, so tests give the same results under `R CMD check` as when run locally.
 * `method<-` now reports an incompatible method signature with a warning rather than an error while `pkgload::load_all()` is active, and skips registering the method, so that a package remains sourceable while its methods are out of sync with a changed generic, letting you fix them one by one (#726).
 * `new_class()` now errors if a child class overrides a parent property with a type that doesn't extend the parent's type, since such a class could never be instantiated (#352, #708).
