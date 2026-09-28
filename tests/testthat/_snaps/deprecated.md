@@ -232,6 +232,80 @@
       Warning:
       `<S7::Hat>@brim` was deprecated in S7 1.0.0.
 
+# deprecated properties are omitted from object printing
+
+    Code
+      expect_no_warning(print(b))
+    Output
+      <S7::Basket>
+       @ size   : num 3
+       @ doubled: num 6
+    Code
+      expect_no_warning(str(b))
+    Output
+      <S7::Basket>
+       @ size   : num 3
+       @ doubled: num 6
+    Code
+      expect_no_warning(str(list(b)))
+    Output
+      List of 1
+       $ : <S7::Basket>
+        ..@ size   : num 3
+        ..@ doubled: num 6
+
+---
+
+    Code
+      b@count
+    Condition
+      Warning:
+      `<S7::Basket>@count` was deprecated in S7 1.5.0.
+      Please use `<S7::Basket>@size` instead.
+    Output
+      [1] 3
+    Code
+      b@retired
+    Condition
+      Warning:
+      `<S7::Basket>@retired` was deprecated in S7 1.5.0.
+    Output
+      [1] 1
+
+# printing respects inherited and overridden deprecated properties
+
+    Code
+      expect_no_warning(print(Child()))
+    Output
+      <S7::Child>
+    Code
+      expect_no_warning(print(Visible(x = 1)))
+    Output
+      <S7::Visible>
+       @ x: num 1
+
+# printing skips properties that signal deprecation errors
+
+    Code
+      print(b)
+    Output
+      <S7::Basket>
+       @ size: num 3
+    Code
+      str(b)
+    Output
+      <S7::Basket>
+       @ size: num 3
+
+---
+
+    Code
+      b@count
+    Condition
+      Error:
+      ! <S7::Basket>@count was deprecated in S7 1.5.0 and is now defunct.
+      i Please use <S7::Basket>@size instead.
+
 # deprecated_property() validates its inputs
 
     Code

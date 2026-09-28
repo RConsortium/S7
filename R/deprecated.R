@@ -234,6 +234,9 @@ is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
 #' with a replacement, supplying a value to the constructor does not warn,
 #' because S7 can't distinguish a user-supplied value from the default.)
 #'
+#' The default `print()` and `str()` methods omit deprecated properties
+#' without calling their getters.
+#'
 #' @param old The name of the deprecated property, as a string. Because the
 #'   name is part of the property itself, the `properties` list entry doesn't
 #'   need to be named.
@@ -322,14 +325,18 @@ deprecated_property <- function(
     default <- default %||% as.name(new)
   }
 
-  new_property(
+  out <- new_property(
     class = class,
     getter = getter,
     setter = setter,
     default = default,
     name = old
   )
+  class(out) <- c("S7_deprecated_property", "S7_property")
+  out
 }
+
+is_deprecated_property <- function(x) inherits(x, "S7_deprecated_property")
 
 # The wrapper's closure environment (the execution environment of
 # new_deprecated_fun()) holds everything about the deprecation, so

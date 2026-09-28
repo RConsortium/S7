@@ -268,6 +268,66 @@ test_that("deprecated_property() without a replacement preserves NULL", {
   expect_identical(attr(h, "brim"), 2)
 })
 
+test_that("deprecated properties are omitted from object printing", {
+  Basket := new_class(
+    properties = list(
+      size = class_double,
+      doubled = new_property(getter = \(self) self@size * 2),
+      deprecated_property("count", new = "size", when = "1.5.0"),
+      deprecated_property("retired", when = "1.5.0", class = class_double)
+    )
+  )
+  b <- Basket(size = 3, retired = 1)
+
+  expect_snapshot({
+    expect_no_warning(print(b))
+    expect_no_warning(str(b))
+    expect_no_warning(str(list(b)))
+  })
+  expect_snapshot({
+    b@count
+    b@retired
+  })
+})
+
+test_that("printing respects inherited and overridden deprecated properties", {
+  Parent := new_class(
+    properties = list(
+      deprecated_property("x", when = "1.0.0", class = class_double)
+    )
+  )
+  Child := new_class(parent = Parent)
+  Visible := new_class(parent = Parent, properties = list(x = class_double))
+
+  expect_snapshot({
+    expect_no_warning(print(Child()))
+    expect_no_warning(print(Visible(x = 1)))
+  })
+})
+
+test_that("printing skips properties that signal deprecation errors", {
+  skip_if_not_installed("lifecycle")
+
+  Basket := new_class(
+    properties = list(
+      size = class_double,
+      deprecated_property(
+        "count",
+        new = "size",
+        when = "1.5.0",
+        method = "lifecycle(stop)"
+      )
+    )
+  )
+  b <- Basket(size = 3)
+
+  expect_snapshot({
+    print(b)
+    str(b)
+  })
+  expect_snapshot(b@count, error = TRUE)
+})
+
 test_that("deprecated_property() validates its inputs", {
   expect_snapshot(error = TRUE, {
     deprecated_property(1, when = "1.0.0")

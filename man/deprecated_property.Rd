@@ -54,6 +54,9 @@ To deprecate a property that has no replacement, omit \code{new}: the property
 stores data as usual, but warns when read or written. (Unlike a property
 with a replacement, supplying a value to the constructor does not warn,
 because S7 can't distinguish a user-supplied value from the default.)
+
+The default \code{print()} and \code{str()} methods omit deprecated properties
+without calling their getters.
 }
 \examples{
 # A property renamed from count to size:

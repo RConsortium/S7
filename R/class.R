@@ -488,7 +488,11 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
     cat("\n")
   }
 
-  str_nest(props(object), "@", ..., nest.lev = nest.lev)
+  properties <- Filter(
+    Negate(is_deprecated_property),
+    S7_class(object)@properties
+  )
+  str_nest(props(object, names(properties)), "@", ..., nest.lev = nest.lev)
 }
 
 #' Retrieve the class specification of an object

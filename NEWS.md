@@ -43,6 +43,7 @@
 * `new_property()` now warns when `default` is a complex value like a named vector, because such values are inlined into the constructor and can cause `R CMD check` failures. Wrap them in `quote()` instead. This warning will become an error in a future release (#541).
 * `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
+* `print()` and `str()` now omit properties created by `deprecated_property()` (#754).
 * `print(<S7_class>)` now shows property defaults inline (`= "value"`) and annotates read-only properties (`[read-only]`) (#439).
 * `prop()` and `prop<-()` errors from getters and setters (including custom) now report a synthetic `<Class>@<prop>` call, making it easier to see which property triggered the error (#416, #536, #638).
 * `prop()` no longer leaves an object in a broken state when a custom getter signals an error (#520, #640, #638).
