@@ -3,45 +3,44 @@ base_matrix_ops <- NULL
 ops_no_method <- new.env(parent = emptyenv())
 
 on_load_define_ops <- function() {
-  # lapply() evaluates in a base environment, so the new generics inherit
-  # that environment. This is intentional.
+  # Operator generics belong to base and accept only their operands.
+  env <- asNamespace("base")
   base_ops <<- lapply(
     setNames(, group_generics()$Ops),
     new_generic,
-    dispatch_args = c("e1", "e2")
+    dispatch_args = c("e1", "e2"),
+    fun = new_function(alist(e1 = , e2 = ), quote(S7::S7_dispatch()), env)
   )
   # R dispatches `!` through the `Ops` group, but it's always unary
-  base_ops[["!"]] <<- new_generic("!", dispatch_args = "e1")
-  # This direct call captures an S7 frame, so set base ownership explicitly.
-  # The generated body is only S7::S7_dispatch(), with no captured bindings.
-  environment(base_ops[["!"]]) <<- asNamespace("base")
+  base_ops[["!"]] <<- new_generic(
+    "!",
+    dispatch_args = "e1",
+    fun = new_function(alist(e1 = ), quote(S7::S7_dispatch()), env)
+  )
 
   base_matrix_ops <<- lapply(
     setNames(, group_generics()$matrixOps),
     new_generic,
-    dispatch_args = c("x", "y")
+    dispatch_args = c("x", "y"),
+    fun = new_function(alist(x = , y = ), quote(S7::S7_dispatch()), env)
   )
 }
 
 #' @export
 Ops.S7_object <- function(e1, e2) {
-  out <- withVisible(ops_dispatch(base_ops[[.Generic]], e1, e2))
-  if (!identical(out$value, ops_no_method)) {
-    if (out$visible) return(out$value) else return(invisible(out$value))
-  }
-
-  if (!missing(e2) && S7_inherits(e1) && S7_inherits(e2)) {
-    method_lookup_error(.Generic, list(e1 = e1, e2 = e2))
-  } else {
+  out <-
+    .External2(method_call_, base_ops[[.Generic]], environment(), ops_no_method)
+  if (identical(out, ops_no_method)) {
+    if (!missing(e2) && S7_inherits(e1) && S7_inherits(e2)) {
+      method_lookup_error(.Generic, list(e1 = e1, e2 = e2))
+    }
     # Must call NextMethod() directly in the method, not wrapped in an
     # anonymous function.
-    NextMethod()
+    return(NextMethod())
   }
-}
 
-# Keep the generic's argument frame, including ..., for native dispatch.
-ops_dispatch <- function(generic, e1, e2, ...) {
-  .External2(method_call_, generic, environment(), ops_no_method)
+  # R makes operator results visible, even when the method returns invisibly.
+  out
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)

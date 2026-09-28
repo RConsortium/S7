@@ -233,6 +233,40 @@ test_that("Ops methods propagate missing-method errors from the same operator", 
   expect_snapshot(error = TRUE, -Number(1))
 })
 
+test_that("Ops methods have fixed argument lists", {
+  local_R_CMD_check()
+  local_methods(base_ops[["+"]], base_ops[["!"]])
+  Number := new_class(parent = class_double)
+
+  expect_snapshot(error = TRUE, {
+    method(`+`, list(Number, class_missing)) <- function(e1, e2, ...) NULL
+  })
+  expect_snapshot(error = TRUE, {
+    method(`!`, Number) <- function(e1, ...) NULL
+  })
+})
+
+test_that("matrixOps methods have fixed argument lists", {
+  skip_if(getRversion() < "4.3")
+  local_R_CMD_check()
+  local_methods(base_matrix_ops[["%*%"]])
+  Number := new_class(parent = class_double)
+
+  expect_snapshot(error = TRUE, {
+    method(`%*%`, list(Number, Number)) <- function(x, y, ...) NULL
+  })
+})
+
+test_that("Ops methods receive the original argument expressions", {
+  local_methods(base_ops[["-"]])
+  Number := new_class(parent = class_double)
+  method(`-`, list(Number, class_missing)) <- function(e1, e2) {
+    list(substitute(e1), missing(e2))
+  }
+
+  expect_identical(-Number(1), list(quote(Number(1)), TRUE))
+})
+
 test_that("Ops methods preserve restarts when propagating method errors", {
   local_methods(base_ops[["-"]])
   Number := new_class(parent = class_double)
