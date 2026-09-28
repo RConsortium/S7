@@ -9,7 +9,8 @@ deprecated_generic(
   new = NULL,
   old = NULL,
   when,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  new_label = NULL
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ only displayed once every eight hours.
 
 The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
+
+\item{new_label}{Optional replacement label for the message, such as \code{"Bar()"}
+or \code{"pkg::Bar()"}. Requires \code{new}. By default, the label uses the
+replacement's internal name and package. Set this when the replacement
+is exported under a different name; it does not change the target.}
 }
 \value{
 A function with class \code{S7_deprecated_generic}.
@@ -53,6 +59,15 @@ export under the old name:
 
 To deprecate a generic that has no replacement, supply the generic itself
 as \code{old}: it continues to power the deprecated name, but calls warn.
+
+A replacement in another package is resolved in its owning namespace, so
+calls and method registrations through either export use the same method
+table. The replacement must remain available under its original name in
+that namespace.
+
+The wrapper uses the replacement's signature. Changes to dispatch arguments
+or other formals need an adapter or a separate old generic. To deprecate an
+argument, put the deprecation in the generic's function instead.
 }
 \examples{
 # A generic renamed from summarise() to summarize():

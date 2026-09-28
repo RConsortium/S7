@@ -9,7 +9,8 @@ deprecated_class(
   new = NULL,
   old = NULL,
   when,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  new_label = NULL
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ only displayed once every eight hours.
 
 The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
+
+\item{new_label}{Optional replacement label for the message, such as \code{"Bar()"}
+or \code{"pkg::Bar()"}. Requires \code{new}. By default, the label uses the
+replacement's internal name and package. Set this when the replacement
+is exported under a different name; it does not change the target.}
 }
 \value{
 A function with class \code{S7_deprecated_class}.
@@ -55,6 +61,15 @@ an instance of \code{new}.
 To deprecate a class that has no replacement, supply the class itself as
 \code{old}: it continues to power the deprecated name, but constructing an
 instance warns.
+
+Renaming or moving a class changes its identity. Downstream packages that
+define subclasses must be rebuilt: installed subclasses retain the old
+dispatch and property metadata. Saved instances also retain their old
+identity and may need explicit migration.
+
+To rename only the exported constructor while preserving the class's
+identity, keep the original class object under the new export and supply
+\code{new_label} to name that export in the message (see the example below).
 }
 \examples{
 # A class renamed from Dog to Pet:
@@ -73,6 +88,12 @@ speak(Pet(name = "Rex"))
 Cat := new_class(properties = list(lives = class_double))
 Cat := deprecated_class(old = Cat, when = "3.0.0")
 Cat(lives = 9)
+
+# Rename an export while preserving existing subclasses and instances:
+Foo := new_class()
+Bar <- Foo
+Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
+Foo()
 }
 \seealso{
 \code{\link[=deprecated_generic]{deprecated_generic()}} and \code{\link[=deprecated_property]{deprecated_property()}} to deprecate

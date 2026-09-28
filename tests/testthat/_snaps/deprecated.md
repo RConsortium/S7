@@ -96,6 +96,21 @@
       ! `old@name` ("new_gen") must match `name` ("old_gen").
       * To deprecate in favor of a renamed generic, use `new`.
     Code
+      deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = 1)
+    Condition
+      Error in `deprecated_generic()`:
+      ! `new_label` must be a single string.
+    Code
+      deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = "")
+    Condition
+      Error in `deprecated_generic()`:
+      ! `new_label` must not be "" or NA.
+    Code
+      deprecated_generic("new_gen", old = new_gen, when = "1.0.0", new_label = "x()")
+    Condition
+      Error in `deprecated_generic()`:
+      ! `new_label` requires `new`.
+    Code
       deprecated_generic("old_gen", new = new_gen, when = "1.0.0", method = "warn")
     Condition
       Error in `deprecated_generic()`:
@@ -117,6 +132,55 @@
     Condition
       Warning in `Cat()`:
       `Cat()` was deprecated in S7 3.0.0.
+
+# replacement labels can preserve class and generic identities
+
+    Code
+      x <- Foo(x = 1)
+    Condition
+      Warning in `Foo()`:
+      `Foo()` was deprecated in S7 2.0.0.
+      Please use `Bar()` instead.
+
+---
+
+    Code
+      out <- foo(x)
+    Condition
+      Warning in `foo()`:
+      `foo()` was deprecated in S7 2.0.0.
+      Please use `bar()` instead.
+
+---
+
+    Code
+      print(Foo)
+    Output
+      <S7_deprecated_class> `Foo()` was deprecated in S7 2.0.0. Please use `Bar()` instead.
+    Code
+      print(foo)
+    Output
+      <S7_deprecated_generic> `foo()` was deprecated in S7 2.0.0. Please use `bar()` instead.
+
+---
+
+    Code
+      print(Older)
+    Output
+      <S7_deprecated_class> `Older()` was deprecated in S7 3.0.0. Please use `Bar()` instead.
+    Code
+      print(older)
+    Output
+      <S7_deprecated_generic> `older()` was deprecated in S7 3.0.0. Please use `bar()` instead.
+
+# replacement labels work with lifecycle
+
+    Code
+      Foo()
+    Condition
+      Error:
+      ! `Foo()` was deprecated in S7 2.0.0 and is now defunct.
+      i Please use `Bar()` instead.
 
 # deprecated_class() validates its inputs
 
@@ -156,6 +220,16 @@
       Error in `deprecated_class()`:
       ! `old@name` ("Pet") must match `name` ("Old").
       * To deprecate in favor of a renamed class, use `new`.
+    Code
+      deprecated_class("Old", new = Pet, when = "1.0.0", new_label = NA_character_)
+    Condition
+      Error in `deprecated_class()`:
+      ! `new_label` must not be "" or NA.
+    Code
+      deprecated_class("Pet", old = Pet, when = "1.0.0", new_label = "Other()")
+    Condition
+      Error in `deprecated_class()`:
+      ! `new_label` requires `new`.
 
 # deprecated_property() with a replacement delegates and warns
 

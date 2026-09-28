@@ -13,6 +13,15 @@
 #' To deprecate a generic that has no replacement, supply the generic itself
 #' as `old`: it continues to power the deprecated name, but calls warn.
 #'
+#' A replacement in another package is resolved in its owning namespace, so
+#' calls and method registrations through either export use the same method
+#' table. The replacement must remain available under its original name in
+#' that namespace.
+#'
+#' The wrapper uses the replacement's signature. Changes to dispatch arguments
+#' or other formals need an adapter or a separate old generic. To deprecate an
+#' argument, put the deprecation in the generic's function instead.
+#'
 #' @param name The old name of the generic, as a string. As with
 #'   [new_generic()], the result should be assigned to a variable with this
 #'   name, most easily with [:=].
@@ -31,6 +40,10 @@
 #'
 #'   The lifecycle options require the lifecycle package to be installed,
 #'   and to be a dependency of your package.
+#' @param new_label Optional replacement label for the message, such as `"Bar()"`
+#'   or `"pkg::Bar()"`. Requires `new`. By default, the label uses the
+#'   replacement's internal name and package. Set this when the replacement
+#'   is exported under a different name; it does not change the target.
 #' @returns A function with class `S7_deprecated_generic`.
 #' @seealso [deprecated_class()] and [deprecated_property()] to deprecate
 #'   other parts of your API.
@@ -57,7 +70,8 @@ deprecated_generic <- function(
   new = NULL,
   old = NULL,
   when,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  new_label = NULL
 ) {
   check_name(name)
   check_when(when)
@@ -67,6 +81,12 @@ deprecated_generic <- function(
 
   if (is.null(new) == is.null(old)) {
     stop2("Must supply exactly one of `new` and `old`.")
+  }
+  if (!is.null(new_label)) {
+    check_name(new_label)
+    if (is.null(new)) {
+      stop2("`new_label` requires `new`.")
+    }
   }
 
   if (is.null(new)) {
@@ -86,7 +106,7 @@ deprecated_generic <- function(
       stop2(msg)
     }
     target <- old
-    with <- NULL
+    new_label <- NULL
   } else {
     if (is_deprecated_generic(new)) {
       new <- deprecated_target(new)
@@ -96,13 +116,14 @@ deprecated_generic <- function(
       stop2(msg)
     }
     target <- new
-    with <- target_label(package_name(target), target@name, package)
+    new_label <- new_label %||%
+      target_label(package_name(target), target@name, package)
   }
 
   new_deprecated_fun(
     target = target,
     what = paste0(name, "()"),
-    with = with,
+    with = new_label,
     when = when,
     package = package,
     method = method,
@@ -129,6 +150,15 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' To deprecate a class that has no replacement, supply the class itself as
 #' `old`: it continues to power the deprecated name, but constructing an
 #' instance warns.
+#'
+#' Renaming or moving a class changes its identity. Downstream packages that
+#' define subclasses must be rebuilt: installed subclasses retain the old
+#' dispatch and property metadata. Saved instances also retain their old
+#' identity and may need explicit migration.
+#'
+#' To rename only the exported constructor while preserving the class's
+#' identity, keep the original class object under the new export and supply
+#' `new_label` to name that export in the message (see the example below).
 #'
 #' @param name The old name of the class, as a string. As with [new_class()],
 #'   the result should be assigned to a variable with this name, most easily
@@ -159,12 +189,19 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Cat := new_class(properties = list(lives = class_double))
 #' Cat := deprecated_class(old = Cat, when = "3.0.0")
 #' Cat(lives = 9)
+#'
+#' # Rename an export while preserving existing subclasses and instances:
+#' Foo := new_class()
+#' Bar <- Foo
+#' Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
+#' Foo()
 deprecated_class <- function(
   name,
   new = NULL,
   old = NULL,
   when,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  new_label = NULL
 ) {
   check_name(name)
   check_when(when)
@@ -174,6 +211,12 @@ deprecated_class <- function(
 
   if (is.null(new) == is.null(old)) {
     stop2("Must supply exactly one of `new` and `old`.")
+  }
+  if (!is.null(new_label)) {
+    check_name(new_label)
+    if (is.null(new)) {
+      stop2("`new_label` requires `new`.")
+    }
   }
 
   if (is.null(new)) {
@@ -193,7 +236,7 @@ deprecated_class <- function(
       stop2(msg)
     }
     target <- old
-    with <- NULL
+    new_label <- NULL
   } else {
     if (is_deprecated_class(new)) {
       new <- deprecated_target(new)
@@ -203,13 +246,14 @@ deprecated_class <- function(
       stop2(msg)
     }
     target <- new
-    with <- target_label(target@package, target@name, package)
+    new_label <- new_label %||%
+      target_label(target@package, target@name, package)
   }
 
   new_deprecated_fun(
     target = target,
     what = paste0(name, "()"),
-    with = with,
+    with = new_label,
     when = when,
     package = package,
     method = method,
@@ -367,7 +411,14 @@ is_deprecated_property <- function(x) inherits(x, "S7_deprecated_property")
 # The wrapper's closure environment (the execution environment of
 # new_deprecated_fun()) holds everything about the deprecation, so
 # introspection reads from it rather than from duplicated attributes.
-deprecated_target <- function(x) environment(x)$target
+deprecated_target <- function(x) {
+  target <- environment(x)$target
+  if (is_external_generic(target)) {
+    as_generic(resolve_generic(target))
+  } else {
+    target
+  }
+}
 
 # Build the wrapper exported under the old name: it signals the deprecation,
 # then evaluates the user's call with the target in functional position, so
@@ -382,6 +433,22 @@ new_deprecated_fun <- function(
   env,
   class
 ) {
+  # Force metadata so promises don't retain the caller's target object.
+  what
+  with
+  when
+  package
+  method
+  env
+  class
+  args <- formals(target)
+  if (is_S7_generic(target)) {
+    target_package <- package_name(target)
+    if (!is.null(target_package) && !identical(target_package, package)) {
+      # Serializing a foreign generic would duplicate its method table.
+      target <- as_external_generic(target)
+    }
+  }
   delegate <- function() {
     call <- sys.call(-1L)
     user_env <- parent.frame(2L)
@@ -395,13 +462,13 @@ new_deprecated_fun <- function(
       call = call,
       user_env = user_env
     )
-    call[[1L]] <- target
+    call[[1L]] <- deprecated_target(out)
     eval(call, user_env)
   }
   # Keep the target's argument names out of the environment where deprecation
   # state is read. Embed the delegate so even an argument named `delegate`
   # cannot shadow it.
-  out <- new_function(formals(target), as.call(list(delegate)), environment())
+  out <- new_function(args, as.call(list(delegate)), environment())
   class(out) <- c(class, "function")
   out
 }

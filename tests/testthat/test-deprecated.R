@@ -120,6 +120,59 @@ test_that("external generic registration resolves through a deprecated generic",
   expect_equal(asNamespace("pkgA")$new_gen("hi"), "HI")
 })
 
+test_that("installed aliases preserve generic methods and class identities", {
+  # Relies on installed S7, including in the package installation subprocesses.
+  skip_if(quick_test())
+  lib <- local_libpath()
+  fixtures <- test_path("deprecated")
+  quick_install(file.path(fixtures, c("home-v1", "user")), lib)
+  expect_identical(
+    callr::r(
+      function() {
+        loadNamespace("deprecatedUser")
+        c(deprecatedHome::gen(1), deprecatedHome::gen("x"))
+      },
+      libpath = .libPaths()
+    ),
+    c("double", "character")
+  )
+  quick_install(file.path(fixtures, c("core", "home-v2")), lib)
+
+  check <- function() {
+    loadNamespace("deprecatedUser")
+    old <- deprecatedHome::gen
+    new <- deprecatedCore::gen
+    child <- deprecatedUser::Child(value = 2)
+    saved <- deprecatedUser::saved
+    stopifnot(
+      identical(new(1), "double"),
+      identical(new("x"), "character"),
+      identical(suppressWarnings(old(1)), "double"),
+      identical(suppressWarnings(old("x")), "character"),
+      S7::S7_inherits(child, deprecatedHome::Bar),
+      S7::S7_inherits(saved, deprecatedHome::Bar),
+      identical(new(child), 2),
+      identical(new(saved), 3),
+      identical(suppressWarnings(old(child)), 2),
+      identical(suppressWarnings(old(saved)), 3),
+      identical(
+        S7::method(old, S7::class_double),
+        S7::method(new, S7::class_double)
+      ),
+      identical(S7::S7_methods(old), S7::S7_methods(new))
+    )
+    S7::method(old, S7::class_logical) <- function(x, ...) "logical"
+    stopifnot(identical(new(TRUE), "logical"))
+    S7::method(old, S7::class_logical) <- NULL
+    stopifnot(nrow(S7::S7_methods(new)) == 3L)
+    TRUE
+  }
+  expect_identical(callr::r(check, libpath = .libPaths()), TRUE)
+
+  quick_install(file.path(fixtures, "user"), lib)
+  expect_identical(callr::r(check, libpath = .libPaths()), TRUE)
+})
+
 test_that("deprecated_generic() validates its inputs", {
   new_gen := new_generic("x")
   expect_snapshot(error = TRUE, {
@@ -131,6 +184,14 @@ test_that("deprecated_generic() validates its inputs", {
     deprecated_generic("old_gen", new = new_gen, old = new_gen, when = "1.0.0")
     deprecated_generic("old_gen", old = mean, when = "1.0.0")
     deprecated_generic("old_gen", old = new_gen, when = "1.0.0")
+    deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = 1)
+    deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = "")
+    deprecated_generic(
+      "new_gen",
+      old = new_gen,
+      when = "1.0.0",
+      new_label = "x()"
+    )
     deprecated_generic(
       "old_gen",
       new = new_gen,
@@ -174,6 +235,47 @@ test_that("deprecated_class() without a replacement still constructs", {
   expect_equal(S7_class(felix)@name, "Cat")
 })
 
+test_that("replacement labels can preserve class and generic identities", {
+  Foo := new_class(properties = list(x = class_double))
+  Bar <- Foo
+  Child := new_class(parent = Foo)
+  foo := new_generic("x")
+  method(foo, Foo) <- function(x) x@x
+  bar <- foo
+  Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
+  foo := deprecated_generic(new = bar, when = "2.0.0", new_label = "bar()")
+
+  expect_snapshot(x <- Foo(x = 1))
+  expect_identical(S7_class(x), Bar)
+  expect_no_warning(child <- Child(x = 2))
+  expect_equal(bar(child), 2)
+  expect_snapshot(out <- foo(x))
+  expect_equal(out, 1)
+  expect_snapshot({
+    print(Foo)
+    print(foo)
+  })
+  Older := deprecated_class(new = Foo, when = "3.0.0", new_label = "Bar()")
+  older := deprecated_generic(new = foo, when = "3.0.0", new_label = "bar()")
+  expect_snapshot({
+    print(Older)
+    print(older)
+  })
+})
+
+test_that("replacement labels work with lifecycle", {
+  skip_if_not_installed("lifecycle")
+  Foo := new_class()
+  Bar <- Foo
+  Foo := deprecated_class(
+    new = Bar,
+    when = "2.0.0",
+    new_label = "Bar()",
+    method = "lifecycle(stop)"
+  )
+  expect_snapshot(error = TRUE, Foo())
+})
+
 test_that("deprecated classes work with the union operator", {
   Pet := new_class()
   Dog := deprecated_class(new = Pet, when = "1.0.0")
@@ -195,6 +297,13 @@ test_that("deprecated_class() validates its inputs", {
     deprecated_class("Old", new = Pet, old = Pet, when = "1.0.0")
     deprecated_class("Old", old = 1, when = "1.0.0")
     deprecated_class("Old", old = Pet, when = "1.0.0")
+    deprecated_class(
+      "Old",
+      new = Pet,
+      when = "1.0.0",
+      new_label = NA_character_
+    )
+    deprecated_class("Pet", old = Pet, when = "1.0.0", new_label = "Other()")
   })
 })
 

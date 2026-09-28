@@ -1,0 +1,5 @@
+import(S7)
+importFrom(deprecatedHome, gen)
+importFrom(deprecatedHome, Foo)
+export(Child)
+export(saved)
