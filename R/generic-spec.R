@@ -125,7 +125,7 @@ internal_generics <- function() {
 }
 
 group_generics <- function() {
-  # S3 group generics can be defined by combining S4 group generics.
+  # S3 group generics can be defined by combining S4 group generics
   groups <- list(
     Ops = c("Arith", "Compare", "Logic"),
     Math = c("Math", "Math2"),
@@ -134,7 +134,7 @@ group_generics <- function() {
   )
 
   out <- lapply(groups, function(x) unlist(lapply(x, methods::getGroupMembers)))
-  # S4 groups omit `!`, which belongs to the S3 Ops group.
+  # S4 groups omit `!`, which belongs to the S3 Ops group
   out$Ops <- c(out$Ops, "!")
   if (getRversion() >= "4.3") {
     out$matrixOps <- c("%*%")

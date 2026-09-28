@@ -3,7 +3,7 @@ base_matrix_ops <- NULL
 ops_no_method <- new.env(parent = emptyenv())
 
 on_load_define_ops <- function() {
-  # Operator generics belong to base and accept only their operands.
+  # Operator generics belong to base and accept only their operands
   env <- asNamespace("base")
   base_ops <<- lapply(
     setNames(, group_generics()$Ops),
@@ -39,7 +39,7 @@ Ops.S7_object <- function(e1, e2) {
     return(NextMethod())
   }
 
-  # R makes operator results visible, even when the method returns invisibly.
+  # R makes operator results visible, even when the method returns invisibly
   out
 }
 
