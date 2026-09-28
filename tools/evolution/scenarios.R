@@ -953,9 +953,9 @@ scenarios <- c(
     scenario(
       name = "class-deprecated-prop-same-value",
       expect = paste(
-        "A deprecates count in favor of size. An explicit write of the current",
-        "value should signal deprecation just like a changed write. The smoke",
-        "test fails if the helper silently skips this use of the old name."
+        "A deprecates count in favor of size. Equal constructor arguments and",
+        "an explicit write of the current value remain silent, including in",
+        "stop mode. This is the documented initialization exception."
       ),
       a_v1 = {
         Foo := new_class(properties = list(count = class_double))
@@ -971,14 +971,161 @@ scenarios <- c(
       b = {},
       b_test = {
         library(evoB)
-        x <- evoA::Foo(count = 2)
         warnings <- 0L
-        withCallingHandlers(x@count <- 2, warning = function(w) {
-          warnings <<- warnings + 1L
+        withCallingHandlers(
+          {
+            x <- if (packageVersion("evoA") >= "2.0.0") {
+              evoA::Foo(size = 2, count = 2)
+            } else {
+              evoA::Foo(count = 2)
+            }
+            x@count <- 2
+          },
+          warning = function(w) warnings <<- warnings + 1L
+        )
+        stopifnot(warnings == 0L)
+      }
+    ),
+    scenario(
+      name = "gen-export-rename-deprecated",
+      expect = paste(
+        "A exports the original gen1 generic as gen2 and deprecates gen1 with",
+        "new_label. Both exports share B's methods, stale or rebuilt, and",
+        "the warning recommends gen2 even though the generic's name is gen1."
+      ),
+      a_v1 = {
+        gen1 := new_generic("x")
+      },
+      a_v2 = {
+        gen1 := new_generic("x")
+        gen2 <- gen1
+        gen1 := deprecated_generic(
+          new = gen2,
+          when = "2.0.0",
+          new_label = "gen2()"
+        )
+      },
+      b = {
+        BClass := new_class()
+        method(gen1, BClass) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::BClass()
+        warnings <- character()
+        value <- withCallingHandlers(evoA::gen1(x), warning = function(w) {
+          warnings <<- c(warnings, conditionMessage(w))
         })
+        stopifnot(identical(value, "B"))
         if (packageVersion("evoA") >= "2.0.0") {
-          stopifnot(warnings == 1L)
+          stopifnot(
+            identical(evoA::gen2(x), "B"),
+            length(warnings) == 1L,
+            grepl("Please use `gen2()` instead.", warnings, fixed = TRUE)
+          )
         }
+      },
+      b_ns = "importFrom(evoA, gen1)"
+    ),
+    scenario(
+      name = "class-export-rename-deprecated",
+      expect = paste(
+        "A exports the original Foo class as Bar and deprecates Foo with",
+        "new_label. The class identity stays Foo, so B's installed subclass,",
+        "methods, and saved instance continue to work without rebuilding."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        Foo := new_class(properties = list(size = class_double))
+        Bar <- Foo
+        Foo := deprecated_class(
+          new = Bar,
+          when = "2.0.0",
+          new_label = "Bar()"
+        )
+      },
+      b = {
+        Foo := new_external_class(package = "evoA")
+        Baz := new_class(parent = Foo)
+        gen := new_generic("x")
+        method(gen, Foo) <- function(x, ...) x@size
+        saved <- evoA::Foo(size = 1)
+      },
+      b_test = {
+        library(evoB)
+        child <- evoB:::Baz(size = 2)
+        stopifnot(
+          identical(evoB:::gen(child), 2),
+          identical(evoB:::gen(evoB:::saved), 1)
+        )
+        warnings <- character()
+        x <- withCallingHandlers(evoA::Foo(size = 3), warning = function(w) {
+          warnings <<- c(warnings, conditionMessage(w))
+        })
+        stopifnot(identical(evoB:::gen(x), 3))
+        if (packageVersion("evoA") >= "2.0.0") {
+          stopifnot(
+            S7::S7_inherits(child, evoA::Bar),
+            S7::S7_inherits(evoB:::saved, evoA::Bar),
+            length(warnings) == 1L,
+            grepl("Please use `Bar()` instead.", warnings, fixed = TRUE)
+          )
+        }
+      }
+    ),
+    scenario(
+      name = "class-retire-prop-validator",
+      expect = paste(
+        "A retires count while preserving its class, default, and validator.",
+        "Negative constructor and assignment values remain invalid, and a",
+        "rejected assignment leaves the previous value intact."
+      ),
+      a_v1 = {
+        Foo := new_class(
+          properties = list(
+            count = new_property(
+              class_double,
+              default = 1,
+              validator = function(value) {
+                if (any(value < 0)) "must be non-negative"
+              }
+            )
+          )
+        )
+      },
+      a_v2 = {
+        Foo := new_class(
+          properties = list(
+            deprecated_property(
+              "count",
+              when = "2.0.0",
+              class = class_double,
+              default = 1,
+              validator = function(value) {
+                if (any(value < 0)) "must be non-negative"
+              }
+            )
+          )
+        )
+      },
+      b = {},
+      b_test = {
+        library(evoB)
+        x <- evoA::Foo()
+        stopifnot(identical(x@count, 1))
+        invalid_constructor <- tryCatch(evoA::Foo(count = -1), error = identity)
+        invalid_assignment <- tryCatch(x@count <- -1, error = identity)
+        stopifnot(
+          inherits(invalid_constructor, "error"),
+          grepl("must be non-negative", conditionMessage(invalid_constructor)),
+          inherits(invalid_assignment, "error"),
+          grepl("must be non-negative", conditionMessage(invalid_assignment)),
+          identical(x@count, 1)
+        )
+        x@count <- 2
+        stopifnot(identical(x@count, 2))
       }
     )
   )
@@ -992,7 +1139,8 @@ for (method in c("lifecycle(warn)", "lifecycle(stop)")) {
     "gen-rename-deprecated",
     "class-retire-deprecated",
     "class-rename-prop-deprecated",
-    "class-retire-prop-deprecated"
+    "class-retire-prop-deprecated",
+    "class-deprecated-prop-same-value"
   )) {
     sc <- scenarios[[name]]
     sc$name <- paste0(
@@ -1011,7 +1159,7 @@ for (method in c("lifecycle(warn)", "lifecycle(stop)")) {
       sc$expect,
       "Signaling policy:",
       method,
-      "(stop mode intentionally makes direct use fail)."
+      "(stop mode signals errors instead of warnings)."
     )
     scenarios[[sc$name]] <- sc
   }

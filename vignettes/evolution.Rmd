@@ -345,9 +345,16 @@ Should the re-export signal deprecation?
 Since a re-export costs nothing to maintain, keeping it forever is a fine choice.
 Keep the `NAMESPACE` re-export while downstream packages migrate to the new home.
 
-> **Current limitation:** wrapping a foreign generic with `gen := deprecated_generic(new = myPackageCore::gen, when = "2.0.0")` does not reliably share its method table across installed packages.
-> The compatibility lab's `gen-move-package-deprecated` scenario fails for both stale and rebuilt downstream packages.
-> Until the wrapper resolves the target in its owning namespace at run time, use the re-export above.
+If you want to retire the old home, export a deprecated alias instead:
+
+```{r, eval = FALSE}
+# In myPackage, version 2
+gen := deprecated_generic(new = myPackageCore::gen, when = "2.0.0")
+```
+
+The wrapper resolves the generic in its owning namespace, so calls and method registrations through either package use the same method table.
+This works for both already-installed and rebuilt downstream packages.
+The target must remain available under its original name in that namespace.
 
 ## Changing a class
 
@@ -383,11 +390,19 @@ To give downstream packages a transition window, keep the property with `depreca
 
 ```{r}
 # myPackage, version 1
-Foo := new_class(properties = list(count = new_property(class_double, default = 1)))
+validate_count <- function(value) {
+  if (any(value < 0)) "must be non-negative"
+}
+Foo := new_class(properties = list(
+  count = new_property(class_double, default = 1, validator = validate_count)
+))
 
 # myPackage, version 2
 Foo := new_class(properties = list(
-  deprecated_property("count", when = "2.0.0", class = class_double, default = 1)
+  deprecated_property(
+    "count", when = "2.0.0", class = class_double, default = 1,
+    validator = validate_count
+  )
 ))
 
 foo <- Foo(count = 3)
@@ -396,8 +411,9 @@ foo@count <- 4
 print(foo)
 ```
 
-Preserve the original property's class and default explicitly.
-The helper does not accept a property-specific `validator`, getter, or setter; retiring a property with those behaviors needs a custom recipe that preserves them.
+Preserve the original property's class, default, and validator explicitly.
+Invalid values still fail validation during construction and assignment.
+The helper does not wrap an existing getter or setter; retiring a computed property or one with a custom setter needs a custom recipe that preserves that behavior.
 Without a replacement, construction does not warn, including when `count` is supplied; reads and changed writes do.
 The default `print()` and `str()` omit deprecated properties without calling their getters, including when access would signal an error.
 `props()` still reads them and therefore still signals deprecation.
@@ -421,11 +437,12 @@ foo@size
 
 The helper supplies both a getter and setter, so callers can keep using `Foo(count = ...)`, `foo@count`, and `foo@count <- ...` during the transition.
 Put the replacement property first and preserve its old default and validation rules.
+Put any `validator` on the replacement property; `deprecated_property()` rejects a validator when `new` is supplied.
 The deprecated argument defaults to the replacement argument; callers using only `size` stay silent.
 If both names are supplied with different values, the deprecated argument wins and warns.
 Avoid supplying both names.
 
-There is a signaling limit: an explicit assignment of the current value, or construction with equal `count` and `size`, is silent.
+There is a signaling limit: an explicit assignment of the current value can be silent, as can construction with equal `count` and `size`.
 The helper uses value equality to avoid warning during default construction, so it cannot distinguish those explicit uses from initialization.
 This also bypasses `"lifecycle(stop)"` for those writes; it is not a complete ban on supplying the old name.
 Once downstream packages have migrated, remove the deprecated property.
@@ -452,8 +469,27 @@ There's no mechanical transition here; treat narrowing like removing the propert
 ### Renaming a class
 
 Renaming a class is the most breaking change S7 offers, because a class's identity — the string `"myPackage::Foo"` — is woven into everything: method dispatch tables, the `class()` vector of every existing instance, and external class references.
-If you only need another exported spelling and can keep the old name, `Bar <- Foo` preserves the original class object and its identity.
-The rest of this section covers creating a new class named `Bar` and retiring `Foo`.
+If you only need another exported spelling, `Bar <- Foo` preserves the original class object and its identity.
+You can deprecate the old constructor export with `new_label`:
+
+```{r}
+Foo := new_class(properties = list(size = class_double))
+saved <- Foo(size = 1)
+MyFoo := new_class(parent = Foo)
+
+Bar <- Foo
+Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
+Foo(size = 2) # warns and recommends Bar()
+MyFoo(size = 3) # existing subclasses still work
+S7_inherits(saved, Bar)
+```
+
+The class's internal name remains `Foo`, so its existing subclasses and saved instances keep the same identity.
+`new_label` changes only the replacement name in the message; it does not rename the class itself.
+It also works with `deprecated_generic()` when the new export differs from the generic's internal name.
+
+If the class's internal name also needs to change, create a new class named `Bar` and keep an alias for `Foo` during the transition.
+That has different consequences for downstream packages and saved instances.
 
 If myPackage renames `Foo` to `Bar` with no alias, depPackage fails to install, whether it refers to the class via `new_external_class("myPackage", "Foo")`:
 

@@ -12,9 +12,11 @@ test — both with a stale evoB (only evoA upgraded) and with evoB rebuilt
 against evoA 2.0.0.
 
 The lab includes deprecation helpers with imported and deferred registrations,
-class aliases, package moves, saved instances, property access, and lifecycle
-warning/error policies. See [deprecation-review.md](deprecation-review.md) for
-the design assessment and outstanding gaps.
+class aliases, package moves, saved instances, property validators, and lifecycle
+warning/error policies. It also checks `new_label` when renaming an export while
+preserving its class or generic identity. See
+[deprecation-review.md](deprecation-review.md) for the design assessment and
+compatibility limits.
 
 ## Usage
 
@@ -48,10 +50,10 @@ for the lifecycle scenarios.
 
 Every scenario must install and pass its smoke test against evoA 1.0.0; a
 broken baseline stops the run. After upgrading evoA, expected errors are
-recorded, including deliberate breaking changes and regression cases for
-unresolved gaps. If rebuilding evoB fails, subsequent rebuilt load/test stages
-are `SKIPPED`: R restores the old installation, which must not be mistaken for
-a successfully rebuilt package. A filtered run replaces `results.md` with just
+recorded, including deliberate breaking changes and transitions that require
+rebuilding downstream packages. If rebuilding evoB fails, subsequent rebuilt
+load/test stages are `SKIPPED`: R restores the old installation, which must
+not be mistaken for a successfully rebuilt package. A filtered run replaces `results.md` with just
 that subset; run the complete lab before updating the committed report.
 
 ## When to run it
