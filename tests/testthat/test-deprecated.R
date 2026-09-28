@@ -268,6 +268,68 @@ test_that("deprecated_property() without a replacement preserves NULL", {
   expect_identical(attr(h, "brim"), 2)
 })
 
+test_that("retired properties preserve validators", {
+  Hat := new_class(
+    properties = list(
+      deprecated_property(
+        "brim",
+        when = "1.0.0",
+        class = class_double,
+        default = 1,
+        validator = function(value) {
+          if (value < 0) "must be non-negative"
+        }
+      )
+    )
+  )
+  expect_no_warning(h <- Hat())
+  expect_identical(attr(h, "brim"), 1)
+  expect_snapshot(error = TRUE, Hat(brim = -1))
+  expect_snapshot(error = TRUE, h@brim <- -1)
+  expect_identical(attr(h, "brim"), 1)
+  expect_snapshot(h@brim <- 2)
+  expect_identical(attr(h, "brim"), 2)
+})
+
+test_that("renamed properties reject validators", {
+  expect_snapshot(
+    error = TRUE,
+    deprecated_property(
+      "count",
+      new = "size",
+      when = "1.0.0",
+      validator = \(value) if (value < 0) "must be non-negative"
+    )
+  )
+})
+
+test_that("equal property values are silent even with stopping deprecations", {
+  skip_if_not_installed("lifecycle")
+  Basket := new_class(
+    properties = list(
+      size = class_double,
+      deprecated_property(
+        "count",
+        new = "size",
+        when = "1.0.0",
+        method = "lifecycle(stop)"
+      ),
+      deprecated_property(
+        "retired",
+        class = class_double,
+        when = "1.0.0",
+        method = "lifecycle(stop)"
+      )
+    )
+  )
+  expect_no_warning(b <- Basket(size = 2, count = 2, retired = 3))
+  expect_no_warning(b@count <- 2)
+  expect_no_warning(b@retired <- 3)
+  expect_snapshot(error = TRUE, b@count <- 4)
+  expect_snapshot(error = TRUE, b@retired <- 4)
+  expect_snapshot(error = TRUE, Basket(size = 2, count = 4))
+})
+
 test_that("deprecated properties are omitted from object printing", {
   Basket := new_class(
     properties = list(

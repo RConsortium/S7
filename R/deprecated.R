@@ -226,16 +226,32 @@ is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
 #' If you rename a property or retire it without a replacement,
 #' `deprecated_property()` lets old code keep working while warning users
 #' that they need to update. It creates a property that signals a
-#' deprecation warning when it is read or written, delegating storage to the
+#' deprecation warning when it is read or changed, delegating storage to the
 #' property named `new`.
 #'
 #' To deprecate a property that has no replacement, omit `new`: the property
-#' stores data as usual, but warns when read or written. (Unlike a property
-#' with a replacement, supplying a value to the constructor does not warn,
-#' because S7 can't distinguish a user-supplied value from the default.)
+#' stores data as usual, but warns when read or changed. Supplying a value to
+#' the constructor does not warn, because S7 can't distinguish a user-supplied
+#' value from the default.
+#'
+#' Assignments identical to the current value can be silent. With a replacement,
+#' this also applies to constructor arguments: `Basket(size = 2, count = 2)`
+#' is silent, while `Basket(size = 2, count = 3)` signals deprecation. These
+#' exceptions also apply to `method = "lifecycle(stop)"`; it does not prohibit
+#' every use of the old argument or every assignment to the old property.
+#'
+#' Rebuild downstream packages that define subclasses after changing a
+#' property's definition. Installed subclasses retain the old property
+#' metadata; an alias does not migrate that metadata or saved instances.
+#'
+#' When retiring a stored property, preserve its `class`, `default`, and
+#' `validator`. Validation for a renamed property must live on the replacement.
+#' Existing computed properties or properties with custom setters need custom
+#' getters and setters that signal deprecation; this helper does not wrap an
+#' existing property definition.
 #'
 #' The default `print()` and `str()` methods omit deprecated properties
-#' without calling their getters.
+#' without calling their getters. [props()] reads them and signals deprecation.
 #'
 #' @param old The name of the deprecated property, as a string. Because the
 #'   name is part of the property itself, the `properties` list entry doesn't
@@ -243,9 +259,12 @@ is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
 #' @param new The name of the replacement property, as a string. If `NULL`,
 #'   the property is deprecated without a replacement.
 #' @param class,default The property `class` and `default`, as in
-#'   [new_property()]. When `new` is supplied, `default` defaults to the
-#'   value of the replacement property so that construction only warns when
-#'   the deprecated argument is actually used.
+#'   [new_property()]. When `new` is supplied, `default` defaults to the value
+#'   of the replacement property so that construction only signals deprecation
+#'   when the deprecated argument differs from it.
+#' @param validator A property validator, as in [new_property()]. Only allowed
+#'   when `new` is `NULL`. When renaming a property, put the validator on the
+#'   replacement instead.
 #' @inheritParams deprecated_generic
 #' @returns An [S7 property][new_property].
 #' @seealso [deprecated_generic()] and [deprecated_class()] to deprecate
@@ -267,13 +286,19 @@ deprecated_property <- function(
   when,
   method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
   class = class_any,
-  default = NULL
+  default = NULL,
+  validator = NULL
 ) {
   check_name(old, arg = "old")
   check_when(when)
   method <- check_deprecate_method(method)
   if (!is.null(new)) {
     check_name(new, arg = "new")
+    if (!is.null(validator)) {
+      stop2(
+        "When `new` is supplied, put `validator` on the replacement property."
+      )
+    }
   }
   package <- topNamespaceName(parent.frame())
   env <- parent.frame()
@@ -329,6 +354,7 @@ deprecated_property <- function(
     class = class,
     getter = getter,
     setter = setter,
+    validator = validator,
     default = default,
     name = old
   )

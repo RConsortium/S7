@@ -10,7 +10,8 @@ deprecated_property(
   when,
   method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
   class = class_any,
-  default = NULL
+  default = NULL,
+  validator = NULL
 )
 }
 \arguments{
@@ -36,9 +37,13 @@ The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
 
 \item{class, default}{The property \code{class} and \code{default}, as in
-\code{\link[=new_property]{new_property()}}. When \code{new} is supplied, \code{default} defaults to the
-value of the replacement property so that construction only warns when
-the deprecated argument is actually used.}
+\code{\link[=new_property]{new_property()}}. When \code{new} is supplied, \code{default} defaults to the value
+of the replacement property so that construction only signals deprecation
+when the deprecated argument differs from it.}
+
+\item{validator}{A property validator, as in \code{\link[=new_property]{new_property()}}. Only allowed
+when \code{new} is \code{NULL}. When renaming a property, put the validator on the
+replacement instead.}
 }
 \value{
 An \link[=new_property]{S7 property}.
@@ -47,16 +52,32 @@ An \link[=new_property]{S7 property}.
 If you rename a property or retire it without a replacement,
 \code{deprecated_property()} lets old code keep working while warning users
 that they need to update. It creates a property that signals a
-deprecation warning when it is read or written, delegating storage to the
+deprecation warning when it is read or changed, delegating storage to the
 property named \code{new}.
 
 To deprecate a property that has no replacement, omit \code{new}: the property
-stores data as usual, but warns when read or written. (Unlike a property
-with a replacement, supplying a value to the constructor does not warn,
-because S7 can't distinguish a user-supplied value from the default.)
+stores data as usual, but warns when read or changed. Supplying a value to
+the constructor does not warn, because S7 can't distinguish a user-supplied
+value from the default.
+
+Assignments identical to the current value can be silent. With a replacement,
+this also applies to constructor arguments: \code{Basket(size = 2, count = 2)}
+is silent, while \code{Basket(size = 2, count = 3)} signals deprecation. These
+exceptions also apply to \code{method = "lifecycle(stop)"}; it does not prohibit
+every use of the old argument or every assignment to the old property.
+
+Rebuild downstream packages that define subclasses after changing a
+property's definition. Installed subclasses retain the old property
+metadata; an alias does not migrate that metadata or saved instances.
+
+When retiring a stored property, preserve its \code{class}, \code{default}, and
+\code{validator}. Validation for a renamed property must live on the replacement.
+Existing computed properties or properties with custom setters need custom
+getters and setters that signal deprecation; this helper does not wrap an
+existing property definition.
 
 The default \code{print()} and \code{str()} methods omit deprecated properties
-without calling their getters.
+without calling their getters. \code{\link[=props]{props()}} reads them and signals deprecation.
 }
 \examples{
 # A property renamed from count to size:

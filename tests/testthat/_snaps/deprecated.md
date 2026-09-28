@@ -232,6 +232,67 @@
       Warning:
       `<S7::Hat>@brim` was deprecated in S7 1.0.0.
 
+# retired properties preserve validators
+
+    Code
+      Hat(brim = -1)
+    Condition
+      Error in `<S7::Hat>@brim`:
+      ! <S7::Hat>@brim must be non-negative
+
+---
+
+    Code
+      h@brim <- -1
+    Condition
+      Warning:
+      `<S7::Hat>@brim` was deprecated in S7 1.0.0.
+      Error in `<S7::Hat>@brim`:
+      ! <S7::Hat>@brim must be non-negative
+
+---
+
+    Code
+      h@brim <- 2
+    Condition
+      Warning:
+      `<S7::Hat>@brim` was deprecated in S7 1.0.0.
+
+# renamed properties reject validators
+
+    Code
+      deprecated_property("count", new = "size", when = "1.0.0", validator = function(
+        value) if (value < 0) "must be non-negative")
+    Condition
+      Error in `deprecated_property()`:
+      ! When `new` is supplied, put `validator` on the replacement property.
+
+# equal property values are silent even with stopping deprecations
+
+    Code
+      b@count <- 4
+    Condition
+      Error:
+      ! <S7::Basket>@count was deprecated in S7 1.0.0 and is now defunct.
+      i Please use <S7::Basket>@size instead.
+
+---
+
+    Code
+      b@retired <- 4
+    Condition
+      Error:
+      ! <S7::Basket>@retired was deprecated in S7 1.0.0 and is now defunct.
+
+---
+
+    Code
+      Basket(size = 2, count = 4)
+    Condition
+      Error:
+      ! <S7::Basket>@count was deprecated in S7 1.0.0 and is now defunct.
+      i Please use <S7::Basket>@size instead.
+
 # deprecated properties are omitted from object printing
 
     Code
