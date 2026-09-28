@@ -11,16 +11,24 @@ what happens at each stage: installing evoB, loading it, running its smoke
 test — both with a stale evoB (only evoA upgraded) and with evoB rebuilt
 against evoA 2.0.0.
 
+The lab includes deprecation helpers with imported and deferred registrations,
+class aliases, package moves, saved instances, property access, and lifecycle
+warning/error policies. See [deprecation-review.md](deprecation-review.md) for
+the design assessment and outstanding gaps.
+
 ## Usage
 
 From the S7 package root:
 
 ```sh
-# Fast mode: install + load + smoke test for every scenario (~2 min)
+# Install + load + smoke test for every scenario
 Rscript tools/evolution/run.R
 
 # Also run R CMD check on evoB for every scenario (slower)
 Rscript tools/evolution/run.R --check
+
+# Run independent scenarios in four worker processes
+Rscript tools/evolution/run.R --check --jobs=4
 
 # Run a subset of scenarios
 Rscript tools/evolution/run.R gen-add-arg class-rename
@@ -31,6 +39,20 @@ Rscript tools/evolution/run.R --s7=../S7-other-branch
 
 Results are written to `results.md` (committed, so changes show up in review)
 and full per-stage logs to `logs/` (ignored).
+
+Set `S7_EVOLUTION_SOURCE` to a commit or source description when testing another
+branch, so the report records which implementation was used. Set
+`S7_EVOLUTION_WORK` to retain fixture libraries for inspection after the run.
+The runner requires withr for restoring its working directory, and lifecycle
+for the lifecycle scenarios.
+
+Every scenario must install and pass its smoke test against evoA 1.0.0; a
+broken baseline stops the run. After upgrading evoA, expected errors are
+recorded, including deliberate breaking changes and regression cases for
+unresolved gaps. If rebuilding evoB fails, subsequent rebuilt load/test stages
+are `SKIPPED`: R restores the old installation, which must not be mistaken for
+a successfully rebuilt package. A filtered run replaces `results.md` with just
+that subset; run the complete lab before updating the committed report.
 
 ## When to run it
 

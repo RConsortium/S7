@@ -15,16 +15,20 @@
 #
 # Usage, from the S7 package root:
 #
-#   Rscript tools/evolution/run.R [--check] [--s7=path] [scenario ...]
+#   Rscript tools/evolution/run.R [--check] [--jobs=4] [--s7=path] [scenario ...]
 #
 # * --check    also run R CMD check on evoB (slower, but classifies severity)
 # * --s7=path  install S7 from `path` instead of the current directory
+# * --jobs=n   run independent scenarios in n worker processes (default: 1)
 # * scenario   one or more scenario names to run (default: all)
 #
 # Output: tools/evolution/results.md, full logs in tools/evolution/logs/.
 
 args <- commandArgs(trailingOnly = TRUE)
 check_mode <- "--check" %in% args
+jobs <- sub("^--jobs=", "", grep("^--jobs=", args, value = TRUE))
+jobs <- if (length(jobs)) as.integer(jobs) else 1L
+stopifnot(length(jobs) == 1L, !is.na(jobs), jobs >= 1L)
 s7_source <- sub("^--s7=", "", grep("^--s7=", args, value = TRUE))
 if (length(s7_source) == 0) {
   s7_source <- "."
@@ -57,7 +61,7 @@ path_sep <- .Platform$path.sep
 run_cmd <- function(bin, args, env = character(), dir = NULL) {
   if (!is.null(dir)) {
     old <- setwd(dir)
-    on.exit(setwd(old))
+    withr::defer(setwd(old))
   }
   output <- suppressWarnings(
     system2(bin, args, stdout = TRUE, stderr = TRUE, env = env)
@@ -82,6 +86,8 @@ install_pkg <- function(path, dest_lib, libs) {
     c(
       "CMD",
       "INSTALL",
+      "--preclean",
+      "--clean",
       "--no-multiarch",
       "--no-byte-compile",
       "--no-docs",
@@ -191,7 +197,9 @@ write_package <- function(
 }
 
 classify <- function(res) {
-  if (res$status != 0) {
+  if (is.na(res$status)) {
+    "SKIPPED"
+  } else if (res$status != 0) {
     "ERROR"
   } else if (any(grepl("Warning", res$output))) {
     "WARNING"
@@ -224,7 +232,7 @@ excerpt <- function(res, n = 6) {
 # Strip the session-specific work directory so results.md diffs cleanly
 # between runs.
 scrub <- function(lines) {
-  gsub(work, "<lab>", lines, fixed = TRUE)
+  trimws(gsub(work, "<lab>", lines, fixed = TRUE), which = "right")
 }
 
 # Setup ----------------------------------------------------------------------
@@ -237,6 +245,7 @@ work <- Sys.getenv(
 )
 base_lib <- file.path(work, "base-lib")
 dir.create(base_lib, recursive = TRUE, showWarnings = FALSE)
+work <- normalizePath(work)
 
 log_root <- file.path(lab_dir, "logs")
 unlink(log_root, recursive = TRUE)
@@ -266,6 +275,7 @@ run_scenario <- function(sc) {
 
   write_package(a_dir, "evoA", "1.0.0", "S7", sc$a_v1, exports = TRUE)
   stages[["evoA 1.0.0: install"]] <- install_pkg(a_dir, lib, libs)
+  stopifnot(stages[["evoA 1.0.0: install"]]$status == 0L)
 
   write_package(
     b_dir,
@@ -279,6 +289,10 @@ run_scenario <- function(sc) {
   )
   stages[["evoB install (v1)"]] <- install_pkg(b_dir, lib, libs)
   stages[["evoB test (v1)"]] <- run_script(sc$b_test, libs, dir)
+  stopifnot(
+    stages[["evoB install (v1)"]]$status == 0L,
+    stages[["evoB test (v1)"]]$status == 0L
+  )
 
   if (!is.null(sc$a_core)) {
     core_dir <- file.path(dir, "evoACore")
@@ -291,8 +305,9 @@ run_scenario <- function(sc) {
       exports = TRUE
     )
     stages[["evoACore 2.0.0: install"]] <- install_pkg(core_dir, lib, libs)
+    stopifnot(stages[["evoACore 2.0.0: install"]]$status == 0L)
   }
-  a2_imports <- c("S7", if (!is.null(sc$a_core)) "evoACore")
+  a2_imports <- c("S7", if (!is.null(sc$a_core)) "evoACore", sc$a_imports)
   write_package(
     a_dir,
     "evoA",
@@ -303,10 +318,25 @@ run_scenario <- function(sc) {
     extra_ns = sc$a_ns
   )
   stages[["evoA 2.0.0: install"]] <- install_pkg(a_dir, lib, libs)
+  stopifnot(stages[["evoA 2.0.0: install"]]$status == 0L)
+  stages[["evoB load (v2, stale)"]] <- run_script(
+    'loadNamespace("evoB")',
+    libs,
+    dir
+  )
   stages[["evoB test (v2, stale)"]] <- run_script(sc$b_test, libs, dir)
 
   stages[["evoB install (v2)"]] <- install_pkg(b_dir, lib, libs)
-  stages[["evoB test (v2)"]] <- run_script(sc$b_test, libs, dir)
+  if (stages[["evoB install (v2)"]]$status == 0L) {
+    stages[["evoB load (v2)"]] <- run_script('loadNamespace("evoB")', libs, dir)
+    stages[["evoB test (v2)"]] <- run_script(sc$b_test, libs, dir)
+  } else {
+    # R CMD INSTALL restores the previous installation on failure. Testing it
+    # again would incorrectly report stale-package behavior as a rebuilt B.
+    skipped <- list(status = NA_integer_, output = character())
+    stages[["evoB load (v2)"]] <- skipped
+    stages[["evoB test (v2)"]] <- skipped
+  }
 
   if (check_mode) {
     stages[["evoB R CMD check (v2)"]] <- check_pkg(b_dir, libs, dir)
@@ -323,7 +353,35 @@ run_scenario <- function(sc) {
   stages
 }
 
-results <- lapply(scenarios, run_scenario)
+results <- if (jobs == 1L) {
+  lapply(scenarios, run_scenario)
+} else {
+  local({
+    workers <- parallel::makeCluster(jobs, outfile = "")
+    withr::defer(parallel::stopCluster(workers))
+    parallel::clusterExport(
+      workers,
+      c(
+        "run_scenario",
+        "write_package",
+        "install_pkg",
+        "run_script",
+        "check_pkg",
+        "run_cmd",
+        "lib_env",
+        "%||%",
+        "work",
+        "base_lib",
+        "log_root",
+        "check_mode",
+        "r_bin",
+        "rscript_bin",
+        "path_sep"
+      )
+    )
+    parallel::parLapplyLB(workers, scenarios, run_scenario)
+  })
+}
 
 # Report ----------------------------------------------------------------------
 
@@ -348,6 +406,7 @@ report <- c(
   "",
   paste0("* Date: ", format(Sys.Date())),
   paste0("* S7 version: ", s7_desc[["Version"]]),
+  paste0("* S7 source: ", Sys.getenv("S7_EVOLUTION_SOURCE", "working tree")),
   paste0("* R version: ", getRversion()),
   paste0(
     "* Mode: ",

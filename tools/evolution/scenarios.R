@@ -58,8 +58,8 @@ scenarios <- list(
     name = "gen-add-arg",
     expect = paste(
       "A adds an optional argument to a generic that has `...`;",
-      "B's method lacks it. Expect warnings when evoB is (re)installed and",
-      "loaded against 2.0.0; calls still work."
+      "B's method lacks it. Installation, loading, and calls remain silent;",
+      "R CMD check of B reports the mismatch in a NOTE."
     ),
     a_v1 = {
       gen := new_generic("x")
@@ -114,8 +114,8 @@ scenarios <- list(
     name = "gen-add-arg-nodots",
     expect = paste(
       "A adds an argument to a generic *without* `...`, where method formals",
-      "must match exactly. Expect evoB to fail to install against 2.0.0, with",
-      "no version of B that works for both."
+      "must match exactly in development contexts. Ordinary installation",
+      "succeeds, but calls and R CMD check fail against 2.0.0."
     ),
     a_v1 = {
       gen := new_generic("x", fun = function(x) S7_dispatch())
@@ -168,8 +168,8 @@ scenarios <- list(
     name = "gen-change-default",
     expect = paste(
       "A changes the default of a non-dispatch argument; B's method uses the",
-      "old default. Expect a default-mismatch warning at install/load against",
-      "2.0.0 (and B matching 2.0.0 would warn against 1.0.0)."
+      "old default. Ordinary installation and loading are silent; R CMD",
+      "check reports a NOTE. Calls receive the generic's new default."
     ),
     a_v1 = {
       gen := new_generic("x", fun = function(x, drop = FALSE, ...) {
@@ -279,9 +279,9 @@ scenarios <- list(
   scenario(
     name = "gen-add-dispatch-arg",
     expect = paste(
-      "A converts a single-dispatch generic to double dispatch. Expect evoB",
-      "to fail to install against 2.0.0: the method signature and formals no",
-      "longer conform."
+      "A converts a single-dispatch generic to double dispatch. B fails to",
+      "reinstall: multidispatch registration requires a list signature.",
+      "The stale registration is a separate case checked below."
     ),
     a_v1 = {
       gen := new_generic("x")
@@ -542,9 +542,9 @@ scenarios <- list(
   scenario(
     name = "class-rename-alias-external",
     expect = paste(
-      "A renames a class but keeps the old name as an exported alias. Expect",
-      "this NOT to help B when B refers to the class with",
-      "new_external_class(): resolution checks the class's real name."
+      "A renames a class but keeps the old name as an exported alias.",
+      "External-class resolution follows the alias, so construction works",
+      "for both stale and rebuilt B."
     ),
     a_v1 = {
       Foo := new_class(properties = list(size = class_double))
@@ -613,4 +613,406 @@ scenarios <- list(
   )
 )
 
-names(scenarios) <- vapply(scenarios, function(x) x$name, character(1))
+scenarios <- c(
+  scenarios,
+  list(
+    scenario(
+      name = "gen-rename-deprecated",
+      expect = paste(
+        "A renames a generic with deprecated_generic(). B imports the old",
+        "name and registers a method. Registration stays silent; calls via",
+        "the old name warn and both names reach B's method, stale or rebuilt."
+      ),
+      a_v1 = {
+        gen1 := new_generic("x")
+      },
+      a_v2 = {
+        gen2 := new_generic("x")
+        gen1 := deprecated_generic(new = gen2, when = "2.0.0")
+      },
+      b = {
+        BClass := new_class()
+        method(gen1, BClass) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::BClass()
+        stopifnot(identical(evoA::gen1(x), "B"))
+        if ("gen2" %in% getNamespaceExports("evoA")) {
+          stopifnot(identical(evoA::gen2(x), "B"))
+          stopifnot(identical(
+            S7::method(evoA::gen1, object = x),
+            S7::method(evoA::gen2, object = x)
+          ))
+        }
+      },
+      b_ns = "importFrom(evoA, gen1)"
+    ),
+    scenario(
+      name = "gen-rename-deprecated-external",
+      expect = paste(
+        "As gen-rename-deprecated, with deferred new_external_generic()",
+        "registration. The old reference should resolve to the replacement."
+      ),
+      a_v1 = {
+        gen1 := new_generic("x")
+      },
+      a_v2 = {
+        gen2 := new_generic("x")
+        gen1 := deprecated_generic(new = gen2, when = "2.0.0")
+      },
+      b = {
+        gen1 := new_external_generic(package = "evoA", dispatch_args = "x")
+        BClass := new_class()
+        method(gen1, BClass) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::BClass()
+        stopifnot(identical(evoA::gen1(x), "B"))
+        if ("gen2" %in% getNamespaceExports("evoA")) {
+          stopifnot(identical(evoA::gen2(x), "B"))
+        }
+      }
+    ),
+    scenario(
+      name = "gen-retire-deprecated",
+      expect = paste(
+        "A retires a generic without replacing it. B's imported registration",
+        "should survive both an upstream-only upgrade and rebuilding B;",
+        "calling the generic warns and still dispatches."
+      ),
+      a_v1 = {
+        gen := new_generic("x")
+      },
+      a_v2 = {
+        gen := new_generic("x")
+        gen := deprecated_generic(old = gen, when = "2.0.0")
+      },
+      b = {
+        BClass := new_class()
+        method(gen, BClass) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        stopifnot(identical(evoA::gen(evoB:::BClass()), "B"))
+      },
+      b_ns = "importFrom(evoA, gen)"
+    ),
+    scenario(
+      name = "gen-move-package-deprecated",
+      expect = paste(
+        "A moves a generic to evoACore and exports deprecated_generic(new =",
+        "evoACore::gen). B's methods should be callable through both packages.",
+        "This exercises serialization of a wrapper around a foreign generic."
+      ),
+      a_v1 = {
+        gen := new_generic("x")
+      },
+      a_core = {
+        gen := new_generic("x")
+      },
+      a_v2 = {
+        gen := deprecated_generic(new = evoACore::gen, when = "2.0.0")
+      },
+      b = {
+        BClass := new_class()
+        method(gen, BClass) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::BClass()
+        if (requireNamespace("evoACore", quietly = TRUE)) {
+          stopifnot(identical(evoACore::gen(x), "B"))
+        }
+        stopifnot(identical(evoA::gen(x), "B"))
+      },
+      b_ns = "importFrom(evoA, gen)"
+    ),
+    scenario(
+      name = "class-rename-deprecated-external",
+      expect = paste(
+        "A renames Foo to Bar with deprecated_class(). B uses an external",
+        "parent and registers a method on the external class. Check both",
+        "construction and dispatch, including an already-installed subclass."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        Bar := new_class(properties = list(size = class_double))
+        Foo := deprecated_class(new = Bar, when = "2.0.0")
+      },
+      b = {
+        Foo := new_external_class(package = "evoA")
+        Baz := new_class(parent = Foo, properties = list(extra = class_double))
+        gen := new_generic("x")
+        method(gen, Foo) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::Baz(size = 1, extra = 2)
+        stopifnot(identical(x@size, 1), identical(x@extra, 2))
+        stopifnot(identical(evoB:::gen(evoA::Foo(size = 1)), "B"))
+        stopifnot(identical(evoB:::gen(x), "B"))
+      }
+    ),
+    scenario(
+      name = "class-rename-deprecated-direct",
+      expect = paste(
+        "A renames Foo to Bar with deprecated_class(). B stores a direct",
+        "parent and method signature. A rebuilt B should use Bar; a stale",
+        "B retains the old class identity and may need rebuilding."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        Bar := new_class(properties = list(size = class_double))
+        Foo := deprecated_class(new = Bar, when = "2.0.0")
+      },
+      b = {
+        Baz := new_class(parent = evoA::Foo)
+        gen := new_generic("x")
+        method(gen, evoA::Foo) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::Baz(size = 1)
+        stopifnot(identical(evoB:::gen(x), "B"))
+        stopifnot(identical(evoB:::gen(evoA::Foo(size = 1)), "B"))
+      }
+    ),
+    scenario(
+      name = "class-retire-deprecated",
+      expect = paste(
+        "A retires Foo without a replacement. B uses it as an external parent,",
+        "property type, union, and method signature. Class contexts stay silent;",
+        "only an explicit call to the deprecated constructor warns."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        Foo := new_class(properties = list(size = class_double))
+        Foo := deprecated_class(old = Foo, when = "2.0.0")
+      },
+      b = {
+        Foo := new_external_class(package = "evoA")
+        Baz := new_class(parent = Foo)
+        Box := new_class(properties = list(item = Foo, optional = Foo | NULL))
+        gen := new_generic("x")
+        method(gen, Foo) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::Baz(size = 1)
+        box <- evoB:::Box(item = x, optional = NULL)
+        stopifnot(S7::S7_inherits(box@item, evoA::Foo))
+        stopifnot(identical(evoB:::gen(x), "B"))
+        stopifnot(identical(evoA::Foo(size = 2)@size, 2))
+      }
+    ),
+    scenario(
+      name = "class-move-package-deprecated",
+      expect = paste(
+        "A moves Foo to evoACore and keeps a deprecated alias. Check external",
+        "parent construction and method dispatch for stale and rebuilt B."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_core = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        Foo := deprecated_class(new = evoACore::Foo, when = "2.0.0")
+      },
+      b = {
+        Foo := new_external_class(package = "evoA")
+        Baz := new_class(parent = Foo)
+        gen := new_generic("x")
+        method(gen, Foo) <- function(x, ...) "B"
+      },
+      b_test = {
+        library(evoB)
+        x <- evoB:::Baz(size = 1)
+        stopifnot(identical(x@size, 1))
+        stopifnot(identical(evoB:::gen(evoA::Foo(size = 1)), "B"))
+        stopifnot(identical(evoB:::gen(x), "B"))
+      }
+    ),
+    scenario(
+      name = "class-rename-serialized-instance",
+      expect = paste(
+        "B saves an instance of A's Foo at installation. A renames Foo to Bar",
+        "with a deprecated alias. The saved instance keeps its old identity:",
+        "a stale B cannot treat it as the replacement class."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        Bar := new_class(properties = list(size = class_double))
+        Foo := deprecated_class(new = Bar, when = "2.0.0")
+      },
+      b = {
+        saved <- evoA::Foo(size = 1)
+      },
+      b_test = {
+        library(evoB)
+        stopifnot(S7::S7_inherits(evoB:::saved, evoA::Foo))
+      }
+    ),
+    scenario(
+      name = "class-rename-prop-deprecated",
+      expect = paste(
+        "A renames count to size, preserving its default. The old constructor",
+        "argument, reads, and changed writes warn and delegate after rebuilding",
+        "B. A stale subclass retains the old stored property and fails",
+        "validation. Rebuilt print() and str() stay silent."
+      ),
+      a_v1 = {
+        Foo := new_class(
+          properties = list(count = new_property(class_double, default = 7))
+        )
+      },
+      a_v2 = {
+        Foo := new_class(
+          properties = list(
+            size = new_property(class_double, default = 7),
+            deprecated_property("count", new = "size", when = "2.0.0")
+          )
+        )
+      },
+      b = {
+        Foo := new_external_class(package = "evoA")
+        Baz := new_class(parent = Foo)
+      },
+      b_test = {
+        library(evoB)
+        stopifnot(identical(evoA::Foo()@count, 7))
+        x <- evoB:::Baz(count = 2)
+        stopifnot(identical(x@count, 2))
+        x@count <- 3
+        stopifnot(identical(x@count, 3))
+        withCallingHandlers(
+          {
+            print(x)
+            str(x)
+          },
+          warning = function(w) stop(w)
+        )
+        if ("size" %in% S7::prop_names(x)) {
+          stopifnot(identical(x@size, 3))
+        }
+      }
+    ),
+    scenario(
+      name = "class-retire-prop-deprecated",
+      expect = paste(
+        "A retires count without replacing it, preserving its type and default.",
+        "Construction remains silent; reads and changed writes warn. Printing",
+        "omits the deprecated property."
+      ),
+      a_v1 = {
+        Foo := new_class(
+          properties = list(count = new_property(class_double, default = 7))
+        )
+      },
+      a_v2 = {
+        Foo := new_class(
+          properties = list(
+            deprecated_property(
+              "count",
+              when = "2.0.0",
+              class = class_double,
+              default = 7
+            )
+          )
+        )
+      },
+      b = {},
+      b_test = {
+        library(evoB)
+        x <- withCallingHandlers(evoA::Foo(count = 2), warning = function(w) {
+          stop(w)
+        })
+        stopifnot(identical(evoA::Foo()@count, 7), identical(x@count, 2))
+        x@count <- 3
+        stopifnot(identical(x@count, 3))
+        withCallingHandlers(
+          {
+            print(x)
+            str(x)
+          },
+          warning = function(w) stop(w)
+        )
+      }
+    ),
+    scenario(
+      name = "class-deprecated-prop-same-value",
+      expect = paste(
+        "A deprecates count in favor of size. An explicit write of the current",
+        "value should signal deprecation just like a changed write. The smoke",
+        "test fails if the helper silently skips this use of the old name."
+      ),
+      a_v1 = {
+        Foo := new_class(properties = list(count = class_double))
+      },
+      a_v2 = {
+        Foo := new_class(
+          properties = list(
+            size = class_double,
+            deprecated_property("count", new = "size", when = "2.0.0")
+          )
+        )
+      },
+      b = {},
+      b_test = {
+        library(evoB)
+        x <- evoA::Foo(count = 2)
+        warnings <- 0L
+        withCallingHandlers(x@count <- 2, warning = function(w) {
+          warnings <<- warnings + 1L
+        })
+        if (packageVersion("evoA") >= "2.0.0") {
+          stopifnot(warnings == 1L)
+        }
+      }
+    )
+  )
+)
+
+names(scenarios) <- vapply(scenarios, \(x) x$name, character(1))
+
+# Exercise the same cross-package transitions with each signaling policy.
+for (method in c("lifecycle(warn)", "lifecycle(stop)")) {
+  for (name in c(
+    "gen-rename-deprecated",
+    "class-retire-deprecated",
+    "class-rename-prop-deprecated",
+    "class-retire-prop-deprecated"
+  )) {
+    sc <- scenarios[[name]]
+    sc$name <- paste0(
+      name,
+      "-",
+      if (method == "lifecycle(warn)") "warn" else "stop"
+    )
+    sc$a_v2 <- sub(
+      'when = "2.0.0"',
+      paste0('when = "2.0.0", method = "', method, '"'),
+      sc$a_v2,
+      fixed = TRUE
+    )
+    sc$a_imports <- "lifecycle"
+    sc$expect <- paste(
+      sc$expect,
+      "Signaling policy:",
+      method,
+      "(stop mode intentionally makes direct use fail)."
+    )
+    scenarios[[sc$name]] <- sc
+  }
+}
