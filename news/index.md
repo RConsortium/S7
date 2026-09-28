@@ -2,6 +2,9 @@
 
 ## S7 (development version)
 
+- Operator methods now propagate missing-method errors raised inside
+  their bodies instead of silently falling back to base behavior
+  ([\#490](https://github.com/RConsortium/S7/issues/490)).
 - New `:=` operator creates and names an object in one step, so
   `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")`
   ([\#658](https://github.com/RConsortium/S7/issues/658)).
@@ -130,6 +133,8 @@
   re-registering an identical method, eliminating spurious messages from
   `devtools::load_all()`
   ([\#474](https://github.com/RConsortium/S7/issues/474)).
+- `method<-` now supports unary `+`, `-`, and `!` methods
+  ([\#531](https://github.com/RConsortium/S7/issues/531)).
 - `method<-` now only checks that a method is consistent with its
   generic in development contexts (i.e. during
   [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html),

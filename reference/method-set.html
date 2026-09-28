@@ -131,6 +131,20 @@ given <code>signature</code>, or <code>NULL</code> to unregister an existing met
 avoid embedding a copy of that generic in your package. See
 <code><a href="../articles/packages.html">vignette("packages")</a></code> for details.</p>
     </div>
+    <div class="section level2">
+    <h2 id="operators">Operators<a class="anchor" aria-label="anchor" href="#operators"></a></h2>
+
+
+<p>Binary operators such as <code>+</code> and <code>-</code> dispatch on <code>e1</code> and <code>e2</code>. To define
+a unary method, use <code>list(Foo, class_missing)</code> as the signature and a
+function with arguments <code>e1</code> and <code>e2</code>; <code>e2</code> will be missing when called.
+This lets unary and binary methods coexist on the same class.</p>
+<p>The <code>!</code> operator is always unary. Use <code>Foo</code> (or <code>list(Foo)</code>) as its
+signature and a function with argument <code>e1</code>.</p>
+<p>If no unary method is registered, the operator falls back to R's base
+behavior for the underlying object. Errors raised inside a registered
+method are propagated.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
