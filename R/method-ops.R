@@ -36,11 +36,11 @@ Ops.S7_object <- function(e1, e2) {
     }
     # Must call NextMethod() directly in the method, not wrapped in an
     # anonymous function.
-    return(NextMethod())
+    NextMethod()
+  } else {
+    # R makes operator results visible, even when the method returns invisibly
+    out
   }
-
-  # R makes operator results visible, even when the method returns invisibly
-  out
 }
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(chooseOpsMethod, S7_object)
