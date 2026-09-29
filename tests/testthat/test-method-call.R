@@ -1,15 +1,10 @@
-method_context <- function(x) {
-  list(
-    call = S7_generic_call(),
-    sentinel = eval(quote(sentinel), S7_user_frame())
-  )
-}
-
-test_that("S7_user_frame() returns the calling frame of the generic", {
+test_that("S7_user_frame() can skip super() to return the original caller", {
   foo := new_generic("x")
 
   x <- 1
-  method(foo, class_double) <- function(x) eval(quote(x), S7_user_frame())
+  method(foo, class_double) <- function(x) {
+    eval(quote(x), S7_user_frame(skip = "super"))
+  }
 
   expect_equal(foo(1), 1)
   local({
@@ -28,12 +23,15 @@ test_that("S7_user_frame() returns the calling frame of the generic", {
   })
 })
 
-test_that("S7_user_frame(skip_super = FALSE) stops at super()", {
+test_that("S7_user_frame() stops at super() by default", {
   foo := new_generic("x")
   Number := new_class(parent = class_double)
 
   method(foo, class_double) <- function(x) {
-    eval(quote(sentinel), S7_user_frame(skip_super = FALSE))
+    list(
+      default = eval(quote(sentinel), S7_user_frame()),
+      none = eval(quote(sentinel), S7_user_frame(skip = "none"))
+    )
   }
   method(foo, Number) <- function(x) {
     sentinel <- "method"
@@ -41,12 +39,12 @@ test_that("S7_user_frame(skip_super = FALSE) stops at super()", {
   }
 
   sentinel <- "caller"
-  expect_equal(foo(Number(1)), "method")
+  expect_equal(foo(Number(1)), list(default = "method", none = "method"))
 })
 
-test_that("S7_generic_call() is the originating call to the generic", {
+test_that("S7_generic_call() can skip super() to return the original call", {
   foo := new_generic("x")
-  method(foo, class_double) <- function(x) S7_generic_call()
+  method(foo, class_double) <- function(x) S7_generic_call(skip = "super")
   expect_equal(foo(1), quote(foo(1)))
 
   # Even in the presence of super()
@@ -55,13 +53,28 @@ test_that("S7_generic_call() is the originating call to the generic", {
   expect_equal(foo(Number(1)), quote(foo(Number(1))))
 })
 
-test_that("S7_generic_call(skip_super = FALSE) stops at super()", {
+test_that("S7_generic_call() stops at super() by default", {
   foo := new_generic("x")
   Number := new_class(parent = class_double)
 
-  method(foo, class_double) <- function(x) S7_generic_call(skip_super = FALSE)
+  method(foo, class_double) <- function(x) {
+    list(default = S7_generic_call(), none = S7_generic_call(skip = "none"))
+  }
   method(foo, Number) <- function(x) foo(super(x, class_double))
-  expect_equal(foo(Number(1)), quote(foo(super(x, class_double))))
+  expect_equal(
+    foo(Number(1)),
+    list(
+      default = quote(foo(super(x, class_double))),
+      none = quote(foo(super(x, class_double)))
+    )
+  )
+})
+
+test_that("helpers reject unknown skip values", {
+  expect_snapshot(error = TRUE, {
+    S7_generic_call(skip = "invalid")
+    S7_user_frame(skip = "invalid")
+  })
 })
 
 test_that("helpers work from functions called by a method", {
@@ -125,12 +138,12 @@ test_that("a different nested generic stops the walk (nearest generic)", {
   outer := new_generic("x")
 
   method(inner, class_double) <- function(x) {
-    S7_generic_call()
+    S7_generic_call(skip = "super")
   }
   method(outer, class_double) <- function(x) {
     list(
       inner = inner(x),
-      outer = S7_generic_call()
+      outer = S7_generic_call(skip = "super")
     )
   }
   expect_equal(outer(1), list(inner = quote(inner(x)), outer = quote(outer(1))))

@@ -6,9 +6,9 @@
 \alias{S7_generic_fun}
 \title{Access the generic call and user frame from within a method}
 \usage{
-S7_generic_call(match = FALSE, skip_super = TRUE)
+S7_generic_call(match = FALSE, skip = c("none", "super"))
 
-S7_user_frame(skip_super = TRUE)
+S7_user_frame(skip = c("none", "super"))
 
 S7_generic_fun()
 }
@@ -16,8 +16,9 @@ S7_generic_fun()
 \item{match}{Set to \code{TRUE} to process with \code{\link[=match.call]{match.call()}} and name all
 arguments.}
 
-\item{skip_super}{Set to \code{FALSE} to stop at methods that re-dispatch the
-same generic with \code{\link[=super]{super()}}, instead of skipping past them.}
+\item{skip}{Whether to skip calls that re-dispatch the same generic with
+\code{\link[=super]{super()}}. The default, \code{"none"}, reports the nearest generic call;
+\code{"super"} skips past these re-dispatches.}
 }
 \value{
 \code{S7_generic_call()} returns a call; \code{S7_user_frame()} returns an
@@ -28,7 +29,7 @@ called outside of a method.
 These helpers give a method stable access to three pieces of context that
 are otherwise obscured by S7's dispatch machinery:
 \itemize{
-\item \code{S7_generic_call()} returns the originating call to the generic. This is
+\item \code{S7_generic_call()} returns the call to the generic. This is
 useful as the \code{call} for an error message, so that the user sees the
 generic call (e.g. \code{foo(1)}) rather than S7's internal dispatch.
 \item \code{S7_user_frame()} returns the frame from which the generic was called.
@@ -39,11 +40,10 @@ you need to inspect the generic, e.g. to retrieve its name or dispatch
 arguments.
 }
 
-\code{S7_generic_call()} and \code{S7_user_frame()} skip intermediate frames when a
-method re-dispatches the same generic to a superclass with \code{\link[=super]{super()}},
-reporting the outermost user-facing call and its caller. Set
-\code{skip_super = FALSE} to report the nearest call to the generic instead, i.e.
-the \code{super()} call inside the method.
+By default, \code{S7_generic_call()} and \code{S7_user_frame()} report the nearest call
+to the generic and its caller. Set \code{skip = "super"} to skip intermediate
+frames when a method re-dispatches the same generic to a superclass with
+\code{\link[=super]{super()}}, reporting the outermost user-facing call and its caller.
 
 You can also call these helpers from a function that the method calls, such
 as a shared error helper; they use the innermost active method of an S7
@@ -54,11 +54,11 @@ operators like \code{+}.
 # S7_generic_call() reports the call to the generic:
 foo := new_generic("x")
 method(foo, class_double) <- function(x) {
-  list(user = S7_generic_call(), nearest = S7_generic_call(skip_super = FALSE))
+  list(nearest = S7_generic_call(), user = S7_generic_call(skip = "super"))
 }
 foo(1)
 
-# By default, it skips past super() re-dispatches:
+# Set skip = "super" to skip past super() re-dispatches:
 Number := new_class(parent = class_double)
 method(foo, Number) <- function(x) {
   foo(super(x, class_double))

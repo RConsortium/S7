@@ -4,7 +4,7 @@
 #' These helpers give a method stable access to three pieces of context that
 #' are otherwise obscured by S7's dispatch machinery:
 #'
-#' * `S7_generic_call()` returns the originating call to the generic. This is
+#' * `S7_generic_call()` returns the call to the generic. This is
 #'   useful as the `call` for an error message, so that the user sees the
 #'   generic call (e.g. `foo(1)`) rather than S7's internal dispatch.
 #'
@@ -16,11 +16,10 @@
 #'   you need to inspect the generic, e.g. to retrieve its name or dispatch
 #'   arguments.
 #'
-#' `S7_generic_call()` and `S7_user_frame()` skip intermediate frames when a
-#' method re-dispatches the same generic to a superclass with [super()],
-#' reporting the outermost user-facing call and its caller. Set
-#' `skip_super = FALSE` to report the nearest call to the generic instead, i.e.
-#' the `super()` call inside the method.
+#' By default, `S7_generic_call()` and `S7_user_frame()` report the nearest call
+#' to the generic and its caller. Set `skip = "super"` to skip intermediate
+#' frames when a method re-dispatches the same generic to a superclass with
+#' [super()], reporting the outermost user-facing call and its caller.
 #'
 #' You can also call these helpers from a function that the method calls, such
 #' as a shared error helper; they use the innermost active method of an S7
@@ -29,8 +28,9 @@
 #'
 #' @param match Set to `TRUE` to process with [match.call()] and name all
 #'   arguments.
-#' @param skip_super Set to `FALSE` to stop at methods that re-dispatch the
-#'   same generic with [super()], instead of skipping past them.
+#' @param skip Whether to skip calls that re-dispatch the same generic with
+#'   [super()]. The default, `"none"`, reports the nearest generic call;
+#'   `"super"` skips past these re-dispatches.
 #' @returns `S7_generic_call()` returns a call; `S7_user_frame()` returns an
 #'   environment; `S7_generic_fun()` returns the generic function. All error if
 #'   called outside of a method.
@@ -41,11 +41,11 @@
 #' # S7_generic_call() reports the call to the generic:
 #' foo := new_generic("x")
 #' method(foo, class_double) <- function(x) {
-#'   list(user = S7_generic_call(), nearest = S7_generic_call(skip_super = FALSE))
+#'   list(nearest = S7_generic_call(), user = S7_generic_call(skip = "super"))
 #' }
 #' foo(1)
 #'
-#' # By default, it skips past super() re-dispatches:
+#' # Set skip = "super" to skip past super() re-dispatches:
 #' Number := new_class(parent = class_double)
 #' method(foo, Number) <- function(x) {
 #'   foo(super(x, class_double))
@@ -74,9 +74,9 @@
 #'   paste0("Called ", generic@name, "()")
 #' }
 #' bar(1)
-S7_generic_call <- function(match = FALSE, skip_super = TRUE) {
-  stopifnot(isTRUE(skip_super) || isFALSE(skip_super))
-  idx <- generic_call_frame(skip_super)
+S7_generic_call <- function(match = FALSE, skip = c("none", "super")) {
+  skip <- match.arg(skip)
+  idx <- generic_call_frame(skip)
   call <- sys.call(idx)
   if (isTRUE(match)) {
     call <- match.call(sys.function(idx), call, envir = sys.frame(idx))
@@ -86,9 +86,9 @@ S7_generic_call <- function(match = FALSE, skip_super = TRUE) {
 
 #' @rdname S7_generic_call
 #' @export
-S7_user_frame <- function(skip_super = TRUE) {
-  stopifnot(isTRUE(skip_super) || isFALSE(skip_super))
-  frame <- generic_call_frame(skip_super)
+S7_user_frame <- function(skip = c("none", "super")) {
+  skip <- match.arg(skip)
+  frame <- generic_call_frame(skip)
   sys.frame(sys.parents()[frame])
 }
 
@@ -96,11 +96,11 @@ S7_user_frame <- function(skip_super = TRUE) {
 #' @export
 S7_generic_fun <- function() {
   # super() only re-dispatches the same generic, so no need to skip it
-  frame <- generic_call_frame(skip_super = FALSE)
+  frame <- generic_call_frame(skip = "none")
   sys.function(frame)
 }
 
-generic_call_frame <- function(skip_super, call = sys.call(-1L)) {
+generic_call_frame <- function(skip, call = sys.call(-1L)) {
   parents <- sys.parents()
 
   frame <- active_generic_frame(parents)
@@ -108,7 +108,7 @@ generic_call_frame <- function(skip_super, call = sys.call(-1L)) {
     stop2("Must be called from within a method.", call = call)
   }
 
-  if (!skip_super) {
+  if (skip == "none") {
     return(frame)
   }
 

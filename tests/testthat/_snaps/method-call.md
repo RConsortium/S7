@@ -1,3 +1,16 @@
+# helpers reject unknown skip values
+
+    Code
+      S7_generic_call(skip = "invalid")
+    Condition
+      Error in `match.arg()`:
+      ! 'arg' should be one of "none", "super"
+    Code
+      S7_user_frame(skip = "invalid")
+    Condition
+      Error in `match.arg()`:
+      ! 'arg' should be one of "none", "super"
+
 # helpers error when called outside a method
 
     Code
