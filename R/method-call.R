@@ -117,7 +117,9 @@ generic_call_frame <- function(call = sys.call(-1L)) {
 # Frame of the generic that dispatched the innermost active method.
 # S7_dispatch() evaluates the method in the generic's frame, so the generic is
 # always the method's direct parent. Methods invoked any other way (e.g. by an
-# S3 or S4 generic, an operator, or a direct call) have no generic frame.
+# operator, or called directly) have no generic frame. Methods registered for
+# S3 and S4 generics are plain functions, so they look like helpers called by
+# the enclosing S7 method (if any).
 active_generic_frame <- function(parents) {
   for (i in rev(seq_along(parents))) {
     fun <- sys.function(i)
