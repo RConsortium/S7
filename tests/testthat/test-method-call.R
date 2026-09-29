@@ -39,6 +39,13 @@ test_that("S7_generic_call() is the originating call to the generic", {
   expect_equal(foo(Number(1)), quote(foo(Number(1))))
 })
 
+test_that("helpers work from functions called by a method", {
+  foo := new_generic("x")
+  helper <- function() S7_generic_call()
+  method(foo, class_double) <- function(x) helper()
+  expect_equal(foo(1), quote(foo(1)))
+})
+
 test_that("S7_generic_fun() returns the generic being dispatched", {
   foo <- new_generic("foo", "x")
   method(foo, class_double) <- function(x) S7_generic_fun()
@@ -188,6 +195,16 @@ test_that("helpers error from generic bodies outside active methods", {
   })
   method(after, class_double) <- function(x) x
   expect_error(after(1), "Must be called from within a method.", fixed = TRUE)
+})
+
+test_that("helpers error in methods not dispatched by an S7 generic", {
+  Foo := new_class(package = NULL)
+  method(`+`, list(Foo, Foo)) <- function(e1, e2) S7_generic_call()
+
+  outer := new_generic("x")
+  method(outer, class_double) <- function(x) Foo() + Foo()
+
+  expect_snapshot(error = TRUE, outer(1))
 })
 
 test_that("helpers error while forcing dispatch arguments", {

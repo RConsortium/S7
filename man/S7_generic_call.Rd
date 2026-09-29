@@ -22,8 +22,8 @@ environment; \code{S7_generic_fun()} returns the generic function. All error if
 called outside of a method.
 }
 \description{
-These helpers give a method stable access to two pieces of context that are
-otherwise obscured by S7's dispatch machinery:
+These helpers give a method stable access to three pieces of context that
+are otherwise obscured by S7's dispatch machinery:
 \itemize{
 \item \code{S7_generic_call()} returns the originating call to the generic. This is
 useful as the \code{call} for an error message, so that the user sees the
@@ -31,14 +31,19 @@ generic call (e.g. \code{foo(1)}) rather than S7's internal dispatch.
 \item \code{S7_user_frame()} returns the frame from which the generic was called.
 This is the equivalent of \code{\link[=parent.frame]{parent.frame()}} in an S3 method, and is
 useful if you need non-standard evaluation.
-\item \code{S7_generic_fun()} returns the generic function itself. This is the
-equivalent of \code{\link[=sys.function]{sys.function()}} in an S3 method, and is useful if you need
-to inspect the generic, e.g. to retrieve its name or dispatch arguments.
+\item \code{S7_generic_fun()} returns the generic function itself. This is useful if
+you need to inspect the generic, e.g. to retrieve its name or dispatch
+arguments.
 }
 
 All three helpers skip intermediate frames when a method re-dispatches the
 same generic to a superclass with \code{\link[=super]{super()}}, reporting the outermost
 user-facing call, its caller, and the originating generic.
+
+You can also call these helpers from a function that the method calls, such
+as a shared error helper; they use the innermost active method of an S7
+generic. They aren't supported in methods for S3 or S4 generics, or for
+operators like \code{+}.
 }
 \examples{
 # S7_generic_call() reports the call to the generic, skipping super():

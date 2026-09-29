@@ -1,8 +1,8 @@
 #' Access the generic call and user frame from within a method
 #'
 #' @description
-#' These helpers give a method stable access to two pieces of context that are
-#' otherwise obscured by S7's dispatch machinery:
+#' These helpers give a method stable access to three pieces of context that
+#' are otherwise obscured by S7's dispatch machinery:
 #'
 #' * `S7_generic_call()` returns the originating call to the generic. This is
 #'   useful as the `call` for an error message, so that the user sees the
@@ -12,13 +12,18 @@
 #'   This is the equivalent of [parent.frame()] in an S3 method, and is
 #'   useful if you need non-standard evaluation.
 #'
-#' * `S7_generic_fun()` returns the generic function itself. This is the
-#'   equivalent of [sys.function()] in an S3 method, and is useful if you need
-#'   to inspect the generic, e.g. to retrieve its name or dispatch arguments.
+#' * `S7_generic_fun()` returns the generic function itself. This is useful if
+#'   you need to inspect the generic, e.g. to retrieve its name or dispatch
+#'   arguments.
 #'
 #' All three helpers skip intermediate frames when a method re-dispatches the
 #' same generic to a superclass with [super()], reporting the outermost
 #' user-facing call, its caller, and the originating generic.
+#'
+#' You can also call these helpers from a function that the method calls, such
+#' as a shared error helper; they use the innermost active method of an S7
+#' generic. They aren't supported in methods for S3 or S4 generics, or for
+#' operators like `+`.
 #'
 #' @param match Set to `TRUE` to process with [match.call()] and name all
 #'   arguments.
@@ -90,18 +95,13 @@ S7_generic_fun <- function() {
 generic_call_frame <- function(call = sys.call(-1L)) {
   parents <- sys.parents()
 
-  method_frame <- active_method_frame(call)
-  frame <- parent_generic_frame(method_frame, parents)
+  frame <- active_generic_frame(parents)
   if (is.na(frame)) {
     stop2("Must be called from within a method.", call = call)
   }
 
   # Walk past same-generic super() re-dispatches.
-  repeat {
-    if (!is_super_dispatch(frame)) {
-      break
-    }
-
+  while (is_super_dispatch(frame)) {
     parent <- parent_generic_frame(frame, parents)
     if (
       is.na(parent) || !identical(sys.function(parent), sys.function(frame))
@@ -114,17 +114,26 @@ generic_call_frame <- function(call = sys.call(-1L)) {
   frame
 }
 
-active_method_frame <- function(call) {
-  for (i in rev(seq_len(sys.nframe() - 1L))) {
-    if (inherits(sys.function(i), "S7_method")) {
-      return(i)
+# Frame of the generic that dispatched the innermost active method.
+# S7_dispatch() evaluates the method in the generic's frame, so the generic is
+# always the method's direct parent. Methods invoked any other way (e.g. by an
+# S3 or S4 generic, an operator, or a direct call) have no generic frame.
+active_generic_frame <- function(parents) {
+  for (i in rev(seq_along(parents))) {
+    fun <- sys.function(i)
+    if (inherits(fun, "S7_generic")) {
+      break
     }
-    if (inherits(sys.function(i), "S7_generic")) {
+    if (inherits(fun, "S7_method")) {
+      generic <- parents[[i]]
+      if (generic > 0L && inherits(sys.function(generic), "S7_generic")) {
+        return(generic)
+      }
       break
     }
   }
 
-  stop2("Must be called from within a method.", call = call)
+  NA_integer_
 }
 
 parent_generic_frame <- function(frame, parents) {

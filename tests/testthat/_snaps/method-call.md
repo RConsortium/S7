@@ -16,3 +16,11 @@
       Error in `S7_generic_fun()`:
       ! Must be called from within a method.
 
+# helpers error in methods not dispatched by an S7 generic
+
+    Code
+      outer(1)
+    Condition
+      Error in `S7_generic_call()`:
+      ! Must be called from within a method.
+
