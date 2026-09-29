@@ -152,6 +152,8 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Calling the constructor warns, then constructs an instance of the
 #' deprecated class. Using it in method signatures, `parent`, property
 #' classes, or [new_external_class()] references does not warn.
+#' Property defaults generated before deprecation can still signal; see
+#' "Installed property defaults" below.
 #'
 #' Supply `replacement` to recommend another class in the warning. This
 #' changes the message only: `Dog()` still creates a `Dog`, even if the
@@ -169,6 +171,23 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' or update installed subclasses if you also change the class definition.
 #' Changes to the parent, properties, constructor, or validator need the same
 #' compatibility considerations as changes to a non-deprecated class.
+#'
+#' @section Installed property defaults:
+#' A downstream package installed before deprecation can retain a property
+#' default that calls the constructor directly. For example:
+#'
+#' ```r
+#' Box := new_class(properties = list(item = upstream::Foo))
+#' ```
+#'
+#' After `upstream` deprecates `Foo`, `Box()` can warn, or error with
+#' `method = "lifecycle(stop)"`. Rebuild and reinstall the downstream package
+#' against the updated `upstream` to generate a silent default. Defaults
+#' generated from [new_external_class()] references stay silent without
+#' rebuilding.
+#'
+#' Explicitly written constructor calls, including calls in a property's
+#' `default` or a custom constructor, still signal after rebuilding.
 #'
 #' @param name The name of the class, as a string. Assign the result to a
 #'   variable with this name, most easily with [:=].
@@ -524,16 +543,33 @@ deprecate_signal <- function(
   invisible()
 }
 
-# The frame of the nearest caller from outside S7. Used to attribute a
-# deprecation to the right user when it's signalled from deep inside S7
-# machinery (e.g. a deprecated property accessed via `@`).
+# Find the caller outside S7, its generated constructors, and base evaluation
+# helpers (e.g. lapply() in props()). Keep downstream package frames so lifecycle
+# can attribute and throttle indirect use normally.
 user_frame <- function() {
   S7_ns <- topenv(environment())
-  for (i in rev(seq_len(sys.nframe() - 1L))) {
-    fun_env <- environment(sys.function(i))
-    if (is.null(fun_env) || !identical(topenv(fun_env), S7_ns)) {
+  parents <- sys.parents()
+  i <- sys.parent()
+  while (i > 0L) {
+    fun <- sys.function(i)
+    if (is_class(fun)) {
+      # The underlying constructor retains the marker for generated code.
+      fun <- attr(fun, "constructor", exact = TRUE)
+    }
+    fun_env <- environment(fun)
+    ns <- topenv(fun_env)
+    if (
+      !is_default_constructor(fun) &&
+        (is.null(fun_env) ||
+          (!identical(ns, S7_ns) &&
+            !identical(ns, baseenv()) &&
+            !isBaseNamespace(ns)))
+    ) {
       return(sys.frame(i))
     }
+    # Follow callers, skipping frames whose arguments are being evaluated
+    # (e.g. setNames() in props()). C accessors can be their own parent.
+    i <- min(i - 1L, parents[[i]])
   }
   globalenv()
 }

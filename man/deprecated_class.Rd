@@ -47,6 +47,8 @@ constructor, and validator, and keep exporting it under the same name.
 Calling the constructor warns, then constructs an instance of the
 deprecated class. Using it in method signatures, \code{parent}, property
 classes, or \code{\link[=new_external_class]{new_external_class()}} references does not warn.
+Property defaults generated before deprecation can still signal; see
+"Installed property defaults" below.
 
 Supply \code{replacement} to recommend another class in the warning. This
 changes the message only: \code{Dog()} still creates a \code{Dog}, even if the
@@ -65,6 +67,24 @@ The helper does not convert existing or saved objects to \code{replacement},
 or update installed subclasses if you also change the class definition.
 Changes to the parent, properties, constructor, or validator need the same
 compatibility considerations as changes to a non-deprecated class.
+}
+
+\section{Installed property defaults}{
+
+A downstream package installed before deprecation can retain a property
+default that calls the constructor directly. For example:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{Box := new_class(properties = list(item = upstream::Foo))
+}\if{html}{\out{</div>}}
+
+After \code{upstream} deprecates \code{Foo}, \code{Box()} can warn, or error with
+\code{method = "lifecycle(stop)"}. Rebuild and reinstall the downstream package
+against the updated \code{upstream} to generate a silent default. Defaults
+generated from \code{\link[=new_external_class]{new_external_class()}} references stay silent without
+rebuilding.
+
+Explicitly written constructor calls, including calls in a property's
+\code{default} or a custom constructor, still signal after rebuilding.
 }
 
 \examples{

@@ -344,6 +344,78 @@ test_that("deprecated classes construct property defaults silently", {
   expect_identical(S7_inherits(holder@dog, dep$Dog), TRUE)
 })
 
+test_that("installed direct property defaults need rebuilding after deprecation", {
+  skip_if(quick_test())
+  skip_if_not_installed("lifecycle")
+  lib <- local_libpath()
+  fixtures <- test_path("deprecated")
+
+  check <- function(deprecated, rebuilt = FALSE) {
+    for (policy in c("Base", "Warn", "Stop")) {
+      for (kind in c("Box", "External", "Explicit")) {
+        name <- paste0(policy, kind)
+        # Each call gets fresh lifecycle state, including indirect warnings.
+        out <- callr::r(
+          function(name) {
+            options(cli.unicode = FALSE, lifecycle_verbosity = "warning")
+            constructor <- getExportedValue("deprecatedDefaultsUser", name)
+            warnings <- character()
+            value <- tryCatch(
+              withCallingHandlers(constructor(), warning = function(w) {
+                warnings <<- c(warnings, conditionMessage(w))
+                invokeRestart("muffleWarning")
+              }),
+              error = identity
+            )
+            if (inherits(value, "error")) {
+              list(
+                error = conditionMessage(value),
+                error_class = class(value)[[1L]],
+                warnings = warnings
+              )
+            } else {
+              list(
+                value = list(
+                  name = S7::S7_class(value@item)@name,
+                  package = S7::S7_class(value@item)@package,
+                  size = value@item@size
+                ),
+                warnings = warnings
+              )
+            }
+          },
+          args = list(name),
+          libpath = .libPaths()
+        )
+        signals <- deprecated &&
+          (kind == "Explicit" || (kind == "Box" && !rebuilt))
+        stops <- signals && policy == "Stop"
+        expect_identical(
+          out$value,
+          if (!stops) {
+            list(name = policy, package = "deprecatedDefaults", size = 7)
+          }
+        )
+        expect_length(out$warnings, as.integer(signals && !stops))
+        expect_identical(
+          out$error_class,
+          if (stops) "lifecycle_error_deprecated"
+        )
+        if (signals) {
+          expect_snapshot(cat(c(name, out$warnings, out$error), sep = "\n"))
+        }
+      }
+    }
+  }
+
+  quick_install(file.path(fixtures, c("defaults-v1", "defaults-user")), lib)
+  check(deprecated = FALSE)
+  quick_install(file.path(fixtures, "defaults-v2"), lib)
+  check(deprecated = TRUE)
+  quick_install(file.path(fixtures, "defaults-user"), lib)
+  check(deprecated = TRUE, rebuilt = TRUE)
+})
+
 test_that("deprecated classes name replacements from other packages", {
   dep := local_package({
     Pet := new_class()
@@ -653,6 +725,158 @@ test_that("deprecated_property() works with lifecycle", {
   b <- Basket(size = 3)
 
   expect_snapshot(invisible(b@count))
+})
+
+test_that("props() attributes repeated lifecycle warnings to its direct caller", {
+  skip_if_not_installed("lifecycle")
+  withr::local_options(lifecycle_verbosity = "warning")
+
+  directProps := local_package({
+    Renamed := new_class(
+      properties = list(
+        size = class_double,
+        deprecated_property(
+          "count",
+          new = "size",
+          when = "2.0.0",
+          method = "lifecycle(warn)"
+        )
+      )
+    )
+    Retired := new_class(
+      properties = list(
+        deprecated_property(
+          "item",
+          class = class_double,
+          when = "2.0.0",
+          method = "lifecycle(warn)"
+        )
+      )
+    )
+  })
+
+  for (x in list(
+    directProps$Renamed(size = 1),
+    directProps$Retired(item = 2)
+  )) {
+    warnings <- list()
+    expect_snapshot({
+      withCallingHandlers(
+        {
+          invisible(props(x))
+          invisible(props(x))
+        },
+        lifecycle_warning_deprecated = function(w) {
+          warnings[[length(warnings) + 1L]] <<- w
+        }
+      )
+    })
+    expect_length(warnings, 2L)
+  }
+})
+
+test_that("generated constructors attribute property deprecation to their caller", {
+  skip_if_not_installed("lifecycle")
+  withr::local_options(lifecycle_verbosity = "warning")
+  constructorProps := local_package({
+    Renamed := new_class(
+      properties = list(
+        size = class_double,
+        deprecated_property(
+          "count",
+          new = "size",
+          when = "2.0.0",
+          method = "lifecycle(warn)"
+        )
+      )
+    )
+  })
+
+  warnings <- list()
+  expect_snapshot({
+    withCallingHandlers(
+      {
+        invisible(constructorProps$Renamed(size = 1, count = 2))
+        invisible(constructorProps$Renamed(size = 1, count = 3))
+      },
+      lifecycle_warning_deprecated = function(w) {
+        warnings[[length(warnings) + 1L]] <<- w
+      }
+    )
+  })
+  expect_length(warnings, 2L)
+})
+
+test_that("props() attributes indirect lifecycle warnings to the downstream package", {
+  skip_if(quick_test())
+  skip_if_not_installed("lifecycle")
+
+  for (verbosity in c("default", "warning")) {
+    out <- callr::r(
+      function(local_package, verbosity) {
+        library(S7)
+        environment(local_package) <- asNamespace("S7")
+        options(cli.unicode = FALSE, lifecycle_verbosity = verbosity)
+        indirectProps := local_package({
+          Renamed := new_class(
+            properties = list(
+              size = class_double,
+              deprecated_property(
+                "count",
+                new = "size",
+                when = "2.0.0",
+                method = "lifecycle(warn)"
+              )
+            )
+          )
+          Retired := new_class(
+            properties = list(
+              deprecated_property(
+                "item",
+                class = class_double,
+                when = "2.0.0",
+                method = "lifecycle(warn)"
+              )
+            )
+          )
+        })
+        propsUser := local_package({
+          read_props <- function(x) props(x)
+        })
+        capture <- function(expr) {
+          warnings <- character()
+          value <- withCallingHandlers(force(expr), warning = function(w) {
+            warnings <<- c(warnings, conditionMessage(w))
+            invokeRestart("muffleWarning")
+          })
+          list(value = value, warnings = warnings)
+        }
+        lapply(
+          list(
+            indirectProps$Renamed(size = 1),
+            indirectProps$Retired(item = 2)
+          ),
+          function(x) {
+            list(
+              first = capture(propsUser$read_props(x)),
+              second = capture(propsUser$read_props(x)),
+              direct = capture(props(x))
+            )
+          }
+        )
+      },
+      args = list(local_package = local_package, verbosity = verbosity),
+      libpath = .libPaths()
+    )
+    for (result in out) {
+      expect_length(result$first$warnings, 1L)
+      expect_length(result$second$warnings, 0L)
+      expect_length(result$direct$warnings, as.integer(verbosity == "warning"))
+      expect_identical(result$first$value, result$second$value)
+      expect_identical(result$first$value, result$direct$value)
+      expect_snapshot(cat(c(verbosity, result$first$warnings), sep = "\n"))
+    }
+  }
 })
 
 test_that("deprecated generics and classes print nicely", {

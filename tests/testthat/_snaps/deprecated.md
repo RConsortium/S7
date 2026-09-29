@@ -199,6 +199,84 @@
       ! <S7::Dog> object is invalid:
       - name must have length 1
 
+# installed direct property defaults need rebuilding after deprecation
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      BaseBox
+      `Base()` was deprecated in deprecatedDefaults 2.0.0.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      BaseExplicit
+      `Base()` was deprecated in deprecatedDefaults 2.0.0.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      WarnBox
+      `Warn()` was deprecated in deprecatedDefaults 2.0.0.
+      i The deprecated feature was likely used in the deprecatedDefaultsUser package.
+        Please report the issue to the authors.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      WarnExplicit
+      `Warn()` was deprecated in deprecatedDefaults 2.0.0.
+      i The deprecated feature was likely used in the deprecatedDefaultsUser package.
+        Please report the issue to the authors.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      StopBox
+      `Stop()` was deprecated in deprecatedDefaults 2.0.0 and is now defunct.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      StopExplicit
+      `Stop()` was deprecated in deprecatedDefaults 2.0.0 and is now defunct.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      BaseExplicit
+      `Base()` was deprecated in deprecatedDefaults 2.0.0.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      WarnExplicit
+      `Warn()` was deprecated in deprecatedDefaults 2.0.0.
+      i The deprecated feature was likely used in the deprecatedDefaultsUser package.
+        Please report the issue to the authors.
+
+---
+
+    Code
+      cat(c(name, out$warnings, out$error), sep = "\n")
+    Output
+      StopExplicit
+      `Stop()` was deprecated in deprecatedDefaults 2.0.0 and is now defunct.
+
 # deprecated classes name replacements from other packages
 
     Code
@@ -522,6 +600,97 @@
       Warning:
       <S7::Basket>@count was deprecated in S7 1.5.0.
       i Please use <S7::Basket>@size instead.
+
+# props() attributes repeated lifecycle warnings to its direct caller
+
+    Code
+      withCallingHandlers({
+        invisible(props(x))
+        invisible(props(x))
+      }, lifecycle_warning_deprecated = function(w) {
+        warnings[[length(warnings) + 1L]] <<- w
+      })
+    Condition
+      Warning:
+      <directProps::Renamed>@count was deprecated in directProps 2.0.0.
+      i Please use <directProps::Renamed>@size instead.
+      Warning:
+      <directProps::Renamed>@count was deprecated in directProps 2.0.0.
+      i Please use <directProps::Renamed>@size instead.
+
+---
+
+    Code
+      withCallingHandlers({
+        invisible(props(x))
+        invisible(props(x))
+      }, lifecycle_warning_deprecated = function(w) {
+        warnings[[length(warnings) + 1L]] <<- w
+      })
+    Condition
+      Warning:
+      <directProps::Retired>@item was deprecated in directProps 2.0.0.
+      Warning:
+      <directProps::Retired>@item was deprecated in directProps 2.0.0.
+
+# generated constructors attribute property deprecation to their caller
+
+    Code
+      withCallingHandlers({
+        invisible(constructorProps$Renamed(size = 1, count = 2))
+        invisible(constructorProps$Renamed(size = 1, count = 3))
+      }, lifecycle_warning_deprecated = function(w) {
+        warnings[[length(warnings) + 1L]] <<- w
+      })
+    Condition
+      Warning:
+      <constructorProps::Renamed>@count was deprecated in constructorProps 2.0.0.
+      i Please use <constructorProps::Renamed>@size instead.
+      Warning:
+      <constructorProps::Renamed>@count was deprecated in constructorProps 2.0.0.
+      i Please use <constructorProps::Renamed>@size instead.
+
+# props() attributes indirect lifecycle warnings to the downstream package
+
+    Code
+      cat(c(verbosity, result$first$warnings), sep = "\n")
+    Output
+      default
+      <indirectProps::Renamed>@count was deprecated in indirectProps 2.0.0.
+      i Please use <indirectProps::Renamed>@size instead.
+      i The deprecated feature was likely used in the propsUser package.
+        Please report the issue to the authors.
+
+---
+
+    Code
+      cat(c(verbosity, result$first$warnings), sep = "\n")
+    Output
+      default
+      <indirectProps::Retired>@item was deprecated in indirectProps 2.0.0.
+      i The deprecated feature was likely used in the propsUser package.
+        Please report the issue to the authors.
+
+---
+
+    Code
+      cat(c(verbosity, result$first$warnings), sep = "\n")
+    Output
+      warning
+      <indirectProps::Renamed>@count was deprecated in indirectProps 2.0.0.
+      i Please use <indirectProps::Renamed>@size instead.
+      i The deprecated feature was likely used in the propsUser package.
+        Please report the issue to the authors.
+
+---
+
+    Code
+      cat(c(verbosity, result$first$warnings), sep = "\n")
+    Output
+      warning
+      <indirectProps::Retired>@item was deprecated in indirectProps 2.0.0.
+      i The deprecated feature was likely used in the propsUser package.
+        Please report the issue to the authors.
 
 # deprecated generics and classes print nicely
 

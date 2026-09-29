@@ -1,0 +1,7 @@
+Package: deprecatedDefaults
+Title: Deprecation Test Fixture
+Version: 2.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "kalinowskit@gmail.com")
+Description: Test property defaults across class deprecation.
+License: MIT
+Imports: S7, lifecycle
