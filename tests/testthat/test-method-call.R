@@ -6,7 +6,7 @@ method_context <- function(x) {
 }
 
 test_that("S7_user_frame() returns the calling frame of the generic", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
 
   x <- 1
   method(foo, class_double) <- function(x) eval(quote(x), S7_user_frame())
@@ -18,7 +18,7 @@ test_that("S7_user_frame() returns the calling frame of the generic", {
   })
 
   # Even in the presence of super()
-  Number <- new_class("Number", parent = class_double)
+  Number := new_class(parent = class_double)
   method(foo, Number) <- function(x) foo(super(x, class_double))
 
   expect_equal(foo(Number(1)), 1)
@@ -29,12 +29,12 @@ test_that("S7_user_frame() returns the calling frame of the generic", {
 })
 
 test_that("S7_generic_call() is the originating call to the generic", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   method(foo, class_double) <- function(x) S7_generic_call()
   expect_equal(foo(1), quote(foo(1)))
 
   # Even in the presence of super()
-  Number <- new_class("Number", parent = class_double)
+  Number := new_class(parent = class_double)
   method(foo, Number) <- function(x) foo(super(x, class_double))
   expect_equal(foo(Number(1)), quote(foo(Number(1))))
 })
@@ -47,19 +47,19 @@ test_that("helpers work from functions called by a method", {
 })
 
 test_that("S7_generic_fun() returns the generic being dispatched", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   method(foo, class_double) <- function(x) S7_generic_fun()
   expect_identical(foo(1), foo)
 
   # Even in the presence of super()
-  Number <- new_class("Number", parent = class_double)
+  Number := new_class(parent = class_double)
   method(foo, Number) <- function(x) foo(super(x, class_double))
   expect_identical(foo(Number(1)), foo)
 })
 
 test_that("S7_generic_fun() returns the nearest generic", {
-  inner <- new_generic("inner", "x")
-  outer <- new_generic("outer", "x")
+  inner := new_generic("x")
+  outer := new_generic("x")
 
   method(inner, class_double) <- function(x) S7_generic_fun()
   method(outer, class_double) <- function(x) {
@@ -69,8 +69,8 @@ test_that("S7_generic_fun() returns the nearest generic", {
 })
 
 test_that("super redispatch through helpers reports original generic context", {
-  foo <- new_generic("foo", "x")
-  Number <- new_class("Number", parent = class_double)
+  foo := new_generic("x")
+  Number := new_class(parent = class_double)
 
   method(foo, class_double) <- method_context
   redispatch <- function(x) {
@@ -90,14 +90,14 @@ test_that("super redispatch through helpers reports original generic context", {
 })
 
 test_that("S7_generic_call(match = TRUE) names the arguments", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   method(foo, class_double) <- function(x) S7_generic_call(match = TRUE)
   expect_equal(foo(1), quote(foo(x = 1)))
 })
 
 test_that("a different nested generic stops the walk (nearest generic)", {
-  inner <- new_generic("inner", "x")
-  outer <- new_generic("outer", "x")
+  inner := new_generic("x")
+  outer := new_generic("x")
 
   method(inner, class_double) <- function(x) {
     S7_generic_call()
@@ -112,9 +112,9 @@ test_that("a different nested generic stops the walk (nearest generic)", {
 })
 
 test_that("super() passed to a different generic stops the walk", {
-  inner <- new_generic("inner", "x")
-  outer <- new_generic("outer", "x")
-  Number <- new_class("Number", parent = class_double)
+  inner := new_generic("x")
+  outer := new_generic("x")
+  Number := new_class(parent = class_double)
 
   method(inner, class_double) <- method_context
   method(outer, Number) <- function(x) {
@@ -133,9 +133,9 @@ test_that("super() passed to a different generic stops the walk", {
 })
 
 test_that("intervening generic stops same-generic super walk", {
-  foo <- new_generic("foo", "x")
-  bar <- new_generic("bar", "x")
-  Number <- new_class("Number", parent = class_double)
+  foo := new_generic("x")
+  bar := new_generic("x")
+  Number := new_class(parent = class_double)
 
   method(foo, class_double) <- method_context
   method(foo, Number) <- function(x) {
@@ -158,7 +158,7 @@ test_that("intervening generic stops same-generic super walk", {
 })
 
 test_that("same-generic nested calls are not super redispatches", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
 
   method(foo, class_double) <- function(x) {
     sentinel <- "method frame"
@@ -182,19 +182,19 @@ test_that("helpers error when called outside a method", {
 })
 
 test_that("helpers error from generic bodies outside active methods", {
-  before <- new_generic("before", "x", function(x) {
+  before := new_generic("x", function(x) {
     S7_generic_call()
     S7_dispatch()
   })
   method(before, class_double) <- function(x) x
-  expect_error(before(1), "Must be called from within a method.", fixed = TRUE)
+  expect_snapshot(error = TRUE, before(1))
 
-  after <- new_generic("after", "x", function(x) {
+  after := new_generic("x", function(x) {
     S7_dispatch()
     S7_user_frame()
   })
   method(after, class_double) <- function(x) x
-  expect_error(after(1), "Must be called from within a method.", fixed = TRUE)
+  expect_snapshot(error = TRUE, after(1))
 })
 
 test_that("helpers error in methods not dispatched by an S7 generic", {
@@ -208,15 +208,13 @@ test_that("helpers error in methods not dispatched by an S7 generic", {
 })
 
 test_that("helpers error while forcing dispatch arguments", {
-  foo <- new_generic("foo", "x")
+  foo := new_generic("x")
   method(foo, class_double) <- function(x) x
 
-  expect_error(
+  expect_snapshot(error = TRUE, {
     foo({
       S7_generic_call()
       1
-    }),
-    "Must be called from within a method.",
-    fixed = TRUE
-  )
+    })
+  })
 })

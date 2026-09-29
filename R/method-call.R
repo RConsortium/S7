@@ -35,12 +35,12 @@
 #' @export
 #' @examples
 #' # S7_generic_call() reports the call to the generic, skipping super():
-#' foo <- new_generic("foo", "x")
+#' foo := new_generic("x")
 #' method(foo, class_double) <- function(x) {
 #'   S7_generic_call()
 #' }
 #'
-#' Number <- new_class("Number", parent = class_double)
+#' Number := new_class(parent = class_double)
 #' method(foo, Number) <- function(x) {
 #'   foo(super(x, class_double))
 #' }
@@ -50,7 +50,7 @@
 #' # S7_user_frame() supplies the enclosing environment for non-standard
 #' # evaluation, so an expression can mix columns of the data with variables
 #' # from where the generic was called, like subset():
-#' keep_rows <- new_generic("keep_rows", "data")
+#' keep_rows := new_generic("data")
 #' method(keep_rows, class_data.frame) <- function(data, condition) {
 #'   rows <- eval(substitute(condition), data, S7_user_frame())
 #'   data[rows, , drop = FALSE]
@@ -63,7 +63,7 @@
 #'
 #' # S7_generic_fun() returns the generic itself, e.g. to use its name in a
 #' # message:
-#' bar <- new_generic("bar", "x")
+#' bar := new_generic("x")
 #' method(bar, class_double) <- function(x) {
 #'   generic <- S7_generic_fun()
 #'   paste0("Called ", generic@name, "()")
