@@ -2,9 +2,9 @@
 
 The helpers support generic renames, moves, and retirement; deprecating a class while preserving its definition; and renaming or retiring stored properties. `deprecated_class()` keeps the original type, methods, and subclasses. Its `replacement` argument recommends another class without forwarding construction or method registration to it.
 
-This covers a transition in which maintainers keep the original class available while downstream users adopt a replacement. Class aliases that change identity, migration of saved objects, and changes to installed property definitions need separate compatibility work. The tests identify two follow-ups for #734: fix lifecycle warning attribution through `props()`, and clarify that generated direct property defaults in an already-installed package can still call the deprecated constructor. Reproductions and suggested adjustments are below.
+This covers a transition in which maintainers keep the original class available while downstream users adopt a replacement. Class aliases that change identity, migration of saved objects, and changes to installed property definitions need separate compatibility work. Lifecycle warnings through `props()` preserve caller attribution, and #734 documents and tests the rebuilding boundary for installed direct property defaults. These limits are described below.
 
-This review uses the two local commits on PR #734, `8bb5206f` and `f423df4c`, through `f423df4c183b459bf1007e72ed6803ba7a679970`, combined with main at `cf91eb3f10f8667ff6348b32b814b21894efe560`. The combined source tree is `5d3d844bc31ee1c94d75562e8b4e80e6d34915a3`. The lab holds S7 fixed while upgrading the fixture packages; it does not test upgrading S7 itself across serialized package versions.
+This review uses PR #734 at `d179940224fdd93941b8b0bf46654bf0bf37ad08`, combined with main at `cf91eb3f10f8667ff6348b32b814b21894efe560`. The combined source tree is `6235fe9baf8668439b4a6df336238713766af642`. The lab holds S7 fixed while upgrading the fixture packages; it does not test upgrading S7 itself across serialized package versions.
 
 ## Package scenarios
 
@@ -28,7 +28,7 @@ The executable cases live in `scenarios.R`; `results.md` records installation, n
 | Inspect an object                    | `print()` and `str()` stay silent; `props()` reads deprecated properties and signals                       |
 | Change signaling policy              | Base warnings and both lifecycle methods, including each property operation and silent exceptions          |
 
-The original breaking-change cases remain as comparisons. An `ERROR` can be intentional, for example when an export is removed, a stale subclass needs rebuilding, or `lifecycle(stop)` stops a deprecated call. The property-signal cases catch and assert each expected condition, so their successful stop-mode tests report `OK`. Other stop-mode cases deliberately end with an uncaught deprecation error. The failing `class-deprecated-property-signals-warn` case is a regression to fix, described below; its assertion is retained. Read the scenario descriptions alongside the recorded results.
+The original breaking-change cases remain as comparisons. An `ERROR` can be intentional, for example when an export is removed, a stale subclass needs rebuilding, or `lifecycle(stop)` stops a deprecated call. The property-signal cases catch and assert each expected condition, so their successful stop-mode tests report `OK`. Other stop-mode cases deliberately end with an uncaught deprecation error. Read the scenario descriptions alongside the recorded results.
 
 ## Supported transitions
 
@@ -72,15 +72,13 @@ Calls through either package reach the same method table, including downstream r
 
 Retiring a stored property requires carrying over its `class`, `default`, and `validator`. Renaming a property requires putting validation on the replacement. The lab tests invalid constructor values and writes through both names, and verifies that a rejected write leaves the previous value intact. Supplying a validator on the deprecated alias itself is rejected by #734's input-validation tests.
 
-The property-signal cases check reads, `props()`, changed writes (including a retired property whose old value is NULL), and conflicting old/new constructor arguments under all three policies. Base warnings and stop-mode errors match the expected behavior. Lifecycle warnings have the `props()` attribution and throttling defect below. Equal-value arguments and writes stay silent. Retired-property construction remains silent even with an explicit argument. `print()` and `str()` omit deprecated properties without invoking their getters, including in stop mode.
+The property-signal cases check reads, `props()`, changed writes (including a retired property whose old value is NULL), and conflicting old/new constructor arguments under all three policies. Base warnings, lifecycle warnings, and stop-mode errors match the expected behavior. Equal-value arguments and writes stay silent. Retired-property construction remains silent even with an explicit argument. `print()` and `str()` omit deprecated properties without invoking their getters, including in stop mode.
 
 For lifecycle warning assertions, these cases set `lifecycle_verbosity = "warning"` so repeated direct uses each signal. The other lifecycle scenarios use the default warning policy.
 
-## Compatibility boundaries
+### Lifecycle warning attribution
 
-### Lifecycle warnings through props(): fix needed in #734
-
-With lifecycle 1.0.5, a direct call to `props()` attributes a deprecated-property warning to the base package. A second call can be silent even with `lifecycle_verbosity = "warning"`:
+With lifecycle 1.0.5 and `lifecycle_verbosity = "warning"`, repeated direct calls to `props()` each warn:
 
 ```r
 options(lifecycle_verbosity = "warning")
@@ -96,16 +94,18 @@ Basket := new_class(
   )
 )
 x <- Basket()
-props(x) # warns, attributing the use to the base package
-props(x) # silent, despite the warning option
-x@count # a direct read still warns
+props(x) # warns
+props(x) # warns again
+x@count # a direct read also warns
 ```
 
-`props()` reads properties through `lapply()`. The caller lookup in `user_frame()` stops at that base frame, so lifecycle treats the access as an indirect use in base rather than a direct user call. This both gives the wrong attribution and prevents the warning option from making every direct call warn.
+`props()` reads properties through `lapply()`. Caller lookup follows the call chain through S7, generated constructors, and base evaluation helpers to find the caller responsible for the deprecated use. It retains downstream package frames so lifecycle can attribute indirect uses to that package and apply its usual throttling.
 
-#734 should preserve the actual caller through these internal iteration frames and test both warning attribution and repeated direct calls. The lab's `class-deprecated-property-signals-warn` assertion fails at `props(x)` after an earlier direct read; both stale and rebuilt packages reproduce it, and the fixture's `R CMD check` fails. Fresh-process probes confirm the incorrect attribution for both renamed and retired properties, while direct reads, changed writes, and renamed constructor arguments warn as expected. This is a defect, not an intentional unsupported scenario. Base warnings and `lifecycle(stop)` still signal through `props()`.
+The lab's `class-deprecated-property-signals-warn` assertions cover `props()` after an earlier direct read, for both renamed and retired properties in stale and rebuilt packages. #734's regression tests also check warning text, repeated direct `props()` calls, and conflicting renamed arguments in generated constructors. Fresh-process tests cover genuine downstream calls under both default and warning verbosity: the first indirect use warns with the downstream package's name, and the second is throttled. A subsequent direct use warns again only under warning verbosity. Base warnings and `lifecycle(stop)` also signal through `props()`.
 
-### Installed direct property defaults: adjustment needed in #734
+## Compatibility boundaries
+
+### Installed direct property defaults
 
 A downstream class defined before deprecation can retain a generated default that calls the exported constructor directly:
 
@@ -128,7 +128,7 @@ Foo := deprecated_class(
 
 Without rebuilding evoB, `Box()` errors because its installed default still calls `evoA::Foo()`. Base and lifecycle warning policies warn at the same point. Rebuilding evoB generates `S7::as_class(evoA::Foo)()` and restores silent construction. A default generated from `new_external_class()` already uses the silent path and does not need rebuilding for this transition.
 
-The `class-deprecated-direct-property-default` scenarios reproduce all three policies. #734 should qualify the statement that property-class use does not warn and add this installed-package regression case. The evolution vignette now explains the boundary and recommends external references. No runtime change is needed if rebuilding these direct references is an accepted requirement; guaranteeing silence for existing compiled defaults would require a broader design change.
+The `class-deprecated-direct-property-default` scenarios reproduce all three policies. #734's installed-package regression tests compare direct, external, and explicitly written defaults before deprecation, after an upstream-only upgrade, and after rebuilding. Its `deprecated_class()` documentation and the evolution vignette explain the boundary and recommend external references. Rebuilding these direct references is an intentional requirement; guaranteeing silence for existing compiled defaults would require a broader design change.
 
 An explicitly written default or custom constructor that calls `Foo()` remains an ordinary deprecated call. Silencing every indirect call would hide uses that the helper is meant to report.
 
@@ -151,6 +151,6 @@ Property deprecation changes the property definition even when the class name st
 
 ## Validation
 
-All 59 package scenarios completed with `--check` against the source tree pinned above, on R 4.6.1 with lifecycle 1.0.5. Every version-1 baseline passed, and every upstream upgrade installed successfully. One new scenario fails its intended contract: lifecycle warning attribution and throttling through `props()`. The other recorded errors match deliberate breaking cases, stop-mode calls, and the documented rebuilding boundaries. Some fixture checks also report unused-Imports notes.
+All 59 package scenarios completed with `--check` against the source tree pinned above, on R 4.6.1 with lifecycle 1.0.5. Every version-1 baseline passed, and every upstream upgrade installed successfully. The property-signal cases pass under all three policies for stale and rebuilt packages. The recorded errors match deliberate breaking cases, stop-mode calls, and the documented rebuilding boundaries. Some fixture checks also report unused-Imports notes. No further changes to #734 are required by these cases.
 
-The full S7 package suite passed 1,503 assertions, including 116 deprecation assertions, with no failures, skips, or warnings. The combined source with this branch's documentation passed `pkgdown::check_pkgdown()` and rendered the evolution vignette. Pandoc emitted notices about deprecated command-line options; vignette execution succeeded. The existing package suite does not cover the newly exposed `props()` warning defect.
+The full S7 package suite passed 1,623 assertions, including 236 deprecation assertions, with no failures, skips, or warnings. This includes #734's caller-attribution and installed-default regression tests. The combined source with this branch's documentation passed `pkgdown::check_pkgdown()` and rendered the evolution vignette. Pandoc emitted notices about deprecated command-line options; vignette execution succeeded.
