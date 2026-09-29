@@ -145,130 +145,114 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Deprecate a class
 #'
 #' @description
-#' `deprecated_class()` keeps an old class name working while warning users
-#' to call a replacement constructor. Keep exporting the old name:
+#' To deprecate a class, change [new_class()] to `deprecated_class()` in its
+#' definition and supply `when`. Keep its existing parent, properties,
+#' constructor, and validator, and keep exporting it under the same name.
 #'
-#' * Calling the old constructor warns, then constructs an instance of `new`.
-#' * Using the old name in method signatures, `parent`, property classes, or
-#'   [new_external_class()] references uses `new` without a warning.
+#' Calling the constructor warns, then constructs an instance of the
+#' deprecated class. Using it in method signatures, `parent`, property
+#' classes, or [new_external_class()] references does not warn.
 #'
-#' To change the name users call without changing the class, assign the
-#' existing class to the new name and use `new_label` in the deprecation
-#' message (see the example below). The class name stored on objects stays
-#' the same, so existing methods and subclasses still work.
+#' Supply `replacement` to recommend another class in the warning. This
+#' changes the message only: `Dog()` still creates a `Dog`, even if the
+#' warning recommends `Pet()`. Methods for `Dog` remain methods for `Dog`.
+#' To register a method for both classes, use `Dog | Pet` as its signature.
 #'
-#' To deprecate a class without replacing it, supply the existing class as
-#' `old`. Its constructor still works, but now warns.
+#' Omit `replacement` to deprecate the class without recommending another.
 #'
 #' @section Installed subclasses:
-#' A package that defines a subclass stores the parent class and its property
-#' definitions when the package is installed. Updating the parent package
-#' does not rerun the subclass definition.
+#' Adding deprecation to an otherwise unchanged class does not require
+#' rebuilding packages that define subclasses. Existing instances and
+#' subclasses continue matching methods for the deprecated class.
 #'
-#' If you replace a class with a newly created class or change its properties,
-#' maintainers of packages that subclass it need to rebuild their packages
-#' against the updated parent package to use the new definition. Users then
-#' need to install those rebuilt packages. Giving the existing class another
-#' name does not require rebuilding subclasses.
+#' The helper does not convert existing or saved objects to `replacement`,
+#' or update installed subclasses if you also change the class definition.
+#' Changes to the parent, properties, constructor, or validator need the same
+#' compatibility considerations as changes to a non-deprecated class.
 #'
-#' These helpers also leave previously created or saved objects unchanged.
-#' Converting those objects to a new class or property layout is a separate
-#' step.
-#'
-#' @param name The old name of the class, as a string. As with [new_class()],
-#'   the result should be assigned to a variable with this name, most easily
-#'   with [:=].
-#' @param new The replacement: an S7 class, usually the renamed class.
-#' @param old For a deprecation without a replacement: the existing class,
-#'   whose constructor continues to work. Its name must match
-#'   `name`.
+#' @param name The name of the class, as a string. Assign the result to a
+#'   variable with this name, most easily with [:=].
+#' @param ... Named arguments passed to [new_class()], such as `parent`,
+#'   `properties`, `constructor`, and `validator`.
+#' @param replacement An S7 class to recommend in the warning, or `NULL` to
+#'   give no recommendation. It does not affect construction or dispatch.
 #' @inheritParams deprecated_generic
-#' @returns A function with class `S7_deprecated_class`.
+#' @returns An S7 class with the additional class `S7_deprecated_class`.
 #' @seealso [deprecated_generic()] and [deprecated_property()] to deprecate
 #'   other parts of your API.
 #' @export
 #' @examples
-#' # You already export Dog and want users to call it Pet:
-#' Dog := new_class(properties = list(name = class_character))
-#' Pet <- Dog
-#' Dog := deprecated_class(new = Pet, when = "2.0.0", new_label = "Pet()")
+#' # Recommend Pet() while keeping Dog() working:
+#' Pet := new_class(properties = list(name = class_character))
+#' Dog := deprecated_class(
+#'   properties = list(name = class_character),
+#'   replacement = Pet,
+#'   when = "2.0.0"
+#' )
 #'
-#' Dog(name = "Fido") # warns
-#' Pet(name = "Fido") # no warning
+#' Dog(name = "Fido") # warns and creates a Dog
+#' Pet(name = "Fido") # creates a Pet without warning
 #'
-#' # Packages can still register methods using the old name:
+#' # Existing methods and subclasses still use Dog:
 #' speak := new_generic("x")
 #' method(speak, Dog) <- function(x) "Woof!"
+#' Puppy := new_class(parent = Dog)
+#' speak(Puppy(name = "Rex"))
+#'
+#' # A method can support both classes:
+#' method(speak, Dog | Pet) <- function(x) x@name
 #' speak(Pet(name = "Rex"))
 #'
 #' # A class deprecated without a replacement:
-#' Cat := new_class(properties = list(lives = class_double))
-#' Cat := deprecated_class(old = Cat, when = "3.0.0")
+#' Cat := deprecated_class(
+#'   properties = list(lives = class_double),
+#'   when = "3.0.0"
+#' )
 #' Cat(lives = 9)
 deprecated_class <- function(
   name,
-  new = NULL,
-  old = NULL,
+  ...,
   when,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
-  new_label = NULL
+  replacement = NULL,
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
 ) {
   check_name(name)
   check_when(when)
   method <- check_deprecate_method(method)
   env <- parent.frame()
-  package <- topNamespaceName(env)
 
-  if (is.null(new) == is.null(old)) {
-    stop2("Must supply exactly one of `new` and `old`.")
-  }
-  if (!is.null(new_label)) {
-    check_name(new_label)
-    if (is.null(new)) {
-      stop2("`new_label` requires `new`.")
-    }
+  if (!is.null(replacement) && !is_class(replacement)) {
+    msg <- sprintf(
+      "`replacement` must be an S7 class, not %s.",
+      obj_desc(replacement)
+    )
+    stop2(msg)
   }
 
-  if (is.null(new)) {
-    if (!is_class(old)) {
-      msg <- sprintf("`old` must be an S7 class, not %s.", obj_desc(old))
-      stop2(msg)
-    }
-    if (!identical(old@name, name)) {
-      msg <- c(
-        sprintf(
-          "`old@name` (\"%s\") must match `name` (\"%s\").",
-          old@name,
-          name
-        ),
-        "* To deprecate in favor of a renamed class, use `new`."
-      )
-      stop2(msg)
-    }
-    target <- old
-  } else {
-    if (is_deprecated_class(new)) {
-      new <- deprecated_target(new)
-    }
-    if (!is_class(new)) {
-      msg <- sprintf("`new` must be an S7 class, not %s.", obj_desc(new))
-      stop2(msg)
-    }
-    target <- new
-    new_label <- new_label %||%
-      target_label(target@package, target@name, package)
+  # Define the class in the caller's environment, preserving package names
+  # and the scope of property defaults and custom constructors.
+  definition <- as.call(c(
+    list(quote(S7::new_class), name = name),
+    as.list(substitute(list(...)))[-1L]
+  ))
+  target <- eval(definition, env)
+  with <- if (!is.null(replacement)) {
+    target_label(replacement@package, replacement@name, target@package)
   }
 
-  new_deprecated_fun(
+  out <- new_deprecated_fun(
     target = target,
     what = paste0(name, "()"),
-    with = new_label,
+    with = with,
     when = when,
-    package = package,
+    package = target@package,
     method = method,
     env = env,
     class = "S7_deprecated_class"
   )
+  attributes(out) <- attributes(target)
+  class(out) <- c("S7_deprecated_class", class(out))
+  out
 }
 
 is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
@@ -306,7 +290,12 @@ is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
 #' setter, add a deprecation signal to its existing getter and setter instead
 #' of using this helper.
 #'
-#' @inheritSection deprecated_class Installed subclasses
+#' @section Installed subclasses:
+#' A package that defines a subclass stores the parent's property definitions
+#' when it is installed. After deprecating a property, maintainers of those
+#' packages need to rebuild them against the updated parent package so their
+#' subclasses use the new property definition. Users then need to install
+#' the rebuilt packages. Previously created or saved objects are unchanged.
 #'
 #' @param old The name of the deprecated property, as a string. Because the
 #'   name is part of the property itself, the `properties` list entry doesn't

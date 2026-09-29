@@ -124,7 +124,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
     # Note: During package build, using pkg::class for a package's own symbols
     # will raise an error from `::`.
     if (identical(package, f@package)) {
-      return(call(f@name))
+      cl <- as.name(f@name)
+      f2 <- get(f@name, envir = envir)
     } else {
       # namespace the pkgname::classname() call
       cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
@@ -132,7 +133,7 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
       # check the call evaluates to f.
       # This will error if package is not installed or object is not exported.
       f2 <- eval(cl, baseenv())
-      if (!identical(f, f2)) {
+      if (!identical(f, as_class(f2))) {
         msg <- sprintf(
           "`%s::%s` is not identical to the class with the same @package and @name properties.",
           f@package,
@@ -140,8 +141,11 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
         )
         stop2(msg, call = NULL)
       }
-      return(as.call(list(cl)))
     }
+    if (is_deprecated_class(f2)) {
+      return(bquote(S7::as_class(.(cl))()))
+    }
+    return(as.call(list(cl)))
   }
 
   # If the constructor is a closure wrapping a simple expression, try

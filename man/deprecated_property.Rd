@@ -85,19 +85,11 @@ of using this helper.
 
 \section{Installed subclasses}{
 
-A package that defines a subclass stores the parent class and its property
-definitions when the package is installed. Updating the parent package
-does not rerun the subclass definition.
-
-If you replace a class with a newly created class or change its properties,
-maintainers of packages that subclass it need to rebuild their packages
-against the updated parent package to use the new definition. Users then
-need to install those rebuilt packages. Giving the existing class another
-name does not require rebuilding subclasses.
-
-These helpers also leave previously created or saved objects unchanged.
-Converting those objects to a new class or property layout is a separate
-step.
+A package that defines a subclass stores the parent's property definitions
+when it is installed. After deprecating a property, maintainers of those
+packages need to rebuild them against the updated parent package so their
+subclasses use the new property definition. Users then need to install
+the rebuilt packages. Previously created or saved objects are unchanged.
 }
 
 \examples{

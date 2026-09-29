@@ -48,14 +48,19 @@ test_that("deprecated wrappers keep arguments separate from deprecation state", 
   Target := new_class(
     properties = list(target = new_property(class_double, default = -1))
   )
-  Old := deprecated_class(new = Target, when = "1.0.0")
+  Old := deprecated_class(
+    properties = list(target = new_property(class_double, default = -1)),
+    replacement = Target,
+    when = "1.0.0"
+  )
   expect_snapshot(
     obj <- local({
       target <- 1
       Old(target = target)
     })
   )
-  expect_identical(obj, Target(target = 1))
+  expect_identical(obj@target, 1)
+  expect_identical(S7_class(obj)@name, "Old")
 })
 
 test_that("deprecated wrappers preserve lazy arguments and target defaults", {
@@ -120,7 +125,7 @@ test_that("external generic registration resolves through a deprecated generic",
   expect_equal(asNamespace("pkgA")$new_gen("hi"), "HI")
 })
 
-test_that("installed aliases preserve generic methods and class identities", {
+test_that("installed deprecations preserve generic methods and existing classes", {
   # Relies on installed S7, including in the package installation subprocesses.
   skip_if(quick_test())
   lib <- local_libpath()
@@ -149,8 +154,11 @@ test_that("installed aliases preserve generic methods and class identities", {
       identical(new("x"), "character"),
       identical(suppressWarnings(old(1)), "double"),
       identical(suppressWarnings(old("x")), "character"),
-      S7::S7_inherits(child, deprecatedHome::Bar),
-      S7::S7_inherits(saved, deprecatedHome::Bar),
+      S7::S7_inherits(child, deprecatedHome::Foo),
+      S7::S7_inherits(saved, deprecatedHome::Foo),
+      !S7::S7_inherits(saved, deprecatedHome::Bar),
+      identical(deprecatedHome::Foo@name, "Foo"),
+      identical(deprecatedHome::Bar@name, "Bar"),
       identical(new(child), 2),
       identical(new(saved), 3),
       identical(suppressWarnings(old(child)), 2),
@@ -165,6 +173,11 @@ test_that("installed aliases preserve generic methods and class identities", {
     stopifnot(identical(new(TRUE), "logical"))
     S7::method(old, S7::class_logical) <- NULL
     stopifnot(nrow(S7::S7_methods(new)) == 3L)
+    S7::method(new, deprecatedHome::Bar) <- function(x, ...) -x@value
+    stopifnot(
+      identical(new(deprecatedHome::Bar(value = 4)), -4),
+      identical(new(saved), 3)
+    )
     TRUE
   }
   expect_identical(callr::r(check, libpath = .libPaths()), TRUE)
@@ -201,109 +214,178 @@ test_that("deprecated_generic() validates its inputs", {
   })
 })
 
-test_that("deprecated_class() constructor warns then constructs the replacement", {
+test_that("deprecated_class() warns without changing the class", {
   Pet := new_class(properties = list(name = class_character))
-  Dog := deprecated_class(new = Pet, when = "2.0.0")
+  Dog := deprecated_class(
+    properties = list(name = class_character),
+    replacement = Pet,
+    when = "2.0.0"
+  )
 
   expect_snapshot(d <- Dog(name = "Fido"))
-  expect_identical(S7_class(d), Pet)
+  expect_identical(Dog@name, "Dog")
+  expect_identical(S7_class(d), as_class(Dog))
+  expect_identical(S7_class(d)@name, "Dog")
+  expect_identical(d@name, "Fido")
+  expect_identical(S7_inherits(d, Pet), FALSE)
   expect_identical(formals(Dog), formals(Pet))
+  expect_snapshot(expect_no_warning(print(d)))
 })
 
-test_that("deprecated class is silently treated as the replacement in class contexts", {
-  Pet := new_class(properties = list(name = class_character))
-  Dog := deprecated_class(new = Pet, when = "2.0.0")
+test_that("deprecated classes keep their own methods and subclasses", {
+  Dog := new_class(properties = list(name = class_character))
+  Puppy := new_class(parent = Dog)
+  saved_path <- withr::local_tempfile()
+  saveRDS(Puppy(name = "Fido"), saved_path)
+  saved <- readRDS(saved_path)
 
-  expect_identical(as_class(Dog), Pet)
+  Pet := new_class(properties = list(name = class_character))
+  Dog := deprecated_class(
+    properties = list(name = class_character),
+    replacement = Pet,
+    when = "2.0.0"
+  )
 
   speak := new_generic("x")
-  method(speak, Dog) <- function(x) "Woof!"
-  expect_equal(speak(Pet(name = "Rex")), "Woof!")
+  method(speak, Dog) <- function(x) paste("Woof!", x@name)
+  expect_equal(speak(saved), "Woof! Fido")
+  expect_no_warning(puppy <- Puppy(name = "Rex"))
+  expect_equal(speak(puppy), "Woof! Rex")
+  expect_identical(S7_inherits(saved, Dog), TRUE)
+  expect_snapshot(error = TRUE, speak(Pet(name = "Rex")))
 
   BigDog := new_class(parent = Dog)
-  expect_identical(BigDog@parent, Pet)
+  expect_identical(BigDog@parent, as_class(Dog))
   expect_no_warning(big <- BigDog(name = "Rex"))
-  expect_equal(big@name, "Rex")
+  expect_equal(speak(big), "Woof! Rex")
+
+  method(speak, Dog) <- NULL
+  method(speak, Dog | Pet) <- function(x) x@name
+  expect_equal(speak(Pet(name = "Rex")), "Rex")
+  expect_equal(speak(saved), "Fido")
 })
 
 test_that("deprecated_class() without a replacement still constructs", {
-  Cat := new_class(properties = list(lives = class_double))
-  Cat := deprecated_class(old = Cat, when = "3.0.0")
+  Cat := deprecated_class(
+    properties = list(lives = class_double),
+    when = "3.0.0"
+  )
 
   expect_snapshot(felix <- Cat(lives = 9))
   expect_equal(felix@lives, 9)
   expect_equal(S7_class(felix)@name, "Cat")
 })
 
-test_that("replacement labels can preserve class and generic identities", {
+test_that("replacement labels can preserve generic identities", {
   Foo := new_class(properties = list(x = class_double))
-  Bar <- Foo
   Child := new_class(parent = Foo)
   foo := new_generic("x")
   method(foo, Foo) <- function(x) x@x
   bar <- foo
-  Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
   foo := deprecated_generic(new = bar, when = "2.0.0", new_label = "bar()")
 
-  expect_snapshot(x <- Foo(x = 1))
-  expect_identical(S7_class(x), Bar)
+  x <- Foo(x = 1)
   expect_no_warning(child <- Child(x = 2))
   expect_equal(bar(child), 2)
   expect_snapshot(out <- foo(x))
   expect_equal(out, 1)
-  expect_snapshot({
-    print(Foo)
-    print(foo)
-  })
-  Older := deprecated_class(new = Foo, when = "3.0.0", new_label = "Bar()")
+  expect_snapshot(print(foo))
   older := deprecated_generic(new = foo, when = "3.0.0", new_label = "bar()")
-  expect_snapshot({
-    print(Older)
-    print(older)
-  })
+  expect_snapshot(print(older))
 })
 
 test_that("replacement labels work with lifecycle", {
   skip_if_not_installed("lifecycle")
-  Foo := new_class()
-  Bar <- Foo
-  Foo := deprecated_class(
-    new = Bar,
+  foo := new_generic("x")
+  bar <- foo
+  foo := deprecated_generic(
+    new = bar,
     when = "2.0.0",
-    new_label = "Bar()",
+    new_label = "bar()",
     method = "lifecycle(stop)"
   )
-  expect_snapshot(error = TRUE, Foo())
+  expect_snapshot(error = TRUE, foo(1))
+})
+
+test_that("deprecated classes preserve constructor scope and validation", {
+  skip_if_not_installed("lifecycle")
+  default_name <- "Fido"
+  Pet := new_class(properties = list(name = class_character))
+  Dog := deprecated_class(
+    properties = list(name = class_character),
+    constructor = function(name = default_name) {
+      new_object(S7_object(), name = name)
+    },
+    validator = function(self) {
+      if (length(self@name) != 1L) "name must have length 1"
+    },
+    replacement = Pet,
+    when = "2.0.0",
+    method = "lifecycle(stop)"
+  )
+
+  expect_snapshot(error = TRUE, Dog())
+  Puppy := new_class(parent = Dog)
+  expect_no_warning(puppy <- Puppy())
+  expect_identical(puppy@name, "Fido")
+  expect_snapshot(error = TRUE, Puppy(name = character()))
+})
+
+test_that("deprecated classes construct property defaults silently", {
+  dep := local_package({
+    Dog := deprecated_class(when = "1.0.0")
+    Holder := new_class(properties = list(dog = Dog))
+  })
+  expect_no_warning(holder <- dep$Holder())
+  expect_identical(S7_inherits(holder@dog, dep$Dog), TRUE)
+
+  expect_no_warning(Holder := new_class(properties = list(dog = dep$Dog)))
+  expect_no_warning(holder <- Holder())
+  expect_identical(S7_inherits(holder@dog, dep$Dog), TRUE)
+})
+
+test_that("deprecated classes name replacements from other packages", {
+  dep := local_package({
+    Pet := new_class()
+  })
+  Dog := deprecated_class(replacement = dep$Pet, when = "2.0.0")
+  expect_snapshot(invisible(Dog()))
+})
+
+test_that("deprecated classes preserve S4 parents", {
+  local_S4_classes()
+  S4Parent <- methods::setClass(
+    "DeprecatedS4Parent",
+    slots = c(value = "numeric")
+  )
+  Old := deprecated_class(parent = S4Parent, when = "1.0.0", package = NULL)
+
+  expect_snapshot(obj <- Old(value = 1))
+  expect_identical(obj@value, 1)
+  expect_identical(methods::validObject(obj, test = TRUE), TRUE)
+  Child := new_class(parent = Old, package = NULL)
+  expect_no_warning(child <- Child(value = 2))
+  expect_identical(child@value, 2)
 })
 
 test_that("deprecated classes work with the union operator", {
-  Pet := new_class()
-  Dog := deprecated_class(new = Pet, when = "1.0.0")
-  Cat := deprecated_class(new = Pet, when = "1.0.0")
+  Dog := deprecated_class(when = "1.0.0")
+  Cat := deprecated_class(when = "1.0.0")
 
-  expect_identical(Dog | NULL, Pet | NULL)
-  expect_identical(NULL | Dog, NULL | Pet)
-  expect_identical(Dog | Cat, Pet | Pet)
-  expect_identical(Dog | class_double, Pet | class_double)
+  expect_identical(Dog | NULL, as_class(Dog) | NULL)
+  expect_identical(NULL | Dog, NULL | as_class(Dog))
+  expect_identical(Dog | Cat, as_class(Dog) | as_class(Cat))
+  expect_identical(Dog | class_double, as_class(Dog) | class_double)
 })
 
 test_that("deprecated_class() validates its inputs", {
-  Pet := new_class()
   expect_snapshot(error = TRUE, {
-    deprecated_class(1, new = Pet, when = "1.0.0")
-    deprecated_class("Old", new = Pet)
-    deprecated_class("Old", new = 1, when = "1.0.0")
-    deprecated_class("Old", when = "1.0.0")
-    deprecated_class("Old", new = Pet, old = Pet, when = "1.0.0")
-    deprecated_class("Old", old = 1, when = "1.0.0")
-    deprecated_class("Old", old = Pet, when = "1.0.0")
-    deprecated_class(
-      "Old",
-      new = Pet,
-      when = "1.0.0",
-      new_label = NA_character_
-    )
-    deprecated_class("Pet", old = Pet, when = "1.0.0", new_label = "Other()")
+    deprecated_class(name = 1, when = "1.0.0")
+    deprecated_class(name = "Old")
+    deprecated_class(name = "Old", when = "next year")
+    deprecated_class(name = "Old", when = "1.0.0", method = "warn")
+    deprecated_class(name = "Old", replacement = 1, when = "1.0.0")
+    deprecated_class(name = "Old", replacement = class_double, when = "1.0.0")
   })
 })
 
@@ -577,9 +659,8 @@ test_that("deprecated generics and classes print nicely", {
   new_gen := new_generic("x")
   old_gen := deprecated_generic(new = new_gen, when = "1.1.0")
   Pet := new_class()
-  Dog := deprecated_class(new = Pet, when = "2.0.0")
-  Cat := new_class()
-  Cat := deprecated_class(old = Cat, when = "3.0.0")
+  Dog := deprecated_class(replacement = Pet, when = "2.0.0")
+  Cat := deprecated_class(when = "3.0.0")
 
   expect_snapshot({
     print(old_gen)

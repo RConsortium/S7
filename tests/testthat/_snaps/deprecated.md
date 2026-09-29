@@ -116,7 +116,7 @@
       Error in `deprecated_generic()`:
       ! `method` must be one of "base", "lifecycle(warn)", or "lifecycle(stop)".
 
-# deprecated_class() constructor warns then constructs the replacement
+# deprecated_class() warns without changing the class
 
     Code
       d <- Dog(name = "Fido")
@@ -124,6 +124,22 @@
       Warning in `Dog()`:
       `Dog()` was deprecated in S7 2.0.0.
       Please use `Pet()` instead.
+
+---
+
+    Code
+      expect_no_warning(print(d))
+    Output
+      <S7::Dog>
+       @ name: chr "Fido"
+
+# deprecated classes keep their own methods and subclasses
+
+    Code
+      speak(Pet(name = "Rex"))
+    Condition
+      Error:
+      ! Can't find method for `speak(<S7::Pet>)`.
 
 # deprecated_class() without a replacement still constructs
 
@@ -133,16 +149,7 @@
       Warning in `Cat()`:
       `Cat()` was deprecated in S7 3.0.0.
 
-# replacement labels can preserve class and generic identities
-
-    Code
-      x <- Foo(x = 1)
-    Condition
-      Warning in `Foo()`:
-      `Foo()` was deprecated in S7 2.0.0.
-      Please use `Bar()` instead.
-
----
+# replacement labels can preserve generic identities
 
     Code
       out <- foo(x)
@@ -154,20 +161,12 @@
 ---
 
     Code
-      print(Foo)
-    Output
-      <S7_deprecated_class> `Foo()` was deprecated in S7 2.0.0. Please use `Bar()` instead.
-    Code
       print(foo)
     Output
       <S7_deprecated_generic> `foo()` was deprecated in S7 2.0.0. Please use `bar()` instead.
 
 ---
 
-    Code
-      print(Older)
-    Output
-      <S7_deprecated_class> `Older()` was deprecated in S7 3.0.0. Please use `Bar()` instead.
     Code
       print(older)
     Output
@@ -176,60 +175,79 @@
 # replacement labels work with lifecycle
 
     Code
-      Foo()
+      foo(1)
     Condition
       Error:
-      ! `Foo()` was deprecated in S7 2.0.0 and is now defunct.
-      i Please use `Bar()` instead.
+      ! `foo()` was deprecated in S7 2.0.0 and is now defunct.
+      i Please use `bar()` instead.
+
+# deprecated classes preserve constructor scope and validation
+
+    Code
+      Dog()
+    Condition
+      Error:
+      ! `Dog()` was deprecated in S7 2.0.0 and is now defunct.
+      i Please use `Pet()` instead.
+
+---
+
+    Code
+      Puppy(name = character())
+    Condition
+      Error in `Dog()`:
+      ! <S7::Dog> object is invalid:
+      - name must have length 1
+
+# deprecated classes name replacements from other packages
+
+    Code
+      invisible(Dog())
+    Condition
+      Warning in `Dog()`:
+      `Dog()` was deprecated in S7 2.0.0.
+      Please use `dep::Pet()` instead.
+
+# deprecated classes preserve S4 parents
+
+    Code
+      obj <- Old(value = 1)
+    Condition
+      Warning in `Old()`:
+      `Old()` was deprecated in version 1.0.0.
 
 # deprecated_class() validates its inputs
 
     Code
-      deprecated_class(1, new = Pet, when = "1.0.0")
+      deprecated_class(name = 1, when = "1.0.0")
     Condition
       Error in `deprecated_class()`:
       ! `name` must be a single string.
     Code
-      deprecated_class("Old", new = Pet)
+      deprecated_class(name = "Old")
     Condition
       Error in `deprecated_class()`:
       ! argument "when" is missing, with no default
     Code
-      deprecated_class("Old", new = 1, when = "1.0.0")
+      deprecated_class(name = "Old", when = "next year")
     Condition
       Error in `deprecated_class()`:
-      ! `new` must be an S7 class, not <double>.
+      ! `when` must be a version number, not "next year".
     Code
-      deprecated_class("Old", when = "1.0.0")
+      deprecated_class(name = "Old", when = "1.0.0", method = "warn")
     Condition
       Error in `deprecated_class()`:
-      ! Must supply exactly one of `new` and `old`.
+      ! `method` must be one of "base", "lifecycle(warn)", or "lifecycle(stop)".
     Code
-      deprecated_class("Old", new = Pet, old = Pet, when = "1.0.0")
+      deprecated_class(name = "Old", replacement = 1, when = "1.0.0")
     Condition
       Error in `deprecated_class()`:
-      ! Must supply exactly one of `new` and `old`.
+      ! `replacement` must be an S7 class, not <double>.
     Code
-      deprecated_class("Old", old = 1, when = "1.0.0")
+      deprecated_class(name = "Old", replacement = class_double, when = "1.0.0")
     Condition
       Error in `deprecated_class()`:
-      ! `old` must be an S7 class, not <double>.
-    Code
-      deprecated_class("Old", old = Pet, when = "1.0.0")
-    Condition
-      Error in `deprecated_class()`:
-      ! `old@name` ("Pet") must match `name` ("Old").
-      * To deprecate in favor of a renamed class, use `new`.
-    Code
-      deprecated_class("Old", new = Pet, when = "1.0.0", new_label = NA_character_)
-    Condition
-      Error in `deprecated_class()`:
-      ! `new_label` must not be "" or NA.
-    Code
-      deprecated_class("Pet", old = Pet, when = "1.0.0", new_label = "Other()")
-    Condition
-      Error in `deprecated_class()`:
-      ! `new_label` requires `new`.
+      ! `replacement` must be an S7 class, not S3<S7_base_class>.
 
 # deprecated_property() with a replacement delegates and warns
 
