@@ -157,8 +157,8 @@ test_that("installed deprecations preserve generic methods and existing classes"
       S7::S7_inherits(child, deprecatedHome::Foo),
       S7::S7_inherits(saved, deprecatedHome::Foo),
       !S7::S7_inherits(saved, deprecatedHome::Bar),
-      identical(deprecatedHome::Foo@name, "Foo"),
-      identical(deprecatedHome::Bar@name, "Bar"),
+      identical(S7::prop(deprecatedHome::Foo, "name"), "Foo"),
+      identical(S7::prop(deprecatedHome::Bar, "name"), "Bar"),
       identical(new(child), 2),
       identical(new(saved), 3),
       identical(suppressWarnings(old(child)), 2),
@@ -173,7 +173,7 @@ test_that("installed deprecations preserve generic methods and existing classes"
     stopifnot(identical(new(TRUE), "logical"))
     S7::method(old, S7::class_logical) <- NULL
     stopifnot(nrow(S7::S7_methods(new)) == 3L)
-    S7::method(new, deprecatedHome::Bar) <- function(x, ...) -x@value
+    S7::method(new, deprecatedHome::Bar) <- \(x, ...) -S7::prop(x, "value")
     stopifnot(
       identical(new(deprecatedHome::Bar(value = 4)), -4),
       identical(new(saved), 3)
