@@ -16,9 +16,11 @@
 #'   you need to inspect the generic, e.g. to retrieve its name or dispatch
 #'   arguments.
 #'
-#' All three helpers skip intermediate frames when a method re-dispatches the
-#' same generic to a superclass with [super()], reporting the outermost
-#' user-facing call, its caller, and the originating generic.
+#' `S7_generic_call()` and `S7_user_frame()` skip intermediate frames when a
+#' method re-dispatches the same generic to a superclass with [super()],
+#' reporting the outermost user-facing call and its caller. Set
+#' `skip_super = FALSE` to report the nearest call to the generic instead, i.e.
+#' the `super()` call inside the method.
 #'
 #' You can also call these helpers from a function that the method calls, such
 #' as a shared error helper; they use the innermost active method of an S7
@@ -27,6 +29,8 @@
 #'
 #' @param match Set to `TRUE` to process with [match.call()] and name all
 #'   arguments.
+#' @param skip_super Set to `FALSE` to stop at methods that re-dispatch the
+#'   same generic with [super()], instead of skipping past them.
 #' @returns `S7_generic_call()` returns a call; `S7_user_frame()` returns an
 #'   environment; `S7_generic_fun()` returns the generic function. All error if
 #'   called outside of a method.
@@ -34,17 +38,18 @@
 #'   superclass dispatch.
 #' @export
 #' @examples
-#' # S7_generic_call() reports the call to the generic, skipping super():
+#' # S7_generic_call() reports the call to the generic:
 #' foo := new_generic("x")
 #' method(foo, class_double) <- function(x) {
-#'   S7_generic_call()
+#'   list(user = S7_generic_call(), nearest = S7_generic_call(skip_super = FALSE))
 #' }
+#' foo(1)
 #'
+#' # By default, it skips past super() re-dispatches:
 #' Number := new_class(parent = class_double)
 #' method(foo, Number) <- function(x) {
 #'   foo(super(x, class_double))
 #' }
-#'
 #' foo(Number(1))
 #'
 #' # S7_user_frame() supplies the enclosing environment for non-standard
@@ -69,8 +74,9 @@
 #'   paste0("Called ", generic@name, "()")
 #' }
 #' bar(1)
-S7_generic_call <- function(match = FALSE) {
-  idx <- generic_call_frame()
+S7_generic_call <- function(match = FALSE, skip_super = TRUE) {
+  stopifnot(isTRUE(skip_super) || isFALSE(skip_super))
+  idx <- generic_call_frame(skip_super)
   call <- sys.call(idx)
   if (isTRUE(match)) {
     call <- match.call(sys.function(idx), call, envir = sys.frame(idx))
@@ -80,24 +86,30 @@ S7_generic_call <- function(match = FALSE) {
 
 #' @rdname S7_generic_call
 #' @export
-S7_user_frame <- function() {
-  frame <- generic_call_frame()
+S7_user_frame <- function(skip_super = TRUE) {
+  stopifnot(isTRUE(skip_super) || isFALSE(skip_super))
+  frame <- generic_call_frame(skip_super)
   sys.frame(sys.parents()[frame])
 }
 
 #' @rdname S7_generic_call
 #' @export
 S7_generic_fun <- function() {
-  frame <- generic_call_frame()
+  # super() only re-dispatches the same generic, so no need to skip it
+  frame <- generic_call_frame(skip_super = FALSE)
   sys.function(frame)
 }
 
-generic_call_frame <- function(call = sys.call(-1L)) {
+generic_call_frame <- function(skip_super, call = sys.call(-1L)) {
   parents <- sys.parents()
 
   frame <- active_generic_frame(parents)
   if (is.na(frame)) {
     stop2("Must be called from within a method.", call = call)
+  }
+
+  if (!skip_super) {
+    return(frame)
   }
 
   # Walk past same-generic super() re-dispatches.

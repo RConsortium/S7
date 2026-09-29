@@ -6,15 +6,18 @@
 \alias{S7_generic_fun}
 \title{Access the generic call and user frame from within a method}
 \usage{
-S7_generic_call(match = FALSE)
+S7_generic_call(match = FALSE, skip_super = TRUE)
 
-S7_user_frame()
+S7_user_frame(skip_super = TRUE)
 
 S7_generic_fun()
 }
 \arguments{
 \item{match}{Set to \code{TRUE} to process with \code{\link[=match.call]{match.call()}} and name all
 arguments.}
+
+\item{skip_super}{Set to \code{FALSE} to stop at methods that re-dispatch the
+same generic with \code{\link[=super]{super()}}, instead of skipping past them.}
 }
 \value{
 \code{S7_generic_call()} returns a call; \code{S7_user_frame()} returns an
@@ -36,9 +39,11 @@ you need to inspect the generic, e.g. to retrieve its name or dispatch
 arguments.
 }
 
-All three helpers skip intermediate frames when a method re-dispatches the
-same generic to a superclass with \code{\link[=super]{super()}}, reporting the outermost
-user-facing call, its caller, and the originating generic.
+\code{S7_generic_call()} and \code{S7_user_frame()} skip intermediate frames when a
+method re-dispatches the same generic to a superclass with \code{\link[=super]{super()}},
+reporting the outermost user-facing call and its caller. Set
+\code{skip_super = FALSE} to report the nearest call to the generic instead, i.e.
+the \code{super()} call inside the method.
 
 You can also call these helpers from a function that the method calls, such
 as a shared error helper; they use the innermost active method of an S7
@@ -46,17 +51,18 @@ generic. They aren't supported in methods for S3 or S4 generics, or for
 operators like \code{+}.
 }
 \examples{
-# S7_generic_call() reports the call to the generic, skipping super():
+# S7_generic_call() reports the call to the generic:
 foo := new_generic("x")
 method(foo, class_double) <- function(x) {
-  S7_generic_call()
+  list(user = S7_generic_call(), nearest = S7_generic_call(skip_super = FALSE))
 }
+foo(1)
 
+# By default, it skips past super() re-dispatches:
 Number := new_class(parent = class_double)
 method(foo, Number) <- function(x) {
   foo(super(x, class_double))
 }
-
 foo(Number(1))
 
 # S7_user_frame() supplies the enclosing environment for non-standard

@@ -28,6 +28,22 @@ test_that("S7_user_frame() returns the calling frame of the generic", {
   })
 })
 
+test_that("S7_user_frame(skip_super = FALSE) stops at super()", {
+  foo := new_generic("x")
+  Number := new_class(parent = class_double)
+
+  method(foo, class_double) <- function(x) {
+    eval(quote(sentinel), S7_user_frame(skip_super = FALSE))
+  }
+  method(foo, Number) <- function(x) {
+    sentinel <- "method"
+    foo(super(x, class_double))
+  }
+
+  sentinel <- "caller"
+  expect_equal(foo(Number(1)), "method")
+})
+
 test_that("S7_generic_call() is the originating call to the generic", {
   foo := new_generic("x")
   method(foo, class_double) <- function(x) S7_generic_call()
@@ -37,6 +53,15 @@ test_that("S7_generic_call() is the originating call to the generic", {
   Number := new_class(parent = class_double)
   method(foo, Number) <- function(x) foo(super(x, class_double))
   expect_equal(foo(Number(1)), quote(foo(Number(1))))
+})
+
+test_that("S7_generic_call(skip_super = FALSE) stops at super()", {
+  foo := new_generic("x")
+  Number := new_class(parent = class_double)
+
+  method(foo, class_double) <- function(x) S7_generic_call(skip_super = FALSE)
+  method(foo, Number) <- function(x) foo(super(x, class_double))
+  expect_equal(foo(Number(1)), quote(foo(super(x, class_double))))
 })
 
 test_that("helpers work from functions called by a method", {
