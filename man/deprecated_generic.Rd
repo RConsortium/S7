@@ -22,7 +22,7 @@ name, most easily with \link{:=}.}
 a generic that now lives in another package.}
 
 \item{old}{For a deprecation without a replacement: the existing generic,
-which continues to power the deprecated name.}
+which continues to supply the methods.}
 
 \item{when}{The package version when the deprecation began, e.g.
 \code{"1.2.0"}.}
@@ -38,37 +38,49 @@ only displayed once every eight hours.
 The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
 
-\item{new_label}{Optional replacement label for the message, such as \code{"Bar()"}
-or \code{"pkg::Bar()"}. Requires \code{new}. By default, the label uses the
-replacement's internal name and package. Set this when the replacement
-is exported under a different name; it does not change the target.}
+\item{new_label}{How to name the replacement in the warning, e.g. \code{"Bar()"}
+or \code{"pkg::Bar()"}. Requires \code{new}. Defaults to the name recorded when the
+replacement was created. Use this when you export it under a different
+name. It changes the message, not the object used as the replacement.}
 }
 \value{
 A function with class \code{S7_deprecated_generic}.
 }
 \description{
-If you rename a generic, move it to another package, or retire it without
-a replacement, \code{deprecated_generic()} lets old code keep working while
-warning users that they need to update. It creates a function that you
-export under the old name:
+Use \code{deprecated_generic()} when you rename a generic, move it to another
+package, or want users to stop calling it. Keep exporting the old name so
+existing code can still use it.
+
+A plain alias like \code{old <- new} gives callers no warning. A wrapper that
+calls \code{.Deprecated()} can warn, but downstream packages can no longer
+register S7 methods on it. \code{deprecated_generic()} supports both:
 \itemize{
-\item Calling it signals a deprecation warning, then delegates to \code{new}.
-\item Methods registered on it with \link{method<-} are silently registered on
-\code{new}, so downstream packages continue to work.
+\item Calling the old name warns, then calls the replacement.
+\item Registering a method on the old name registers it on the replacement,
+without a warning. Both names use the same methods.
 }
 
-To deprecate a generic that has no replacement, supply the generic itself
-as \code{old}: it continues to power the deprecated name, but calls warn.
-
-A replacement in another package is resolved in its owning namespace, so
-calls and method registrations through either export use the same method
-table. The replacement must remain available under its original name in
-that namespace.
-
-The wrapper uses the replacement's signature. Changes to dispatch arguments
-or other formals need an adapter or a separate old generic. To deprecate an
-argument, put the deprecation in the generic's function instead.
+To deprecate a generic without replacing it, supply the existing generic
+as \code{old}. Calls still dispatch to its methods, but now warn.
 }
+\section{Moving a generic to another package}{
+
+If \code{pkg::gen()} moves to \code{pkgcore::gen()}, define the old name in \code{pkg} as:
+
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{gen := deprecated_generic(new = pkgcore::gen, when = "2.0.0")
+}\if{html}{\out{</div>}}
+
+Methods registered through either name apply to calls through both names,
+including methods supplied by other packages.
+}
+
+\section{Changing arguments}{
+
+The deprecated generic has the same arguments as the replacement and
+forwards them unchanged. Changing or deprecating arguments needs code in
+the generic itself; this helper only deprecates the generic's name.
+}
+
 \examples{
 # A generic renamed from summarise() to summarize():
 summarize := new_generic("x")

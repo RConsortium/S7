@@ -282,7 +282,7 @@ x
 
 #### Deprecated properties
 
-Use `deprecated_property()` to rename a property while keeping old code working. Reading or writing the deprecated name signals a deprecation warning, then delegates to the replacement:
+Use `deprecated_property()` when renaming a property so existing code can still read and write the old name. Reading it or assigning a different value warns users to use the replacement:
 
 ```{r}
 Person := new_class(properties = list(
@@ -303,7 +303,9 @@ hadley@firstName <- "John"
 hadley@first_name  # no warning
 ```
 
-Under the hood, this is implemented with a `getter` and `setter` that warn then delegate to the replacement, and a `default` that ensures the constructor only warns when the deprecated argument is actually supplied. See `deprecated_generic()` and `deprecated_class()` for deprecating other parts of your API.
+The old constructor argument defaults to the new one, so `Person(first_name = "Hadley")` is silent. Explicitly supplying the same value, as in `Person(first_name = "Hadley", firstName = "Hadley")`, is also silent. Printing an object omits deprecated properties.
+
+See `?deprecated_property` for deprecating a property without a replacement, preserving validation, and updating packages that define subclasses. Use `deprecated_generic()` and `deprecated_class()` for generic and class names.
 
 #### Required properties
 

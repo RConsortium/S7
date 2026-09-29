@@ -49,36 +49,57 @@ replacement instead.}
 An \link[=new_property]{S7 property}.
 }
 \description{
-If you rename a property or retire it without a replacement,
-\code{deprecated_property()} lets old code keep working while warning users
-that they need to update. It creates a property that signals a
-deprecation warning when it is read or changed, delegating storage to the
-property named \code{new}.
+Add \code{deprecated_property()} to a class's \code{properties} to warn users when
+they use an old property name. Supply \code{new} to forward reads and writes to
+a replacement property, or omit it to keep storing the property's value.
 
-To deprecate a property that has no replacement, omit \code{new}: the property
-stores data as usual, but warns when read or changed. Supplying a value to
-the constructor does not warn, because S7 can't distinguish a user-supplied
-value from the default.
-
-Assignments identical to the current value can be silent. With a replacement,
-this also applies to constructor arguments: \code{Basket(size = 2, count = 2)}
-is silent, while \code{Basket(size = 2, count = 3)} signals deprecation. These
-exceptions also apply to \code{method = "lifecycle(stop)"}; it does not prohibit
-every use of the old argument or every assignment to the old property.
-
-Rebuild downstream packages that define subclasses after changing a
-property's definition. Installed subclasses retain the old property
-metadata; an alias does not migrate that metadata or saved instances.
-
-When retiring a stored property, preserve its \code{class}, \code{default}, and
-\code{validator}. Validation for a renamed property must live on the replacement.
-Existing computed properties or properties with custom setters need custom
-getters and setters that signal deprecation; this helper does not wrap an
-existing property definition.
-
-The default \code{print()} and \code{str()} methods omit deprecated properties
-without calling their getters. \code{\link[=props]{props()}} reads them and signals deprecation.
+The default \code{print()} and \code{str()} methods omit deprecated properties.
+Direct access and \code{\link[=props]{props()}} still read them and signal deprecation.
 }
+\section{When properties warn}{
+
+Reading a deprecated property signals a warning. Setting it to a different
+value also warns, but assignments of the current value can be silent.
+
+With a replacement, the old constructor argument defaults to the value of
+the new argument. For example, \code{Basket(size = 2)} and
+\code{Basket(size = 2, count = 2)} are both silent, while
+\code{Basket(size = 2, count = 3)} warns. S7 cannot distinguish explicitly
+supplying the same value from using that default.
+
+Without a replacement, construction is silent: S7 initializes the property
+for every object, whether its value came from an argument or a default.
+
+\code{method = "lifecycle(stop)"} turns the deprecation warnings described above
+into errors. The cases described as silent remain silent.
+}
+
+\section{Preserving validation}{
+
+When deprecating a stored property without a replacement, keep its existing
+\code{class}, \code{default}, and \code{validator}. For a renamed property, put validation
+on the replacement. To deprecate a computed property or one with a custom
+setter, add a deprecation signal to its existing getter and setter instead
+of using this helper.
+}
+
+\section{Installed subclasses}{
+
+A package that defines a subclass stores the parent class and its property
+definitions when the package is installed. Updating the parent package
+does not rerun the subclass definition.
+
+If you replace a class with a newly created class or change its properties,
+maintainers of packages that subclass it need to rebuild their packages
+against the updated parent package to use the new definition. Users then
+need to install those rebuilt packages. Giving the existing class another
+name does not require rebuilding subclasses.
+
+These helpers also leave previously created or saved objects unchanged.
+Converting those objects to a new class or property layout is a separate
+step.
+}
+
 \examples{
 # A property renamed from count to size:
 Basket := new_class(properties = list(

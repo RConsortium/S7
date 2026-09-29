@@ -110,6 +110,7 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
     } else {
       cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
     }
+    # Return before class_constructor() to keep the package lookup deferred.
     return(bquote(S7::as_class(.(cl))()))
   }
 
@@ -336,11 +337,23 @@ class_inherits <- function(x, what) {
     S7_union = some(what$classes, class_inherits, x = x),
     S7_S3 = !isS4(x) &&
       class_dispatch_inherits(what$class, class(x)),
-    S7_external = inherits(x, "S7_object") &&
-      (inherits(x, what$class_name) ||
-        (isNamespaceLoaded(what$package) &&
-          class_inherits(x, resolve_external_class_req(what)))),
+    S7_external = class_inherits_external(x, what),
   )
+}
+
+class_inherits_external <- function(x, what) {
+  if (!inherits(x, "S7_object")) {
+    return(FALSE)
+  }
+  if (inherits(x, what$class_name)) {
+    return(TRUE)
+  }
+  if (!isNamespaceLoaded(what$package)) {
+    return(FALSE)
+  }
+
+  # The exported name may be an alias for a renamed class.
+  class_inherits(x, resolve_external_class_req(what))
 }
 
 # Is every instance of `child` guaranteed to also be an instance of `parent`?

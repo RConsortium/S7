@@ -21,7 +21,7 @@ with \link{:=}.}
 \item{new}{The replacement: an S7 class, usually the renamed class.}
 
 \item{old}{For a deprecation without a replacement: the existing class,
-which continues to power the deprecated name. Its name must match
+whose constructor continues to work. Its name must match
 \code{name}.}
 
 \item{when}{The package version when the deprecation began, e.g.
@@ -38,62 +38,66 @@ only displayed once every eight hours.
 The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
 
-\item{new_label}{Optional replacement label for the message, such as \code{"Bar()"}
-or \code{"pkg::Bar()"}. Requires \code{new}. By default, the label uses the
-replacement's internal name and package. Set this when the replacement
-is exported under a different name; it does not change the target.}
+\item{new_label}{How to name the replacement in the warning, e.g. \code{"Bar()"}
+or \code{"pkg::Bar()"}. Requires \code{new}. Defaults to the name recorded when the
+replacement was created. Use this when you export it under a different
+name. It changes the message, not the object used as the replacement.}
 }
 \value{
 A function with class \code{S7_deprecated_class}.
 }
 \description{
-If you rename a class or retire it without a replacement,
-\code{deprecated_class()} lets old code keep working while warning users that
-they need to update. It creates an alias that you export under the old
-name:
+\code{deprecated_class()} keeps an old class name working while warning users
+to call a replacement constructor. Keep exporting the old name:
 \itemize{
-\item Calling the constructor signals a deprecation warning, then constructs
-an instance of \code{new}.
-\item In every other context (method signatures, \code{parent}, property classes,
-\code{\link[=new_external_class]{new_external_class()}} references) it is silently treated as \code{new}.
+\item Calling the old constructor warns, then constructs an instance of \code{new}.
+\item Using the old name in method signatures, \code{parent}, property classes, or
+\code{\link[=new_external_class]{new_external_class()}} references uses \code{new} without a warning.
 }
 
-To deprecate a class that has no replacement, supply the class itself as
-\code{old}: it continues to power the deprecated name, but constructing an
-instance warns.
+To change the name users call without changing the class, assign the
+existing class to the new name and use \code{new_label} in the deprecation
+message (see the example below). The class name stored on objects stays
+the same, so existing methods and subclasses still work.
 
-Renaming or moving a class changes its identity. Downstream packages that
-define subclasses must be rebuilt: installed subclasses retain the old
-dispatch and property metadata. Saved instances also retain their old
-identity and may need explicit migration.
-
-To rename only the exported constructor while preserving the class's
-identity, keep the original class object under the new export and supply
-\code{new_label} to name that export in the message (see the example below).
+To deprecate a class without replacing it, supply the existing class as
+\code{old}. Its constructor still works, but now warns.
 }
+\section{Installed subclasses}{
+
+A package that defines a subclass stores the parent class and its property
+definitions when the package is installed. Updating the parent package
+does not rerun the subclass definition.
+
+If you replace a class with a newly created class or change its properties,
+maintainers of packages that subclass it need to rebuild their packages
+against the updated parent package to use the new definition. Users then
+need to install those rebuilt packages. Giving the existing class another
+name does not require rebuilding subclasses.
+
+These helpers also leave previously created or saved objects unchanged.
+Converting those objects to a new class or property layout is a separate
+step.
+}
+
 \examples{
-# A class renamed from Dog to Pet:
-Pet := new_class(properties = list(name = class_character))
-Dog := deprecated_class(new = Pet, when = "2.0.0")
+# You already export Dog and want users to call it Pet:
+Dog := new_class(properties = list(name = class_character))
+Pet <- Dog
+Dog := deprecated_class(new = Pet, when = "2.0.0", new_label = "Pet()")
 
-# Calling the old constructor warns, then constructs the new class:
-Dog(name = "Fido")
+Dog(name = "Fido") # warns
+Pet(name = "Fido") # no warning
 
-# In method signatures the old name silently means the new class:
+# Packages can still register methods using the old name:
 speak := new_generic("x")
 method(speak, Dog) <- function(x) "Woof!"
 speak(Pet(name = "Rex"))
 
-# A class deprecated without a replacement keeps working:
+# A class deprecated without a replacement:
 Cat := new_class(properties = list(lives = class_double))
 Cat := deprecated_class(old = Cat, when = "3.0.0")
 Cat(lives = 9)
-
-# Rename an export while preserving existing subclasses and instances:
-Foo := new_class()
-Bar <- Foo
-Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
-Foo()
 }
 \seealso{
 \code{\link[=deprecated_generic]{deprecated_generic()}} and \code{\link[=deprecated_property]{deprecated_property()}} to deprecate

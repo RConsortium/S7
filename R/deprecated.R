@@ -1,26 +1,35 @@
 #' Deprecate a generic
 #'
 #' @description
-#' If you rename a generic, move it to another package, or retire it without
-#' a replacement, `deprecated_generic()` lets old code keep working while
-#' warning users that they need to update. It creates a function that you
-#' export under the old name:
+#' Use `deprecated_generic()` when you rename a generic, move it to another
+#' package, or want users to stop calling it. Keep exporting the old name so
+#' existing code can still use it.
 #'
-#' * Calling it signals a deprecation warning, then delegates to `new`.
-#' * Methods registered on it with [method<-] are silently registered on
-#'   `new`, so downstream packages continue to work.
+#' A plain alias like `old <- new` gives callers no warning. A wrapper that
+#' calls `.Deprecated()` can warn, but downstream packages can no longer
+#' register S7 methods on it. `deprecated_generic()` supports both:
 #'
-#' To deprecate a generic that has no replacement, supply the generic itself
-#' as `old`: it continues to power the deprecated name, but calls warn.
+#' * Calling the old name warns, then calls the replacement.
+#' * Registering a method on the old name registers it on the replacement,
+#'   without a warning. Both names use the same methods.
 #'
-#' A replacement in another package is resolved in its owning namespace, so
-#' calls and method registrations through either export use the same method
-#' table. The replacement must remain available under its original name in
-#' that namespace.
+#' To deprecate a generic without replacing it, supply the existing generic
+#' as `old`. Calls still dispatch to its methods, but now warn.
 #'
-#' The wrapper uses the replacement's signature. Changes to dispatch arguments
-#' or other formals need an adapter or a separate old generic. To deprecate an
-#' argument, put the deprecation in the generic's function instead.
+#' @section Moving a generic to another package:
+#' If `pkg::gen()` moves to `pkgcore::gen()`, define the old name in `pkg` as:
+#'
+#' ```r
+#' gen := deprecated_generic(new = pkgcore::gen, when = "2.0.0")
+#' ```
+#'
+#' Methods registered through either name apply to calls through both names,
+#' including methods supplied by other packages.
+#'
+#' @section Changing arguments:
+#' The deprecated generic has the same arguments as the replacement and
+#' forwards them unchanged. Changing or deprecating arguments needs code in
+#' the generic itself; this helper only deprecates the generic's name.
 #'
 #' @param name The old name of the generic, as a string. As with
 #'   [new_generic()], the result should be assigned to a variable with this
@@ -28,7 +37,7 @@
 #' @param new The replacement: an S7 generic, usually the renamed generic, or
 #'   a generic that now lives in another package.
 #' @param old For a deprecation without a replacement: the existing generic,
-#'   which continues to power the deprecated name.
+#'   which continues to supply the methods.
 #' @param when The package version when the deprecation began, e.g.
 #'   `"1.2.0"`.
 #' @param method How to signal the deprecation:
@@ -40,10 +49,10 @@
 #'
 #'   The lifecycle options require the lifecycle package to be installed,
 #'   and to be a dependency of your package.
-#' @param new_label Optional replacement label for the message, such as `"Bar()"`
-#'   or `"pkg::Bar()"`. Requires `new`. By default, the label uses the
-#'   replacement's internal name and package. Set this when the replacement
-#'   is exported under a different name; it does not change the target.
+#' @param new_label How to name the replacement in the warning, e.g. `"Bar()"`
+#'   or `"pkg::Bar()"`. Requires `new`. Defaults to the name recorded when the
+#'   replacement was created. Use this when you export it under a different
+#'   name. It changes the message, not the object used as the replacement.
 #' @returns A function with class `S7_deprecated_generic`.
 #' @seealso [deprecated_class()] and [deprecated_property()] to deprecate
 #'   other parts of your API.
@@ -106,7 +115,6 @@ deprecated_generic <- function(
       stop2(msg)
     }
     target <- old
-    new_label <- NULL
   } else {
     if (is_deprecated_generic(new)) {
       new <- deprecated_target(new)
@@ -137,35 +145,42 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Deprecate a class
 #'
 #' @description
-#' If you rename a class or retire it without a replacement,
-#' `deprecated_class()` lets old code keep working while warning users that
-#' they need to update. It creates an alias that you export under the old
-#' name:
+#' `deprecated_class()` keeps an old class name working while warning users
+#' to call a replacement constructor. Keep exporting the old name:
 #'
-#' * Calling the constructor signals a deprecation warning, then constructs
-#'   an instance of `new`.
-#' * In every other context (method signatures, `parent`, property classes,
-#'   [new_external_class()] references) it is silently treated as `new`.
+#' * Calling the old constructor warns, then constructs an instance of `new`.
+#' * Using the old name in method signatures, `parent`, property classes, or
+#'   [new_external_class()] references uses `new` without a warning.
 #'
-#' To deprecate a class that has no replacement, supply the class itself as
-#' `old`: it continues to power the deprecated name, but constructing an
-#' instance warns.
+#' To change the name users call without changing the class, assign the
+#' existing class to the new name and use `new_label` in the deprecation
+#' message (see the example below). The class name stored on objects stays
+#' the same, so existing methods and subclasses still work.
 #'
-#' Renaming or moving a class changes its identity. Downstream packages that
-#' define subclasses must be rebuilt: installed subclasses retain the old
-#' dispatch and property metadata. Saved instances also retain their old
-#' identity and may need explicit migration.
+#' To deprecate a class without replacing it, supply the existing class as
+#' `old`. Its constructor still works, but now warns.
 #'
-#' To rename only the exported constructor while preserving the class's
-#' identity, keep the original class object under the new export and supply
-#' `new_label` to name that export in the message (see the example below).
+#' @section Installed subclasses:
+#' A package that defines a subclass stores the parent class and its property
+#' definitions when the package is installed. Updating the parent package
+#' does not rerun the subclass definition.
+#'
+#' If you replace a class with a newly created class or change its properties,
+#' maintainers of packages that subclass it need to rebuild their packages
+#' against the updated parent package to use the new definition. Users then
+#' need to install those rebuilt packages. Giving the existing class another
+#' name does not require rebuilding subclasses.
+#'
+#' These helpers also leave previously created or saved objects unchanged.
+#' Converting those objects to a new class or property layout is a separate
+#' step.
 #'
 #' @param name The old name of the class, as a string. As with [new_class()],
 #'   the result should be assigned to a variable with this name, most easily
 #'   with [:=].
 #' @param new The replacement: an S7 class, usually the renamed class.
 #' @param old For a deprecation without a replacement: the existing class,
-#'   which continues to power the deprecated name. Its name must match
+#'   whose constructor continues to work. Its name must match
 #'   `name`.
 #' @inheritParams deprecated_generic
 #' @returns A function with class `S7_deprecated_class`.
@@ -173,28 +188,23 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #'   other parts of your API.
 #' @export
 #' @examples
-#' # A class renamed from Dog to Pet:
-#' Pet := new_class(properties = list(name = class_character))
-#' Dog := deprecated_class(new = Pet, when = "2.0.0")
+#' # You already export Dog and want users to call it Pet:
+#' Dog := new_class(properties = list(name = class_character))
+#' Pet <- Dog
+#' Dog := deprecated_class(new = Pet, when = "2.0.0", new_label = "Pet()")
 #'
-#' # Calling the old constructor warns, then constructs the new class:
-#' Dog(name = "Fido")
+#' Dog(name = "Fido") # warns
+#' Pet(name = "Fido") # no warning
 #'
-#' # In method signatures the old name silently means the new class:
+#' # Packages can still register methods using the old name:
 #' speak := new_generic("x")
 #' method(speak, Dog) <- function(x) "Woof!"
 #' speak(Pet(name = "Rex"))
 #'
-#' # A class deprecated without a replacement keeps working:
+#' # A class deprecated without a replacement:
 #' Cat := new_class(properties = list(lives = class_double))
 #' Cat := deprecated_class(old = Cat, when = "3.0.0")
 #' Cat(lives = 9)
-#'
-#' # Rename an export while preserving existing subclasses and instances:
-#' Foo := new_class()
-#' Bar <- Foo
-#' Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
-#' Foo()
 deprecated_class <- function(
   name,
   new = NULL,
@@ -236,7 +246,6 @@ deprecated_class <- function(
       stop2(msg)
     }
     target <- old
-    new_label <- NULL
   } else {
     if (is_deprecated_class(new)) {
       new <- deprecated_target(new)
@@ -267,35 +276,37 @@ is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
 #' Deprecate a property
 #'
 #' @description
-#' If you rename a property or retire it without a replacement,
-#' `deprecated_property()` lets old code keep working while warning users
-#' that they need to update. It creates a property that signals a
-#' deprecation warning when it is read or changed, delegating storage to the
-#' property named `new`.
+#' Add `deprecated_property()` to a class's `properties` to warn users when
+#' they use an old property name. Supply `new` to forward reads and writes to
+#' a replacement property, or omit it to keep storing the property's value.
 #'
-#' To deprecate a property that has no replacement, omit `new`: the property
-#' stores data as usual, but warns when read or changed. Supplying a value to
-#' the constructor does not warn, because S7 can't distinguish a user-supplied
-#' value from the default.
+#' The default `print()` and `str()` methods omit deprecated properties.
+#' Direct access and [props()] still read them and signal deprecation.
 #'
-#' Assignments identical to the current value can be silent. With a replacement,
-#' this also applies to constructor arguments: `Basket(size = 2, count = 2)`
-#' is silent, while `Basket(size = 2, count = 3)` signals deprecation. These
-#' exceptions also apply to `method = "lifecycle(stop)"`; it does not prohibit
-#' every use of the old argument or every assignment to the old property.
+#' @section When properties warn:
+#' Reading a deprecated property signals a warning. Setting it to a different
+#' value also warns, but assignments of the current value can be silent.
 #'
-#' Rebuild downstream packages that define subclasses after changing a
-#' property's definition. Installed subclasses retain the old property
-#' metadata; an alias does not migrate that metadata or saved instances.
+#' With a replacement, the old constructor argument defaults to the value of
+#' the new argument. For example, `Basket(size = 2)` and
+#' `Basket(size = 2, count = 2)` are both silent, while
+#' `Basket(size = 2, count = 3)` warns. S7 cannot distinguish explicitly
+#' supplying the same value from using that default.
 #'
-#' When retiring a stored property, preserve its `class`, `default`, and
-#' `validator`. Validation for a renamed property must live on the replacement.
-#' Existing computed properties or properties with custom setters need custom
-#' getters and setters that signal deprecation; this helper does not wrap an
-#' existing property definition.
+#' Without a replacement, construction is silent: S7 initializes the property
+#' for every object, whether its value came from an argument or a default.
 #'
-#' The default `print()` and `str()` methods omit deprecated properties
-#' without calling their getters. [props()] reads them and signals deprecation.
+#' `method = "lifecycle(stop)"` turns the deprecation warnings described above
+#' into errors. The cases described as silent remain silent.
+#'
+#' @section Preserving validation:
+#' When deprecating a stored property without a replacement, keep its existing
+#' `class`, `default`, and `validator`. For a renamed property, put validation
+#' on the replacement. To deprecate a computed property or one with a custom
+#' setter, add a deprecation signal to its existing getter and setter instead
+#' of using this helper.
+#'
+#' @inheritSection deprecated_class Installed subclasses
 #'
 #' @param old The name of the deprecated property, as a string. Because the
 #'   name is part of the property itself, the `properties` list entry doesn't
@@ -445,7 +456,8 @@ new_deprecated_fun <- function(
   if (is_S7_generic(target)) {
     target_package <- package_name(target)
     if (!is.null(target_package) && !identical(target_package, package)) {
-      # Serializing a foreign generic would duplicate its method table.
+      # Keep a reference to the owning package's binding, not a serialized
+      # copy of its method table. The binding must keep the generic's S7 name.
       target <- as_external_generic(target)
     }
   }
