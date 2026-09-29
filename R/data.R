@@ -13,7 +13,7 @@
 #'   invisibly.
 #' @export
 #' @examples
-#' Text <- new_class("Text", parent = class_character)
+#' Text := new_class(parent = class_character)
 #' y <- Text(c(foo = "bar"))
 #' y
 #' S7_data(y)
@@ -22,13 +22,16 @@
 #' y
 #'
 #' # S3 classes are preserved
-#' MyDF <- new_class("MyDF", parent = class_data.frame)
+#' MyDF := new_class(parent = class_data.frame)
 #' S7_data(MyDF(data.frame(x = 1, y = 2)))
 S7_data <- function(object) {
   check_is_S7(object)
   check_not_environment(object, "S7_data()")
 
-  out <- zap_attr(object, c(prop_storage_names(object), "class", "S7_class"))
+  out <- zap_attr(
+    object,
+    c(prop_storage_names(object), "class", "_S7_class", "S7_class")
+  )
 
   base <- base_parent(S7_class(object))
   if (is_S3_class(base)) {
@@ -37,10 +40,15 @@ S7_data <- function(object) {
   out
 }
 
-# Walk up the @parent chain to the first non-S7 ancestor (or S7_object).
+# Walk up the @parent chain to the first non-S7 ancestor (or S7_object),
+# resolving external classes so the walk can continue through them.
 base_parent <- function(class) {
   while (is_class(class) && class@name != "S7_object") {
-    class <- class@parent
+    parent <- class@parent
+    if (is_external_class(parent)) {
+      parent <- resolve_external_class_req(parent, package = class@package)
+    }
+    class <- parent
   }
   class
 }
@@ -51,7 +59,7 @@ base_parent <- function(class) {
   check_is_S7(object)
   check_not_environment(object, "S7_data<-")
 
-  s7_attrs <- c(prop_storage_names(object), "class", "S7_class")
+  s7_attrs <- c(prop_storage_names(object), "class", "_S7_class", "S7_class")
   for (name in s7_attrs) {
     attr(value, name) <- attr(object, name, exact = TRUE)
   }

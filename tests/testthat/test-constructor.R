@@ -34,14 +34,13 @@ test_that("generates correct arguments from parent + properties", {
   expect_equal(args$parent, pairlist())
 
   # Includes parent properties
-  foo <- new_class("foo", properties = list(x = class_numeric))
+  foo := new_class(properties = list(x = class_numeric))
   args <- constructor_args(foo, as_properties(list(y = class_numeric)))
   expect_equal(args$self, pairlist(y = integer()))
   expect_equal(args$parent, pairlist(x = integer()))
 
   # But only those in the constructor
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_numeric),
     constructor = function() new_object(x = 1)
   )
@@ -59,10 +58,10 @@ test_that("generates meaningful constructors", {
         as_properties(list(x = class_numeric, y = class_numeric))
       )
 
-      foo <- new_class("foo", parent = class_character)
+      foo := new_class(parent = class_character)
       new_constructor(foo, list())
 
-      foo2 <- new_class("foo2", parent = foo)
+      foo2 := new_class(parent = foo)
       new_constructor(foo2, list())
     },
     transform = scrub_environment
@@ -85,8 +84,7 @@ test_that("can generate constructors for S3 classes", {
 test_that("can generate constructor for inherited abstract classes", {
   expect_snapshot(
     {
-      foo1 <- new_class(
-        "foo1",
+      foo1 := new_class(
         abstract = TRUE,
         properties = list(x = class_double)
       )
@@ -95,18 +93,17 @@ test_that("can generate constructor for inherited abstract classes", {
     },
     transform = scrub_environment
   )
-  child <- new_class("child", foo1, properties = list(y = class_double))
+  child := new_class(foo1, properties = list(y = class_double))
   expect_no_error(child(y = 0.5))
 
   # even if it has a read-only property
   prop_readonly <- new_property(getter = function(self) "test")
-  child <- new_class("child", foo1, properties = list(x = prop_readonly))
+  child := new_class(foo1, properties = list(x = prop_readonly))
   expect_no_error(child())
 })
 
 test_that("can use `...` in parent constructor", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_list),
     constructor = function(...) new_object(S7_object(), x = list(...))
   )
@@ -117,15 +114,214 @@ test_that("can use `...` in parent constructor", {
   )
 
   # And check that arguments matched correctly
-  bar <- new_class("bar", foo, properties = list(y = class_double))
+  bar := new_class(foo, properties = list(y = class_double))
   expect_equal(bar()@x, list())
   expect_equal(bar(2)@x, list(2))
   expect_equal(bar(y = 2)@x, list())
 })
 
+test_that("subclass forwards `...` to a custom parent constructor (#609)", {
+  # The parent default references a symbol from the parent's own environment,
+  # which the child can't see -- so it must be evaluated by the parent.
+  Parent <- local({
+    secret <- 42L
+    new_class(
+      name = "Parent",
+      properties = list(x = class_integer),
+      constructor = function(x = secret) new_object(S7_object(), x = x)
+    )
+  })
+  Child := new_class(
+    parent = Parent,
+    properties = list(y = class_double)
+  )
+
+  expect_named(formals(Child), c("...", "y"))
+  expect_equal(Child()@x, 42L)
+  expect_equal(Child(10L)@x, 10L) # positional arg forwarded to the parent
+  expect_equal(Child(y = 2)@y, 2) # named child arg is not forwarded
+})
+
+test_that("subclass of a custom S3 parent forwards `...`", {
+  rle2 <- new_S3_class(
+    "rle2",
+    constructor = function(.data = list(), n = integer()) {
+      structure(.data, n = n, class = "rle2")
+    }
+  )
+
+  Child := new_class(parent = rle2, properties = list(z = class_double))
+  expect_named(formals(Child), c("...", "z"))
+  expect_equal(Child(z = 1)@z, 1)
+
+  # S7's own S3 wrappers stay on the inline path
+  Factor := new_class(parent = class_factor)
+  expect_named(formals(Factor), c(".data", "levels"))
+})
+
+test_that("forwarding constructor passes overrides to both parent and object", {
+  P := new_class(
+    package = NULL,
+    properties = list(a = new_property(class_double, default = 1)),
+    constructor = function(a = 1) new_object(S7_object(), a = a)
+  )
+
+  expect_snapshot(
+    new_constructor(
+      P,
+      as_properties(list(
+        a = new_property(class_double, default = 99),
+        b = class_double
+      ))
+    ),
+    transform = scrub_environment
+  )
+
+  C := new_class(
+    parent = P,
+    package = NULL,
+    properties = list(a = new_property(class_double, default = 99))
+  )
+  expect_equal(C()@a, 99) # child default wins over parent default
+  expect_equal(C(a = 5)@a, 5)
+})
+
+test_that("subclass can override simple parent property defaults", {
+  foo := new_class(
+    properties = list(x = new_property(class_numeric, default = 1))
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+  expect_equal(foo2()@x, 2)
+  expect_equal(foo2(x = 3)@x, 3)
+})
+
+test_that("subclass can override required parent propertes", {
+  need_x <- quote(stop("need x"))
+  required := new_class(
+    properties = list(x = new_property(class_numeric, default = need_x))
+  )
+  required2 := new_class(
+    parent = required,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+  expect_equal(required2()@x, 2)
+})
+
+test_that("subclass can override simple parent property when parent uses ...", {
+  need_x <- quote(stop("need x"))
+  dots := new_class(
+    properties = list(x = new_property(class_numeric, default = need_x)),
+    constructor = function(...) new_object(S7_object(), ...)
+  )
+  dots2 := new_class(
+    parent = dots,
+    properties = list(x = new_property(class_numeric, default = 2))
+  )
+  expect_equal(dots2()@x, 2)
+})
+
+test_that("compatible dynamic settable override is passed to parent", {
+  need_x <- quote(stop("need x"))
+  foo := new_class(
+    properties = list(x = new_property(class_numeric, default = need_x))
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      x = new_property(
+        class_double,
+        default = 1,
+        getter = function(self) self@x,
+        setter = function(self, value) {
+          self@x <- value + 1
+          self
+        }
+      )
+    )
+  )
+  expect_equal(foo2(x = 1)@x, 2)
+  expect_equal(foo2()@x, 2)
+})
+
+test_that("subclass setter is used during construction", {
+  foo := new_class(properties = list(x = class_integer, z = class_any))
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      z = new_property(
+        class_double,
+        setter = function(self, value) {
+          self@z <- value * 2
+          self
+        }
+      )
+    )
+  )
+  expect_equal(foo2(z = 1)@z, 2)
+  expect_equal(foo2(x = 1L, z = 1)@x, 1L)
+})
+
+test_that("parent validators rerun after inherited properties are reset", {
+  validator <- function(self) {
+    if (self@x < 0) "@x must be non-negative"
+  }
+
+  foo := new_class(
+    properties = list(x = class_double),
+    constructor = function() new_object(S7_object(), x = 0),
+    validator = validator
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(class_double, default = -1))
+  )
+
+  expect_error(foo2(), "@x must be non-negative")
+})
+
+test_that("overridden properties keep their position in the constructor", {
+  foo := new_class(
+    properties = list(x = class_numeric, y = class_numeric)
+  )
+  foo2 := new_class(
+    parent = foo,
+    properties = list(
+      x = new_property(class_numeric, default = 2),
+      z = class_numeric
+    )
+  )
+
+  expect_named(formals(foo2), c("x", "y", "z"))
+  expect_equal(props(foo2(1, 2, 3)), list(x = 1, y = 2, z = 3))
+})
+
+test_that("read-only properties filter only overridden constructor arguments", {
+  foo := new_class(properties = list(x = class_character))
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(getter = function(self) "fixed"))
+  )
+  expect_null(formals(foo2))
+  expect_equal(foo2()@x, "fixed")
+
+  Factor := new_class(
+    parent = class_factor,
+    properties = list(
+      levels = new_property(getter = function(self) levels(self))
+    )
+  )
+  expect_named(formals(Factor), c(".data", "levels"))
+
+  x <- Factor(c(1L, 2L), levels = c("a", "b"))
+  expect_equal(levels(x), c("a", "b"))
+  expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
+})
+
 test_that("can create constructors with missing or lazy defaults", {
-  Person <- new_class(
-    name = "Person",
+  Person := new_class(
     properties = list(
       # non-dynamic, default error call (required constructor arg)
       first_name = new_property(
@@ -203,8 +399,7 @@ test_that("can create constructors with missing or lazy defaults", {
 })
 
 test_that("Dynamic settable properties are included in constructor", {
-  Foo <- new_class(
-    name = "Foo",
+  Foo := new_class(
     package = NULL,
     properties = list(
       dynamic_settable = new_property(

@@ -20,7 +20,7 @@
 #'
 #' @export
 #' @examples
-#' Counter <- new_class("Counter", class_environment)
+#' Counter := new_class(class_environment)
 #' counter <- Counter()
 #' counter$n <- 0L
 #'

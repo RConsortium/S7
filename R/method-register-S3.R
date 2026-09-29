@@ -1,5 +1,5 @@
 register_S3_method <- function(
-  generic,
+  generic, # always resolved to real generic
   signature,
   method,
   envir = parent.frame(),
@@ -25,12 +25,13 @@ register_S3_method <- function(
   if (is_local_s3_generic(generic)) {
     register_local_s3_method(generic, class, method)
   } else {
-    # Register external generics in their own namespace
-    external_generic <- get0(generic$name, envir = envir)
-    if (is_external_generic(external_generic)) {
-      envir <- asNamespace(external_generic$package)
-    }
-    registerS3method(generic$name, class, method, envir)
+    # Register external generics in their own namespace.
+    S3_envir <- environment(generic$generic) %||% envir
+    registerS3method(generic$name, class, method, S3_envir)
+  }
+
+  if (should_register_S4_method(generic, signature)) {
+    register_S4_method(generic$name, signature, method, envir, call = call)
   }
 }
 

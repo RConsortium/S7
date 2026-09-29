@@ -9,6 +9,7 @@ reference:
   - new_class
   - new_generic
   - new_union
+  - ":="
   - method<-
   - S7_inherits
   - validate
@@ -24,6 +25,7 @@ reference:
 - title: Method dispatch
   contents:
   - convert
+  - convert_lazy
   - class_missing
   - class_any
   - super
@@ -35,6 +37,8 @@ reference:
   - S7_class
   - S7_class_desc
   - S7_generic_call
+  - S7_classes
+  - S7_methods
 
 - title: Packages
   desc: >
@@ -42,6 +46,7 @@ reference:
     for more details.
   contents:
   - S7_on_load
+  - new_external_class
   - new_external_generic
 
 - title: Compatibility

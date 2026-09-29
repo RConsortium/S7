@@ -10,8 +10,6 @@
 prop(object, name)
 
 prop(object, name, check = TRUE) <- value
-
-object@name
 }
 \arguments{
 \item{object}{An object from a S7 class}
@@ -39,7 +37,7 @@ a property.
 }
 }
 \examples{
-Horse <- new_class("Horse", properties = list(
+Horse := new_class(properties = list(
   name = class_character,
   colour = class_character,
   height = class_numeric

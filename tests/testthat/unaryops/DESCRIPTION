@@ -1,0 +1,9 @@
+Package: unaryops
+Title: Test Unary Operator Methods
+Version: 0.0.0.9000
+Authors@R:
+    person("Tomasz", "Kalinowski", , "tomasz@posit.co", role = c("aut", "cre"))
+Description: Exercises unary operator registration in an installed package.
+Imports: S7
+License: MIT
+Encoding: UTF-8

@@ -1,3 +1,32 @@
+test_that("modify_list() replaces existing values and appends new ones", {
+  expect_equal(
+    modify_list(list(a = 1, b = 2), list(b = 3, c = 4)),
+    list(a = 1, b = 3, c = 4)
+  )
+  expect_equal(modify_list(list(a = 1), list()), list(a = 1))
+})
+
+test_that("modify_list() accepts NULL x", {
+  expect_equal(modify_list(NULL, list()), list())
+  expect_equal(modify_list(NULL, list(a = 1)), list(a = 1))
+})
+
+test_that("collect_dots() collects named dots into a list", {
+  expect_equal(collect_dots(x = 1, y = 2), list(x = 1, y = 2))
+  expect_equal(collect_dots(), list())
+})
+
+test_that("collect_dots() preserves a single unnamed list", {
+  expect_equal(collect_dots(list(x = 1, y = 2)), list(x = 1, y = 2))
+})
+
+test_that("collect_dots() errors if arguments are unnamed", {
+  expect_snapshot(error = TRUE, {
+    collect_dots(1, 2)
+    collect_dots(list(1, y = 2))
+  })
+})
+
 test_that("check_function() accepts a matching single signature", {
   expect_snapshot(check_function(1, alist(x = ), arg = "f"), error = TRUE)
   expect_invisible(check_function(function(x) NULL, alist(x = )))

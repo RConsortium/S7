@@ -23,7 +23,7 @@ test_that("new_generic finds S7_dispatch calls", {
 })
 
 test_that("derived fun always includes ...", {
-  g <- new_generic("g", "x")
+  g := new_generic("x")
   expect_equal(names(formals(g)), c("x", "..."))
 })
 
@@ -40,13 +40,13 @@ test_that("check_dispatch_args() produces informative errors", {
 })
 
 test_that("S7_generic printing", {
-  foo1 <- new_generic("foo1", "x")
-  text <- new_class("text", package = NULL)
+  foo1 := new_generic("x")
+  text := new_class(package = NULL)
 
   method(foo1, class_character) <- function(x) 1
   method(foo1, text) <- function(x) 2
 
-  foo3 <- new_generic("foo3", c("x", "y", "z"))
+  foo3 := new_generic(c("x", "y", "z"))
   method(foo3, list(class_character, text, class_character)) <- function(
     x,
     y,
@@ -75,7 +75,7 @@ test_that("S7_generic printing", {
 })
 
 test_that("S7_generic printing with long / many arguments", {
-  foo <- new_generic("foo", letters)
+  foo := new_generic(letters)
   expect_snapshot(
     foo
   )

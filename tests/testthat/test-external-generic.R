@@ -1,13 +1,12 @@
 test_that("can get and append methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_package("testpkg")
 
-  expect_equal(S7_methods_table("S7"), list())
+  expect_equal(S7_methods_table("testpkg"), list())
 
-  bar <- new_external_generic("foo", "bar", "x")
-  external_methods_add("S7", bar, list(), function() {})
+  bar := new_external_generic("foo", dispatch_args = "x")
+  external_methods_add("testpkg", bar, list(), function() {})
   expect_equal(
-    S7_methods_table("S7"),
+    S7_methods_table("testpkg"),
     list(
       list(
         generic = bar,
@@ -18,47 +17,88 @@ test_that("can get and append methods", {
   )
 })
 
+test_that("re-adding a method replaces the existing entry", {
+  local_package("testpkg")
+
+  bar := new_external_generic("foo", dispatch_args = "x")
+  external_methods_add("testpkg", bar, list("A"), function() "a")
+  external_methods_add("testpkg", bar, list("A"), function() "b")
+  expect_length(S7_methods_table("testpkg"), 1)
+  expect_equal(S7_methods_table("testpkg")[[1]]$method(), "b")
+})
+
 test_that("can remove methods", {
-  external_methods_reset("S7")
-  on.exit(external_methods_reset("S7"), add = TRUE)
+  local_package("testpkg")
 
-  bar <- new_external_generic("foo", "bar", "x")
-  baz <- new_external_generic("foo", "baz", "x")
-  external_methods_add("S7", bar, list("A"), function() "a")
-  external_methods_add("S7", baz, list("B"), function() "b")
-  expect_length(S7_methods_table("S7"), 2)
+  bar := new_external_generic("foo", dispatch_args = "x")
+  baz := new_external_generic("foo", dispatch_args = "x")
+  external_methods_add("testpkg", bar, list("A"), function() "a")
+  external_methods_add("testpkg", baz, list("B"), function() "b")
+  expect_length(S7_methods_table("testpkg"), 2)
 
-  external_methods_remove("S7", bar, list("A"))
-  expect_length(S7_methods_table("S7"), 1)
-  expect_equal(S7_methods_table("S7")[[1]]$generic, baz)
+  external_methods_remove("testpkg", bar, list("A"))
+  expect_length(S7_methods_table("testpkg"), 1)
+  expect_equal(S7_methods_table("testpkg")[[1]]$generic, baz)
 
   # No-op when entry doesn't exist
-  external_methods_remove("S7", bar, list("A"))
-  expect_length(S7_methods_table("S7"), 1)
+  external_methods_remove("testpkg", bar, list("A"))
+  expect_length(S7_methods_table("testpkg"), 1)
+})
+
+test_that("resolve_generic_opt() finds re-exported generics", {
+  testcore := local_package({
+    gen := new_generic("x")
+  })
+
+  # Simulate testpkg re-exporting testcore::gen: the binding lives in the
+  # imports environment and is listed in the exports, but is absent from the
+  # namespace proper
+  testpkg := local_package()
+  assign("gen", testcore$gen, envir = parent.env(testpkg))
+  assign("gen", "gen", envir = testpkg[[".__NAMESPACE__."]]$exports)
+
+  gen := new_external_generic(package = "testpkg", dispatch_args = "x")
+  expect_identical(resolve_generic_opt(gen), testcore$gen)
+})
+
+test_that("resolve_generic_opt() finds unexported generics", {
+  testpkg := local_package({
+    gen := new_generic("x")
+  })
+  rm(list = "gen", envir = testpkg[[".__NAMESPACE__."]]$exports)
+
+  gen := new_external_generic(package = "testpkg", dispatch_args = "x")
+  expect_identical(resolve_generic_opt(gen), testpkg$gen)
+})
+
+test_that("resolve_generic() warns instead of erroring when generic is missing", {
+  testpkg := local_package()
+
+  gen := new_external_generic(package = "testpkg", dispatch_args = "x")
+  expect_null(resolve_generic_opt(gen))
+  expect_snapshot(out <- resolve_generic(gen))
+  expect_null(out)
 })
 
 test_that("displays nicely", {
-  bar <- new_external_generic("foo", "bar", "x")
-  on.exit(external_methods_reset("S7"), add = TRUE)
-
+  bar := new_external_generic("foo", dispatch_args = "x")
   expect_snapshot({
     print(bar)
   })
 })
 
 test_that("can convert existing generics to external", {
-  foo_S7 <- new_generic("foo_S7", "x")
-  env <- new.env()
-  env$.packageName <- "test"
-  environment(foo_S7) <- env
+  ns <- local_package("test", {
+    foo_S7 := new_generic("x")
+  })
 
   expect_equal(
-    as_external_generic(foo_S7),
+    as_external_generic(ns$foo_S7),
     new_external_generic("test", "foo_S7", "x")
   )
 
-  foo_ext <- new_external_generic("pkg", "foo", "x")
-  expect_equal(as_external_generic(foo_ext), foo_ext)
+  foo := new_external_generic("pkg", dispatch_args = "x")
+  expect_equal(as_external_generic(foo), foo)
 
   expect_equal(
     as_external_generic(as_S3_generic(sum)),
@@ -94,7 +134,7 @@ test_that("new_method works with both hard and soft dependencies", {
   # to t0::AnS7Class() (and not inline the full class object).
   # As these tests grow, consider splitting this into a separate context like:
   #   test_that("package exported classes are not inlined in constructor formals", {...})
-  Foo <- new_class("Foo", properties = list(bar = t0::`An S7 Class`))
+  Foo := new_class(properties = list(bar = t0::`An S7 Class`))
   expect_identical(formals(Foo), as.pairlist(alist(bar = t0::`An S7 Class`())))
   expect_identical(
     formals(t2::`An S7 Class 2`),

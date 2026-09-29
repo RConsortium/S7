@@ -12,8 +12,28 @@ global_variables <- function(names) {
   assign(".__global__", current, envir = env)
 }
 
+obj_addr <- function(x) {
+  .Call(obj_addr_, x)
+}
+
 vlapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
+}
+every <- function(X, FUN, ...) {
+  for (x in X) {
+    if (!FUN(x, ...)) {
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+some <- function(X, FUN, ...) {
+  for (x in X) {
+    if (FUN(x, ...)) {
+      return(TRUE)
+    }
+  }
+  FALSE
 }
 vcapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = character(1), ...)
@@ -23,8 +43,22 @@ paste_c <- function(...) {
   paste(c(...), collapse = "")
 }
 
+# Lightweight equivalent of withr::defer()
+defer <- function(expr, frame = parent.frame(), after = FALSE) {
+  thunk <- as.call(list(function() expr))
+  do.call(on.exit, list(thunk, TRUE, after), envir = frame)
+}
+
 stop2 <- function(message, call = sys.call(-1L), class = NULL) {
   stop(errorCondition(
+    message = paste(message, collapse = "\n"),
+    call = call,
+    class = class
+  ))
+}
+
+warning2 <- function(message, call = sys.call(-1L), class = NULL) {
+  warning(warningCondition(
     message = paste(message, collapse = "\n"),
     call = call,
     class = class
@@ -50,6 +84,27 @@ names2 <- function(x) {
   } else {
     nms
   }
+}
+
+# Collect `...` into a named list. As a convenience, a single unnamed list is
+# spliced in so its elements become the values, making it easy to supply
+# values programmatically. All values must be named.
+collect_dots <- function(..., call = sys.call(-1)) {
+  args <- list(...)
+
+  is_single_list <- length(args) == 1L &&
+    !nzchar(names2(args)) &&
+    is.list(args[[1L]])
+
+  if (is_single_list) {
+    args <- args[[1L]]
+    if ("" %in% names2(args)) {
+      stop2("All elements of `..1` must be named.", call = call)
+    }
+  } else if ("" %in% names2(args)) {
+    stop2("All arguments to `...` must be named.", call = call)
+  }
+  args
 }
 
 is_prefix <- function(x, y) {
@@ -91,6 +146,10 @@ str_nest <- function(
 
 str_function <- function(object, ..., nest.lev = 0) {
   attr(object, "srcref") <- NULL
+  # Display S7-generated constructors like any other function
+  if (inherits(object, "S7_constructor")) {
+    class(object) <- NULL
+  }
   if (identical(class(object), "function")) {
     cat(" ")
   }
@@ -173,15 +232,16 @@ show_args <- function(x, name = "function", suffix = "") {
 }
 
 modify_list <- function(x, new_vals) {
-  stopifnot(is.list(x) || is.pairlist(x), all(nzchar(names2(x))))
+  stopifnot(
+    is.null(x) || is.list(x) || is.pairlist(x),
+    all(nzchar(names2(x)))
+  )
+  x <- x %||% list()
 
   if (length(new_vals)) {
     nms <- names2(new_vals)
     if (!all(nzchar(nms))) {
       stop2("All elements in `new_vals` must be named.")
-    }
-    if (is.null(x)) {
-      x <- list()
     }
     x[nms] <- new_vals
   }
@@ -197,6 +257,9 @@ deparse_trunc <- function(x, width, collapse = "\n") {
   x
 }
 
+is_plain_list <- function(x) {
+  is.list(x) && !is.object(x)
+}
 
 # For older versions of R ----------------------------------------------------
 deparse1 <- function(expr, collapse = " ", width.cutoff = 500L, ...) {

@@ -3,7 +3,7 @@ test_that("new_S3_class has a print method", {
 })
 
 test_that("can construct objects that extend S3 classes", {
-  ordered2 <- new_class("ordered2", parent = class_factor, package = NULL)
+  ordered2 := new_class(parent = class_factor, package = NULL)
   x <- ordered2(c(1L, 2L, 1L), letters[1:3])
   expect_equal(class(x), c("ordered2", "factor", "S7_object"))
   expect_equal(prop_names(x), character())
@@ -16,7 +16,7 @@ test_that("subclasses inherit validator", {
     function(.data) structure(.data, class = "foo"),
     function(x) if (!is.double(x)) "Underlying data must be a double"
   )
-  foo2 <- new_class("foo2", foo, package = NULL)
+  foo2 := new_class(foo, package = NULL)
 
   expect_snapshot(error = TRUE, foo2("a"))
 })
@@ -38,7 +38,7 @@ test_that("default new_S3_class constructor errors", {
 })
 
 test_that("can construct data frame subclass", {
-  dataframe2 <- new_class("dataframe2", class_data.frame)
+  dataframe2 := new_class(class_data.frame)
   df <- dataframe2(list(x = 1:3))
   expect_s3_class(df, "data.frame")
 })
@@ -79,5 +79,19 @@ test_that("catches invalid data.frame", {
     validate_data.frame(structure(list(x = 1, y = 1:2), row.names = 1L))
     validate_data.frame(structure(list(x = 1, y = 1), row.names = 1:2))
     validate_data.frame(structure(list(1), row.names = 1L))
+    validate_data.frame(structure(
+      list(y = 1:2, x = data.frame(x1 = 1:3)),
+      row.names = 1:2
+    ))
   })
+})
+
+test_that("data.frame accepts data.frame and matrix columns (#751)", {
+  packed <- data.frame(y = 1:3)
+  packed$x <- data.frame(x1 = 1:3, x2 = 4:6)
+  expect_null(validate_data.frame(packed))
+
+  mat <- data.frame(y = 1:3)
+  mat$m <- matrix(1:6, nrow = 3)
+  expect_null(validate_data.frame(mat))
 })

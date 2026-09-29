@@ -11,14 +11,17 @@
 #'   CamelCase for S7 class names, but it is not required.)
 #'
 #'   The result of calling `new_class()` should always be assigned to a variable
-#'   with this name, i.e. `Foo <- new_class("Foo")`. This object both represents
-#'   the class and is used to construct new instances of the class.
+#'   with this name, i.e. `Foo <- new_class("Foo", ...)` or
+#'   `Foo := new_class(...)`. This object both represents the class and is used
+#'   to construct new instances of the class.
 #' @param parent The parent class to inherit behavior from.
-#'   There are three options:
+#'   There are four options:
 #'
 #'   * An S7 class, like [S7_object].
+#'   * An S4 class, like the result of [methods::getClass()].
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
+#'   * A class from another package, wrapped by [new_external_class()].
 #' @param package Package name. This is automatically resolved if the class is
 #'   defined in a package, and `NULL` otherwise.
 #'
@@ -31,8 +34,10 @@
 #'   argument for each property.
 #'
 #'   A custom constructor should call `new_object()` to create the S7 object.
-#'   The first argument, `.data`, should be an instance of the parent class
-#'   (if used). The subsequent arguments are used to set the properties.
+#'   `new_class()` automatically associates a custom constructor with its class,
+#'   so no additional class argument is needed. The first argument to
+#'   `new_object()`, `_parent`, should be an instance of the parent class (if
+#'   used). The subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.
 #'
@@ -54,12 +59,23 @@
 #'   belong to each instance of the class. Each element of the list can
 #'   either be a type specification (processed by [as_class()]) or a
 #'   full property specification created [new_property()].
+#' @section S4 compatibility:
+#' `new_class()` can use an S4 class definition or class generator as its
+#' `parent`. S4 parent slots become S7 properties, the class is registered with
+#' S4 automatically, and S4 generics can dispatch through the S4 parent.
+#'
+#' S7 objects that directly extend S4 are represented as S3 old-class objects,
+#' so `isS4()` is `FALSE` even though [methods::is()] and S4 dispatch see the
+#' S4 parent. S4 classes can extend S7 classes by calling
+#' [S4_contains()] in `methods::setClass(contains = )`.
+#'
+#' See `vignette("compatibility")` for examples and caveats.
 #' @return A object constructor, a function that can be used to create objects
 #'   of the given class.
 #' @export
 #' @examples
 #' # Create an class that represents a range using a numeric start and end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -77,7 +93,7 @@
 #'
 #' # But we might also want to use a validator to ensure that start and end
 #' # are length 1, and that start is < end
-#' Range <- new_class("Range",
+#' Range := new_class(
 #'   properties = list(
 #'     start = class_numeric,
 #'     end = class_numeric
@@ -110,6 +126,15 @@ new_class <- function(
 
   parent <- as_class(parent)
 
+  # We have to resolve at build-time to validate the properties we know.
+  # But we otherwise avoid embedding the resolved parent because its definition
+  # may have changed in between package build time and run time.
+  if (is_external_class(parent)) {
+    parent_resolved <- resolve_external_class_req(parent, package)
+  } else {
+    parent_resolved <- parent
+  }
+
   # Don't check arguments for S7_object
   if (!is.null(parent)) {
     check_can_inherit(parent)
@@ -124,29 +149,45 @@ new_class <- function(
     }
     if (
       abstract &&
-        (!is_class(parent) || !(parent@abstract || parent@name == "S7_object"))
+        !((is_class(parent_resolved) &&
+          (parent_resolved@abstract || parent_resolved@name == "S7_object")) ||
+          (is_S4_class(parent_resolved) && parent_resolved@virtual))
     ) {
       stop2("Abstract classes must have abstract parents.")
     }
   }
 
-  # Combine properties from parent, overriding as needed
-  all_props <- attr(parent, "properties", exact = TRUE) %||% list()
+  parent_props <- class_properties(parent_resolved)
   new_props <- as_properties(properties)
   check_prop_names(new_props)
+  check_prop_overrides(new_props, parent_props, name, parent)
+
+  # Combine properties from parent, overriding as needed
+  all_props <- parent_props
   all_props[names(new_props)] <- new_props
 
   if (is.null(constructor)) {
+    constructor_props <- if (is_S4_class(parent)) all_props else new_props
     constructor <- new_constructor(
       parent,
-      all_props,
+      constructor_props,
       envir = parent.frame(),
       package = package
     )
   }
 
+  class_ref <- new_class_ref()
+  constructor_env <- new.env(hash = FALSE, parent = environment(constructor))
+  constructor_env$.S7_class_ref <- class_ref
+  environment(constructor) <- constructor_env
+
   object <- constructor
-  # Must synchronise with prop_names
+  # A class's metadata is stored as plain attributes on the class object.
+  # Must synchronise with prop_names().
+  #
+  # We access these attributes directly in performance hot paths to avoid the
+  # S3 dispatch that `@` requires. This is safe for class metadata, which we
+  # control.
   attr(object, "name") <- name
   attr(object, "parent") <- parent
   attr(object, "package") <- package
@@ -154,7 +195,15 @@ new_class <- function(
   attr(object, "abstract") <- abstract
   attr(object, "constructor") <- constructor
   attr(object, "validator") <- validator
+  class_name <- paste(c(package, name), collapse = "::")
+  attr(object, "S7_class_name") <- class_name
+  attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
   class(object) <- c("S7_class", "S7_object")
+  class_ref$class <- object
+
+  if (S7_extends_S4(object)) {
+    S4_register_subclass(object, env = parent.frame())
+  }
 
   global_variables(names(all_props))
   object
@@ -170,8 +219,23 @@ globalVariables(c(
 ))
 
 #' @rawNamespace if (getRversion() >= "4.3.0") S3method(nameOfClass, S7_class, S7_class_name)
+# Fully qualified class name; cached in the `S7_class_name` attribute
 S7_class_name <- function(x) {
-  paste(c(x@package, x@name), collapse = "::")
+  attr(x, "S7_class_name", exact = TRUE) %||%
+    paste(c(x@package, x@name), collapse = "::")
+}
+
+# Vector of class names used for dispatch; cached in the `S7_dispatch` attribute
+S7_class_dispatch <- function(class_name, parent) {
+  if (identical(class_name, "S7_object")) {
+    return("S7_object")
+  }
+
+  c(
+    class_name,
+    class_dispatch(parent),
+    if (is_S4_class(parent)) "S7_object"
+  )
 }
 
 check_S7_constructor <- function(constructor, call = sys.call(-1L)) {
@@ -248,7 +312,13 @@ c.S7_class <- function(...) {
   stop2("Can not combine S7 class objects.")
 }
 
-can_inherit <- function(x) is_base_class(x) || is_S3_class(x) || is_class(x)
+can_inherit <- function(x) {
+  is_base_class(x) ||
+    is_S3_class(x) ||
+    is_class(x) ||
+    is_S4_class(x) ||
+    is_external_class(x)
+}
 
 check_can_inherit <- function(
   x,
@@ -257,7 +327,7 @@ check_can_inherit <- function(
 ) {
   if (!can_inherit(x)) {
     msg <- sprintf(
-      "`%s` must be an S7 class, S3 class, or base type, not %s.",
+      "`%s` must be an S7 class, S4 class, S3 class, or base type, not %s.",
       arg,
       class_friendly(x)
     )
@@ -267,17 +337,36 @@ check_can_inherit <- function(
 
 is_class <- function(x) inherits(x, "S7_class")
 
+# A class you can't supply an instance of: an abstract S7 class, or an S3 class
+# registered without a constructor (e.g. a marker class like "gg" or "POSIXt").
+class_is_abstract <- function(class) {
+  if (is_class(class)) {
+    attr(class, "abstract", TRUE) # called on construction
+  } else if (is_S3_class(class)) {
+    class$abstract %||% is_S3_stub_constructor(class$constructor)
+  } else {
+    FALSE
+  }
+}
+
 check_parent <- function(parent, class, call = sys.call(-1L)) {
-  parent_class <- class@parent
+  parent_class <- attr(class, "parent", TRUE) # called on construction
   if (is.null(parent_class)) {
     stop2(
-      "`.parent` must not be supplied when class has no parent.",
+      "`_parent` must not be supplied when class has no parent.",
       call = call
     )
   }
 
   # Ignore abstract classes since you can't supply an instance
-  if (is_class(parent_class) && parent_class@abstract) {
+  if (class_is_abstract(parent_class)) {
+    return()
+  }
+
+  # S4 parent compatibility is checked after new_object() installs the S7
+  # class attributes, at which point methods::validObject() can see the
+  # registered oldClass structure.
+  if (is_S4_class(parent_class)) {
     return()
   }
 
@@ -285,7 +374,7 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
     return()
   }
   msg <- sprintf(
-    "`.parent` must be an instance of %s, not %s.",
+    "`_parent` must be an instance of %s, not %s.",
     class_desc(parent_class),
     obj_desc(parent)
   )
@@ -294,65 +383,87 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 
 # Object ------------------------------------------------------------------
 
-#' @param .parent,... Parent object and named properties used to construct the
+#' @param _parent,... Parent object and named properties used to construct the
 #'   object.
+#'
+#'   As a convenience, if `...` is a single unnamed list, then the elements of
+#'   that list are used as the properties. This makes it easy to
+#'   programmatically construct an object from a list of property values.
 #' @rdname new_class
 #' @export
-new_object <- function(.parent, ...) {
-  class <- sys.function(-1)
+new_object <- function(`_parent`, ...) {
+  # Skip constructor arguments and local variables when finding the reference.
+  class_ref <- get_class_ref(parent.env(parent.frame()))
+  if (inherits(class_ref, "S7_class_ref")) {
+    class <- class_ref$class
+  } else {
+    class <- sys.function(sys.parent())
+  }
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
-  if (class@abstract) {
+  # This is the hottest function in S7, so read the class metadata we need once,
+  # up front.
+  class_abstract <- attr(class, "abstract", TRUE)
+  class_props <- attr(class, "properties", TRUE)
+  class_parent <- attr(class, "parent", TRUE)
+
+  if (class_abstract && !is_constructing_parent_part(class)) {
     msg <- sprintf(
       "Can't construct an object from abstract class <%s>.",
       class@name
     )
-    stop2(msg)
+    stop2(msg, class = "S7_error_abstract_class")
   }
 
-  if (!missing(.parent)) {
-    check_parent(.parent, class)
+  if (!missing(`_parent`)) {
+    local_constructing(class)
+    check_parent(`_parent`, class)
   }
 
-  args <- list(...)
-  if ("" %in% names2(args)) {
-    stop2("All arguments to `...` must be named.")
-  }
+  args <- collect_dots(...)
 
-  has_setter <- vlapply(class@properties[names(args)], prop_has_setter)
+  has_setter <- vlapply(class_props[names(args)], prop_has_setter)
   self_attrs <- args[!has_setter]
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
-  # We must awkwardly operate on `.parent` rather than binding to a local
+  # We must awkwardly operate on `_parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
-    list(class = class_dispatch(class), S7_class = class),
+    list(
+      class = class_dispatch(class),
+      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+    ),
     self_attrs,
-    attributes(.parent)
+    attributes(`_parent`)
   )
   attrs <- attrs[!duplicated(names(attrs))]
-  attributes(.parent) <- attrs
+  attributes(`_parent`) <- attrs
 
   # invoke custom property setters
   prop_setter_vals <- args[has_setter]
   for (name in names(prop_setter_vals)) {
-    prop(.parent, name, check = FALSE) <- prop_setter_vals[[name]]
+    prop(`_parent`, name, check = FALSE) <- prop_setter_vals[[name]]
   }
 
-  # Don't need to validate if parent class already validated,
-  # i.e. it's a non-abstract S7 class
-  parent_validated <- inherits(class@parent, "S7_object") &&
-    !class@parent@abstract
+  # Don't need to validate the parent class if it's already validated and none
+  # of its properties were reset by this call.
+  parent_validated <-
+    inherits(class_parent, "S7_object") &&
+    !attr(class_parent, "abstract", TRUE)
+  parent_props_reset <- parent_validated &&
+    any(
+      names2(args) %in% names2(attr(class_parent, "properties", TRUE))
+    )
   validate_from(
-    .parent,
-    parent = if (parent_validated) class@parent,
+    `_parent`,
+    parent = if (parent_validated && !parent_props_reset) class_parent,
     # Attribute validation failures to the constructor call, not new_object()
     call = sys.call(-1L)
   )
 
-  .parent
+  `_parent`
 }
 
 #' @export
@@ -397,7 +508,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
 #' @returns A class specification.
 #' @export
 #' @examples
-#' Foo <- new_class("Foo")
+#' Foo := new_class()
 #' S7_class(Foo())
 #'
 #' # Also works on non-S7 objects
@@ -409,10 +520,41 @@ S7_class <- function(object) {
   switch(
     obj_type(object),
     missing = class_missing,
-    S7 = attr(object, "S7_class", exact = TRUE),
-    S4 = methods::getClass(class(object)),
+    S7 = .Call(S7_class_, object),
+    S4 = if (has_S7_class(object)) {
+      .Call(S7_class_, object)
+    } else {
+      methods::getClass(class(object))
+    },
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
+  )
+}
+
+S7_class_storage <- function(class) {
+  get_class_ref(environment(class), default = class)
+}
+
+# Class objects are closures, which leads to two problems:
+# * `sys.function()` does deep copies
+# * `serialize()`/`saveRDS()` only de-dups environments
+# We solve both problems with an environment-backed class reference. The
+# reference is bound as `.S7_class_ref` in the constructor's environment and
+# points back to the completed class through `$class`. Ordinary S7 objects store
+# the reference instead of the closure, avoiding `sys.function()` and ensuring
+# that objects serialized together share a single copy of their class.
+new_class_ref <- function() {
+  ref <- new.env(hash = FALSE, parent = emptyenv())
+  class(ref) <- "S7_class_ref"
+  ref
+}
+
+get_class_ref <- function(env, default = NULL) {
+  get0(
+    ".S7_class_ref",
+    envir = env,
+    inherits = FALSE,
+    ifnotfound = default
   )
 }
 
@@ -424,4 +566,97 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
   }
+}
+
+check_prop_overrides <- function(
+  child_props,
+  parent_props,
+  name,
+  parent,
+  call = sys.call(-1L)
+) {
+  overridden <- intersect(names(child_props), names(parent_props))
+  check_S4_slot_overrides(child_props, parent, call = call)
+
+  for (prop in overridden) {
+    child_prop <- child_props[[prop]]
+
+    child_class <- child_prop$class
+    parent_class <- parent_props[[prop]]$class
+
+    # Read-only properties are computed, not stored, so when the user hasn't
+    # declared a type there's nothing to narrow.
+    if (prop_is_read_only(child_prop) && is_class_any(child_class)) {
+      next
+    }
+
+    if (!class_extends(child_class, parent_class)) {
+      child_desc <- paste0("<", name, ">")
+      parent_desc <- class_desc(parent)
+      msg <- c(
+        sprintf(
+          "%s@%s must narrow %s@%s.",
+          child_desc,
+          prop,
+          parent_desc,
+          prop
+        ),
+        sprintf("- %s@%s is %s.", parent_desc, prop, class_desc(parent_class)),
+        sprintf("- %s@%s is %s.", child_desc, prop, class_desc(child_class))
+      )
+      stop2(msg, call = call)
+    }
+  }
+}
+
+check_S4_slot_overrides <- function(
+  child_props,
+  parent,
+  call = sys.call(-1L)
+) {
+  parent_S4 <- if (is_S4_class(parent)) parent else S4_ancestor(parent)
+  if (is.null(parent_S4)) {
+    return(invisible())
+  }
+
+  overridden <- intersect(names(child_props), names(parent_S4@slots))
+
+  for (prop in overridden) {
+    child_prop <- child_props[[prop]]
+    if (!prop_is_encapsulated(child_prop)) {
+      next
+    }
+
+    msg <- sprintf(
+      paste0(
+        "Can't override inherited S4 slot %s with a property that has a ",
+        "custom getter or setter."
+      ),
+      prop
+    )
+    stop2(msg, call = call)
+  }
+
+  invisible()
+}
+
+# Abstract classes ----------------------------------------------
+
+# While a constructor's `new_object()` call runs, the class under construction
+# is recorded here so that the constructors of abstract ancestors know they're
+# building the parent part of a concrete subclass, and hence are allowed to
+# run.
+constructing <- new.env(parent = emptyenv())
+
+# Record `class` as under construction until `frame` exits.
+local_constructing <- function(class, frame = parent.frame()) {
+  old <- constructing$class
+  constructing$class <- class
+  defer(constructing$class <- old, frame = frame)
+  invisible(old)
+}
+
+is_constructing_parent_part <- function(class) {
+  child <- constructing$class
+  !is.null(child) && S7_class_name(class) %in% class_dispatch(child)[-1]
 }

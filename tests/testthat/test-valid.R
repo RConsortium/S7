@@ -1,6 +1,5 @@
 test_that("validate() validates object and type recursively", {
-  klass <- new_class(
-    "klass",
+  klass := new_class(
     package = NULL,
     properties = list(x = class_double, y = class_double),
     validator = function(self) {
@@ -20,8 +19,7 @@ test_that("validate() validates object and type recursively", {
     validate(obj)
   })
 
-  klass2 <- new_class(
-    "klass2",
+  klass2 := new_class(
     parent = klass,
     package = NULL,
     properties = list(z = class_double)
@@ -37,17 +35,44 @@ test_that("validate() validates object and type recursively", {
   })
 })
 
+test_that("validate() accepts objects that carry no class metadata", {
+  Foo := new_class(package = NULL)
+
+  expect_equal(validate(S7_object()), S7_object())
+  expect_equal(validate(Foo), Foo)
+})
+
 test_that("validate checks base type", {
-  Double <- new_class("Double", package = NULL, parent = class_double)
+  Double := new_class(package = NULL, parent = class_double)
   x <- Double(10)
   mode(x) <- "character"
 
   expect_snapshot(error = TRUE, validate(x))
 })
 
+test_that("validate runs property validators for base type properties", {
+  Positive := new_class(
+    package = NULL,
+    properties = list(
+      x = new_property(
+        class_double,
+        validator = function(value) if (value < 0) "must be positive"
+      )
+    )
+  )
+  expect_snapshot(error = TRUE, Positive(x = -1))
+})
+
+test_that("validate runs class validators for non-base type properties", {
+  Wrapper := new_class(package = NULL, properties = list(x = class_factor))
+  obj <- Wrapper(x = factor("a"))
+  attr(obj, "x") <- structure(1L, class = "factor")
+
+  expect_snapshot(error = TRUE, validate(obj))
+})
+
 test_that("validate checks the type of setters", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     package = NULL,
     properties = list(
       x = new_property(
@@ -67,14 +92,13 @@ test_that("validate does not check type of getters", {
   # validation to always be cheap
 
   prop <- new_property(class_integer, getter = function(self) "x")
-  foo <- new_class("foo", properties = list(x = prop))
+  foo := new_class(properties = list(x = prop))
 
   expect_no_error(foo())
 })
 
 test_that("valid eventually calls the validation function only at the end", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "must be positive"
   )
@@ -89,8 +113,7 @@ test_that("valid eventually calls the validation function only at the end", {
 })
 
 test_that("valid implicitly does _not_ call the validation function", {
-  foo <- new_class(
-    "foo",
+  foo := new_class(
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "must be positive"
   )
@@ -105,8 +128,7 @@ test_that("valid implicitly does _not_ call the validation function", {
 
 
 test_that("property validation errors have class S7_error_validation_failed", {
-  klass <- new_class(
-    "klass",
+  klass := new_class(
     package = NULL,
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "x must be positive"
@@ -117,8 +139,7 @@ test_that("property validation errors have class S7_error_validation_failed", {
 })
 
 test_that("class validator errors have class S7_error_validation_failed", {
-  klass <- new_class(
-    "klass",
+  klass := new_class(
     package = NULL,
     properties = list(x = class_double),
     validator = function(self) if (self@x < 0) "x must be positive"
@@ -130,8 +151,7 @@ test_that("class validator errors have class S7_error_validation_failed", {
 
 test_that("inherited property validators run only once during construction", {
   x_calls <- 0L
-  parent <- new_class(
-    "parent",
+  parent := new_class(
     package = NULL,
     properties = list(
       x = new_property(
@@ -143,8 +163,8 @@ test_that("inherited property validators run only once during construction", {
       )
     )
   )
-  child <- new_class("child", package = NULL, parent = parent)
-  grandchild <- new_class("grandchild", package = NULL, parent = child)
+  child := new_class(package = NULL, parent = parent)
+  grandchild := new_class(package = NULL, parent = child)
 
   x_calls <- 0L
   parent()
@@ -162,8 +182,7 @@ test_that("inherited property validators run only once during construction", {
 test_that("overridden property validators run during construction", {
   parent_calls <- 0L
   child_calls <- 0L
-  parent <- new_class(
-    "parent",
+  parent := new_class(
     package = NULL,
     properties = list(
       x = new_property(
@@ -175,8 +194,7 @@ test_that("overridden property validators run during construction", {
       )
     )
   )
-  child <- new_class(
-    "child",
+  child := new_class(
     package = NULL,
     parent = parent,
     properties = list(
@@ -195,4 +213,17 @@ test_that("overridden property validators run during construction", {
   child()
   expect_equal(parent_calls, 1L)
   expect_equal(child_calls, 1L)
+})
+
+
+test_that("factors with missing values do not cause an error inside validate_factor", {
+  factor_completely_empty <- factor(NA)
+  factor_mixed <- factor(c("something", NA))
+
+  expect_null(validate_factor(factor_completely_empty))
+  expect_null(validate_factor(factor_mixed))
+
+  TestObj := new_class(properties = list(val = class_factor))
+  expect_no_error(TestObj(val = factor_completely_empty))
+  expect_no_error(TestObj(val = factor_mixed))
 })

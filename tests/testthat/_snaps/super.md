@@ -1,7 +1,7 @@
-# super() / checks to
+# super() checks to
 
     Code
-      foo <- new_class("foo", package = NULL)
+      foo := new_class(package = NULL)
       super(foo(), class_character)
     Condition
       Error in `super()`:
@@ -17,7 +17,7 @@
       Error in `super()`:
       ! `to` must be an S7, S3, S4, or base class, not NULL.
 
-# super() / displays nicely
+# super() displays nicely
 
     Code
       f1 <- super(foo2(), foo1)
