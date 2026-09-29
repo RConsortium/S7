@@ -12,9 +12,11 @@ test — both with a stale evoB (only evoA upgraded) and with evoB rebuilt
 against evoA 2.0.0.
 
 The lab includes deprecation helpers with imported and deferred registrations,
-class aliases, package moves, saved instances, property validators, and lifecycle
-warning/error policies. It also checks `new_label` when renaming an export while
-preserving its class or generic identity. See
+class recommendations that preserve identity, plain class aliases, package moves,
+saved instances, custom constructors, property defaults and validators, and
+lifecycle warning/error policies. It also checks `new_label` for generic exports.
+Class recommendations retain the original class and its methods; the replacement
+gets its own methods or an explicitly shared union signature. See
 [deprecation-review.md](deprecation-review.md) for the design assessment and
 compatibility limits.
 

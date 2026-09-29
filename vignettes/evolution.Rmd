@@ -52,7 +52,8 @@ Most of the advice in this vignette boils down to a few design rules that are ch
   When an argument is only meaningful to some methods, leave it out of the generic and let those methods take it via `...`.
 
 * **Treat names as permanent.**
-  Generics can be renamed with `deprecated_generic()`, and classes with `deprecated_class()`, but serialized objects and already-installed subclasses can retain the old class identity.
+  Generics can be renamed with `deprecated_generic()`.
+  For classes, `deprecated_class()` preserves the old class and can recommend a replacement; changing a class's identity still affects saved objects and already-installed subclasses.
   Spend naming effort accordingly, and set `package` once, correctly.
 
 * **Pass properties by name** to constructors, always.
@@ -146,17 +147,17 @@ S7 supplies three helpers for keeping an old interface available during a transi
 | Helper | With a replacement | Without a replacement |
 |--------|--------------------|-----------------------|
 | `deprecated_generic()` | Calls warn and dispatch through `new`; registrations target `new` silently. | Supply `old` to keep the generic and its methods, with warnings on calls. |
-| `deprecated_class()` | Constructor calls warn and construct `new`; class references resolve to `new` silently. | Supply `old` to keep the class, with warnings on explicit constructor calls. |
+| `deprecated_class()` | Define the original class and supply `replacement` to recommend another class. Constructor calls warn and still create the original class. | Omit `replacement`; explicit constructor calls warn. |
 | `deprecated_property()` | Reads and changed writes warn and use the property named by `new`. | Omit `new` to retain storage and warn on reads and changed writes. |
 
 All three require `when`, the version of your package that introduced the deprecation, and accept the same `method` argument:
 
 * `"base"`, the default, signals a `deprecatedWarning` on each deprecated call or access that triggers the helper.
-* `"lifecycle(warn)"` uses `lifecycle::deprecate_warn()`, which normally limits each warning to once every eight hours.
+* `"lifecycle(warn)"` uses `lifecycle::deprecate_warn()`, which throttles repeated warnings.
 * `"lifecycle(stop)"` uses `lifecycle::deprecate_stop()` to make that use an error.
 
 If you use a lifecycle method, add lifecycle to your package's dependencies.
-The warning policy is separate from registration: even `"lifecycle(stop)"` permits method registration and class references through a deprecated alias.
+The warning policy is separate from registration: even `"lifecycle(stop)"` permits method registration and use of a deprecated class in class definitions.
 It stops calls to the deprecated constructor or generic, or access to the deprecated property, rather than preventing downstream packages from referring to the definition.
 
 Warnings in a plain R test script do not by themselves make `R CMD check` fail.
@@ -301,6 +302,20 @@ This also works for already-installed depPackage registrations and for registrat
 An ordinary wrapper such as `function(x, ...) { .Deprecated("gen2"); gen2(x, ...) }` is not a generic that downstream packages can register methods on.
 Use `deprecated_generic()` when the old name is an extension point.
 
+You can also keep the generic's internal identity while changing its exported name.
+Use `new_label` when the name in the warning should differ from the generic's internal name:
+
+```{r}
+gen1 := new_generic("x")
+gen2 <- gen1
+gen1 := deprecated_generic(new = gen2, when = "2.0.0", new_label = "gen2()")
+method(gen1, BClass) <- function(x, ...) "result"
+gen1(BClass()) # warns and recommends gen2()
+gen2(BClass())
+```
+
+`new_label` changes only the message; both exports use the same generic and methods.
+
 ### Retiring a generic
 
 If there is no replacement, pass the existing generic as `old`:
@@ -418,6 +433,10 @@ Without a replacement, construction does not warn, including when `count` is sup
 The default `print()` and `str()` omit deprecated properties without calling their getters, including when access would signal an error.
 `props()` still reads them and therefore still signals deprecation.
 
+An already-installed subclass can keep using its old property definition silently.
+Maintainers need to rebuild the subclass package against the updated parent to adopt the deprecation; users then need to install that rebuilt version.
+Changing the parent package alone does not guarantee that reads and writes in every subclass will warn.
+
 ### Renaming a property
 
 A rename is "add the new property, deprecate the old one":
@@ -466,87 +485,112 @@ Error: <myPackage::Foo> object properties are invalid:
 The same applies to tightening a validator.
 There's no mechanical transition here; treat narrowing like removing the property and adding a stricter one, i.e. give downstream packages a deprecation window in which the validator warns rather than errors.
 
-### Renaming a class
+### Deprecating a class
 
-Renaming a class is the most breaking change S7 offers, because a class's identity — the string `"myPackage::Foo"` — is woven into everything: method dispatch tables, the `class()` vector of every existing instance, and external class references.
-If you only need another exported spelling, `Bar <- Foo` preserves the original class object and its identity.
-You can deprecate the old constructor export with `new_label`:
+Change `new_class()` to `deprecated_class()` in the existing class definition and add `when`.
+Keep the class's name, package, parent, properties, constructor, and validator unchanged.
+If there is a replacement, supply it as `replacement`:
 
 ```{r}
+# myPackage, version 1
 Foo := new_class(properties = list(size = class_double))
 saved <- Foo(size = 1)
 MyFoo := new_class(parent = Foo)
+measure := new_generic("x")
+method(measure, Foo) <- function(x) x@size
 
-Bar <- Foo
-Foo := deprecated_class(new = Bar, when = "2.0.0", new_label = "Bar()")
-Foo(size = 2) # warns and recommends Bar()
-MyFoo(size = 3) # existing subclasses still work
+# myPackage, version 2: export both classes
+Bar := new_class(properties = list(size = class_double))
+Foo := deprecated_class(
+  properties = list(size = class_double),
+  replacement = Bar,
+  when = "2.0.0"
+)
+foo <- Foo(size = 2) # warns and still constructs a Foo
+measure(foo)
+measure(MyFoo(size = 3)) # existing subclasses still work, without warning
+measure(saved)
+S7_inherits(saved, Foo)
 S7_inherits(saved, Bar)
 ```
 
-The class's internal name remains `Foo`, so its existing subclasses and saved instances keep the same identity.
-`new_label` changes only the replacement name in the message; it does not rename the class itself.
-It also works with `deprecated_generic()` when the new export differs from the generic's internal name.
+`replacement` changes the message only.
+`Foo` keeps its identity, and existing methods still apply to `Foo`, its subclasses, and saved instances.
+Adding deprecation to an otherwise unchanged class does not require rebuilding packages that define subclasses, whether their parent reference is direct or external.
+Changes to the class's definition still need the compatibility work described in the other sections.
 
-If the class's internal name also needs to change, create a new class named `Bar` and keep an alias for `Foo` during the transition.
-That has different consequences for downstream packages and saved instances.
-
-If myPackage renames `Foo` to `Bar` with no alias, depPackage fails to install, whether it refers to the class via `new_external_class("myPackage", "Foo")`:
-
-```
-Error: Package 'myPackage' must export `Foo` as an S7 class.
-```
-
-or via `myPackage::Foo` directly (the binding is simply gone).
-
-Keep the old export with `deprecated_class()`:
+Methods for `Foo` do not automatically apply to `Bar`.
+When a method can handle both classes, register it on their union:
 
 ```{r}
-Bar := new_class(properties = list(size = class_double))
-Foo := deprecated_class(new = Bar, when = "2.0.0")
-foo <- Foo(size = 3) # warns and constructs a Bar
-
-MyFoo := new_class(parent = Foo)
-MyFoo(size = 3) # subclass construction is silent
-S7_inherits(foo, Foo)
+method(measure, Foo | Bar) <- function(x) x@size
+measure(Bar(size = 4))
+measure(saved)
 ```
 
-Method signatures, property types, unions, and inheritance checks treat the alias as `Bar` without warning.
-`new_external_class("myPackage", "Foo")` also resolves through it, so downstream packages can rebuild without changing their references.
-A plain alias, `Foo <- Bar`, provides the same resolution without constructor warnings.
+If the replacement needs a different representation, keep separate methods and provide an explicit conversion for users who want it.
+Recommending `Bar` does not convert existing objects or change the type returned by `Foo()`.
 
-Rebuilding matters even for an external parent.
-An already-installed subclass can construct successfully after the rename, but its stored class vector still names `myPackage::Foo`, while a method registered through the external reference now targets `myPackage::Bar`.
-The lab verifies that dispatch on this subclass fails until depPackage is rebuilt.
-Direct references to `myPackage::Foo` can also retain the old class definition.
-An alias supports a source-compatible transition; it does not update every installed class definition.
+Class contexts remain available without warnings: method signatures, parent classes, property types, unions, and `new_external_class()` references use the original class.
+Generated subclass constructors also retain the original constructor's defaults and validation.
+Even `method = "lifecycle(stop)"` permits these uses; it stops explicit calls to the deprecated constructor.
 
-Saved instances have the same limitation: an instance created before the rename retains its old identity and is not automatically an instance of `Bar`.
-Keep a conversion path that can recognize the old class, or reconstruct and re-save those objects.
-An alias alone is not a data migration.
-Choose class names as if you can't change them.
+Property defaults have one installation boundary.
+A previously installed class defined with `properties = list(item = myPackage::Foo)` can have a generated default that calls `myPackage::Foo()` directly.
+After myPackage deprecates `Foo`, using that default warns, or errors in stop mode, until the containing package is rebuilt.
+Defaults generated from `new_external_class()` resolve the underlying class silently, including in already-installed packages.
+Rebuilding a direct property reference against the deprecated class also generates a silent default.
+An explicitly written default such as `quote(myPackage::Foo())` remains an ordinary constructor call and signals deprecation.
 
-Changing a class's `package` also changes its identity string.
-An old-home alias such as `Foo := deprecated_class(new = myPackageCore::Foo, when = "2.0.0")` lets downstream source references resolve and rebuild, but has the same limitations for installed subclasses and saved instances.
-Coordinate rebuilding and data migration for a move as well as a rename.
+### Renaming or moving a class
+
+A class's identity — the string `"myPackage::Foo"` — appears in method dispatch tables, existing instances, and installed subclass definitions.
+To introduce a class named `Bar`, keep `Foo` available with its existing definition and deprecate it as above.
+Downstream authors can then move their subclasses and methods to `Bar` when ready.
+
+For a class defined with `new_class()`, adding `Bar <- Foo` gives it another exported spelling while preserving its identity and constructor behavior.
+`deprecated_class()` defines a class; it does not wrap an existing class as an alias, and it does not accept `new`, `old`, or `new_label`.
+The `new_label` argument belongs to `deprecated_generic()`.
+
+A plain alias in the other direction, `Foo <- Bar` after defining a new class named `Bar`, preserves the old export but changes which class it names.
+External references can resolve through this alias, so unchanged downstream source can be rebuilt.
+An already-installed subclass still has `myPackage::Foo` in its dispatch vector while a method registered through the old export now targets `myPackage::Bar`.
+The lab verifies that dispatch fails until the subclass package is rebuilt.
+Saved instances retain their old identity and need explicit conversion or reconstruction if they are to become `Bar` objects.
+
+Changing the class's `package` also changes its identity.
+To recommend a class in another package while preserving existing users, keep the original definition:
+
+```{r, eval = FALSE}
+# In myPackage
+Foo := deprecated_class(
+  properties = list(size = class_double),
+  replacement = myPackageCore::Foo,
+  when = "2.0.0"
+)
+```
+
+The warning recommends `myPackageCore::Foo()`, but construction and methods still use `myPackage::Foo`.
+Actually moving the class and exporting `Foo <- myPackageCore::Foo` has the same rebuilding and saved-object limits as a rename that changes identity.
+Removing the old export entirely breaks downstream imports and class references.
 
 ### Retiring a class
 
-Supply the existing class as `old` if it has no replacement:
+If there is no replacement, omit `replacement` and keep the existing definition:
 
 ```{r}
-Retired := new_class(properties = list(size = class_double))
-Retired := deprecated_class(old = Retired, when = "2.0.0")
+Retired := deprecated_class(
+  properties = list(size = class_double),
+  when = "2.0.0"
+)
 Retired(size = 3)
 ```
 
-The class keeps its identity.
-Downstream subclasses, method signatures, property types, and unions can continue using it; explicit constructor calls warn.
-Even `method = "lifecycle(stop)"` does not prohibit inheritance or construction through a subclass, because class contexts unwrap the alias silently.
+Downstream subclasses, method signatures, property types, and unions can continue using the class; explicit constructor calls warn.
 If you intend to remove the class entirely, check these downstream definitions as well as direct constructor calls.
 
 ### Making a class abstract
 
-Making an existing class abstract breaks every direct `myPackage::Foo()` call at run time, which is presumably the point of the change — give downstream packages a deprecation window with `deprecated_class(old = Foo, when = "2.0.0")`, and only later make the class abstract.
+Making an existing class abstract breaks every direct `myPackage::Foo()` call at run time, which is presumably the point of the change — give downstream packages a deprecation window by replacing `new_class()` with `deprecated_class()` in its definition, and only later make the class abstract.
 
 Subclasses are unaffected, including already-installed ones: even though a subclass with an external parent builds its parent part by calling `myPackage::Foo()` at run time, an abstract class's constructor is allowed to run when it's constructing the parent part of a concrete subclass.
