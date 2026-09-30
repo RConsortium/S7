@@ -394,10 +394,14 @@ test_that("S7 objects record their representation version (#711)", {
   )
   generic := new_generic("x")
 
+  classes <- list(S7_object, Foo, Bar, Number, Frame, Environment, Custom)
+  for (class in classes) {
+    expect_identical(attr(class, "S7_version", exact = TRUE), 1L)
+    expect_null(attr(class, "_S7_version", exact = TRUE))
+  }
+
   objects <- list(
-    S7_object,
     S7_object(),
-    Foo,
     Foo(x = 1),
     Bar(x = 1),
     Number(.data = 1),
@@ -407,7 +411,8 @@ test_that("S7 objects record their representation version (#711)", {
     generic
   )
   for (object in objects) {
-    expect_identical(attr(object, "S7_version", exact = TRUE), 1L)
+    expect_identical(attr(object, "_S7_version", exact = TRUE), 1L)
+    expect_null(attr(object, "S7_version", exact = TRUE))
   }
 })
 
@@ -415,15 +420,15 @@ test_that("S7_object() shares immutable version and class attributes (#711)", {
   x <- S7_object()
   y <- S7_object()
   expect_equal(
-    obj_addr(attr(x, "S7_version", exact = TRUE)),
-    obj_addr(attr(y, "S7_version", exact = TRUE))
+    obj_addr(attr(x, "_S7_version", exact = TRUE)),
+    obj_addr(attr(y, "_S7_version", exact = TRUE))
   )
   expect_equal(obj_addr(class(x)), obj_addr(class(y)))
 
-  attr(x, "S7_version")[[1]] <- 2L
+  attr(x, "_S7_version")[[1]] <- 2L
   class(x)[[1]] <- "Changed"
-  expect_identical(attr(y, "S7_version", exact = TRUE), 1L)
-  expect_identical(attr(S7_object(), "S7_version", exact = TRUE), 1L)
+  expect_identical(attr(y, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(S7_object(), "_S7_version", exact = TRUE), 1L)
   expect_identical(class(y), "S7_object")
   expect_identical(class(S7_object()), "S7_object")
 })
@@ -799,8 +804,8 @@ test_that("can round trip to disk and back", {
   f2 <- readRDS(path)
 
   expect_equal(f, f2)
-  expect_identical(attr(f2, "S7_version", exact = TRUE), 1L)
-  expect_identical(attr(f2@x, "S7_version", exact = TRUE), 1L)
+  expect_identical(attr(f2, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(f2@x, "_S7_version", exact = TRUE), 1L)
   rm(foo1, foo2, f, envir = globalenv())
 })
 
@@ -814,7 +819,7 @@ test_that("objects from a previous version of S7 still work (#677)", {
   obj <- Foo(1, x = 2)
   attr(obj, "S7_class") <- attr(obj, "_S7_class", exact = TRUE)
   attr(obj, "_S7_class") <- NULL
-  attr(obj, "S7_version") <- NULL
+  attr(obj, "_S7_version") <- NULL
 
   expect_equal(S7_class(obj), Foo)
   expect_equal(obj@x, 2)
@@ -822,7 +827,7 @@ test_that("objects from a previous version of S7 still work (#677)", {
 
   obj@x <- 3
   expect_equal(obj@x, 3)
-  expect_null(attr(obj, "S7_version", exact = TRUE))
+  expect_null(attr(obj, "_S7_version", exact = TRUE))
 
   expect_equal(S7_data(obj), 1)
   expect_equal(convert(obj, to = class_double), 1)

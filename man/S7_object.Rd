@@ -14,11 +14,12 @@ The base class from which all S7 classes eventually inherit from.
 }
 \section{Representation version}{
 
-Newly constructed S7 objects carry an internal \code{S7_version} attribute,
-starting at \code{1L}. This tracks changes to the stored object representation,
-independently of the S7 package version, so future backward compatibility
-code can distinguish object formats. Objects created before versioning was
-introduced have no version attribute and remain supported.
+Newly constructed S7 objects carry an internal \verb{_S7_version} attribute.
+Classes returned by \code{\link[=new_class]{new_class()}} carry \code{S7_version}. Both start at \code{1L}
+and track changes to the stored representation independently of the S7
+package version, so future backward compatibility code can distinguish
+object formats. Objects created before versioning was introduced have no
+version attribute and remain supported.
 }
 
 \examples{

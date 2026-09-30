@@ -20,6 +20,19 @@ test_that("S7_data preserves non-property attributes when retrieving .data", {
   expect_equal(names(S7_data(text(val))), names(val))
 })
 
+test_that("S7_data preserves user S7_version attributes (#711)", {
+  Text := new_class(parent = class_character)
+  data <- structure("hi", S7_version = "user")
+  x <- Text(.data = data)
+  expect_identical(attr(x, "S7_version", exact = TRUE), "user")
+  expect_identical(S7_data(x), data)
+
+  replacement <- structure("bye", S7_version = "replacement")
+  S7_data(x) <- replacement
+  expect_identical(attr(x, "_S7_version", exact = TRUE), 1L)
+  expect_identical(S7_data(x), replacement)
+})
+
 test_that("S7_data lets you set data", {
   text := new_class(class_character)
   x <- text("foo")
@@ -31,12 +44,12 @@ test_that("S7_data preserves the object's representation version (#711)", {
   Text := new_class(parent = class_character)
   x <- Text(.data = "foo")
   S7_data(x) <- "bar"
-  expect_identical(attr(x, "S7_version", exact = TRUE), 1L)
+  expect_identical(attr(x, "_S7_version", exact = TRUE), 1L)
   expect_identical(S7_data(x), "bar")
 
-  attr(x, "S7_version") <- NULL
+  attr(x, "_S7_version") <- NULL
   S7_data(x) <- Text(.data = "baz")
-  expect_null(attr(x, "S7_version", exact = TRUE))
+  expect_null(attr(x, "_S7_version", exact = TRUE))
   expect_identical(S7_data(x), "baz")
 })
 

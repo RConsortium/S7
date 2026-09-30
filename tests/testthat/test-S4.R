@@ -27,12 +27,12 @@ test_that("S4 inheritance records the S7 representation version (#711)", {
   methods::setClass("VersionedS4Parent", slots = list(x = "numeric"))
   VersionedS7 := new_class(parent = methods::getClass("VersionedS4Parent"))
   child <- VersionedS7(x = 1)
-  expect_identical(attr(child, "S7_version", exact = TRUE), 1L)
+  expect_identical(attr(child, "_S7_version", exact = TRUE), 1L)
   expect_identical(methods::validObject(child), TRUE)
 
   methods::setClass("VersionedS4Child", contains = S4_contains(VersionedS7))
   object <- methods::new("VersionedS4Child", x = 2)
-  expect_identical(attr(object, "S7_version", exact = TRUE), 1L)
+  expect_identical(attr(object, "_S7_version", exact = TRUE), 1L)
   expect_identical(methods::validObject(object), TRUE)
 })
 
@@ -162,7 +162,7 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild")
   expect_equal(
     methods::slotNames(S4regContainsChild_S4),
-    c("y", "x", "_S7_class", "S7_version", ".S3Class")
+    c("y", "x", "_S7_class", "_S7_version", ".S3Class")
   )
   expect_contains(
     methods::extends(S4regContainsChild_S4),
@@ -269,7 +269,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
       "status",
       "metadata",
       "_S7_class",
-      "S7_version",
+      "_S7_version",
       "assays",
       "rowData",
       ".S3Class"
@@ -277,7 +277,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
   )
   expect_contains(
     methods::slotNames(S4regNewChild_S4),
-    c("assays", "rowData", "metadata", "status", "_S7_class", "S7_version")
+    c("assays", "rowData", "metadata", "status", "_S7_class", "_S7_version")
   )
   setClass(
     "S4regNewGrandChild",
@@ -681,7 +681,7 @@ test_that("S7 classes can extend S4 classes", {
   expect_equal(as.character(methods::getClass("Child")@className), "Child")
   expect_equal(
     methods::slotNames("Child"),
-    c("y", "_S7_class", "S7_version", "x", ".S3Class")
+    c("y", "_S7_class", "_S7_version", "x", ".S3Class")
   )
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")

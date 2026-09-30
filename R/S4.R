@@ -10,7 +10,7 @@
 #' invisibly returns the registered S4 class name.
 #' For S7 classes, this creates a virtual S4 old class that exposes stored S7
 #' properties as S4 slots and carries the `_S7_class` slot needed for S7 dispatch
-#' and validation, along with the internal `S7_version` representation marker.
+#' and validation, along with the internal `_S7_version` representation marker.
 #'
 #' After registration, `S4_contains()` returns the virtual S4 class name to use
 #' when an S4 class should extend an S7 class with
@@ -270,7 +270,7 @@ S4_properties_prototype <- function(
   }
   if (include_S7_class) {
     args$`_S7_class` <- class
-    args$S7_version <- S7_object_version
+    args$`_S7_version` <- S7_object_version
   }
   do.call(methods::prototype, args)
 }
@@ -325,8 +325,8 @@ S4_register_class <- function(class, env = parent.frame()) {
     # Private storage: either a class object or a shared class reference.
     slots$`_S7_class` <- "ANY"
   }
-  if (!"S7_version" %in% parent_slot_names) {
-    slots$S7_version <- "integer"
+  if (!"_S7_version" %in% parent_slot_names) {
+    slots$`_S7_version` <- "integer"
   }
 
   methods::setClass(
