@@ -110,87 +110,87 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
     } else {
       cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
     }
-    # Return before class_constructor() to keep the package lookup deferred.
-    return(bquote(S7::as_class(.(cl))()))
-  }
+    bquote(S7::as_class(.(cl))())
+  } else {
+    f <- class_constructor(.x)
 
-  f <- class_constructor(.x)
+    # For S7 class constructors with a non-NULL @package property
+    # Instead of inlining the full class definition, use either
+    # `pkgname::classname()` or `classname()`
+    if (is_class(f) && !is.null(f@package)) {
+      # Check if the class can be resolved as a bare symbol without pkgname::
+      # Note: During package build, using pkg::class for a package's own symbols
+      # will raise an error from `::`.
+      if (identical(package, f@package)) {
+        cl <- as.name(f@name)
+        f2 <- get(f@name, envir = envir)
+      } else {
+        # namespace the pkgname::classname() call
+        cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
 
-  # For S7 class constructors with a non-NULL @package property
-  # Instead of inlining the full class definition, use either
-  # `pkgname::classname()` or `classname()`
-  if (is_class(f) && !is.null(f@package)) {
-    # Check if the class can be resolved as a bare symbol without pkgname::
-    # Note: During package build, using pkg::class for a package's own symbols
-    # will raise an error from `::`.
-    if (identical(package, f@package)) {
-      cl <- as.name(f@name)
-      f2 <- get(f@name, envir = envir)
-    } else {
-      # namespace the pkgname::classname() call
-      cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
-
-      # check the call evaluates to f.
-      # This will error if package is not installed or object is not exported.
-      f2 <- eval(cl, baseenv())
-      if (!identical(f, as_class(f2))) {
-        msg <- sprintf(
-          "`%s::%s` is not identical to the class with the same @package and @name properties.",
-          f@package,
-          f@name
-        )
-        stop2(msg, call = NULL)
+        # check the call evaluates to f.
+        # This will error if package is not installed or object is not exported.
+        f2 <- eval(cl, baseenv())
+        if (!identical(f, as_class(f2))) {
+          msg <- sprintf(
+            "`%s::%s` is not identical to the class with the same @package and @name properties.",
+            f@package,
+            f@name
+          )
+          stop2(msg, call = NULL)
+        }
       }
+      if (is_deprecated_class(f2)) {
+        bquote(S7::as_class(.(cl))())
+      } else {
+        as.call(list(cl))
+      }
+    } else {
+      # If the constructor is a closure wrapping a simple expression, try
+      # to extract the expression
+      # (mostly for nicer printing and introspection.)
+
+      # can't unwrap if the closure is potentially important
+      fe <- environment(f)
+      if (!identical(fe, baseenv()) && !identical(fe, asNamespace("S7"))) {
+        return(as.call(list(f)))
+      }
+
+      # special case for `class_missing`
+      if (identical(body(f) -> fb, quote(expr = ))) {
+        return(quote(expr = ))
+      }
+
+      # `new_object()` must be called from the class constructor, can't
+      # be safely unwrapped
+      if ("new_object" %in% all.names(fb)) {
+        return(as.call(list(f)))
+      }
+
+      # maybe unwrap body if it is a single expression wrapped in `{`
+      if (length(fb) == 2L && identical(fb[[1L]], quote(`{`))) {
+        fb <- fb[[2L]]
+      }
+
+      # If all the all the work happens in the promise to the `.data` arg,
+      # return the `.data` expression.
+      ff <- formals(f)
+      if (
+        (identical(fb, quote(.data))) &&
+          identical(names(ff), ".data")
+      ) {
+        return(ff$.data)
+      }
+
+      # if all the work happens in the function body, return the body.
+      if (is.null(ff)) {
+        return(fb)
+      }
+
+      #else, return a call to the constructor
+      as.call(list(f))
     }
-    if (is_deprecated_class(f2)) {
-      return(bquote(S7::as_class(.(cl))()))
-    }
-    return(as.call(list(cl)))
   }
-
-  # If the constructor is a closure wrapping a simple expression, try
-  # to extract the expression
-  # (mostly for nicer printing and introspection.)
-
-  # can't unwrap if the closure is potentially important
-  fe <- environment(f)
-  if (!identical(fe, baseenv()) && !identical(fe, asNamespace("S7"))) {
-    return(as.call(list(f)))
-  }
-
-  # special case for `class_missing`
-  if (identical(body(f) -> fb, quote(expr = ))) {
-    return(quote(expr = ))
-  }
-
-  # `new_object()` must be called from the class constructor, can't
-  # be safely unwrapped
-  if ("new_object" %in% all.names(fb)) {
-    return(as.call(list(f)))
-  }
-
-  # maybe unwrap body if it is a single expression wrapped in `{`
-  if (length(fb) == 2L && identical(fb[[1L]], quote(`{`))) {
-    fb <- fb[[2L]]
-  }
-
-  # If all the all the work happens in the promise to the `.data` arg,
-  # return the `.data` expression.
-  ff <- formals(f)
-  if (
-    (identical(fb, quote(.data))) &&
-      identical(names(ff), ".data")
-  ) {
-    return(ff$.data)
-  }
-
-  # if all the work happens in the function body, return the body.
-  if (is.null(ff)) {
-    return(fb)
-  }
-
-  #else, return a call to the constructor
-  as.call(list(f))
 }
 
 class_constructor <- function(.x) {
