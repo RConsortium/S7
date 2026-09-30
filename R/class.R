@@ -489,9 +489,7 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
   }
 
   properties <- S7_class(object)@properties
-  properties <- properties[
-    !vapply(properties, is_deprecated_property, logical(1))
-  ]
+  properties <- properties[!vapply(properties, is_deprecated_property, FALSE)]
   str_nest(props(object, names(properties)), "@", ..., nest.lev = nest.lev)
 }
 
