@@ -173,7 +173,7 @@ validate_properties <- function(object, class, parent_class = NULL) {
     }
 
     value <- if (metadata$direct_property_access && !isS4(object)) {
-      attr(object, metadata$validation_storage_names[[i]], exact = TRUE)
+      .Call(prop_get_storage_, object, metadata$validation_storage_names[[i]])
     } else {
       prop(object, name)
     }
