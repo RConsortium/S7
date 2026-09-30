@@ -94,7 +94,7 @@ A Date is a numeric vector with class \code{Date} that can be constructed with
       "Underlying data must be numeric"
     \}
   \},
-  default = quote(base::.Date(integer()))
+  default = quote(.Date(integer()))
 )
 }\if{html}{\out{</div>}}
 }

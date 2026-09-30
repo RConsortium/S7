@@ -55,7 +55,7 @@
 #'       "Underlying data must be numeric"
 #'     }
 #'   },
-#'   default = quote(base::.Date(integer()))
+#'   default = quote(.Date(integer()))
 #' )
 #' ```
 #'
@@ -347,7 +347,7 @@ class_factor <- new_S3_class(
     structure(.data, levels = levels, class = "factor")
   }),
   validator = validate_factor,
-  default = quote(base::factor())
+  default = quote(factor())
 )
 
 #' @export
@@ -360,7 +360,7 @@ class_Date <- new_S3_class(
     .Date(.data)
   }),
   validator = validate_date,
-  default = quote(base::.Date(numeric()))
+  default = quote(.Date(numeric()))
 )
 
 #' @export
@@ -373,7 +373,7 @@ class_POSIXct <- new_S3_class(
     .POSIXct(.data, tz = tz)
   }),
   validator = validate_POSIXct,
-  default = quote(base::.POSIXct(numeric(), tz = ""))
+  default = quote(.POSIXct(numeric(), tz = ""))
 )
 
 #' @export
@@ -386,7 +386,7 @@ class_POSIXlt <- new_S3_class(
     as.POSIXlt(.data, tz = tz)
   }),
   validator = validate_POSIXlt,
-  default = quote(base::as.POSIXlt(NULL, tz = ""))
+  default = quote(as.POSIXlt(NULL, tz = ""))
 )
 
 #' @export
@@ -411,7 +411,7 @@ class_data.frame <- new_S3_class(
     }
   }),
   validator = validate_data.frame,
-  default = quote(base::data.frame())
+  default = quote(data.frame())
 )
 
 #  @export

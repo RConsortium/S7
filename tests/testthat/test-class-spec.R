@@ -271,10 +271,10 @@ test_that("exported S3 wrappers have compact executable property defaults", {
     class_POSIXlt = class_POSIXlt
   )
   defaults <- alist(
-    class_factor = base::factor(),
-    class_Date = base::.Date(numeric()),
-    class_POSIXct = base::.POSIXct(numeric(), tz = ""),
-    class_POSIXlt = base::as.POSIXlt(NULL, tz = "")
+    class_factor = factor(),
+    class_Date = .Date(numeric()),
+    class_POSIXct = .POSIXct(numeric(), tz = ""),
+    class_POSIXlt = as.POSIXlt(NULL, tz = "")
   )
   for (name in names(wrappers)) {
     Wrapper := new_class(properties = list(value = wrappers[[name]]))

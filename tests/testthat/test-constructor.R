@@ -49,16 +49,16 @@ test_that("generates correct arguments from parent + properties", {
   expect_equal(args$parent, pairlist())
 })
 
-test_that("data-frame property defaults use an executable reference (#755)", {
+test_that("data-frame property defaults use a compact executable call (#755)", {
   Survey := new_class(properties = list(survey = class_data.frame))
   default <- formals(Survey)$survey
 
-  expect_identical(default, quote(base::data.frame()))
-  expect_type(default[[1L]], "language")
+  expect_identical(default, quote(data.frame()))
+  expect_type(default[[1L]], "symbol")
   expect_identical(parse(text = deparse(default))[[1L]], default)
   expect_identical(
     deparse(args(Survey)),
-    c("function (survey = base::data.frame()) ", "NULL")
+    c("function (survey = data.frame()) ", "NULL")
   )
 
   empty <- class_data.frame$constructor()
@@ -68,16 +68,19 @@ test_that("data-frame property defaults use an executable reference (#755)", {
   expect_identical(Survey(survey = survey)@survey, survey)
 })
 
-test_that("data-frame defaults work without attachment or unqualified bindings", {
+test_that("data-frame defaults work without attachment and ignore caller bindings", {
   local_dev_S7_lib()
   out <- callr::r(function() {
     `:=` <- S7::`:=`
     Survey := S7::new_class(properties = list(survey = S7::class_data.frame))
-    class_data.frame <- data.frame <- function(...) stop("Shadowed binding")
+    construct <- function() {
+      class_data.frame <- data.frame <- function(...) stop("Shadowed binding")
+      Survey()
+    }
 
     list(
       attached = "package:S7" %in% search(),
-      survey = S7::prop(Survey(), "survey"),
+      survey = S7::prop(construct(), "survey"),
       parsed = eval(parse(text = deparse(formals(Survey)$survey)), baseenv())
     )
   })
@@ -99,7 +102,7 @@ test_that("data-frame defaults preserve selection and inheritance", {
     )
   )
   defaults <- as.pairlist(alist(
-    data_first = base::data.frame(),
+    data_first = data.frame(),
     null_first = NULL,
     explicit = data.frame(x = 1L)
   ))
