@@ -113,6 +113,33 @@ test_that("super dispatch preserves generic locals", {
   )
 })
 
+test_that("successive dispatches do not share the super marker", {
+  Base := new_class()
+  Child := new_class(parent = Base)
+  foo := new_generic("x", function(x) {
+    first <- S7_dispatch()
+    if (!inherits(x, "S7_super")) {
+      return(first)
+    }
+    x <- Base()
+    list(first = first, second = S7_dispatch())
+  })
+  method(foo, Base) <- method_context
+  method(foo, Child) <- function(x) {
+    sentinel <- "method"
+    foo(super(x, Base))
+  }
+
+  sentinel <- "caller"
+  expect_equal(
+    foo(Child()),
+    list(
+      first = list(call = quote(foo(Child())), sentinel = "caller"),
+      second = list(call = quote(foo(super(x, Base))), sentinel = "method")
+    )
+  )
+})
+
 test_that("helpers reject unknown skip values", {
   expect_snapshot(error = TRUE, {
     S7_generic_call(skip = "invalid")
