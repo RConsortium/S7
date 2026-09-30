@@ -1,20 +1,17 @@
 #' Deprecate a generic
 #'
 #' @description
-#' Use `deprecated_generic()` when you rename a generic, move it to another
-#' package, or want users to stop calling it. Keep exporting the old name so
-#' existing code can still use it.
+#' To deprecate a generic, change [new_generic()] to `deprecated_generic()` in
+#' its definition and supply `when`. Keep its existing `dispatch_args`, `fun`,
+#' and method registrations, and keep exporting it under the same name. Calls
+#' still dispatch to its methods, but now warn.
 #'
-#' A plain alias like `old <- new` gives callers no warning. A wrapper that
-#' calls `.Deprecated()` can warn, but downstream packages can no longer
-#' register S7 methods on it. `deprecated_generic()` supports both:
+#' If you rename a generic or move it to another package, supply the
+#' replacement as `new` instead of `dispatch_args` and `fun`:
 #'
 #' * Calling the old name warns, then calls the replacement.
 #' * Registering a method on the old name registers it on the replacement,
 #'   without a warning. Both names use the same methods.
-#'
-#' To deprecate a generic without replacing it, supply the existing generic
-#' as `old`. Calls still dispatch to its methods, but now warn.
 #'
 #' @section Moving a generic to another package:
 #' If `pkg::gen()` moves to `pkgcore::gen()`, define the old name in `pkg` as:
@@ -27,17 +24,18 @@
 #' including methods supplied by other packages.
 #'
 #' @section Changing arguments:
-#' The deprecated generic has the same arguments as the replacement and
-#' forwards them unchanged. Changing or deprecating arguments needs code in
-#' the generic itself; this helper only deprecates the generic's name.
+#' When `new` is supplied, the deprecated generic has the same arguments as
+#' the replacement and forwards them unchanged. Changing or deprecating
+#' arguments needs code in the generic itself; this helper only deprecates
+#' the generic's name.
 #'
 #' @param name The old name of the generic, as a string. As with
 #'   [new_generic()], the result should be assigned to a variable with this
 #'   name, most easily with [:=].
+#' @param dispatch_args,fun As in [new_generic()]. Use these to define a
+#'   deprecated generic without a replacement. Cannot be supplied with `new`.
 #' @param new The replacement: an S7 generic, usually the renamed generic, or
 #'   a generic that now lives in another package.
-#' @param old For a deprecation without a replacement: the existing generic,
-#'   which continues to supply the methods.
 #' @param when The package version when the deprecation began, e.g.
 #'   `"1.2.0"`.
 #' @param method How to signal the deprecation:
@@ -58,6 +56,11 @@
 #'   other parts of your API.
 #' @export
 #' @examples
+#' # Deprecate a generic by changing its definition:
+#' shout := deprecated_generic("x", when = "2.0.0")
+#' method(shout, class_character) <- \(x) toupper(x)
+#' shout("hi")
+#'
 #' # A generic renamed from summarise() to summarize():
 #' summarize := new_generic("x")
 #' method(summarize, class_double) <- function(x) mean(x)
@@ -68,17 +71,12 @@
 #' # Registering a method on the old name registers it on the new generic:
 #' method(summarise, class_character) <- function(x) unique(x)
 #' summarize(c("a", "b", "a"))
-#'
-#' # A generic deprecated without a replacement keeps working:
-#' shout := new_generic("x")
-#' method(shout, class_character) <- function(x) toupper(x)
-#' shout := deprecated_generic(old = shout, when = "2.0.0")
-#' shout("hi")
 deprecated_generic <- function(
   name,
-  new = NULL,
-  old = NULL,
+  dispatch_args,
+  fun = NULL,
   when,
+  new = NULL,
   method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
   new_label = NULL
 ) {
@@ -88,9 +86,6 @@ deprecated_generic <- function(
   env <- parent.frame()
   package <- topNamespaceName(env)
 
-  if (is.null(new) == is.null(old)) {
-    stop2("Must supply exactly one of `new` and `old`.")
-  }
   if (!is.null(new_label)) {
     check_name(new_label)
     if (is.null(new)) {
@@ -99,23 +94,19 @@ deprecated_generic <- function(
   }
 
   if (is.null(new)) {
-    if (!is_S7_generic(old)) {
-      msg <- sprintf("`old` must be an S7 generic, not %s.", obj_desc(old))
-      stop2(msg)
-    }
-    if (!identical(old@name, name)) {
-      msg <- c(
-        sprintf(
-          "`old@name` (\"%s\") must match `name` (\"%s\").",
-          old@name,
-          name
-        ),
-        "* To deprecate in favor of a renamed generic, use `new`."
-      )
-      stop2(msg)
-    }
-    target <- old
+    # Construct in the caller's environment so the generic belongs to their
+    # package and can receive methods from downstream packages.
+    definition <- as.call(list(
+      quote(S7::new_generic),
+      name = name,
+      dispatch_args = dispatch_args,
+      fun = fun
+    ))
+    target <- eval(definition, env)
   } else {
+    if (!missing(dispatch_args) || !missing(fun)) {
+      stop2("Can't supply `dispatch_args` or `fun` with `new`.")
+    }
     if (is_deprecated_generic(new)) {
       new <- deprecated_target(new)
     }

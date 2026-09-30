@@ -1,3 +1,4 @@
 import(S7)
 export(gen)
+export(shout)
 export(Foo)

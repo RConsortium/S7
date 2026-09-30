@@ -6,9 +6,10 @@
 \usage{
 deprecated_generic(
   name,
-  new = NULL,
-  old = NULL,
+  dispatch_args,
+  fun = NULL,
   when,
+  new = NULL,
   method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
   new_label = NULL
 )
@@ -18,14 +19,14 @@ deprecated_generic(
 \code{\link[=new_generic]{new_generic()}}, the result should be assigned to a variable with this
 name, most easily with \link{:=}.}
 
-\item{new}{The replacement: an S7 generic, usually the renamed generic, or
-a generic that now lives in another package.}
-
-\item{old}{For a deprecation without a replacement: the existing generic,
-which continues to supply the methods.}
+\item{dispatch_args, fun}{As in \code{\link[=new_generic]{new_generic()}}. Use these to define a
+deprecated generic without a replacement. Cannot be supplied with \code{new}.}
 
 \item{when}{The package version when the deprecation began, e.g.
 \code{"1.2.0"}.}
+
+\item{new}{The replacement: an S7 generic, usually the renamed generic, or
+a generic that now lives in another package.}
 
 \item{method}{How to signal the deprecation:
 \itemize{
@@ -47,21 +48,18 @@ name. It changes the message, not the object used as the replacement.}
 A function with class \code{S7_deprecated_generic}.
 }
 \description{
-Use \code{deprecated_generic()} when you rename a generic, move it to another
-package, or want users to stop calling it. Keep exporting the old name so
-existing code can still use it.
+To deprecate a generic, change \code{\link[=new_generic]{new_generic()}} to \code{deprecated_generic()} in
+its definition and supply \code{when}. Keep its existing \code{dispatch_args}, \code{fun},
+and method registrations, and keep exporting it under the same name. Calls
+still dispatch to its methods, but now warn.
 
-A plain alias like \code{old <- new} gives callers no warning. A wrapper that
-calls \code{.Deprecated()} can warn, but downstream packages can no longer
-register S7 methods on it. \code{deprecated_generic()} supports both:
+If you rename a generic or move it to another package, supply the
+replacement as \code{new} instead of \code{dispatch_args} and \code{fun}:
 \itemize{
 \item Calling the old name warns, then calls the replacement.
 \item Registering a method on the old name registers it on the replacement,
 without a warning. Both names use the same methods.
 }
-
-To deprecate a generic without replacing it, supply the existing generic
-as \code{old}. Calls still dispatch to its methods, but now warn.
 }
 \section{Moving a generic to another package}{
 
@@ -76,12 +74,18 @@ including methods supplied by other packages.
 
 \section{Changing arguments}{
 
-The deprecated generic has the same arguments as the replacement and
-forwards them unchanged. Changing or deprecating arguments needs code in
-the generic itself; this helper only deprecates the generic's name.
+When \code{new} is supplied, the deprecated generic has the same arguments as
+the replacement and forwards them unchanged. Changing or deprecating
+arguments needs code in the generic itself; this helper only deprecates
+the generic's name.
 }
 
 \examples{
+# Deprecate a generic by changing its definition:
+shout := deprecated_generic("x", when = "2.0.0")
+method(shout, class_character) <- \(x) toupper(x)
+shout("hi")
+
 # A generic renamed from summarise() to summarize():
 summarize := new_generic("x")
 method(summarize, class_double) <- function(x) mean(x)
@@ -92,12 +96,6 @@ summarise(c(1, 2, 3))
 # Registering a method on the old name registers it on the new generic:
 method(summarise, class_character) <- function(x) unique(x)
 summarize(c("a", "b", "a"))
-
-# A generic deprecated without a replacement keeps working:
-shout := new_generic("x")
-method(shout, class_character) <- function(x) toupper(x)
-shout := deprecated_generic(old = shout, when = "2.0.0")
-shout("hi")
 }
 \seealso{
 \code{\link[=deprecated_class]{deprecated_class()}} and \code{\link[=deprecated_property]{deprecated_property()}} to deprecate

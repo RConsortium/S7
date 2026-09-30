@@ -1,4 +1,5 @@
 method(gen, class_double) <- function(x, ...) "double"
+method(shout, class_character) <- \(x, ...) toupper(x)
 method(gen, Foo) <- function(x, ...) x@value
 Child := new_class(parent = Foo)
 saved <- Child(value = 3)

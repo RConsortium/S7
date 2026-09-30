@@ -104,12 +104,53 @@ test_that("method registration on a deprecated generic targets the replacement",
 })
 
 test_that("deprecated_generic() without a replacement still dispatches", {
-  old_gen := new_generic("x")
-  old_gen := deprecated_generic(old = old_gen, when = "2.0.0")
-  method(old_gen, class_character) <- function(x) toupper(x)
+  old_gen := deprecated_generic("x", when = "2.0.0")
+  expect_no_warning(method(old_gen, class_character) <- \(x) toupper(x))
 
   expect_snapshot(out <- old_gen("hi"))
   expect_equal(out, "HI")
+  expect_equal(method(old_gen, class_character)(x = "hi"), "HI")
+  expect_equal(S7_methods(old_gen)$generic, "old_gen")
+})
+
+test_that("deprecated_generic() accepts a custom generic definition", {
+  suffix <- "!"
+  calls <- 0L
+  fun <- function(x, y, ..., ending = suffix) {
+    calls <<- calls + 1L
+    S7_dispatch()
+  }
+  combine := deprecated_generic(c("x", "y"), fun, when = "2.0.0")
+  method(combine, list(class_character, class_character)) <- function(
+    x,
+    y,
+    ...,
+    ending = suffix
+  ) {
+    paste0(x, y, ending)
+  }
+
+  expect_identical(formals(combine), formals(fun))
+  expect_snapshot(out <- combine("a", "b"))
+  expect_equal(out, "ab!")
+  expect_identical(calls, 1L)
+})
+
+test_that("external methods register on a directly defined deprecated generic", {
+  pkgA := local_package({
+    old_gen := deprecated_generic("x", when = "2.0.0")
+  })
+  pkgB := local_package({
+    old_gen := new_external_generic("pkgA", dispatch_args = "x")
+    method(old_gen, class_character) <- \(x) toupper(x)
+  })
+
+  expect_snapshot(out <- pkgA$old_gen("hi"))
+  expect_equal(out, "HI")
+  expect_identical(
+    environment(method(pkgA$old_gen, class_character)@generic),
+    pkgA
+  )
 })
 
 test_that("external generic registration resolves through a deprecated generic", {
@@ -135,11 +176,15 @@ test_that("installed deprecations preserve generic methods and existing classes"
     callr::r(
       function() {
         loadNamespace("deprecatedUser")
-        c(deprecatedHome::gen(1), deprecatedHome::gen("x"))
+        c(
+          deprecatedHome::gen(1),
+          deprecatedHome::gen("x"),
+          deprecatedHome::shout("hi")
+        )
       },
       libpath = .libPaths()
     ),
-    c("double", "character")
+    c("double", "character", "HI")
   )
   quick_install(file.path(fixtures, c("core", "home-v2")), lib)
 
@@ -150,6 +195,7 @@ test_that("installed deprecations preserve generic methods and existing classes"
     child <- deprecatedUser::Child(value = 2)
     saved <- deprecatedUser::saved
     stopifnot(
+      identical(suppressWarnings(deprecatedHome::shout("hi")), "HI"),
       identical(new(1), "double"),
       identical(new("x"), "character"),
       identical(suppressWarnings(old(1)), "double"),
@@ -194,14 +240,20 @@ test_that("deprecated_generic() validates its inputs", {
     deprecated_generic("old_gen", new = new_gen, when = "next year")
     deprecated_generic("old_gen", new = mean, when = "1.0.0")
     deprecated_generic("old_gen", when = "1.0.0")
-    deprecated_generic("old_gen", new = new_gen, old = new_gen, when = "1.0.0")
-    deprecated_generic("old_gen", old = mean, when = "1.0.0")
-    deprecated_generic("old_gen", old = new_gen, when = "1.0.0")
+    deprecated_generic("old_gen", dispatch_args = 1, when = "1.0.0")
+    deprecated_generic("old_gen", "x", \(x) x, when = "1.0.0")
+    deprecated_generic("old_gen", "x", new = new_gen, when = "1.0.0")
+    deprecated_generic(
+      "old_gen",
+      fun = \(x) S7_dispatch(),
+      new = new_gen,
+      when = "1.0.0"
+    )
     deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = 1)
     deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = "")
     deprecated_generic(
-      "new_gen",
-      old = new_gen,
+      "old_gen",
+      "x",
       when = "1.0.0",
       new_label = "x()"
     )

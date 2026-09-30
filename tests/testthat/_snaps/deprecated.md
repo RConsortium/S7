@@ -52,6 +52,22 @@
       Warning in `old_gen()`:
       `old_gen()` was deprecated in S7 2.0.0.
 
+# deprecated_generic() accepts a custom generic definition
+
+    Code
+      out <- combine("a", "b")
+    Condition
+      Warning in `combine()`:
+      `combine()` was deprecated in S7 2.0.0.
+
+# external methods register on a directly defined deprecated generic
+
+    Code
+      out <- pkgA$old_gen("hi")
+    Condition
+      Warning in `pkgA$old_gen()`:
+      `old_gen()` was deprecated in pkgA 2.0.0.
+
 # deprecated_generic() validates its inputs
 
     Code
@@ -78,23 +94,28 @@
       deprecated_generic("old_gen", when = "1.0.0")
     Condition
       Error in `deprecated_generic()`:
-      ! Must supply exactly one of `new` and `old`.
+      ! argument "dispatch_args" is missing, with no default
     Code
-      deprecated_generic("old_gen", new = new_gen, old = new_gen, when = "1.0.0")
+      deprecated_generic("old_gen", dispatch_args = 1, when = "1.0.0")
+    Condition
+      Error in `S7::new_generic()`:
+      ! `dispatch_args` must be a character vector.
+    Code
+      deprecated_generic("old_gen", "x", function(x) x, when = "1.0.0")
+    Condition
+      Error in `S7::new_generic()`:
+      ! `fun` must contain a call to `S7_dispatch()`.
+    Code
+      deprecated_generic("old_gen", "x", new = new_gen, when = "1.0.0")
     Condition
       Error in `deprecated_generic()`:
-      ! Must supply exactly one of `new` and `old`.
+      ! Can't supply `dispatch_args` or `fun` with `new`.
     Code
-      deprecated_generic("old_gen", old = mean, when = "1.0.0")
+      deprecated_generic("old_gen", fun = function(x) S7_dispatch(), new = new_gen,
+      when = "1.0.0")
     Condition
       Error in `deprecated_generic()`:
-      ! `old` must be an S7 generic, not <closure>.
-    Code
-      deprecated_generic("old_gen", old = new_gen, when = "1.0.0")
-    Condition
-      Error in `deprecated_generic()`:
-      ! `old@name` ("new_gen") must match `name` ("old_gen").
-      * To deprecate in favor of a renamed generic, use `new`.
+      ! Can't supply `dispatch_args` or `fun` with `new`.
     Code
       deprecated_generic("old_gen", new = new_gen, when = "1.0.0", new_label = 1)
     Condition
@@ -106,7 +127,7 @@
       Error in `deprecated_generic()`:
       ! `new_label` must not be "" or NA.
     Code
-      deprecated_generic("new_gen", old = new_gen, when = "1.0.0", new_label = "x()")
+      deprecated_generic("old_gen", "x", when = "1.0.0", new_label = "x()")
     Condition
       Error in `deprecated_generic()`:
       ! `new_label` requires `new`.
