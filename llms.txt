@@ -215,6 +215,10 @@ for more details.
   : Retrieve the class specification of an object
 - [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
   : Format a class specification as a string
+- [`S7_generic_call()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md)
+  [`S7_user_frame()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md)
+  [`S7_generic_fun()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md)
+  : Access the generic call and user frame from within a method
 - [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
   [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
   : Find S7 classes and generics in an environment

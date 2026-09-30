@@ -340,6 +340,13 @@
 - `S7_error_method_not_found` now has a correct class vector without a
   duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
   [\#604](https://github.com/RConsortium/S7/issues/604)).
+- [`S7_generic_call()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md),
+  [`S7_user_frame()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md),
+  and
+  [`S7_generic_fun()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md)
+  are new helpers for accessing a method’s generic call, caller frame,
+  and generic function
+  ([\#596](https://github.com/RConsortium/S7/issues/596)).
 - [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
   and
   [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
