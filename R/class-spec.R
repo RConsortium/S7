@@ -109,6 +109,10 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
     }
   }
 
+  if (is_S3_class(ctor_class) && !is.null(ctor_class$default)) {
+    return(ctor_class$default)
+  }
+
   f <- class_constructor(.x)
 
   # For S7 class constructors with a non-NULL @package property

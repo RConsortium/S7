@@ -29,6 +29,51 @@ test_that("new_S3_class() checks its inputs", {
     new_S3_class("foo", function(x) {})
     new_S3_class("foo", function(.data, ...) {})
   })
+
+  expect_snapshot(
+    new_S3_class("data.frame", default = data.frame()),
+    error = TRUE
+  )
+})
+
+test_that("new_S3_class() defaults are evaluated for each property construction", {
+  defaults <- constructors <- 0L
+  make_default <- function() {
+    defaults <<- defaults + 1L
+    data.frame(x = defaults)
+  }
+  custom <- new_S3_class(
+    "data.frame",
+    constructor = function(.data = list()) {
+      constructors <<- constructors + 1L
+      list2DF(.data)
+    },
+    default = quote(make_default())
+  )
+  Survey := new_class(properties = list(survey = custom))
+  expect_identical(formals(Survey)$survey, quote(make_default()))
+  expect_identical(defaults, 0L)
+  expect_identical(constructors, 0L)
+  expect_identical(Survey()@survey, data.frame(x = 1L))
+  expect_identical(Survey()@survey, data.frame(x = 2L))
+  expect_identical(defaults, 2L)
+  expect_identical(constructors, 0L)
+
+  Override := new_class(
+    properties = list(
+      survey = new_property(custom, default = quote(data.frame(x = 10L)))
+    )
+  )
+  expect_identical(Override()@survey, data.frame(x = 10L))
+  expect_identical(defaults, 2L)
+})
+
+test_that("new_S3_class() can supply a property default without a constructor", {
+  epoch <- .Date(0)
+  Date <- new_S3_class("Date", default = quote(epoch))
+  Event := new_class(properties = list(date = Date))
+  expect_identical(formals(Event)$date, quote(epoch))
+  expect_identical(Event()@date, epoch)
 })
 
 
