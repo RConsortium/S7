@@ -14,6 +14,16 @@ extern SEXP prop_storage_rename_(SEXP);
 extern SEXP S7_eval_bare_(SEXP, SEXP);
 extern SEXP class_type_(SEXP);
 extern SEXP obj_addr_(SEXP);
+extern SEXP class_ref_new_(SEXP);
+extern SEXP class_ref_clone_(SEXP);
+extern SEXP class_ref_get_(SEXP);
+extern SEXP class_ref_set_(SEXP, SEXP);
+extern SEXP class_ref_set_weak_(SEXP, SEXP);
+extern SEXP class_ref_set_serialized_(SEXP, SEXP, SEXP);
+extern SEXP class_ref_resolve_set_(SEXP, SEXP, SEXP);
+extern SEXP class_ref_clear_(SEXP);
+extern SEXP class_ref_tag_(SEXP);
+extern SEXP class_ref_serialized_(SEXP);
 extern void prop_init(void);
 extern void class_type_init(void);
 
@@ -29,6 +39,16 @@ static const R_CallMethodDef CallEntries[] = {
     CALLDEF(S7_eval_bare_, 2),
     CALLDEF(class_type_, 1),
     CALLDEF(obj_addr_, 1),
+    CALLDEF(class_ref_new_, 1),
+    CALLDEF(class_ref_clone_, 1),
+    CALLDEF(class_ref_get_, 1),
+    CALLDEF(class_ref_set_, 2),
+    CALLDEF(class_ref_set_weak_, 2),
+    CALLDEF(class_ref_set_serialized_, 3),
+    CALLDEF(class_ref_resolve_set_, 3),
+    CALLDEF(class_ref_clear_, 1),
+    CALLDEF(class_ref_tag_, 1),
+    CALLDEF(class_ref_serialized_, 1),
     {NULL, NULL, 0}
 };
 
