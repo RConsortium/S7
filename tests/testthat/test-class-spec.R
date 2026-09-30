@@ -271,10 +271,10 @@ test_that("exported S3 wrappers have compact executable property defaults", {
     class_POSIXlt = class_POSIXlt
   )
   defaults <- alist(
-    class_factor = S7::class_factor$constructor(),
-    class_Date = S7::class_Date$constructor(),
-    class_POSIXct = S7::class_POSIXct$constructor(),
-    class_POSIXlt = S7::class_POSIXlt$constructor()
+    class_factor = base::factor(),
+    class_Date = base::.Date(numeric()),
+    class_POSIXct = base::.POSIXct(numeric(), tz = ""),
+    class_POSIXlt = base::as.POSIXlt(NULL, tz = "")
   )
   for (name in names(wrappers)) {
     Wrapper := new_class(properties = list(value = wrappers[[name]]))
@@ -289,7 +289,7 @@ test_that("formula property defaults retain the constructor's calling environmen
   Formula := new_class(properties = list(value = class_formula))
   expect_identical(
     formals(Formula)$value,
-    quote(S7::class_formula$constructor())
+    quote(stats::formula(NULL))
   )
 
   first <- Formula()@value

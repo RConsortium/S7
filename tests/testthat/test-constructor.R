@@ -53,12 +53,12 @@ test_that("data-frame property defaults use an executable reference (#755)", {
   Survey := new_class(properties = list(survey = class_data.frame))
   default <- formals(Survey)$survey
 
-  expect_identical(default, quote(S7::class_data.frame$constructor()))
+  expect_identical(default, quote(base::data.frame()))
   expect_type(default[[1L]], "language")
   expect_identical(parse(text = deparse(default))[[1L]], default)
   expect_identical(
     deparse(args(Survey)),
-    c("function (survey = S7::class_data.frame$constructor()) ", "NULL")
+    c("function (survey = base::data.frame()) ", "NULL")
   )
 
   empty <- class_data.frame$constructor()
@@ -99,7 +99,7 @@ test_that("data-frame defaults preserve selection and inheritance", {
     )
   )
   defaults <- as.pairlist(alist(
-    data_first = S7::class_data.frame$constructor(),
+    data_first = base::data.frame(),
     null_first = NULL,
     explicit = data.frame(x = 1L)
   ))
