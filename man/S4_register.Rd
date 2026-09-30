@@ -32,7 +32,7 @@ an S7 class that does not extend an S4 class, or an S3 class created by
 invisibly returns the registered S4 class name.
 For S7 classes, this creates a virtual S4 old class that exposes stored S7
 properties as S4 slots and carries the \verb{_S7_class} slot needed for S7 dispatch
-and validation, along with the internal \verb{_S7_version} representation marker.
+and validation, along with the internal \code{S7_version} representation marker.
 
 After registration, \code{S4_contains()} returns the virtual S4 class name to use
 when an S4 class should extend an S7 class with

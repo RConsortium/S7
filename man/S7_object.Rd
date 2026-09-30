@@ -14,7 +14,7 @@ The base class from which all S7 classes eventually inherit from.
 }
 \section{Representation version}{
 
-Newly constructed S7 objects carry an internal \verb{_S7_version} attribute,
+Newly constructed S7 objects carry an internal \code{S7_version} attribute,
 starting at \code{1L}. This tracks changes to the stored object representation,
 independently of the S7 package version, so future backward compatibility
 code can distinguish object formats. Objects created before versioning was

@@ -31,12 +31,12 @@ test_that("S7_data preserves the object's representation version (#711)", {
   Text := new_class(parent = class_character)
   x <- Text(.data = "foo")
   S7_data(x) <- "bar"
-  expect_identical(attr(x, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(x, "S7_version", exact = TRUE), 1L)
   expect_identical(S7_data(x), "bar")
 
-  attr(x, "_S7_version") <- NULL
+  attr(x, "S7_version") <- NULL
   S7_data(x) <- Text(.data = "baz")
-  expect_null(attr(x, "_S7_version", exact = TRUE))
+  expect_null(attr(x, "S7_version", exact = TRUE))
   expect_identical(S7_data(x), "baz")
 })
 

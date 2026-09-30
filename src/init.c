@@ -109,7 +109,7 @@ void R_init_S7(DllInfo *dll)
     sym_S7_class = Rf_install("_S7_class");
     // Legacy name used by objects created with an older version of S7.
     sym_S7_class_legacy = Rf_install("S7_class");
-    sym_S7_version = Rf_install("_S7_version");
+    sym_S7_version = Rf_install("S7_version");
     sym_class = Rf_install("class");
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
