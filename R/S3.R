@@ -148,6 +148,20 @@ is_S3_class <- function(x) {
   inherits(x, "S7_S3_class")
 }
 
+# Detect the stub constructor emitted by S7 <= 0.2.2, before S3 class
+# definitions recorded whether they were abstract (#686, #747).
+is_S3_stub_constructor <- function(constructor) {
+  if (!is.function(constructor)) {
+    return(FALSE)
+  }
+  call <- find_call(body(constructor), quote(sprintf))
+  if (is.null(call)) {
+    return(FALSE)
+  }
+  fmt <- call[[2]]
+  is.character(fmt) && grepl("doesn't have a constructor", fmt, fixed = TRUE)
+}
+
 # -------------------------------------------------------------------------
 # Pull out validation functions so hit by code coverage
 
@@ -160,7 +174,7 @@ validate_factor <- function(self) {
       "attr(, 'levels') must be a <character>"
     },
     {
-      rng <- range(0L, unclass(self))
+      rng <- range(0L, unclass(self), na.rm = TRUE)
       NULL
     },
     if (rng[1] < 0L) {
@@ -210,8 +224,11 @@ validate_data.frame <- function(self) {
   }
 
   if (length(self) >= 1) {
+    # `lengths()` gives the wrong answer for data frame and matrix columns
+    col_lengths <- vapply(self, NROW, integer(1L), USE.NAMES = FALSE)
+
     # Avoid materialising compact row names
-    ns <- unique(c(lengths(self), .row_names_info(self, 2L)))
+    ns <- unique(c(col_lengths, .row_names_info(self, 2L)))
     if (length(ns) > 1) {
       return("All columns and row names must have the same length")
     }

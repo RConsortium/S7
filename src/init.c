@@ -3,7 +3,7 @@
 #include <R_ext/Rdynload.h>
 
 /* .Call calls */
-extern SEXP method_(SEXP, SEXP, SEXP, SEXP);
+extern SEXP method_(SEXP, SEXP);
 extern SEXP method_call_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP test_call_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP S7_class_(SEXP);
@@ -20,7 +20,7 @@ extern void class_type_init(void);
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef CallEntries[] = {
-    CALLDEF(method_, 4),
+    CALLDEF(method_, 2),
     CALLDEF(S7_object_, 0),
     CALLDEF(S7_class_, 1),
     CALLDEF(prop_, 2),
@@ -33,7 +33,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 static const R_ExternalMethodDef ExternalEntries[] = {
-    CALLDEF(method_call_, 2),
+    CALLDEF(method_call_, 3),
     {NULL, NULL, 0}
 };
 
@@ -54,6 +54,7 @@ SEXP sym_getter;
 SEXP sym_dot_should_validate;
 SEXP sym_dot_getting_prop;
 SEXP sym_dot_setting_prop;
+SEXP sym_u_dispatched_super;
 
 // `comment` lacks a predefined R_*Symbol, unlike the other special names.
 SEXP sym_comment;
@@ -117,6 +118,7 @@ void R_init_S7(DllInfo *dll)
     sym_dot_should_validate = Rf_install(".should_validate");
     sym_dot_getting_prop = Rf_install(".getting_prop");
     sym_dot_setting_prop = Rf_install(".setting_prop");
+    sym_u_dispatched_super = Rf_install("_dispatched_super");
 
     sym_comment = Rf_install("comment");
 

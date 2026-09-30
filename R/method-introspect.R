@@ -41,7 +41,7 @@ method <- function(generic, class = NULL, object = NULL) {
   check_is_S7(generic, S7_generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
 
-  method <- .Call(method_, generic, dispatch, environment(), FALSE)
+  method <- .Call(method_, generic, dispatch)
   if (!is.null(method)) {
     return(method)
   }

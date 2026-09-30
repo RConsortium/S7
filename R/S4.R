@@ -321,7 +321,8 @@ S4_register_class <- function(class, env = parent.frame()) {
   slots <- lapply(properties, S4_property_class, S4_env = where)
   needs_S7_class_slot <- !"_S7_class" %in% parent_slot_names
   if (needs_S7_class_slot) {
-    slots$`_S7_class` <- "S7_class"
+    # Private storage: either a class object or a shared class reference.
+    slots$`_S7_class` <- "ANY"
   }
 
   methods::setClass(

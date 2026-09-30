@@ -198,7 +198,7 @@ convert_method <- function(from, to) {
     }
   }
 
-  .Call(method_, convert, list(from_dispatch, to_class), environment(), FALSE)
+  .Call(method_, convert, list(from_dispatch, to_class))
 }
 
 convert_up <- function(from, to, call = sys.call(-1L)) {

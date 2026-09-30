@@ -185,7 +185,12 @@ validate_properties <- function(object, class, parent_class = NULL) {
       next
     }
 
-    errors <- c(errors, prop_validate(prop_obj, value))
+    err <- prop_validate(prop_obj, value)
+    if (is.null(err)) {
+      next
+    }
+
+    errors <- c(errors, err)
   }
 
   errors

@@ -130,6 +130,25 @@ test_that("inheritance lets child properties narrow the parent's type", {
   ))
 })
 
+test_that("inheritance lets S3 properties narrow to subclasses with shared base classes (#747)", {
+  Parent := new_class(
+    package = NULL,
+    properties = list(coordinates = new_S3_class("Coord"))
+  )
+
+  expect_no_error({
+    Child := new_class(
+      parent = Parent,
+      package = NULL,
+      properties = list(
+        coordinates = new_S3_class(
+          c("CoordCartesian", "Coord", "ggproto", "gg")
+        )
+      )
+    )
+  })
+})
+
 test_that("inheritance lets child properties narrow with S4 inheritance", {
   local_S4_classes()
   S4PropertyParent <- setClass("S4PropertyParent", slots = c(x = "numeric"))
@@ -418,6 +437,24 @@ test_that("custom constructors use a shared class reference (#742)", {
   expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
 })
 
+test_that("constructor properties don't shadow the shared class reference", {
+  Foo := new_class(properties = list(.S7_class_ref = class_double))
+
+  x <- Foo(.S7_class_ref = 1)
+  expect_equal(x@.S7_class_ref, 1)
+  expect_identical(S7_class(x), Foo)
+})
+
+test_that("constructor locals don't shadow the shared class reference", {
+  Other := new_class()
+  Foo := new_class(constructor = function() {
+    .S7_class_ref <- attr(Other(), "_S7_class", exact = TRUE)
+    new_object(S7_object())
+  })
+
+  expect_identical(S7_class(Foo()), Foo)
+})
+
 test_that("serialisation preserves shared class references (#742)", {
   Foo := new_class(package = NULL)
   xy <- unserialize(serialize(list(Foo(), Foo()), NULL))
@@ -528,11 +565,47 @@ test_that("new_object() allows arbitrary placeholder for abstract S3 parents (#6
   expect_no_error(Concrete(list(1, "A")))
 })
 
-test_that("new_object() has fallback for S3 classes created by older S7 (#686)", {
-  old_s3 <- class_POSIXt
-  old_s3$abstract <- NULL
-  Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
+test_that("new_object() supports legacy abstract S3 classes (#686, #747)", {
+  old_s3 <- structure(
+    list(
+      class = "POSIXt",
+      constructor = local({
+        class <- "POSIXt"
+        function(.data) {
+          stop(
+            sprintf("S3 class <%s> doesn't have a constructor", class[[1]]),
+            call. = FALSE
+          )
+        }
+      }),
+      validator = NULL
+    ),
+    class = "S7_S3_class"
+  )
+  Foo := new_class(
+    parent = old_s3,
+    package = NULL,
+    constructor = \(x) new_object(x)
+  )
   expect_no_error(Foo(list(1, "A")))
+})
+
+test_that("new_object() validates legacy concrete S3 parents", {
+  old_s3 <- structure(
+    list(
+      class = "foo",
+      constructor = function(.data) structure(.data, class = "foo"),
+      validator = NULL
+    ),
+    class = "S7_S3_class"
+  )
+  Foo := new_class(
+    parent = old_s3,
+    package = NULL,
+    constructor = \(x) new_object(x)
+  )
+
+  expect_snapshot(Foo(list()), error = TRUE)
 })
 
 test_that("new_object() errors if `_parent` is supplied but class has no parent", {
