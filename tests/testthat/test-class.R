@@ -5,7 +5,7 @@ test_that("S7 classes possess expected properties", {
     prop_names(foo),
     setdiff(
       names(attributes(foo)),
-      c("class", "S7_class_name", "S7_dispatch")
+      c("class", "S7_class_name", "S7_dispatch", "_S7_version")
     )
   )
   expect_type(foo@name, "character")
@@ -382,6 +382,35 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
+test_that("S7 objects record their representation version (#711)", {
+  Foo := new_class(properties = list(x = class_double))
+  Bar := new_class(parent = Foo)
+  Number := new_class(parent = class_double)
+  Frame := new_class(parent = class_data.frame)
+  Environment := new_class(parent = class_environment)
+  Custom := new_class(
+    parent = class_double,
+    constructor = function(x) new_object(x)
+  )
+  generic := new_generic("x")
+
+  objects <- list(
+    S7_object,
+    S7_object(),
+    Foo,
+    Foo(x = 1),
+    Bar(x = 1),
+    Number(.data = 1),
+    Frame(.data = data.frame(x = 1)),
+    Environment(),
+    Custom(x = 1),
+    generic
+  )
+  for (object in objects) {
+    expect_identical(attr(object, "_S7_version", exact = TRUE), 1L)
+  }
+})
+
 test_that("new_object() stores a shared class reference (#742)", {
   Foo := new_class(package = NULL)
   x <- Foo()
@@ -753,6 +782,8 @@ test_that("can round trip to disk and back", {
   f2 <- readRDS(path)
 
   expect_equal(f, f2)
+  expect_identical(attr(f2, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(f2@x, "_S7_version", exact = TRUE), 1L)
   rm(foo1, foo2, f, envir = globalenv())
 })
 
@@ -766,6 +797,7 @@ test_that("objects from a previous version of S7 still work (#677)", {
   obj <- Foo(1, x = 2)
   attr(obj, "S7_class") <- attr(obj, "_S7_class", exact = TRUE)
   attr(obj, "_S7_class") <- NULL
+  attr(obj, "_S7_version") <- NULL
 
   expect_equal(S7_class(obj), Foo)
   expect_equal(obj@x, 2)
@@ -773,6 +805,7 @@ test_that("objects from a previous version of S7 still work (#677)", {
 
   obj@x <- 3
   expect_equal(obj@x, 3)
+  expect_null(attr(obj, "_S7_version", exact = TRUE))
 
   expect_equal(S7_data(obj), 1)
   expect_equal(convert(obj, to = class_double), 1)

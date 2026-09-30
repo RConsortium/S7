@@ -92,8 +92,11 @@ static SEXP make_s7_proto_object(void)
     ));
     obj = PROTECT(Rf_eval(asS3_call, R_BaseEnv));
     Rf_classgets(obj, Rf_mkString("S7_object"));
+    // Keep in sync with S7_object_version in R/class.R.
+    SEXP version = PROTECT(Rf_ScalarInteger(1));
+    Rf_setAttrib(obj, Rf_install("_S7_version"), version);
 
-    UNPROTECT(3);
+    UNPROTECT(4);
     return obj;
 }
 
