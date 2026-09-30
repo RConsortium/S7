@@ -2,6 +2,7 @@
 # of the package version. Older objects have no version attribute.
 # Keep in sync with R_init_S7() in src/init.c.
 S7_object_version <- 1L
+S7_object_attrs <- c("_S7_class", "_S7_version", "S7_class")
 
 #' Define a new S7 class
 #'
