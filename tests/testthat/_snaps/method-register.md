@@ -138,6 +138,28 @@
       - Generic: 2
       - Method:  1
 
+# check_method errors become warnings during load_all() (#726)
+
+    Code
+      foo := new_generic("x", function(x) S7_dispatch())
+      check_method(function(x, y) { }, foo)
+    Condition
+      Warning:
+      foo() generic lacks `...` so method formals must match generic formals exactly.
+      - generic formals: foo(x)
+      - method formals:  foo(x, y)
+    Code
+      bar := new_generic("x", function(x, ...) S7_dispatch())
+      check_method(function(y, ...) { }, bar)
+    Condition
+      Warning:
+      bar() dispatches on `x`, but bar(???) has arguments `y`, `...`.
+    Code
+      check_method(function(x = 1, ...) { }, bar)
+    Condition
+      Warning:
+      In bar(???), dispatch arguments (`x`) must not have default values.
+
 # S7_method printing
 
     Code

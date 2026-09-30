@@ -8,12 +8,13 @@ extern SEXP sym_dispatch_args;
 extern SEXP sym_methods;
 extern SEXP sym_S7_dispatch;
 extern SEXP sym_name;
+extern SEXP sym_u_dispatched_super;
 
 extern SEXP fn_base_quote;
 extern SEXP fn_base_missing;
 extern SEXP missing_call;
-
 extern SEXP R_TRUE;
+
 extern SEXP s7_proto_object;
 
 
@@ -126,7 +127,7 @@ void S7_method_lookup_error(SEXP generic, SEXP envir) {
   while(1);
 }
 
-SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
+SEXP method_(SEXP generic, SEXP signature) {
   if (!Rf_inherits(generic, "S7_generic")) {
     return R_NilValue;
   }
@@ -136,13 +137,7 @@ SEXP method_(SEXP generic, SEXP signature, SEXP envir, SEXP error_) {
     Rf_error("Corrupt S7_generic: @methods isn't an environment.");
   }
 
-  SEXP m = method_rec(table, signature, 0);
-
-  if (m == R_NilValue && Rf_asLogical(error_)) {
-    S7_method_lookup_error(generic, envir);
-  }
-
-  return m;
+  return method_rec(table, signature, 0);
 }
 
 
@@ -163,6 +158,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
   SEXP envir = CAR(args_); args_ = CDR(args_);
+  SEXP fallback = CAR(args_);
 
   if (!Rf_inherits(generic, "S7_generic")) {
     SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
@@ -219,6 +215,9 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
         if (Rf_inherits(val, "S7_super")) {
 
+          // Keep dispatch metadata in S7_dispatch()'s own frame. The method
+          // call is evaluated in the generic's frame (envir), not this frame.
+          Rf_defineVar(sym_u_dispatched_super, R_TRUE, env_);
 
           // Put the super() stored value into the method call.
           // Note: This means we don't pass along the arg PROMSXP, meaning that
@@ -257,7 +256,15 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   }
 
   // Now that we have all the classes, we can look up what method to call
-  SEXP m = method_(generic, dispatch_classes, envir, R_TRUE);
+  SEXP m = method_(generic, dispatch_classes);
+  if (m == R_NilValue) {
+    // Operators can fall back without signalling a missing-method error.
+    if (fallback != R_NilValue) {
+      UNPROTECT(4);
+      return fallback;
+    }
+    S7_method_lookup_error(generic, envir);
+  }
   REPROTECT(m, val_pi); // unnecessary, for rchk only
 
   /// Inlining the method closure in the call like `SETCAR(mcall, m);`

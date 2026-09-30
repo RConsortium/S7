@@ -32,5 +32,5 @@ method_lookup_error_message <- function(name, types) {
 #' @order 2
 #' @export
 S7_dispatch <- function() {
-  .External2(method_call_, sys.function(-1L), sys.frame(-1L))
+  .External2(method_call_, sys.function(-1L), sys.frame(-1L), NULL)
 }

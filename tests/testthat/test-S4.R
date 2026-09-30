@@ -30,6 +30,26 @@ test_that("S4_register registers an S7 class so it can be used with S4 methods",
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
 })
 
+test_that("S4_register accepts shared class references in S7 objects", {
+  local_S4_classes()
+  S4regShared := new_class(
+    properties = list(x = class_double),
+    package = NULL
+  )
+  S4regSharedChild := new_class(parent = S4regShared, package = NULL)
+  parent <- S4regShared(x = 1)
+  child <- S4regSharedChild(x = 2)
+  S4_register(S4regSharedChild)
+
+  expect_identical(methods::validObject(parent), TRUE)
+  expect_identical(methods::validObject(child), TRUE)
+  expect_identical(methods::validObject(S4regShared(x = 3)), TRUE)
+  expect_identical(
+    methods::validObject(convert(child, to = S4regShared)),
+    TRUE
+  )
+})
+
 test_that("S4_contains requires prior S4 registration", {
   local_S4_classes()
   S4regContainsUnregistered := new_class(package = NULL)

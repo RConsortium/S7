@@ -54,7 +54,8 @@
 #'     if (!is.numeric(self)) {
 #'       "Underlying data must be numeric"
 #'     }
-#'   }
+#'   },
+#'   default = quote(.Date(integer()))
 #' )
 #' ```
 #'
@@ -78,6 +79,11 @@
 #'   A validator is a single argument function that takes the object to
 #'   validate and returns `NULL` if the object is valid. If the object is
 #'   invalid, it returns a character vector of problems.
+#' @param default An optional quoted call or symbol to use as the default when
+#'   this class is used for a property. It is evaluated each time the property
+#'   is omitted during object construction. If `NULL`, the default is
+#'   obtained from `constructor`. A default supplied to [new_property()] takes
+#'   precedence.
 #' @returns An S7 definition of an S3 class, i.e. a list with class
 #'   `S7_S3_class`.
 #' @examples
@@ -88,9 +94,17 @@
 #' method(my_generic, Date) <- function(x) "This is a date"
 #'
 #' my_generic(Sys.Date())
-new_S3_class <- function(class, constructor = NULL, validator = NULL) {
+new_S3_class <- function(
+  class,
+  constructor = NULL,
+  validator = NULL,
+  default = NULL
+) {
   if (!is.character(class)) {
     stop2("`class` must be a character vector.")
+  }
+  if (!is.null(default) && !is.call(default) && !is.symbol(default)) {
+    stop2("`default` must be NULL or a quoted call or symbol.")
   }
   if (!is.null(constructor)) {
     abstract <- FALSE
@@ -110,7 +124,8 @@ new_S3_class <- function(class, constructor = NULL, validator = NULL) {
     class = class,
     constructor = constructor,
     validator = validator,
-    abstract = abstract
+    abstract = abstract,
+    default = default
   )
   class(out) <- "S7_S3_class"
   out
@@ -148,6 +163,20 @@ is_S3_class <- function(x) {
   inherits(x, "S7_S3_class")
 }
 
+# Detect the stub constructor emitted by S7 <= 0.2.2, before S3 class
+# definitions recorded whether they were abstract (#686, #747).
+is_S3_stub_constructor <- function(constructor) {
+  if (!is.function(constructor)) {
+    return(FALSE)
+  }
+  call <- find_call(body(constructor), quote(sprintf))
+  if (is.null(call)) {
+    return(FALSE)
+  }
+  fmt <- call[[2]]
+  is.character(fmt) && grepl("doesn't have a constructor", fmt, fixed = TRUE)
+}
+
 # -------------------------------------------------------------------------
 # Pull out validation functions so hit by code coverage
 
@@ -160,7 +189,7 @@ validate_factor <- function(self) {
       "attr(, 'levels') must be a <character>"
     },
     {
-      rng <- range(0L, unclass(self))
+      rng <- range(0L, unclass(self), na.rm = TRUE)
       NULL
     },
     if (rng[1] < 0L) {
@@ -210,8 +239,11 @@ validate_data.frame <- function(self) {
   }
 
   if (length(self) >= 1) {
+    # `lengths()` gives the wrong answer for data frame and matrix columns
+    col_lengths <- vapply(self, NROW, integer(1L), USE.NAMES = FALSE)
+
     # Avoid materialising compact row names
-    ns <- unique(c(lengths(self), .row_names_info(self, 2L)))
+    ns <- unique(c(col_lengths, .row_names_info(self, 2L)))
     if (length(ns) > 1) {
       return("All columns and row names must have the same length")
     }
@@ -314,7 +346,8 @@ class_factor <- new_S3_class(
     levels <- levels %||% attr(.data, "levels", TRUE) %||% character()
     structure(.data, levels = levels, class = "factor")
   }),
-  validator = validate_factor
+  validator = validate_factor,
+  default = quote(factor())
 )
 
 #' @export
@@ -326,7 +359,8 @@ class_Date <- new_S3_class(
   constructor = new_S7_constructor(function(.data = double()) {
     .Date(.data)
   }),
-  validator = validate_date
+  validator = validate_date,
+  default = quote(.Date(numeric()))
 )
 
 #' @export
@@ -338,7 +372,8 @@ class_POSIXct <- new_S3_class(
   constructor = new_S7_constructor(function(.data = double(), tz = "") {
     .POSIXct(.data, tz = tz)
   }),
-  validator = validate_POSIXct
+  validator = validate_POSIXct,
+  default = quote(.POSIXct(numeric(), tz = ""))
 )
 
 #' @export
@@ -350,7 +385,8 @@ class_POSIXlt <- new_S3_class(
   constructor = new_S7_constructor(function(.data = NULL, tz = "") {
     as.POSIXlt(.data, tz = tz)
   }),
-  validator = validate_POSIXlt
+  validator = validate_POSIXlt,
+  default = quote(as.POSIXlt(NULL, tz = ""))
 )
 
 #' @export
@@ -374,7 +410,8 @@ class_data.frame <- new_S3_class(
       out
     }
   }),
-  validator = validate_data.frame
+  validator = validate_data.frame,
+  default = quote(data.frame())
 )
 
 #  @export
@@ -429,5 +466,6 @@ class_formula <- new_S3_class(
       stats::formula(.data, env = env)
     }
   ),
-  validator = validate_formula
+  validator = validate_formula,
+  default = quote(stats::formula(NULL))
 )

@@ -177,7 +177,7 @@ new_class <- function(
   }
 
   class_ref <- new_class_ref(name = name, package = package)
-  constructor_env <- new.env(parent = environment(constructor))
+  constructor_env <- new.env(hash = FALSE, parent = environment(constructor))
   constructor_env$.S7_class_ref <- class_ref
   environment(constructor) <- constructor_env
 
@@ -201,7 +201,7 @@ new_class <- function(
   class(object) <- c("S7_class", "S7_object")
   if (typeof(class_ref) == "externalptr") {
     if (is.null(package)) {
-      holder <- new.env(parent = emptyenv())
+      holder <- new.env(hash = FALSE, parent = emptyenv())
       holder$class <- object
       .Call(class_ref_set_serialized_, class_ref, object, holder)
     } else {
@@ -353,7 +353,7 @@ class_is_abstract <- function(class) {
   if (is_class(class)) {
     attr(class, "abstract", TRUE) # called on construction
   } else if (is_S3_class(class)) {
-    class$abstract %||% is_default_constructor(class$constructor)
+    class$abstract %||% is_S3_stub_constructor(class$constructor)
   } else {
     FALSE
   }
@@ -402,7 +402,8 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class_ref <- get_class_ref(parent.frame())
+  # Skip constructor arguments and local variables when finding the reference.
+  class_ref <- get_class_ref(parent.env(parent.frame()))
   if (inherits(class_ref, "S7_class_ref")) {
     if (typeof(class_ref) == "externalptr") {
       class <- .Call(class_ref_get_, class_ref)
@@ -570,7 +571,7 @@ S7_class_storage <- function(class) {
 new_class_ref <- function(name, package) {
   # Needed while S7's own classes are created before the DLL is loaded.
   if (!exists("class_ref_new_", inherits = TRUE)) {
-    ref <- new.env(parent = emptyenv())
+    ref <- new.env(hash = FALSE, parent = emptyenv())
     class(ref) <- "S7_class_ref"
     return(ref)
   }
@@ -587,7 +588,7 @@ get_class_ref <- function(env, default = NULL) {
   get0(
     ".S7_class_ref",
     envir = env,
-    inherits = TRUE,
+    inherits = FALSE,
     ifnotfound = default
   )
 }

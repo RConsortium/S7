@@ -16,6 +16,19 @@
 #' in your `.onLoad`. This ensures that all methods are dynamically registered
 #' when needed.
 #'
+#' @section Operators:
+#' Binary operators such as `+` and `-` dispatch on `e1` and `e2`. To define
+#' a unary method, use `list(Foo, class_missing)` as the signature and a
+#' function with arguments `e1` and `e2`; `e2` will be missing when called.
+#' This lets unary and binary methods coexist on the same class.
+#'
+#' The `!` operator is always unary. Use `Foo` (or `list(Foo)`) as its
+#' signature and a function with argument `e1`.
+#'
+#' If no unary method is registered, the operator falls back to R's base
+#' behavior for the underlying object. Errors raised inside a registered
+#' method are propagated.
+#'
 #' @param generic A generic function, i.e. an [S7 generic][new_generic],
 #'   an [external generic][new_external_generic], an [S3 generic][UseMethod],
 #'   or an [S4 generic][methods::setGeneric].
@@ -94,15 +107,17 @@ register_method <- function(
       signature <- resolve_signature(signature)
     } else {
       generic_ext <- as_external_generic(generic, env)
-      if (is_S7_generic(generic)) {
+      compatible <- !is_S7_generic(generic) ||
         check_method(
           method,
           generic,
           name = method_name(generic, signature),
+          signature = signature,
           call = call
         )
+      if (compatible) {
+        external_methods_add(package, generic_ext, signature, method)
       }
-      external_methods_add(package, generic_ext, signature, method)
       if (!is_local_generic(generic, package)) {
         return(generic_sentinel(generic_ext))
       }
@@ -202,12 +217,16 @@ register_S7_method <- function(
   package = NULL,
   call = sys.call(-1L)
 ) {
-  check_method(
+  compatible <- check_method(
     method,
     generic,
     name = method_name(generic, signature),
+    signature = signature,
     call = call
   )
+  if (!compatible) {
+    return(invisible())
+  }
   method <- S7_method_for_signature(
     method,
     generic,
@@ -275,7 +294,8 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
   if (n == 1) {
     # Accept a bare list of length 1 too, for symmetry with multi-dispatch
     # generics where a list is required (#555).
-    if (is_plain_list(signature) && length(signature) == 1) {
+    if (is_plain_list(signature)) {
+      check_signature_list(signature, 1, call = call)
       signature <- signature[[1]]
     }
     new_signature(list(as_class(signature, arg = "signature")))
@@ -328,10 +348,29 @@ check_method <- function(
   method,
   generic,
   name = paste0(generic@name, "(???)"),
+  signature = NULL,
   call = sys.call(-1L)
 ) {
   if (!is.function(method) || is.primitive(method)) {
     stop2(sprintf("%s must be a function.", name), call = call)
+  }
+
+  # Mismatches between a method and its generic only actionable by developer.
+  # We still register in the hope that they do still work (e.g. if it's just a
+  # change in default values).
+  if (!in_dev(method, generic, signature)) {
+    return(invisible(TRUE))
+  }
+
+  # Warn instead of erroring during while load_all() is active so you can see
+  # all at once. But don't register to robustly surface failures.
+  stop_or_warn <- function(message) {
+    if (in_load_all()) {
+      warning2(message, call = NULL)
+      invisible(FALSE)
+    } else {
+      stop2(message, call = call)
+    }
   }
 
   generic_formals <- formals(args(generic))
@@ -354,7 +393,7 @@ check_method <- function(
         show_args(method_formals, name = generic@name)
       )
     )
-    stop2(c(msg, bullets), call = call)
+    return(stop_or_warn(c(msg, bullets)))
   }
 
   n_dispatch <- length(generic@dispatch_args)
@@ -368,7 +407,7 @@ check_method <- function(
       name,
       arg_names(method_args)
     )
-    stop2(msg, call = call)
+    return(stop_or_warn(msg))
   }
 
   empty_dispatch <- vlapply(
@@ -382,7 +421,7 @@ check_method <- function(
       name,
       arg_names(generic@dispatch_args)
     )
-    stop2(msg, call = call)
+    return(stop_or_warn(msg))
   }
 
   extra_args <- setdiff(names(generic_formals), c(generic@dispatch_args, "..."))
