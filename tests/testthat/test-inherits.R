@@ -1,12 +1,32 @@
 test_that("it works", {
-  foo1 <- new_class("foo1")
-  foo2 <- new_class("foo2", parent = foo1)
+  foo1 := new_class()
+  foo2 := new_class(parent = foo1)
 
   expect_true(S7_inherits(foo1(), NULL))
   expect_true(S7_inherits(foo1(), foo1))
   expect_true(S7_inherits(foo2(), foo1))
   expect_false(S7_inherits(foo1(), foo2))
   expect_false(S7_inherits(1, NULL))
+})
+
+test_that("has_S7_class() recognises objects that don't store a class", {
+  foo := new_class()
+
+  expect_true(has_S7_class(foo()))
+  expect_true(has_S7_class(S7_object()))
+  expect_true(has_S7_class(foo))
+  expect_true(has_S7_class(S7_object))
+
+  expect_false(has_S7_class(1))
+  expect_false(has_S7_class(factor("a")))
+  expect_false(has_S7_class(NULL))
+})
+
+test_that("S7_inherits() matches class-vector-only objects to S7 classes", {
+  foo := new_class(parent = class_list, package = NULL)
+  x <- structure(list(), class = class(foo()))
+
+  expect_identical(S7_inherits(x, foo), TRUE)
 })
 
 test_that("accepts any class specification (#556)", {
@@ -32,8 +52,8 @@ test_that("checks that input is a class", {
 
 test_that("throws informative error", {
   expect_snapshot(error = TRUE, {
-    foo1 <- new_class("foo1", package = NULL)
-    foo2 <- new_class("foo2", package = NULL)
+    foo1 := new_class(package = NULL)
+    foo2 := new_class(package = NULL)
     check_is_S7(foo1(), foo2)
   })
   expect_snapshot(check_is_S7("a"), error = TRUE)

@@ -44,8 +44,8 @@ Starting with \R 4.3.0, \code{base::inherits()} can accept an S7 class as
 the second argument, supporting usage like \code{inherits(x, Foo)}.
 }
 \examples{
-Foo1 <- new_class("Foo1")
-Foo2 <- new_class("Foo2")
+Foo1 := new_class()
+Foo2 := new_class()
 
 S7_inherits(Foo1(), Foo1)
 check_is_S7(Foo1())

@@ -1,12 +1,12 @@
-# method registration / adds messages when overwriting
+# method registration adds messages when overwriting
 
     Code
       method(foo, class_character) <- (function(x) "c")
-      method(foo, class_character) <- (function(x) "c")
+      method(foo, class_character) <- (function(x) "C")
     Message
       Overwriting method foo(<character>)
 
-# method registration / checks argument types
+# method registration checks argument types
 
     Code
       x <- 10
@@ -24,8 +24,13 @@
        * An S3 class object (from `new_S3_class()`)
        * An S4 class object
        * A base class
+    Code
+      method(foo, ext) <- (function(y) "x")
+    Condition
+      Error in `method<-`:
+      ! foo() dispatches on `x`, but foo(<notloaded.pkg::ext>) has arguments `y`.
 
-# method unregistration / removes S7 method via NULL assignment
+# method unregistration removes an S7 method via NULL assignment
 
     Code
       foo("x")
@@ -33,7 +38,7 @@
       Error:
       ! Can't find method for `foo(<character>)`.
 
-# method unregistration / removes method with multi-dispatch signature
+# method unregistration removes a method with a multi-dispatch signature
 
     Code
       foo(A(), B())
@@ -43,7 +48,7 @@
       - x: <S7::A>
       - y: <S7::B>
 
-# as_signature() / accepts a length-1 list for single dispatch (#555)
+# as_signature() accepts a length-1 list for single dispatch (#555)
 
     Code
       as_signature(list(1), foo)
@@ -56,7 +61,7 @@
        * An S4 class object
        * A base class
 
-# as_signature() / requires a list of the correct length for multiple dispatch
+# as_signature() requires a list of the correct length for multiple dispatch
 
     Code
       as_signature(class_character, foo)
@@ -69,10 +74,17 @@
       Error:
       ! `signature` must be length 2.
 
+# S7_signature has format and print methods
+
+    Code
+      print(sig)
+    Output
+      <integer>, <character>
+
 # check_method complains if the functions are not compatible
 
     Code
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       check_method(1, foo)
     Condition
       Error:
@@ -93,7 +105,7 @@
 ---
 
     Code
-      foo <- new_generic("foo", "x", function(x) S7_dispatch())
+      foo := new_generic("x", function(x) S7_dispatch())
       check_method(function(x, y) { }, foo)
     Condition
       Error:
@@ -104,7 +116,7 @@
 # check_method rejects primitive functions
 
     Code
-      foo <- new_generic("foo", "x")
+      foo := new_generic("x")
       check_method(log, foo)
     Condition
       Error:
@@ -113,7 +125,7 @@
 # check_method warn if default arguments don't match
 
     Code
-      foo <- new_generic("foo", "x", function(x, ..., z = 2, y = 1) S7_dispatch())
+      foo := new_generic("x", function(x, ..., z = 2, y = 1) S7_dispatch())
       check_method(function(x, ..., y = 1) { }, foo)
     Condition
       Warning:
@@ -125,6 +137,28 @@
       In foo(???), default value of `z` is not the same as the generic
       - Generic: 2
       - Method:  1
+
+# check_method errors become warnings during load_all() (#726)
+
+    Code
+      foo := new_generic("x", function(x) S7_dispatch())
+      check_method(function(x, y) { }, foo)
+    Condition
+      Warning:
+      foo() generic lacks `...` so method formals must match generic formals exactly.
+      - generic formals: foo(x)
+      - method formals:  foo(x, y)
+    Code
+      bar := new_generic("x", function(x, ...) S7_dispatch())
+      check_method(function(y, ...) { }, bar)
+    Condition
+      Warning:
+      bar() dispatches on `x`, but bar(???) has arguments `y`, `...`.
+    Code
+      check_method(function(x = 1, ...) { }, bar)
+    Condition
+      Warning:
+      In bar(???), dispatch arguments (`x`) must not have default values.
 
 # S7_method printing
 

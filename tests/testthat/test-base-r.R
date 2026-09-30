@@ -1,9 +1,9 @@
 test_that("base::inherits() accepts S7 objects", {
   skip_if(getRversion() < "4.3")
 
-  ClassA <- new_class("ClassA")
-  ClassBA <- new_class("ClassBA", parent = ClassA)
-  ClassX <- new_class("ClassX")
+  ClassA := new_class()
+  ClassBA := new_class(parent = ClassA)
+  ClassX := new_class()
 
   expect_no_error(stopifnot(exprs = {
     isTRUE(inherits(ClassA(), ClassA))
@@ -19,8 +19,7 @@ test_that("base::inherits() accepts S7 objects", {
 test_that("base::`@` accesses S7 properties", {
   skip_if(getRversion() < "4.3")
 
-  range <- new_class(
-    "range",
+  range := new_class(
     properties = list(start = class_double, end = class_double),
     validator = function(self) {
       if (length(self@start) != 1) {

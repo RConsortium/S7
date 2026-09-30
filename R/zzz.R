@@ -22,6 +22,7 @@ S7_object <- new_class(
   }
 )
 methods::setOldClass("S7_object")
+methods::setOldClass(c("S7_class", "S7_object"))
 
 .S7_type <- NULL
 # Defined onLoad because it depends on R version
@@ -169,10 +170,17 @@ make_traceable("S7_method", c("generic", "signature"))
 # hooks -------------------------------------------------------------------
 
 .onAttach <- function(libname, pkgname) {
-  env <- as.environment(paste0("package:", pkgname))
+  activate_bind_compatibility()
+
   if (getRversion() < "4.3.0") {
-    env[[".conflicts.OK"]] <- TRUE
+    # S7_at already supplies @ without conflicting with base::@.
+    env <- as.environment(paste0("package:", pkgname))
+    rm(list = "@", envir = env)
   }
+}
+
+.onDetach <- function(...) {
+  restore_attached_bindings()
 }
 
 .onLoad <- function(...) {

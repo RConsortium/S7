@@ -14,8 +14,8 @@
 # throws informative error
 
     Code
-      foo1 <- new_class("foo1", package = NULL)
-      foo2 <- new_class("foo2", package = NULL)
+      foo1 := new_class(package = NULL)
+      foo2 := new_class(package = NULL)
       check_is_S7(foo1(), foo2)
     Condition
       Error:

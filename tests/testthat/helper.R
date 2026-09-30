@@ -55,10 +55,61 @@ local_methods <- function(..., frame = parent.frame()) {
   invisible()
 }
 
-local_S4_class <- function(name, ..., env = parent.frame()) {
-  out <- methods::setClass(name, contains = "character")
-  defer(S4_remove_classes(name, env), env)
-  out
+# Simulate a package with namespace
+local_package <- function(
+  name,
+  code = {},
+  version = "0.0.0",
+  frame = parent.frame()
+) {
+  # The intermediate environment plays the role of the imports environment
+  # of a real namespace, e.g. so tests can simulate re-exports.
+  imports <- new.env(parent = asNamespace("S7"))
+  ns <- new.env(parent = imports)
+
+  info <- new.env(parent = emptyenv())
+  info$spec <- c(name = name, version = version)
+  info$exports <- new.env(parent = emptyenv())
+  ns[[".__NAMESPACE__."]] <- info
+  ns[[".packageName"]] <- name
+  ns[[".__S3MethodsTable__."]] <- new.env(parent = emptyenv())
+
+  # register namespace so asNamespace(pkg) works
+  internal <- get(".Internal", envir = baseenv())
+  internal(registerNamespace(name, ns))
+  defer(internal(unregisterNamespace(name)), frame = frame)
+  defer(S7_on_unload_(ns), frame = frame)
+
+  eval(substitute(code), ns)
+
+  # export everything defined by the code block so `pkg::name` works
+  for (nm in ls(ns)) {
+    assign(nm, nm, envir = info$exports)
+  }
+
+  ns
+}
+
+# Filter out any IDE hooks added interactively (e.g. Positron registers an
+# "ark_onload_hook" for every package), leaving only the hooks S7 manages.
+package_hooks <- function(package, event = "onLoad") {
+  hooks <- getHook(packageEvent(package, event))
+  is_ide_hook <- function(hook) any(startsWith(class(hook), "ark_"))
+  Filter(function(hook) !is_ide_hook(hook), hooks)
+}
+
+local_S4_classes <- function(env = parent.frame(), where = topenv(env)) {
+  old <- methods::getClasses(where = where, inherits = FALSE)
+  defer(
+    {
+      new <- setdiff(methods::getClasses(where = where, inherits = FALSE), old)
+      for (class in new) {
+        methods::removeClass(class, where = where)
+      }
+    },
+    env
+  )
+  invisible()
 }
 
 # Create a temporary library, prepend it to .libPaths(), and restore the
@@ -75,16 +126,47 @@ local_libpath <- function(frame = parent.frame()) {
   lib
 }
 
+# Install the development S7 into a session-scoped library (built once per
+# test process) and prepend that library to .libPaths() until `frame` exits.
+local_dev_S7_lib <- local({
+  lib <- NULL
+  function(frame = parent.frame()) {
+    if (is.null(lib)) {
+      dir.create(new_lib <- tempfile("S7-dev-lib-"))
+      install.packages(
+        pkgs = normalizePath(test_path("..", "..")),
+        lib = new_lib,
+        repos = NULL,
+        type = "source",
+        quiet = TRUE,
+        INSTALL_opts = c(
+          "--data-compress=none",
+          "--no-byte-compile",
+          "--no-data",
+          "--no-demo",
+          "--no-docs",
+          "--no-help",
+          "--no-html",
+          "--use-vanilla"
+        )
+      )
+      lib <<- new_lib
+    }
+
+    old <- .libPaths()
+    .libPaths(c(lib, old))
+    defer(.libPaths(old), frame = frame)
+    lib
+  }
+})
+
 # Install the package at `path` into `lib`, attach it, and detach (and unload)
 # it when `frame` exits. The package name is taken from `basename(path)`.
 local_install_and_attach <- function(path, lib, frame = parent.frame()) {
   quick_install(path, lib)
   package <- basename(path)
   library(package, character.only = TRUE)
-  defer(
-    try(detach(paste0("package:", package), unload = TRUE), silent = TRUE),
-    frame = frame
-  )
+  defer(unloadNamespace(package), frame = frame)
   invisible(package)
 }
 
@@ -123,10 +205,63 @@ unregister_s3_methods <- function(envir, generic) {
   invisible()
 }
 
-# Lightweight equivalent of withr::defer()
-defer <- function(expr, frame = parent.frame(), after = FALSE) {
-  thunk <- as.call(list(function() expr))
-  do.call(on.exit, list(thunk, TRUE, after), envir = frame)
+# Lightweight equivalent of withr::local_envvar(); use NA to unset a variable
+local_envvar <- function(..., frame = parent.frame()) {
+  new <- c(...)
+  old <- Sys.getenv(names(new), unset = NA, names = TRUE)
+  set_envvar(new)
+  defer(set_envvar(old), frame = frame)
+  invisible()
+}
+
+# Simulate the contexts that in_dev() distinguishes: an active load_all(),
+# R CMD check checking `package`, or an end user loading installed packages
+local_load_all <- function(frame = parent.frame()) {
+  local_envvar(
+    DEVTOOLS_LOAD = "S7",
+    "_R_CHECK_PACKAGE_NAME_" = NA,
+    frame = frame
+  )
+}
+
+local_R_CMD_check <- function(package = "S7", frame = parent.frame()) {
+  local_envvar(
+    DEVTOOLS_LOAD = NA,
+    "_R_CHECK_PACKAGE_NAME_" = package,
+    frame = frame
+  )
+  testthat::local_mocked_bindings(
+    is_testing = function() FALSE,
+    .env = frame
+  )
+}
+
+local_end_user <- function(frame = parent.frame()) {
+  local_envvar(
+    DEVTOOLS_LOAD = NA,
+    "_R_CHECK_PACKAGE_NAME_" = NA,
+    frame = frame
+  )
+}
+
+set_envvar <- function(vars) {
+  unset <- is.na(vars)
+  if (any(unset)) {
+    Sys.unsetenv(names(vars)[unset])
+  }
+  if (any(!unset)) {
+    do.call(Sys.setenv, as.list(vars[!unset]))
+  }
+}
+
+# Create a function whose environment reports the given package name, or no
+# package at all when `package` is NULL
+function_in_package <- function(package) {
+  env <- new.env(parent = globalenv())
+  env$.packageName <- package
+  f <- function(x, ...) NULL
+  environment(f) <- env
+  f
 }
 
 # always returns a named list, even in the empty case.
@@ -136,23 +271,13 @@ named_list <- function(...) {
   x
 }
 
-`:=` <- function(sym, val) {
-  cl <- sys.call()
-  cl[[1L]] <- quote(`<-`)
-  stopifnot(is.symbol(cl[[2L]]) && is.call(cl[[3L]]))
-  cl[[3L]]$name <- as.character(cl[[2L]])
-  eval.parent(cl)
-}
-
-`add<-` <- `+`
-
 dbg <- function(..., .display = utils::str, .file = NULL) {
   out <- NULL
   exprs <- as.list(substitute(list(...)))[-1L]
 
   if (!is.null(.file)) {
     sink(.file, append = TRUE)
-    on.exit(sink())
+    defer(sink())
   }
 
   for (i in seq_len(...length())) {

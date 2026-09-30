@@ -11,7 +11,7 @@ Use \code{class_any} to register a default method that is called when no other
 methods are matched.
 }
 \examples{
-foo <- new_generic("foo", "x")
+foo := new_generic("x")
 method(foo, class_numeric) <- function(x) "number"
 method(foo, class_any) <- function(x) "fallback"
 

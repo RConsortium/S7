@@ -55,9 +55,24 @@ Note that if you are writing a package, you must call \code{\link[=S7_on_load]{S
 in your \code{.onLoad}. This ensures that all methods are dynamically registered
 when needed.
 }
+\section{Operators}{
+
+Binary operators such as \code{+} and \code{-} dispatch on \code{e1} and \code{e2}. To define
+a unary method, use \code{list(Foo, class_missing)} as the signature and a
+function with arguments \code{e1} and \code{e2}; \code{e2} will be missing when called.
+This lets unary and binary methods coexist on the same class.
+
+The \code{!} operator is always unary. Use \code{Foo} (or \code{list(Foo)}) as its
+signature and a function with argument \code{e1}.
+
+If no unary method is registered, the operator falls back to R's base
+behavior for the underlying object. Errors raised inside a registered
+method are propagated.
+}
+
 \examples{
 # Create a generic
-bizarro <- new_generic("bizarro", "x")
+bizarro := new_generic("x")
 # Register some methods
 method(bizarro, class_numeric) <- function(x) rev(x)
 method(bizarro, new_S3_class("data.frame")) <- function(x) {

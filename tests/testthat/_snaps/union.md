@@ -1,8 +1,8 @@
 # has useful print method
 
     Code
-      foo1 <- new_class("foo1", package = NULL)
-      foo2 <- new_class("foo2", package = NULL)
+      foo1 := new_class(package = NULL)
+      foo2 := new_class(package = NULL)
       new_union(foo1, foo2)
     Output
       <S7_union>: <foo1> or <foo2>

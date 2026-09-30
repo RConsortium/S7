@@ -19,8 +19,8 @@
 #' the second argument, supporting usage like `inherits(x, Foo)`.
 #' @export
 #' @examples
-#' Foo1 <- new_class("Foo1")
-#' Foo2 <- new_class("Foo2")
+#' Foo1 := new_class()
+#' Foo2 := new_class()
 #'
 #' S7_inherits(Foo1(), Foo1)
 #' check_is_S7(Foo1())
@@ -40,10 +40,18 @@
 S7_inherits <- function(x, class = NULL) {
   class <- as_class(class)
   if (is.null(class)) {
-    inherits(x, "S7_object")
+    has_S7_class(x)
   } else {
     class_inherits(x, class)
   }
+}
+
+has_S7_class <- function(x) {
+  # Reading the stored class is the cheapest test and covers every instance of
+  # a user-defined class, so it goes first.
+  !is.null(.Call(S7_class_, x)) ||
+    identical(class(x), "S7_object") ||
+    inherits(x, "S7_class")
 }
 
 #' @export

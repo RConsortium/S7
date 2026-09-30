@@ -16,6 +16,19 @@
 #' in your `.onLoad`. This ensures that all methods are dynamically registered
 #' when needed.
 #'
+#' @section Operators:
+#' Binary operators such as `+` and `-` dispatch on `e1` and `e2`. To define
+#' a unary method, use `list(Foo, class_missing)` as the signature and a
+#' function with arguments `e1` and `e2`; `e2` will be missing when called.
+#' This lets unary and binary methods coexist on the same class.
+#'
+#' The `!` operator is always unary. Use `Foo` (or `list(Foo)`) as its
+#' signature and a function with argument `e1`.
+#'
+#' If no unary method is registered, the operator falls back to R's base
+#' behavior for the underlying object. Errors raised inside a registered
+#' method are propagated.
+#'
 #' @param generic A generic function, i.e. an [S7 generic][new_generic],
 #'   an [external generic][new_external_generic], an [S3 generic][UseMethod],
 #'   or an [S4 generic][methods::setGeneric].
@@ -45,7 +58,7 @@
 #' @export
 #' @examples
 #' # Create a generic
-#' bizarro <- new_generic("bizarro", "x")
+#' bizarro := new_generic("x")
 #' # Register some methods
 #' method(bizarro, class_numeric) <- function(x) rev(x)
 #' method(bizarro, new_S3_class("data.frame")) <- function(x) {
@@ -77,19 +90,57 @@ register_method <- function(
   original <- generic
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
+  method_package <- packageName(env)
 
-  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+  if (external_generic_available(generic)) {
     generic <- as_generic(
       getFromNamespace(generic$name, generic$package),
       call = call
     )
   }
 
+  # Delay package methods with external classes until onLoad. Outside a package
+  # there is no deferred methods table, so resolve them before registering.
+  deps <- signature_deps(signature)
+  if (length(deps)) {
+    if (is.null(package)) {
+      signature <- resolve_signature(signature)
+    } else {
+      generic_ext <- as_external_generic(generic, env)
+      compatible <- !is_S7_generic(generic) ||
+        check_method(
+          method,
+          generic,
+          name = method_name(generic, signature),
+          signature = signature,
+          call = call
+        )
+      if (compatible) {
+        external_methods_add(package, generic_ext, signature, method)
+      }
+      if (!is_local_generic(generic, package)) {
+        return(generic_sentinel(generic_ext))
+      }
+      return(invisible(original))
+    }
+  }
+
+  external <- NULL
+  if (!is.null(package) && !is_local_generic(generic, package)) {
+    external <- as_external_generic(generic, env)
+  }
+
   # Register in current session
   signatures <- flatten_signature(signature)
   if (is_S7_generic(generic)) {
     for (sig in signatures) {
-      register_S7_method(generic, sig, method, call = call)
+      register_S7_method(
+        generic,
+        sig,
+        method,
+        package = method_package,
+        call = call
+      )
     }
     register_ops_bridge(generic, signatures, env)
   } else if (is_S3_generic(generic)) {
@@ -105,7 +156,6 @@ register_method <- function(
   # if we're inside a package, we also need to be able register methods
   # when the package is loaded
   if (!is.null(package) && !is_local_generic(generic, package)) {
-    external <- as_external_generic(generic, env)
     external_methods_add(package, external, signature, method)
     return(generic_sentinel(external))
   }
@@ -124,7 +174,12 @@ unregister_method <- function(
   generic <- as_generic(generic, call = call)
   signature <- as_signature(signature, generic, call = call)
 
-  if (is_external_generic(generic) && isNamespaceLoaded(generic$package)) {
+  external <- NULL
+  if (is_external_generic(generic)) {
+    external <- as_external_generic(generic, env)
+  }
+
+  if (external_generic_available(generic)) {
     generic <- as_generic(
       getFromNamespace(generic$name, generic$package),
       call = call
@@ -133,7 +188,8 @@ unregister_method <- function(
 
   # Unregister in current session
   if (is_S7_generic(generic)) {
-    unregister_S7_method(generic, signature)
+    unregister_signature <- resolve_signature_available(signature, package)
+    unregister_S7_method(generic, unregister_signature)
   } else if (is_S3_generic(generic)) {
     stop2("Can't unregister methods for S3 generics", call = call)
   } else if (is_S4_generic(generic)) {
@@ -142,10 +198,13 @@ unregister_method <- function(
 
   # If we're inside a package, also remove from the deferred external
   # methods table so the method isn't re-registered on package load.
-  if (!is.null(package) && !is_local_generic(generic, package)) {
-    external <- as_external_generic(generic)
+  if (!is.null(package)) {
+    local <- is_local_generic(generic, package)
+    external <- external %||% as_external_generic(generic, env)
     external_methods_remove(package, external, signature)
-    return(generic_sentinel(external))
+    if (!local) {
+      return(generic_sentinel(external))
+    }
   }
 
   invisible(original)
@@ -155,18 +214,44 @@ register_S7_method <- function(
   generic,
   signature,
   method,
+  package = NULL,
   call = sys.call(-1L)
 ) {
-  check_method(
+  compatible <- check_method(
     method,
     generic,
     name = method_name(generic, signature),
+    signature = signature,
     call = call
   )
-  method <- S7_method(method, generic = generic, signature = signature)
+  if (!compatible) {
+    return(invisible())
+  }
+  method <- S7_method_for_signature(
+    method,
+    generic,
+    signature,
+    package = package
+  )
   generic_add_method(generic, signature, method)
 
   invisible()
+}
+
+S7_method_for_signature <- function(
+  method,
+  generic,
+  signature,
+  package = NULL
+) {
+  method <- S7_method(method, generic = generic, signature = signature)
+  if (is.null(attr(method, "name", TRUE))) {
+    attr(method, "name") <- as.name(method_signature(generic, signature))
+  }
+  if (!is.null(package)) {
+    attr(method, "S7_package") <- package
+  }
+  method
 }
 
 unregister_S7_method <- function(generic, signature) {
@@ -198,10 +283,19 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
   }
 
   n <- generic_n_dispatch(generic)
+
+  if (is_plain_list(signature)) {
+    S4_signature <- S3_generic_S4_signature(generic)
+    if (length(signature) == length(S4_signature)) {
+      n <- length(S4_signature)
+    }
+  }
+
   if (n == 1) {
     # Accept a bare list of length 1 too, for symmetry with multi-dispatch
     # generics where a list is required (#555).
-    if (is.list(signature) && !is.object(signature) && length(signature) == 1) {
+    if (is_plain_list(signature)) {
+      check_signature_list(signature, 1, call = call)
       signature <- signature[[1]]
     }
     new_signature(list(as_class(signature, arg = "signature")))
@@ -239,14 +333,44 @@ new_signature <- function(x) {
   x
 }
 
+#' @export
+format.S7_signature <- function(x, ...) {
+  paste0(vcapply(unclass(x), class_desc), collapse = ", ")
+}
+
+#' @export
+print.S7_signature <- function(x, ...) {
+  cat(format(x), "\n", sep = "")
+  invisible(x)
+}
+
 check_method <- function(
   method,
   generic,
   name = paste0(generic@name, "(???)"),
+  signature = NULL,
   call = sys.call(-1L)
 ) {
   if (!is.function(method) || is.primitive(method)) {
     stop2(sprintf("%s must be a function.", name), call = call)
+  }
+
+  # Mismatches between a method and its generic only actionable by developer.
+  # We still register in the hope that they do still work (e.g. if it's just a
+  # change in default values).
+  if (!in_dev(method, generic, signature)) {
+    return(invisible(TRUE))
+  }
+
+  # Warn instead of erroring during while load_all() is active so you can see
+  # all at once. But don't register to robustly surface failures.
+  stop_or_warn <- function(message) {
+    if (in_load_all()) {
+      warning2(message, call = NULL)
+      invisible(FALSE)
+    } else {
+      stop2(message, call = call)
+    }
   }
 
   generic_formals <- formals(args(generic))
@@ -269,7 +393,7 @@ check_method <- function(
         show_args(method_formals, name = generic@name)
       )
     )
-    stop2(c(msg, bullets), call = call)
+    return(stop_or_warn(c(msg, bullets)))
   }
 
   n_dispatch <- length(generic@dispatch_args)
@@ -283,7 +407,7 @@ check_method <- function(
       name,
       arg_names(method_args)
     )
-    stop2(msg, call = call)
+    return(stop_or_warn(msg))
   }
 
   empty_dispatch <- vlapply(
@@ -297,7 +421,7 @@ check_method <- function(
       name,
       arg_names(generic@dispatch_args)
     )
-    stop2(msg, call = call)
+    return(stop_or_warn(msg))
   }
 
   extra_args <- setdiff(names(generic_formals), c(generic@dispatch_args, "..."))
