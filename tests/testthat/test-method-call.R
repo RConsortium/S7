@@ -70,6 +70,49 @@ test_that("S7_generic_call() stops at super() by default", {
   )
 })
 
+test_that("super dispatch does not add its marker to user frames", {
+  foo := new_generic("x")
+  Base := new_class()
+  Child := new_class(parent = Base)
+
+  method(foo, Base) <- function(x) {
+    list(
+      method = environment(),
+      generic = parent.frame(),
+      caller = S7_user_frame(skip = "super")
+    )
+  }
+  method(foo, Child) <- function(x) foo(super(x, Base))
+
+  frames <- foo(Child())
+  expect_identical(frames$caller, environment())
+  expect_equal(
+    vapply(
+      frames,
+      \(env) exists("_dispatched_super", envir = env, inherits = FALSE),
+      logical(1)
+    ),
+    c(method = FALSE, generic = FALSE, caller = FALSE)
+  )
+})
+
+test_that("super dispatch preserves generic locals", {
+  foo := new_generic("x", function(x) {
+    `_dispatched_super` <- "user value"
+    inside <- S7_dispatch()
+    list(inside = inside, after = `_dispatched_super`)
+  })
+  Base := new_class()
+  method(foo, Base) <- function(x) {
+    get("_dispatched_super", envir = parent.frame(), inherits = FALSE)
+  }
+
+  expect_equal(
+    foo(super(Base(), Base)),
+    list(inside = "user value", after = "user value")
+  )
+})
+
 test_that("helpers reject unknown skip values", {
   expect_snapshot(error = TRUE, {
     S7_generic_call(skip = "invalid")
@@ -196,7 +239,10 @@ test_that("intervening generic stops same-generic super walk", {
 })
 
 test_that("same-generic nested calls are not super redispatches", {
-  foo := new_generic("x")
+  foo := new_generic("x", function(x) {
+    `_dispatched_super` <- "user value"
+    S7_dispatch()
+  })
 
   method(foo, class_double) <- function(x) {
     sentinel <- "method frame"

@@ -113,7 +113,7 @@ generic_call_frame <- function(skip, call = sys.call(-1L)) {
   }
 
   # Walk past same-generic super() re-dispatches.
-  while (is_super_dispatch(frame)) {
+  while (is_super_dispatch(frame, parents)) {
     parent <- parent_generic_frame(frame, parents)
     if (
       is.na(parent) || !identical(sys.function(parent), sys.function(frame))
@@ -162,8 +162,18 @@ parent_generic_frame <- function(frame, parents) {
   NA_integer_
 }
 
-# S7_dispatch() marks the generic's frame with `_dispatched_super` when it
-# unwraps a super() object.
-is_super_dispatch <- function(i) {
-  exists("_dispatched_super", envir = sys.frame(i), inherits = FALSE)
+# S7_dispatch() marks its own frame when it unwraps a super() object.
+# Identify that activation by its function and the generic that called it.
+is_super_dispatch <- function(frame, parents) {
+  for (i in which(parents == frame)) {
+    if (identical(sys.function(i), S7_dispatch)) {
+      return(exists(
+        "_dispatched_super",
+        envir = sys.frame(i),
+        inherits = FALSE
+      ))
+    }
+  }
+
+  FALSE
 }

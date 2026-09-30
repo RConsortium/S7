@@ -215,9 +215,9 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
         if (Rf_inherits(val, "S7_super")) {
 
-          // Mark the generic's frame so S7_generic_call()/S7_user_frame() can
-          // tell this is a super() re-dispatch and walk out to the user call.
-          Rf_defineVar(sym_u_dispatched_super, R_TRUE, envir);
+          // Keep dispatch metadata in S7_dispatch()'s own frame. The method
+          // call is evaluated in the generic's frame (envir), not this frame.
+          Rf_defineVar(sym_u_dispatched_super, R_TRUE, env_);
 
           // Put the super() stored value into the method call.
           // Note: This means we don't pass along the arg PROMSXP, meaning that
