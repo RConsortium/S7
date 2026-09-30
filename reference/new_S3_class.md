@@ -8,7 +8,7 @@ it's an important base class already defined in
 ## Usage
 
 ``` r
-new_S3_class(class, constructor = NULL, validator = NULL)
+new_S3_class(class, constructor = NULL, validator = NULL, default = NULL)
 ```
 
 ## Arguments
@@ -43,6 +43,15 @@ new_S3_class(class, constructor = NULL, validator = NULL)
   A validator is a single argument function that takes the object to
   validate and returns `NULL` if the object is valid. If the object is
   invalid, it returns a character vector of problems.
+
+- default:
+
+  An optional quoted call or symbol to use as the default when this
+  class is used for a property. It is evaluated each time the property
+  is omitted during object construction. If `NULL`, the default is
+  obtained from `constructor`. A default supplied to
+  [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  takes precedence.
 
 ## Value
 
@@ -100,7 +109,8 @@ is a numeric vector with class `Date` that can be constructed with
         if (!is.numeric(self)) {
           "Underlying data must be numeric"
         }
-      }
+      },
+      default = quote(.Date(integer()))
     )
 
 ## Examples

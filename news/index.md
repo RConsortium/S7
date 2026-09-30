@@ -167,6 +167,11 @@
   `_` are now reserved for internal use
   ([\#579](https://github.com/RConsortium/S7/issues/579)).
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now generates compact property defaults for S7’s bundled concrete S3
+  wrappers, so generated documentation no longer includes their
+  constructor bodies
+  ([\#755](https://github.com/RConsortium/S7/issues/755)).
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   experimentally allows `class_environment` as a parent again, so you
   can build S7 objects that share R’s reference semantics for
   environments. This support is provisional: because environments are
@@ -269,6 +274,10 @@
   that use [`nameOfClass()`](https://rdrr.io/r/base/class.html)) in R
   4.3 and later ([@lawremi](https://github.com/lawremi),
   [\#521](https://github.com/RConsortium/S7/issues/521)).
+- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  gains a `default` argument for supplying a quoted property default
+  independently of its constructor
+  ([\#755](https://github.com/RConsortium/S7/issues/755)).
 - `print(<S7_class>)` now shows property defaults inline (`= "value"`)
   and annotates read-only properties (`[read-only]`)
   ([\#439](https://github.com/RConsortium/S7/issues/439)).
