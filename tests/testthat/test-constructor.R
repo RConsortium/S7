@@ -49,6 +49,72 @@ test_that("generates correct arguments from parent + properties", {
   expect_equal(args$parent, pairlist())
 })
 
+test_that("data-frame property defaults use an executable reference (#755)", {
+  Survey := new_class(properties = list(survey = class_data.frame))
+  default <- formals(Survey)$survey
+
+  expect_identical(default, quote(S7::class_data.frame$constructor()))
+  expect_type(default[[1L]], "language")
+  expect_identical(parse(text = deparse(default))[[1L]], default)
+  expect_identical(
+    deparse(args(Survey)),
+    c("function (survey = S7::class_data.frame$constructor()) ", "NULL")
+  )
+
+  empty <- class_data.frame$constructor()
+  expect_identical(Survey()@survey, empty)
+  expect_identical(eval(parse(text = deparse(default))[[1L]], baseenv()), empty)
+  survey <- data.frame(x = 1:3, row.names = letters[1:3])
+  expect_identical(Survey(survey = survey)@survey, survey)
+})
+
+test_that("data-frame defaults work without attachment or unqualified bindings", {
+  local_dev_S7_lib()
+  out <- callr::r(function() {
+    `:=` <- S7::`:=`
+    Survey := S7::new_class(properties = list(survey = S7::class_data.frame))
+    class_data.frame <- data.frame <- function(...) stop("Shadowed binding")
+
+    list(
+      attached = "package:S7" %in% search(),
+      survey = S7::prop(Survey(), "survey"),
+      parsed = eval(parse(text = deparse(formals(Survey)$survey)), baseenv())
+    )
+  })
+
+  expect_identical(out$attached, FALSE)
+  expect_identical(out$survey, class_data.frame$constructor())
+  expect_identical(out$parsed, out$survey)
+})
+
+test_that("data-frame defaults preserve selection and inheritance", {
+  Survey := new_class(
+    properties = list(
+      data_first = class_data.frame | NULL,
+      null_first = NULL | class_data.frame,
+      explicit = new_property(
+        class_data.frame,
+        default = quote(data.frame(x = 1L))
+      )
+    )
+  )
+  defaults <- as.pairlist(alist(
+    data_first = S7::class_data.frame$constructor(),
+    null_first = NULL,
+    explicit = data.frame(x = 1L)
+  ))
+  expect_identical(formals(Survey), defaults)
+  expect_identical(Survey()@data_first, class_data.frame$constructor())
+  expect_null(Survey()@null_first)
+  expect_identical(Survey()@explicit, data.frame(x = 1L))
+
+  Child := new_class(parent = Survey)
+  expect_identical(formals(Child), defaults)
+  expect_identical(Child()@data_first, Survey()@data_first)
+  expect_null(Child()@null_first)
+  expect_identical(Child()@explicit, Survey()@explicit)
+})
+
 test_that("generates meaningful constructors", {
   expect_snapshot(
     {

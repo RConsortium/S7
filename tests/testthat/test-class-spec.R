@@ -263,6 +263,71 @@ test_that("can work with S7 classes that extend S3 classes", {
   expect_equal(class_inherits(obj, Date2), TRUE)
 })
 
+test_that("exported S3 wrappers have compact executable property defaults", {
+  wrappers <- list(
+    class_factor = class_factor,
+    class_Date = class_Date,
+    class_POSIXct = class_POSIXct,
+    class_POSIXlt = class_POSIXlt
+  )
+  defaults <- alist(
+    class_factor = S7::class_factor$constructor(),
+    class_Date = S7::class_Date$constructor(),
+    class_POSIXct = S7::class_POSIXct$constructor(),
+    class_POSIXlt = S7::class_POSIXlt$constructor()
+  )
+  for (name in names(wrappers)) {
+    Wrapper := new_class(properties = list(value = wrappers[[name]]))
+    default <- formals(Wrapper)$value
+    expect_identical(default, defaults[[name]])
+    expect_identical(parse(text = deparse(default))[[1L]], default)
+    expect_identical(Wrapper()@value, wrappers[[name]]$constructor())
+  }
+})
+
+test_that("formula property defaults retain the constructor's calling environment", {
+  Formula := new_class(properties = list(value = class_formula))
+  expect_identical(
+    formals(Formula)$value,
+    quote(S7::class_formula$constructor())
+  )
+
+  first <- Formula()@value
+  second <- Formula()@value
+  expect_s3_class(first, "formula")
+  expect_length(first, 0L)
+  expect_identical(parent.env(environment(first)), environment(Formula))
+  expect_identical(get("value", environment(first)), first)
+  expect_identical(identical(environment(first), environment(second)), FALSE)
+})
+
+test_that("abstract S3 property defaults still require an explicit value", {
+  Abstract := new_class(properties = list(value = class_POSIXt))
+  expect_snapshot(error = TRUE, Abstract())
+  value <- Sys.time()
+  expect_identical(Abstract(value = value)@value, value)
+})
+
+test_that("custom same-name S3 defaults retain their closure and captured state", {
+  calls <- 0L
+  custom <- new_S3_class(
+    "data.frame",
+    constructor = local({
+      secret <- 40L
+      function(.data = list()) {
+        calls <<- calls + 1L
+        list2DF(c(.data, list(x = secret + calls)))
+      }
+    })
+  )
+  Survey := new_class(properties = list(survey = custom))
+  expect_identical(calls, 0L)
+  expect_identical(formals(Survey)$survey[[1L]], custom$constructor)
+  expect_identical(Survey()@survey, data.frame(x = 41L))
+  expect_identical(Survey()@survey, data.frame(x = 42L))
+  expect_identical(calls, 2L)
+})
+
 # S4 ----------------------------------------------------------------------
 
 test_that("can work with S4 classes", {

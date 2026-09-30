@@ -111,6 +111,20 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
 
   f <- class_constructor(.x)
 
+  # Only S7's exported S3 definitions have stable symbolic references.
+  if (is_S3_class(ctor_class)) {
+    name <- paste0("class_", ctor_class$class[[1L]])
+    if (
+      name %in%
+        getNamespaceExports("S7") &&
+        identical(ctor_class, getExportedValue("S7", name))
+    ) {
+      ref <- call("::", quote(S7), as.name(name))
+      ref <- call("$", ref, quote(constructor))
+      return(as.call(list(ref)))
+    }
+  }
+
   # For S7 class constructors with a non-NULL @package property
   # Instead of inlining the full class definition, use either
   # `pkgname::classname()` or `classname()`

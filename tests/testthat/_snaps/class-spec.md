@@ -6,6 +6,14 @@
       Error in `class_type()`:
       ! `x` is not a standard S7 class.
 
+# abstract S3 property defaults still require an explicit value
+
+    Code
+      Abstract()
+    Condition
+      Error:
+      ! S3 class <POSIXt> doesn't have a constructor.
+
 # S7_class_desc() formats every supported class spec
 
     Code
