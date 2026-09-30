@@ -86,10 +86,11 @@ of using this helper.
 \section{Installed subclasses}{
 
 A package that defines a subclass stores the parent's property definitions
-when it is installed. After deprecating a property, maintainers of those
-packages need to rebuild them against the updated parent package so their
-subclasses use the new property definition. Users then need to install
-the rebuilt packages. Previously created or saved objects are unchanged.
+when it is installed. After deprecating a property, downstream packages
+need to be rebuilt against the updated parent package so their subclasses
+use the new property definition. That build might happen on CRAN, on the
+package author's machine, or on the user's machine. Users need to install
+the rebuilt version. Previously created or saved objects are unchanged.
 }
 
 \examples{
