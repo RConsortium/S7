@@ -12,7 +12,7 @@
 #     git stash pop && Rscript bench/constructor.R --save=/tmp/after.rds
 #     Rscript bench/constructor.R --compare=/tmp/before.rds,/tmp/after.rds
 #
-# Run a subset with --only=calls,classes,memory,serialization (default: all).
+# Run a subset with --only=calls,classes,memory,serialization,release.
 #
 pkgload::load_all(quiet = TRUE)
 
@@ -201,9 +201,56 @@ bench_serialization <- function() {
   )
 }
 
+# Keep classes out of the environment holding the objects, so dropping a batch
+# makes its class references collectible. Grouping instances by class exercises
+# releases from different positions in the preservation list.
+class_reference_batches <- function(n_classes, n_objects, n_batches) {
+  stopifnot(n_objects %% n_classes == 0)
+  make_class <- function(i) {
+    new_class(name = paste0("Release", i), package = NULL)
+  }
+  environment(make_class) <- asNamespace("S7")
+  classes <- lapply(seq_len(n_classes), make_class)
+  constructors <- rep(classes, each = n_objects / n_classes)
+  lapply(seq_len(n_batches), \(i) lapply(constructors, \(class) class()))
+}
+
+bench_release <- function(
+  iterations = 7L,
+  n_objects = 5000L,
+  n_blockers = 20000L
+) {
+  batches <- class_reference_batches(1L, n_objects, iterations)
+  blockers <- if (n_blockers == 0L) {
+    NULL
+  } else {
+    class_reference_batches(100L, n_blockers, 1L)
+  }
+  i <- 0L
+  release <- function() {
+    i <<- i + 1L
+    batches[i] <<- list(NULL)
+    gc()
+    invisible(NULL)
+  }
+  res <- bench::mark(
+    release = release(),
+    iterations = iterations,
+    check = FALSE,
+    memory = FALSE,
+    filter_gc = FALSE
+  )
+  invisible(blockers)
+  data.frame(
+    case = paste0(n_objects, "_released_behind_", n_blockers, "_live"),
+    ms = as.numeric(res$median) * 1e3,
+    row.names = NULL
+  )
+}
+
 # reporting -------------------------------------------------------------------
 
-all_benchmarks <- c("calls", "classes", "memory", "serialization")
+all_benchmarks <- c("calls", "classes", "memory", "serialization", "release")
 
 run_all <- function(only = all_benchmarks) {
   out <- list()
@@ -218,6 +265,9 @@ run_all <- function(only = all_benchmarks) {
   }
   if ("serialization" %in% only) {
     out$serialization <- bench_serialization()
+  }
+  if ("release" %in% only) {
+    out$release <- bench_release()
   }
   out
 }
@@ -281,6 +331,6 @@ main <- function(args = commandArgs(trailingOnly = TRUE)) {
   invisible(run)
 }
 
-if (!interactive()) {
+if (sys.nframe() == 0L) {
   main()
 }

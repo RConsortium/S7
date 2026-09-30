@@ -35,13 +35,20 @@ extern SEXP fn_base_quote;
 extern SEXP R_TRUE;
 extern SEXP R_FALSE;
 
+// Each cell holds its class in TAG(), with CAR()/CDR() pointing to the
+// previous/next cells. Only the head is preserved through R's precious list.
+static SEXP class_ref_roots = NULL;
+
 static
 void class_ref_finalizer(SEXP ref) {
-  SEXP class = (SEXP) R_ExternalPtrAddr(ref);
-  if (class == NULL)
+  SEXP token = R_ExternalPtrProtected(ref);
+  SEXP cell = (SEXP) R_ExternalPtrAddr(token);
+  if (cell == NULL)
     return;
 
-  R_ReleaseObject(class);
+  SETCDR(CAR(cell), CDR(cell));
+  SETCAR(CDR(cell), CAR(cell));
+  R_ClearExternalPtr(token);
   R_ClearExternalPtr(ref);
 }
 
@@ -55,15 +62,30 @@ SEXP class_ref_get_(SEXP ref) {
 }
 
 SEXP class_ref_set_(SEXP ref, SEXP class) {
+  PROTECT(class);
   SEXP old = (SEXP) R_ExternalPtrAddr(ref);
   if (old == NULL) {
     R_RegisterCFinalizerEx(ref, class_ref_finalizer, TRUE);
   } else {
-    R_ReleaseObject(old);
+    class_ref_finalizer(ref);
   }
 
+  // Keep the class address in `ref` so equivalent instances stay identical.
+  // The token's address is cleared by serialization, keeping the preservation
+  // list out of the stream. Its protected field retains local class storage.
+  SEXP token = R_ExternalPtrProtected(ref);
+  if (TYPEOF(token) != EXTPTRSXP) {
+    token = PROTECT(R_MakeExternalPtr(NULL, R_NilValue, token));
+    R_SetExternalPtrProtected(ref, token);
+    UNPROTECT(1);
+  }
+  SEXP cell = PROTECT(Rf_cons(class_ref_roots, CDR(class_ref_roots)));
+  SET_TAG(cell, class);
+  SETCDR(class_ref_roots, cell);
+  SETCAR(CDR(cell), cell);
+  R_SetExternalPtrAddr(token, cell);
   R_SetExternalPtrAddr(ref, class);
-  R_PreserveObject(class);
+  UNPROTECT(2);
   return ref;
 }
 
@@ -95,14 +117,15 @@ SEXP class_ref_tag_(SEXP ref) {
 }
 
 SEXP class_ref_serialized_(SEXP ref) {
-  return R_ExternalPtrProtected(ref);
+  SEXP holder = R_ExternalPtrProtected(ref);
+  return TYPEOF(holder) == EXTPTRSXP ? R_ExternalPtrProtected(holder) : holder;
 }
 
 SEXP class_ref_clone_(SEXP ref) {
   SEXP clone = PROTECT(R_MakeExternalPtr(
     NULL,
     R_ExternalPtrTag(ref),
-    R_ExternalPtrProtected(ref)
+    class_ref_serialized_(ref)
   ));
   SEXP class = class_ref_get_(ref);
   if (class != R_NilValue)
@@ -414,6 +437,11 @@ void prop_init(void) {
   SEXP call = PROTECT(Rf_lang3(Rf_install("new.env"), R_FALSE, ns_S7));
   prop_call_env = Rf_eval(call, R_BaseEnv);
   R_PreserveObject(prop_call_env);
+  UNPROTECT(1);
+
+  SEXP tail = PROTECT(Rf_cons(R_NilValue, R_NilValue));
+  class_ref_roots = Rf_cons(R_NilValue, tail);
+  R_PreserveObject(class_ref_roots);
   UNPROTECT(1);
 }
 

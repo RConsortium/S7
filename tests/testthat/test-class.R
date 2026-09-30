@@ -393,6 +393,7 @@ test_that("new_object() stores an external class reference (#742)", {
   expect_type(y_ref, "externalptr")
   expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
   expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+  expect_identical(x, y)
 })
 
 test_that("custom constructors use external class references (#742)", {
@@ -472,6 +473,59 @@ test_that("external class references keep local classes alive", {
   expect_equal(obj_addr(S7_class(x)), class_address)
 })
 
+test_that("class references release classes after their last instance", {
+  collected <- new.env(parent = emptyenv())
+  collected$labels <- character()
+  finalizer <- function(marker) {
+    collected$labels <- c(collected$labels, marker$label)
+  }
+  environment(finalizer) <- list2env(
+    list(collected = collected),
+    parent = baseenv()
+  )
+
+  make_objects <- function(label, finalizer) {
+    marker <- new.env(parent = emptyenv())
+    marker$label <- label
+    reg.finalizer(marker, finalizer)
+    Foo := new_class(
+      package = NULL,
+      validator = function(self) {
+        marker
+        NULL
+      }
+    )
+    list(Foo(), Foo())
+  }
+  environment(make_objects) <- asNamespace("S7")
+
+  objects <- lapply(
+    setNames(c("first", "middle", "last"), c("first", "middle", "last")),
+    make_objects,
+    finalizer = finalizer
+  )
+  objects$middle[[1]] <- NULL
+  gc()
+  gc()
+  expect_identical(collected$labels, character())
+
+  objects$first <- NULL
+  gc()
+  gc()
+  expect_identical(collected$labels, "first")
+
+  objects$last <- NULL
+  gc()
+  gc()
+  expect_setequal(collected$labels, c("first", "last"))
+  expect_identical(S7_class(objects$middle[[1]])@name, "Foo")
+
+  objects$middle <- NULL
+  gc()
+  gc()
+  expect_setequal(collected$labels, c("first", "middle", "last"))
+})
+
 test_that("restored objects resolve and validate the current class once", {
   pkg := local_package({
     Foo := new_class(properties = list(x = class_double))
@@ -532,6 +586,13 @@ test_that("restored objects must be valid under the current class", {
 
   x <- unserialize(raw)
   expect_snapshot(S7_class(x), error = TRUE)
+
+  eval(
+    quote(Foo := new_class(properties = list(x = class_double))),
+    pkg
+  )
+  expect_identical(S7_class(x), pkg$Foo)
+  expect_identical(x@x, 1)
 })
 
 test_that("new_object() supports constructors without a class reference", {
