@@ -558,6 +558,13 @@ SEXP prop_(SEXP object, SEXP name) {
           name_sym == sym_validator))
       return value;
 
+  // R's tracing initializer reads the data slot of registered S7 functions.
+  // Declared properties above take precedence over this implicit S4 slot.
+  if (name_sym == Rf_install(".Data") &&
+      (Rf_isS4(object) || Rf_inherits(object, "S7_generic") ||
+       Rf_inherits(object, "S7_method")))
+    return R_do_slot(object, name_sym);
+
   signal_prop_error_unknown(object, name);
   return R_NilValue; // unreachable, for compiler
 }

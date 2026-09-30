@@ -4,6 +4,7 @@
 #'
 #' @keywords internal
 #' @export
+#' @importFrom methods initialize
 #' @return The base S7 object.
 #' @examples
 #'
@@ -111,9 +112,9 @@ on_load_define_S7_generic <- function() {
     ),
     parent = class_function
   )
+  register_S7_function(S7_generic)
 }
 
-methods::setOldClass(c("S7_generic", "function", "S7_object"))
 is_S7_generic <- function(x) inherits(x, "S7_generic")
 
 
@@ -121,28 +122,48 @@ S7_method <- NULL
 
 on_load_define_S7_method <- function() {
   S7_method <<- new_class(
-    "S7_method",
+    name = "S7_method",
     package = NULL,
     parent = class_function,
     properties = list(generic = S7_generic, signature = class_list)
   )
+  register_S7_function(S7_method)
 }
-methods::setOldClass(c("S7_method", "function", "S7_object"))
 
-# trace() builds a "<class>WithTrace" S4 class for the traced function on
-# the fly, but the machinery it uses assumes that class() returns a single
-# string, which isn't true for S7 generics and methods. So we register the
-# traceable classes in advance, along with an initialize method that works
-# around the same assumption in methods:::.initTraceable() by giving it a
-# classless copy of the function (#584).
-make_traceable <- function(class, props) {
-  slots <- rep(list("ANY"), length(props))
-  names(slots) <- props
+register_S7_function <- function(class) {
+  where <- topenv()
+  slots <- lapply(class@properties, S4_property_class, S4_env = where)
+  slots$`_S7_class` <- "ANY"
+  methods::setClass(
+    class@name,
+    contains = c("function", "S7_object"),
+    slots = slots,
+    prototype = methods::prototype(`_S7_class` = S7_class_storage(class)),
+    where = where
+  )
+  methods::setOldClass(
+    class_dispatch(class),
+    S4Class = class@name,
+    where = where
+  )
+}
+
+# Before R 4.7, trace() assumes a single class string and its old-class
+# coercion can discard the trace wrapper (#584, r-devel/r-svn#262).
+# Newer R versions inherit the slots above without a custom initializer.
+on_load_make_traceable <- function() {
+  if (getRversion() < "4.7.0") {
+    make_traceable("S7_generic")
+    make_traceable("S7_method")
+  }
+}
+
+make_traceable <- function(class) {
+  props <- setdiff(names(methods::getSlots(class)), c(".Data", ".S3Class"))
 
   methods::setClass(
     paste0(class, "WithTrace"),
-    contains = c(class, "traceable"),
-    slots = slots
+    contains = c(class, "traceable")
   )
   methods::setMethod(
     "initialize",
@@ -155,17 +176,14 @@ make_traceable <- function(class, props) {
       class(def) <- NULL
       .Object <- methods::callNextMethod(.Object, def = def, ...)
       .Object@original <- original
-      # Mirror the S7 properties so introspection (e.g. print methods that
-      # access x@generic) keeps working on the traced object
       for (prop in props) {
         methods::slot(.Object, prop) <- attr(original, prop, exact = TRUE)
       }
+      attr(.Object, ".S3Class") <- class(original)
       .Object
     }
   )
 }
-make_traceable("S7_generic", c("name", "methods", "dispatch_args"))
-make_traceable("S7_method", c("generic", "signature"))
 
 # hooks -------------------------------------------------------------------
 
@@ -189,6 +207,7 @@ make_traceable("S7_method", c("generic", "signature"))
   on_load_define_environment()
   on_load_define_S7_generic()
   on_load_define_S7_method()
+  on_load_make_traceable()
   on_load_make_convert_generic()
   on_load_define_ops()
   on_load_define_or_methods()
