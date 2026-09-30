@@ -411,6 +411,23 @@ test_that("S7 objects record their representation version (#711)", {
   }
 })
 
+test_that("S7_object() shares immutable version and class attributes (#711)", {
+  x <- S7_object()
+  y <- S7_object()
+  expect_equal(
+    obj_addr(attr(x, "_S7_version", exact = TRUE)),
+    obj_addr(attr(y, "_S7_version", exact = TRUE))
+  )
+  expect_equal(obj_addr(class(x)), obj_addr(class(y)))
+
+  attr(x, "_S7_version")[[1]] <- 2L
+  class(x)[[1]] <- "Changed"
+  expect_identical(attr(y, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(S7_object(), "_S7_version", exact = TRUE), 1L)
+  expect_identical(class(y), "S7_object")
+  expect_identical(class(S7_object()), "S7_object")
+})
+
 test_that("new_object() stores a shared class reference (#742)", {
   Foo := new_class(package = NULL)
   x <- Foo()

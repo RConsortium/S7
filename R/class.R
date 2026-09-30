@@ -1,6 +1,6 @@
 # Increment only when the stored S7 object representation changes, independently
 # of the package version. Older objects have no version attribute.
-# Keep in sync with make_s7_proto_object() in src/init.c.
+# Keep in sync with R_init_S7() in src/init.c.
 S7_object_version <- 1L
 
 #' Define a new S7 class
