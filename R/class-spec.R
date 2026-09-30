@@ -142,13 +142,11 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
         stop2(msg, call = NULL)
       }
     }
-    return(
-      if (is_deprecated_class(f2)) {
-        bquote(S7::as_class(.(cl))())
-      } else {
-        as.call(list(cl))
-      }
-    )
+    if (is_deprecated_class(f2)) {
+      return(bquote(S7::as_class(.(cl))()))
+    } else {
+      return(as.call(list(cl)))
+    }
   }
 
   # If the constructor is a closure wrapping a simple expression, try
