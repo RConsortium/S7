@@ -65,6 +65,17 @@
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>The base S7 object.</p>
     </div>
+    <div class="section level2">
+    <h2 id="representation-version">Representation version<a class="anchor" aria-label="anchor" href="#representation-version"></a></h2>
+
+
+<p>Newly constructed S7 objects carry an internal <code>_S7_version</code> attribute.
+Classes returned by <code><a href="new_class.html">new_class()</a></code> carry <code>S7_version</code>. Both start at <code>1L</code>
+and track changes to the stored representation independently of the S7
+package version, so future backward compatibility code can distinguish
+object formats. Objects created before versioning was introduced have no
+version attribute and remain supported.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

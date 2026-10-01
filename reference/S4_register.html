@@ -99,7 +99,7 @@ name.</p>
 invisibly returns the registered S4 class name.
 For S7 classes, this creates a virtual S4 old class that exposes stored S7
 properties as S4 slots and carries the <code>_S7_class</code> slot needed for S7 dispatch
-and validation.</p>
+and validation, along with the internal <code>_S7_version</code> representation marker.</p>
 <p>After registration, <code>S4_contains()</code> returns the virtual S4 class name to use
 when an S4 class should extend an S7 class with
 <code>methods::setClass(contains = )</code>. It asserts that the S7 properties can
