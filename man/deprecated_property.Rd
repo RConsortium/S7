@@ -83,14 +83,13 @@ setter, add a deprecation signal to its existing getter and setter instead
 of using this helper.
 }
 
-\section{Installed subclasses}{
+\section{Downstream packages}{
 
-A package that defines a subclass stores the parent's property definitions
-when it is installed. After deprecating a property, downstream packages
-need to be rebuilt against the updated parent package so their subclasses
-use the new property definition. That build might happen on CRAN, on the
-package author's machine, or on the user's machine. Users need to install
-the rebuilt version. Previously created or saved objects are unchanged.
+Downstream packages can store copies of classes, generics, or properties
+when they are built, instead of looking them up dynamically when they are
+used. Those packages may not emit deprecation warnings until they are rebuilt
+against the updated version of your package and reinstalled. Code that looks
+them up dynamically can start warning as soon as your package is updated.
 }
 
 \examples{

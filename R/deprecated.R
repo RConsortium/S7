@@ -300,13 +300,12 @@ is_deprecated_class <- function(x) inherits(x, "S7_deprecated_class")
 #' setter, add a deprecation signal to its existing getter and setter instead
 #' of using this helper.
 #'
-#' @section Installed subclasses:
-#' A package that defines a subclass stores the parent's property definitions
-#' when it is installed. After deprecating a property, downstream packages
-#' need to be rebuilt against the updated parent package so their subclasses
-#' use the new property definition. That build might happen on CRAN, on the
-#' package author's machine, or on the user's machine. Users need to install
-#' the rebuilt version. Previously created or saved objects are unchanged.
+#' @section Downstream packages:
+#' Downstream packages can store copies of classes, generics, or properties
+#' when they are built, instead of looking them up dynamically when they are
+#' used. Those packages may not emit deprecation warnings until they are rebuilt
+#' against the updated version of your package and reinstalled. Code that looks
+#' them up dynamically can start warning as soon as your package is updated.
 #'
 #' @param old The name of the deprecated property, as a string. Because the
 #'   name is part of the property itself, the `properties` list entry doesn't
