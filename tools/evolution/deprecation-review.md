@@ -2,9 +2,9 @@
 
 The helpers support generic renames, moves, and retirement; deprecating a class while preserving its definition; and renaming or retiring stored properties. `deprecated_class()` keeps the original type, methods, and subclasses. Its `replacement` argument recommends another class without forwarding construction or method registration to it.
 
-This covers a transition in which maintainers keep the original class available while downstream users adopt a replacement. Class aliases that change identity, migration of saved objects, and changes to installed property definitions need separate compatibility work. Lifecycle warnings through `props()` preserve caller attribution, and #734 documents and tests the rebuilding boundary for installed direct property defaults. These limits are described below.
+This covers a transition in which maintainers keep the original class available while downstream users adopt a replacement. Class aliases that change identity, migration of saved objects, and changes to installed property definitions need separate compatibility work. Lifecycle warnings through `props()` preserve caller attribution. Installed direct property defaults and copied definitions have rebuilding boundaries, described below.
 
-This review uses PR #734 at `d179940224fdd93941b8b0bf46654bf0bf37ad08`, combined with main at `cf91eb3f10f8667ff6348b32b814b21894efe560`. The combined source tree is `6235fe9baf8668439b4a6df336238713766af642`. The lab holds S7 fixed while upgrading the fixture packages; it does not test upgrading S7 itself across serialized package versions.
+This review uses main at `245aaf46355a48403ad580b366b817a9c4191851`, which includes the merged deprecation helpers from #734. The lab holds S7 fixed while upgrading the fixture packages; it does not test upgrading S7 itself across serialized package versions.
 
 ## Package scenarios
 
@@ -13,7 +13,8 @@ The executable cases live in `scenarios.R`; `results.md` records installation, n
 | Transition                           | Coverage                                                                                                   |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
 | Rename a generic                     | Imported and external registrations; calls through both names; method lookup through the alias             |
-| Retire a generic                     | Existing downstream methods still dispatch through `old`                                                   |
+| Retire a generic                     | Direct definition; custom function, lexical scope, and defaults; existing downstream registrations         |
+| Copy a generic or class              | Installed copies stay silent until rebuilding; dynamic export lookups signal immediately                   |
 | Move a generic                       | Compare NAMESPACE re-export, binding copy, and deprecated wrapper                                          |
 | Rename a generic export              | `new_label` while preserving the generic's original identity and shared methods                            |
 | Recommend a replacement class        | Direct and external parents and method signatures; distinct replacement type; explicit union methods       |
@@ -55,7 +56,9 @@ Omitting `replacement` retires the class without recommending another. Even stop
 
 ### Generic aliases and package moves
 
-`deprecated_generic(new = ...)` forwards calls and registrations to the replacement. Unlike classes, both names share their methods. Imported and external registrations work for stale and rebuilt downstream packages. `old =` retains the existing generic when there is no replacement.
+`deprecated_generic(new = ...)` forwards calls and registrations to the replacement. Unlike classes, both names share their methods. Imported and external registrations work for stale and rebuilt downstream packages.
+
+Without a replacement, change `new_generic()` to `deprecated_generic()` in the original definition and add `when`. Keep the dispatch arguments, any custom `fun`, and the method registrations. The retirement scenarios preserve a custom function's lexical scope and default argument under all three signaling policies; downstream registrations survive both upstream-only upgrades and rebuilding. There is no `old` argument.
 
 For a move, the wrapper resolves the foreign generic in its owning namespace:
 
@@ -105,6 +108,12 @@ The lab's `class-deprecated-property-signals-warn` assertions cover `props()` af
 
 ## Compatibility boundaries
 
+### Copies stored by downstream packages
+
+A downstream package can save a copy of a generic or class in its namespace, for example with `copied_generic <- evoA::gen` or `copied_class <- evoA::Foo`. Those copies can retain the original definition after evoA deprecates its exports. Rebuilding the downstream package adopts the deprecated definitions.
+
+The copied-definition scenarios compare these installed copies with calls through `evoA::gen()` and `evoA::Foo()`. They assert that the copies remain silent until rebuilding, while dynamic export lookups signal immediately after the upstream upgrade. This applies to base warnings, lifecycle warnings, and stop-mode errors. Deprecation does not rewrite definitions already stored by another package.
+
 ### Installed direct property defaults
 
 A downstream class defined before deprecation can retain a generated default that calls the exported constructor directly:
@@ -151,6 +160,8 @@ Property deprecation changes the property definition even when the class name st
 
 ## Validation
 
-All 59 package scenarios completed with `--check` against the source tree pinned above, on R 4.6.1 with lifecycle 1.0.5. Every version-1 baseline passed, and every upstream upgrade installed successfully. The property-signal cases pass under all three policies for stale and rebuilt packages. The recorded errors match deliberate breaking cases, stop-mode calls, and the documented rebuilding boundaries. Some fixture checks also report unused-Imports notes. No further changes to #734 are required by these cases.
+All 64 package scenarios completed with `--check` against the source tree pinned above, on R 4.6.1 with lifecycle 1.0.5. Every version-1 baseline passed, and every upstream upgrade installed successfully. All 595 stages from the previous 59-case report have unchanged outcomes. The property-signal and copied-definition cases pass under all three policies for stale and rebuilt packages. The recorded errors match deliberate breaking cases, stop-mode calls, and the documented rebuilding boundaries. Some fixture checks also report unused-Imports notes. No further changes to the deprecation helpers are required by these cases.
 
-The full S7 package suite passed 1,623 assertions, including 236 deprecation assertions, with no failures, skips, or warnings. This includes #734's caller-attribution and installed-default regression tests. The combined source with this branch's documentation passed `pkgdown::check_pkgdown()` and rendered the evolution vignette. Pandoc emitted notices about deprecated command-line options; vignette execution succeeded.
+The six generic-retirement and copied-definition cases also completed with `--check` on R 4.2.3. All 60 stage outcomes match the R 4.6.1 results.
+
+Full S7 `R CMD check` runs passed on R 4.2.3 and R 4.6.1, including vignette execution and rebuilding. The test suites passed 1,738 and 1,769 assertions, respectively, with no failures. R 4.2 skipped ten version-dependent tests. Both test reports contain two existing fixture-install warnings from `local_dev_S7_lib()` attempting to install the check directory as a source package. The checks report one NOTE on R 4.2 (`methods:::assignClassDef`) and two on R 4.6 (the same NOTE plus the non-API call `Rf_findVarInFrame`). The branch also passed `pkgdown::check_pkgdown()`.

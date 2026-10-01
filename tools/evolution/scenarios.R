@@ -688,24 +688,123 @@ scenarios <- c(
       expect = paste(
         "A retires a generic without replacing it. B's imported registration",
         "should survive both an upstream-only upgrade and rebuilding B;",
-        "calling the generic warns and still dispatches."
+        "calling the generic warns and still dispatches. Its custom function",
+        "keeps its lexical scope and default argument."
       ),
       a_v1 = {
-        gen := new_generic("x")
+        prefix <- "A:"
+        gen := new_generic("x", fun = function(x, ending = "!", ...) {
+          out <- S7_dispatch()
+          paste0(prefix, out, ending)
+        })
       },
       a_v2 = {
-        gen := new_generic("x")
-        gen := deprecated_generic(old = gen, when = "2.0.0")
+        prefix <- "A:"
+        gen := deprecated_generic(
+          "x",
+          fun = function(x, ending = "!", ...) {
+            out <- S7_dispatch()
+            paste0(prefix, out, ending)
+          },
+          when = "2.0.0"
+        )
       },
       b = {
         BClass := new_class()
-        method(gen, BClass) <- function(x, ...) "B"
+        method(gen, BClass) <- \(x, ending = "!", ...) "B"
       },
       b_test = {
         library(evoB)
-        stopifnot(identical(evoA::gen(evoB:::BClass()), "B"))
+        stopifnot(
+          is.function(S7::method(evoA::gen, evoB:::BClass)),
+          identical(evoA::gen(evoB:::BClass()), "A:B!"),
+          identical(evoA::gen(evoB:::BClass(), ending = "?"), "A:B?")
+        )
       },
       b_ns = "importFrom(evoA, gen)"
+    ),
+    scenario(
+      name = "copied-deprecated-definitions",
+      expect = paste(
+        "B saves copies of A's generic and class before deprecation. Calls",
+        "through those copies stay silent until B is rebuilt, while dynamic",
+        "lookups in A signal as soon as A is upgraded. Assert each condition."
+      ),
+      a_v1 = {
+        policy <- "base"
+        gen := new_generic("x")
+        method(gen, class_double) <- \(x, ...) x
+        Foo := new_class(properties = list(size = class_double))
+      },
+      a_v2 = {
+        policy <- "base"
+        gen := deprecated_generic("x", when = "2.0.0", method = policy)
+        method(gen, class_double) <- \(x, ...) x
+        Foo := deprecated_class(
+          properties = list(size = class_double),
+          when = "2.0.0",
+          method = policy
+        )
+      },
+      b = {
+        copied_generic <- evoA::gen
+        copied_class <- evoA::Foo
+        built_against <- as.character(getNamespaceVersion("evoA"))
+      },
+      b_test = {
+        library(evoB)
+        library(S7)
+        options(lifecycle_verbosity = "warning")
+        deprecated <- as.character(getNamespaceVersion("evoA")) == "2.0.0"
+        rebuilt <- evoB:::built_against == "2.0.0"
+        check_call <- function(expr, signals, class_result = FALSE) {
+          warnings <- list()
+          value <- tryCatch(
+            withCallingHandlers(expr, warning = function(w) {
+              warnings[[length(warnings) + 1L]] <<- w
+              invokeRestart("muffleWarning")
+            }),
+            error = identity
+          )
+          stopping <- signals && evoA::policy == "lifecycle(stop)"
+          stopifnot(
+            inherits(value, "error") == stopping,
+            length(warnings) == as.integer(signals && !stopping)
+          )
+          if (stopping) {
+            stopifnot(inherits(value, "lifecycle_error_deprecated"))
+          } else {
+            if (signals) {
+              expected <- if (evoA::policy == "base") {
+                "deprecatedWarning"
+              } else {
+                "lifecycle_warning_deprecated"
+              }
+              stopifnot(inherits(warnings[[1L]], expected))
+            }
+            if (class_result) {
+              stopifnot(
+                S7_inherits(value, evoA::Foo),
+                identical(value@size, 3)
+              )
+            } else {
+              stopifnot(identical(value, 3))
+            }
+          }
+        }
+        check_call(evoB:::copied_generic(3), signals = rebuilt)
+        check_call(
+          evoB:::copied_class(size = 3),
+          signals = rebuilt,
+          class_result = TRUE
+        )
+        check_call(evoA::gen(3), signals = deprecated)
+        check_call(
+          evoA::Foo(size = 3),
+          signals = deprecated,
+          class_result = TRUE
+        )
+      }
     ),
     scenario(
       name = "gen-move-package-deprecated",
@@ -1563,6 +1662,7 @@ names(scenarios) <- vapply(scenarios, \(x) x$name, character(1))
 for (method in c("lifecycle(warn)", "lifecycle(stop)")) {
   for (name in c(
     "gen-rename-deprecated",
+    "gen-retire-deprecated",
     "class-replacement-deprecated-external",
     "class-retire-deprecated",
     "class-deprecated-custom-constructor",
@@ -1592,19 +1692,24 @@ for (method in c("lifecycle(warn)", "lifecycle(stop)")) {
     )
     scenarios[[sc$name]] <- sc
   }
-  sc <- scenarios[["class-deprecated-property-signals"]]
-  sc$name <- paste0(
-    sc$name,
-    "-",
-    if (method == "lifecycle(warn)") "warn" else "stop"
-  )
-  sc$a_v2 <- sub(
-    'policy <- "base"',
-    paste0('policy <- "', method, '"'),
-    sc$a_v2,
-    fixed = TRUE
-  )
-  sc$a_imports <- "lifecycle"
-  sc$expect <- paste(sc$expect, "Signaling policy:", method)
-  scenarios[[sc$name]] <- sc
+  for (name in c(
+    "class-deprecated-property-signals",
+    "copied-deprecated-definitions"
+  )) {
+    sc <- scenarios[[name]]
+    sc$name <- paste0(
+      name,
+      "-",
+      if (method == "lifecycle(warn)") "warn" else "stop"
+    )
+    sc$a_v2 <- sub(
+      'policy <- "base"',
+      paste0('policy <- "', method, '"'),
+      sc$a_v2,
+      fixed = TRUE
+    )
+    sc$a_imports <- "lifecycle"
+    sc$expect <- paste(sc$expect, "Signaling policy:", method)
+    scenarios[[sc$name]] <- sc
+  }
 }

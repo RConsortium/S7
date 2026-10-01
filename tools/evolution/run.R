@@ -451,5 +451,5 @@ for (name in names(results)) {
   }
 }
 
-writeLines(report, file.path(lab_dir, "results.md"))
+writeLines(head(report, -1L), file.path(lab_dir, "results.md"))
 message("Wrote ", file.path(lab_dir, "results.md"))

@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-<!-- 
+<!--
 The failures described in this vignette can be verified with `tools/evolution/`: a small harness that builds real package pairs and observes what breaks. Use it to reverify results when the package changes.
 -->
 
@@ -24,7 +24,7 @@ This vignette works through the ways an S7 interface can change, and what each c
 
 Throughout, we'll imagine two packages:
 
-* **myPackage** is upstream: it defines S7 classes and generics. 
+* **myPackage** is upstream: it defines S7 classes and generics.
   You're the author of myPackage.
 * **depPackage** is downstream: it depends on myPackage, registering methods for myPackage's generics, subclassing myPackage's classes, and creating and manipulating instances of them.
   Someone else is the author of depPackage.
@@ -146,7 +146,7 @@ S7 supplies three helpers for keeping an old interface available during a transi
 
 | Helper | With a replacement | Without a replacement |
 |--------|--------------------|-----------------------|
-| `deprecated_generic()` | Calls warn and dispatch through `new`; registrations target `new` silently. | Supply `old` to keep the generic and its methods, with warnings on calls. |
+| `deprecated_generic()` | Calls warn and dispatch through `new`; registrations target `new` silently. | Replace `new_generic()` in the existing definition, preserving its dispatch arguments and function. Calls warn and still dispatch. |
 | `deprecated_class()` | Define the original class and supply `replacement` to recommend another class. Constructor calls warn and still create the original class. | Omit `replacement`; explicit constructor calls warn. |
 | `deprecated_property()` | Reads and changed writes warn and use the property named by `new`. | Omit `new` to retain storage and warn on reads and changed writes. |
 
@@ -163,6 +163,9 @@ It stops calls to the deprecated constructor or generic, or access to the deprec
 Warnings in a plain R test script do not by themselves make `R CMD check` fail.
 They can still fail tests that require silence or convert warnings to errors, and a warning during namespace loading can produce a check NOTE.
 Use the warning phase to find downstream uses before switching to errors or removing an export.
+
+Downstream packages that save a copy of a generic or class in their namespace can keep using the old definition without warning until they are rebuilt.
+Calls that look up the export dynamically, such as `myPackage::gen()`, use the updated definition immediately.
 
 ## Changing a generic
 
@@ -318,15 +321,15 @@ gen2(BClass())
 
 ### Retiring a generic
 
-If there is no replacement, pass the existing generic as `old`:
+If there is no replacement, change `new_generic()` to `deprecated_generic()` in the generic's definition and add `when`:
 
 ```{r}
-retired := new_generic("x")
+retired := deprecated_generic("x", when = "2.0.0")
 method(retired, BClass) <- function(x, ...) "result"
-retired := deprecated_generic(old = retired, when = "2.0.0")
 retired(BClass())
 ```
 
+Keep the existing `dispatch_args`, any custom `fun`, and the method registrations.
 The old name and dispatch signature stay available, so downstream packages can continue registering methods during the warning phase.
 Removing the export later still breaks imports; changing to `method = "lifecycle(stop)"` instead preserves registration but makes calls fail.
 
@@ -336,7 +339,7 @@ Changing a generic's dispatch arguments — renaming them, reordering them, or m
 There is no transition trick: a generic's dispatch arguments are its identity.
 If you need different dispatch, create a generic with a new name and keep the old generic during the transition.
 `deprecated_generic(new = ...)` adopts the replacement's formals and dispatch signature; it does not translate an old registration or adapt arguments to a different interface.
-Use `deprecated_generic(old = ...)` to retire the old generic while you coordinate new methods, and write any argument adaptation explicitly.
+Use `deprecated_generic()` with the old generic's definition while you coordinate new methods, and write any argument adaptation explicitly.
 
 ### Moving a generic to another package
 

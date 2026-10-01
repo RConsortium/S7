@@ -15,6 +15,8 @@ The lab includes deprecation helpers with imported and deferred registrations,
 class recommendations that preserve identity, plain class aliases, package moves,
 saved instances, custom constructors, property defaults and validators, and
 lifecycle warning/error policies. It also checks `new_label` for generic exports.
+Generic retirement preserves custom functions, defaults, and downstream methods.
+Copied-definition cases distinguish installed copies from dynamic export lookups.
 Class recommendations retain the original class and its methods; the replacement
 gets its own methods or an explicitly shared union signature. See
 [deprecation-review.md](deprecation-review.md) for the design assessment and
@@ -61,7 +63,8 @@ that subset; run the complete lab before updating the committed report.
 ## When to run it
 
 * Before each release (it's in the `release_bullets()` checklist): re-run and
-  check that `results.md` is unchanged. If it changed, S7's cross-package
-  behavior changed — update `vignette("evolution")` to match.
+  review changes in `results.md`. If the recorded behavior changed, update
+  `vignette("evolution")` to match. The date and source metadata also change
+  between runs.
 * When changing method registration, `check_method()`, constructors, or
   external generics/classes.
