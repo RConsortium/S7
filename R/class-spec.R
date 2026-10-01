@@ -23,6 +23,10 @@
 as_class <- function(x, arg = deparse(substitute(x))) {
   error_base <- sprintf("Can't convert `%s` to a valid class.", arg)
 
+  if (is_deprecated_class(x)) {
+    x <- deprecated_target(x)
+  }
+
   if (is_foundation_class(x)) {
     x
   } else if (is.null(x)) {
@@ -102,11 +106,12 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
   ctor_class <- if (is_union(.x)) .x$classes[[1L]] else .x
   if (is_external_class(ctor_class)) {
     if (identical(package, ctor_class$package)) {
-      return(call(ctor_class$name))
+      cl <- as.name(ctor_class$name)
     } else {
       cl <- call("::", as.name(ctor_class$package), as.name(ctor_class$name))
-      return(as.call(list(cl)))
     }
+    # Return before class_constructor() to keep the package lookup deferred.
+    return(bquote(S7::as_class(.(cl))()))
   }
 
   if (is_S3_class(ctor_class) && !is.null(ctor_class$default)) {
@@ -123,7 +128,8 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
     # Note: During package build, using pkg::class for a package's own symbols
     # will raise an error from `::`.
     if (identical(package, f@package)) {
-      return(call(f@name))
+      cl <- as.name(f@name)
+      f2 <- get(f@name, envir = envir)
     } else {
       # namespace the pkgname::classname() call
       cl <- as.call(list(quote(`::`), as.name(f@package), as.name(f@name)))
@@ -131,7 +137,7 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
       # check the call evaluates to f.
       # This will error if package is not installed or object is not exported.
       f2 <- eval(cl, baseenv())
-      if (!identical(f, f2)) {
+      if (!identical(f, as_class(f2))) {
         msg <- sprintf(
           "`%s::%s` is not identical to the class with the same @package and @name properties.",
           f@package,
@@ -139,6 +145,10 @@ class_construct_expr <- function(.x, envir = NULL, package = NULL) {
         )
         stop2(msg, call = NULL)
       }
+    }
+    if (is_deprecated_class(f2)) {
+      return(bquote(S7::as_class(.(cl))()))
+    } else {
       return(as.call(list(cl)))
     }
   }
@@ -336,8 +346,23 @@ class_inherits <- function(x, what) {
     S7_union = some(what$classes, class_inherits, x = x),
     S7_S3 = !isS4(x) &&
       class_dispatch_inherits(what$class, class(x)),
-    S7_external = inherits(x, "S7_object") && inherits(x, what$class_name),
+    S7_external = class_inherits_external(x, what),
   )
+}
+
+class_inherits_external <- function(x, what) {
+  if (!inherits(x, "S7_object")) {
+    return(FALSE)
+  }
+  if (inherits(x, what$class_name)) {
+    return(TRUE)
+  }
+  if (!isNamespaceLoaded(what$package)) {
+    return(FALSE)
+  }
+
+  # The exported name may be an alias for a renamed class.
+  class_inherits(x, resolve_external_class_req(what))
 }
 
 # Is every instance of `child` guaranteed to also be an instance of `parent`?
@@ -370,6 +395,9 @@ class_extends <- function(child, parent) {
     class_extends(child, parent)
   } else if (is_class(child) && is_external_class(parent)) {
     if (!class_dispatch_extends(parent$class_name, class_dispatch(child))) {
+      if (isNamespaceLoaded(parent$package)) {
+        return(class_extends(child, resolve_external_class_req(parent)))
+      }
       return(FALSE)
     }
     if (!is.null(parent$version)) {

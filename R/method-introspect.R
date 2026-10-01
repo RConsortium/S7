@@ -38,6 +38,9 @@
 #' try(method(bizarro, class = class_data.frame))
 #' try(method(bizarro, object = "x"))
 method <- function(generic, class = NULL, object = NULL) {
+  if (is_deprecated_generic(generic)) {
+    generic <- deprecated_target(generic)
+  }
   check_is_S7(generic, S7_generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
 
@@ -80,6 +83,9 @@ method <- function(generic, class = NULL, object = NULL) {
 #'
 #' method_explain(add, list(Foo2, Foo2))
 method_explain <- function(generic, class = NULL, object = NULL) {
+  if (is_deprecated_generic(generic)) {
+    generic <- deprecated_target(generic)
+  }
   check_is_S7(generic, S7_generic)
   dispatch <- as_dispatch(generic, class = class, object = object)
   dispatch <- lapply(dispatch, c, "ANY")

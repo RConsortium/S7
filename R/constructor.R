@@ -199,6 +199,9 @@ constructor_forward <- function(parent, properties, envir, package) {
 
   # Parent(<override = override>, ...)
   parent_call <- new_call(ref, as_names(c(parent_override_nms, "...")))
+  if (is_external_class(parent)) {
+    parent_call[[1L]] <- bquote(S7::as_class(.(parent_call[[1L]])))
+  }
 
   new_object <- c(if (!has_S7_symbols(envir, "new_object")) "S7", "new_object")
   child_call <- new_call(new_object, c(list(parent_call), as_names(self_nms)))
