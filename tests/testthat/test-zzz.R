@@ -45,17 +45,121 @@ test_that("[[ gives more accurate error", {
 })
 
 test_that("register S4 classes for key components", {
-  expect_s4_class(getClass("S7_object"), "classRepresentation")
-  expect_s4_class(getClass("S7_method"), "classRepresentation")
-  expect_s4_class(getClass("S7_generic"), "classRepresentation")
+  for (class in c("S7_object", "S7_method", "S7_generic")) {
+    expect_s4_class(
+      methods::getClassDef(class, package = "S7", inherits = FALSE),
+      "classRepresentation"
+    )
+  }
 })
 
-test_that("namespace can load with only base attached", {
+test_that("namespace can load without loading methods", {
+  expect_identical(
+    callr::r(
+      function() {
+        options(warn = 2)
+        before <- isNamespaceLoaded("methods")
+        loadNamespace("S7")
+        c(before, isNamespaceLoaded("methods"))
+      },
+      libpath = .libPaths(),
+      env = c(R_DEFAULT_PACKAGES = "base")
+    ),
+    c(FALSE, FALSE)
+  )
+})
+
+test_that("tracing works across methods load orders and S7 reloads", {
+  for (load_order in c("before", "after", "reload", "reload_loaded")) {
+    expect_identical(
+      callr::r(
+        function(load_order) {
+          options(warn = 2)
+          if (load_order %in% c("before", "reload_loaded")) {
+            loadNamespace("methods")
+          }
+          if (load_order %in% c("reload", "reload_loaded")) {
+            loadNamespace("S7")
+            unloadNamespace("S7")
+          }
+          library(S7)
+          my_generic := new_generic(dispatch_args = "x")
+          my_class := new_class(package = NULL)
+          method(my_generic, my_class) <- function(x) "result"
+          obj <- my_class()
+          original_generic <- my_generic
+          original_method <- method(my_generic, my_class)
+
+          if (load_order %in% c("after", "reload")) {
+            method(`+`, list(my_class, my_class)) <- function(e1, e2) "sum"
+            stopifnot(identical(obj + obj, "sum"))
+            stopifnot(!isNamespaceLoaded("methods"))
+            loadNamespace("methods")
+          }
+
+          suppressMessages(trace(
+            "my_class",
+            quote(NULL),
+            print = FALSE,
+            where = prop(my_generic, "methods")
+          ))
+          suppressMessages(trace(
+            "my_generic",
+            quote(NULL),
+            print = FALSE,
+            where = environment()
+          ))
+          traced <- method(my_generic, my_class)
+          stopifnot(
+            identical(my_generic(obj), "result"),
+            identical(
+              prop(my_generic, "methods"),
+              prop(original_generic, "methods")
+            ),
+            identical(prop(traced, "generic"), original_generic),
+            identical(
+              prop(traced, "signature"),
+              prop(original_method, "signature")
+            ),
+            identical(attr(my_generic, "_S7_version", exact = TRUE), 1L),
+            identical(attr(traced, "_S7_version", exact = TRUE), 1L),
+            methods::validObject(my_generic),
+            methods::validObject(traced)
+          )
+          suppressMessages(untrace(
+            "my_class",
+            where = prop(my_generic, "methods")
+          ))
+          suppressMessages(untrace("my_generic", where = environment()))
+          identical(my_generic, original_generic) &&
+            identical(method(my_generic, my_class), original_method)
+        },
+        args = list(load_order = load_order),
+        libpath = .libPaths(),
+        env = c(R_DEFAULT_PACKAGES = "base")
+      ),
+      TRUE
+    )
+  }
+})
+
+test_that("S4 registrations are removed when S7 unloads", {
   expect_null(callr::r(
     function() {
       options(warn = 2)
-      loadNamespace("S7")
-      NULL
+      library(S7)
+      loadNamespace("methods")
+      detach("package:S7", unload = TRUE)
+      ordinary <- function(x) x
+      suppressMessages(trace(
+        "ordinary",
+        quote(NULL),
+        print = FALSE,
+        where = environment()
+      ))
+      stopifnot(identical(ordinary(1L), 1L))
+      suppressMessages(untrace("ordinary", where = environment()))
+      methods::getClassDef("S7_generic")
     },
     libpath = .libPaths(),
     env = c(R_DEFAULT_PACKAGES = "base")
