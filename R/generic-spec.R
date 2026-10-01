@@ -6,6 +6,10 @@ is_generic <- function(x) {
 }
 
 as_generic <- function(x, call = sys.call(-1L)) {
+  if (is_deprecated_generic(x)) {
+    x <- deprecated_target(x)
+  }
+
   if (is_generic(x)) {
     x
   } else if (is.function(x)) {

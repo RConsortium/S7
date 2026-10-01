@@ -282,27 +282,12 @@ x
 
 #### Deprecated properties
 
-A `setter` + `getter` can be used to to deprecate a property:
+Use `deprecated_property()` when renaming a property so existing code can still read and write the old name. Reading it or assigning a different value warns users to use the replacement:
 
 ```{r}
 Person := new_class(properties = list(
- first_name = class_character,
- firstName = new_property(
-    class_character,
-    default = quote(first_name),
-    getter = function(self) {
-      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-      self@first_name
-    },
-    setter = function(self, value) {
-      if (identical(value, self@first_name)) {
-        return(self)
-      }
-      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-      self@first_name <- value
-      self
-    }
-  )
+  first_name = class_character,
+  deprecated_property("firstName", new = "first_name", when = "1.1.0")
 ))
 
 args(Person)
@@ -317,6 +302,10 @@ hadley@firstName <- "John"
 
 hadley@first_name  # no warning
 ```
+
+The old constructor argument defaults to the new one, so `Person(first_name = "Hadley")` is silent. Explicitly supplying the same value, as in `Person(first_name = "Hadley", firstName = "Hadley")`, is also silent. Printing an object omits deprecated properties.
+
+See `?deprecated_property` for deprecating a property without a replacement, preserving validation, and updating packages that define subclasses. Use `deprecated_generic()` for generics and `deprecated_class()` for classes.
 
 #### Required properties
 
@@ -421,3 +410,31 @@ PositiveRange := new_class(
 # `...` is forwarded to Range()'s custom constructor
 PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
 ```
+
+## Deprecating a class
+
+To deprecate a class, change `new_class()` to `deprecated_class()` in its existing definition and add `when`. You can also recommend another class with `replacement`:
+
+```{r}
+Pet := new_class(properties = list(name = class_character))
+Dog := deprecated_class(
+  properties = list(name = class_character),
+  replacement = Pet,
+  when = "2.0.0"
+)
+
+Dog(name = "Fido") # warns and creates a Dog
+Pet(name = "Fido") # creates a Pet without warning
+```
+
+Keep the old class's parent, properties, constructor, and validator unchanged. Adding deprecation then preserves existing objects and subclasses, including subclasses in packages installed before the deprecation was added.
+
+Methods for `Dog` remain methods for `Dog`; recommending `Pet` does not redirect them. To share a method between the two classes, use a union:
+
+```{r}
+speak := new_generic("x")
+method(speak, Dog | Pet) <- function(x) paste("Hello,", x@name)
+speak(Pet(name = "Fido"))
+```
+
+Omit `replacement` to deprecate a class without recommending another. See `?deprecated_class` for the warning options.

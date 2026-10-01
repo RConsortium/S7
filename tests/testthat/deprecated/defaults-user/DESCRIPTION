@@ -1,0 +1,7 @@
+Package: deprecatedDefaultsUser
+Title: Deprecation Test Fixture
+Version: 1.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "kalinowskit@gmail.com")
+Description: Test installed property defaults across an upstream upgrade.
+License: MIT
+Imports: S7, deprecatedDefaults
