@@ -90,6 +90,18 @@ for more details.
 - [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
   : Generics in other packages
 
+## Deprecation
+
+Helpers for gracefully retiring generics, classes, and properties: old
+code keeps working, but warns users to update.
+
+- [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md)
+  : Deprecate a generic
+- [`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
+  : Deprecate a class
+- [`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
+  : Deprecate a property
+
 ## Compatibility
 
 These tools provide a layer of compatibility between S7 and S3 classes,

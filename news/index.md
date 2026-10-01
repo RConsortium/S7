@@ -77,6 +77,24 @@
   that returns `from` unchanged if it already inherits from `to`,
   preserving any extra properties instead of stripping them
   ([\#428](https://github.com/RConsortium/S7/issues/428)).
+- New
+  [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md),
+  [`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md),
+  and
+  [`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
+  help package authors deprecate S7 APIs while keeping old code working.
+  [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md)
+  replaces
+  [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+  to define a generic that warns, or forwards calls and method
+  registrations to a replacement supplied as `new`. Deprecated
+  properties can forward reads and writes to a replacement property.
+  [`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
+  defines the existing class with a constructor that warns, preserving
+  its methods and subclasses; an optional `replacement` is recommended
+  in the warning. Warnings can use base R or lifecycle
+  ([\#727](https://github.com/RConsortium/S7/issues/727),
+  [\#730](https://github.com/RConsortium/S7/issues/730)).
 - `method<-` now works for double-dispatch operators (e.g. `+`, `==`,
   `%*%`) with plain S3 or S4 classes, even when neither operand is an S7
   object ([\#544](https://github.com/RConsortium/S7/issues/544)).
@@ -209,6 +227,10 @@
   ([\#250](https://github.com/RConsortium/S7/issues/250)), and for
   extending class from other packages
   ([\#317](https://github.com/RConsortium/S7/issues/317)).
+- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+  now accepts exported aliases, so a reference to an old class name
+  still works when that name points to a renamed or moved class
+  ([\#727](https://github.com/RConsortium/S7/issues/727)).
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now allows an abstract class’s constructor to run when it is building
   the parent part of a subclass, so a subclass of an abstract class from
@@ -278,6 +300,11 @@
   gains a `default` argument for supplying a quoted property default
   independently of its constructor
   ([\#755](https://github.com/RConsortium/S7/issues/755)).
+- [`print()`](https://rdrr.io/r/base/print.html) and
+  [`str()`](https://rdrr.io/r/utils/str.html) now omit properties
+  created by
+  [`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
+  ([\#754](https://github.com/RConsortium/S7/issues/754)).
 - `print(<S7_class>)` now shows property defaults inline (`= "value"`)
   and annotates read-only properties (`[read-only]`)
   ([\#439](https://github.com/RConsortium/S7/issues/439)).

@@ -374,28 +374,17 @@ many common patterns of properties.
 
 #### Deprecated properties
 
-A `setter` + `getter` can be used to to deprecate a property:
+Use
+[`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
+when renaming a property so existing code can still read and write the
+old name. Reading it or assigning a different value warns users to use
+the replacement:
 
 ``` r
 
 Person := new_class(properties = list(
- first_name = class_character,
- firstName = new_property(
-    class_character,
-    default = quote(first_name),
-    getter = function(self) {
-      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-      self@first_name
-    },
-    setter = function(self, value) {
-      if (identical(value, self@first_name)) {
-        return(self)
-      }
-      warning("@firstName is deprecated; please use @first_name instead", call. = FALSE)
-      self@first_name <- value
-      self
-    }
-  )
+  first_name = class_character,
+  deprecated_property("firstName", new = "first_name", when = "1.1.0")
 ))
 
 args(Person)
@@ -403,20 +392,37 @@ args(Person)
 #> NULL
 
 hadley <- Person(firstName = "Hadley")
-#> Warning: @firstName is deprecated; please use @first_name instead
+#> Warning: `<Person>@firstName` was deprecated in version 1.1.0.
+#> Please use `<Person>@first_name` instead.
 
 hadley <- Person(first_name = "Hadley") # no warning
 
 hadley@firstName
-#> Warning: @firstName is deprecated; please use @first_name instead
+#> Warning: `<Person>@firstName` was deprecated in version 1.1.0.
+#> Please use `<Person>@first_name` instead.
 #> [1] "Hadley"
 
 hadley@firstName <- "John"
-#> Warning: @firstName is deprecated; please use @first_name instead
+#> Warning: `<Person>@firstName` was deprecated in version 1.1.0.
+#> Please use `<Person>@first_name` instead.
 
 hadley@first_name  # no warning
 #> [1] "John"
 ```
+
+The old constructor argument defaults to the new one, so
+`Person(first_name = "Hadley")` is silent. Explicitly supplying the same
+value, as in `Person(first_name = "Hadley", firstName = "Hadley")`, is
+also silent. Printing an object omits deprecated properties.
+
+See
+[`?deprecated_property`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
+for deprecating a property without a replacement, preserving validation,
+and updating packages that define subclasses. Use
+[`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md)
+for generics and
+[`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
+for classes.
 
 #### Required properties
 
@@ -507,7 +513,7 @@ Range@constructor
 #>     S7::new_object(S7::S7_object(), start = start, end = end, 
 #>         length = length)
 #> }
-#> <environment: 0x563aa68c9cb0>
+#> <environment: 0x56305d77de00>
 ```
 
 In most cases, S7’s default constructor will be all you need. However,
@@ -566,3 +572,52 @@ PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
 #>  @ end     : num 10
 #>  @ positive: logi TRUE
 ```
+
+## Deprecating a class
+
+To deprecate a class, change
+[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+to
+[`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
+in its existing definition and add `when`. You can also recommend
+another class with `replacement`:
+
+``` r
+
+Pet := new_class(properties = list(name = class_character))
+Dog := deprecated_class(
+  properties = list(name = class_character),
+  replacement = Pet,
+  when = "2.0.0"
+)
+
+Dog(name = "Fido") # warns and creates a Dog
+#> Warning in Dog(name = "Fido"): `Dog()` was deprecated in version 2.0.0.
+#> Please use `Pet()` instead.
+#> <Dog>
+#>  @ name: chr "Fido"
+Pet(name = "Fido") # creates a Pet without warning
+#> <Pet>
+#>  @ name: chr "Fido"
+```
+
+Keep the old class’s parent, properties, constructor, and validator
+unchanged. Adding deprecation then preserves existing objects and
+subclasses, including subclasses in packages installed before the
+deprecation was added.
+
+Methods for `Dog` remain methods for `Dog`; recommending `Pet` does not
+redirect them. To share a method between the two classes, use a union:
+
+``` r
+
+speak := new_generic("x")
+method(speak, Dog | Pet) <- function(x) paste("Hello,", x@name)
+speak(Pet(name = "Fido"))
+#> [1] "Hello, Fido"
+```
+
+Omit `replacement` to deprecate a class without recommending another.
+See
+[`?deprecated_class`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
+for the warning options.
