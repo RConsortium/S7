@@ -213,13 +213,13 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
   }
 
   if (is_base_class(to)) {
-    from <- zap_attr(from, c(from_props, "_S7_class", "S7_class", "class"))
+    from <- zap_attr(from, c(from_props, S7_object_attrs))
   } else if (is_S3_class(to)) {
     if (class_is_abstract(to)) {
       msg <- sprintf("Can't convert to abstract class <%s>.", to$class[[1]])
       stop2(msg, call = call)
     }
-    from <- zap_attr(from, c(from_props, "_S7_class", "S7_class"))
+    from <- zap_attr(from, c(from_props, S7_object_attrs))
     class(from) <- to$class
   } else if (is_class(to)) {
     to_props <- prop_storage_rename(names(to@properties))

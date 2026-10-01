@@ -1,3 +1,9 @@
+# Increment only when the stored S7 object representation changes, independently
+# of the package version. Older objects have no version attribute.
+# Keep in sync with R_init_S7() in src/init.c.
+S7_object_version <- 1L
+S7_object_attrs <- c("class", "_S7_class", "_S7_version", "S7_class")
+
 #' Define a new S7 class
 #'
 #' @description
@@ -198,6 +204,7 @@ new_class <- function(
   class_name <- paste(c(package, name), collapse = "::")
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
+  attr(object, "S7_version") <- S7_object_version
   class(object) <- c("S7_class", "S7_object")
   class_ref$class <- object
 
@@ -433,6 +440,7 @@ new_object <- function(`_parent`, ...) {
   attrs <- c(
     list(
       class = class_dispatch(class),
+      `_S7_version` = S7_object_version,
       `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
     ),
     self_attrs,
