@@ -65,6 +65,7 @@ test_that("fallback convert can convert to super class", {
   obj <- convert(foo2(1, 2), to = foo1)
   expect_equal(class(obj), c("foo1", "S7_object"))
   expect_equal(S7_class(obj), foo1)
+  expect_identical(attr(obj, "_S7_version", exact = TRUE), 1L)
   expect_equal(props(obj), list(x = 1))
   expect_equal(attr(obj, "y"), NULL)
 })
@@ -115,11 +116,15 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
 test_that("fallback convert can convert to S3 class", {
   local_methods(convert)
   factor2 := new_class(
-    class_factor,
+    parent = class_factor,
     properties = list(x = class_double)
   )
-  obj <- convert(factor2(1, "x", x = 1), to = class_factor)
+  obj <- factor2(.data = 1, levels = "x", x = 1)
+  attr(obj, "S7_version") <- "user"
+  obj <- convert(obj, to = class_factor)
   expect_equal(class(obj), "factor")
+  expect_null(attr(obj, "_S7_version", exact = TRUE))
+  expect_identical(attr(obj, "S7_version", exact = TRUE), "user")
   expect_false(S7_inherits(obj))
   expect_equal(attr(obj, "x"), NULL)
 })
@@ -130,8 +135,12 @@ test_that("fallback convert can convert to base type", {
     parent = class_character,
     properties = list(x = class_double)
   )
-  obj <- convert(character2("x", x = 1), to = class_character)
+  obj <- character2(.data = "x", x = 1)
+  attr(obj, "S7_version") <- "user"
+  obj <- convert(obj, to = class_character)
   expect_equal(attr(obj, "class"), NULL)
+  expect_null(attr(obj, "_S7_version", exact = TRUE))
+  expect_identical(attr(obj, "S7_version", exact = TRUE), "user")
   expect_false(S7_inherits(obj))
   expect_equal(attr(obj, "x"), NULL)
 })

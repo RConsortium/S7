@@ -170,7 +170,8 @@ SEXP S7_obj_dispatch(SEXP object) {
 }
 
 SEXP S7_object_(void) {
-  return Rf_duplicate(s7_proto_object);
+  // Share the cached class and version values; copy the attribute list.
+  return Rf_shallow_duplicate(s7_proto_object);
 }
 
 SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {

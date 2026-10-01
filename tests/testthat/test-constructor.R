@@ -49,6 +49,53 @@ test_that("generates correct arguments from parent + properties", {
   expect_equal(args$parent, pairlist())
 })
 
+test_that("data-frame property defaults use a compact executable call (#755)", {
+  Survey := new_class(properties = list(survey = class_data.frame))
+  default <- formals(Survey)$survey
+
+  expect_identical(default, quote(data.frame()))
+  expect_type(default[[1L]], "symbol")
+  expect_identical(parse(text = deparse(default))[[1L]], default)
+  expect_identical(
+    deparse(args(Survey)),
+    c("function (survey = data.frame()) ", "NULL")
+  )
+
+  empty <- class_data.frame$constructor()
+  expect_identical(Survey()@survey, empty)
+  expect_identical(eval(parse(text = deparse(default))[[1L]], baseenv()), empty)
+  survey <- data.frame(x = 1:3, row.names = letters[1:3])
+  expect_identical(Survey(survey = survey)@survey, survey)
+})
+
+test_that("data-frame defaults preserve selection and inheritance", {
+  Survey := new_class(
+    properties = list(
+      data_first = class_data.frame | NULL,
+      null_first = NULL | class_data.frame,
+      explicit = new_property(
+        class_data.frame,
+        default = quote(data.frame(x = 1L))
+      )
+    )
+  )
+  defaults <- as.pairlist(alist(
+    data_first = data.frame(),
+    null_first = NULL,
+    explicit = data.frame(x = 1L)
+  ))
+  expect_identical(formals(Survey), defaults)
+  expect_identical(Survey()@data_first, class_data.frame$constructor())
+  expect_null(Survey()@null_first)
+  expect_identical(Survey()@explicit, data.frame(x = 1L))
+
+  Child := new_class(parent = Survey)
+  expect_identical(formals(Child), defaults)
+  expect_identical(Child()@data_first, Survey()@data_first)
+  expect_null(Child()@null_first)
+  expect_identical(Child()@explicit, Survey()@explicit)
+})
+
 test_that("generates meaningful constructors", {
   expect_snapshot(
     {
