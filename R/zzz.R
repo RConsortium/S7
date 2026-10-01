@@ -30,6 +30,8 @@ S7_object <- new_class(
     }
   }
 )
+methods::setOldClass("S7_object")
+methods::setOldClass(c("S7_class", "S7_object"))
 
 .S7_type <- NULL
 # Defined onLoad because it depends on R version
@@ -118,6 +120,7 @@ on_load_define_S7_generic <- function() {
     ),
     parent = class_function
   )
+  register_S7_function(S7_generic)
 }
 
 is_S7_generic <- function(x) inherits(x, "S7_generic")
@@ -132,9 +135,11 @@ on_load_define_S7_method <- function() {
     parent = class_function,
     properties = list(generic = S7_generic, signature = class_list)
   )
+  register_S7_function(S7_method)
 }
 
-register_S7_function <- function(class, where) {
+register_S7_function <- function(class) {
+  where <- topenv()
   slots <- lapply(class@properties, S4_property_class, S4_env = where)
   slots$`_S7_class` <- "ANY"
   slots$`_S7_version` <- "integer"
@@ -153,30 +158,20 @@ register_S7_function <- function(class, where) {
     S4Class = class@name,
     where = where
   )
-}
-
-on_load_register_S4 <- function() {
-  where <- topenv()
-  methods::setOldClass("S7_object", where = where)
-  methods::setOldClass(c("S7_class", "S7_object"), where = where)
-  register_S7_function(S7_generic, where)
-  register_S7_function(S7_method, where)
   if (getRversion() < "4.7.0") {
-    make_traceable("S7_generic", where)
-    make_traceable("S7_method", where)
+    make_traceable(class@name)
   }
 }
 
 # Before R 4.7, trace() assumes a single class string and its old-class
 # coercion can discard the trace wrapper (#584, r-devel/r-svn#262).
 # Newer R versions inherit the slots above without a custom initializer.
-make_traceable <- function(class, where) {
+make_traceable <- function(class) {
   props <- setdiff(names(methods::getSlots(class)), c(".Data", ".S3Class"))
 
   methods::setClass(
     paste0(class, "WithTrace"),
-    contains = c(class, "traceable"),
-    where = where
+    contains = c(class, "traceable")
   )
   methods::setMethod(
     "initialize",
@@ -194,8 +189,7 @@ make_traceable <- function(class, where) {
       }
       attr(.Object, ".S3Class") <- class(original)
       .Object
-    },
-    where = where
+    }
   )
 }
 
@@ -226,5 +220,4 @@ make_traceable <- function(class, where) {
   on_load_define_or_methods()
   on_load_define_S7_type()
   on_load_define_union_classes()
-  on_load_register_S4()
 }
