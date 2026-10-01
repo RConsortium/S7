@@ -22,12 +22,46 @@ test_that("local_S4_classes cleans up S4 classes registered during scope", {
   expect_equal(methods::getClasses(where = env, inherits = FALSE), character())
 })
 
+test_that("S4 inheritance records the S7 representation version (#711)", {
+  local_S4_classes()
+  methods::setClass("VersionedS4Parent", slots = list(x = "numeric"))
+  VersionedS7 := new_class(parent = methods::getClass("VersionedS4Parent"))
+  child <- VersionedS7(x = 1)
+  expect_identical(attr(child, "_S7_version", exact = TRUE), 1L)
+  expect_identical(methods::validObject(child), TRUE)
+
+  methods::setClass("VersionedS4Child", contains = S4_contains(VersionedS7))
+  object <- methods::new("VersionedS4Child", x = 2)
+  expect_identical(attr(object, "_S7_version", exact = TRUE), 1L)
+  expect_identical(methods::validObject(object), TRUE)
+})
+
 test_that("S4_register registers an S7 class so it can be used with S4 methods", {
   local_S4_classes()
   S4regS7 := new_class(package = NULL)
   S4regS7_S4 <- S4_register(S4regS7)
   expect_equal(S4regS7_S4, "S4regS7")
   expect_contains(methods::extends("S4regS7"), c("S4regS7", "S7_object"))
+})
+
+test_that("S4_register accepts shared class references in S7 objects", {
+  local_S4_classes()
+  S4regShared := new_class(
+    properties = list(x = class_double),
+    package = NULL
+  )
+  S4regSharedChild := new_class(parent = S4regShared, package = NULL)
+  parent <- S4regShared(x = 1)
+  child <- S4regSharedChild(x = 2)
+  S4_register(S4regSharedChild)
+
+  expect_identical(methods::validObject(parent), TRUE)
+  expect_identical(methods::validObject(child), TRUE)
+  expect_identical(methods::validObject(S4regShared(x = 3)), TRUE)
+  expect_identical(
+    methods::validObject(convert(child, to = S4regShared)),
+    TRUE
+  )
 })
 
 test_that("S4_contains requires prior S4 registration", {
@@ -128,7 +162,7 @@ test_that("S4_register can reify S7 properties as slots for S4 subclasses", {
   expect_equal(S4regContainsChild_S4, "S7::S4regContainsChild")
   expect_equal(
     methods::slotNames(S4regContainsChild_S4),
-    c("y", "x", "_S7_class", ".S3Class")
+    c("y", "x", "_S7_class", "_S7_version", ".S3Class")
   )
   expect_contains(
     methods::extends(S4regContainsChild_S4),
@@ -231,11 +265,19 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
   S4regNewChild_S4 <- S4_contains(S4regNewChild)
   expect_equal(
     methods::slotNames("S4regNewChild"),
-    c("status", "metadata", "_S7_class", "assays", "rowData", ".S3Class")
+    c(
+      "status",
+      "metadata",
+      "_S7_class",
+      "_S7_version",
+      "assays",
+      "rowData",
+      ".S3Class"
+    )
   )
   expect_contains(
     methods::slotNames(S4regNewChild_S4),
-    c("assays", "rowData", "metadata", "status", "_S7_class")
+    c("assays", "rowData", "metadata", "status", "_S7_class", "_S7_version")
   )
   setClass(
     "S4regNewGrandChild",
@@ -639,7 +681,7 @@ test_that("S7 classes can extend S4 classes", {
   expect_equal(as.character(methods::getClass("Child")@className), "Child")
   expect_equal(
     methods::slotNames("Child"),
-    c("y", "_S7_class", "x", ".S3Class")
+    c("y", "_S7_class", "_S7_version", "x", ".S3Class")
   )
   expect_equal(methods::slot(child, "x"), 2)
   expect_equal(methods::slot(child, "y"), "b")

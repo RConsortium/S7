@@ -3,7 +3,7 @@
 #include <R_ext/Rdynload.h>
 
 /* .Call calls */
-extern SEXP method_(SEXP, SEXP, SEXP, SEXP);
+extern SEXP method_(SEXP, SEXP);
 extern SEXP method_call_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP test_call_(SEXP, SEXP, SEXP, SEXP);
 extern SEXP S7_class_(SEXP);
@@ -20,7 +20,7 @@ extern void class_type_init(void);
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef CallEntries[] = {
-    CALLDEF(method_, 4),
+    CALLDEF(method_, 2),
     CALLDEF(S7_object_, 0),
     CALLDEF(S7_class_, 1),
     CALLDEF(prop_, 2),
@@ -33,7 +33,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 static const R_ExternalMethodDef ExternalEntries[] = {
-    CALLDEF(method_call_, 2),
+    CALLDEF(method_call_, 3),
     {NULL, NULL, 0}
 };
 
@@ -41,6 +41,7 @@ SEXP sym_ANY;
 SEXP sym_S7_class;
 SEXP sym_S7_class_legacy;
 SEXP sym_class;
+static SEXP sym_S7_version;
 
 SEXP sym_name;
 SEXP sym_parent;
@@ -54,6 +55,7 @@ SEXP sym_getter;
 SEXP sym_dot_should_validate;
 SEXP sym_dot_getting_prop;
 SEXP sym_dot_setting_prop;
+SEXP sym_u_dispatched_super;
 
 // `comment` lacks a predefined R_*Symbol, unlike the other special names.
 SEXP sym_comment;
@@ -82,6 +84,7 @@ SEXP ns_S7;
 
 SEXP R_TRUE, R_FALSE;
 SEXP s7_proto_object;
+static SEXP r_string_S7_object, s7_object_version;
 
 static SEXP make_s7_proto_object(void)
 {
@@ -90,7 +93,8 @@ static SEXP make_s7_proto_object(void)
         Rf_install("asS3"), obj, /*flag =*/ R_TRUE, /*complete =*/ R_FALSE
     ));
     obj = PROTECT(Rf_eval(asS3_call, R_BaseEnv));
-    Rf_classgets(obj, Rf_mkString("S7_object"));
+    Rf_classgets(obj, r_string_S7_object);
+    Rf_setAttrib(obj, sym_S7_version, s7_object_version);
 
     UNPROTECT(3);
     return obj;
@@ -105,6 +109,7 @@ void R_init_S7(DllInfo *dll)
     sym_S7_class = Rf_install("_S7_class");
     // Legacy name used by objects created with an older version of S7.
     sym_S7_class_legacy = Rf_install("S7_class");
+    sym_S7_version = Rf_install("_S7_version");
     sym_class = Rf_install("class");
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
@@ -117,6 +122,7 @@ void R_init_S7(DllInfo *dll)
     sym_dot_should_validate = Rf_install(".should_validate");
     sym_dot_getting_prop = Rf_install(".getting_prop");
     sym_dot_setting_prop = Rf_install(".setting_prop");
+    sym_u_dispatched_super = Rf_install("_dispatched_super");
 
     sym_comment = Rf_install("comment");
 
@@ -139,6 +145,9 @@ void R_init_S7(DllInfo *dll)
     ns_S7 = R_FindNamespace(Rf_mkString("S7"));
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
     R_PreserveObject(R_FALSE = Rf_ScalarLogical(0));
+    R_PreserveObject(r_string_S7_object = Rf_mkString("S7_object"));
+    // Keep in sync with S7_object_version in R/class.R.
+    R_PreserveObject(s7_object_version = Rf_ScalarInteger(1));
     prop_init();
     class_type_init();
     R_PreserveObject(s7_proto_object = make_s7_proto_object());

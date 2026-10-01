@@ -1,3 +1,9 @@
+# Increment only when the stored S7 object representation changes, independently
+# of the package version. Older objects have no version attribute.
+# Keep in sync with R_init_S7() in src/init.c.
+S7_object_version <- 1L
+S7_object_attrs <- c("class", "_S7_class", "_S7_version", "S7_class")
+
 #' Define a new S7 class
 #'
 #' @description
@@ -177,7 +183,7 @@ new_class <- function(
   }
 
   class_ref <- new_class_ref()
-  constructor_env <- new.env(parent = environment(constructor))
+  constructor_env <- new.env(hash = FALSE, parent = environment(constructor))
   constructor_env$.S7_class_ref <- class_ref
   environment(constructor) <- constructor_env
 
@@ -198,6 +204,7 @@ new_class <- function(
   class_name <- paste(c(package, name), collapse = "::")
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
+  attr(object, "S7_version") <- S7_object_version
   class(object) <- c("S7_class", "S7_object")
   class_ref$class <- object
 
@@ -392,7 +399,8 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class_ref <- get_class_ref(parent.frame())
+  # Skip constructor arguments and local variables when finding the reference.
+  class_ref <- get_class_ref(parent.env(parent.frame()))
   if (inherits(class_ref, "S7_class_ref")) {
     class <- class_ref$class
   } else {
@@ -432,6 +440,7 @@ new_object <- function(`_parent`, ...) {
   attrs <- c(
     list(
       class = class_dispatch(class),
+      `_S7_version` = S7_object_version,
       `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
     ),
     self_attrs,
@@ -547,7 +556,7 @@ S7_class_storage <- function(class) {
 # the reference instead of the closure, avoiding `sys.function()` and ensuring
 # that objects serialized together share a single copy of their class.
 new_class_ref <- function() {
-  ref <- new.env(parent = emptyenv())
+  ref <- new.env(hash = FALSE, parent = emptyenv())
   class(ref) <- "S7_class_ref"
   ref
 }
@@ -556,7 +565,7 @@ get_class_ref <- function(env, default = NULL) {
   get0(
     ".S7_class_ref",
     envir = env,
-    inherits = TRUE,
+    inherits = FALSE,
     ifnotfound = default
   )
 }
