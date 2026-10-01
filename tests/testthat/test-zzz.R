@@ -67,6 +67,7 @@ test_that("S7 methods can be traced", {
   my_class := new_class(package = NULL)
   method(my_generic, my_class) <- function(x) "result"
   original <- method(my_generic, my_class)
+  expect_identical(attr(original, "_S7_version", exact = TRUE), 1L)
   obj <- my_class()
 
   calls <- new.env()
@@ -82,6 +83,7 @@ test_that("S7 methods can be traced", {
   expect_identical(traced@generic, original@generic)
   expect_identical(traced@signature, original@signature)
   expect_identical(S7_class(traced), S7_class(original))
+  expect_identical(attr(traced, "_S7_version", exact = TRUE), 1L)
   expect_identical(methods::validObject(traced), TRUE)
   expect_output(
     print(method(my_generic, my_class)),
@@ -100,6 +102,7 @@ test_that("S7 generics can be traced", {
   my_class := new_class(package = NULL)
   method(my_generic, my_class) <- function(x) "result"
   original <- my_generic
+  expect_identical(attr(original, "_S7_version", exact = TRUE), 1L)
   original_method <- method(my_generic, my_class)
   obj <- my_class()
 
@@ -116,6 +119,7 @@ test_that("S7 generics can be traced", {
   expect_identical(my_generic@dispatch_args, original@dispatch_args)
   expect_identical(my_generic@methods, original@methods)
   expect_identical(S7_class(my_generic), S7_class(original))
+  expect_identical(attr(my_generic, "_S7_version", exact = TRUE), 1L)
   expect_identical(methods::validObject(my_generic), TRUE)
   expect_identical(method(my_generic, my_class), original_method)
   expect_identical(method(my_generic, object = obj), original_method)

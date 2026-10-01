@@ -142,11 +142,15 @@ register_S7_function <- function(class) {
   where <- topenv()
   slots <- lapply(class@properties, S4_property_class, S4_env = where)
   slots$`_S7_class` <- "ANY"
+  slots$`_S7_version` <- "integer"
   methods::setClass(
     class@name,
     contains = c("function", "S7_object"),
     slots = slots,
-    prototype = methods::prototype(`_S7_class` = S7_class_storage(class)),
+    prototype = methods::prototype(
+      `_S7_class` = S7_class_storage(class),
+      `_S7_version` = S7_object_version
+    ),
     where = where
   )
   methods::setOldClass(
