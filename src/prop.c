@@ -1,8 +1,10 @@
 #include "compat.h"
+#include <stdio.h>
 #include <string.h>
 
 extern SEXP sym_S7_class;
 extern SEXP sym_S7_class_legacy;
+extern SEXP sym_class;
 
 extern SEXP sym_name;
 extern SEXP sym_parent;
@@ -40,12 +42,20 @@ SEXP get_S7_class(SEXP object) {
   SEXP S7_class = Rf_getAttrib(object, sym_S7_class);
   if (S7_class == R_NilValue)
     S7_class = Rf_getAttrib(object, sym_S7_class_legacy);
+  if (TYPEOF(S7_class) == ENVSXP && Rf_inherits(S7_class, "S7_class_ref"))
+    S7_class = s7_get_var_in_frame(S7_class, sym_class, R_NilValue);
   return S7_class;
 }
 
 // R-callable wrapper around get_S7_class().
 SEXP S7_class_(SEXP object) {
   return get_S7_class(object);
+}
+
+SEXP obj_addr_(SEXP object) {
+  char address[2 * sizeof(void *) + 3];
+  snprintf(address, sizeof(address), "%p", (void *) object);
+  return Rf_mkString(address);
 }
 
 static inline

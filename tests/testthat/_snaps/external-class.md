@@ -40,7 +40,7 @@
       resolve_external_class_req(new_external_class("too.old", "X"))
     Condition
       Error:
-      ! Package 'too.old' must export `X` as the S7 class <too.old::X>.
+      ! Package 'too.old' must export `X` as an S7 class.
 
 # external class works as a property type for self-reference
 
@@ -68,4 +68,3 @@
       Error:
       ! Can't find external class <dep::Animal>:
       * Package 'dep' needs version 2.0.0, but only 1.0.0 is available.
-

@@ -1,3 +1,9 @@
+# Increment only when the stored S7 object representation changes, independently
+# of the package version. Older objects have no version attribute.
+# Keep in sync with R_init_S7() in src/init.c.
+S7_object_version <- 1L
+S7_object_attrs <- c("class", "_S7_class", "_S7_version", "S7_class")
+
 #' Define a new S7 class
 #'
 #' @description
@@ -34,8 +40,10 @@
 #'   argument for each property.
 #'
 #'   A custom constructor should call `new_object()` to create the S7 object.
-#'   The first argument, `.data`, should be an instance of the parent class
-#'   (if used). The subsequent arguments are used to set the properties.
+#'   `new_class()` automatically associates a custom constructor with its class,
+#'   so no additional class argument is needed. The first argument to
+#'   `new_object()`, `_parent`, should be an instance of the parent class (if
+#'   used). The subsequent arguments are used to set the properties.
 #' @param validator A function taking a single argument, `self`, the object
 #'   to validate.
 #'
@@ -174,6 +182,11 @@ new_class <- function(
     )
   }
 
+  class_ref <- new_class_ref()
+  constructor_env <- new.env(hash = FALSE, parent = environment(constructor))
+  constructor_env$.S7_class_ref <- class_ref
+  environment(constructor) <- constructor_env
+
   object <- constructor
   # A class's metadata is stored as plain attributes on the class object.
   # Must synchronise with prop_names().
@@ -191,7 +204,9 @@ new_class <- function(
   class_name <- paste(c(package, name), collapse = "::")
   attr(object, "S7_class_name") <- class_name
   attr(object, "S7_dispatch") <- S7_class_dispatch(class_name, parent_resolved)
+  attr(object, "S7_version") <- S7_object_version
   class(object) <- c("S7_class", "S7_object")
+  class_ref$class <- object
 
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
@@ -335,7 +350,7 @@ class_is_abstract <- function(class) {
   if (is_class(class)) {
     attr(class, "abstract", TRUE) # called on construction
   } else if (is_S3_class(class)) {
-    class$abstract %||% is_default_constructor(class$constructor)
+    class$abstract %||% is_S3_stub_constructor(class$constructor)
   } else {
     FALSE
   }
@@ -384,7 +399,13 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @rdname new_class
 #' @export
 new_object <- function(`_parent`, ...) {
-  class <- sys.function(sys.parent())
+  # Skip constructor arguments and local variables when finding the reference.
+  class_ref <- get_class_ref(parent.env(parent.frame()))
+  if (inherits(class_ref, "S7_class_ref")) {
+    class <- class_ref$class
+  } else {
+    class <- sys.function(sys.parent())
+  }
   if (!inherits(class, "S7_class")) {
     stop2("`new_object()` must be called from within a constructor.")
   }
@@ -417,7 +438,11 @@ new_object <- function(`_parent`, ...) {
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
   attrs <- c(
-    list(class = class_dispatch(class), `_S7_class` = class),
+    list(
+      class = class_dispatch(class),
+      `_S7_version` = S7_object_version,
+      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+    ),
     self_attrs,
     attributes(`_parent`)
   )
@@ -472,7 +497,11 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
     cat("\n")
   }
 
-  str_nest(props(object), "@", ..., nest.lev = nest.lev)
+  properties <- S7_class(object)@properties
+  properties <- properties[
+    !vapply(properties, is_deprecated_property, logical(1))
+  ]
+  str_nest(props(object, names(properties)), "@", ..., nest.lev = nest.lev)
 }
 
 #' Retrieve the class specification of an object
@@ -511,6 +540,33 @@ S7_class <- function(object) {
     },
     S3 = new_S3_class(class(object)),
     base = base_S7_class(object)
+  )
+}
+
+S7_class_storage <- function(class) {
+  get_class_ref(environment(class), default = class)
+}
+
+# Class objects are closures, which leads to two problems:
+# * `sys.function()` does deep copies
+# * `serialize()`/`saveRDS()` only de-dups environments
+# We solve both problems with an environment-backed class reference. The
+# reference is bound as `.S7_class_ref` in the constructor's environment and
+# points back to the completed class through `$class`. Ordinary S7 objects store
+# the reference instead of the closure, avoiding `sys.function()` and ensuring
+# that objects serialized together share a single copy of their class.
+new_class_ref <- function() {
+  ref <- new.env(hash = FALSE, parent = emptyenv())
+  class(ref) <- "S7_class_ref"
+  ref
+}
+
+get_class_ref <- function(env, default = NULL) {
+  get0(
+    ".S7_class_ref",
+    envir = env,
+    inherits = FALSE,
+    ifnotfound = default
   )
 }
 

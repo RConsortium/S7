@@ -36,6 +36,7 @@ reference:
   - method_explain
   - S7_class
   - S7_class_desc
+  - S7_generic_call
   - S7_classes
   - S7_methods
 
@@ -47,6 +48,15 @@ reference:
   - S7_on_load
   - new_external_class
   - new_external_generic
+
+- title: Deprecation
+  desc: >
+    Helpers for gracefully retiring generics, classes, and properties:
+    old code keeps working, but warns users to update.
+  contents:
+  - deprecated_generic
+  - deprecated_class
+  - deprecated_property
 
 - title: Compatibility
   desc: >

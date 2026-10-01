@@ -198,7 +198,7 @@ convert_method <- function(from, to) {
     }
   }
 
-  .Call(method_, convert, list(from_dispatch, to_class), environment(), FALSE)
+  .Call(method_, convert, list(from_dispatch, to_class))
 }
 
 convert_up <- function(from, to, call = sys.call(-1L)) {
@@ -213,13 +213,13 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
   }
 
   if (is_base_class(to)) {
-    from <- zap_attr(from, c(from_props, "_S7_class", "S7_class", "class"))
+    from <- zap_attr(from, c(from_props, S7_object_attrs))
   } else if (is_S3_class(to)) {
     if (class_is_abstract(to)) {
       msg <- sprintf("Can't convert to abstract class <%s>.", to$class[[1]])
       stop2(msg, call = call)
     }
-    from <- zap_attr(from, c(from_props, "_S7_class", "S7_class"))
+    from <- zap_attr(from, c(from_props, S7_object_attrs))
     class(from) <- to$class
   } else if (is_class(to)) {
     to_props <- prop_storage_rename(names(to@properties))
@@ -229,7 +229,7 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
     }
 
     from <- zap_attr(from, c(setdiff(from_props, to_props), "S7_class"))
-    attr(from, "_S7_class") <- to
+    attr(from, "_S7_class") <- if (isS4(from)) to else S7_class_storage(to)
     class(from) <- class_dispatch(to)
   } else if (is_S4_coerce(from, to)) {
     from <- convert_S4(from, to)

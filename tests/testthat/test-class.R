@@ -5,7 +5,7 @@ test_that("S7 classes possess expected properties", {
     prop_names(foo),
     setdiff(
       names(attributes(foo)),
-      c("class", "S7_class_name", "S7_dispatch")
+      c("class", "S7_class_name", "S7_dispatch", "S7_version")
     )
   )
   expect_type(foo@name, "character")
@@ -103,6 +103,25 @@ test_that("inheritance lets child properties narrow the parent's type", {
     foo1,
     properties = list(x = new_property(Child, default = quote(Child())))
   ))
+})
+
+test_that("inheritance lets S3 properties narrow to subclasses with shared base classes (#747)", {
+  Parent := new_class(
+    package = NULL,
+    properties = list(coordinates = new_S3_class("Coord"))
+  )
+
+  expect_no_error({
+    Child := new_class(
+      parent = Parent,
+      package = NULL,
+      properties = list(
+        coordinates = new_S3_class(
+          c("CoordCartesian", "Coord", "ggproto", "gg")
+        )
+      )
+    )
+  })
 })
 
 test_that("inheritance lets child properties narrow with S4 inheritance", {
@@ -363,6 +382,156 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
+test_that("S7 objects record their representation version (#711)", {
+  Foo := new_class(properties = list(x = class_double))
+  Bar := new_class(parent = Foo)
+  Number := new_class(parent = class_double)
+  Frame := new_class(parent = class_data.frame)
+  Environment := new_class(parent = class_environment)
+  Custom := new_class(
+    parent = class_double,
+    constructor = function(x) new_object(x)
+  )
+  generic := new_generic("x")
+
+  classes <- list(S7_object, Foo, Bar, Number, Frame, Environment, Custom)
+  for (class in classes) {
+    expect_identical(attr(class, "S7_version", exact = TRUE), 1L)
+    expect_null(attr(class, "_S7_version", exact = TRUE))
+  }
+
+  objects <- list(
+    S7_object(),
+    Foo(x = 1),
+    Bar(x = 1),
+    Number(.data = 1),
+    Frame(.data = data.frame(x = 1)),
+    Environment(),
+    Custom(x = 1),
+    generic
+  )
+  for (object in objects) {
+    expect_identical(attr(object, "_S7_version", exact = TRUE), 1L)
+    expect_null(attr(object, "S7_version", exact = TRUE))
+  }
+})
+
+test_that("S7_object() shares immutable version and class attributes (#711)", {
+  x <- S7_object()
+  y <- S7_object()
+  expect_equal(
+    obj_addr(attr(x, "_S7_version", exact = TRUE)),
+    obj_addr(attr(y, "_S7_version", exact = TRUE))
+  )
+  expect_equal(obj_addr(class(x)), obj_addr(class(y)))
+
+  attr(x, "_S7_version")[[1]] <- 2L
+  class(x)[[1]] <- "Changed"
+  expect_identical(attr(y, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(S7_object(), "_S7_version", exact = TRUE), 1L)
+  expect_identical(class(y), "S7_object")
+  expect_identical(class(S7_object()), "S7_object")
+})
+
+test_that("new_object() stores a shared class reference (#742)", {
+  Foo := new_class(package = NULL)
+  x <- Foo()
+  y <- Foo()
+
+  x_ref <- attr(x, "_S7_class", exact = TRUE)
+  y_ref <- attr(y, "_S7_class", exact = TRUE)
+  expect_type(x_ref, "environment")
+  expect_equal(obj_addr(x_ref), obj_addr(y_ref))
+  expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("custom constructors use a shared class reference (#742)", {
+  Foo := new_class(
+    constructor = function(x) new_object(S7_object(), x = x),
+    properties = list(x = class_double),
+    package = NULL
+  )
+
+  x <- Foo(1)
+  y <- Foo(2)
+  expect_equal(
+    obj_addr(attr(x, "_S7_class", exact = TRUE)),
+    obj_addr(attr(y, "_S7_class", exact = TRUE))
+  )
+  expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("constructor properties don't shadow the shared class reference", {
+  Foo := new_class(properties = list(.S7_class_ref = class_double))
+
+  x <- Foo(.S7_class_ref = 1)
+  expect_equal(x@.S7_class_ref, 1)
+  expect_identical(S7_class(x), Foo)
+})
+
+test_that("constructor locals don't shadow the shared class reference", {
+  Other := new_class()
+  Foo := new_class(constructor = function() {
+    .S7_class_ref <- attr(Other(), "_S7_class", exact = TRUE)
+    new_object(S7_object())
+  })
+
+  expect_identical(S7_class(Foo()), Foo)
+})
+
+test_that("serialisation preserves shared class references (#742)", {
+  Foo := new_class(package = NULL)
+  xy <- unserialize(serialize(list(Foo(), Foo()), NULL))
+
+  expect_equal(
+    obj_addr(attr(xy[[1]], "_S7_class", exact = TRUE)),
+    obj_addr(attr(xy[[2]], "_S7_class", exact = TRUE))
+  )
+  expect_equal(
+    obj_addr(S7_class(xy[[1]])),
+    obj_addr(S7_class(xy[[2]]))
+  )
+
+  Foo_rds <- unserialize(serialize(Foo, NULL))
+  x <- Foo_rds()
+  y <- Foo_rds()
+  expect_equal(
+    obj_addr(attr(x, "_S7_class", exact = TRUE)),
+    obj_addr(attr(y, "_S7_class", exact = TRUE))
+  )
+  expect_equal(
+    obj_addr(S7_class(x)),
+    obj_addr(S7_class(y))
+  )
+})
+
+test_that("classes in namespaces use shared class references (#742)", {
+  pkg := local_package({
+    Foo := new_class()
+  })
+  Foo <- pkg$Foo
+  x <- Foo()
+  y <- Foo()
+
+  expect_equal(
+    obj_addr(attr(x, "_S7_class", exact = TRUE)),
+    obj_addr(attr(y, "_S7_class", exact = TRUE))
+  )
+  expect_equal(obj_addr(S7_class(x)), obj_addr(Foo))
+  expect_equal(obj_addr(S7_class(y)), obj_addr(Foo))
+})
+
+test_that("new_object() supports constructors without a class reference", {
+  Foo := new_class(package = NULL)
+  environment(Foo) <- parent.env(environment(Foo))
+
+  x <- Foo()
+  expect_type(attr(x, "_S7_class", exact = TRUE), "closure")
+  expect_equal(S7_class(x), Foo)
+})
+
 test_that("new_object() can be forced lazily from a constructor", {
   Foo := new_class(
     constructor = function() identity(new_object(S7_object())),
@@ -422,11 +591,47 @@ test_that("new_object() allows arbitrary placeholder for abstract S3 parents (#6
   expect_no_error(Concrete(list(1, "A")))
 })
 
-test_that("new_object() has fallback for S3 classes created by older S7 (#686)", {
-  old_s3 <- class_POSIXt
-  old_s3$abstract <- NULL
-  Foo := new_class(parent = old_s3, constructor = \(x) new_object(x))
+test_that("new_object() supports legacy abstract S3 classes (#686, #747)", {
+  old_s3 <- structure(
+    list(
+      class = "POSIXt",
+      constructor = local({
+        class <- "POSIXt"
+        function(.data) {
+          stop(
+            sprintf("S3 class <%s> doesn't have a constructor", class[[1]]),
+            call. = FALSE
+          )
+        }
+      }),
+      validator = NULL
+    ),
+    class = "S7_S3_class"
+  )
+  Foo := new_class(
+    parent = old_s3,
+    package = NULL,
+    constructor = \(x) new_object(x)
+  )
   expect_no_error(Foo(list(1, "A")))
+})
+
+test_that("new_object() validates legacy concrete S3 parents", {
+  old_s3 <- structure(
+    list(
+      class = "foo",
+      constructor = function(.data) structure(.data, class = "foo"),
+      validator = NULL
+    ),
+    class = "S7_S3_class"
+  )
+  Foo := new_class(
+    parent = old_s3,
+    package = NULL,
+    constructor = \(x) new_object(x)
+  )
+
+  expect_snapshot(Foo(list()), error = TRUE)
 })
 
 test_that("new_object() errors if `_parent` is supplied but class has no parent", {
@@ -599,6 +804,8 @@ test_that("can round trip to disk and back", {
   f2 <- readRDS(path)
 
   expect_equal(f, f2)
+  expect_identical(attr(f2, "_S7_version", exact = TRUE), 1L)
+  expect_identical(attr(f2@x, "_S7_version", exact = TRUE), 1L)
   rm(foo1, foo2, f, envir = globalenv())
 })
 
@@ -612,6 +819,7 @@ test_that("objects from a previous version of S7 still work (#677)", {
   obj <- Foo(1, x = 2)
   attr(obj, "S7_class") <- attr(obj, "_S7_class", exact = TRUE)
   attr(obj, "_S7_class") <- NULL
+  attr(obj, "_S7_version") <- NULL
 
   expect_equal(S7_class(obj), Foo)
   expect_equal(obj@x, 2)
@@ -619,6 +827,7 @@ test_that("objects from a previous version of S7 still work (#677)", {
 
   obj@x <- 3
   expect_equal(obj@x, 3)
+  expect_null(attr(obj, "_S7_version", exact = TRUE))
 
   expect_equal(S7_data(obj), 1)
   expect_equal(convert(obj, to = class_double), 1)

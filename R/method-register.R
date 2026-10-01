@@ -16,6 +16,19 @@
 #' in your `.onLoad`. This ensures that all methods are dynamically registered
 #' when needed.
 #'
+#' @section Operators:
+#' Binary operators such as `+` and `-` dispatch on `e1` and `e2`. To define
+#' a unary method, use `list(Foo, class_missing)` as the signature and a
+#' function with arguments `e1` and `e2`; `e2` will be missing when called.
+#' This lets unary and binary methods coexist on the same class.
+#'
+#' The `!` operator is always unary. Use `Foo` (or `list(Foo)`) as its
+#' signature and a function with argument `e1`.
+#'
+#' If no unary method is registered, the operator falls back to R's base
+#' behavior for the underlying object. Errors raised inside a registered
+#' method are propagated.
+#'
 #' @param generic A generic function, i.e. an [S7 generic][new_generic],
 #'   an [external generic][new_external_generic], an [S3 generic][UseMethod],
 #'   or an [S4 generic][methods::setGeneric].
@@ -281,7 +294,8 @@ as_signature <- function(signature, generic, call = sys.call(-1L)) {
   if (n == 1) {
     # Accept a bare list of length 1 too, for symmetry with multi-dispatch
     # generics where a list is required (#555).
-    if (is_plain_list(signature) && length(signature) == 1) {
+    if (is_plain_list(signature)) {
+      check_signature_list(signature, 1, call = call)
       signature <- signature[[1]]
     }
     new_signature(list(as_class(signature, arg = "signature")))

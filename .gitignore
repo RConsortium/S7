@@ -8,3 +8,5 @@ compile_commands.json
 .vscode
 tools/evolution/logs
 .claude/worktrees
+.mcp-console/
+.agents/console/

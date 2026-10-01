@@ -1,0 +1,7 @@
+Package: deprecatedUser
+Title: Deprecation Test Fixture
+Version: 1.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "kalinowskit@gmail.com")
+Description: Register methods through a deprecated generic export.
+License: MIT
+Imports: S7, deprecatedHome

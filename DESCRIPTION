@@ -34,10 +34,12 @@ Suggests:
     callr,
     covr,
     knitr,
+    lifecycle,
     methods,
     rmarkdown,
-    testthat (>= 3.2.0),
-    tibble
+    testthat (>= 3.3.0),
+    tibble,
+    withr
 VignetteBuilder:
     knitr
 Config/build/compilation-database: true

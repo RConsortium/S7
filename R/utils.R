@@ -12,6 +12,10 @@ global_variables <- function(names) {
   assign(".__global__", current, envir = env)
 }
 
+obj_addr <- function(x) {
+  .Call(obj_addr_, x)
+}
+
 vlapply <- function(X, FUN, ...) {
   vapply(X = X, FUN = FUN, FUN.VALUE = logical(1), ...)
 }

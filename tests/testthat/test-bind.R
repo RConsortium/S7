@@ -42,3 +42,112 @@ test_that(":= validates its inputs", {
     foo := no_name()
   })
 })
+
+test_that("S7 := wins without hiding unrelated attach conflicts", {
+  skip_if(quick_test())
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  local_dev_S7_lib()
+
+  check_order <- function(package, order) {
+    output <- callr::r(
+      function(package, order) {
+        if (identical(order, "package-first")) {
+          package_bind <- getExportedValue(package, ":=")
+          attach(
+            list(as_class = function(...) NULL),
+            name = "shadow",
+            warn.conflicts = FALSE
+          )
+          library(package, character.only = TRUE)
+        }
+
+        messages <- character()
+        warnings <- character()
+
+        withCallingHandlers(
+          {
+            if (identical(order, "S7-first")) {
+              library(S7)
+              library(package, character.only = TRUE)
+            } else {
+              library(S7)
+            }
+          },
+          packageStartupMessage = function(cnd) {
+            messages <<- c(messages, conditionMessage(cnd))
+            invokeRestart("muffleMessage")
+          },
+          warning = function(cnd) {
+            warnings <<- c(warnings, conditionMessage(cnd))
+            invokeRestart("muffleWarning")
+          }
+        )
+
+        stopifnot(identical(get(":=", mode = "function"), S7::`:=`))
+
+        if (identical(order, "package-first")) {
+          stopifnot(identical(getExportedValue(package, ":="), package_bind))
+          detach("package:S7")
+          stopifnot(identical(
+            get(":=", mode = "function"),
+            package_bind
+          ))
+        }
+
+        list(messages = messages, warnings = warnings)
+      },
+      args = list(package = package, order = order)
+    )
+
+    expect_no_match(output$messages, ":=", fixed = TRUE)
+    expect_no_match(output$warnings, ":=", fixed = TRUE)
+    if (identical(order, "package-first")) {
+      expect_match(output$messages, "as_class", all = FALSE)
+    }
+  }
+
+  for (package in packages) {
+    check_order(package, "S7-first")
+    check_order(package, "package-first")
+  }
+})
+
+test_that("loading S7 does not affect := when S7 is not attached", {
+  skip_if(quick_test())
+
+  packages <- c("data.table", "rlang")
+  packages <- packages[vapply(
+    packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )]
+  skip_if(length(packages) == 0, "rlang and data.table are not installed")
+
+  local_dev_S7_lib()
+
+  for (package in packages) {
+    expect_no_error(callr::r(
+      function(package) {
+        loadNamespace("S7")
+        library(package, character.only = TRUE)
+        stopifnot(
+          identical(
+            get(":=", mode = "function"),
+            getExportedValue(package, ":=")
+          )
+        )
+      },
+      args = list(package = package)
+    ))
+  }
+})
