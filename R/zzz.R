@@ -12,6 +12,7 @@
 #'
 #' @keywords internal
 #' @export
+#' @importFrom methods initialize
 #' @return The base S7 object.
 #' @examples
 #'
@@ -154,53 +155,15 @@ register_S7_function <- function(class, where) {
   )
 }
 
-.S7_S4_env <- NULL
-
 on_load_register_S4 <- function() {
-  # The hook can run after the namespace is locked.
-  package <- "S7"
-  where <- new.env(parent = topenv())
-  where$.packageName <- package
-  .S7_S4_env <<- where
-  # S4 lookup needs class definitions in their owning namespace too.
-  classes <- c("S7_object", "S7_class", "S7_generic", "S7_method")
+  where <- topenv()
+  methods::setOldClass("S7_object", where = where)
+  methods::setOldClass(c("S7_class", "S7_object"), where = where)
+  register_S7_function(S7_generic, where)
+  register_S7_function(S7_method, where)
   if (getRversion() < "4.7.0") {
-    classes <- c(classes, "S7_genericWithTrace", "S7_methodWithTrace")
-  }
-  for (class in classes) {
-    binding <- paste0(".__C__", class)
-    makeActiveBinding(
-      binding,
-      local({
-        binding <- binding
-        function(value) {
-          if (missing(value)) {
-            return(where[[binding]])
-          }
-          where[[binding]] <- value
-        }
-      }),
-      topenv()
-    )
-  }
-  hook <- S7_hook(
-    function(...) {
-      where$initialize <- methods::initialize
-      methods::setOldClass("S7_object", where = where)
-      methods::setOldClass(c("S7_class", "S7_object"), where = where)
-      register_S7_function(S7_generic, where)
-      register_S7_function(S7_method, where)
-      if (getRversion() < "4.7.0") {
-        make_traceable("S7_generic", where)
-        make_traceable("S7_method", where)
-      }
-    },
-    package = package
-  )
-  setHook(packageEvent("methods", "onLoad"), hook)
-  hooks_packages(package) <- "methods"
-  if (isNamespaceLoaded("methods")) {
-    hook()
+    make_traceable("S7_generic", where)
+    make_traceable("S7_method", where)
   }
 }
 
@@ -215,26 +178,23 @@ make_traceable <- function(class, where) {
     contains = c(class, "traceable"),
     where = where
   )
-  initialize <- function(.Object, def, ...) {
-    if (missing(def)) {
-      return(methods::callNextMethod(.Object, ...))
-    }
-    original <- def
-    class(def) <- NULL
-    .Object <- methods::callNextMethod(.Object, def = def, ...)
-    .Object@original <- original
-    for (prop in props) {
-      methods::slot(.Object, prop) <- attr(original, prop, exact = TRUE)
-    }
-    attr(.Object, ".S3Class") <- class(original)
-    .Object
-  }
-  # callNextMethod() must find the local initialize generic.
-  environment(initialize) <- list2env(list(props = props), parent = where)
   methods::setMethod(
     "initialize",
     paste0(class, "WithTrace"),
-    initialize,
+    function(.Object, def, ...) {
+      if (missing(def)) {
+        return(methods::callNextMethod(.Object, ...))
+      }
+      original <- def
+      class(def) <- NULL
+      .Object <- methods::callNextMethod(.Object, def = def, ...)
+      .Object@original <- original
+      for (prop in props) {
+        methods::slot(.Object, prop) <- attr(original, prop, exact = TRUE)
+      }
+      attr(.Object, ".S3Class") <- class(original)
+      .Object
+    },
     where = where
   )
 }
@@ -267,13 +227,4 @@ make_traceable <- function(class, where) {
   on_load_define_S7_type()
   on_load_define_union_classes()
   on_load_register_S4()
-}
-
-.onUnload <- function(...) {
-  hooks_remove("S7")
-  if (isNamespaceLoaded("methods")) {
-    methods::cacheMetaData(.S7_S4_env, attach = FALSE)
-    # Restore caches for the methods generics borrowed by our registrations.
-    methods::cacheMetaData(asNamespace("methods"), attach = TRUE)
-  }
 }

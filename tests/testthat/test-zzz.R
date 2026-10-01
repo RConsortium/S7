@@ -53,7 +53,7 @@ test_that("register S4 classes for key components", {
   }
 })
 
-test_that("namespace can load without loading methods", {
+test_that("namespace loads methods with only base attached", {
   expect_identical(
     callr::r(
       function() {
@@ -65,20 +65,17 @@ test_that("namespace can load without loading methods", {
       libpath = .libPaths(),
       env = c(R_DEFAULT_PACKAGES = "base")
     ),
-    c(FALSE, FALSE)
+    c(FALSE, TRUE)
   )
 })
 
-test_that("tracing works across methods load orders and S7 reloads", {
-  for (load_order in c("before", "after", "reload", "reload_loaded")) {
+test_that("tracing works in a base-only session and after S7 reloads", {
+  for (reload in c(FALSE, TRUE)) {
     expect_identical(
       callr::r(
-        function(load_order) {
+        function(reload) {
           options(warn = 2)
-          if (load_order %in% c("before", "reload_loaded")) {
-            loadNamespace("methods")
-          }
-          if (load_order %in% c("reload", "reload_loaded")) {
+          if (reload) {
             loadNamespace("S7")
             unloadNamespace("S7")
           }
@@ -89,13 +86,6 @@ test_that("tracing works across methods load orders and S7 reloads", {
           obj <- my_class()
           original_generic <- my_generic
           original_method <- method(my_generic, my_class)
-
-          if (load_order %in% c("after", "reload")) {
-            method(`+`, list(my_class, my_class)) <- function(e1, e2) "sum"
-            stopifnot(identical(obj + obj, "sum"))
-            stopifnot(!isNamespaceLoaded("methods"))
-            loadNamespace("methods")
-          }
 
           suppressMessages(trace(
             "my_class",
@@ -134,7 +124,7 @@ test_that("tracing works across methods load orders and S7 reloads", {
           identical(my_generic, original_generic) &&
             identical(method(my_generic, my_class), original_method)
         },
-        args = list(load_order = load_order),
+        args = list(reload = reload),
         libpath = .libPaths(),
         env = c(R_DEFAULT_PACKAGES = "base")
       ),
@@ -148,7 +138,6 @@ test_that("S4 registrations are removed when S7 unloads", {
     function() {
       options(warn = 2)
       library(S7)
-      loadNamespace("methods")
       detach("package:S7", unload = TRUE)
       ordinary <- function(x) x
       suppressMessages(trace(

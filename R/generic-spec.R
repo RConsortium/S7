@@ -129,68 +129,17 @@ internal_generics <- function() {
 }
 
 group_generics <- function() {
-  # Base S3 group generics, without loading methods for S4 introspection.
-  out <- list(
-    Ops = c(
-      "+",
-      "-",
-      "*",
-      "^",
-      "%%",
-      "%/%",
-      "/",
-      "==",
-      ">",
-      "<",
-      "!=",
-      "<=",
-      ">=",
-      "&",
-      "|",
-      "!"
-    ),
-    Math = c(
-      "abs",
-      "sign",
-      "sqrt",
-      "ceiling",
-      "floor",
-      "trunc",
-      "cummax",
-      "cummin",
-      "cumprod",
-      "cumsum",
-      "exp",
-      "expm1",
-      "log",
-      "log10",
-      "log2",
-      "log1p",
-      "cos",
-      "cosh",
-      "sin",
-      "sinh",
-      "tan",
-      "tanh",
-      "acos",
-      "acosh",
-      "asin",
-      "asinh",
-      "atan",
-      "atanh",
-      "cospi",
-      "sinpi",
-      "tanpi",
-      "gamma",
-      "lgamma",
-      "digamma",
-      "trigamma",
-      "round",
-      "signif"
-    ),
-    Summary = c("max", "min", "range", "prod", "sum", "any", "all"),
-    Complex = c("Arg", "Conj", "Im", "Mod", "Re")
+  # S3 group generics can be defined by combining S4 group generics
+  groups <- list(
+    Ops = c("Arith", "Compare", "Logic"),
+    Math = c("Math", "Math2"),
+    Summary = "Summary",
+    Complex = "Complex"
   )
+
+  out <- lapply(groups, function(x) unlist(lapply(x, methods::getGroupMembers)))
+  # S4 groups omit `!`, which belongs to the S3 Ops group
+  out$Ops <- c(out$Ops, "!")
   if (getRversion() >= "4.3") {
     out$matrixOps <- c("%*%")
   }
