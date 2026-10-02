@@ -1,5 +1,6 @@
 # S7 (development version)
 
+* New `vignette("evolution")` explains how to evolve S7 classes and generics without breaking downstream packages, and what downstream authors can do to smooth transitions. Its claims are verified by a manually-run compatibility lab in `tools/evolution/` (#143).
 * Operator methods now propagate missing-method errors raised inside their bodies instead of silently falling back to base behavior (#490).
 * New `:=` operator creates and names an object in one step, so `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")` (#658).
 * The `:=` operator now stays ahead of rlang and data.table regardless of attachment order, without emitting `:=` masking messages (#697).

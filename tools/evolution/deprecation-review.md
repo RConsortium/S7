@@ -1,0 +1,167 @@
+# Deprecation design review
+
+The helpers support generic renames, moves, and retirement; deprecating a class while preserving its definition; and renaming or retiring stored properties. `deprecated_class()` keeps the original type, methods, and subclasses. Its `replacement` argument recommends another class without forwarding construction or method registration to it.
+
+This covers a transition in which maintainers keep the original class available while downstream users adopt a replacement. Class aliases that change identity, migration of saved objects, and changes to installed property definitions need separate compatibility work. Lifecycle warnings through `props()` preserve caller attribution. Installed direct property defaults and copied definitions have rebuilding boundaries, described below.
+
+This review uses main at `245aaf46355a48403ad580b366b817a9c4191851`, which includes the merged deprecation helpers from #734. The lab holds S7 fixed while upgrading the fixture packages; it does not test upgrading S7 itself across serialized package versions.
+
+## Package scenarios
+
+The executable cases live in `scenarios.R`; `results.md` records installation, namespace loading, smoke tests, and `R CMD check`. Each starts with a downstream package that works with the old upstream version, then tests both an upstream-only upgrade and a rebuilt downstream package.
+
+| Transition                           | Coverage                                                                                                   |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Rename a generic                     | Imported and external registrations; calls through both names; method lookup through the alias             |
+| Retire a generic                     | Direct definition; custom function, lexical scope, and defaults; existing downstream registrations         |
+| Copy a generic or class              | Installed copies stay silent until rebuilding; dynamic export lookups signal immediately                   |
+| Move a generic                       | Compare NAMESPACE re-export, binding copy, and deprecated wrapper                                          |
+| Rename a generic export              | `new_label` while preserving the generic's original identity and shared methods                            |
+| Recommend a replacement class        | Direct and external parents and method signatures; distinct replacement type; explicit union methods       |
+| Recommend a class in another package | Original package and class identity retained; warning names the other package                              |
+| Retire a class                       | Subclass construction, property defaults, unions, inheritance, method dispatch, explicit constructor calls |
+| Preserve saved instances             | An instance stored in the downstream namespace before deprecation, then saved and read as RDS              |
+| Preserve a custom constructor        | Lexical defaults, validation, direct and external subclasses, local and external property defaults         |
+| Deprecate a direct property type     | Compare the installed constructor's old default with one generated after rebuilding                        |
+| Rename or move class identity        | Plain aliases allow rebuilding, but stale subclasses and saved instances retain old metadata               |
+| Rename a property                    | Default, both constructor arguments, reads, changed writes, validation, and installed subclasses           |
+| Retire a property                    | Type, default, validator, silent construction, nullable values, and installed subclasses                   |
+| Inspect an object                    | `print()` and `str()` stay silent; `props()` reads deprecated properties and signals                       |
+| Change signaling policy              | Base warnings and both lifecycle methods, including each property operation and silent exceptions          |
+
+The original breaking-change cases remain as comparisons. An `ERROR` can be intentional, for example when an export is removed, a stale subclass needs rebuilding, or `lifecycle(stop)` stops a deprecated call. The property-signal cases catch and assert each expected condition, so their successful stop-mode tests report `OK`. Other stop-mode cases deliberately end with an uncaught deprecation error. Read the scenario descriptions alongside the recorded results.
+
+## Supported transitions
+
+### Deprecating a class without changing its type
+
+Keep the original class definition and change its defining function:
+
+```r
+Bar := new_class(properties = list(size = class_double))
+Foo := deprecated_class(
+  properties = list(size = class_double),
+  replacement = Bar,
+  when = "2.0.0"
+)
+```
+
+`Foo()` warns and constructs a Foo. Existing instances and subclasses still inherit from Foo, and Foo's methods continue to apply. They do not become Bar instances, and Bar does not acquire Foo's methods. A method that supports both classes can use `Foo | Bar` as its signature.
+
+The direct and external package scenarios verify both stale and rebuilt subclass dispatch. The saved-instance case also verifies an RDS round trip. A separate case recommends a class with a different schema, confirming that the recommendation does not adapt construction. A cross-package recommendation retains the old home and names the new package in the warning.
+
+The custom-constructor cases preserve the original lexical default and validator, including rejection of invalid subclass values. Generated subclass constructors and external property defaults stay silent under all three signaling policies. Local property defaults defined after the deprecated class are also silent.
+
+Omitting `replacement` retires the class without recommending another. Even stop mode leaves class contexts available: subclass definitions and generated constructors, method signatures, unions, and inheritance checks. Explicit constructor calls signal. This allows continued extension during deprecation; removing the class eventually still requires checking these downstream definitions.
+
+### Generic aliases and package moves
+
+`deprecated_generic(new = ...)` forwards calls and registrations to the replacement. Unlike classes, both names share their methods. Imported and external registrations work for stale and rebuilt downstream packages.
+
+Without a replacement, change `new_generic()` to `deprecated_generic()` in the original definition and add `when`. Keep the dispatch arguments, any custom `fun`, and the method registrations. The retirement scenarios preserve a custom function's lexical scope and default argument under all three signaling policies; downstream registrations survive both upstream-only upgrades and rebuilding. There is no `old` argument.
+
+For a move, the wrapper resolves the foreign generic in its owning namespace:
+
+```r
+# evoA, version 2
+gen := deprecated_generic(new = evoACore::gen, when = "2.0.0")
+```
+
+Calls through either package reach the same method table, including downstream registrations. The target must remain available under its original name in its owning namespace. A NAMESPACE re-export also works when the old home can remain silent. Copying a foreign generic into an ordinary binding still duplicates its method table during installation; that comparison deliberately fails.
+
+`new_label` applies to generics. It lets an export rename recommend the new spelling while retaining the original generic object. `deprecated_class()` instead accepts a class definition and an optional `replacement`; it has no `new`, `old`, or `new_label` arguments. A plain export alias, `Bar <- Foo`, preserves the class object and adds no deprecation signal. A warning alias that constructs another class is outside the new class helper's contract.
+
+### Preserving property behavior
+
+Retiring a stored property requires carrying over its `class`, `default`, and `validator`. Renaming a property requires putting validation on the replacement. The lab tests invalid constructor values and writes through both names, and verifies that a rejected write leaves the previous value intact. Supplying a validator on the deprecated alias itself is rejected by #734's input-validation tests.
+
+The property-signal cases check reads, `props()`, changed writes (including a retired property whose old value is NULL), and conflicting old/new constructor arguments under all three policies. Base warnings, lifecycle warnings, and stop-mode errors match the expected behavior. Equal-value arguments and writes stay silent. Retired-property construction remains silent even with an explicit argument. `print()` and `str()` omit deprecated properties without invoking their getters, including in stop mode.
+
+For lifecycle warning assertions, these cases set `lifecycle_verbosity = "warning"` so repeated direct uses each signal. The other lifecycle scenarios use the default warning policy.
+
+### Lifecycle warning attribution
+
+With lifecycle 1.0.5 and `lifecycle_verbosity = "warning"`, repeated direct calls to `props()` each warn:
+
+```r
+options(lifecycle_verbosity = "warning")
+Basket := new_class(
+  properties = list(
+    deprecated_property(
+      "count",
+      class = class_double,
+      default = 1,
+      when = "2.0.0",
+      method = "lifecycle(warn)"
+    )
+  )
+)
+x <- Basket()
+props(x) # warns
+props(x) # warns again
+x@count # a direct read also warns
+```
+
+`props()` reads properties through `lapply()`. Caller lookup follows the call chain through S7, generated constructors, and base evaluation helpers to find the caller responsible for the deprecated use. It retains downstream package frames so lifecycle can attribute indirect uses to that package and apply its usual throttling.
+
+The lab's `class-deprecated-property-signals-warn` assertions cover `props()` after an earlier direct read, for both renamed and retired properties in stale and rebuilt packages. #734's regression tests also check warning text, repeated direct `props()` calls, and conflicting renamed arguments in generated constructors. Fresh-process tests cover genuine downstream calls under both default and warning verbosity: the first indirect use warns with the downstream package's name, and the second is throttled. A subsequent direct use warns again only under warning verbosity. Base warnings and `lifecycle(stop)` also signal through `props()`.
+
+## Compatibility boundaries
+
+### Copies stored by downstream packages
+
+A downstream package can save a copy of a generic or class in its namespace, for example with `copied_generic <- evoA::gen` or `copied_class <- evoA::Foo`. Those copies can retain the original definition after evoA deprecates its exports. Rebuilding the downstream package adopts the deprecated definitions.
+
+The copied-definition scenarios compare these installed copies with calls through `evoA::gen()` and `evoA::Foo()`. They assert that the copies remain silent until rebuilding, while dynamic export lookups signal immediately after the upstream upgrade. This applies to base warnings, lifecycle warnings, and stop-mode errors. Deprecation does not rewrite definitions already stored by another package.
+
+### Installed direct property defaults
+
+A downstream class defined before deprecation can retain a generated default that calls the exported constructor directly:
+
+```r
+# evoA, version 1
+Foo := new_class(
+  properties = list(size = new_property(class_double, default = 7))
+)
+
+# evoB, installed against evoA version 1
+Box := new_class(properties = list(item = evoA::Foo))
+
+# evoA, version 2
+Foo := deprecated_class(
+  properties = list(size = new_property(class_double, default = 7)),
+  when = "2.0.0",
+  method = "lifecycle(stop)"
+)
+```
+
+Without rebuilding evoB, `Box()` errors because its installed default still calls `evoA::Foo()`. Base and lifecycle warning policies warn at the same point. Rebuilding evoB generates `S7::as_class(evoA::Foo)()` and restores silent construction. A default generated from `new_external_class()` already uses the silent path and does not need rebuilding for this transition.
+
+The `class-deprecated-direct-property-default` scenarios reproduce all three policies. #734's installed-package regression tests compare direct, external, and explicitly written defaults before deprecation, after an upstream-only upgrade, and after rebuilding. Its `deprecated_class()` documentation and the evolution vignette explain the boundary and recommend external references. Rebuilding these direct references is an intentional requirement; guaranteeing silence for existing compiled defaults would require a broader design change.
+
+An explicitly written default or custom constructor that calls `Foo()` remains an ordinary deprecated call. Silencing every indirect call would hide uses that the helper is meant to report.
+
+### Class identity changes and saved objects
+
+A plain `Foo <- Bar` alias after defining Bar changes which type the old export names. External class references follow the alias, but a stale subclass retains Foo in its dispatch vector. Dispatch can fail until the subclass package is rebuilt. With a direct parent and method signature, the stale method can still match the old subclass while failing on a newly constructed Bar. Moving a class to another package also changes its identity.
+
+Saved Foo instances do not become Bar instances. Recommending Bar while preserving Foo avoids breaking their old methods; it does not migrate them. The helper deliberately leaves representation conversion and rebuilding for structural changes to package authors.
+
+### Installed property definitions
+
+Property deprecation changes the property definition even when the class name stays the same. In the rename case, a stale subclass retains a stored `count` property while the new parent stores `size`; construction fails validation until rebuilding. In the retirement case, the stale subclass still works but reads and writes remain silent until rebuilding adopts the deprecation. A runtime parent reference does not refresh the subclass's stored property metadata.
+
+### Signaling and adaptation limits
+
+- Equal-value writes and constructor arguments can stay silent even under `lifecycle(stop)`. Stop mode does not prohibit every spelling of the old property name. Remove the property after migration if that is the desired end state.
+- Computed properties and custom setters need deprecation signals added to their existing implementation. The property helper does not wrap an existing getter or setter.
+- Generic argument deprecation belongs in the generic's function. Changes to dispatch arguments or formals need an explicit adapter or a separate old generic; `deprecated_generic(new = ...)` uses the replacement's signature unchanged.
+- Warnings in a plain test script do not themselves fail `R CMD check`; warning-as-error tests can fail, and namespace-load warnings can produce a NOTE. Errors fail when exercised.
+
+## Validation
+
+All 64 package scenarios completed with `--check` against the source tree pinned above, on R 4.6.1 with lifecycle 1.0.5. Every version-1 baseline passed, and every upstream upgrade installed successfully. All 595 stages from the previous 59-case report have unchanged outcomes. The property-signal and copied-definition cases pass under all three policies for stale and rebuilt packages. The recorded errors match deliberate breaking cases, stop-mode calls, and the documented rebuilding boundaries. Some fixture checks also report unused-Imports notes. No further changes to the deprecation helpers are required by these cases.
+
+The six generic-retirement and copied-definition cases also completed with `--check` on R 4.2.3. All 60 stage outcomes match the R 4.6.1 results.
+
+Full S7 `R CMD check` runs passed on R 4.2.3 and R 4.6.1, including vignette execution and rebuilding. The test suites passed 1,738 and 1,769 assertions, respectively, with no failures. R 4.2 skipped ten version-dependent tests. Both test reports contain two existing fixture-install warnings from `local_dev_S7_lib()` attempting to install the check directory as a source package. The checks report one NOTE on R 4.2 (`methods:::assignClassDef`) and two on R 4.6 (the same NOTE plus the non-API call `Rf_findVarInFrame`). The branch also passed `pkgdown::check_pkgdown()`.

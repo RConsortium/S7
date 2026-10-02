@@ -68,6 +68,19 @@ If you export a class (i.e. its constructor), you must also set the `package` ar
 
 NB: if your package creates a hierarchy of classes, subclasses must be defined _after_ the parent classes. That means if you define the classes in separate files, you will need to use the `DESCRIPTION` Collate field (or the equivalent roxygen2 `@include` tag) to ensure the files are loaded in the correct order.
 
+### Extending classes from other packages
+
+Refer to classes from other packages with `new_external_class()`, both in method signatures and as the `parent` of your own class:
+
+```{r, eval = FALSE}
+TheirClass := new_external_class(package = "theirpkg")
+MyClass := new_class(parent = TheirClass, properties = list(extra = class_double))
+```
+
+The generated constructor resolves the parent at run time and forwards `...` to the installed `theirpkg::TheirClass()` constructor.
+The subclass still stores property definitions and dispatch metadata from installation, so structural changes can require rebuilding your package (see `vignette("evolution")` for details).
+Use the `version` argument (also available in `new_external_generic()`) when you depend on behavior introduced in a specific release.
+
 ## Generics and methods
 
 You should document generics like regular functions (since they are!).
