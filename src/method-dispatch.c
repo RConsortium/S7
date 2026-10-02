@@ -127,8 +127,27 @@ void S7_method_lookup_error(SEXP generic, SEXP envir) {
   while(1);
 }
 
+static inline
+SEXP as_S7_generic(SEXP generic) {
+  if (Rf_inherits(generic, "S7_generic")) {
+    return generic;
+  }
+
+  // Only R's trace wrapper may supply an original generic. Keep ordinary
+  // calls on the native class check without evaluating S4 inheritance.
+  if (Rf_isS4(generic) && Rf_inherits(generic, "S7_genericWithTrace")) {
+    SEXP original = Rf_getAttrib(generic, Rf_install("original"));
+    if (Rf_inherits(original, "S7_generic")) {
+      return original;
+    }
+  }
+
+  return R_NilValue;
+}
+
 SEXP method_(SEXP generic, SEXP signature) {
-  if (!Rf_inherits(generic, "S7_generic")) {
+  generic = as_S7_generic(generic);
+  if (generic == R_NilValue) {
     return R_NilValue;
   }
 
@@ -161,7 +180,8 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   SEXP envir = CAR(args_); args_ = CDR(args_);
   SEXP fallback = CAR(args_);
 
-  if (!Rf_inherits(generic, "S7_generic")) {
+  generic = as_S7_generic(generic);
+  if (generic == R_NilValue) {
     SEXP err_call = PROTECT(Rf_lang1(Rf_install("dispatch_not_generic_error")));
     Rf_eval(err_call, ns_S7);
     UNPROTECT(1); // never reached

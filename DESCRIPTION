@@ -28,6 +28,7 @@ BugReports: https://github.com/RConsortium/S7/issues
 Depends:
     R (>= 4.2.0)
 Imports:
+    methods,
     utils
 Suggests:
     bench,
@@ -35,7 +36,6 @@ Suggests:
     covr,
     knitr,
     lifecycle,
-    methods,
     rmarkdown,
     testthat (>= 3.3.0),
     tibble,

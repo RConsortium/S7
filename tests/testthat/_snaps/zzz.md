@@ -44,3 +44,11 @@
       Error in `[[<-.S7_object`:
       ! S7 objects are not subsettable.
 
+# S7_dispatch rejects an untraced function with an original attribute
+
+    Code
+      fake(1L)
+    Condition
+      Error in `S7_dispatch()`:
+      ! Must be called from within an S7 generic.
+
