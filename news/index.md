@@ -427,6 +427,12 @@
 - [`super()`](https://rconsortium.github.io/S7/reference/super.md) now
   works with S3 and S4 objects, not just S7 objects
   ([\#500](https://github.com/RConsortium/S7/issues/500)).
+- [`trace()`](https://rdrr.io/r/base/trace.html) and
+  [`untrace()`](https://rdrr.io/r/base/trace.html) now work with S7
+  generics and methods,
+  e.g. `trace("myclass", browser, where = my_generic@methods)` sets a
+  breakpoint in the method for `myclass`
+  ([\#584](https://github.com/RConsortium/S7/issues/584)).
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
   now checks property types substantially faster, because a property
   restricted to a base type (e.g. `class_double`) no longer has its
