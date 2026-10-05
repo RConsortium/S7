@@ -58,6 +58,5 @@ S4_generic(Foo())
 
 S4Foo := new_class(properties = list(x = class_numeric), package = "S7")
 S4_register(S4Foo)
-S4Foo_S4 <- S4_contains(S4Foo)
-methods::setClass("S4Child", contains = S4Foo_S4)
+methods::setClass("S4Child", contains = S4_contains(S4Foo))
 }
