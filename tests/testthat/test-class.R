@@ -382,6 +382,41 @@ test_that("new_object() gives useful error if called directly", {
   expect_snapshot(new_object(), error = TRUE)
 })
 
+test_that("new_object() strips foreign attributes from S7 parents (#760)", {
+  Base := new_class(properties = list(x = class_double))
+  Left := new_class(parent = Base, properties = list(left = class_double))
+  Right := new_class(
+    parent = Base,
+    properties = list(right = class_double),
+    constructor = function(parent, right = 0) new_object(parent, right = right)
+  )
+  parent <- Left(x = 1, left = 2)
+  attr(parent, "foreign") <- TRUE
+  attr(parent, "S7_class") <- Left
+
+  object <- Right(parent = parent, right = 3)
+  expect_identical(props(object), list(x = 1, right = 3))
+  expect_null(attr(object, "left", exact = TRUE))
+  expect_null(attr(object, "foreign", exact = TRUE))
+  expect_null(attr(object, "S7_class", exact = TRUE))
+  expect_identical(S7_class(object), Right)
+  expect_identical(parent@left, 2)
+})
+
+test_that("new_object() preserves stored properties with special names (#760)", {
+  Base := new_class(properties = list(names = class_character))
+  Child := new_class(parent = Base, properties = list(class = class_character))
+  object <- Child(names = "names property", class = "class property")
+  expect_identical(object@names, "names property")
+  expect_identical(object@class, "class property")
+})
+
+test_that("new_object() preserves attributes of base data (#760)", {
+  Vector := new_class(parent = class_double)
+  data <- structure(c(x = 1), custom = "value")
+  expect_identical(S7_data(Vector(.data = data)), data)
+})
+
 test_that("S7 objects record their representation version (#711)", {
   Foo := new_class(properties = list(x = class_double))
   Bar := new_class(parent = Foo)

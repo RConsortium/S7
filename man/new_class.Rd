@@ -81,6 +81,10 @@ suppress validation when needed.}
 \item{_parent, ...}{Parent object and named properties used to construct the
 object.
 
+When the class inherits directly or indirectly from \link{S7_object}, only
+attributes corresponding to its properties are copied from \verb{_parent}.
+Attributes of underlying base data are preserved.
+
 As a convenience, if \code{...} is a single unnamed list, then the elements of
 that list are used as the properties. This makes it easy to
 programmatically construct an object from a list of property values.}
