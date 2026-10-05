@@ -49,6 +49,7 @@
 * `new_property()` now accepts a `setter` that takes `self`, `name`, and `value` making it easy to reuse the same definition for multiple properties (#552).
 * `new_S3_class()` objects now work with `inherits()` (and other functions that use `nameOfClass()`) in R 4.3 and later (@lawremi, #521).
 * `new_S3_class()` gains a `default` argument for supplying a quoted property default independently of its constructor (#755).
+* `new_S3_class()` gains an optional `attributes` argument declaring the complete set of attributes to preserve when constructing S7 subclasses. The bundled concrete S3 wrappers declare their attributes, so `new_object()` strips foreign attributes from their subclasses (#760).
 * `print()` and `str()` now omit properties created by `deprecated_property()` (#754).
 * `print(<S7_class>)` now shows property defaults inline (`= "value"`) and annotates read-only properties (`[read-only]`) (#439).
 * `prop()` and `prop<-()` errors from getters and setters (including custom) now report a synthetic `<Class>@<prop>` call, making it easier to see which property triggered the error (#416, #536, #638).

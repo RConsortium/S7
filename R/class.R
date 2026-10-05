@@ -393,8 +393,9 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @param _parent,... Parent object and named properties used to construct the
 #'   object.
 #'
-#'   When the class inherits directly or indirectly from [S7_object], only
+#'   When the inheritance chain ends at [S7_object], only
 #'   attributes corresponding to its properties are copied from `_parent`.
+#'   For S3 parents, [new_S3_class()] can declare the attributes to preserve.
 #'   Attributes of underlying base data are preserved.
 #'
 #'   As a convenience, if `...` is a single unnamed list, then the elements of
@@ -439,9 +440,16 @@ new_object <- function(`_parent`, ...) {
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
   parent_attrs <- attributes(`_parent`)
-  if (is_class(base_parent(class))) {
+  base <- base_parent(class)
+  data_attrs <- if (is_class(base)) {
+    character()
+  } else if (is_S3_class(base)) {
+    base$attributes
+  }
+  if (!is.null(data_attrs)) {
     parent_attrs <- parent_attrs[
-      names(parent_attrs) %in% prop_storage_rename(names(class_props))
+      names(parent_attrs) %in%
+        c(data_attrs, prop_storage_rename(names(class_props)))
     ]
   }
 
@@ -452,7 +460,7 @@ new_object <- function(`_parent`, ...) {
     list(
       class = class_dispatch(class),
       `_S7_version` = S7_object_version,
-      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+      `_S7_class` = if (is_S4_class(base)) class else class_ref %||% class
     ),
     self_attrs,
     parent_attrs

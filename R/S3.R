@@ -59,6 +59,13 @@
 #' )
 #' ```
 #'
+#' You can also declare the complete set of attributes used by the S3 class
+#' with `attributes`. This allows [new_object()] to discard foreign attributes
+#' when constructing S7 subclasses, while preserving the declared attributes
+#' and S7 properties. Include optional attributes such as `names` if they are
+#' supported; `class` is managed automatically. For example, a factor wrapper
+#' could use `attributes = c("levels", "names", "dim", "dimnames")`.
+#'
 #' @export
 #' @param class S3 class vector (i.e. what `class()` returns). For method
 #'   registration, you can abbreviate this to a single string, the S3 class
@@ -84,6 +91,12 @@
 #'   is omitted during object construction. If `NULL`, the default is
 #'   obtained from `constructor`. A default supplied to [new_property()] takes
 #'   precedence.
+#' @param attributes A character vector of attribute names used by the S3
+#'   class, excluding `class`. Use `character()` for a class with no other
+#'   attributes. The default, `NULL`, means the attributes are unknown, so
+#'   [new_object()] preserves all attributes of the parent object.
+#'   This declaration controls which attributes are copied during construction;
+#'   it does not require them to be present or validate their values.
 #' @returns An S7 definition of an S3 class, i.e. a list with class
 #'   `S7_S3_class`.
 #' @examples
@@ -98,13 +111,22 @@ new_S3_class <- function(
   class,
   constructor = NULL,
   validator = NULL,
-  default = NULL
+  default = NULL,
+  attributes = NULL
 ) {
   if (!is.character(class)) {
     stop2("`class` must be a character vector.")
   }
   if (!is.null(default) && !is.call(default) && !is.symbol(default)) {
     stop2("`default` must be NULL or a quoted call or symbol.")
+  }
+  if (
+    !is.null(attributes) &&
+      (!is.character(attributes) || anyNA(attributes) || any(attributes == ""))
+  ) {
+    stop2(
+      "`attributes` must be NULL or a character vector of non-empty, non-missing names."
+    )
   }
   if (!is.null(constructor)) {
     abstract <- FALSE
@@ -125,7 +147,8 @@ new_S3_class <- function(
     constructor = constructor,
     validator = validator,
     abstract = abstract,
-    default = default
+    default = default,
+    attributes = attributes
   )
   class(out) <- "S7_S3_class"
   out
@@ -334,6 +357,9 @@ validate_formula <- function(self) {
 # * `class_matrix` for matrices.
 # * `class_array` for arrays.
 #' * `class_formula` for formulas.
+#'
+#' The concrete wrappers declare their supported attributes, so [new_object()]
+#' strips foreign attributes when constructing S7 subclasses.
 
 #'
 #' @export
@@ -347,7 +373,8 @@ class_factor <- new_S3_class(
     structure(.data, levels = levels, class = "factor")
   }),
   validator = validate_factor,
-  default = quote(factor())
+  default = quote(factor()),
+  attributes = c("levels", "names", "dim", "dimnames")
 )
 
 #' @export
@@ -360,7 +387,8 @@ class_Date <- new_S3_class(
     .Date(.data)
   }),
   validator = validate_date,
-  default = quote(.Date(numeric()))
+  default = quote(.Date(numeric())),
+  attributes = c("names", "dim", "dimnames")
 )
 
 #' @export
@@ -373,7 +401,8 @@ class_POSIXct <- new_S3_class(
     .POSIXct(.data, tz = tz)
   }),
   validator = validate_POSIXct,
-  default = quote(.POSIXct(numeric(), tz = ""))
+  default = quote(.POSIXct(numeric(), tz = "")),
+  attributes = c("tzone", "names", "dim", "dimnames")
 )
 
 #' @export
@@ -386,7 +415,8 @@ class_POSIXlt <- new_S3_class(
     as.POSIXlt(.data, tz = tz)
   }),
   validator = validate_POSIXlt,
-  default = quote(as.POSIXlt(NULL, tz = ""))
+  default = quote(as.POSIXlt(NULL, tz = "")),
+  attributes = c("names", "tzone", "balanced")
 )
 
 #' @export
@@ -411,7 +441,8 @@ class_data.frame <- new_S3_class(
     }
   }),
   validator = validate_data.frame,
-  default = quote(data.frame())
+  default = quote(data.frame()),
+  attributes = c("names", "row.names")
 )
 
 #  @export
@@ -467,5 +498,6 @@ class_formula <- new_S3_class(
     }
   ),
   validator = validate_formula,
-  default = quote(stats::formula(NULL))
+  default = quote(stats::formula(NULL)),
+  attributes = c(".Environment", "srcref")
 )

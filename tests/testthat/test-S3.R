@@ -21,6 +21,102 @@ test_that("subclasses inherit validator", {
   expect_snapshot(error = TRUE, foo2("a"))
 })
 
+test_that("S3 declarations control inherited attributes during construction (#760)", {
+  labelled <- new_S3_class(
+    "labelled",
+    constructor = function(.data = double(), label = "") {
+      structure(.data, label = label, class = "labelled")
+    },
+    attributes = c("names", "label")
+  )
+  Base := new_class(parent = labelled, properties = list(x = class_double))
+  Left := new_class(parent = Base, properties = list(left = class_double))
+  Right := new_class(
+    parent = Base,
+    properties = list(right = class_double),
+    constructor = function(parent, right = 0) new_object(parent, right = right)
+  )
+  parent <- Left(.data = c(a = 1), label = "kept", x = 2, left = 3)
+  attr(parent, "foreign") <- TRUE
+
+  object <- Right(parent = parent, right = 4)
+  expect_identical(
+    S7_data(object),
+    structure(c(a = 1), label = "kept", class = "labelled")
+  )
+  expect_identical(props(object), list(x = 2, right = 4))
+  expect_null(attr(object, "left", exact = TRUE))
+  expect_null(attr(object, "foreign", exact = TRUE))
+  expect_identical(parent@left, 3)
+
+  dirty <- structure(c(a = 1), foreign = TRUE)
+  expect_null(attr(Base(.data = dirty), "foreign", exact = TRUE))
+})
+
+test_that("S3 attribute declarations distinguish unknown and empty sets (#760)", {
+  for (attributes in list(NULL, character())) {
+    plain <- new_S3_class(
+      "plain",
+      constructor = function(.data = double()) {
+        structure(.data, class = "plain")
+      },
+      attributes = attributes
+    )
+    Child := new_class(parent = plain)
+    object <- Child(.data = structure(1, foreign = TRUE))
+    expect_identical(
+      attr(object, "foreign", exact = TRUE),
+      if (is.null(attributes)) TRUE
+    )
+    expect_identical(class(S7_data(object)), "plain")
+  }
+})
+
+test_that("S3 attribute declarations work through external parents (#760)", {
+  pkg := local_package({
+    labelled <- new_S3_class(
+      "labelled",
+      constructor = function(.data = double(), label = "") {
+        structure(.data, label = label, class = "labelled")
+      },
+      attributes = "label"
+    )
+    Base := new_class(parent = labelled, properties = list(x = class_double))
+  })
+  Base := new_external_class(package = "pkg")
+  Child := new_class(parent = Base)
+  object <- Child(.data = structure(1, foreign = TRUE), label = "kept", x = 2)
+  expect_identical(object@x, 2)
+  expect_identical(attr(object, "label", exact = TRUE), "kept")
+  expect_null(attr(object, "foreign", exact = TRUE))
+})
+
+test_that("bundled S3 wrappers preserve their data attributes (#760)", {
+  cases <- list(
+    list(class = class_factor, data = factor(c(a = "x"))),
+    list(class = class_Date, data = .Date(c(a = 1))),
+    list(class = class_POSIXct, data = .POSIXct(c(a = 1), tz = "UTC")),
+    list(class = class_POSIXlt, data = as.POSIXlt(.POSIXct(1, tz = "UTC"))),
+    list(class = class_data.frame, data = data.frame(x = 1, row.names = "a")),
+    list(class = class_formula, data = y ~ x)
+  )
+  for (case in cases) {
+    Child := new_class(
+      parent = case$class,
+      constructor = function(parent) new_object(parent)
+    )
+    parent <- case$data
+    attr(parent, "foreign") <- TRUE
+    expect_identical(S7_data(Child(parent = parent)), case$data)
+  }
+})
+
+test_that("new_S3_class() checks attribute names", {
+  expect_snapshot(error = TRUE, new_S3_class("foo", attributes = 1))
+  expect_snapshot(error = TRUE, new_S3_class("foo", attributes = NA_character_))
+  expect_snapshot(error = TRUE, new_S3_class("foo", attributes = ""))
+})
+
 
 test_that("new_S3_class() checks its inputs", {
   expect_snapshot(new_S3_class(1), error = TRUE)
