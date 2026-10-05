@@ -40,21 +40,20 @@ S7_data <- function(object) {
 # Walk up the @parent chain to the first non-S7 ancestor (or S7_object),
 # resolving external classes so the walk can continue through them.
 base_parent <- function(class) {
-  repeat {
+  while (is_class(class)) {
     parent <- attr(class, "parent", exact = TRUE)
-    if (is_class(parent)) {
-      class <- parent
-    } else if (is.null(parent)) {
-      return(class)
-    } else if (is_external_class(parent)) {
-      class <- resolve_external_class_req(
+    if (is.null(parent)) {
+      break
+    }
+    if (is_external_class(parent)) {
+      parent <- resolve_external_class_req(
         parent,
         package = attr(class, "package", exact = TRUE)
       )
-    } else {
-      return(parent)
     }
+    class <- parent
   }
+  class
 }
 
 #' @export

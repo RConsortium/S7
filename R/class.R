@@ -441,10 +441,12 @@ new_object <- function(`_parent`, ...) {
 
   parent_attrs <- attributes(`_parent`)
   base <- base_parent(class)
-  data_attrs <- if (is_class(base)) {
-    character()
+  if (is_class(base)) {
+    data_attrs <- character()
   } else if (is_S3_class(base)) {
-    base$attributes
+    data_attrs <- base$attributes
+  } else {
+    data_attrs <- NULL
   }
   if (!is.null(data_attrs)) {
     parent_attrs <- parent_attrs[
