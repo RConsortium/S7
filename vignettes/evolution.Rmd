@@ -19,8 +19,9 @@ The failures described in this vignette can be verified with `tools/evolution/`:
 -->
 
 Sooner or later every successful package needs to change its interface: a generic gains an argument, a property turns out to be misnamed, a class needs to be split in two.
-When other packages depend on yours, these changes stop being private decisions.
-This vignette works through the ways an S7 interface can change, and what each change does to downstream packages.
+When other packages depend on yours, these changes stop being private decisions, and you need to think through how your changes affect your dependencies.
+This vignette works through the ways an S7 interface can change, and what each change does to downstream packages. 
+We assume that you're already familiar with `vignette("packages.Rmd")`, although we'll repeat the most important content.
 
 Throughout, we'll imagine two packages:
 
@@ -34,7 +35,7 @@ So for each change we care about three questions:
 
 1. What breaks in depPackage, and *when*: when depPackage is installed, when it's loaded, or when it's used?
 2. What should the author of depPackage do so that a single version of depPackage works with both versions of your package?
-3. What can you do to make the change less disruptive in the first place?
+3. What can you do to minimise the disruption of the change?
 
 ```{r setup}
 library(S7)
@@ -42,30 +43,22 @@ library(S7)
 
 ## Designing for evolution
 
-Most of the advice in this vignette boils down to a few design rules that are cheap on day one and pay for themselves the first time you need to change anything:
+You can make life easier for yourself and your dependencies by following a few design rules that are cheap during development and pay for themselves as soon as you need to change anything:
 
 * **Give every generic `...`** (the default).
   A generic without `...` can never gain an argument without breaking every downstream method.
 
-* **Keep generics minimal.**
-  Every non-dispatch argument in the generic's signature is part of a contract that all methods are checked against, and its default belongs to the generic: dispatch supplies it, so no method can override it.
+* **Keep generics as small as possible.**
+  Every argument in the generic's signature (even those that don't take part in dispatch) is part of a contract that all methods are checked against.
   When an argument is only meaningful to some methods, leave it out of the generic and let those methods take it via `...`.
 
 * **Treat names as permanent.**
-  Generics can be renamed with `deprecated_generic()`.
-  For classes, `deprecated_class()` preserves the old class and can recommend a replacement; changing a class's identity still affects saved objects and already-installed subclasses.
-  Spend naming effort accordingly, and set `package` once, correctly.
+  While there are ways to "rename" classes and generics, it's best to think of them as creating a new class/generic and deprecating the old. 
 
-* **Pass properties by name** to constructors, always.
+* Always **pass constructor properties by name**, not position.
 
 * **Prefer composition for volatile details.**
-  Fields you expect to churn can live in a helper class stored as one property, so the enclosing class's contract — and every subclass — is insulated from the churn.
-
-* **Deprecate, then remove.**
-  Almost every change below has a two-release shape: one release that supports both forms (deprecated alias, deprecated property, warning validator), and a later one that drops the old form.
-  Your reverse dependency checks tell you when it's safe to take the second step.
-
-And when a change genuinely can't be made compatible — dispatch changes, class renames, property narrowing — the best tool is social, not technical: work with your downstream maintainers, send PRs, and sequence the releases.
+  Put fields that you expect to churn in a helper class stored as one property, insulating subclasses from the churn.
 
 ## How S7 couples packages
 
@@ -83,9 +76,13 @@ To predict what breaks, you need to know when downstream code actually runs:
   Calls through `myPackage::Foo()` and external references use the installed myPackage, but objects and class definitions saved in depPackage can retain parts of the old definition.
   Failures here don't break installation; they surface wherever the code runs, most visibly in depPackage's tests, examples, and vignettes.
 
-### The generic–method contract
+It's most important to avoid failures that happen at install time, because these make it impossible to create a version of depPackage that works with both old and new myPackage, thus requiring simultaneous CRAN releasese.
+This is a significant cost, and will require carefully coordination with downstream maintainers.
 
-When a method is registered, S7 compares the method's formals to the generic's:
+### Developing vs using
+
+In fact, it's so important to avoid problems at install time, that S7 surfaces errors differently to developers vs end-users.
+For example, when you register a method during development, S7 compares the method's formals to the generic's:
 
 * The method's first arguments must match the generic's dispatch arguments, in order, with no defaults.
   A mismatch is an **error**.
@@ -95,52 +92,17 @@ When a method is registered, S7 compares the method's formals to the generic's:
 * If the method's default for an argument differs from the generic's, that's a **warning**.
 * If the method has extra arguments that the generic lacks (and the generic has `...`), that's **silently allowed**.
 
-That last rule is the single most useful tool for coordinating change, because it means a method can be written for a *future* version of its generic.
-We'll use it repeatedly below.
-
-These checks only run where someone can act on them, i.e. in **development contexts**:
+But these checks only run during development, i.e. where someone can act on them:
 
 * Under `devtools::load_all()`.
 * Under `R CMD check`, but only when the package being checked owns the method, the generic, or one of the classes in the signature.
 * When the method isn't in a package at all — registered in a script or interactively, as in this vignette's examples.
 
-Everywhere else the checks are skipped and the method is registered as-is: plain `R CMD INSTALL`, an ordinary `library()` call, and `R CMD check` of some *other* package that merely depends on depPackage.
-This shapes almost everything below.
-When myPackage breaks the contract, the mismatch is reported to depPackage's author, and to you when you run reverse dependency checks (those check depPackage itself), but not to depPackage's users, and not to depPackage's own downstream packages.
+When you call `library(depPackage)` these checks are skipped, and the method is registered as-is.
+This doesn't mean there's no problem, it just means that the problem is delayed enough for someone to do something about it.
+This makes it possible to fix problems at run-time, not check-time.
 
-The price is that the two **error** cases no longer stop an end user from installing or loading depPackage.
-The mismatched method is registered anyway, and the failure resurfaces at run time when the generic is called.
-
-One extra affordance while `load_all()` is active: the errors are demoted to warnings, and the offending method isn't registered.
-That means you can re-source a package whose generic you just changed and fix its methods one at a time, instead of having to update them all before the package will load again.
-
-### How depPackage should refer to myPackage
-
-One mechanical detail matters more than you might expect: `method<-` is a replacement function, so `method(myPackage::gen, MyClass) <- f` doesn't work — R can't assign to `myPackage::gen`.
-depPackage has three options, and they behave differently when myPackage changes:
-
-* **Import the generic** (`@importFrom myPackage gen`, then `method(gen, MyClass) <- f`).
-  This is the standard approach for a hard dependency.
-  If `gen` disappears from myPackage, depPackage fails to *install*.
-
-* **Use `new_external_generic()`**.
-  This registers the method only when myPackage is loaded, and optionally only when myPackage is new enough (via `version`).
-  If the generic disappears, you get a warning at load time rather than an installation failure.
-
-* **Use `new_external_class()`** to refer to myPackage's classes, both in method signatures and as the `parent` of a subclass.
-  The subclass's constructor forwards `...` to the installed `myPackage::Foo()` instead of baking in its arguments and defaults.
-  The subclass still stores property definitions and dispatch metadata from installation, so structural changes can require rebuilding depPackage.
-
-```{r, eval = FALSE}
-# In depPackage
-Foo := new_external_class(package = "myPackage")
-MyFoo := new_class(parent = Foo, properties = list(extra = class_double))
-
-gen := new_external_generic(package = "myPackage", dispatch_args = "x")
-method(gen, MyFoo) <- function(x, ...) "Hello!"
-```
-
-### Signaling deprecation
+## Signaling deprecation
 
 S7 supplies three helpers for keeping an old interface available during a transition:
 
@@ -157,34 +119,28 @@ All three require `when`, the version of your package that introduced the deprec
 * `"lifecycle(stop)"` uses `lifecycle::deprecate_stop()` to make that use an error.
 
 If you use a lifecycle method, add lifecycle to your package's dependencies.
-The warning policy is separate from registration: even `"lifecycle(stop)"` permits method registration and use of a deprecated class in class definitions.
-It stops calls to the deprecated constructor or generic, or access to the deprecated property, rather than preventing downstream packages from referring to the definition.
 
-Warnings in a plain R test script do not by themselves make `R CMD check` fail.
-They can still fail tests that require silence or convert warnings to errors, and a warning during namespace loading can produce a check NOTE.
-Use the warning phase to find downstream uses before switching to errors or removing an export.
-
-Downstream packages that save a copy of a generic or class in their namespace can keep using the old definition without warning until they are rebuilt.
-Calls that look up the export dynamically, such as `myPackage::gen()`, use the updated definition immediately.
+Warnings do not by themselves make `R CMD check` fail, although they can cause tests to fail if they require silence or convert warnings to errors.
+Use the warning phase to give downstream users a graceful transition period before switching to errors or removing an export.
 
 ## Changing a generic
 
 ### Adding an argument
 
-If your generic has `...` (and it should — see [Designing for evolution]), adding a non-dispatch argument is one of the mildest changes you can make.
+If your generic has `...` (and it should), adding a non-dispatch argument is one of the mildest changes you can make.
 Existing methods keep working, but every registration produces a warning until they're updated:
 
 ```{r}
 # myPackage, version 1
 gen := new_generic("x")
+
 # depPackage's method, written against version 1
-gen_BClass <- function(x, ...) "old"
+BClass := new_class()
+method(gen, BClass) <- function(x, ...) "old"
 
 # myPackage, version 2 adds `verbose`
 gen := new_generic("x", fun = function(x, verbose = FALSE, ...) S7_dispatch())
-
-BClass := new_class()
-method(gen, BClass) <- gen_BClass
+method(gen, BClass) <- function(x, ...) "old"
 ```
 
 Because the check only runs in development contexts, depPackage's users see nothing: installing and loading depPackage are both silent, and calls keep working.
@@ -194,8 +150,6 @@ The warning surfaces under `load_all()`, and as a single NOTE in `R CMD check` o
 * checking whether the namespace can be loaded with stated dependencies ... NOTE
 Warning: gen(<depPackage::BClass>) doesn't have argument `verbose`
 ```
-
-So depPackage's author will hear about it — and so will you, when you run reverse dependency checks, since those check depPackage itself.
 
 The fix is pleasingly asymmetric: because methods may have arguments the generic lacks, depPackage can add the argument **before** myPackage releases:
 
@@ -217,27 +171,7 @@ So the transition recipe is:
 2. Each downstream package adds the argument to its methods, and can release whenever convenient.
 3. You release.
 
-If you skip steps 1–2, nothing breaks outright — downstream packages just get a check NOTE until they catch up.
-
-If your generic *doesn't* have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic:
-
-```{r, error = TRUE}
-gen_strict := new_generic("x", fun = function(x) S7_dispatch())
-method(gen_strict, BClass) <- function(x) "old"
-
-# myPackage, version 2
-gen_strict := new_generic("x", fun = function(x, verbose = FALSE) S7_dispatch())
-method(gen_strict, BClass) <- function(x) "old"
-```
-
-Since that error is only raised in development contexts, depPackage still installs and loads for its users; the mismatched method is registered, and the call blows up when it's made:
-
-```
-Error in `method(gen_strict, depPackage::BClass)`(x = <object>, verbose = FALSE) :
-  unused argument (verbose = FALSE)
-```
-
-depPackage's own `R CMD check` fails earlier and says something more useful, at `checking whether the package can be loaded`.
+If your generic *doesn't* have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic.
 Either way there is no fix on depPackage's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename (below).
 
 ### Removing an argument
@@ -246,8 +180,7 @@ Removing a non-dispatch argument is silent at registration time: methods may hav
 Downstream packages can remove the argument from their methods at leisure.
 
 Callers are the bigger concern: `gen(x, removed_arg = 1)` will still be accepted by the generic (the argument passes through `...`) and then reach methods that may or may not expect it.
-So before removing an argument, deprecate it: keep it in the generic, and warn when it's supplied.
-This is an argument deprecation, so put the warning in the generic's function rather than wrapping the whole generic with `deprecated_generic()`:
+So before removing an argument, deprecate it: keep it in the generic, and warn when it's supplied:
 
 ```{r}
 gen := new_generic("x", fun = function(x, verbose = FALSE, ...) {
@@ -257,17 +190,26 @@ gen := new_generic("x", fun = function(x, verbose = FALSE, ...) {
   S7_dispatch()
 })
 method(gen, BClass) <- function(x, verbose = FALSE, ...) "result"
-gen(BClass())
-gen(BClass(), verbose = TRUE)
+. <- gen(BClass(), verbose = TRUE)
 ```
 
-Use `lifecycle::deprecate_warn()` in the same place if your package uses lifecycle.
-Keep the method's argument during the transition so it still matches the generic.
+If you use lifecycle, the equivalent is:
+
+```{r}
+gen := new_generic("x", fun = function(x, verbose = deprecated(), ...) {
+  if (lifecycle::is_present(verbose)) {
+    lifecycle::deprecate_warn("1.0.0", "gen(verbose)")
+  }
+  S7_dispatch()
+})
+method(gen, BClass) <- function(x, verbose = deprecated(), ...) "result"
+. <- gen(BClass(), verbose = TRUE)
+```
 
 ### Changing a default
 
-Changing the default value of a non-dispatch argument warns for every method whose default doesn't match — and, more consequentially, changes what those methods actually receive.
-The default belongs to the generic, not to the method: dispatch passes on all of the generic's arguments, so when a caller supplies nothing, the method gets the *generic's* default and its own is never reached.
+Changing a default changes behavior immediately, for every caller, because S7 dispatch never uses the defaults provided by the method.
+For this reason S7 warns whenever the generic and method drift out of sync:
 
 ```{r}
 gen := new_generic("x", fun = function(x, drop = TRUE, ...) S7_dispatch())
@@ -275,13 +217,10 @@ method(gen, BClass) <- function(x, drop = FALSE, ...) drop
 gen(BClass())
 ```
 
-(A method's default is only used when the generic's argument has no default at all.)
-So changing a default changes behavior immediately, for every caller — including callers of methods that thought they had pinned the old value.
+There's no way around this warning, as there's no spelling of the method that agrees with both versions of myPackage: whichever default it names disagrees with one of them, and omitting the default disagrees with both.
+Fortunately the warning fires only in development contexts, which costs depPackage one check NOTE and costs depPackage's users nothing.
 
-Unlike an added argument, there's no spelling of the method that agrees with both versions of myPackage: whichever default it names disagrees with one of them, and omitting the default disagrees with both.
-So the mitigation here isn't a transition recipe, it's the scoping described in [The generic–method contract]: the warning fires only in development contexts, which costs depPackage one check NOTE and costs depPackage's users nothing.
-
-Our advice: change defaults rarely, and prefer to keep non-dispatch arguments (and especially their defaults) out of the generic entirely, so that the methods that care about them own both the argument and its default.
+Our advice is to keep non-dispatch arguments to a minimum, and change defaults rarely, if ever.
 
 ### Renaming a generic
 
@@ -290,34 +229,20 @@ If you simply rename a generic, depPackage fails to install: its `importFrom(myP
 The fix is to keep the old name as a deprecated alias for the new generic:
 
 ```{r}
+# myPackage, version 1
+gen1 := new_generic("x")
+
 # myPackage, version 2
 gen2 := new_generic("x")
-gen1 := deprecated_generic(new = gen2, when = "2.0.0") # export both
+gen1 := deprecated_generic(new = gen2, when = "2.0.0")
 method(gen1, BClass) <- function(x, ...) "result"
 gen2(BClass())
 gen1(BClass())
 ```
 
-`deprecated_generic()` returns an object that still counts as the generic for registration purposes — `method(gen1, MyClass) <- f` lands on the shared `gen2`, so depPackage keeps installing and both names dispatch to the same methods — while calls through the old name warn that it's time to move on.
-This also works for already-installed depPackage registrations and for registrations made with `new_external_generic()`.
 (If you plan to keep the old name indefinitely, a plain alias `gen1 <- gen2` is completely transparent and signals nothing.)
 
-An ordinary wrapper such as `function(x, ...) { .Deprecated("gen2"); gen2(x, ...) }` is not a generic that downstream packages can register methods on.
-Use `deprecated_generic()` when the old name is an extension point.
-
-You can also keep the generic's internal identity while changing its exported name.
-Use `new_label` when the name in the warning should differ from the generic's internal name:
-
-```{r}
-gen1 := new_generic("x")
-gen2 <- gen1
-gen1 := deprecated_generic(new = gen2, when = "2.0.0", new_label = "gen2()")
-method(gen1, BClass) <- function(x, ...) "result"
-gen1(BClass()) # warns and recommends gen2()
-gen2(BClass())
-```
-
-`new_label` changes only the message; both exports use the same generic and methods.
+`deprecated_generic()` returns an object that still counts as the generic so method registration continues to work, but calls through the old name warn that it's time to move on.
 
 ### Retiring a generic
 
