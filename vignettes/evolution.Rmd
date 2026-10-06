@@ -70,7 +70,7 @@ The following sections cover each way a generic can change:
 
 ### Changing dispatch
 
-<!-- tools/evolution/logs: gen-add-dispatch-arg, gen-add-arg-nodots -->
+<!-- tools/evolution/logs: gen-change-dispatch -->
 
 Changing a generic's dispatch arguments (i.e. their number, names, or order) breaks every method in depPackage.
 There is no workaround: a generic's dispatch arguments are its identity.
@@ -89,7 +89,7 @@ Either way there is no fix on depPackage's side, so a generic without `...` is a
 
 ### Adding an argument
 
-<!-- tools/evolution/logs: gen-add-arg, gen-add-arg-fixed -->
+<!-- tools/evolution/logs: gen-add-arg -->
 
 If your generic has `...`, adding a non-dispatch argument is one of the mildest changes you can make.
 Existing methods keep working, but every registration produces a warning until they're updated:
@@ -142,7 +142,7 @@ So before removing an argument, deprecate it: keep it in the generic, and warn w
 ```{r}
 gen := new_generic("x", fun = function(x, verbose = FALSE, ...) {
   if (!missing(verbose)) {
-    .Deprecated("`verbose` is deprecated.")
+    .Deprecated(msg = "The `verbose` argument is deprecated and will be removed in a future release.")
   }
   S7_dispatch()
 })
@@ -194,7 +194,7 @@ If you must, the process is:
 
 ### Renaming a generic
 
-<!-- tools/evolution/logs: gen-rename, gen-rename-alias, gen-rename-wrapper -->
+<!-- tools/evolution/logs: gen-rename -->
 
 If you simply rename a generic, depPackage will fail to install if it uses `importFrom(yourPackage, gen)`.
 The fix is to keep the old name as a deprecated alias for the new generic:
@@ -238,6 +238,8 @@ So the process is:
 
 ### Removing a generic
 
+<!-- tools/evolution/logs: gen-remove -->
+
 To retire a generic without replacement, use `deprecated_generic()` without the `new` argument:
 
 ```{r}
@@ -260,7 +262,7 @@ So the process is:
 
 ### Moving a generic to another package
 
-<!-- tools/evolution/logs: gen-move-package, gen-move-package-copy -->
+<!-- tools/evolution/logs: gen-move-package -->
 
 Splitting generics out into a lower-dependency package (say yourPackageCore) works, as long as yourPackage re-exports them:
 
@@ -334,7 +336,7 @@ The following sections cover each way a class can change:
 
 ### Adding a property
 
-<!-- tools/evolution/logs: class-add-prop, class-add-prop-clash -->
+<!-- tools/evolution/logs: class-add-prop -->
 
 Adding a property is usually harmless, but there are two ways it can still bite:
 
@@ -360,9 +362,9 @@ So the process is:
 
 ### Removing a property
 
-<!-- tools/evolution/logs: class-remove-prop, class-remove-prop-deprecated -->
+<!-- tools/evolution/logs: class-remove-prop -->
 
-Removing a property will cause run-time errors: `Foo(count = 2)` will fail with `unused argument` and `x@count` with `Can't find property`.
+Removing a property will cause run-time errors: `Foo(count = 2)` will fail with `unused argument` and `x@count` with `Property not found`.
 To give dependencies time to adapt, deprecate the property with `deprecated_property()`:
 
 ```{r}
@@ -396,6 +398,8 @@ So the process is:
 
 ### Renaming a property
 
+<!-- tools/evolution/logs: class-rename-prop -->
+
 A rename is just an add and a remove, supplying the name of the `new` property to `deprecated_property()`:
 
 ```{r}
@@ -419,7 +423,7 @@ So the process is:
 
 ### Changing a property's type or validator
 
-<!-- tools/evolution/logs: class-narrow-prop -->
+<!-- tools/evolution/logs: class-change-prop-type -->
 
 Widening a property's type (say, `class_integer` to `class_numeric`) is safe for depPackage: everything that validated before still validates.
 Narrowing causes run-time errors: any code that stored a now-invalid value fails when it runs:
@@ -460,7 +464,7 @@ So the process is:
 
 ### Renaming a class
 
-<!-- tools/evolution/logs: class-rename, class-rename-alias-direct, class-rename-alias-external -->
+<!-- tools/evolution/logs: class-rename -->
 
 To rename, create a new class, then change the previous definition to use `deprecated_class()`. Pass the replacement class definition to `new` and set the version `when` the replacement happened.
 
@@ -488,7 +492,7 @@ S7_inherits(saved, Bar)
 ```
 
 Methods for `Foo` do not automatically apply to `Bar`.
-When a method can handle both classes, register it on their union:
+When a method can handle both classes, register it on their union (this replaces the existing `Foo` method with an identical one, hence the message):
 
 ```{r}
 method(measure, Foo | Bar) <- function(x) x@size
@@ -505,6 +509,8 @@ So the process is:
 3. You remove the old class in a later release.
 
 ### Removing a class
+
+<!-- tools/evolution/logs: class-remove -->
 
 If you're removing a class without an alternative, omit `new` and keep the existing definition:
 
@@ -525,6 +531,8 @@ So the process is:
 3. You remove the class in a later release.
 
 ### Moving a class
+
+<!-- tools/evolution/logs: class-move -->
 
 You can use the same technique as renaming to move a class between packages, because changing the class's `package` also changes its identity.
 To recommend a class in another package while preserving existing uses, use `deprecated_class()`:
