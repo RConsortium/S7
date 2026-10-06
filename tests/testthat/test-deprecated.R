@@ -50,7 +50,7 @@ test_that("deprecated wrappers keep arguments separate from deprecation state", 
   )
   Old := deprecated_class(
     properties = list(target = new_property(class_double, default = -1)),
-    replacement = Target,
+    new = Target,
     when = "1.0.0"
   )
   expect_snapshot(
@@ -270,7 +270,7 @@ test_that("deprecated_class() warns without changing the class", {
   Pet := new_class(properties = list(name = class_character))
   Dog := deprecated_class(
     properties = list(name = class_character),
-    replacement = Pet,
+    new = Pet,
     when = "2.0.0"
   )
 
@@ -294,7 +294,7 @@ test_that("deprecated classes keep their own methods and subclasses", {
   Pet := new_class(properties = list(name = class_character))
   Dog := deprecated_class(
     properties = list(name = class_character),
-    replacement = Pet,
+    new = Pet,
     when = "2.0.0"
   )
 
@@ -371,7 +371,7 @@ test_that("deprecated classes preserve constructor scope and validation", {
     validator = function(self) {
       if (length(self@name) != 1L) "name must have length 1"
     },
-    replacement = Pet,
+    new = Pet,
     when = "2.0.0",
     method = "lifecycle(stop)"
   )
@@ -472,7 +472,7 @@ test_that("deprecated classes name replacements from other packages", {
   dep := local_package({
     Pet := new_class()
   })
-  Dog := deprecated_class(replacement = dep$Pet, when = "2.0.0")
+  Dog := deprecated_class(new = dep$Pet, when = "2.0.0")
   expect_snapshot(invisible(Dog()))
 })
 
@@ -508,8 +508,8 @@ test_that("deprecated_class() validates its inputs", {
     deprecated_class(name = "Old")
     deprecated_class(name = "Old", when = "next year")
     deprecated_class(name = "Old", when = "1.0.0", method = "warn")
-    deprecated_class(name = "Old", replacement = 1, when = "1.0.0")
-    deprecated_class(name = "Old", replacement = class_double, when = "1.0.0")
+    deprecated_class(name = "Old", new = 1, when = "1.0.0")
+    deprecated_class(name = "Old", new = class_double, when = "1.0.0")
   })
 })
 
@@ -935,7 +935,7 @@ test_that("deprecated generics and classes print nicely", {
   new_gen := new_generic("x")
   old_gen := deprecated_generic(new = new_gen, when = "1.1.0")
   Pet := new_class()
-  Dog := deprecated_class(replacement = Pet, when = "2.0.0")
+  Dog := deprecated_class(new = Pet, when = "2.0.0")
   Cat := deprecated_class(when = "3.0.0")
 
   expect_snapshot({

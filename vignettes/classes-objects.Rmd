@@ -413,13 +413,13 @@ PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
 
 ## Deprecating a class
 
-To deprecate a class, change `new_class()` to `deprecated_class()` in its existing definition and add `when`. You can also recommend another class with `replacement`:
+To deprecate a class, change `new_class()` to `deprecated_class()` in its existing definition and add `when`. You can also recommend another class with `new`:
 
 ```{r}
 Pet := new_class(properties = list(name = class_character))
 Dog := deprecated_class(
   properties = list(name = class_character),
-  replacement = Pet,
+  new = Pet,
   when = "2.0.0"
 )
 
@@ -437,4 +437,4 @@ method(speak, Dog | Pet) <- function(x) paste("Hello,", x@name)
 speak(Pet(name = "Fido"))
 ```
 
-Omit `replacement` to deprecate a class without recommending another. See `?deprecated_class` for the warning options.
+Omit `new` to deprecate a class without recommending another. See `?deprecated_class` for the warning options.
