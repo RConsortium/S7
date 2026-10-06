@@ -13,6 +13,23 @@ test_that("property retrieval retrieves the properties that exist & errors other
   })
 })
 
+test_that("S7 functions expose their registered S4 data slot", {
+  generic := new_generic("x")
+  method(generic, class_integer) <- function(x) x
+  implementation <- method(generic, class_integer)
+  expect_identical(generic@.Data, methods::slot(generic, ".Data"))
+  expect_identical(implementation@.Data, methods::slot(implementation, ".Data"))
+
+  suppressMessages(trace(
+    "integer",
+    quote(NULL),
+    print = FALSE,
+    where = generic@methods
+  ))
+  traced <- method(generic, class_integer)
+  expect_identical(traced@.Data, methods::slot(traced, ".Data"))
+})
+
 test_that("property retrieval evaluates dynamic properties", {
   foo := new_class(
     properties = list(

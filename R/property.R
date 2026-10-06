@@ -369,7 +369,7 @@ prop_call <- function(object, name) {
 #' @name prop
 `@.S7_object` <- prop
 
-#' @rawNamespace S3method("@<-",S7_object)
+#' @export
 `@<-.S7_object` <- function(object, name, value) {
   if (isS4(object) && !name %in% names(S7_class(object)@properties)) {
     methods::slot(object, name) <- value
