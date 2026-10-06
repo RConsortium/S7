@@ -144,7 +144,9 @@
 
 ### Package development
 
-* New `vignette("evolution")` explains how to evolve S7 classes and generics without breaking downstream packages, and what downstream authors can do to smooth transitions. Its claims are verified by a manually-run compatibility lab in `tools/evolution/` (#143).
+* New `vignette("evolution")` explains how to evolve S7 classes and generics 
+  without breaking downstream packages, and what downstream authors can do to 
+  smooth transitions (#143).
 
 * New `deprecated_class()`, `deprecated_generic()`, and `deprecated_property()`
   help package authors deprecate APIs while keeping existing code working. A
