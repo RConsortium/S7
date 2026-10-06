@@ -95,7 +95,7 @@ generic_method_rows <- function(generic, package, class) {
 # so that print.data.frame() formats it per-element: data frames format whole
 # columns, so the scalar format.S7_signature() method is never reached.
 new_signature_list <- function(x) {
-  class(x) <- "S7_signature_list"
+  class(x) <- c("S7_signature_list", "list")
   x
 }
 
@@ -148,11 +148,12 @@ find_matches <- function(env, predicate) {
   if (isNamespace(env)) {
     # Not attached; use exported values
     names <- getNamespaceExports(env)
+    objs <- setNames(lapply(names, \(name) getExportedValue(env, name)), names)
   } else {
     # Attached or global; use all values
     names <- ls(envir = env)
+    objs <- mget(names, envir = env, inherits = FALSE)
   }
 
-  objs <- mget(names, envir = env, inherits = FALSE)
   Filter(predicate, objs)
 }
