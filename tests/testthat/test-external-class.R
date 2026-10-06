@@ -55,7 +55,7 @@ test_that("external class inheritance resolves a renamed class (#727)", {
 test_that("external class inheritance recognizes deprecated classes", {
   deprpkg := local_package({
     Bar := new_class()
-    Foo := deprecated_class(replacement = Bar, when = "2.0.0")
+    Foo := deprecated_class(new = Bar, when = "2.0.0")
   })
 
   Foo := new_external_class("deprpkg")
@@ -69,7 +69,7 @@ test_that("external deprecated parents construct subclasses silently", {
     Pet := new_class(properties = list(name = class_character))
     Dog := deprecated_class(
       properties = list(name = class_character),
-      replacement = Pet,
+      new = Pet,
       when = "1.0.0"
     )
   })
@@ -97,7 +97,7 @@ test_that("external class aliases allow narrowing property overrides", {
 test_that("external deprecated property classes construct defaults silently", {
   dep := local_package({
     Pet := new_class()
-    Dog := deprecated_class(replacement = Pet, when = "1.0.0")
+    Dog := deprecated_class(new = Pet, when = "1.0.0")
   })
   Dog := new_external_class(package = "dep")
   Holder := new_class(properties = list(pet = Dog))
