@@ -11,6 +11,7 @@ articles:
   compatibility: compatibility.html
   spec/design: spec/design.html
   spec/dispatch: spec/dispatch.html
+  evolution: evolution.html
   generics-methods: generics-methods.html
   motivation: motivation.html
   packages: packages.html
@@ -18,7 +19,7 @@ articles:
   spec/proposal: spec/proposal.html
   spec/requirements: spec/requirements.html
   S7: S7.html
-last_built: 2026-10-06T20:43Z
+last_built: 2026-10-06T22:53Z
 urls:
   reference: https://rconsortium.github.io/S7/reference
   article: https://rconsortium.github.io/S7/articles

@@ -237,6 +237,12 @@
 #### Package development
 
 - New
+  [`vignette("evolution")`](https://rconsortium.github.io/S7/articles/evolution.md)
+  explains how to evolve S7 classes and generics without breaking
+  downstream packages, and what downstream authors can do to smooth
+  transitions ([\#143](https://github.com/RConsortium/S7/issues/143)).
+
+- New
   [`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md),
   [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md),
   and

@@ -11,6 +11,8 @@
   S4](https://rconsortium.github.io/S7/articles/compatibility.md):
 - [Using S7 in a
   package](https://rconsortium.github.io/S7/articles/packages.md):
+- [Evolving S7 classes and
+  generics](https://rconsortium.github.io/S7/articles/evolution.md):
 - [Motivation for
   S7](https://rconsortium.github.io/S7/articles/motivation.md):
 - [Performance](https://rconsortium.github.io/S7/articles/performance.md):

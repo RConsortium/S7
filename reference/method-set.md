@@ -35,6 +35,11 @@ method(generic, signature) <- value
   an [S3 generic](https://rdrr.io/r/base/UseMethod.html), or an [S4
   generic](https://rdrr.io/r/methods/setGeneric.html).
 
+  Note that because `method<-` is an assignment function,
+  `method(pkg::gen, class) <- f` will not work. You must either import
+  `gen` into your namespace or use
+  [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md).
+
 - signature:
 
   A method signature.
