@@ -1,448 +1,536 @@
 # Changelog
 
-## S7 (development version)
+## S7 1.0.0
 
-- Operator methods now propagate missing-method errors raised inside
-  their bodies instead of silently falling back to base behavior
-  ([\#490](https://github.com/RConsortium/S7/issues/490)).
-- New `:=` operator creates and names an object in one step, so
-  `Foo := new_class()` is equivalent to `Foo <- new_class(name = "Foo")`
-  ([\#658](https://github.com/RConsortium/S7/issues/658)).
-- The `:=` operator now stays ahead of rlang and data.table regardless
-  of attachment order, without emitting `:=` masking messages
-  ([\#697](https://github.com/RConsortium/S7/issues/697)).
-- The class object that S7 stores on each instance now lives in the
-  `_S7_class` attribute (previously `S7_class`), moving it into the
-  `_`-prefixed namespace reserved for S7 internals so it can’t collide
-  with a user-defined property. Objects created by an older version of
-  S7 (e.g. serialised to disk or baked into another package’s lazy-load
-  database) continue to work, as S7 falls back to the old attribute name
-  when reading them
-  ([\#677](https://github.com/RConsortium/S7/issues/677)).
-- S7 and S4 now interoperate through inheritance.
-  [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  can use an S4 class as a parent, mapping S4 slots to S7 properties and
-  registering the class with S4 automatically. Conversely,
+### Breaking changes
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  now errors when upcasting to an abstract class. Use a concrete target
+  class instead ([\#680](https://github.com/RConsortium/S7/issues/680),
+  [\#686](https://github.com/RConsortium/S7/issues/686)).
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  now restricts default downcasts to descendants of the source class.
+  Converting between sibling classes requires an explicit
+  [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  method, rather than relying on a shared ancestor
+  ([\#509](https://github.com/RConsortium/S7/issues/509)).
+
+- `method<-()` now leaves a temporary placeholder, rather than a copy of
+  an external generic, in your package namespace. Add
+  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  at the top level of `zzz.R`, after all method registrations, to remove
+  these placeholders when the package is built
+  ([\#364](https://github.com/RConsortium/S7/issues/364)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  changes the default constructor for subclasses of classes with custom
+  constructors. The subclass constructor now takes `...`, followed by
+  named arguments for its new properties. It forwards `...` to the
+  parent instead of exposing the parent’s properties as individual
+  arguments. Update calls to use the parent constructor’s arguments, and
+  re-document affected constructors
+  ([\#609](https://github.com/RConsortium/S7/issues/609),
+  [\#317](https://github.com/RConsortium/S7/issues/317)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now reserves property names beginning with `_` for internal use.
+  Rename any properties that use this prefix
+  ([\#579](https://github.com/RConsortium/S7/issues/579)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  and
+  [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
+  now name their first arguments `_parent` and `_object`, respectively.
+  Update calls that name these arguments, or pass the first argument
+  positionally ([\#423](https://github.com/RConsortium/S7/issues/423)).
+
+### New features
+
+#### Classes and properties
+
+- New `:=` operator creates and names an object in one step:
+  `Foo := new_class()` is equivalent to
+  `Foo <- new_class(name = "Foo")`. S7’s `:=` takes precedence over
+  rlang and data.table regardless of attachment order, without emitting
+  masking messages
+  ([\#658](https://github.com/RConsortium/S7/issues/658),
+  [\#697](https://github.com/RConsortium/S7/issues/697)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now supports S4 classes as parents, mapping S4 slots to S7 properties
+  and registering the new class with S4 automatically. Conversely,
   [`S4_register()`](https://rconsortium.github.io/S7/reference/S4_register.md)
   registers an S7 class with S4, and
   [`S4_contains()`](https://rconsortium.github.io/S7/reference/S4_register.md)
-  returns an S4 class name suitable for
-  `methods::setClass(contains = )`, exposing stored S7 properties as S4
-  slots for S4 subclasses. This support includes S4 initialization and
-  validity integration, and S4/internal generic registration where
-  needed; see
+  supplies a class name for `methods::setClass(contains = )`, exposing
+  stored S7 properties as slots for S4 subclasses. This includes
+  integration with S4 initialization, validity checking, and S4/internal
+  generic registration. See
   [`vignette("compatibility")`](https://rconsortium.github.io/S7/articles/compatibility.md)
-  for caveats ([\#456](https://github.com/RConsortium/S7/issues/456)).
-- Errors thrown by S7 now report the function where they occurred,
-  making it easier to track down the source of a problem
-  ([\#646](https://github.com/RConsortium/S7/issues/646)).
-- `class_POSIXct` uses the `tzone` attribute (not `tz`), and allows it
-  to be absent ([\#401](https://github.com/RConsortium/S7/issues/401)).
-- Base type wrappers like `class_integer` now define their constructor
-  and validator in the S7 namespace.
-  ([\#553](https://github.com/RConsortium/S7/issues/553)).
-- Method dispatch on `class_missing` now correctly handles missing
-  arguments forwarded through a wrapper functions
-  ([\#595](https://github.com/RConsortium/S7/issues/595)).
+  for details ([\#456](https://github.com/RConsortium/S7/issues/456)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now allows properties named `names`, `dim`, `dimnames`, `class`,
+  `comment`, `tsp`, and `row.names`. Property names beginning with `_`
+  are reserved for internal use
+  ([\#579](https://github.com/RConsortium/S7/issues/579)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  experimentally supports `class_environment` as a parent, allowing S7
+  objects with reference semantics. Environments are modified in place,
+  so some operations differ from those on value-typed objects, and the
+  API may change.
+  [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
+  and `S7_data<-()` error on these objects because they would otherwise
+  remove the S7 attributes in place
+  ([\#590](https://github.com/RConsortium/S7/issues/590)).
+
+- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+  creates a delayed reference to an S7 class in another package, or a
+  class in your own package that is not yet defined. This supports
+  method registration for suggested packages
+  ([\#573](https://github.com/RConsortium/S7/issues/573)),
+  self-referential and mutually recursive classes
+  ([\#250](https://github.com/RConsortium/S7/issues/250)), and
+  inheritance from classes in other packages
+  ([\#317](https://github.com/RConsortium/S7/issues/317)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now accepts a named list of property values, passed as a single
+  unnamed argument through `...`
+  ([\#497](https://github.com/RConsortium/S7/issues/497)). Its first
+  argument is now named `_parent` to avoid clashes with property names
+  ([\#423](https://github.com/RConsortium/S7/issues/423)).
+
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  accepts a `setter` with arguments `self`, `name`, and `value`, so the
+  same setter can be reused for multiple properties
+  ([\#552](https://github.com/RConsortium/S7/issues/552)).
+
+- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  gains a `default` argument for supplying a quoted property default
+  independently of its constructor
+  ([\#755](https://github.com/RConsortium/S7/issues/755)).
+
+- [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
+  now accepts a named list of property values, passed as a single
+  unnamed argument through `...`
+  ([\#497](https://github.com/RConsortium/S7/issues/497)). Its first
+  argument is now named `_object` to avoid clashes with property names
+  ([\#423](https://github.com/RConsortium/S7/issues/423)).
+
+#### Generics and methods
+
+- [`method()`](https://rconsortium.github.io/S7/reference/method.md) and
+  `method<-()` accept a length-one list as `signature` for
+  single-dispatch generics, matching the list-of-classes form used for
+  multiple dispatch
+  ([\#555](https://github.com/RConsortium/S7/issues/555)).
+
+- `method<-()` can register methods on S3 and S4 generics for base
+  types, S3 classes, S7 unions, `class_any`, and `NULL`. Unions expand
+  to one registration per class; `class_any` and `NULL` register as the
+  `default` and `NULL` methods, respectively
+  ([\#455](https://github.com/RConsortium/S7/issues/455)).
+
+- `method<-()` supports double-dispatch operators such as `+`, `==`, and
+  `%*%` with plain S3 or S4 classes, even when neither operand is an S7
+  object ([\#544](https://github.com/RConsortium/S7/issues/544)). It
+  also supports unary `+`, `-`, and `!` methods
+  ([\#531](https://github.com/RConsortium/S7/issues/531)).
+
+- `method<-()` accepts `NULL` to unregister an existing method, e.g.
+  `method(foo, class_character) <- NULL`
+  ([\#613](https://github.com/RConsortium/S7/issues/613)).
+
+- [`super()`](https://rconsortium.github.io/S7/reference/super.md) now
+  works with S3 and S4 objects, not just S7 objects
+  ([\#500](https://github.com/RConsortium/S7/issues/500)).
+
+#### Conversion
+
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
-  now errors when upcasting to an abstract class, rather than producing
-  an instance of that abstract class
-  ([\#680](https://github.com/RConsortium/S7/issues/680),
-  [\#686](https://github.com/RConsortium/S7/issues/686)).
-- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
-  no longer automatically converts between sibling classes (classes that
-  merely share a common ancestor); the default downcast now applies only
-  when `to` is genuinely a descendant of `from`’s class
-  ([\#509](https://github.com/RConsortium/S7/issues/509)).
-- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
-  now falls back to the corresponding `as.*()` function
-  (e.g. [`as.character()`](https://rdrr.io/r/base/character.html)) when
-  converting to a base type like `class_character` and no method or
-  inheritance-based default applies, so `convert(1, class_character)`
-  works out of the box
+  falls back to the corresponding `as.*()` function when converting to a
+  base type and no method or inheritance-based default applies. For
+  example, `convert(1, class_character)` uses
+  [`as.character()`](https://rdrr.io/r/base/character.html)
   ([\#472](https://github.com/RConsortium/S7/issues/472)).
+
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
-  accepts a single unnamed list of property overrides when downcasting,
-  as a shortcut for individual name-value pairs
+  now accepts a named list of property overrides when downcasting,
+  passed as a single unnamed argument through `...`
   ([\#497](https://github.com/RConsortium/S7/issues/497)).
-- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
-  no longer errors when `from` is a base or S3 object and `to` is an S7
-  class that inherits from `from`’s class. The base/S3 value is now
-  passed as `.data` to the `to` constructor
-  ([\#537](https://github.com/RConsortium/S7/issues/537)).
+
 - New
   [`convert_lazy()`](https://rconsortium.github.io/S7/reference/convert_lazy.md)
   is a non-strict variant of
   [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
   that returns `from` unchanged if it already inherits from `to`,
-  preserving any extra properties instead of stripping them
+  preserving the more specific class and any extra properties instead of
+  stripping them
   ([\#428](https://github.com/RConsortium/S7/issues/428)).
+
+#### Introspection and debugging
+
+- [`print()`](https://rdrr.io/r/base/print.html) for S7 classes now
+  shows property defaults inline and marks read-only properties with
+  `[read-only]` ([\#439](https://github.com/RConsortium/S7/issues/439)).
+
 - New
-  [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md),
+  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
+  returns a data frame describing an object’s or class’s properties,
+  with one row per property and columns for name, default, class,
+  getter, setter, and validator
+  ([\#551](https://github.com/RConsortium/S7/issues/551)).
+
+- [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
+  returns a class specification for any R object, not just S7 objects: a
+  `class_*` wrapper for base types, a
+  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  wrapper for S3 objects, or an S4 class for S4 objects. The result can
+  be passed directly to
+  [`method()`](https://rconsortium.github.io/S7/reference/method.md) and
+  other S7 dispatch helpers
+  ([\#559](https://github.com/RConsortium/S7/issues/559)).
+
+- New
+  [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
+  formats a class specification as a short, human-readable string
+  ([\#594](https://github.com/RConsortium/S7/issues/594)).
+
+- New
+  [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
+  and
+  [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
+  list the S7 classes and generics defined in an environment or package
+  ([\#335](https://github.com/RConsortium/S7/issues/335)).
+
+- New
+  [`S7_generic_call()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md),
+  [`S7_generic_fun()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md),
+  and
+  [`S7_user_frame()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md)
+  provide access to a method’s generic call, generic function, and
+  caller frame ([\#596](https://github.com/RConsortium/S7/issues/596)).
+
+- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  and
+  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
+  accept any class specification, including S7 unions, S3 and S4
+  classes, and base type wrappers
+  ([\#556](https://github.com/RConsortium/S7/issues/556)).
+
+- New
+  [`S7_methods()`](https://rconsortium.github.io/S7/reference/S7_methods.md)
+  lists methods registered on a generic, or methods associated with a
+  class across generics in attached packages
+  ([\#435](https://github.com/RConsortium/S7/issues/435)).
+
+- [`trace()`](https://rdrr.io/r/base/trace.html) and
+  [`untrace()`](https://rdrr.io/r/base/trace.html) work with S7 generics
+  and methods, enabling standard debugging workflows. For example,
+  `trace("myclass", browser, where = my_generic@methods)` sets a
+  breakpoint in the method for `myclass`
+  ([\#584](https://github.com/RConsortium/S7/issues/584)).
+
+#### Package development
+
+- New
   [`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md),
+  [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md),
   and
   [`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
-  help package authors deprecate S7 APIs while keeping old code working.
-  [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md)
-  replaces
-  [`new_generic()`](https://rconsortium.github.io/S7/reference/new_generic.md)
-  to define a generic that warns, or forwards calls and method
+  help package authors deprecate APIs while keeping existing code
+  working. A deprecated class warns on construction while preserving its
+  methods and subclasses; an optional `replacement` is recommended in
+  the warning. A deprecated generic can warn or forward calls and method
   registrations to a replacement supplied as `new`. Deprecated
   properties can forward reads and writes to a replacement property.
-  [`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
-  defines the existing class with a constructor that warns, preserving
-  its methods and subclasses; an optional `replacement` is recommended
-  in the warning. Warnings can use base R or lifecycle
+  Warnings can use base R or lifecycle
   ([\#727](https://github.com/RConsortium/S7/issues/727),
   [\#730](https://github.com/RConsortium/S7/issues/730)).
-- `method<-` now works for double-dispatch operators (e.g. `+`, `==`,
-  `%*%`) with plain S3 or S4 classes, even when neither operand is an S7
-  object ([\#544](https://github.com/RConsortium/S7/issues/544)).
-- `method<-` no longer embeds a copy of a generic owned by another
-  package in your package namespace. Instead it returns a sentinel value
-  that the new
+
+- New
   [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
-  removes from the namespace at build time; call
-  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
-  at the top level of `zzz.R` (see
-  [`vignette("packages")`](https://rconsortium.github.io/S7/articles/packages.md))
-  ([\#364](https://github.com/RConsortium/S7/issues/364)).
-- `method<-` now accepts `NULL` to unregister an existing method,
-  e.g. `method(foo, class_character) <- NULL`
-  ([\#613](https://github.com/RConsortium/S7/issues/613)).
-- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
-  is now idempotent when `from` is already an instance of `to`,
-  returning it unchanged. When `from` inherits from `to` but is more
-  specific, dispatch is now restricted to classes more specific than
-  `to`, so an inherited downcasting method can no longer be selected in
-  place of an upcast
-  ([\#429](https://github.com/RConsortium/S7/issues/429)).
-- `method<-` now gives a clear error when assigning a primitive function
-  (e.g. `log`) as a method
-  ([\#608](https://github.com/RConsortium/S7/issues/608)).
-- `method<-` and
-  [`method()`](https://rconsortium.github.io/S7/reference/method.md) now
-  accept a length-1 list as `signature` for single-dispatch generics,
-  matching the list-of-classes form required for multi-dispatch
-  ([\#555](https://github.com/RConsortium/S7/issues/555)).
+  removes the temporary placeholders returned by `method<-()` for
+  generics owned by other packages, avoiding embedded copies of those
+  generics in your namespace. Call it at the top level of `zzz.R`, after
+  all method registrations, not inside `.onLoad()`. See
+  [`vignette("packages")`](https://rconsortium.github.io/S7/articles/packages.md)
+  for details ([\#364](https://github.com/RConsortium/S7/issues/364)).
+
+- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  is the new name for
+  [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
+  which remains available for backward compatibility. Call it from
+  `.onLoad()` to register methods
+  ([\#615](https://github.com/RConsortium/S7/issues/615)).
+
+- New
+  [`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  unregisters active methods and removes hooks added by
+  [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md).
+  Call it from `.onUnload()`
+  ([\#316](https://github.com/RConsortium/S7/issues/316)).
+
+### Performance
+
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  now names its first argument `_parent` to minimise the chance of a
-  clash with a property
-  ([\#423](https://github.com/RConsortium/S7/issues/423)). It also
-  accepts a single unnamed named list as a shortcut for splicing
-  property values, making it easier to programmatically construct an
-  object from a list of properties
-  ([\#497](https://github.com/RConsortium/S7/issues/497)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  no longer copies an S7 class each time a default or custom constructor
-  creates an object. New objects instead store a shared internal class
-  reference, which also preserves sharing when multiple objects are
-  serialised together. Constructors created by older versions of S7
-  continue to work through the previous fallback
-  ([\#742](https://github.com/RConsortium/S7/issues/742)).
-- `method<-` can now register methods on S3 and S4 generics with base
-  types (e.g. `class_character`), S3 classes
-  ([`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md),
-  `class_factor`, etc.), S7 unions (expanded to one registration per
-  class), `class_any` (registered as the `default` method), and `NULL`
-  (registered as the `NULL` method)
-  ([\#455](https://github.com/RConsortium/S7/issues/455)).
-- `method<-` no longer emits an “Overwriting method” message when
-  re-registering an identical method, eliminating spurious messages from
-  `devtools::load_all()`
-  ([\#474](https://github.com/RConsortium/S7/issues/474)).
-- `method<-` now supports unary `+`, `-`, and `!` methods
-  ([\#531](https://github.com/RConsortium/S7/issues/531)).
-- `method<-` now only checks that a method is consistent with its
-  generic in development contexts (i.e. during
-  [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html),
-  when `R CMD check` is checking a package involved in the registration,
-  or when the method is registered outside of a package). This means
-  that when a package changes one of its generics, users of
-  already-installed downstream packages no longer see errors or warnings
-  that they can’t do anything about
-  ([\#726](https://github.com/RConsortium/S7/issues/726),
-  [\#728](https://github.com/RConsortium/S7/issues/728)). Methods
-  registered inside testthat tests are treated as an end-user context,
-  so tests give the same results under `R CMD check` as when run
-  locally.
-- `method<-` now reports an incompatible method signature with a warning
-  rather than an error while
-  [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html)
-  is active, and skips registering the method, so that a package remains
-  sourceable while its methods are out of sync with a changed generic,
-  letting you fix them one by one
-  ([\#726](https://github.com/RConsortium/S7/issues/726)).
-- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  now errors if a child class overrides a parent property with a type
-  that doesn’t extend the parent’s type, since such a class could never
-  be instantiated
-  ([\#352](https://github.com/RConsortium/S7/issues/352),
-  [\#708](https://github.com/RConsortium/S7/issues/708)).
-- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  now allows properties named `names`, `dim`, `dimnames`, `class`,
-  `comment`, `tsp`, and `row.names`. But property names beginning with
-  `_` are now reserved for internal use
-  ([\#579](https://github.com/RConsortium/S7/issues/579)).
-- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  now generates compact property defaults for S7’s bundled concrete S3
-  wrappers, so generated documentation no longer includes their
-  constructor bodies
-  ([\#755](https://github.com/RConsortium/S7/issues/755)).
-- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  experimentally allows `class_environment` as a parent again, so you
-  can build S7 objects that share R’s reference semantics for
-  environments. This support is provisional: because environments are
-  mutated in place, some operations behave differently than for
-  value-typed S7 objects, and the API may change.
-  [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
-  and `S7_data<-()` error on environment-based objects, since they would
-  otherwise destroy the object’s S7 attributes in place
-  ([\#590](https://github.com/RConsortium/S7/issues/590)).
-- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  generates a working default constructor for a subclass of a class with
-  a custom constructor: the subclass takes `...` and forwards it to the
-  parent constructor (followed by a named argument for each property the
-  subclass adds), so the parent’s argument defaults are matched and
-  evaluated by the parent itself. This is a breaking change: such a
-  subclass constructor no longer exposes the parent’s properties as
-  named or positional arguments, only via `...`
-  ([\#609](https://github.com/RConsortium/S7/issues/609),
-  [\#317](https://github.com/RConsortium/S7/issues/317)).
-- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)’s
-  default constructor now respects properties overridden in a subclass:
-  the subclass’s default is used
-  ([\#467](https://github.com/RConsortium/S7/issues/467)) and its setter
-  is run during construction
-  ([\#585](https://github.com/RConsortium/S7/issues/585)). Values for
-  overridden properties are passed to both the parent constructor and
-  the new object, so a subclass can override a parent property whose
-  default is mandatory.
-- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
-  creates a delayed reference to an S7 class in another package (or your
-  own package, but not yet defined). It is useful for registering
-  methods on classes from suggested packages
-  ([\#573](https://github.com/RConsortium/S7/issues/573)), for creating
-  self-referential or mutually recursive classes
-  ([\#250](https://github.com/RConsortium/S7/issues/250)), and for
-  extending class from other packages
-  ([\#317](https://github.com/RConsortium/S7/issues/317)).
-- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
-  now accepts exported aliases, so a reference to an old class name
-  still works when that name points to a renamed or moved class
-  ([\#727](https://github.com/RConsortium/S7/issues/727)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  now allows an abstract class’s constructor to run when it is building
-  the parent part of a subclass, so a subclass of an abstract class from
-  another package (via
-  [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md))
-  can be constructed
-  ([\#717](https://github.com/RConsortium/S7/issues/717)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  is now substantially faster, because each class caches its own name
-  and dispatch vector, and class type detection has moved to C.
-  Construction is 1.4x faster for a class that directly extends
-  `S7_object`, rising to 2.4x faster for a class with 10 ancestors;
+  is faster thanks to cached class names and dispatch vectors and faster
+  class type detection. In benchmarks, construction is 1.4x faster for a
+  direct subclass of `S7_object` and 2.4x faster for a class with 10
+  ancestors.
   [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
   is 1.5x faster and
   [`super()`](https://rconsortium.github.io/S7/reference/super.md) is
   2.1x faster ([\#723](https://github.com/RConsortium/S7/issues/723)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  stores a shared internal class reference instead of copying the class
+  on each construction. Objects serialized together also share this
+  reference. Constructors created by older versions of S7 continue to
+  work ([\#742](https://github.com/RConsortium/S7/issues/742)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  preserves ALTREP parent values, so wrapping a large compact integer
+  sequence uses O(1) rather than O(n) memory
+  ([@kschaubroeck](https://github.com/kschaubroeck),
+  [\#607](https://github.com/RConsortium/S7/issues/607)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  avoids re-running validators for properties inherited unchanged from
+  an already-validated parent, so each property is validated only once
+  when constructing deeply nested subclasses
+  ([\#539](https://github.com/RConsortium/S7/issues/539)).
+
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   and
   [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
-  are 25-30% faster because the handful of places that run on every
-  construction now read class metadata (`parent`, `properties`,
-  `abstract`, and `validator`) straight from the attributes where it is
-  stored, rather than going through `@`. On R 4.3 and later S7 also no
-  longer defines its own `@`, so the remaining internal uses resolve to
-  base’s generic directly
+  are 25-30% faster through direct access to class metadata. Avoiding
+  duplicate checks for base type properties also makes construction 1.4x
+  faster for classes with 10 such properties and 1.6x faster for classes
+  with 50. On R 4.3 and later, S7 uses base R’s `@` directly
   ([\#723](https://github.com/RConsortium/S7/issues/723)).
+
+### Bug fixes and minor improvements
+
+#### Classes and construction
+
+- Base type wrappers such as `class_integer` now define their
+  constructors and validators in the S7 namespace
+  ([\#553](https://github.com/RConsortium/S7/issues/553)).
+
+- `class_POSIXct` uses the `tzone` attribute, rather than `tz`, and
+  allows it to be absent
+  ([\#401](https://github.com/RConsortium/S7/issues/401)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now rejects property overrides whose type does not extend the parent’s
+  property type, since such classes cannot be instantiated
+  ([\#352](https://github.com/RConsortium/S7/issues/352),
+  [\#708](https://github.com/RConsortium/S7/issues/708)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  generates compact property defaults for bundled concrete S3 wrappers,
+  keeping constructor bodies out of generated documentation
+  ([\#755](https://github.com/RConsortium/S7/issues/755)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  generates a working default constructor when the parent has a custom
+  constructor. It forwards `...` to the parent, allowing the parent to
+  match and evaluate its own argument defaults. Properties added by the
+  subclass follow `...` as named arguments
+  ([\#609](https://github.com/RConsortium/S7/issues/609),
+  [\#317](https://github.com/RConsortium/S7/issues/317)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  uses the subclass’s default and setter for overridden properties.
+  Override values are passed to both the parent constructor and the new
+  object, allowing subclasses to override parent properties with
+  mandatory defaults
+  ([\#467](https://github.com/RConsortium/S7/issues/467),
+  [\#585](https://github.com/RConsortium/S7/issues/585)).
+
+- [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+  accepts exported aliases, so references continue to work when an old
+  name points to a renamed or moved class
+  ([\#727](https://github.com/RConsortium/S7/issues/727)).
+
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  now gives an informative error when `.parent` is a class specification
+  allows an abstract class’s constructor to run while constructing the
+  parent part of a subclass. This supports subclasses of abstract
+  classes in other packages referenced through
+  [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md)
+  ([\#717](https://github.com/RConsortium/S7/issues/717)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  gives an informative error when `_parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  no longer materialises ALTREP parent values
-  (e.g. [`seq_len()`](https://rdrr.io/r/base/seq.html)), so constructing
-  an S7 object that wraps a large compact integer sequence is now O(1)
-  in memory instead of O(n)
-  ([@kschaubroeck](https://github.com/kschaubroeck),
-  [\#607](https://github.com/RConsortium/S7/issues/607)).
-- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
-  no longer re-runs property validators for properties inherited
-  unchanged from an already-validated parent class, so constructing an
-  instance of a deeply nested class hierarchy validates each property
-  exactly once ([\#539](https://github.com/RConsortium/S7/issues/539)).
-- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
-  now runs the property class’s own validator when checking a value, not
-  just the structural class check, so a property restricted to an S3
-  class (e.g. `class_factor`) now enforces constraints that aren’t
-  visible in [`class()`](https://rdrr.io/r/base/class.html)
-  ([\#401](https://github.com/RConsortium/S7/issues/401)).
-- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
-  now warns when `default` is a complex value like a named vector,
-  because such values are inlined into the constructor and can cause
-  `R CMD check` failures. Wrap them in
-  [`quote()`](https://rdrr.io/r/base/substitute.html) instead. This
-  warning will become an error in a future release
-  ([\#541](https://github.com/RConsortium/S7/issues/541)).
-- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
-  now accepts a `setter` that takes `self`, `name`, and `value` making
-  it easy to reuse the same definition for multiple properties
-  ([\#552](https://github.com/RConsortium/S7/issues/552)).
+
 - [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
-  objects now work with
-  [`inherits()`](https://rdrr.io/r/base/class.html) (and other functions
-  that use [`nameOfClass()`](https://rdrr.io/r/base/class.html)) in R
-  4.3 and later ([@lawremi](https://github.com/lawremi),
+  objects work with [`inherits()`](https://rdrr.io/r/base/class.html)
+  and other functions that use
+  [`nameOfClass()`](https://rdrr.io/r/base/class.html) on R 4.3 and
+  later ([@lawremi](https://github.com/lawremi),
   [\#521](https://github.com/RConsortium/S7/issues/521)).
-- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
-  gains a `default` argument for supplying a quoted property default
-  independently of its constructor
-  ([\#755](https://github.com/RConsortium/S7/issues/755)).
-- [`print()`](https://rdrr.io/r/base/print.html) and
-  [`str()`](https://rdrr.io/r/utils/str.html) now omit properties
-  created by
-  [`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
-  ([\#754](https://github.com/RConsortium/S7/issues/754)).
-- `print(<S7_class>)` now shows property defaults inline (`= "value"`)
-  and annotates read-only properties (`[read-only]`)
-  ([\#439](https://github.com/RConsortium/S7/issues/439)).
-- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) and
-  `prop<-()` errors from getters and setters (including custom) now
-  report a synthetic `<Class>@<prop>` call, making it easier to see
-  which property triggered the error
-  ([\#416](https://github.com/RConsortium/S7/issues/416),
-  [\#536](https://github.com/RConsortium/S7/issues/536),
-  [\#638](https://github.com/RConsortium/S7/issues/638)).
-- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) no
-  longer leaves an object in a broken state when a custom getter signals
-  an error ([\#520](https://github.com/RConsortium/S7/issues/520),
+
+- [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
+  reads class metadata from the internal `_S7_class` attribute,
+  previously named `S7_class`, avoiding collisions with user-defined
+  properties. Objects created by older versions of S7, including saved
+  objects and objects in installed packages, remain supported. Use
+  [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
+  rather than accessing the attribute directly
+  ([\#677](https://github.com/RConsortium/S7/issues/677)).
+
+#### Conversion and underlying data
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  returns `from` unchanged when it already has the target class. When
+  upcasting a more specific subclass, dispatch is restricted to classes
+  more specific than `to`, so an inherited downcasting method is not
+  selected in place of an upcast
+  ([\#429](https://github.com/RConsortium/S7/issues/429)).
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  now errors when upcasting to an abstract class instead of creating an
+  instance of that class
+  ([\#680](https://github.com/RConsortium/S7/issues/680),
+  [\#686](https://github.com/RConsortium/S7/issues/686)).
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  only applies the default downcast when `to` is a descendant of the
+  source class, rather than converting between sibling classes
+  ([\#509](https://github.com/RConsortium/S7/issues/509)).
+
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  supports conversion from base and S3 objects to S7 subclasses of their
+  class, passing the source value as `.data` to the target constructor
+  ([\#537](https://github.com/RConsortium/S7/issues/537)).
+
+- [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
+  preserves the S3 class when the S7 class inherits from an S3 class.
+  For example, extracting data from an S7 subclass of data.frame returns
+  a data.frame ([\#380](https://github.com/RConsortium/S7/issues/380)).
+
+- `S7_data<-()` preserves attributes such as `names` and `dim` from the
+  replacement data, rather than retaining the originals, so resizing the
+  underlying data works correctly
+  ([\#478](https://github.com/RConsortium/S7/issues/478)).
+
+#### Generics and method registration
+
+- Dispatch on `class_missing` correctly handles missing arguments
+  forwarded through wrapper functions
+  ([\#595](https://github.com/RConsortium/S7/issues/595)).
+
+- Operator methods propagate missing-method errors raised inside their
+  bodies instead of silently falling back to base behavior
+  ([\#490](https://github.com/RConsortium/S7/issues/490)).
+
+- `method<-()` gives a clear error when a primitive function, such as
+  `log`, is assigned as a method
+  ([\#608](https://github.com/RConsortium/S7/issues/608)).
+
+- `method<-()` silently accepts re-registration of an identical method,
+  avoiding spurious “Overwriting method” messages from
+  `devtools::load_all()`
+  ([\#474](https://github.com/RConsortium/S7/issues/474)).
+
+- `method<-()` checks method signatures for consistency with their
+  generics only in development contexts: during
+  [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html),
+  when `R CMD check` checks a package involved in the registration, or
+  when registering a method outside a package. Users of installed
+  packages no longer receive these warnings or errors after an upstream
+  generic changes. Registrations inside testthat tests are treated as an
+  end-user context, keeping local tests consistent with `R CMD check`
+  ([\#726](https://github.com/RConsortium/S7/issues/726),
+  [\#728](https://github.com/RConsortium/S7/issues/728)).
+
+- `method<-()` warns and skips registration of incompatible methods
+  during
+  [`pkgload::load_all()`](https://pkgload.r-lib.org/reference/load_all.html),
+  rather than stopping with an error. This lets a package remain
+  sourceable while its methods are updated to match a changed generic
+  ([\#726](https://github.com/RConsortium/S7/issues/726)).
+
+- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  avoids accumulating duplicate registration hooks when a package is
+  loaded repeatedly
+  ([\#316](https://github.com/RConsortium/S7/issues/316)).
+
+- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
+  warns and skips registration when an upstream generic has been renamed
+  or removed, allowing the downstream package to load. It also resolves
+  generics through package exports, so generics can move between
+  packages and be re-exported without breaking installed downstream
+  packages ([\#729](https://github.com/RConsortium/S7/issues/729)).
+
+#### Properties and validation
+
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  runs the property class’s own validator when checking values, in
+  addition to checking their class. Properties restricted to an S3 class
+  such as `class_factor` now enforce constraints that are not visible in
+  [`class()`](https://rdrr.io/r/base/class.html)
+  ([\#401](https://github.com/RConsortium/S7/issues/401)).
+
+- [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
+  warns when `default` is a complex value, such as a named vector, that
+  would be inlined into the constructor and could cause `R CMD check`
+  failures. Wrap these defaults in
+  [`quote()`](https://rdrr.io/r/base/substitute.html). This warning will
+  become an error in a future release
+  ([\#541](https://github.com/RConsortium/S7/issues/541)).
+
+- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) keeps
+  objects usable after a custom getter signals an error
+  ([\#520](https://github.com/RConsortium/S7/issues/520),
   [\#640](https://github.com/RConsortium/S7/issues/640),
   [\#638](https://github.com/RConsortium/S7/issues/638)).
-- `prop<-()` no longer fails when assigning a call or symbol to a
-  property ([\#511](https://github.com/RConsortium/S7/issues/511),
+
+- `prop<-()` supports assigning calls and symbols to properties
+  ([\#511](https://github.com/RConsortium/S7/issues/511),
   [\#633](https://github.com/RConsortium/S7/issues/633),
   [\#638](https://github.com/RConsortium/S7/issues/638)).
-- New
-  [`prop_info()`](https://rconsortium.github.io/S7/reference/prop_names.md)
-  returns a data frame summarising the properties of an S7 object or
-  class, with one row per property and columns for name, default, class,
-  getter, setter, and validator
-  ([\#551](https://github.com/RConsortium/S7/issues/551)).
-- New
-  [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md),
-  [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md),
-  and
-  [`S7_methods()`](https://rconsortium.github.io/S7/reference/S7_methods.md)
-  introspection helpers.
-  [`S7_classes()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
-  and
-  [`S7_generics()`](https://rconsortium.github.io/S7/reference/S7_classes.md)
-  list the S7 classes / generics defined in a given environment/package
-  ([\#335](https://github.com/RConsortium/S7/issues/335)).
-  [`S7_methods()`](https://rconsortium.github.io/S7/reference/S7_methods.md)
-  list methods methods registered on a generic or all methods associated
-  with a class (across generics in attached packages)
-  ([\#435](https://github.com/RConsortium/S7/issues/435)).
-- [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
-  now gives a clear error when called from a function that is not an S7
-  generic, e.g. `unclass(generic)()`, instead of failing with a
-  confusing message
-  ([\#684](https://github.com/RConsortium/S7/issues/684)).
-- [`S7_class()`](https://rconsortium.github.io/S7/reference/S7_class.md)
-  now returns a class specification for any R object, not just S7
-  objects. It returns the matching `class_*` for base types, a
-  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
-  wrapper for S3 objects, and the S4 class for S4 objects, so the result
-  can be passed directly to
-  [`method()`](https://rconsortium.github.io/S7/reference/method.md) or
-  other S7 dispatch helpers
-  ([\#559](https://github.com/RConsortium/S7/issues/559)).
-- [`S7_class_desc()`](https://rconsortium.github.io/S7/reference/S7_class_desc.md)
-  is a new exported helper that formats a class specification as a short
-  human-readable string
-  ([\#594](https://github.com/RConsortium/S7/issues/594)).
-- [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
-  now preserves the S3 class when the S7 class inherits from an S3
-  class, so
-  e.g. [`S7_data()`](https://rconsortium.github.io/S7/reference/S7_data.md)
-  on a data.frame subclass now returns a data.frame
-  ([\#380](https://github.com/RConsortium/S7/issues/380)).
-- `S7_data<-()` now preserves attributes (like `names` or `dim`) from
-  the replacement data instead of carrying over the originals, so
-  resizing the underlying data works correctly
-  ([\#478](https://github.com/RConsortium/S7/issues/478)).
-- `S7_error_method_not_found` now has a correct class vector without a
+
+#### Errors and printing
+
+- Errors from S7 report the function where they occurred
+  ([\#646](https://github.com/RConsortium/S7/issues/646)).
+
+- `S7_error_method_not_found` has a correct class vector without a
   duplicate `"error"` entry ([@jjjermiah](https://github.com/jjjermiah),
   [\#604](https://github.com/RConsortium/S7/issues/604)).
-- [`S7_generic_call()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md),
-  [`S7_user_frame()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md),
-  and
-  [`S7_generic_fun()`](https://rconsortium.github.io/S7/reference/S7_generic_call.md)
-  are new helpers for accessing a method’s generic call, caller frame,
-  and generic function
-  ([\#596](https://github.com/RConsortium/S7/issues/596)).
-- [`S7_inherits()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  and
-  [`check_is_S7()`](https://rconsortium.github.io/S7/reference/S7_inherits.md)
-  now accept any class specification (S7 class, S7 union, S3 class, S4
-  class, or base type wrapper like `class_integer`), not just S7 classes
-  ([\#556](https://github.com/RConsortium/S7/issues/556)).
-- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
-  is the new name for
-  [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
-  giving it a nicer symmetry with
-  [`S7_on_build()`](https://rconsortium.github.io/S7/reference/S7_on_load.md);
-  [`methods_register()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
-  remains available for backward compatibility
-  ([\#615](https://github.com/RConsortium/S7/issues/615)). It no longer
-  accumulates duplicate registration hooks when a package is loaded
-  repeatedly ([\#316](https://github.com/RConsortium/S7/issues/316)).
-- [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
-  no longer makes a package unloadable when a generic it registers a
-  method for has been renamed or removed from the upstream package; it
-  now warns and skips the registration. It also resolves generics
-  through the upstream package’s exports, so a generic can move to
-  another package and be re-exported without breaking already-installed
-  downstream packages
-  ([\#729](https://github.com/RConsortium/S7/issues/729)).
-- New
-  [`S7_on_unload()`](https://rconsortium.github.io/S7/reference/S7_on_load.md),
-  to be called from `.onUnload()`, unregisters active methods and
-  removes hooks added by
-  [`S7_on_load()`](https://rconsortium.github.io/S7/reference/S7_on_load.md)
-  ([\#316](https://github.com/RConsortium/S7/issues/316)).
-- [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
-  now names its first argument `_object` to minimise the chances of a
-  clash with a property
-  ([\#423](https://github.com/RConsortium/S7/issues/423)). It also
-  accepts a single unnamed named list as a shortcut for splicing
-  property values, making it easier to set properties programmatically
-  ([\#497](https://github.com/RConsortium/S7/issues/497)).
-- [`str()`](https://rdrr.io/r/utils/str.html) on S7 objects that inherit
-  from data.frame (or other S3 classes whose underlying data has a `dim`
-  attribute incompatible with the bare base type) no longer errors
+
+- [`print()`](https://rdrr.io/r/base/print.html) and
+  [`str()`](https://rdrr.io/r/utils/str.html) omit properties created by
+  [`deprecated_property()`](https://rconsortium.github.io/S7/reference/deprecated_property.md)
+  ([\#754](https://github.com/RConsortium/S7/issues/754)).
+
+- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) and
+  `prop<-()` report errors from getters and setters with a synthetic
+  `<Class>@<prop>` call, identifying the property that triggered the
+  error ([\#416](https://github.com/RConsortium/S7/issues/416),
+  [\#536](https://github.com/RConsortium/S7/issues/536),
+  [\#638](https://github.com/RConsortium/S7/issues/638)).
+
+- [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+  gives a clear error when called from a function that is not an S7
+  generic, such as `unclass(generic)()`
+  ([\#684](https://github.com/RConsortium/S7/issues/684)).
+
+- [`str()`](https://rdrr.io/r/utils/str.html) works for S7 objects that
+  inherit from data.frame and other S3 classes whose `dim` attribute is
+  incompatible with the bare underlying type
   ([\#494](https://github.com/RConsortium/S7/issues/494)).
-- [`super()`](https://rconsortium.github.io/S7/reference/super.md) now
-  works with S3 and S4 objects, not just S7 objects
-  ([\#500](https://github.com/RConsortium/S7/issues/500)).
-- [`trace()`](https://rdrr.io/r/base/trace.html) and
-  [`untrace()`](https://rdrr.io/r/base/trace.html) now work with S7
-  generics and methods,
-  e.g. `trace("myclass", browser, where = my_generic@methods)` sets a
-  breakpoint in the method for `myclass`
-  ([\#584](https://github.com/RConsortium/S7/issues/584)).
+
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
-  now checks property types substantially faster, because a property
-  restricted to a base type (e.g. `class_double`) no longer has its
-  underlying type checked twice. Constructing an object with 10 base
-  type properties fell from 100 µs to 70 µs (1.4x faster), while
-  constructing one with 50 fell from 400 µs to 250 µs (1.6x faster)
-  ([\#723](https://github.com/RConsortium/S7/issues/723)).
-- [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
-  now signals validation errors with class `S7_error_validation_failed`,
-  so they can be caught with
+  signals validation errors with class `S7_error_validation_failed`,
+  allowing them to be caught with
   [`tryCatch()`](https://rdrr.io/r/base/conditions.html)
   ([\#602](https://github.com/RConsortium/S7/issues/602),
   [\#605](https://github.com/RConsortium/S7/issues/605)).
