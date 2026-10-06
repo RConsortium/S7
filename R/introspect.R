@@ -148,11 +148,12 @@ find_matches <- function(env, predicate) {
   if (isNamespace(env)) {
     # Not attached; use exported values
     names <- getNamespaceExports(env)
+    objs <- setNames(lapply(names, \(name) getExportedValue(env, name)), names)
   } else {
     # Attached or global; use all values
     names <- ls(envir = env)
+    objs <- mget(names, envir = env, inherits = FALSE)
   }
 
-  objs <- mget(names, envir = env, inherits = FALSE)
   Filter(predicate, objs)
 }
