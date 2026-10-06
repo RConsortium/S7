@@ -28,10 +28,11 @@ S7_object_attrs <- c("class", "_S7_class", "_S7_version", "S7_class")
 #'   * An S3 class wrapped by [new_S3_class()].
 #'   * A base type, like [class_logical], [class_integer], etc.
 #'
-#'   For an S7 parent from another package, the parent's properties are captured
-#'   when your class is defined, but the default constructor calls the parent's
-#'   installed constructor at run time. Parent arguments are forwarded through
-#'   `...`, followed by named arguments for the subclass's own properties.
+#'   When defining a class in a package with an S7 parent from another package,
+#'   the parent's properties are captured when your class is defined, but the
+#'   default constructor calls the parent's installed constructor at run time.
+#'   Parent arguments are forwarded through `...`, followed by named arguments
+#'   for the subclass's own properties.
 #' @param package Package name. This is automatically resolved if the class is
 #'   defined in a package, and `NULL` otherwise.
 #'

@@ -4,9 +4,10 @@ new_constructor <- function(
   envir = asNamespace("S7"),
   package = NULL
 ) {
-  # Look up constructors owned by another package at run time.
+  # Package classes look up constructors owned by another package at run time.
   if (
     is_class(parent) &&
+      !is.null(package) &&
       !is.null(parent@package) &&
       !identical(parent@package, package)
   ) {

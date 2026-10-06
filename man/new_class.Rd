@@ -35,10 +35,11 @@ There are four options:
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
 }
 
-For an S7 parent from another package, the parent's properties are captured
-when your class is defined, but the default constructor calls the parent's
-installed constructor at run time. Parent arguments are forwarded through
-\code{...}, followed by named arguments for the subclass's own properties.}
+When defining a class in a package with an S7 parent from another package,
+the parent's properties are captured when your class is defined, but the
+default constructor calls the parent's installed constructor at run time.
+Parent arguments are forwarded through \code{...}, followed by named arguments
+for the subclass's own properties.}
 
 \item{package}{Package name. This is automatically resolved if the class is
 defined in a package, and \code{NULL} otherwise.

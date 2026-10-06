@@ -198,6 +198,20 @@ test_that("same-package default constructors retain named parent arguments", {
   expect_equal(props(pkg$Child(x = 1L, y = 2)), list(x = 1L, y = 2))
 })
 
+test_that("classes outside packages retain named parent arguments", {
+  dep := local_package({
+    Parent := new_class(properties = list(x = class_integer))
+  })
+  Child := new_class(
+    parent = dep$Parent,
+    package = NULL,
+    properties = list(y = class_double)
+  )
+
+  expect_named(formals(Child), c("x", "y"))
+  expect_equal(props(Child(x = 1L, y = 2)), list(x = 1L, y = 2))
+})
+
 test_that("foreign parent constructors are resolved at run time (#763)", {
   dep := local_package({
     Parent := new_class(
@@ -210,11 +224,8 @@ test_that("foreign parent constructors are resolved at run time (#763)", {
       properties = list(y = class_double)
     )
   })
-  LocalChild := new_class(parent = dep$Parent)
-
   expect_named(formals(pkg$Child), c("...", "y"))
   expect_equal(pkg$Child()@x, 1L)
-  expect_equal(LocalChild()@x, 1L)
 
   evalq(
     {
@@ -225,7 +236,6 @@ test_that("foreign parent constructors are resolved at run time (#763)", {
     dep
   )
   expect_equal(pkg$Child()@x, 2L)
-  expect_equal(LocalChild()@x, 2L)
 
   evalq(
     {
@@ -238,7 +248,6 @@ test_that("foreign parent constructors are resolved at run time (#763)", {
     dep
   )
   expect_equal(pkg$Child()@x, 3L)
-  expect_equal(LocalChild()@x, 3L)
   expect_equal(props(pkg$Child(x = 4L, y = 5)), list(x = 4L, y = 5))
 })
 
@@ -249,8 +258,10 @@ test_that("foreign abstract parent defaults are resolved at run time (#763)", {
       properties = list(x = new_property(class_integer, default = 1L))
     )
   })
-  Child := new_class(parent = dep$Parent)
-  expect_equal(Child()@x, 1L)
+  pkg := local_package({
+    Child := new_class(parent = dep::Parent)
+  })
+  expect_equal(pkg$Child()@x, 1L)
 
   evalq(
     {
@@ -261,7 +272,7 @@ test_that("foreign abstract parent defaults are resolved at run time (#763)", {
     },
     dep
   )
-  expect_equal(Child()@x, 2L)
+  expect_equal(pkg$Child()@x, 2L)
 })
 
 test_that("subclass of a custom S3 parent forwards `...`", {
