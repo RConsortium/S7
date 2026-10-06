@@ -28,7 +28,7 @@ Throughout this vignette, we'll imagine two packages:
   You're the author of yourPackage.
 * **depPackage** is _downstream_: it depends on yourPackage, using its generics (by calling them or registering methods) and its classes (by subclassing them or creating instances). Someone else is the author of depPackage.
 
-This vignette is to address the case where both packages are on CRAN.
+This vignette addresses the case where both packages are on CRAN.
 This is important because it's a lot of hassle to release CRAN packages simultaneously, and hence best avoided.
 So if yourPackage needs to make breaking changes, S7 must ensure that it's possible to make a version of depPackage that works with both old and new versions.
 This vignette shows you how to use the tools that S7 provides, and describes what changes can never be made safely.
@@ -45,7 +45,7 @@ library(S7)
 
 Most changes to a generic cause problems with method registration.
 depPackage's `method<-` calls run when depPackage is installed, and the registrations are replayed each time it's loaded.
-Failures at either install- or load-time are the problematic, because they make it impossible to create a version of depPackage that works with both versions of yourPackage.
+Failures at either install- or load-time are problematic, because they make it impossible to create a version of depPackage that works with both versions of yourPackage.
 
 For this reason, S7 only checks method compatibility in development: when you've loaded the package with `devtools::load_all()`, when you're running `R CMD check` on the package that owns the method, the generic, or one of the classes, or when you're working outside a package (e.g. interactively, in a script, or in a vignette).
 In development, S7 checks that:
@@ -56,7 +56,7 @@ In development, S7 checks that:
 * The method's default values match the generic's.
 
 Users skip these checks entirely: an incompatible method still installs and loads, and any problem only shows up when the method is called.
-This gives the devPackage developer the ability to create a version that works with both old and new yourPackage.
+This gives the depPackage developer the ability to create a version that works with both old and new yourPackage.
 
 The following sections cover each way a generic can change:
 
@@ -83,7 +83,7 @@ So the process is:
 3. Each dependency registers its methods on the new generic, and releases whenever convenient.
 4. You remove the old generic in a later release.
 
-This is always why we recommend always including `...` in the arguments to the generic.
+This is why we recommend always including `...` in the arguments to the generic.
 If it doesn't have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic.
 Either way there is no fix on depPackage's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename.
 
@@ -216,7 +216,7 @@ gen2(BClass())
 gen1(BClass())
 ```
 
-By default, `deprecated_generic()` generates a base warning, but you can use choose to use lifecycle instead:
+By default, `deprecated_generic()` generates a base warning, but you can choose to use lifecycle instead:
 
 ```{r}
 gen1 := deprecated_generic(
@@ -250,7 +250,7 @@ method(gen, BClass) <- function(x, ...) "result"
 gen(BClass())
 ```
 
-Existing method registration will continue to work (with a warning), giving dependencies time to move away from the generic before you remove in a future release.
+Existing method registration will continue to work (with a warning), giving dependencies time to move away from the generic before you remove it in a future release.
 
 So the process is:
 
@@ -339,7 +339,7 @@ The following sections cover each way a class can change:
 Adding a property is usually harmless, but there are two ways it can still bite:
 
 * **Name clash.** 
-  If depPackage's has a subclass and that subclass already has a property with the same name and its type doesn't narrow yours, depPackage will fail to install:
+  If depPackage has a subclass and that subclass already has a property with the same name and its type doesn't narrow yours, depPackage will fail to install:
 
   ```
   Error: <MyFoo>@y must narrow <yourPackage::Foo>@y.
@@ -462,7 +462,7 @@ So the process is:
 
 <!-- tools/evolution/logs: class-rename, class-rename-alias-direct, class-rename-alias-external -->
 
-To rename, create a new class then change the previous definition to use `deprecated_class()`. Pass the replacement class definition to `new` and set the version `when` the replacement happened.
+To rename, create a new class, then change the previous definition to use `deprecated_class()`. Pass the replacement class definition to `new` and set the version `when` the replacement happened.
 
 ```{r}
 # yourPackage, version 1
@@ -516,7 +516,7 @@ Retired := deprecated_class(
 Retired(size = 3)
 ```
 
-Subclasses, method signatures, property types, and unions in depPackage can continue using the class but constructors will warn.
+Subclasses, method signatures, property types, and unions in depPackage can continue using the class, but constructors will warn.
 
 So the process is:
 
