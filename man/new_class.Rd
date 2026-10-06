@@ -33,8 +33,12 @@ There are four options:
 \item An S4 class, like the result of \code{\link[methods:getClass]{methods::getClass()}}.
 \item An S3 class wrapped by \code{\link[=new_S3_class]{new_S3_class()}}.
 \item A base type, like \link{class_logical}, \link{class_integer}, etc.
-\item A class from another package, wrapped by \code{\link[=new_external_class]{new_external_class()}}.
-}}
+}
+
+For an S7 parent from another package, the parent's properties are captured
+when your class is defined, but the default constructor calls the parent's
+installed constructor at run time. Parent arguments are forwarded through
+\code{...}, followed by named arguments for the subclass's own properties.}
 
 \item{package}{Package name. This is automatically resolved if the class is
 defined in a package, and \code{NULL} otherwise.
