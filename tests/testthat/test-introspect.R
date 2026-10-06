@@ -50,9 +50,10 @@ test_that("S7_methods() results can be converted to tibbles", {
   gen := new_generic("x")
   empty <- S7_methods(generic = gen)
   method(gen, Foo) <- function(x) "foo"
+  single <- S7_methods(generic = gen)
   method(gen, Bar) <- function(x) "bar"
 
-  for (res in list(S7_methods(generic = gen), empty)) {
+  for (res in list(empty, single, S7_methods(generic = gen))) {
     expect_identical(as.data.frame(tibble::as_tibble(res)), res)
   }
 })
