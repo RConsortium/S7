@@ -43,7 +43,9 @@ library(S7)
 First we'll lay some ground work by covering the ways in which S7 couples upstream and downstream packages together. 
 Then we'll go into the details of the how classes and generics can change, and how you can make such changes as safely as possible.
 
-## How S7 couples packages
+## Changing a generic
+
+### Method registration
 
 To understand what breaks, you need to know when downstream code actually runs:
 
@@ -77,8 +79,6 @@ When you register a method during development, S7 does a lot of careful checks t
 
 These checks are skipped for users.
 They're still problems, but they no longer happen during install, often making it possible to work around them at run time.
-
-## Changing a generic
 
 ### Designing for evolution
 
@@ -217,14 +217,32 @@ gen2(BClass())
 gen1(BClass())
 ```
 
-### Removing a generic
-
-To retire a generic without replacement, change use `deprecated_generic()` without the `new` argument:
+By default, `deprecated_generic()` generates a base warning, but you can use choose to use lifecycle instead:
 
 ```{r}
-retired := deprecated_generic("x", when = "2.0.0")
-method(retired, BClass) <- function(x, ...) "result"
-retired(BClass())
+gen1 := deprecated_generic(
+  new = gen2, 
+  when = "2.0.0", 
+  method = "lifecycle(warn)"
+)
+method(gen1, BClass) <- function(x, ...) "result"
+gen1(BClass())
+```
+
+You can later remove `gen1` once dependencies have had time to move on.
+
+### Removing a generic
+
+To retire a generic without replacement, use `deprecated_generic()` without the `new` argument:
+
+```{r}
+# myPackage, version 1
+gen := new_generic("x")
+
+# myPackage, version 2
+gen := deprecated_generic("x", when = "2.0.0")
+method(gen, BClass) <- function(x, ...) "result"
+gen(BClass())
 ```
 
 Existing method registration will continue to work (with a warning), giving dependencies time to move away from the generic before you remove in a future release.
@@ -242,7 +260,15 @@ myPackageCore::gen
 
 depPackage's `importFrom(myPackage, gen)` still resolves, and method registration follows the generic object to its new home package automatically, 
 
-Note that it's easy to write `gen <- myPackageCore::gen`, but this captures a copy of the generic when myPackage is installed. 
+You must re-export using the `NAMESPACE`, not assignment:
+
+```{r, eval = FALSE}
+# DO NOT DO THIS
+#' @export
+gen <- myPackageCore::gen
+```
+
+This captures a copy of the generic when myPackage is installed. 
 The result is a split brain: depPackage's registrations follow the generic's home package and land on myPackageCore's original, while calls through `myPackage::gen()` dispatch using the duplicate's empty table and fail.
 
 Should the re-export signal deprecation?
@@ -256,6 +282,30 @@ gen := deprecated_generic(new = myPackageCore::gen, when = "2.0.0")
 
 ## Changing a class
 
+### Class construction
+
+It's important to understand a little bit about how cross package subclasses work.
+When classes live in the same package, the constructor of the subclass can inline the constructor of the parent:
+
+```{r}
+class1 := new_class(package = "foo", properties = list(a = class_any))
+class2 := new_class(class1, package = "foo", properties = list(b = class_any))
+class2@constructor
+```
+
+This is nice because you can look at the arguments of the constructor and see all the properties that it takes.
+
+```{r}
+#| eval: false
+# TODO: update to drop new_external_class after https://github.com/RConsortium/S7/issues/763
+class1 := new_external_class(package = "bar")
+class2 := new_class(class1, package = "foo", properties = list(b = class_any))
+class2@constructor
+```
+
+We can't inline the constructor if the parent is in another package, because the properties of the parent (and hence its constructor) might change.
+This is the key idea that allows classes to evolve over time without immediately breaking their dependencies.
+
 ### Designing for evolution
 
 * **Treat names as permanent.**
@@ -266,23 +316,24 @@ gen := deprecated_generic(new = myPackageCore::gen, when = "2.0.0")
 * **Prefer composition for volatile details.**
   Put fields that you expect to churn in a helper class stored as one property, insulating subclasses from the churn.
 
-
 ### Adding a property
 
 Adding a property is usually straightforward. 
 There are two ways it can still bite:
 
-* **Name clash.** If depPackage's has a subclass and that subclass already has a property with the same name and its type doesn't narrow yours, depPackage will fail to install:
+* **Name clash.** 
+  If depPackage's has a subclass and that subclass already has a property with the same name and its type doesn't narrow yours, depPackage will fail to install:
 
   ```
   Error: <MyFoo>@y must narrow <myPackage::Foo>@y.
   ```
 
   The easiest resolution to this problem is for you to pick a different name.
-  If that doesn't work, you'll need to ask the depPackage maintainer to rename their property with the process described below.
+  If that doesn't work, you'll need to ask the depPackage maintainer to rename their property using the process described below.
 
-* **Positional construction.** `myPackage::Foo(1, 2)` changes meaning if a property is inserted before an existing one.
-  In general, it's safest to only add new properties at the end, but inserting might be ok if all callers used named arguments (as we recommend).
+* **Positional construction.** 
+  `myPackage::Foo(1, 2)` changes meaning if a property is inserted before an existing one.
+  In general, it's safest to only add new properties at the end, but inserting is usually ok because we recommend that all callers use named arguments.
 
 ### Removing a property
 
@@ -314,7 +365,7 @@ print(foo)
 
 ### Renaming a property
 
-A rename is "add the new property, deprecate the old one":
+A rename is just an add and rename, supplying the name of the `new` property to `deprecated_property()`:
 
 ```{r}
 Foo := new_class(properties = list(
@@ -331,7 +382,7 @@ foo@size
 
 The helper supplies both a getter and setter, so callers can keep using `Foo(count = ...)`, `foo@count`, and `foo@count <- ...` during the transition.
 Put the replacement property first and preserve its old default and validation rules.
-Put any `validator` on the replacement property.
+Update any validation to use the new property.
 
 ### Changing a property's type or validator
 
@@ -344,7 +395,7 @@ Error: <myPackage::Foo> object properties are invalid:
 ```
 
 The same applies to tightening a validator.
-There's no mechanical transition here, but you can give downstream packages a deprecation window in which the validator warns rather than errors.
+There's no mechanical transition here, but you can give downstream packages a deprecation window by generating a warning in the validator.
 
 ### Renaming a class
 
