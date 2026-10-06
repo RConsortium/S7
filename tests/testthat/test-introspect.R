@@ -42,6 +42,22 @@ test_that("S7_methods() prints the signature column readably", {
   expect_snapshot(print(S7_methods(generic = gen)))
 })
 
+test_that("S7_methods() results can be converted to tibbles", {
+  skip_if_not_installed("tibble")
+
+  Foo := new_class(package = NULL)
+  Bar := new_class(package = NULL)
+  gen := new_generic("x")
+  empty <- S7_methods(generic = gen)
+  method(gen, Foo) <- function(x) "foo"
+  single <- S7_methods(generic = gen)
+  method(gen, Bar) <- function(x) "bar"
+
+  for (res in list(empty, single, S7_methods(generic = gen))) {
+    expect_identical(as.data.frame(tibble::as_tibble(res)), res)
+  }
+})
+
 test_that("S7_signature_list formats per element", {
   foo := new_generic(c("x", "y"))
   sigs <- new_signature_list(list(
