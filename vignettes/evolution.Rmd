@@ -29,12 +29,13 @@ Throughout this vignette, we'll imagine two packages:
 * **depPackage** is _downstream_: it depends on yourPackage, using its generics (by calling them or registering methods) and its classes (by subclassing them or creating instances). Someone else is the author of depPackage.
 
 This vignette addresses the case where both packages are on CRAN.
-This is important because it's a lot of hassle to release CRAN packages simultaneously, and hence best avoided.
-So if yourPackage needs to make breaking changes, S7 must ensure that it's possible to make a version of depPackage that works with both old and new versions.
-This vignette shows you how to use the tools that S7 provides, and describes what changes can never be made safely.
+Releasing two CRAN packages at the same time is painful and best avoided, so every breaking change needs a path where depPackage can release a version that works with both old and new yourPackage.
+In practice, you may have many dependencies; depPackage stands in for any one of them.
+
+This vignette shows you how to use the tools that S7 provides, and describes the changes that can't be made without breaking depPackage.
 
 The vignette is divided into changes to generics and changes to classes.
-Each starts by explaining when things break, then goes into the details of each possible change and how you can make it as safely as possible.
+Each starts by explaining when things break, then goes into the details of each possible change and how to make it with the least disruption to depPackage.
 We finish with some practices that make your package easier to evolve, and a table summarising every change.
 
 ```{r setup}
@@ -47,16 +48,25 @@ Most changes to a generic cause problems with method registration.
 depPackage's `method<-` calls run when depPackage is installed, and the registrations are replayed each time it's loaded.
 Failures at either install- or load-time are problematic, because they make it impossible to create a version of depPackage that works with both versions of yourPackage.
 
-For this reason, S7 only checks method compatibility in development: when you've loaded the package with `devtools::load_all()`, when you're running `R CMD check` on the package that owns the method, the generic, or one of the classes, or when you're working outside a package (e.g. interactively, in a script, or in a vignette).
+For this reason, S7 only checks method compatibility in development: 
+
+* when you've loaded the package with `devtools::load_all()`, 
+* when you're running `R CMD check` on the package that owns the method, the generic, or one of the classes, or 
+* when you're working outside a package (e.g. interactively, in a script, or in a vignette).
+
 In development, S7 checks that:
 
 * The method has the same dispatch arguments as the generic.
+* If the generic lacks `...`, the method's formals match the generic's exactly.
 * The method has all the non-dispatch arguments that the generic has.
-  If the generic lacks `...`, the method's formals must match the generic's exactly.
 * The method's default values match the generic's.
+
+The first two are errors (or warnings under `load_all()`, so you can see them all at once), which fail `R CMD check` of depPackage.
+The last two are warnings, which show up as a single NOTE.
 
 Users skip these checks entirely: an incompatible method still installs and loads, and any problem only shows up when the method is called.
 This gives the depPackage developer the ability to create a version that works with both old and new yourPackage.
+So in the sections below, a change that "breaks methods" means that depPackage fails `R CMD check`, and its methods error or misbehave when users call them.
 
 The following sections cover each way a generic can change:
 
@@ -72,20 +82,15 @@ The following sections cover each way a generic can change:
 
 <!-- tools/evolution/logs: gen-change-dispatch -->
 
-Changing a generic's dispatch arguments (i.e. their number, names, or order) breaks every method in depPackage.
+Changing a generic's dispatch arguments (i.e. their number, names, or order) breaks every method in depPackage: no method can match both the old and new dispatch arguments.
 There is no workaround: a generic's dispatch arguments are its identity.
-So if you change dispatch, you are creating a new generic, and that means you should be explicit about it: create a new generic with a new name and deprecate the old one, as described in [Renaming a generic](#renaming-a-generic).
-
-So the process is:
+So if you change dispatch, you are creating a new generic, and that means you should be explicit about it: create a new generic with a new name and deprecate the old one.
+We recommend avoiding this if at all possible, but if you have to, here's the process:
 
 1. You create a new generic, with a new name and the new dispatch arguments.
 2. You deprecate the old generic with `deprecated_generic()`, and release.
 3. Each dependency registers its methods on the new generic, and releases whenever convenient.
 4. You remove the old generic in a later release.
-
-This is why we recommend always including `...` in the arguments to the generic.
-If it doesn't have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic.
-Either way, there is no fix on depPackage's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename.
 
 ### Adding an argument
 
@@ -127,6 +132,9 @@ So the process is:
 1. You tell dependency authors about the upcoming argument (or send PRs).
 2. Each dependency adds the argument to its methods, and can release whenever convenient.
 3. You release.
+
+If your generic doesn't have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic.
+Either way, there is no fix on depPackage's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename.
 
 ### Removing an argument
 
@@ -305,7 +313,7 @@ So the process is:
 
 Classes can evolve without breaking their subclasses in other packages because S7 never inlines a parent constructor across package boundaries.
 To see why this matters, compare the two cases.
-When classes live in the same package, the constructor of the subclass can inline the constructor of the parent:
+When classes live in the same package, the subclass's constructor inlines the parent's arguments, so you can see every property it takes:
 
 ```{r}
 class1 := new_class(package = "foo", properties = list(a = class_any))
@@ -313,15 +321,15 @@ class2 := new_class(class1, package = "foo", properties = list(b = class_any))
 class2@constructor
 ```
 
-This is nice because you can look at the arguments of the constructor and see all the properties that it takes.
+When the parent lives in another package, you refer to it with `new_external_class()`:
 
-```{r}
-#| eval: false
-class2 := new_class(foo::class1, properties = list(b = class_any))
-class2@constructor
+```{r, eval = FALSE}
+class1 := new_external_class(package = "foo")
+class2 := new_class(class1, properties = list(b = class_any))
 ```
 
-We can't inline the constructor if the parent is in another package, because the properties of the parent (and hence its constructor) might change.
+Now the constructor of `class2` can't inline the parent's arguments, because the parent's properties (and hence its constructor) might change in a future version of foo.
+Instead, it takes `...` and passes them on to `foo::class1()` at run time, followed by its own property, `b`.
 This is the key idea that allows classes to evolve over time without immediately breaking their dependencies.
 
 The following sections cover each way a class can change:
@@ -352,7 +360,7 @@ Adding a property is usually harmless, but there are two ways it can still bite:
 
 * **Positional construction.** 
   `yourPackage::Foo(1, 2)` changes meaning if a property is inserted before an existing one.
-  In general, it's safest to only add new properties at the end, but inserting is usually OK because we recommend that all callers use named arguments.
+  In general, it's best to add new properties at the end so positional calls keep their meaning, but inserting is usually OK because most callers use named arguments.
 
 So the process is:
 
@@ -466,7 +474,7 @@ So the process is:
 
 <!-- tools/evolution/logs: class-rename -->
 
-To rename, create a new class, then change the previous definition to use `deprecated_class()`. Pass the replacement class definition to `new` and set the version `when` the replacement happened.
+To rename a class, create the new class, then redefine the old one with `deprecated_class()`, passing the replacement to `new` and recording the version in `when`.
 
 ```{r}
 # yourPackage, version 1
@@ -512,7 +520,7 @@ So the process is:
 
 <!-- tools/evolution/logs: class-remove -->
 
-If you're removing a class without an alternative, omit `new` and keep the existing definition:
+To remove a class without a replacement, redefine it with `deprecated_class()`, keeping its existing properties and omitting `new`:
 
 ```{r}
 Retired := deprecated_class(
@@ -555,29 +563,28 @@ So the process is:
 
 ## Designing for evolution
 
-Most of the pain described above can be avoided by a few decisions made when you first design your interface:
+Most of the pain described above can be avoided by a few decisions made when you first design your interface.
+Most of these recap advice from earlier sections:
 
 * **Treat names as permanent.**
   While there are ways to "rename" classes and generics, it's best to think of a rename as creating a new class or generic and deprecating the old one.
   The same goes for a generic's dispatch arguments and a class's package.
 
-* **Give every generic `...`** (the default).
-  A generic without `...` is a frozen interface: it can never gain an argument without breaking every method in every dependency.
+* **Give every generic `...`** (the default), so it can gain arguments later (see [Adding an argument](#adding-an-argument)).
 
 * **Keep generics as small as possible.**
   Every argument in the generic's signature (even those that don't take part in dispatch) is part of its contract, and any changes need careful thought.
   If an argument is only meaningful for some methods, leave it out of the generic and let those methods take it via `...`.
 
-* **Call constructors by name**, not position.
-  This ensures that adding a property never changes the meaning of a call.
+* **Call constructors by name**, not position, so adding a property never changes the meaning of a call (see [Adding a property](#adding-a-property)).
 
 ## Summary
 
 | Change | What breaks in depPackage | What to do |
 |---|---|---|
-| Change dispatch arguments | Every method | Create a new generic and deprecate the old one |
+| Change dispatch arguments | Every method: check error, calls fail | Create a new generic and deprecate the old one |
 | Add an argument (generic has `...`) | Check NOTE only | depPackage adds the argument first, then you release |
-| Add an argument (no `...`) | Every method | Treat as a rename |
+| Add an argument (no `...`) | Every method: check error, calls fail | Treat as a rename |
 | Remove an argument | Callers that supply it | Deprecate the argument, then remove |
 | Change a default | Check NOTE only | Avoid |
 | Rename a generic | Install, via `importFrom()` | `deprecated_generic(new = )` |
@@ -590,4 +597,3 @@ Most of the pain described above can be avoided by a few decisions made when you
 | Rename a class | Nothing immediately | `deprecated_class(new = )` |
 | Remove a class | Nothing immediately | `deprecated_class()` |
 | Move a class | Nothing immediately | `deprecated_class(new = )` |
-| Make a class abstract | Direct construction, at run time | `deprecated_class()` first |
