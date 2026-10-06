@@ -7,11 +7,11 @@ deprecated class. Using it in method signatures, parent, property
 classes, or new_external_class() references does not warn.
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.
-Supply replacement to recommend another class in the warning. This
+Supply new to recommend another class in the warning. This
 changes the message only: Dog() still creates a Dog, even if the
 warning recommends Pet(). Methods for Dog remain methods for Dog.
 To register a method for both classes, use Dog | Pet as its signature.
-Omit replacement to deprecate the class without recommending another.'><meta property="og:description" content='To deprecate a class, change new_class() to deprecated_class() in its
+Omit new to deprecate the class without recommending another.'><meta property="og:description" content='To deprecate a class, change new_class() to deprecated_class() in its
 definition and supply when. Keep its existing parent, properties,
 constructor, and validator, and keep exporting it under the same name.
 Calling the constructor warns, then constructs an instance of the
@@ -19,11 +19,11 @@ deprecated class. Using it in method signatures, parent, property
 classes, or new_external_class() references does not warn.
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.
-Supply replacement to recommend another class in the warning. This
+Supply new to recommend another class in the warning. This
 changes the message only: Dog() still creates a Dog, even if the
 warning recommends Pet(). Methods for Dog remain methods for Dog.
 To register a method for both classes, use Dog | Pet as its signature.
-Omit replacement to deprecate the class without recommending another.'></head><body>
+Omit new to deprecate the class without recommending another.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -85,11 +85,11 @@ deprecated class. Using it in method signatures, <code>parent</code>, property
 classes, or <code><a href="new_external_class.html">new_external_class()</a></code> references does not warn.
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.</p>
-<p>Supply <code>replacement</code> to recommend another class in the warning. This
+<p>Supply <code>new</code> to recommend another class in the warning. This
 changes the message only: <code>Dog()</code> still creates a <code>Dog</code>, even if the
 warning recommends <code>Pet()</code>. Methods for <code>Dog</code> remain methods for <code>Dog</code>.
 To register a method for both classes, use <code>Dog | Pet</code> as its signature.</p>
-<p>Omit <code>replacement</code> to deprecate the class without recommending another.</p>
+<p>Omit <code>new</code> to deprecate the class without recommending another.</p>
     </div>
 
     <div class="section level2">
@@ -98,7 +98,7 @@ To register a method for both classes, use <code>Dog | Pet</code> as its signatu
 <span>  <span class="va">name</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  <span class="va">when</span>,</span>
-<span>  replacement <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  new <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"base"</span>, <span class="st">"lifecycle(warn)"</span>, <span class="st">"lifecycle(stop)"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -122,7 +122,7 @@ variable with this name, most easily with <a href="named-bind.html">:=</a>.</p><
 <code>"1.2.0"</code>.</p></dd>
 
 
-<dt id="arg-replacement">replacement<a class="anchor" aria-label="anchor" href="#arg-replacement"></a></dt>
+<dt id="arg-new">new<a class="anchor" aria-label="anchor" href="#arg-new"></a></dt>
 <dd><p>An S7 class to recommend in the warning, or <code>NULL</code> to
 give no recommendation. It does not affect construction or dispatch.</p></dd>
 
@@ -147,7 +147,7 @@ and to be a dependency of your package.</p></dd>
 <p>Adding deprecation to an otherwise unchanged class does not require
 rebuilding packages that define subclasses. Existing instances and
 subclasses continue matching methods for the deprecated class.</p>
-<p>The helper does not convert existing or saved objects to <code>replacement</code>,
+<p>The helper does not convert existing or saved objects to <code>new</code>,
 or update installed subclasses if you also change the class definition.
 Changes to the parent, properties, constructor, or validator need the same
 compatibility considerations as changes to a non-deprecated class.</p>
@@ -179,7 +179,7 @@ other parts of your API.</p></div>
 <span class="r-in"><span><span class="va">Pet</span> <span class="op">:=</span> <span class="fu"><a href="new_class.html">new_class</a></span><span class="op">(</span>properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">class_character</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">Dog</span> <span class="op">:=</span> <span class="fu">deprecated_class</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="va">class_character</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  replacement <span class="op">=</span> <span class="va">Pet</span>,</span></span>
+<span class="r-in"><span>  new <span class="op">=</span> <span class="va">Pet</span>,</span></span>
 <span class="r-in"><span>  when <span class="op">=</span> <span class="st">"2.0.0"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>

@@ -13,12 +13,12 @@ classes, or
 references does not warn. Property defaults generated before deprecation
 can still signal; see "Installed property defaults" below.
 
-Supply `replacement` to recommend another class in the warning. This
-changes the message only: `Dog()` still creates a `Dog`, even if the
-warning recommends `Pet()`. Methods for `Dog` remain methods for `Dog`.
-To register a method for both classes, use `Dog | Pet` as its signature.
+Supply `new` to recommend another class in the warning. This changes the
+message only: `Dog()` still creates a `Dog`, even if the warning
+recommends `Pet()`. Methods for `Dog` remain methods for `Dog`. To
+register a method for both classes, use `Dog | Pet` as its signature.
 
-Omit `replacement` to deprecate the class without recommending another.
+Omit `new` to deprecate the class without recommending another.
 
 ## Usage
 
@@ -27,7 +27,7 @@ deprecated_class(
   name,
   ...,
   when,
-  replacement = NULL,
+  new = NULL,
   method = c("base", "lifecycle(warn)", "lifecycle(stop)")
 )
 ```
@@ -50,7 +50,7 @@ deprecated_class(
 
   The package version when the deprecation began, e.g. `"1.2.0"`.
 
-- replacement:
+- new:
 
   An S7 class to recommend in the warning, or `NULL` to give no
   recommendation. It does not affect construction or dispatch.
@@ -84,8 +84,8 @@ Adding deprecation to an otherwise unchanged class does not require
 rebuilding packages that define subclasses. Existing instances and
 subclasses continue matching methods for the deprecated class.
 
-The helper does not convert existing or saved objects to `replacement`,
-or update installed subclasses if you also change the class definition.
+The helper does not convert existing or saved objects to `new`, or
+update installed subclasses if you also change the class definition.
 Changes to the parent, properties, constructor, or validator need the
 same compatibility considerations as changes to a non-deprecated class.
 
@@ -120,7 +120,7 @@ to deprecate other parts of your API.
 Pet := new_class(properties = list(name = class_character))
 Dog := deprecated_class(
   properties = list(name = class_character),
-  replacement = Pet,
+  new = Pet,
   when = "2.0.0"
 )
 

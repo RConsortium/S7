@@ -513,7 +513,7 @@ Range@constructor
 #>     S7::new_object(S7::S7_object(), start = start, end = end, 
 #>         length = length)
 #> }
-#> <environment: 0x5573dfe41480>
+#> <environment: 0x562d8a0b8e20>
 ```
 
 In most cases, S7’s default constructor will be all you need. However,
@@ -572,52 +572,3 @@ PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
 #>  @ end     : num 10
 #>  @ positive: logi TRUE
 ```
-
-## Deprecating a class
-
-To deprecate a class, change
-[`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
-to
-[`deprecated_class()`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
-in its existing definition and add `when`. You can also recommend
-another class with `replacement`:
-
-``` r
-
-Pet := new_class(properties = list(name = class_character))
-Dog := deprecated_class(
-  properties = list(name = class_character),
-  replacement = Pet,
-  when = "2.0.0"
-)
-
-Dog(name = "Fido") # warns and creates a Dog
-#> Warning in Dog(name = "Fido"): `Dog()` was deprecated in version 2.0.0.
-#> Please use `Pet()` instead.
-#> <Dog>
-#>  @ name: chr "Fido"
-Pet(name = "Fido") # creates a Pet without warning
-#> <Pet>
-#>  @ name: chr "Fido"
-```
-
-Keep the old class’s parent, properties, constructor, and validator
-unchanged. Adding deprecation then preserves existing objects and
-subclasses, including subclasses in packages installed before the
-deprecation was added.
-
-Methods for `Dog` remain methods for `Dog`; recommending `Pet` does not
-redirect them. To share a method between the two classes, use a union:
-
-``` r
-
-speak := new_generic("x")
-method(speak, Dog | Pet) <- function(x) paste("Hello,", x@name)
-speak(Pet(name = "Fido"))
-#> [1] "Hello, Fido"
-```
-
-Omit `replacement` to deprecate a class without recommending another.
-See
-[`?deprecated_class`](https://rconsortium.github.io/S7/reference/deprecated_class.md)
-for the warning options.
