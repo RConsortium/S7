@@ -20,7 +20,7 @@ The failures described in this vignette can be verified with `tools/evolution/`:
 
 Sooner or later every successful package needs to change its interface: a generic gains an argument, a property turns out to be misnamed, or a class needs to be split in two.
 When other packages depend on yours, these changes are no longer private decisions, and you need to think through how your changes affect dependencies.
-This vignette works through the ways an S7 interface can change, and the consequences for downstream packages. 
+This vignette works through the ways an S7 interface can change and the consequences for downstream packages.
 
 Throughout this vignette, we'll imagine two packages:
 
@@ -33,7 +33,7 @@ This is important because it's a lot of hassle to release CRAN packages simultan
 So if yourPackage needs to make breaking changes, S7 must ensure that it's possible to make a version of depPackage that works with both old and new versions.
 This vignette shows you how to use the tools that S7 provides, and describes what changes can never be made safely.
 
-The vignette is divided into changes to generics, and changes to classes.
+The vignette is divided into changes to generics and changes to classes.
 Each starts by explaining when things break, then goes into the details of each possible change and how you can make it as safely as possible.
 We finish with some practices that make your package easier to evolve, and a table summarising every change.
 
@@ -85,7 +85,7 @@ So the process is:
 
 This is why we recommend always including `...` in the arguments to the generic.
 If it doesn't have `...`, adding an argument is an error for every downstream method, and there is no version of the method that satisfies both the old and the new generic.
-Either way there is no fix on depPackage's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename.
+Either way, there is no fix on depPackage's side, so a generic without `...` is a frozen interface: only add one deliberately, and treat any change to it like a rename.
 
 ### Adding an argument
 
@@ -107,7 +107,7 @@ gen := new_generic("x", fun = function(x, verbose = FALSE, ...) S7_dispatch())
 method(gen, BClass) <- function(x, ...) "old"
 ```
 
-depPackage's users see nothing, but the warning surfaces under `load_all()`, and as a single NOTE in `R CMD check` of depPackage.
+depPackage's users see nothing, but the warning surfaces under `load_all()` and as a single NOTE in `R CMD check` of depPackage.
 The fix is pleasingly asymmetric: because methods may have arguments the generic lacks, depPackage can add the argument **before** yourPackage releases:
 
 ```{r}
@@ -134,7 +134,7 @@ So the process is:
 
 Removing a non-dispatch argument is similarly mild.
 Methods may have extra arguments, so a method that still lists the removed argument registers without complaint against both versions.
-depPackage can remove the argument from their methods at leisure.
+depPackage can remove the argument from its methods at leisure.
 
 Callers are the bigger concern: `gen(x, removed_arg = 1)` will still be accepted by the generic (via `...`) and will reach methods that may or may not expect it.
 So before removing an argument, deprecate it: keep it in the generic, and warn when it's supplied:
@@ -208,7 +208,7 @@ gen2 := new_generic("x")
 gen1 := deprecated_generic(new = gen2, when = "2.0.0")
 ```
 
-`deprecated_generic()` returns an object that still counts as the generic so method registration continues to work, but calls through the old name warn that it's time to move on.
+`deprecated_generic()` returns an object that still counts as the generic, so method registration continues to work, but calls through the old name warn that it's time to move on.
 
 ```{r}
 method(gen1, BClass) <- function(x, ...) "result"
@@ -273,7 +273,7 @@ Splitting generics out into a lower-dependency package (say yourPackageCore) wor
 yourPackageCore::gen
 ```
 
-depPackage's `importFrom(yourPackage, gen)` still resolves, and method registration follows the generic object to its new home package automatically. 
+depPackage's `importFrom(yourPackage, gen)` still resolves, and method registration follows the generic object to its new home package automatically.
 
 You must re-export using the `NAMESPACE`, not assignment:
 
@@ -283,7 +283,7 @@ You must re-export using the `NAMESPACE`, not assignment:
 gen <- yourPackageCore::gen
 ```
 
-This captures a copy of the generic when yourPackage is installed. 
+This captures a copy of the generic when yourPackage is installed.
 The result is a split brain: depPackage's registrations follow the generic's home package and land on yourPackageCore's original, while calls through `yourPackage::gen()` dispatch using the duplicate's empty table and fail.
 
 Should the re-export signal deprecation?
@@ -341,7 +341,7 @@ The following sections cover each way a class can change:
 Adding a property is usually harmless, but there are two ways it can still bite:
 
 * **Name clash.** 
-  If depPackage has a subclass and that subclass already has a property with the same name and its type doesn't narrow yours, depPackage will fail to install:
+  If depPackage has a subclass and that subclass uses a property with the same name, depPackage will fail to install:
 
   ```
   Error: <MyFoo>@y must narrow <yourPackage::Foo>@y.
@@ -352,7 +352,7 @@ Adding a property is usually harmless, but there are two ways it can still bite:
 
 * **Positional construction.** 
   `yourPackage::Foo(1, 2)` changes meaning if a property is inserted before an existing one.
-  In general, it's safest to only add new properties at the end, but inserting is usually ok because we recommend that all callers use named arguments.
+  In general, it's safest to only add new properties at the end, but inserting is usually OK because we recommend that all callers use named arguments.
 
 So the process is:
 
@@ -570,9 +570,6 @@ Most of the pain described above can be avoided by a few decisions made when you
 
 * **Call constructors by name**, not position.
   This ensures that adding a property never changes the meaning of a call.
-
-* **Prefer composition for volatile details.**
-  Put fields that you expect to change in a helper class stored as one property, insulating subclasses from the churn.
 
 ## Summary
 
