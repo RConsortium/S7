@@ -1,0 +1,2 @@
+import(S7)
+export(Foo, Child, Holder)

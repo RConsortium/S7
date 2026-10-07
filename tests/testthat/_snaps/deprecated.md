@@ -162,6 +162,42 @@
       Error:
       ! Can't find method for `speak(<S7::Pet>)`.
 
+# deprecated class aliases construct and dispatch as the replacement
+
+    Code
+      foo <- Foo(value = 3)
+    Condition
+      Warning in `Foo()`:
+      `Foo()` was deprecated in S7 2.0.0.
+      Please use `Bar()` instead.
+
+# deprecated class aliases do not migrate existing objects or subclasses
+
+    Code
+      Holder(item = saved)
+    Condition
+      Error in `Holder()`:
+      ! <S7::Holder> object properties are invalid:
+      - @item must be <S7::Bar>, not <S7::Foo>
+
+# deprecated class alias chains warn once and use the final class
+
+    Code
+      old <- Old()
+    Condition
+      Warning in `Old()`:
+      `Old()` was deprecated in S7 3.0.0.
+      Please use `Bar()` instead.
+
+# deprecated class aliases attribute warnings to their own package
+
+    Code
+      foo <- home$Foo()
+    Condition
+      Warning in `home$Foo()`:
+      `Foo()` was deprecated in home 2.0.0.
+      Please use `core::Bar()` instead.
+
 # deprecated_class() without a replacement still constructs
 
     Code
@@ -347,6 +383,25 @@
     Condition
       Error in `deprecated_class()`:
       ! `new` must be an S7 class, not S3<S7_base_class>.
+
+# deprecated class aliases require a replacement and no class definition
+
+    Code
+      deprecated_class(name = "Foo", when = "2.0.0", alias = TRUE)
+    Condition
+      Error in `deprecated_class()`:
+      ! `alias = TRUE` requires `new`.
+    Code
+      deprecated_class(name = "Foo", new = Bar, when = "2.0.0", alias = NA)
+    Condition
+      Error in `deprecated_class()`:
+      ! `alias` must be TRUE or FALSE.
+    Code
+      deprecated_class(name = "Foo", properties = list(size = class_double), new = Bar,
+      when = "2.0.0", alias = TRUE)
+    Condition
+      Error in `deprecated_class()`:
+      ! Can't supply class arguments in `...` with `alias = TRUE`.
 
 # deprecated_property() with a replacement delegates and warns
 

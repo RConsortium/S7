@@ -146,17 +146,42 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Property defaults generated before deprecation can still signal; see
 #' "Installed property defaults" below.
 #'
-#' Supply `new` to recommend another class in the warning. This
+#' Supply `new` to recommend another class in the warning. By default, this
 #' changes the message only: `Dog()` still creates a `Dog`, even if the
 #' warning recommends `Pet()`. Methods for `Dog` remain methods for `Dog`.
 #' To register a method for both classes, use `Dog | Pet` as its signature.
 #'
 #' Omit `new` to deprecate the class without recommending another.
 #'
+#' @section Aliasing a class:
+#' Set `alias = TRUE` to make the deprecated name an alias for `new`, as
+#' [deprecated_generic()] does for generics. Calling the old name warns,
+#' then calls the replacement's constructor. Method signatures, parents,
+#' property types, unions, and [S7_inherits()] resolve the alias to `new`
+#' without warning. Both names refer to the same class for these operations.
+#'
+#' For example, `Dog := deprecated_class(new = Pet, when = "2.0.0",
+#' alias = TRUE)` makes `Dog()` construct a `Pet`. A method registered or
+#' removed through either name affects the same method registration.
+#' The alias uses the replacement's definition, so do not supply class
+#' arguments such as `properties` or `constructor` in `...`.
+#'
+#' Existing objects and subclasses retain their original class identity.
+#' They do not become instances or subclasses of `new`. Previously registered
+#' methods are not transferred to `new` either. Rebuild packages that captured
+#' the old class in their subclasses, property types, or method signatures.
+#' Use the default `alias = FALSE` when the old class must remain usable by
+#' saved objects or installed subclasses during the transition.
+#'
+#' If `new` belongs to another package, the alias resolves its current
+#' definition at run time. The replacement must remain exported under its
+#' S7 class name.
+#'
 #' @section Installed subclasses:
-#' Adding deprecation to an otherwise unchanged class does not require
-#' rebuilding packages that define subclasses. Existing instances and
-#' subclasses continue matching methods for the deprecated class.
+#' With `alias = FALSE`, adding deprecation to an otherwise unchanged class
+#' does not require rebuilding packages that define subclasses. Existing
+#' instances and subclasses continue matching methods for the deprecated
+#' class.
 #'
 #' The helper does not convert existing or saved objects to `new`,
 #' or update installed subclasses if you also change the class definition.
@@ -164,8 +189,9 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' compatibility considerations as changes to a non-deprecated class.
 #'
 #' @section Installed property defaults:
-#' A downstream package installed before deprecation can retain a property
-#' default that calls the constructor directly. For example:
+#' With `alias = FALSE`, a downstream package installed before deprecation
+#' can retain a property default that calls the constructor directly. For
+#' example:
 #'
 #' ```r
 #' Box := new_class(properties = list(item = upstream::Foo))
@@ -183,9 +209,14 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' @param name The name of the class, as a string. Assign the result to a
 #'   variable with this name, most easily with [:=].
 #' @param ... Named arguments passed to [new_class()], such as `parent`,
-#'   `properties`, `constructor`, and `validator`.
+#'   `properties`, `constructor`, and `validator`. Cannot be supplied with
+#'   `alias = TRUE`.
 #' @param new An S7 class to recommend in the warning, or `NULL` to
-#'   give no recommendation. It does not affect construction or dispatch.
+#'   give no recommendation. With `alias = TRUE`, this is also the class used
+#'   for construction and class contexts such as method signatures.
+#' @param alias If `TRUE`, make the deprecated name an alias for `new`.
+#'   Requires `new` and no arguments in `...`. Defaults to `FALSE`, which
+#'   preserves the deprecated class's definition and identity.
 #' @inheritParams deprecated_generic
 #' @returns An S7 class with the additional class `S7_deprecated_class`.
 #' @seealso [deprecated_generic()] and [deprecated_property()] to deprecate
@@ -213,6 +244,14 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' method(speak, Dog | Pet) <- function(x) x@name
 #' speak(Pet(name = "Rex"))
 #'
+#' # An alias uses the replacement's constructor and class identity:
+#' Hound := deprecated_class(new = Pet, when = "3.0.0", alias = TRUE)
+#' Hound(name = "Rex") # warns and creates a Pet
+#' greet := new_generic("x")
+#' method(greet, Hound) <- function(x) paste("Hello", x@name)
+#' greet(Pet(name = "Rex"))
+#' S7_inherits(Pet(name = "Rex"), Hound)
+#'
 #' # A class deprecated without a replacement:
 #' Cat := deprecated_class(
 #'   properties = list(lives = class_double),
@@ -224,11 +263,21 @@ deprecated_class <- function(
   ...,
   when,
   new = NULL,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  alias = FALSE
 ) {
   check_name(name)
   check_when(when)
   method <- check_deprecate_method(method)
+  if (!isTRUE(alias) && !isFALSE(alias)) {
+    stop2("`alias` must be TRUE or FALSE.")
+  }
+  if (alias && is.null(new)) {
+    stop2("`alias = TRUE` requires `new`.")
+  }
+  if (alias && ...length() > 0L) {
+    stop2("Can't supply class arguments in `...` with `alias = TRUE`.")
+  }
   env <- parent.frame()
 
   if (!is.null(new) && !is_class(new)) {
@@ -239,15 +288,21 @@ deprecated_class <- function(
     stop2(msg)
   }
 
-  # Define the class in the caller's environment, preserving package names
-  # and the scope of property defaults and custom constructors.
-  definition <- as.call(c(
-    list(quote(S7::new_class), name = name),
-    as.list(substitute(list(...)))[-1L]
-  ))
-  target <- eval(definition, env)
+  if (alias) {
+    target <- as_class(new)
+    package <- topNamespaceName(env)
+  } else {
+    # Define the class in the caller's environment, preserving package names
+    # and the scope of property defaults and custom constructors.
+    definition <- as.call(c(
+      list(quote(S7::new_class), name = name),
+      as.list(substitute(list(...)))[-1L]
+    ))
+    target <- eval(definition, env)
+    package <- target@package
+  }
   with <- if (!is.null(new)) {
-    target_label(new@package, new@name, target@package)
+    target_label(new@package, new@name, package)
   }
 
   out <- new_deprecated_fun(
@@ -255,7 +310,7 @@ deprecated_class <- function(
     what = paste0(name, "()"),
     with = with,
     when = when,
-    package = target@package,
+    package = package,
     method = method,
     env = env,
     class = "S7_deprecated_class"
@@ -425,6 +480,8 @@ deprecated_target <- function(x) {
   target <- environment(x)$target
   if (is_external_generic(target)) {
     as_generic(resolve_generic(target))
+  } else if (is_external_class(target)) {
+    resolve_external_class_req(target)
   } else {
     target
   }
@@ -459,6 +516,14 @@ new_deprecated_fun <- function(
       # copy of its method table. The binding must keep the generic's S7 name.
       target <- as_external_generic(target)
     }
+  } else if (
+    is_class(target) &&
+      !is.null(target@package) &&
+      !identical(target@package, package)
+  ) {
+    # Resolve foreign class aliases at run time so installed wrappers use
+    # the current class definition instead of a serialized copy.
+    target <- new_external_class(package = target@package, name = target@name)
   }
   delegate <- function() {
     call <- sys.call(-1L)

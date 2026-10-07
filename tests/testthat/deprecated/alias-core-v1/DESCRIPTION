@@ -1,0 +1,7 @@
+Package: deprecatedAliasCore
+Title: Class Alias Test Fixture
+Version: 1.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "kalinowskit@gmail.com")
+Description: Define a replacement class for a deprecated alias.
+License: MIT
+Imports: S7

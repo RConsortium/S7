@@ -107,6 +107,26 @@ test_that("external deprecated property classes construct defaults silently", {
   expect_identical(S7_inherits(holder@pet, dep$Pet), FALSE)
 })
 
+test_that("external deprecated aliases resolve in every class context", {
+  dep := local_package({
+    Bar := new_class(properties = list(size = class_double))
+    Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+  })
+  Foo := new_external_class(package = "dep")
+  Child := new_class(parent = Foo)
+  Holder := new_class(properties = list(item = Foo))
+  Narrow := new_class(parent = Holder, properties = list(item = dep$Bar))
+
+  expect_identical(S7_inherits(dep$Bar(), Foo), TRUE)
+  expect_no_warning(child <- Child(size = 2))
+  expect_equal(child@size, 2)
+  expect_identical(S7_inherits(child, dep$Bar), TRUE)
+  expect_no_warning(holder <- Holder())
+  expect_identical(S7_class(holder@item), dep$Bar)
+  expect_identical(Holder(item = dep$Bar(size = 3))@item, dep$Bar(size = 3))
+  expect_identical(S7_class(Narrow()@item), dep$Bar)
+})
+
 test_that("external class can be used as a union arm", {
   ec := new_external_class("foo")
   u <- NULL | ec
