@@ -4,6 +4,16 @@ new_constructor <- function(
   envir = asNamespace("S7"),
   package = NULL
 ) {
+  # Package classes look up constructors owned by another package at run time.
+  if (
+    is_class(parent) &&
+      !is.null(package) &&
+      !is.null(parent@package) &&
+      !identical(parent@package, package)
+  ) {
+    parent <- new_external_class(package = parent@package, name = parent@name)
+  }
+
   properties <- as_properties(properties)
 
   if (

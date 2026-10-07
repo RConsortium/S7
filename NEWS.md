@@ -21,6 +21,8 @@
   calls to use the parent constructor's arguments, and re-document affected
   constructors (#609, #317).
 
+* `new_class()` now calls constructors of S7 parents from other packages at run time when the subclass is defined in a package, so subclasses use the installed parent constructor without needing `new_external_class()`. Such subclass constructors now accept parent arguments through `...` (#763).
+
 * `new_class()` now reserves property names beginning with `_` for internal use.
   Rename any properties that use this prefix (#579).
 
@@ -58,8 +60,7 @@
 * `new_external_class()` creates a delayed reference to an S7 class in another
   package, or a class in your own package that is not yet defined. This supports
   method registration for suggested packages (#573), self-referential and
-  mutually recursive classes (#250), and inheritance from classes in other
-  packages (#317).
+  mutually recursive classes (#250).
 
 * `new_object()` now accepts a named list of property values, passed as a single
   unnamed argument through `...` (#497). Its first argument is now named
