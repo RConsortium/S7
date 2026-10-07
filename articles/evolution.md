@@ -401,24 +401,25 @@ class2 := new_class(class1, package = "foo", properties = list(b = class_any))
 class2@constructor
 #> function (a = NULL, b = NULL) 
 #> S7::new_object(class1(a = a), b = b)
-#> <environment: 0x560cfd656028>
+#> <environment: 0x5631b996d3e0>
 ```
 
-When the parent lives in another package, you refer to it with
-[`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md):
+Things are different when the parent lives in another package:
 
 ``` r
 
-class1 := new_external_class(package = "foo")
-class2 := new_class(class1, properties = list(b = class_any))
+class2 := new_class(foo::class1, properties = list(b = class_any))
+class2@constructor
+#> function (..., b = NULL) 
+#> S7::new_object(foo::class1(...), b = b)
 ```
 
 Now the constructor of `class2` can’t inline the parent’s arguments,
 because the parent’s properties (and hence its constructor) might change
-in a future version of foo. Instead, it takes `...` and passes them on
-to `foo::class1()` at run time, followed by its own property, `b`. This
-is the key idea that allows classes to evolve over time without
-immediately breaking their dependencies.
+in a future version. Instead, it takes `...` and passes them on to
+`foo::class1()` at run time, followed by its own property, `b`. This is
+the key idea that allows classes to evolve over time without immediately
+breaking their dependencies.
 
 The following sections cover each way a class can change:
 
