@@ -80,10 +80,8 @@ S7_on_unload_ <- function(env) {
     generic <- as_generic(generic)
     # Methods registered for S3 and S4 generics can't be unregistered yet
     if (is_S7_generic(generic)) {
-      signature <- resolve_signature_available(x$signature, package)
       unregister_own_S7_method(
         generic,
-        signature,
         x$method,
         package
       )
@@ -191,17 +189,12 @@ hooks_packages <- function(package) {
 
 unregister_own_S7_method <- function(
   generic,
-  signature,
   method,
   package = NULL
 ) {
-  signatures <- flatten_signature(signature)
-  for (i in seq_along(signatures)) {
-    sig <- signatures[[i]]
-    current <- generic_get_method(generic, sig)
-    if (is.null(current)) {
-      next
-    }
+  # Use registered signatures: an unloaded class package can no longer tell
+  # us which replacement classes shared the registration.
+  for (current in methods(generic)) {
     own <- S7_method_for_signature(
       method,
       generic,

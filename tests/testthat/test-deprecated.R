@@ -317,6 +317,142 @@ test_that("deprecated classes keep their own methods and subclasses", {
   expect_equal(speak(saved), "Fido")
 })
 
+test_that("deprecated classes can share method registrations with replacements", {
+  Dog := new_class(properties = list(name = class_character))
+  saved <- Dog(name = "Fido")
+  Puppy := new_class(parent = Dog)
+  Pet := new_class(properties = list(name = class_character))
+  Dog := deprecated_class(
+    properties = list(name = class_character),
+    new = Pet,
+    when = "2.0.0",
+    share_methods = TRUE
+  )
+
+  speak := new_generic("x")
+  method(speak, Dog) <- function(x) x@name
+  expect_equal(speak(saved), "Fido")
+  expect_equal(speak(Puppy(name = "Rex")), "Rex")
+  expect_equal(speak(Pet(name = "Spot")), "Spot")
+  expect_snapshot(dog <- Dog(name = "Fido"))
+  expect_identical(S7_class(dog), as_class(Dog))
+  expect_identical(S7_inherits(dog, Dog), TRUE)
+  expect_identical(S7_inherits(dog, Pet), FALSE)
+
+  Holder := new_class(properties = list(pet = Dog))
+  expect_identical(S7_inherits(Holder()@pet, Pet), FALSE)
+  expect_snapshot(error = TRUE, Holder(pet = Pet()))
+
+  method(speak, Pet) <- NULL
+  expect_equal(speak(saved), "Fido")
+  expect_snapshot(error = TRUE, speak(Pet()))
+
+  method(speak, Dog) <- NULL
+  method(speak, Dog) <- function(x) paste("Hello", x@name)
+  expect_equal(speak(Pet(name = "Spot")), "Hello Spot")
+  method(speak, Dog) <- NULL
+  expect_snapshot(error = TRUE, {
+    speak(saved)
+    speak(Pet())
+  })
+})
+
+test_that("shared class methods expand unions and multiple dispatch", {
+  Pet := new_class()
+  Dog := deprecated_class(new = Pet, when = "2.0.0", share_methods = TRUE)
+  Cat := new_class()
+  meet := new_generic(c("x", "y"))
+
+  expect_no_message(
+    method(meet, list(Dog | Pet | Cat, Dog)) <- function(x, y) {
+      paste(S7_class(x)@name, S7_class(y)@name)
+    }
+  )
+  dog <- suppressWarnings(Dog())
+  expect_equal(meet(dog, dog), "Dog Dog")
+  expect_equal(meet(dog, Pet()), "Dog Pet")
+  expect_equal(meet(Pet(), dog), "Pet Dog")
+  expect_equal(meet(Pet(), Pet()), "Pet Pet")
+  expect_equal(meet(Cat(), Pet()), "Cat Pet")
+
+  method(meet, list(Dog | Pet | Cat, Dog)) <- NULL
+  expect_snapshot(error = TRUE, {
+    meet(dog, dog)
+    meet(Pet(), Pet())
+    meet(Cat(), Pet())
+  })
+})
+
+test_that("shared class methods work with deferred external registrations", {
+  upstream := local_package({
+    Pet := new_class()
+    Dog := deprecated_class(new = Pet, when = "2.0.0", share_methods = TRUE)
+    gen := new_generic("x")
+  })
+  downstream := local_package({
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    gen := new_external_generic(package = "upstream", dispatch_args = "x")
+    Dog := new_external_class(package = "upstream")
+    method(gen, Dog) <- function(x) "shared"
+  })
+
+  downstream$.onLoad()
+  dog <- suppressWarnings(upstream$Dog())
+  expect_equal(upstream$gen(dog), "shared")
+  expect_equal(upstream$gen(upstream$Pet()), "shared")
+
+  downstream$.onUnload()
+  expect_snapshot(error = TRUE, {
+    upstream$gen(dog)
+    upstream$gen(upstream$Pet())
+  })
+
+  downstream$.onLoad()
+  eval(quote(method(gen, Dog) <- NULL), downstream)
+  downstream$.onLoad()
+  expect_snapshot(error = TRUE, {
+    upstream$gen(dog)
+    upstream$gen(upstream$Pet())
+  })
+})
+
+test_that("shared class methods work with S3 generics", {
+  local_s3_generic("speak")
+  Pet := new_class()
+  Dog := deprecated_class(new = Pet, when = "2.0.0", share_methods = TRUE)
+  method(speak, Dog) <- function(x) "shared"
+
+  expect_equal(speak(suppressWarnings(Dog())), "shared")
+  expect_equal(speak(Pet()), "shared")
+})
+
+test_that("shared class methods unload after the class package", {
+  generic_pkg := local_package({
+    gen := new_generic("x")
+  })
+  downstream := local_package({
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    gen := new_external_generic(package = "generic_pkg", dispatch_args = "x")
+    Dog := new_external_class(package = "class_pkg")
+    method(gen, Dog) <- function(x) "shared"
+  })
+
+  local({
+    class_pkg := local_package({
+      Pet := new_class()
+      Dog := deprecated_class(new = Pet, when = "2.0.0", share_methods = TRUE)
+    })
+    downstream$.onLoad()
+    expect_equal(generic_pkg$gen(class_pkg$Pet()), "shared")
+  })
+  expect_identical(isNamespaceLoaded("class_pkg"), FALSE)
+
+  downstream$.onUnload()
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
+})
+
 test_that("deprecated_class() without a replacement still constructs", {
   Cat := deprecated_class(
     properties = list(lives = class_double),
@@ -510,6 +646,19 @@ test_that("deprecated_class() validates its inputs", {
     deprecated_class(name = "Old", when = "1.0.0", method = "warn")
     deprecated_class(name = "Old", new = 1, when = "1.0.0")
     deprecated_class(name = "Old", new = class_double, when = "1.0.0")
+  })
+})
+
+test_that("sharing class methods requires a replacement and a boolean flag", {
+  Pet := new_class()
+  expect_snapshot(error = TRUE, {
+    deprecated_class(name = "Dog", when = "2.0.0", share_methods = TRUE)
+    deprecated_class(
+      name = "Dog",
+      new = Pet,
+      when = "2.0.0",
+      share_methods = NA
+    )
   })
 })
 

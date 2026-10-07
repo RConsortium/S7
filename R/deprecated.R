@@ -146,12 +146,28 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Property defaults generated before deprecation can still signal; see
 #' "Installed property defaults" below.
 #'
-#' Supply `new` to recommend another class in the warning. This
+#' Supply `new` to recommend another class in the warning. By default, this
 #' changes the message only: `Dog()` still creates a `Dog`, even if the
 #' warning recommends `Pet()`. Methods for `Dog` remain methods for `Dog`.
-#' To register a method for both classes, use `Dog | Pet` as its signature.
+#' To register an individual method for both classes, use `Dog | Pet`.
 #'
 #' Omit `new` to deprecate the class without recommending another.
+#'
+#' @section Sharing methods with a replacement:
+#' If methods for the deprecated class also work for `new`, set
+#' `share_methods = TRUE`. Registering or removing a method for `Dog` then
+#' has the same effect as using `Dog | Pet` in its signature. Registering
+#' directly for `Pet` still affects only `Pet`.
+#'
+#' This option applies when methods are registered; it does not copy methods
+#' already registered for `Dog`. Reinstall downstream packages whose method
+#' registrations captured the old class definition. Registrations using
+#' [new_external_class()] resolve the class when the package is loaded.
+#'
+#' The classes keep separate identities. `Dog()` still creates a `Dog`, and
+#' `Pet()` does not satisfy a property whose class is `Dog`. Existing objects
+#' and subclasses keep their original class. Use this option only when the
+#' replacement supports the behavior expected by methods for the old class.
 #'
 #' @section Installed subclasses:
 #' Adding deprecation to an otherwise unchanged class does not require
@@ -185,7 +201,11 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' @param ... Named arguments passed to [new_class()], such as `parent`,
 #'   `properties`, `constructor`, and `validator`.
 #' @param new An S7 class to recommend in the warning, or `NULL` to
-#'   give no recommendation. It does not affect construction or dispatch.
+#'   give no recommendation. It does not affect construction. Methods remain
+#'   separate unless `share_methods = TRUE`.
+#' @param share_methods If `TRUE`, registering or removing a method for the
+#'   deprecated class also registers or removes it for `new`. Requires `new`.
+#'   Defaults to `FALSE`.
 #' @inheritParams deprecated_generic
 #' @returns An S7 class with the additional class `S7_deprecated_class`.
 #' @seealso [deprecated_generic()] and [deprecated_property()] to deprecate
@@ -213,6 +233,17 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' method(speak, Dog | Pet) <- function(x) x@name
 #' speak(Pet(name = "Rex"))
 #'
+#' # Share registrations when methods also work for the replacement:
+#' Hound := deprecated_class(
+#'   properties = list(name = class_character),
+#'   new = Pet,
+#'   when = "3.0.0",
+#'   share_methods = TRUE
+#' )
+#' greet := new_generic("x")
+#' method(greet, Hound) <- function(x) paste("Hello", x@name)
+#' greet(Pet(name = "Rex"))
+#'
 #' # A class deprecated without a replacement:
 #' Cat := deprecated_class(
 #'   properties = list(lives = class_double),
@@ -224,11 +255,18 @@ deprecated_class <- function(
   ...,
   when,
   new = NULL,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  share_methods = FALSE
 ) {
   check_name(name)
   check_when(when)
   method <- check_deprecate_method(method)
+  if (!isTRUE(share_methods) && !isFALSE(share_methods)) {
+    stop2("`share_methods` must be TRUE or FALSE.")
+  }
+  if (share_methods && is.null(new)) {
+    stop2("`share_methods = TRUE` requires `new`.")
+  }
   env <- parent.frame()
 
   if (!is.null(new) && !is_class(new)) {
@@ -246,6 +284,11 @@ deprecated_class <- function(
     as.list(substitute(list(...)))[-1L]
   ))
   target <- eval(definition, env)
+  if (share_methods) {
+    attr(target, "S7_method_replacement") <- as_class(new)
+    class_ref <- get_class_ref(environment(target))
+    class_ref$class <- target
+  }
   with <- if (!is.null(new)) {
     target_label(new@package, new@name, target@package)
   }

@@ -162,6 +162,95 @@
       Error:
       ! Can't find method for `speak(<S7::Pet>)`.
 
+# deprecated classes can share method registrations with replacements
+
+    Code
+      dog <- Dog(name = "Fido")
+    Condition
+      Warning in `Dog()`:
+      `Dog()` was deprecated in S7 2.0.0.
+      Please use `Pet()` instead.
+
+---
+
+    Code
+      Holder(pet = Pet())
+    Condition
+      Error in `Holder()`:
+      ! <S7::Holder> object properties are invalid:
+      - @pet must be <S7::Dog>, not <S7::Pet>
+
+---
+
+    Code
+      speak(Pet())
+    Condition
+      Error:
+      ! Can't find method for `speak(<S7::Pet>)`.
+
+---
+
+    Code
+      speak(saved)
+    Condition
+      Error:
+      ! Can't find method for `speak(<S7::Dog>)`.
+    Code
+      speak(Pet())
+    Condition
+      Error:
+      ! Can't find method for `speak(<S7::Pet>)`.
+
+# shared class methods expand unions and multiple dispatch
+
+    Code
+      meet(dog, dog)
+    Condition
+      Error:
+      ! Can't find method for generic `meet(x, y)`:
+      - x: <S7::Dog>
+      - y: <S7::Dog>
+    Code
+      meet(Pet(), Pet())
+    Condition
+      Error:
+      ! Can't find method for generic `meet(x, y)`:
+      - x: <S7::Pet>
+      - y: <S7::Pet>
+    Code
+      meet(Cat(), Pet())
+    Condition
+      Error:
+      ! Can't find method for generic `meet(x, y)`:
+      - x: <S7::Cat>
+      - y: <S7::Pet>
+
+# shared class methods work with deferred external registrations
+
+    Code
+      upstream$gen(dog)
+    Condition
+      Error:
+      ! Can't find method for `gen(<upstream::Dog>)`.
+    Code
+      upstream$gen(upstream$Pet())
+    Condition
+      Error:
+      ! Can't find method for `gen(<upstream::Pet>)`.
+
+---
+
+    Code
+      upstream$gen(dog)
+    Condition
+      Error:
+      ! Can't find method for `gen(<upstream::Dog>)`.
+    Code
+      upstream$gen(upstream$Pet())
+    Condition
+      Error:
+      ! Can't find method for `gen(<upstream::Pet>)`.
+
 # deprecated_class() without a replacement still constructs
 
     Code
@@ -347,6 +436,19 @@
     Condition
       Error in `deprecated_class()`:
       ! `new` must be an S7 class, not S3<S7_base_class>.
+
+# sharing class methods requires a replacement and a boolean flag
+
+    Code
+      deprecated_class(name = "Dog", when = "2.0.0", share_methods = TRUE)
+    Condition
+      Error in `deprecated_class()`:
+      ! `share_methods = TRUE` requires `new`.
+    Code
+      deprecated_class(name = "Dog", new = Pet, when = "2.0.0", share_methods = NA)
+    Condition
+      Error in `deprecated_class()`:
+      ! `share_methods` must be TRUE or FALSE.
 
 # deprecated_property() with a replacement delegates and warns
 

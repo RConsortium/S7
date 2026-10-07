@@ -501,7 +501,7 @@ S7_inherits(saved, Foo)
 S7_inherits(saved, Bar)
 ```
 
-Methods for `Foo` do not automatically apply to `Bar`.
+By default, methods for `Foo` do not automatically apply to `Bar`.
 When a method can handle both classes, register it on their union (this replaces the existing `Foo` method with an identical one, hence the message):
 
 ```{r}
@@ -510,11 +510,31 @@ measure(Bar(size = 4))
 measure(saved)
 ```
 
+If all methods for `Foo` should also apply to `Bar`, set `share_methods = TRUE` when defining the deprecated class:
+
+```{r}
+Foo := deprecated_class(
+  properties = list(size = class_double),
+  new = Bar,
+  when = "2.0.0",
+  share_methods = TRUE
+)
+describe := new_generic("x")
+method(describe, Foo) <- function(x) paste("Size:", x@size)
+describe(Bar(size = 4))
+describe(saved)
+```
+
+Registering or removing a method for `Foo` now has the same effect as using `Foo | Bar`.
+This applies to new registrations; it does not copy methods already registered for `Foo`.
+Downstream packages whose registrations captured the old class definition need to be reinstalled; registrations using `new_external_class()` resolve the class when the package is loaded.
+The option preserves the two class identities: `Foo()` still constructs a `Foo`, and a `Bar` does not satisfy a property whose class is `Foo`.
+
 If the replacement needs a different representation, keep separate methods and provide an explicit conversion for users who want it.
 
 So the process is:
 
-1. You create the new class, replace the old one with `deprecated_class(new = )`, register shared methods on the union, and release.
+1. You create the new class, replace the old one with `deprecated_class(new = )`, choose whether to share method registrations or register individual methods on the union, and release.
 2. Each dependency switches to the new class, and releases whenever convenient.
 3. You remove the old class in a later release.
 

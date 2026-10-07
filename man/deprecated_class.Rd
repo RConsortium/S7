@@ -9,7 +9,8 @@ deprecated_class(
   ...,
   when,
   new = NULL,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  share_methods = FALSE
 )
 }
 \arguments{
@@ -23,7 +24,8 @@ variable with this name, most easily with \link{:=}.}
 \code{"1.2.0"}.}
 
 \item{new}{An S7 class to recommend in the warning, or \code{NULL} to
-give no recommendation. It does not affect construction or dispatch.}
+give no recommendation. It does not affect construction. Methods remain
+separate unless \code{share_methods = TRUE}.}
 
 \item{method}{How to signal the deprecation:
 \itemize{
@@ -35,6 +37,10 @@ only displayed once every eight hours.
 
 The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
+
+\item{share_methods}{If \code{TRUE}, registering or removing a method for the
+deprecated class also registers or removes it for \code{new}. Requires \code{new}.
+Defaults to \code{FALSE}.}
 }
 \value{
 An S7 class with the additional class \code{S7_deprecated_class}.
@@ -50,13 +56,31 @@ classes, or \code{\link[=new_external_class]{new_external_class()}} references d
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.
 
-Supply \code{new} to recommend another class in the warning. This
+Supply \code{new} to recommend another class in the warning. By default, this
 changes the message only: \code{Dog()} still creates a \code{Dog}, even if the
 warning recommends \code{Pet()}. Methods for \code{Dog} remain methods for \code{Dog}.
-To register a method for both classes, use \code{Dog | Pet} as its signature.
+To register an individual method for both classes, use \code{Dog | Pet}.
 
 Omit \code{new} to deprecate the class without recommending another.
 }
+\section{Sharing methods with a replacement}{
+
+If methods for the deprecated class also work for \code{new}, set
+\code{share_methods = TRUE}. Registering or removing a method for \code{Dog} then
+has the same effect as using \code{Dog | Pet} in its signature. Registering
+directly for \code{Pet} still affects only \code{Pet}.
+
+This option applies when methods are registered; it does not copy methods
+already registered for \code{Dog}. Reinstall downstream packages whose method
+registrations captured the old class definition. Registrations using
+\code{\link[=new_external_class]{new_external_class()}} resolve the class when the package is loaded.
+
+The classes keep separate identities. \code{Dog()} still creates a \code{Dog}, and
+\code{Pet()} does not satisfy a property whose class is \code{Dog}. Existing objects
+and subclasses keep their original class. Use this option only when the
+replacement supports the behavior expected by methods for the old class.
+}
+
 \section{Installed subclasses}{
 
 Adding deprecation to an otherwise unchanged class does not require
@@ -108,6 +132,17 @@ speak(Puppy(name = "Rex"))
 # A method can support both classes:
 method(speak, Dog | Pet) <- function(x) x@name
 speak(Pet(name = "Rex"))
+
+# Share registrations when methods also work for the replacement:
+Hound := deprecated_class(
+  properties = list(name = class_character),
+  new = Pet,
+  when = "3.0.0",
+  share_methods = TRUE
+)
+greet := new_generic("x")
+method(greet, Hound) <- function(x) paste("Hello", x@name)
+greet(Pet(name = "Rex"))
 
 # A class deprecated without a replacement:
 Cat := deprecated_class(

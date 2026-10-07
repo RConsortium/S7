@@ -267,10 +267,8 @@ unregister_S7_method <- function(generic, signature) {
 }
 
 flatten_signature <- function(signature) {
-  # Unpack unions
-  sig_is_union <- vlapply(signature, is_union)
-  signature[sig_is_union] <- lapply(signature[sig_is_union], "[[", "classes")
-  signature[!sig_is_union] <- lapply(signature[!sig_is_union], list)
+  # Unpack unions and deprecated classes that share method registrations.
+  signature <- lapply(signature, method_classes)
 
   # Create grid of indices
   indx <- lapply(signature, seq_along)
@@ -279,6 +277,19 @@ flatten_signature <- function(signature) {
 
   rows <- lapply(1:nrow(comb), function(i) comb[i, ])
   lapply(rows, function(row) Map("[[", signature, row))
+}
+
+method_classes <- function(x) {
+  if (is_union(x)) {
+    return(unique(unlist(lapply(x$classes, method_classes), recursive = FALSE)))
+  }
+
+  new <- attr(x, "S7_method_replacement", exact = TRUE)
+  if (!is.null(new)) {
+    c(list(x), method_classes(new))
+  } else {
+    list(x)
+  }
 }
 
 as_signature <- function(signature, generic, call = sys.call(-1L)) {
