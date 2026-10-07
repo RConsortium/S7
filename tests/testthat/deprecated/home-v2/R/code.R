@@ -3,7 +3,7 @@ shout := deprecated_generic("x", when = "2.0.0")
 Bar := new_class(properties = list(value = class_double))
 Foo := deprecated_class(
   properties = list(value = class_double),
-  replacement = Bar,
+  new = Bar,
   when = "2.0.0"
 )
 .onLoad <- function(...) S7_on_load()

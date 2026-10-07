@@ -410,31 +410,3 @@ PositiveRange := new_class(
 # `...` is forwarded to Range()'s custom constructor
 PositiveRange(c(10, 5, 0, 2, 5, 7), positive = TRUE)
 ```
-
-## Deprecating a class
-
-To deprecate a class, change `new_class()` to `deprecated_class()` in its existing definition and add `when`. You can also recommend another class with `replacement`:
-
-```{r}
-Pet := new_class(properties = list(name = class_character))
-Dog := deprecated_class(
-  properties = list(name = class_character),
-  replacement = Pet,
-  when = "2.0.0"
-)
-
-Dog(name = "Fido") # warns and creates a Dog
-Pet(name = "Fido") # creates a Pet without warning
-```
-
-Keep the old class's parent, properties, constructor, and validator unchanged. Adding deprecation then preserves existing objects and subclasses, including subclasses in packages installed before the deprecation was added.
-
-Methods for `Dog` remain methods for `Dog`; recommending `Pet` does not redirect them. To share a method between the two classes, use a union:
-
-```{r}
-speak := new_generic("x")
-method(speak, Dog | Pet) <- function(x) paste("Hello,", x@name)
-speak(Pet(name = "Fido"))
-```
-
-Omit `replacement` to deprecate a class without recommending another. See `?deprecated_class` for the warning options.

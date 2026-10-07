@@ -338,15 +338,15 @@
       Error in `deprecated_class()`:
       ! `method` must be one of "base", "lifecycle(warn)", or "lifecycle(stop)".
     Code
-      deprecated_class(name = "Old", replacement = 1, when = "1.0.0")
+      deprecated_class(name = "Old", new = 1, when = "1.0.0")
     Condition
       Error in `deprecated_class()`:
-      ! `replacement` must be an S7 class, not <double>.
+      ! `new` must be an S7 class, not <double>.
     Code
-      deprecated_class(name = "Old", replacement = class_double, when = "1.0.0")
+      deprecated_class(name = "Old", new = class_double, when = "1.0.0")
     Condition
       Error in `deprecated_class()`:
-      ! `replacement` must be an S7 class, not S3<S7_base_class>.
+      ! `new` must be an S7 class, not S3<S7_base_class>.
 
 # deprecated_property() with a replacement delegates and warns
 

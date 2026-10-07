@@ -4,6 +4,26 @@ test_that("S7_classes() / S7_generics() inspect a single environment", {
   expect_equal(S7_generics(asNamespace("S7")), "convert")
 })
 
+test_that("S7_classes() / S7_generics() inspect re-exports", {
+  upstream := local_package({
+    Foo := new_class()
+    gen := new_generic("x")
+    fun <- function() NULL
+  })
+  downstream := local_package({
+    Bar := new_class()
+    local_gen := new_generic("x")
+  })
+
+  for (name in c("Foo", "gen", "fun")) {
+    assign(name, upstream[[name]], envir = parent.env(downstream))
+    assign(name, name, envir = downstream[[".__NAMESPACE__."]]$exports)
+  }
+
+  expect_setequal(S7_classes(downstream), c("Foo", "Bar"))
+  expect_setequal(S7_generics(downstream), c("gen", "local_gen"))
+})
+
 test_that("default `env` is the caller's environment", {
   local({
     Foo := new_class(package = NULL)
@@ -40,6 +60,22 @@ test_that("S7_methods() prints the signature column readably", {
   method(gen, Bar) <- function(x) "bar"
 
   expect_snapshot(print(S7_methods(generic = gen)))
+})
+
+test_that("S7_methods() results can be converted to tibbles", {
+  skip_if_not_installed("tibble")
+
+  Foo := new_class(package = NULL)
+  Bar := new_class(package = NULL)
+  gen := new_generic("x")
+  empty <- S7_methods(generic = gen)
+  method(gen, Foo) <- function(x) "foo"
+  single <- S7_methods(generic = gen)
+  method(gen, Bar) <- function(x) "bar"
+
+  for (res in list(empty, single, S7_methods(generic = gen))) {
+    expect_identical(as.data.frame(tibble::as_tibble(res)), res)
+  }
 })
 
 test_that("S7_signature_list formats per element", {

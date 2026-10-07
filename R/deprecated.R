@@ -146,19 +146,19 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Property defaults generated before deprecation can still signal; see
 #' "Installed property defaults" below.
 #'
-#' Supply `replacement` to recommend another class in the warning. This
+#' Supply `new` to recommend another class in the warning. This
 #' changes the message only: `Dog()` still creates a `Dog`, even if the
 #' warning recommends `Pet()`. Methods for `Dog` remain methods for `Dog`.
 #' To register a method for both classes, use `Dog | Pet` as its signature.
 #'
-#' Omit `replacement` to deprecate the class without recommending another.
+#' Omit `new` to deprecate the class without recommending another.
 #'
 #' @section Installed subclasses:
 #' Adding deprecation to an otherwise unchanged class does not require
 #' rebuilding packages that define subclasses. Existing instances and
 #' subclasses continue matching methods for the deprecated class.
 #'
-#' The helper does not convert existing or saved objects to `replacement`,
+#' The helper does not convert existing or saved objects to `new`,
 #' or update installed subclasses if you also change the class definition.
 #' Changes to the parent, properties, constructor, or validator need the same
 #' compatibility considerations as changes to a non-deprecated class.
@@ -184,7 +184,7 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #'   variable with this name, most easily with [:=].
 #' @param ... Named arguments passed to [new_class()], such as `parent`,
 #'   `properties`, `constructor`, and `validator`.
-#' @param replacement An S7 class to recommend in the warning, or `NULL` to
+#' @param new An S7 class to recommend in the warning, or `NULL` to
 #'   give no recommendation. It does not affect construction or dispatch.
 #' @inheritParams deprecated_generic
 #' @returns An S7 class with the additional class `S7_deprecated_class`.
@@ -196,7 +196,7 @@ is_deprecated_generic <- function(x) inherits(x, "S7_deprecated_generic")
 #' Pet := new_class(properties = list(name = class_character))
 #' Dog := deprecated_class(
 #'   properties = list(name = class_character),
-#'   replacement = Pet,
+#'   new = Pet,
 #'   when = "2.0.0"
 #' )
 #'
@@ -223,7 +223,7 @@ deprecated_class <- function(
   name,
   ...,
   when,
-  replacement = NULL,
+  new = NULL,
   method = c("base", "lifecycle(warn)", "lifecycle(stop)")
 ) {
   check_name(name)
@@ -231,10 +231,10 @@ deprecated_class <- function(
   method <- check_deprecate_method(method)
   env <- parent.frame()
 
-  if (!is.null(replacement) && !is_class(replacement)) {
+  if (!is.null(new) && !is_class(new)) {
     msg <- sprintf(
-      "`replacement` must be an S7 class, not %s.",
-      obj_desc(replacement)
+      "`new` must be an S7 class, not %s.",
+      obj_desc(new)
     )
     stop2(msg)
   }
@@ -246,8 +246,8 @@ deprecated_class <- function(
     as.list(substitute(list(...)))[-1L]
   ))
   target <- eval(definition, env)
-  with <- if (!is.null(replacement)) {
-    target_label(replacement@package, replacement@name, target@package)
+  with <- if (!is.null(new)) {
+    target_label(new@package, new@name, target@package)
   }
 
   out <- new_deprecated_fun(

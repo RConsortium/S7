@@ -32,6 +32,10 @@
 #' @param generic A generic function, i.e. an [S7 generic][new_generic],
 #'   an [external generic][new_external_generic], an [S3 generic][UseMethod],
 #'   or an [S4 generic][methods::setGeneric].
+#'
+#'   Note that because `method<-` is an assignment function,
+#'   `method(pkg::gen, class) <- f` will not work. You must either import
+#'   `gen` into your namespace or use `new_external_generic()`.
 #' @param signature A method signature.
 #'
 #'   For single-dispatch generics, this must be one of the

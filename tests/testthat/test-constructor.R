@@ -97,19 +97,18 @@ test_that("data-frame defaults preserve selection and inheritance", {
 })
 
 test_that("generates meaningful constructors", {
+  Root := new_class()
+  Props := new_class(properties = list(x = class_numeric, y = class_numeric))
+  foo := new_class(parent = class_character)
+  foo2 := new_class(parent = foo)
+  foo3 := new_class(parent = foo2)
+
   expect_snapshot(
     {
-      new_constructor(S7_object, list())
-      new_constructor(
-        S7_object,
-        as_properties(list(x = class_numeric, y = class_numeric))
-      )
-
-      foo := new_class(parent = class_character)
-      new_constructor(foo, list())
-
-      foo2 := new_class(parent = foo)
-      new_constructor(foo2, list())
+      Root@constructor
+      Props@constructor
+      foo2@constructor
+      foo3@constructor
     },
     transform = scrub_environment
   )
@@ -129,18 +128,18 @@ test_that("can generate constructors for S3 classes", {
 })
 
 test_that("can generate constructor for inherited abstract classes", {
+  foo1 := new_class(abstract = TRUE, properties = list(x = class_double))
+  foo2 := new_class(parent = foo1)
+  foo3 := new_class(parent = foo1, properties = list(y = class_double))
+
   expect_snapshot(
     {
-      foo1 := new_class(
-        abstract = TRUE,
-        properties = list(x = class_double)
-      )
-      new_constructor(foo1, list())
-      new_constructor(foo1, as_properties(list(y = class_double)))
+      foo2@constructor
+      foo3@constructor
     },
     transform = scrub_environment
   )
-  child := new_class(foo1, properties = list(y = class_double))
+  child := new_class(parent = foo1, properties = list(y = class_double))
   expect_no_error(child(y = 0.5))
 
   # even if it has a read-only property
@@ -154,14 +153,14 @@ test_that("can use `...` in parent constructor", {
     properties = list(x = class_list),
     constructor = function(...) new_object(S7_object(), x = list(...))
   )
+  bar := new_class(parent = foo, properties = list(y = class_double))
 
   expect_snapshot(
-    new_constructor(foo, list(y = class_double)),
+    bar@constructor,
     transform = scrub_environment
   )
 
   # And check that arguments matched correctly
-  bar := new_class(foo, properties = list(y = class_double))
   expect_equal(bar()@x, list())
   expect_equal(bar(2)@x, list(2))
   expect_equal(bar(y = 2)@x, list())
@@ -187,6 +186,93 @@ test_that("subclass forwards `...` to a custom parent constructor (#609)", {
   expect_equal(Child()@x, 42L)
   expect_equal(Child(10L)@x, 10L) # positional arg forwarded to the parent
   expect_equal(Child(y = 2)@y, 2) # named child arg is not forwarded
+})
+
+test_that("same-package default constructors retain named parent arguments", {
+  pkg := local_package({
+    Parent := new_class(properties = list(x = class_integer))
+    Child := new_class(parent = Parent, properties = list(y = class_double))
+  })
+
+  expect_named(formals(pkg$Child), c("x", "y"))
+  expect_equal(props(pkg$Child(x = 1L, y = 2)), list(x = 1L, y = 2))
+})
+
+test_that("classes outside packages retain named parent arguments", {
+  dep := local_package({
+    Parent := new_class(properties = list(x = class_integer))
+  })
+  Child := new_class(
+    parent = dep$Parent,
+    package = NULL,
+    properties = list(y = class_double)
+  )
+
+  expect_named(formals(Child), c("x", "y"))
+  expect_equal(props(Child(x = 1L, y = 2)), list(x = 1L, y = 2))
+})
+
+test_that("foreign parent constructors are resolved at run time (#763)", {
+  dep := local_package({
+    Parent := new_class(
+      properties = list(x = new_property(class_integer, default = 1L))
+    )
+  })
+  pkg := local_package({
+    Child := new_class(
+      parent = dep::Parent,
+      properties = list(y = class_double)
+    )
+  })
+  expect_named(formals(pkg$Child), c("...", "y"))
+  expect_equal(pkg$Child()@x, 1L)
+
+  evalq(
+    {
+      Parent := new_class(
+        properties = list(x = new_property(class_integer, default = 2L))
+      )
+    },
+    dep
+  )
+  expect_equal(pkg$Child()@x, 2L)
+
+  evalq(
+    {
+      secret <- 3L
+      Parent := new_class(
+        properties = list(x = class_integer),
+        constructor = function(x = secret) new_object(S7_object(), x = x)
+      )
+    },
+    dep
+  )
+  expect_equal(pkg$Child()@x, 3L)
+  expect_equal(props(pkg$Child(x = 4L, y = 5)), list(x = 4L, y = 5))
+})
+
+test_that("foreign abstract parent defaults are resolved at run time (#763)", {
+  dep := local_package({
+    Parent := new_class(
+      abstract = TRUE,
+      properties = list(x = new_property(class_integer, default = 1L))
+    )
+  })
+  pkg := local_package({
+    Child := new_class(parent = dep::Parent)
+  })
+  expect_equal(pkg$Child()@x, 1L)
+
+  evalq(
+    {
+      Parent := new_class(
+        abstract = TRUE,
+        properties = list(x = new_property(class_integer, default = 2L))
+      )
+    },
+    dep
+  )
+  expect_equal(pkg$Child()@x, 2L)
 })
 
 test_that("subclass of a custom S3 parent forwards `...`", {

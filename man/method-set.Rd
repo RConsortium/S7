@@ -9,7 +9,11 @@ method(generic, signature) <- value
 \arguments{
 \item{generic}{A generic function, i.e. an \link[=new_generic]{S7 generic},
 an \link[=new_external_generic]{external generic}, an \link[=UseMethod]{S3 generic},
-or an \link[methods:setGeneric]{S4 generic}.}
+or an \link[methods:setGeneric]{S4 generic}.
+
+Note that because \verb{method<-} is an assignment function,
+\code{method(pkg::gen, class) <- f} will not work. You must either import
+\code{gen} into your namespace or use \code{new_external_generic()}.}
 
 \item{signature}{A method signature.
 
