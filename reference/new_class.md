@@ -53,8 +53,11 @@ new_object(`_parent`, ...)
     [class_integer](https://rconsortium.github.io/S7/reference/base_classes.md),
     etc.
 
-  - A class from another package, wrapped by
-    [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md).
+  When defining a class in a package with an S7 parent from another
+  package, the parent's properties are captured when your class is
+  defined, but the default constructor calls the parent's installed
+  constructor at run time. Parent arguments are forwarded through `...`,
+  followed by named arguments for the subclass's own properties.
 
 - package:
 

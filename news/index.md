@@ -34,6 +34,14 @@
   [\#317](https://github.com/RConsortium/S7/issues/317)).
 
 - [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now calls constructors of S7 parents from other packages at run time
+  when the subclass is defined in a package, so subclasses use the
+  installed parent constructor without needing
+  [`new_external_class()`](https://rconsortium.github.io/S7/reference/new_external_class.md).
+  Such subclass constructors now accept parent arguments through `...`
+  ([\#763](https://github.com/RConsortium/S7/issues/763)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now reserves property names beginning with `_` for internal use.
   Rename any properties that use this prefix
   ([\#579](https://github.com/RConsortium/S7/issues/579)).
@@ -92,9 +100,7 @@
   method registration for suggested packages
   ([\#573](https://github.com/RConsortium/S7/issues/573)),
   self-referential and mutually recursive classes
-  ([\#250](https://github.com/RConsortium/S7/issues/250)), and
-  inheritance from classes in other packages
-  ([\#317](https://github.com/RConsortium/S7/issues/317)).
+  ([\#250](https://github.com/RConsortium/S7/issues/250)).
 
 - [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
   now accepts a named list of property values, passed as a single

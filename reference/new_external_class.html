@@ -3,7 +3,7 @@
 another package (or in your own package and needed before it's fully
 defined). It carries only the package and class name, and is resolved to
 the real S7 class when needed.
-External classes are useful in three situations:
+External classes are useful in two situations:
 To register a method for a generic in your package, dispatching on a class
 from a soft dependency. The method will be registered when pkg is loaded
 (using the same machinery as new_external_generic()).
@@ -14,13 +14,6 @@ To refer to a class that hasn't been defined yet, such as a
 self-referential or mutually recursive class.
 tree_stub &amp;lt;- new_external_class(&quot;mypkg&quot;, &quot;tree&quot;)
 new_class(&quot;tree&quot;, properties = list(child = NULL | tree_stub))
-
-To use a class from another package as the parent of your own class.
-The parent's properties are captured when your class is defined, but its
-constructor is called at run time, so your subclass always builds on the
-installed version of the parent package.
-TheirClass &amp;lt;- new_external_class(&quot;theirpkg&quot;, &quot;TheirClass&quot;)
-new_class(&quot;MyClass&quot;, parent = TheirClass)
 
 
 
@@ -29,7 +22,7 @@ deferred method registrations fire when the relevant package is loaded."><meta p
 another package (or in your own package and needed before it's fully
 defined). It carries only the package and class name, and is resolved to
 the real S7 class when needed.
-External classes are useful in three situations:
+External classes are useful in two situations:
 To register a method for a generic in your package, dispatching on a class
 from a soft dependency. The method will be registered when pkg is loaded
 (using the same machinery as new_external_generic()).
@@ -40,13 +33,6 @@ To refer to a class that hasn't been defined yet, such as a
 self-referential or mutually recursive class.
 tree_stub &amp;lt;- new_external_class(&quot;mypkg&quot;, &quot;tree&quot;)
 new_class(&quot;tree&quot;, properties = list(child = NULL | tree_stub))
-
-To use a class from another package as the parent of your own class.
-The parent's properties are captured when your class is defined, but its
-constructor is called at run time, so your subclass always builds on the
-installed version of the parent package.
-TheirClass &amp;lt;- new_external_class(&quot;theirpkg&quot;, &quot;TheirClass&quot;)
-new_class(&quot;MyClass&quot;, parent = TheirClass)
 
 
 
@@ -110,7 +96,7 @@ deferred method registrations fire when the relevant package is loaded."></head>
 another package (or in your own package and needed before it's fully
 defined). It carries only the package and class name, and is resolved to
 the real S7 class when needed.</p>
-<p>External classes are useful in three situations:</p><ul><li><p>To register a method for a generic in your package, dispatching on a class
+<p>External classes are useful in two situations:</p><ul><li><p>To register a method for a generic in your package, dispatching on a class
 from a soft dependency. The method will be registered when <code>pkg</code> is loaded
 (using the same machinery as <code><a href="new_external_generic.html">new_external_generic()</a></code>).</p>
 <p></p><div class="sourceCode R"><pre><code><span><span class="va">SomeClass</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_external_class.html">new_external_class</a></span><span class="op">(</span><span class="st">"pkg"</span>, <span class="st">"SomeClass"</span><span class="op">)</span></span>
@@ -119,12 +105,6 @@ from a soft dependency. The method will be registered when <code>pkg</code> is l
 self-referential or mutually recursive class.</p>
 <p></p><div class="sourceCode R"><pre><code><span><span class="va">tree_stub</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_external_class.html">new_external_class</a></span><span class="op">(</span><span class="st">"mypkg"</span>, <span class="st">"tree"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"tree"</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>child <span class="op">=</span> <span class="cn">NULL</span> <span class="op">|</span> <span class="va">tree_stub</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div></li>
-<li><p>To use a class from another package as the <code>parent</code> of your own class.
-The parent's properties are captured when your class is defined, but its
-constructor is called at run time, so your subclass always builds on the
-installed version of the parent package.</p>
-<p></p><div class="sourceCode R"><pre><code><span><span class="va">TheirClass</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/new_external_class.html">new_external_class</a></span><span class="op">(</span><span class="st">"theirpkg"</span>, <span class="st">"TheirClass"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="st">"MyClass"</span>, parent <span class="op">=</span> <span class="va">TheirClass</span><span class="op">)</span></span></code></pre><p></p></div></li>
 </ul><p>Make sure to call <code><a href="S7_on_load.html">S7_on_load()</a></code> in your package's <code>.onLoad()</code> so that
 deferred method registrations fire when the relevant package is loaded.</p>
     </div>
