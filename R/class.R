@@ -398,6 +398,11 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #' @param _parent,... Parent object and named properties used to construct the
 #'   object.
 #'
+#'   When the inheritance chain ends at [S7_object], only
+#'   attributes corresponding to its properties are copied from `_parent`.
+#'   For S3 parents, [new_S3_class()] can declare the attributes to preserve.
+#'   Attributes of underlying base data are preserved.
+#'
 #'   As a convenience, if `...` is a single unnamed list, then the elements of
 #'   that list are used as the properties. This makes it easy to
 #'   programmatically construct an object from a list of property values.
@@ -439,6 +444,22 @@ new_object <- function(`_parent`, ...) {
   self_attrs <- args[!has_setter]
   names(self_attrs) <- prop_storage_rename(names(self_attrs))
 
+  parent_attrs <- attributes(`_parent`)
+  base <- base_parent(class)
+  if (is_class(base)) {
+    data_attrs <- character()
+  } else if (is_S3_class(base)) {
+    data_attrs <- base$attributes
+  } else {
+    data_attrs <- NULL
+  }
+  if (!is.null(data_attrs)) {
+    parent_attrs <- parent_attrs[
+      names(parent_attrs) %in%
+        c(data_attrs, prop_storage_rename(names(class_props)))
+    ]
+  }
+
   # We must awkwardly operate on `_parent` rather than binding to a local
   # variable; since otherwise the extra binding causes ALTREP-wrapped values to
   # be materialised when byte-compiled (#607).
@@ -446,10 +467,10 @@ new_object <- function(`_parent`, ...) {
     list(
       class = class_dispatch(class),
       `_S7_version` = S7_object_version,
-      `_S7_class` = if (S7_extends_S4(class)) class else class_ref %||% class
+      `_S7_class` = if (is_S4_class(base)) class else class_ref %||% class
     ),
     self_attrs,
-    attributes(`_parent`)
+    parent_attrs
   )
   attrs <- attrs[!duplicated(names(attrs))]
   attributes(`_parent`) <- attrs

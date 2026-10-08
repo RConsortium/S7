@@ -35,4 +35,7 @@ the base packages:
 \item \code{class_POSIXct}, \code{class_POSIXlt} and \code{class_POSIXt} for date-times.
 \item \code{class_formula} for formulas.
 }
+
+The concrete wrappers declare their supported attributes, so \code{\link[=new_object]{new_object()}}
+strips foreign attributes when constructing S7 subclasses.
 }

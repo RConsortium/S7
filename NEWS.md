@@ -72,6 +72,8 @@
 * `new_S3_class()` gains a `default` argument for supplying a quoted property
   default independently of its constructor (#755).
 
+* `new_S3_class()` gains an optional `attributes` argument declaring the complete set of attributes to preserve when constructing S7 subclasses. The bundled concrete S3 wrappers declare their attributes, so `new_object()` strips foreign attributes from their subclasses (#760).
+
 * `set_props()` now accepts a named list of property values, passed as a single
   unnamed argument through `...` (#497). Its first argument is now named
   `_object` to avoid clashes with property names (#423).
@@ -232,6 +234,8 @@
 
 * `new_object()` gives an informative error when `_parent` is a class
   specification rather than an instance of the parent class (#409).
+
+* `new_object()` now strips foreign attributes, including properties of sibling classes, when constructing classes rooted in `S7_object` (#760).
 
 * `new_S3_class()` objects work with `inherits()` and other functions that use
   `nameOfClass()` on R 4.3 and later (@lawremi, #521).

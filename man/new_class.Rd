@@ -86,6 +86,11 @@ suppress validation when needed.}
 \item{_parent, ...}{Parent object and named properties used to construct the
 object.
 
+When the inheritance chain ends at \link{S7_object}, only
+attributes corresponding to its properties are copied from \verb{_parent}.
+For S3 parents, \code{\link[=new_S3_class]{new_S3_class()}} can declare the attributes to preserve.
+Attributes of underlying base data are preserved.
+
 As a convenience, if \code{...} is a single unnamed list, then the elements of
 that list are used as the properties. This makes it easy to
 programmatically construct an object from a list of property values.}
