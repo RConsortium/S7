@@ -401,7 +401,7 @@ class2 := new_class(class1, package = "foo", properties = list(b = class_any))
 class2@constructor
 #> function (a = NULL, b = NULL) 
 #> S7::new_object(class1(a = a), b = b)
-#> <environment: 0x55632f573820>
+#> <environment: 0x558231524d20>
 ```
 
 Things are different when the parent lives in another package:
@@ -652,6 +652,54 @@ So the process is:
 2.  Each dependency switches to the new class, and releases whenever
     convenient.
 3.  You remove the old class in a later release.
+
+#### Aliasing a class
+
+You can instead make the old name an alias for the replacement with
+`alias = TRUE`:
+
+``` r
+
+Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+foo <- Foo(size = 2) # warns and constructs a Bar
+#> Warning in Foo(size = 2): `Foo()` was deprecated in version 2.0.0.
+#> Please use `Bar()` instead.
+S7_inherits(foo, Bar)
+#> [1] TRUE
+
+describe := new_generic("x")
+method(describe, Foo) <- function(x) paste("Size:", x@size)
+describe(Bar(size = 3))
+#> [1] "Size: 3"
+
+Box := new_class(properties = list(item = Foo))
+Box(item = Bar(size = 4))
+#> <Box>
+#>  @ item: <Bar>
+#>  .. @ size: num 4
+```
+
+The alias uses `Bar`’s definition, so you do not repeat the properties,
+parent, constructor, or validator. Both names resolve to the same class
+in method signatures, parents, property types, unions, and inheritance
+checks. Registering or removing a method through either name affects the
+same registration.
+
+This changes what the old name means; it does not migrate existing
+objects or subclasses, or transfer previously registered methods. For
+example, the saved object created before the rename still has its
+original class:
+
+``` r
+
+S7_inherits(saved, Foo) # FALSE: Foo now refers to Bar
+#> [1] FALSE
+```
+
+Packages that captured the old class in their method signatures,
+subclasses, or property types need to be rebuilt against the alias. Use
+the default behavior above when saved objects and installed subclasses
+must continue to work with the old class during the transition.
 
 ### Removing a class
 

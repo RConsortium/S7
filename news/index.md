@@ -264,10 +264,12 @@
   help package authors deprecate APIs while keeping existing code
   working. A deprecated class warns on construction while preserving its
   methods and subclasses; an optional `new` is recommended in the
-  warning. A deprecated generic can warn or forward calls and method
-  registrations to a replacement supplied as `new`. Deprecated
-  properties can forward reads and writes to a replacement property.
-  Warnings can use base R or lifecycle
+  warning. With `alias = TRUE`, the deprecated class name instead uses
+  the replacement’s constructor and class identity; existing objects and
+  subclasses are not migrated. A deprecated generic can warn or forward
+  calls and method registrations to a replacement supplied as `new`.
+  Deprecated properties can forward reads and writes to a replacement
+  property. Warnings can use base R or lifecycle
   ([\#727](https://github.com/RConsortium/S7/issues/727),
   [\#730](https://github.com/RConsortium/S7/issues/730)).
 

@@ -7,7 +7,7 @@ deprecated class. Using it in method signatures, parent, property
 classes, or new_external_class() references does not warn.
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.
-Supply new to recommend another class in the warning. This
+Supply new to recommend another class in the warning. By default, this
 changes the message only: Dog() still creates a Dog, even if the
 warning recommends Pet(). Methods for Dog remain methods for Dog.
 To register a method for both classes, use Dog | Pet as its signature.
@@ -19,7 +19,7 @@ deprecated class. Using it in method signatures, parent, property
 classes, or new_external_class() references does not warn.
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.
-Supply new to recommend another class in the warning. This
+Supply new to recommend another class in the warning. By default, this
 changes the message only: Dog() still creates a Dog, even if the
 warning recommends Pet(). Methods for Dog remain methods for Dog.
 To register a method for both classes, use Dog | Pet as its signature.
@@ -86,7 +86,7 @@ deprecated class. Using it in method signatures, <code>parent</code>, property
 classes, or <code><a href="new_external_class.html">new_external_class()</a></code> references does not warn.
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.</p>
-<p>Supply <code>new</code> to recommend another class in the warning. This
+<p>Supply <code>new</code> to recommend another class in the warning. By default, this
 changes the message only: <code>Dog()</code> still creates a <code>Dog</code>, even if the
 warning recommends <code>Pet()</code>. Methods for <code>Dog</code> remain methods for <code>Dog</code>.
 To register a method for both classes, use <code>Dog | Pet</code> as its signature.</p>
@@ -100,7 +100,8 @@ To register a method for both classes, use <code>Dog | Pet</code> as its signatu
 <span>  <span class="va">...</span>,</span>
 <span>  <span class="va">when</span>,</span>
 <span>  new <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"base"</span>, <span class="st">"lifecycle(warn)"</span>, <span class="st">"lifecycle(stop)"</span><span class="op">)</span></span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"base"</span>, <span class="st">"lifecycle(warn)"</span>, <span class="st">"lifecycle(stop)"</span><span class="op">)</span>,</span>
+<span>  alias <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -115,7 +116,8 @@ variable with this name, most easily with <a href="named-bind.html">:=</a>.</p><
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Named arguments passed to <code><a href="new_class.html">new_class()</a></code>, such as <code>parent</code>,
-<code>properties</code>, <code>constructor</code>, and <code>validator</code>.</p></dd>
+<code>properties</code>, <code>constructor</code>, and <code>validator</code>. Cannot be supplied with
+<code>alias = TRUE</code>.</p></dd>
 
 
 <dt id="arg-when">when<a class="anchor" aria-label="anchor" href="#arg-when"></a></dt>
@@ -125,7 +127,8 @@ variable with this name, most easily with <a href="named-bind.html">:=</a>.</p><
 
 <dt id="arg-new">new<a class="anchor" aria-label="anchor" href="#arg-new"></a></dt>
 <dd><p>An S7 class to recommend in the warning, or <code>NULL</code> to
-give no recommendation. It does not affect construction or dispatch.</p></dd>
+give no recommendation. With <code>alias = TRUE</code>, this is also the class used
+for construction and class contexts such as method signatures.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -136,18 +139,48 @@ only displayed once every eight hours.</p></li>
 </ul><p>The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.</p></dd>
 
+
+<dt id="arg-alias">alias<a class="anchor" aria-label="anchor" href="#arg-alias"></a></dt>
+<dd><p>If <code>TRUE</code>, make the deprecated name an alias for <code>new</code>.
+Requires <code>new</code> and no arguments in <code>...</code>. Defaults to <code>FALSE</code>, which
+preserves the deprecated class's definition and identity.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An S7 class with the additional class <code>S7_deprecated_class</code>.</p>
     </div>
     <div class="section level2">
+    <h2 id="aliasing-a-class">Aliasing a class<a class="anchor" aria-label="anchor" href="#aliasing-a-class"></a></h2>
+
+
+<p>Set <code>alias = TRUE</code> to make the deprecated name an alias for <code>new</code>, as
+<code><a href="deprecated_generic.html">deprecated_generic()</a></code> does for generics. Calling the old name warns,
+then calls the replacement's constructor. Method signatures, parents,
+property types, unions, and <code><a href="S7_inherits.html">S7_inherits()</a></code> resolve the alias to <code>new</code>
+without warning. Both names refer to the same class for these operations.</p>
+<p>For example, <code>Dog := deprecated_class(new = Pet, when = "2.0.0", alias = TRUE)</code> makes <code>Dog()</code> construct a <code>Pet</code>. A method registered or
+removed through either name affects the same method registration.
+The alias uses the replacement's definition, so do not supply class
+arguments such as <code>properties</code> or <code>constructor</code> in <code>...</code>.</p>
+<p>Existing objects and subclasses retain their original class identity.
+They do not become instances or subclasses of <code>new</code>. Previously registered
+methods are not transferred to <code>new</code> either. Rebuild packages that captured
+the old class in their subclasses, property types, or method signatures.
+Use the default <code>alias = FALSE</code> when the old class must remain usable by
+saved objects or installed subclasses during the transition.</p>
+<p>If <code>new</code> belongs to another package, the alias resolves its current
+definition at run time. The replacement must remain exported under its
+S7 class name.</p>
+    </div>
+    <div class="section level2">
     <h2 id="installed-subclasses">Installed subclasses<a class="anchor" aria-label="anchor" href="#installed-subclasses"></a></h2>
 
 
-<p>Adding deprecation to an otherwise unchanged class does not require
-rebuilding packages that define subclasses. Existing instances and
-subclasses continue matching methods for the deprecated class.</p>
+<p>With <code>alias = FALSE</code>, adding deprecation to an otherwise unchanged class
+does not require rebuilding packages that define subclasses. Existing
+instances and subclasses continue matching methods for the deprecated
+class.</p>
 <p>The helper does not convert existing or saved objects to <code>new</code>,
 or update installed subclasses if you also change the class definition.
 Changes to the parent, properties, constructor, or validator need the same
@@ -157,8 +190,9 @@ compatibility considerations as changes to a non-deprecated class.</p>
     <h2 id="installed-property-defaults">Installed property defaults<a class="anchor" aria-label="anchor" href="#installed-property-defaults"></a></h2>
 
 
-<p>A downstream package installed before deprecation can retain a property
-default that calls the constructor directly. For example:</p>
+<p>With <code>alias = FALSE</code>, a downstream package installed before deprecation
+can retain a property default that calls the constructor directly. For
+example:</p>
 <p></p><div class="sourceCode r"><pre><code><span><span class="va">Box</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span>properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>item <span class="op">=</span> <span class="fu">upstream</span><span class="fu">::</span><span class="va">Foo</span><span class="op">)</span><span class="op">)</span></span></code></pre><p></p></div>
 <p>After <code>upstream</code> deprecates <code>Foo</code>, <code>Box()</code> can warn, or error with
 <code>method = "lifecycle(stop)"</code>. Rebuild and reinstall the downstream package
@@ -205,6 +239,20 @@ other parts of your API.</p></div>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Overwriting method speak(&lt;Dog&gt;)</span>
 <span class="r-in"><span><span class="fu">speak</span><span class="op">(</span><span class="fu">Pet</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Rex"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Rex"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># An alias uses the replacement's constructor and class identity:</span></span></span>
+<span class="r-in"><span><span class="va">Hound</span> <span class="op">:=</span> <span class="fu">deprecated_class</span><span class="op">(</span>new <span class="op">=</span> <span class="va">Pet</span>, when <span class="op">=</span> <span class="st">"3.0.0"</span>, alias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">Hound</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Rex"</span><span class="op">)</span> <span class="co"># warns and creates a Pet</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>`Hound()` was deprecated in version 3.0.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Please use `Pet()` instead.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;Pet&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  @ name: chr "Rex"</span>
+<span class="r-in"><span><span class="va">greet</span> <span class="op">:=</span> <span class="fu"><a href="new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"x"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="method.html">method</a></span><span class="op">(</span><span class="va">greet</span>, <span class="va">Hound</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Hello"</span>, <span class="va">x</span><span class="op">@</span><span class="va">name</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">greet</span><span class="op">(</span><span class="fu">Pet</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Rex"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Hello Rex"</span>
+<span class="r-in"><span><span class="fu"><a href="S7_inherits.html">S7_inherits</a></span><span class="op">(</span><span class="fu">Pet</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Rex"</span><span class="op">)</span>, <span class="va">Hound</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A class deprecated without a replacement:</span></span></span>
 <span class="r-in"><span><span class="va">Cat</span> <span class="op">:=</span> <span class="fu">deprecated_class</span><span class="op">(</span></span></span>

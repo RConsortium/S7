@@ -453,7 +453,7 @@ parent’s arguments, so you can see every property it takes:</p>
 <span><span class="va">class2</span><span class="op">@</span><span class="va">constructor</span></span>
 <span><span class="co">#&gt; function (a = NULL, b = NULL) </span></span>
 <span><span class="co">#&gt; S7::new_object(class1(a = a), b = b)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x55632f573820&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x558231524d20&gt;</span></span></code></pre></div>
 <p>Things are different when the parent lives in another package:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">class2</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="fu">foo</span><span class="fu">::</span><span class="va">class1</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>b <span class="op">=</span> <span class="va">class_any</span><span class="op">)</span><span class="op">)</span></span>
@@ -690,6 +690,46 @@ union, and release.</li>
 convenient.</li>
 <li>You remove the old class in a later release.</li>
 </ol>
+<div class="section level4">
+<h4 id="aliasing-a-class">Aliasing a class<a class="anchor" aria-label="anchor" href="#aliasing-a-class"></a>
+</h4>
+<p>You can instead make the old name an alias for the replacement with
+<code>alias = TRUE</code>:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Foo</span> <span class="op">:=</span> <span class="fu"><a href="../reference/deprecated_class.html">deprecated_class</a></span><span class="op">(</span>new <span class="op">=</span> <span class="va">Bar</span>, when <span class="op">=</span> <span class="st">"2.0.0"</span>, alias <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">foo</span> <span class="op">&lt;-</span> <span class="fu">Foo</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="co"># warns and constructs a Bar</span></span>
+<span><span class="co">#&gt; Warning in Foo(size = 2): `Foo()` was deprecated in version 2.0.0.</span></span>
+<span><span class="co">#&gt; Please use `Bar()` instead.</span></span>
+<span><span class="fu"><a href="../reference/S7_inherits.html">S7_inherits</a></span><span class="op">(</span><span class="va">foo</span>, <span class="va">Bar</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span>
+<span></span>
+<span><span class="va">describe</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"x"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">describe</span>, <span class="va">Foo</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Size:"</span>, <span class="va">x</span><span class="op">@</span><span class="va">size</span><span class="op">)</span></span>
+<span><span class="fu">describe</span><span class="op">(</span><span class="fu">Bar</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Size: 3"</span></span>
+<span></span>
+<span><span class="va">Box</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span>properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>item <span class="op">=</span> <span class="va">Foo</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">Box</span><span class="op">(</span>item <span class="op">=</span> <span class="fu">Bar</span><span class="op">(</span>size <span class="op">=</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; &lt;Box&gt;</span></span>
+<span><span class="co">#&gt;  @ item: &lt;Bar&gt;</span></span>
+<span><span class="co">#&gt;  .. @ size: num 4</span></span></code></pre></div>
+<p>The alias uses <code>Bar</code>’s definition, so you do not repeat
+the properties, parent, constructor, or validator. Both names resolve to
+the same class in method signatures, parents, property types, unions,
+and inheritance checks. Registering or removing a method through either
+name affects the same registration.</p>
+<p>This changes what the old name means; it does not migrate existing
+objects or subclasses, or transfer previously registered methods. For
+example, the saved object created before the rename still has its
+original class:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/S7_inherits.html">S7_inherits</a></span><span class="op">(</span><span class="va">saved</span>, <span class="va">Foo</span><span class="op">)</span> <span class="co"># FALSE: Foo now refers to Bar</span></span>
+<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
+<p>Packages that captured the old class in their method signatures,
+subclasses, or property types need to be rebuilt against the alias. Use
+the default behavior above when saved objects and installed subclasses
+must continue to work with the old class during the transition.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="removing-a-class">Removing a class<a class="anchor" aria-label="anchor" href="#removing-a-class"></a>
@@ -698,7 +738,7 @@ convenient.</li>
 <p>To remove a class without a replacement, redefine it with
 <code><a href="../reference/deprecated_class.html">deprecated_class()</a></code>, keeping its existing properties and
 omitting <code>new</code>:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Retired</span> <span class="op">:=</span> <span class="fu"><a href="../reference/deprecated_class.html">deprecated_class</a></span><span class="op">(</span></span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="va">class_double</span><span class="op">)</span>,</span>
 <span>  when <span class="op">=</span> <span class="st">"2.0.0"</span></span>
@@ -726,7 +766,7 @@ convenient.</li>
 packages, because changing the class’s <code>package</code> also changes
 its identity. To recommend a class in another package while preserving
 existing uses, use <code><a href="../reference/deprecated_class.html">deprecated_class()</a></code>:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># In yourPackage</span></span>
 <span><span class="va">Foo</span> <span class="op">:=</span> <span class="fu"><a href="../reference/deprecated_class.html">deprecated_class</a></span><span class="op">(</span></span>
 <span>  properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="va">class_double</span><span class="op">)</span>,</span>
