@@ -1,0 +1,7 @@
+Package: deprecatedAliasCore
+Title: Class Alias Test Fixture
+Version: 2.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "kalinowskit@gmail.com")
+Description: Update the constructor of a replacement class.
+License: MIT
+Imports: S7

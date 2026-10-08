@@ -9,7 +9,8 @@ deprecated_class(
   ...,
   when,
   new = NULL,
-  method = c("base", "lifecycle(warn)", "lifecycle(stop)")
+  method = c("base", "lifecycle(warn)", "lifecycle(stop)"),
+  alias = FALSE
 )
 }
 \arguments{
@@ -17,13 +18,15 @@ deprecated_class(
 variable with this name, most easily with \link{:=}.}
 
 \item{...}{Named arguments passed to \code{\link[=new_class]{new_class()}}, such as \code{parent},
-\code{properties}, \code{constructor}, and \code{validator}.}
+\code{properties}, \code{constructor}, and \code{validator}. Cannot be supplied with
+\code{alias = TRUE}.}
 
 \item{when}{The package version when the deprecation began, e.g.
 \code{"1.2.0"}.}
 
 \item{new}{An S7 class to recommend in the warning, or \code{NULL} to
-give no recommendation. It does not affect construction or dispatch.}
+give no recommendation. With \code{alias = TRUE}, this is also the class used
+for construction and class contexts such as method signatures.}
 
 \item{method}{How to signal the deprecation:
 \itemize{
@@ -35,6 +38,10 @@ only displayed once every eight hours.
 
 The lifecycle options require the lifecycle package to be installed,
 and to be a dependency of your package.}
+
+\item{alias}{If \code{TRUE}, make the deprecated name an alias for \code{new}.
+Requires \code{new} and no arguments in \code{...}. Defaults to \code{FALSE}, which
+preserves the deprecated class's definition and identity.}
 }
 \value{
 An S7 class with the additional class \code{S7_deprecated_class}.
@@ -50,18 +57,44 @@ classes, or \code{\link[=new_external_class]{new_external_class()}} references d
 Property defaults generated before deprecation can still signal; see
 "Installed property defaults" below.
 
-Supply \code{new} to recommend another class in the warning. This
+Supply \code{new} to recommend another class in the warning. By default, this
 changes the message only: \code{Dog()} still creates a \code{Dog}, even if the
 warning recommends \code{Pet()}. Methods for \code{Dog} remain methods for \code{Dog}.
 To register a method for both classes, use \code{Dog | Pet} as its signature.
 
 Omit \code{new} to deprecate the class without recommending another.
 }
+\section{Aliasing a class}{
+
+Set \code{alias = TRUE} to make the deprecated name an alias for \code{new}, as
+\code{\link[=deprecated_generic]{deprecated_generic()}} does for generics. Calling the old name warns,
+then calls the replacement's constructor. Method signatures, parents,
+property types, unions, and \code{\link[=S7_inherits]{S7_inherits()}} resolve the alias to \code{new}
+without warning. Both names refer to the same class for these operations.
+
+For example, \code{Dog := deprecated_class(new = Pet, when = "2.0.0", alias = TRUE)} makes \code{Dog()} construct a \code{Pet}. A method registered or
+removed through either name affects the same method registration.
+The alias uses the replacement's definition, so do not supply class
+arguments such as \code{properties} or \code{constructor} in \code{...}.
+
+Existing objects and subclasses retain their original class identity.
+They do not become instances or subclasses of \code{new}. Previously registered
+methods are not transferred to \code{new} either. Rebuild packages that captured
+the old class in their subclasses, property types, or method signatures.
+Use the default \code{alias = FALSE} when the old class must remain usable by
+saved objects or installed subclasses during the transition.
+
+If \code{new} belongs to another package, the alias resolves its current
+definition at run time. The replacement must remain exported under its
+S7 class name.
+}
+
 \section{Installed subclasses}{
 
-Adding deprecation to an otherwise unchanged class does not require
-rebuilding packages that define subclasses. Existing instances and
-subclasses continue matching methods for the deprecated class.
+With \code{alias = FALSE}, adding deprecation to an otherwise unchanged class
+does not require rebuilding packages that define subclasses. Existing
+instances and subclasses continue matching methods for the deprecated
+class.
 
 The helper does not convert existing or saved objects to \code{new},
 or update installed subclasses if you also change the class definition.
@@ -71,8 +104,9 @@ compatibility considerations as changes to a non-deprecated class.
 
 \section{Installed property defaults}{
 
-A downstream package installed before deprecation can retain a property
-default that calls the constructor directly. For example:
+With \code{alias = FALSE}, a downstream package installed before deprecation
+can retain a property default that calls the constructor directly. For
+example:
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{Box := new_class(properties = list(item = upstream::Foo))
 }\if{html}{\out{</div>}}
@@ -108,6 +142,14 @@ speak(Puppy(name = "Rex"))
 # A method can support both classes:
 method(speak, Dog | Pet) <- function(x) x@name
 speak(Pet(name = "Rex"))
+
+# An alias uses the replacement's constructor and class identity:
+Hound := deprecated_class(new = Pet, when = "3.0.0", alias = TRUE)
+Hound(name = "Rex") # warns and creates a Pet
+greet := new_generic("x")
+method(greet, Hound) <- function(x) paste("Hello", x@name)
+greet(Pet(name = "Rex"))
+S7_inherits(Pet(name = "Rex"), Hound)
 
 # A class deprecated without a replacement:
 Cat := deprecated_class(

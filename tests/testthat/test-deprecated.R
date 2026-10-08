@@ -317,6 +317,153 @@ test_that("deprecated classes keep their own methods and subclasses", {
   expect_equal(speak(saved), "Fido")
 })
 
+test_that("deprecated class aliases construct and dispatch as the replacement", {
+  Bar := new_class(
+    properties = list(size = class_double),
+    constructor = function(value = 1) {
+      new_object(S7_object(), size = value * 2)
+    }
+  )
+  Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+
+  expect_snapshot(foo <- Foo(value = 3))
+  expect_identical(S7_class(foo), Bar)
+  expect_identical(as_class(Foo), Bar)
+  expect_identical(formals(Foo), formals(Bar))
+  expect_equal(foo@size, 6)
+
+  gen := new_generic("x")
+  method(gen, Foo) <- function(x) x@size
+  expect_equal(gen(foo), 6)
+  expect_equal(gen(Bar(value = 4)), 8)
+  expect_identical(method(gen, Foo), method(gen, Bar))
+  expect_equal(nrow(S7_methods(generic = gen)), 1)
+
+  method(gen, Bar) <- NULL
+  method(gen, Bar) <- function(x) -x@size
+  expect_equal(gen(foo), -6)
+  method(gen, Foo) <- NULL
+  expect_equal(nrow(S7_methods(generic = gen)), 0)
+})
+
+test_that("deprecated class aliases work as parents and property types", {
+  Bar := new_class(properties = list(size = class_double))
+  Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+  Child := new_class(parent = Foo)
+  Holder := new_class(properties = list(item = Foo))
+  Narrow := new_class(parent = Holder, properties = list(item = Bar))
+
+  expect_identical(Child@parent, Bar)
+  expect_no_warning(child <- Child(size = 2))
+  expect_identical(S7_inherits(child, Foo), TRUE)
+  expect_identical(S7_inherits(child, Bar), TRUE)
+  expect_no_warning(holder <- Holder())
+  expect_identical(S7_class(holder@item), Bar)
+  expect_identical(Holder(item = Bar(size = 3))@item, Bar(size = 3))
+  expect_identical(S7_class(Narrow()@item), Bar)
+  expect_identical(Foo | Bar, new_union(Bar))
+})
+
+test_that("deprecated class aliases do not migrate existing objects or subclasses", {
+  Foo := new_class(properties = list(size = class_double))
+  Child := new_class(parent = Foo)
+  saved <- unserialize(serialize(Foo(size = 1), NULL))
+  gen := new_generic("x")
+  method(gen, Foo) <- function(x) x@size
+
+  Bar := new_class(properties = list(size = class_double))
+  Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+  method(gen, Foo) <- function(x) -x@size
+
+  expect_equal(gen(saved), 1)
+  expect_equal(gen(Child(size = 2)), 2)
+  expect_equal(gen(Bar(size = 3)), -3)
+  expect_identical(S7_class(saved)@name, "Foo")
+  expect_identical(S7_inherits(saved, Foo), FALSE)
+  expect_identical(S7_inherits(Child(size = 2), Foo), FALSE)
+
+  Holder := new_class(properties = list(item = Foo))
+  expect_snapshot(error = TRUE, Holder(item = saved))
+})
+
+test_that("deprecated class alias chains warn once and use the final class", {
+  Bar := new_class()
+  Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+  Old := deprecated_class(new = Foo, when = "3.0.0", alias = TRUE)
+
+  expect_snapshot(old <- Old())
+  expect_identical(S7_class(old), Bar)
+  expect_identical(as_class(Old), Bar)
+})
+
+test_that("deprecated class aliases attribute warnings to their own package", {
+  core := local_package({
+    Bar := new_class()
+  })
+  home := local_package({
+    Foo := deprecated_class(new = core::Bar, when = "2.0.0", alias = TRUE)
+  })
+
+  expect_snapshot(foo <- home$Foo())
+  expect_identical(S7_class(foo), core$Bar)
+})
+
+test_that("external class aliases register and unload replacement methods", {
+  generic_pkg := local_package({
+    gen := new_generic("x")
+  })
+  downstream := local_package({
+    .onLoad <- function(...) S7_on_load()
+    .onUnload <- function(...) S7_on_unload()
+    gen := new_external_generic(package = "generic_pkg", dispatch_args = "x")
+    Foo := new_external_class(package = "class_pkg")
+    method(gen, Foo) <- function(x) "aliased"
+  })
+
+  local({
+    class_pkg := local_package({
+      Bar := new_class()
+      Foo := deprecated_class(new = Bar, when = "2.0.0", alias = TRUE)
+    })
+    downstream$.onLoad()
+    expect_equal(generic_pkg$gen(class_pkg$Bar()), "aliased")
+  })
+  expect_identical(isNamespaceLoaded("class_pkg"), FALSE)
+
+  downstream$.onUnload()
+  expect_equal(nrow(S7_methods(generic = generic_pkg$gen)), 0)
+})
+
+test_that("installed class aliases use the current replacement definition", {
+  skip_if(quick_test())
+  lib <- local_libpath()
+  fixtures <- test_path("deprecated")
+  quick_install(file.path(fixtures, c("alias-core-v1", "alias-home")), lib)
+
+  check <- function(value) {
+    library(S7)
+    foo <- suppressWarnings(deprecatedAliasHome::Foo())
+    stopifnot(
+      identical(as_class(deprecatedAliasHome::Foo), deprecatedAliasCore::Bar),
+      identical(S7_class(foo), deprecatedAliasCore::Bar),
+      identical(foo@value, value),
+      identical(deprecatedAliasHome::Child()@value, value),
+      identical(deprecatedAliasHome::Holder()@item@value, value)
+    )
+    TRUE
+  }
+  expect_identical(
+    callr::r(check, list(value = 1), libpath = .libPaths()),
+    TRUE
+  )
+
+  quick_install(file.path(fixtures, "alias-core-v2"), lib)
+  expect_identical(
+    callr::r(check, list(value = 2), libpath = .libPaths()),
+    TRUE
+  )
+})
+
 test_that("deprecated_class() without a replacement still constructs", {
   Cat := deprecated_class(
     properties = list(lives = class_double),
@@ -510,6 +657,21 @@ test_that("deprecated_class() validates its inputs", {
     deprecated_class(name = "Old", when = "1.0.0", method = "warn")
     deprecated_class(name = "Old", new = 1, when = "1.0.0")
     deprecated_class(name = "Old", new = class_double, when = "1.0.0")
+  })
+})
+
+test_that("deprecated class aliases require a replacement and no class definition", {
+  Bar := new_class()
+  expect_snapshot(error = TRUE, {
+    deprecated_class(name = "Foo", when = "2.0.0", alias = TRUE)
+    deprecated_class(name = "Foo", new = Bar, when = "2.0.0", alias = NA)
+    deprecated_class(
+      name = "Foo",
+      properties = list(size = class_double),
+      new = Bar,
+      when = "2.0.0",
+      alias = TRUE
+    )
   })
 })
 

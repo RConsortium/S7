@@ -151,14 +151,7 @@
   without breaking downstream packages, and what downstream authors can do to 
   smooth transitions (#143).
 
-* New `deprecated_class()`, `deprecated_generic()`, and `deprecated_property()`
-  help package authors deprecate APIs while keeping existing code working. A
-  deprecated class warns on construction while preserving its methods and
-  subclasses; an optional `new` is recommended in the warning. A
-  deprecated generic can warn or forward calls and method registrations to a
-  replacement supplied as `new`. Deprecated properties can forward reads and
-  writes to a replacement property. Warnings can use base R or lifecycle (#727,
-  #730).
+* New `deprecated_class()`, `deprecated_generic()`, and `deprecated_property()` help package authors deprecate APIs while keeping existing code working. A deprecated class warns on construction while preserving its methods and subclasses; an optional `new` is recommended in the warning. With `alias = TRUE`, the deprecated class name instead uses the replacement's constructor and class identity; existing objects and subclasses are not migrated. A deprecated generic can warn or forward calls and method registrations to a replacement supplied as `new`. Deprecated properties can forward reads and writes to a replacement property. Warnings can use base R or lifecycle (#727, #730).
 
 * New `S7_on_build()` removes the temporary placeholders returned by
   `method<-()` for generics owned by other packages, avoiding embedded copies of

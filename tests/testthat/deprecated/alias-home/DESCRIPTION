@@ -1,0 +1,7 @@
+Package: deprecatedAliasHome
+Title: Class Alias Test Fixture
+Version: 1.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "kalinowskit@gmail.com")
+Description: Export a deprecated alias for a class in another package.
+License: MIT
+Imports: S7, deprecatedAliasCore
