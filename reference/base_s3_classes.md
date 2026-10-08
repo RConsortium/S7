@@ -14,6 +14,10 @@ for key S3 classes provided by the base packages:
 
 - `class_formula` for formulas.
 
+The concrete wrappers declare their supported attributes, so
+[`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+strips foreign attributes when constructing S7 subclasses.
+
 ## Usage
 
 ``` r

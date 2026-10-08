@@ -65,7 +65,13 @@ new_S3_class() because S3 lacks a formal class definition.
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">new_S3_class</span><span class="op">(</span><span class="va">class</span>, constructor <span class="op">=</span> <span class="cn">NULL</span>, validator <span class="op">=</span> <span class="cn">NULL</span>, default <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">new_S3_class</span><span class="op">(</span></span>
+<span>  <span class="va">class</span>,</span>
+<span>  constructor <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  validator <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  default <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  attributes <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -104,6 +110,15 @@ this class is used for a property. It is evaluated each time the property
 is omitted during object construction. If <code>NULL</code>, the default is
 obtained from <code>constructor</code>. A default supplied to <code><a href="new_property.html">new_property()</a></code> takes
 precedence.</p></dd>
+
+
+<dt id="arg-attributes">attributes<a class="anchor" aria-label="anchor" href="#arg-attributes"></a></dt>
+<dd><p>A character vector of attribute names used by the S3
+class, excluding <code>class</code>. Use <code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code> for a class with no other
+attributes. The default, <code>NULL</code>, means the attributes are unknown, so
+<code><a href="new_class.html">new_object()</a></code> preserves all attributes of the parent object.
+This declaration controls which attributes are copied during construction;
+it does not require them to be present or validate their values.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -154,6 +169,12 @@ A Date is a numeric vector with class <code>Date</code> that can be constructed 
 <span>  <span class="op">}</span>,</span>
 <span>  default <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/substitute.html" class="external-link">quote</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/base-internal.html" class="external-link">.Date</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre><p></p></div>
+<p>You can also declare the complete set of attributes used by the S3 class
+with <code>attributes</code>. This allows <code><a href="new_class.html">new_object()</a></code> to discard foreign attributes
+when constructing S7 subclasses, while preserving the declared attributes
+and S7 properties. Include optional attributes such as <code>names</code> if they are
+supported; <code>class</code> is managed automatically. For example, a factor wrapper
+could use <code>attributes = c("levels", "names", "dim", "dimnames")</code>.</p>
     </div>
 
     <div class="section level2">

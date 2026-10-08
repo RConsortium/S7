@@ -7,7 +7,9 @@ class_factor for factors.
 class_POSIXct, class_POSIXlt and class_POSIXt for date-times.
 class_formula for formulas.
 
-"><meta property="og:description" content="S7 bundles S3 definitions for key S3 classes provided by
+
+The concrete wrappers declare their supported attributes, so new_object()
+strips foreign attributes when constructing S7 subclasses."><meta property="og:description" content="S7 bundles S3 definitions for key S3 classes provided by
 the base packages:
 class_data.frame for data frames.
 class_Date for dates.
@@ -15,7 +17,9 @@ class_factor for factors.
 class_POSIXct, class_POSIXlt and class_POSIXt for date-times.
 class_formula for formulas.
 
-"></head><body>
+
+The concrete wrappers declare their supported attributes, so new_object()
+strips foreign attributes when constructing S7 subclasses."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -76,7 +80,9 @@ the base packages:</p><ul><li><p><code>class_data.frame</code> for data frames.<
 <li><p><code>class_factor</code> for factors.</p></li>
 <li><p><code>class_POSIXct</code>, <code>class_POSIXlt</code> and <code>class_POSIXt</code> for date-times.</p></li>
 <li><p><code>class_formula</code> for formulas.</p></li>
-</ul></div>
+</ul><p>The concrete wrappers declare their supported attributes, so <code><a href="new_class.html">new_object()</a></code>
+strips foreign attributes when constructing S7 subclasses.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>

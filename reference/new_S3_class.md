@@ -8,7 +8,13 @@ it's an important base class already defined in
 ## Usage
 
 ``` r
-new_S3_class(class, constructor = NULL, validator = NULL, default = NULL)
+new_S3_class(
+  class,
+  constructor = NULL,
+  validator = NULL,
+  default = NULL,
+  attributes = NULL
+)
 ```
 
 ## Arguments
@@ -52,6 +58,17 @@ new_S3_class(class, constructor = NULL, validator = NULL, default = NULL)
   obtained from `constructor`. A default supplied to
   [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
   takes precedence.
+
+- attributes:
+
+  A character vector of attribute names used by the S3 class, excluding
+  `class`. Use [`character()`](https://rdrr.io/r/base/character.html)
+  for a class with no other attributes. The default, `NULL`, means the
+  attributes are unknown, so
+  [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  preserves all attributes of the parent object. This declaration
+  controls which attributes are copied during construction; it does not
+  require them to be present or validate their values.
 
 ## Value
 
@@ -112,6 +129,15 @@ is a numeric vector with class `Date` that can be constructed with
       },
       default = quote(.Date(integer()))
     )
+
+You can also declare the complete set of attributes used by the S3 class
+with `attributes`. This allows
+[`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+to discard foreign attributes when constructing S7 subclasses, while
+preserving the declared attributes and S7 properties. Include optional
+attributes such as `names` if they are supported; `class` is managed
+automatically. For example, a factor wrapper could use
+`attributes = c("levels", "names", "dim", "dimnames")`.
 
 ## Examples
 

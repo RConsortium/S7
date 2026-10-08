@@ -119,6 +119,14 @@
   independently of its constructor
   ([\#755](https://github.com/RConsortium/S7/issues/755)).
 
+- [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  gains an optional `attributes` argument declaring the complete set of
+  attributes to preserve when constructing S7 subclasses. The bundled
+  concrete S3 wrappers declare their attributes, so
+  [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  strips foreign attributes from their subclasses
+  ([\#760](https://github.com/RConsortium/S7/issues/760)).
+
 - [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
   now accepts a named list of property values, passed as a single
   unnamed argument through `...`
@@ -380,6 +388,11 @@
   gives an informative error when `_parent` is a class specification
   rather than an instance of the parent class
   ([\#409](https://github.com/RConsortium/S7/issues/409)).
+
+- [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now strips foreign attributes, including properties of sibling
+  classes, when constructing classes rooted in `S7_object`
+  ([\#760](https://github.com/RConsortium/S7/issues/760)).
 
 - [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
   objects work with [`inherits()`](https://rdrr.io/r/base/class.html)

@@ -120,6 +120,14 @@ new_object(`_parent`, ...)
 
   Parent object and named properties used to construct the object.
 
+  When the inheritance chain ends at
+  [S7_object](https://rconsortium.github.io/S7/reference/S7_object.md),
+  only attributes corresponding to its properties are copied from
+  `_parent`. For S3 parents,
+  [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)
+  can declare the attributes to preserve. Attributes of underlying base
+  data are preserved.
+
   As a convenience, if `...` is a single unnamed list, then the elements
   of that list are used as the properties. This makes it easy to
   programmatically construct an object from a list of property values.
