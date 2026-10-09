@@ -1,7 +1,0 @@
-Package: aliasedChild
-Title: Aliased Child Test Fixture
-Version: 1.0.0
-Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "tomasz@posit.co")
-Description: Test runtime lookup of an exported class alias.
-License: MIT
-Imports: S7, aliasedParent

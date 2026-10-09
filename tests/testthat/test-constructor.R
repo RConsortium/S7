@@ -264,29 +264,31 @@ test_that("foreign parents can have an unexported internal name", {
   expect_identical(pkg$Child(x = 3L)@x, 3L)
 })
 
-test_that("installed foreign parents resolve exported aliases at run time", {
-  skip_if(quick_test())
-  s7_lib <- local_dev_S7_lib()
-  lib <- local_libpath()
-  fixtures <- test_path("constructor")
-  quick_install(file.path(fixtures, c("parent-v1", "child")), lib)
+test_that("foreign parents resolve exported aliases at run time", {
+  dep := local_package({
+    Parent := new_class(properties = list(value = class_integer))
+    class_Parent <- Parent
+    Parent <- function() "ordinary function"
+  })
+  pkg := local_package({
+    Child := new_class(parent = dep::class_Parent)
+  })
+  expect_identical(pkg$Child(value = 3L)@value, 3L)
 
-  construct <- function(s7_lib) {
-    stopifnot(identical(
-      normalizePath(find.package("S7")),
-      normalizePath(file.path(s7_lib, "S7"))
-    ))
-    x <- aliasedChild::Child(value = 3L)
-    stopifnot(S7::S7_inherits(x, aliasedParent::class_Parent))
-    S7::prop(x, "value")
-  }
-  expect_identical(callr::r(construct, list(s7_lib), libpath = .libPaths()), 3L)
-
-  quick_install(file.path(fixtures, "parent-v2"), lib)
-  expect_identical(
-    callr::r(construct, list(s7_lib), libpath = .libPaths()),
-    13L
+  evalq(
+    {
+      Parent := new_class(
+        properties = list(value = class_integer),
+        constructor = function(value = 2L) {
+          new_object(S7_object(), value = value + 10L)
+        }
+      )
+      class_Parent <- Parent
+      Parent <- function() "ordinary function"
+    },
+    dep
   )
+  expect_identical(pkg$Child(value = 3L)@value, 13L)
 })
 
 test_that("foreign abstract parent defaults are resolved at run time (#763)", {
