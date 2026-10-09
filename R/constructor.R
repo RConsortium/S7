@@ -83,6 +83,18 @@ new_constructor <- function(
 # Internal names can differ from exports: ggplot2::class_ggplot is named "ggplot".
 class_as_external <- function(class) {
   package <- class@package
+  name <- class@name
+  if (
+    exists(
+      name,
+      envir = getNamespaceInfo(package, "exports"),
+      inherits = FALSE
+    ) &&
+      identical(getExportedValue(package, name), class)
+  ) {
+    return(new_external_class(package = package, name = name))
+  }
+
   exports <- getNamespaceExports(package)
   # Prefer the internal name when it is also an exported class binding.
   candidates <- intersect(c(class@name, sort(exports)), exports)

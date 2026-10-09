@@ -251,6 +251,19 @@ test_that("foreign parent constructors are resolved at run time (#763)", {
   expect_equal(props(pkg$Child(x = 4L, y = 5)), list(x = 4L, y = 5))
 })
 
+test_that("foreign parents can have an unexported internal name", {
+  dep := local_package({
+    Parent := new_class(properties = list(x = class_integer))
+    class_Parent <- Parent
+    rm(Parent)
+  })
+  pkg := local_package({
+    Child := new_class(parent = dep::class_Parent)
+  })
+
+  expect_identical(pkg$Child(x = 3L)@x, 3L)
+})
+
 test_that("installed foreign parents resolve exported aliases at run time", {
   skip_if(quick_test())
   s7_lib <- local_dev_S7_lib()

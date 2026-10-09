@@ -12,7 +12,7 @@
 #     git stash pop && Rscript bench/constructor.R --save=/tmp/after.rds
 #     Rscript bench/constructor.R --compare=/tmp/before.rds,/tmp/after.rds
 #
-# Run a subset with --only=calls,classes,memory (default: all).
+# Run a subset with --only=calls,classes,foreign,memory (default: all).
 #
 pkgload::load_all(quiet = TRUE)
 
@@ -177,9 +177,43 @@ bench_memory <- function() {
   data.frame(depth = depths, bytes_per_object = round(bytes))
 }
 
+bench_foreign <- function() {
+  source("tests/testthat/helper.R", local = TRUE)
+  dep := local_package({
+    Parent := new_class(properties = list(x = class_integer))
+    Aliased := new_class(properties = list(x = class_integer))
+    class_Aliased <- Aliased
+    Aliased <- function() NULL
+    for (i in seq_len(1000)) {
+      assign(paste0("export_", i), function() NULL)
+    }
+  })
+
+  res <- bench::mark(
+    matching_name = new_class(
+      name = "Child",
+      parent = dep$Parent,
+      package = "child"
+    ),
+    aliased_name = new_class(
+      name = "Child",
+      parent = dep$class_Aliased,
+      package = "child"
+    ),
+    check = FALSE,
+    filter_gc = FALSE,
+    min_iterations = 200
+  )
+  data.frame(
+    case = c("matching_name", "aliased_name"),
+    us = round(as.numeric(res$median) * 1e6, 1),
+    row.names = NULL
+  )
+}
+
 # reporting -------------------------------------------------------------------
 
-all_benchmarks <- c("calls", "classes", "memory")
+all_benchmarks <- c("calls", "classes", "foreign", "memory")
 
 run_all <- function(only = all_benchmarks) {
   out <- list()
@@ -188,6 +222,9 @@ run_all <- function(only = all_benchmarks) {
   }
   if ("classes" %in% only) {
     out$classes <- bench_classes()
+  }
+  if ("foreign" %in% only) {
+    out$foreign <- bench_foreign()
   }
   if ("memory" %in% only) {
     out$memory <- bench_memory()
