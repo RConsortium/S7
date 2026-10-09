@@ -340,7 +340,7 @@ class_inherits <- function(x, what) {
     missing = FALSE,
     any = TRUE,
     S4 = methods::is(x, what),
-    # Class-vector-only objects have no stored class for `has_S7_class()`.
+    # Class-vector-only objects have no stored class to inspect.
     S7 = inherits(x, "S7_object") && inherits(x, S7_class_name(what)),
     S7_base = what$class == base_class(x),
     S7_union = some(what$classes, class_inherits, x = x),
