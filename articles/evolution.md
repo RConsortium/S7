@@ -401,7 +401,7 @@ class2 := new_class(class1, package = "foo", properties = list(b = class_any))
 class2@constructor
 #> function (a = NULL, b = NULL) 
 #> S7::new_object(class1(a = a), b = b)
-#> <environment: 0x5574515c55b0>
+#> <environment: 0x560de284df30>
 ```
 
 Things are different when the parent lives in another package:
