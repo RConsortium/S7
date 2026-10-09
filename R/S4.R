@@ -221,7 +221,7 @@ S4_register_subclass <- function(class, env) {
 S4_set_S3_class_prototype <- function(class, S3_class, env) {
   class_def <- methods::getClass(class, where = env)
   attr(class_def@prototype, ".S3Class") <- S3_class
-  methods:::assignClassDef(class, class_def, env)
+  methods::assignClassDef(class, class_def, env)
   invisible(class)
 }
 
