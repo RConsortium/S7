@@ -259,6 +259,21 @@ test_that("check_method complains if the functions are not compatible", {
   })
 })
 
+test_that("generic dispatch defaults do not require method defaults", {
+  local_R_CMD_check()
+  foo := new_generic("x", function(x = NULL) S7_dispatch())
+  expect_no_error(method(foo, NULL) <- function(x) x)
+  expect_null(foo())
+
+  bar := new_generic(c("x", "y"), function(x, y = as.character(x)) {
+    S7_dispatch()
+  })
+  expect_no_error(
+    method(bar, list(class_double, class_character)) <- function(x, y) y
+  )
+  expect_identical(bar(1), "1")
+})
+
 test_that("check_method rejects primitive functions", {
   expect_snapshot(error = TRUE, {
     foo := new_generic("x")

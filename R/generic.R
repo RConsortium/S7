@@ -21,6 +21,11 @@
 #' arguments to the generic and if the generic uses `...`, it must occur
 #' immediately after the dispatch arguments.
 #'
+#' Dispatch arguments can have defaults in the generic. If an argument is
+#' omitted, S7 evaluates its default and dispatches on that value's class.
+#' Arguments with no supplied value or default dispatch on [class_missing].
+#' Methods must not define defaults for dispatch arguments.
+#'
 #' @param name The name of the generic. The result of calling `new_generic()`
 #'   should always be assigned to a variable with this name, i.e.
 #'   `bar <- new_generic("bar", ...)` or `bar := new_generic(...)`.

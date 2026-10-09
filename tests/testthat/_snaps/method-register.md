@@ -109,7 +109,7 @@
       check_method(function(x, y) { }, foo)
     Condition
       Error:
-      ! foo() generic lacks `...` so method formals must match generic formals exactly.
+      ! foo() generic lacks `...` so method formals must match, except for dispatch defaults.
       - generic formals: foo(x)
       - method formals:  foo(x, y)
 
@@ -145,7 +145,7 @@
       check_method(function(x, y) { }, foo)
     Condition
       Warning:
-      foo() generic lacks `...` so method formals must match generic formals exactly.
+      foo() generic lacks `...` so method formals must match, except for dispatch defaults.
       - generic formals: foo(x)
       - method formals:  foo(x, y)
     Code

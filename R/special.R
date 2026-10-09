@@ -1,8 +1,8 @@
 #' Dispatch on a missing argument
 #'
-#' Use `class_missing` to dispatch when the user has not supplied an argument,
-#' i.e. it's missing in the sense of [missing()], not in the sense of
-#' [is.na()].
+#' Use `class_missing` to dispatch when no argument value is available.
+#' Omitted arguments with defaults dispatch on the default's class.
+#' Missing values detected by [is.na()] do not trigger `class_missing` dispatch.
 #'
 #' @export
 #' @return Sentinel objects used for special types of dispatch.

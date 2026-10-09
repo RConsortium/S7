@@ -1,4 +1,7 @@
 # Called from C
+dispatch_arg_missing <- function(x) missing(x)
+
+# Called from C
 dispatch_not_generic_error <- function() {
   stop2(
     "Must be called from within an S7 generic.",

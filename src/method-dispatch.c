@@ -11,7 +11,6 @@ extern SEXP sym_name;
 extern SEXP sym_u_dispatched_super;
 
 extern SEXP fn_base_quote;
-extern SEXP fn_base_missing;
 extern SEXP missing_call;
 extern SEXP R_TRUE;
 
@@ -76,6 +75,15 @@ SEXP method_rec(SEXP table, SEXP signature, R_xlen_t signature_itr) {
   return R_NilValue;
 }
 
+static inline
+int dispatch_arg_missing(SEXP name, SEXP envir) {
+  // Forwarding to function(x) missing(x) tests whether a value is available,
+  // including a default. Calling missing() directly in the generic instead
+  // tests whether the argument was supplied, even when it has a default.
+  SETCADR(missing_call, name);
+  return Rf_asLogical(Rf_eval(missing_call, envir));
+}
+
 SEXP generic_args(SEXP generic, SEXP envir) {
   // This function is only used to generate an informative message when
   // signalling an S7_method_lookup_error, so it doesn't need to be maximally efficient.
@@ -87,19 +95,12 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   // Allocate a list to store the arguments
   SEXP args = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
-  PROTECT_INDEX pi;
-  PROTECT_WITH_INDEX(R_NilValue, &pi);
-
   // Find the value of each argument.
   SEXP formals = getClosureFormals(generic);
   for (R_xlen_t i = 0; i < n_dispatch; ++i) {
     SEXP name = TAG(formals);
 
-    SETCADR(missing_call, name);
-    SEXP is_missing = Rf_eval(missing_call, envir);
-    REPROTECT(is_missing, pi);
-
-    if (Rf_asLogical(is_missing))  {
+    if (dispatch_arg_missing(name, envir)) {
       SET_VECTOR_ELT(args, i, R_MissingArg);
     } else {
       // method_call_() has already done the necessary computation
@@ -110,7 +111,7 @@ SEXP generic_args(SEXP generic, SEXP envir) {
   }
   Rf_setAttrib(args, R_NamesSymbol, dispatch_args);
 
-  UNPROTECT(2);
+  UNPROTECT(1);
 
   return args;
 }
@@ -214,10 +215,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
       SEXP arg = Rf_findVarInFrame(envir, name);
 
-      SETCADR(missing_call, name);
-      int is_missing = Rf_asLogical(Rf_eval(missing_call, envir));
-
-      if (is_missing) {
+      if (dispatch_arg_missing(name, envir)) {
 
         APPEND_NODE(mcall_tail, name, R_MissingArg);
         SET_VECTOR_ELT(dispatch_classes, i, Rf_mkString("MISSING"));
