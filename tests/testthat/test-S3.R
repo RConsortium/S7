@@ -214,6 +214,38 @@ test_that("catches invalid POSIXct", {
   expect_null(validate_POSIXct(Sys.time()))
 })
 
+test_that("data frame validation uses columns rather than as.list methods", {
+  Frame := new_class(
+    parent = class_data.frame,
+    constructor = function(.data) new_object(.data)
+  )
+  method(as.list, Frame) <- function(x, ...) list(name = "metadata")
+
+  data <- data.frame(x = 1:3)
+  data$matrix <- matrix(1:6, nrow = 3)
+  data$frame <- data.frame(y = 1:3)
+  x <- Frame(.data = data)
+  expect_identical(as.list(x), list(name = "metadata"))
+  expect_identical(S7_data(x), data)
+  expect_identical(.row_names_info(x, 0L), c(NA_integer_, 3L))
+
+  malformed <- structure(
+    list(x = 1:2),
+    class = "data.frame",
+    row.names = c(NA_integer_, -3L)
+  )
+  expect_snapshot(Frame(.data = malformed), error = TRUE)
+})
+
+test_that("data frame validation rejects environment data", {
+  Frame := new_class(
+    parent = class_data.frame,
+    constructor = function(.data) new_object(.data)
+  )
+  data <- structure(new.env(parent = emptyenv()), class = "data.frame")
+  expect_snapshot(Frame(.data = data), error = TRUE)
+})
+
 test_that("catches invalid data.frame", {
   expect_snapshot({
     validate_data.frame(1)

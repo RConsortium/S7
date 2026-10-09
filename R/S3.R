@@ -263,7 +263,8 @@ validate_data.frame <- function(self) {
 
   if (length(self) >= 1) {
     # `lengths()` gives the wrong answer for data frame and matrix columns
-    col_lengths <- vapply(self, NROW, integer(1L), USE.NAMES = FALSE)
+    # Inspect the columns without calling a subclass's as.list() method.
+    col_lengths <- vapply(unclass(self), NROW, integer(1L), USE.NAMES = FALSE)
 
     # Avoid materialising compact row names
     ns <- unique(c(col_lengths, .row_names_info(self, 2L)))
