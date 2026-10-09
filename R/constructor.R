@@ -97,7 +97,7 @@ class_as_external <- function(class) {
 
   exports <- getNamespaceExports(package)
   # Prefer the internal name when it is also an exported class binding.
-  candidates <- intersect(c(class@name, sort(exports)), exports)
+  candidates <- intersect(c(class@name, exports), exports)
   for (name in candidates) {
     exported <- getExportedValue(package, name)
     if (is_deprecated_class(exported)) {
