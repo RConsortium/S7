@@ -1,3 +1,11 @@
+# lookup errors describe default values
+
+    Code
+      foo()
+    Condition
+      Error:
+      ! Can't find method for `foo(<NULL>)`.
+
 # generics pass ... to methods
 
     unused argument (z = 2)

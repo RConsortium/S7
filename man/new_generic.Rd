@@ -50,6 +50,11 @@ one argument, it's said to use \strong{multiple dispatch}.
 There are two restrictions on the dispatch arguments: they must be the first
 arguments to the generic and if the generic uses \code{...}, it must occur
 immediately after the dispatch arguments.
+
+Dispatch arguments can have defaults in the generic. If an argument is
+omitted, S7 evaluates its default and dispatches on that value's class.
+Arguments with no supplied value or default dispatch on \link{class_missing}.
+Methods must not define defaults for dispatch arguments.
 }
 
 \examples{

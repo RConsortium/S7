@@ -46,7 +46,7 @@
       method(`+`, list(Number, class_missing)) <- (function(e1, e2, ...) NULL)
     Condition
       Error in `method<-`:
-      ! +() generic lacks `...` so method formals must match generic formals exactly.
+      ! +() generic lacks `...` so method formals must match, except for dispatch defaults.
       - generic formals: +(e1, e2)
       - method formals:  +(e1, e2, ...)
 
@@ -56,7 +56,7 @@
       method(`!`, Number) <- (function(e1, ...) NULL)
     Condition
       Error in `method<-`:
-      ! !() generic lacks `...` so method formals must match generic formals exactly.
+      ! !() generic lacks `...` so method formals must match, except for dispatch defaults.
       - generic formals: !(e1)
       - method formals:  !(e1, ...)
 
@@ -66,7 +66,7 @@
       method(`%*%`, list(Number, Number)) <- (function(x, y, ...) NULL)
     Condition
       Error in `method<-`:
-      ! %*%() generic lacks `...` so method formals must match generic formals exactly.
+      ! %*%() generic lacks `...` so method formals must match, except for dispatch defaults.
       - generic formals: %*%(x, y)
       - method formals:  %*%(x, y, ...)
 

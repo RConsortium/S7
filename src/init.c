@@ -77,7 +77,6 @@ SEXP sym_S7_dispatch;
 SEXP sym_name;
 
 SEXP fn_base_quote;
-SEXP fn_base_missing;
 SEXP missing_call;
 
 SEXP ns_S7;
@@ -140,7 +139,6 @@ void R_init_S7(DllInfo *dll)
     sym_name = Rf_install("name");
 
     fn_base_quote = Rf_eval(Rf_install("quote"), R_BaseEnv);
-    fn_base_missing = Rf_eval(Rf_install("missing"), R_BaseEnv);
 
     ns_S7 = R_FindNamespace(Rf_mkString("S7"));
     R_PreserveObject(R_TRUE = Rf_ScalarLogical(1));
@@ -151,5 +149,7 @@ void R_init_S7(DllInfo *dll)
     prop_init();
     class_type_init();
     R_PreserveObject(s7_proto_object = make_s7_proto_object());
-    R_PreserveObject(missing_call = Rf_lang2(fn_base_missing, R_NilValue));
+    SEXP fn_missing = PROTECT(Rf_eval(Rf_install("dispatch_arg_missing"), ns_S7));
+    R_PreserveObject(missing_call = Rf_lang2(fn_missing, R_NilValue));
+    UNPROTECT(1);
 }

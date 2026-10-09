@@ -33,6 +33,10 @@ This means that:
 -   Any arguments that the generic has, the method must have too. In particular, the arguments of the method start with the arguments that the generic dispatches on, and those arguments must not have default arguments.
 -   The method can contain arguments that the generic does not, as long as the generic includes `…` in the argument list.
 
+Dispatch arguments can have defaults in the generic.
+When an argument is omitted, S7 evaluates its default and dispatches on that value's class.
+If no value or default is available, S7 dispatches on `class_missing`.
+
 ### Generic with dots; method without dots
 
 The default generic includes `…` but generally the methods should not.
@@ -293,4 +297,4 @@ speak(Dog(), French())
 There are two special classes that become particularly useful with multiple dispatch:
 
 -   `class_any()` will match any class
--   `class_missing()` will match a missing argument (i.e. not `NA`, but an argument that was not supplied)
+-   `class_missing()` will match an argument with no available value. Omitted arguments with defaults dispatch on the default's class.

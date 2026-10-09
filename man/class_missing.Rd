@@ -10,9 +10,9 @@ class_missing
 Sentinel objects used for special types of dispatch.
 }
 \description{
-Use \code{class_missing} to dispatch when the user has not supplied an argument,
-i.e. it's missing in the sense of \code{\link[=missing]{missing()}}, not in the sense of
-\code{\link[=is.na]{is.na()}}.
+Use \code{class_missing} to dispatch when no argument value is available.
+Omitted arguments with defaults dispatch on the default's class.
+Missing values detected by \code{\link[=is.na]{is.na()}} do not trigger \code{class_missing} dispatch.
 }
 \examples{
 foo := new_generic("x")

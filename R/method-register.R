@@ -382,9 +382,18 @@ check_method <- function(
   generic_args <- names(generic_formals)
   method_args <- names(method_formals)
 
-  if (!"..." %in% generic_args && !identical(generic_formals, method_formals)) {
+  # The generic evaluates dispatch defaults; methods must leave them empty.
+  expected_formals <- as.list(generic_formals)
+  expected_formals[generic@dispatch_args] <- rep(
+    alist(x = ),
+    length(generic@dispatch_args)
+  )
+  if (
+    !"..." %in% generic_args &&
+      !identical(expected_formals, as.list(method_formals))
+  ) {
     msg <- sprintf(
-      "%s() generic lacks `...` so method formals must match generic formals exactly.",
+      "%s() generic lacks `...` so method formals must match, except for dispatch defaults.",
       generic@name
     )
     bullets <- c(

@@ -9,6 +9,58 @@ test_that("single dispatch works for specials", {
   expect_equal(foo(), "missing")
 })
 
+test_that("single dispatch evaluates defaults and preserves promises", {
+  foo := new_generic("x", function(x = NULL, ...) S7_dispatch())
+  method(foo, NULL) <- function(x, ...) list(x, substitute(x))
+  method(foo, class_missing) <- function(x, ...) "missing"
+
+  expect_identical(foo(), list(NULL, NULL))
+  expect_identical(foo(x = ), list(NULL, NULL))
+  expect_identical(foo(identity(NULL)), list(NULL, quote(identity(NULL))))
+
+  forward <- function(x) foo(x)
+  expect_identical(forward(), "missing")
+  expect_identical(forward(NULL), list(NULL, quote(x)))
+
+  forced := new_generic("x", function(x = NULL, ...) {
+    force(x)
+    S7_dispatch()
+  })
+  method(forced, NULL) <- function(x, ...) substitute(x)
+  expect_null(forced())
+})
+
+test_that("multiple dispatch evaluates dependent defaults once", {
+  calls <- 0L
+  calendar <- function(x) {
+    calls <<- calls + 1L
+    paste0("calendar:", x)
+  }
+  foo := new_generic(c("x", "cal"), function(x, cal = calendar(x), ...) {
+    S7_dispatch()
+  })
+  method(foo, list(class_double, class_character)) <- function(x, cal, ...) {
+    list(x, cal, substitute(x), substitute(cal))
+  }
+  method(foo, list(class_missing, class_missing)) <- function(x, cal, ...) {
+    c(missing(x), missing(cal))
+  }
+
+  expect_identical(
+    foo(identity(1)),
+    list(1, "calendar:1", quote(identity(1)), quote(calendar(x)))
+  )
+  expect_identical(calls, 1L)
+  expect_identical(foo(1, "explicit"), list(1, "explicit", 1, "explicit"))
+  forward <- function(x, cal) foo(x, cal)
+  expect_identical(forward(), c(TRUE, TRUE))
+})
+
+test_that("lookup errors describe default values", {
+  foo := new_generic("x", function(x = NULL) S7_dispatch())
+  expect_snapshot(foo(), error = TRUE)
+})
+
 test_that("single dispatch works for base types", {
   foo := new_generic("x")
 
