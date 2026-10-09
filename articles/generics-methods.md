@@ -33,6 +33,10 @@ that:
 - The method can contain arguments that the generic does not, as long as
   the generic includes `…` in the argument list.
 
+Dispatch arguments can have defaults in the generic. When an argument is
+omitted, S7 evaluates its default and dispatches on that value’s class.
+If no value or default is available, S7 dispatches on `class_missing`.
+
 ### Generic with dots; method without dots
 
 The default generic includes `…` but generally the methods should not.
@@ -388,5 +392,5 @@ multiple dispatch:
 - [`class_any()`](https://rconsortium.github.io/S7/reference/class_any.md)
   will match any class
 - [`class_missing()`](https://rconsortium.github.io/S7/reference/class_missing.md)
-  will match a missing argument (i.e. not `NA`, but an argument that was
-  not supplied)
+  will match an argument with no available value. Omitted arguments with
+  defaults dispatch on the default’s class.

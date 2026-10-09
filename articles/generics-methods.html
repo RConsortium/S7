@@ -109,6 +109,10 @@ arguments.</li>
 <li>The method can contain arguments that the generic does not, as long
 as the generic includes <code>…</code> in the argument list.</li>
 </ul>
+<p>Dispatch arguments can have defaults in the generic. When an argument
+is omitted, S7 evaluates its default and dispatches on that value’s
+class. If no value or default is available, S7 dispatches on
+<code>class_missing</code>.</p>
 <div class="section level3">
 <h3 id="generic-with-dots-method-without-dots">Generic with dots; method without dots<a class="anchor" aria-label="anchor" href="#generic-with-dots-method-without-dots"></a>
 </h3>
@@ -392,8 +396,9 @@ multiple dispatch:</p>
 <li>
 <code><a href="../reference/class_any.html">class_any()</a></code> will match any class</li>
 <li>
-<code><a href="../reference/class_missing.html">class_missing()</a></code> will match a missing argument (i.e. not
-<code>NA</code>, but an argument that was not supplied)</li>
+<code><a href="../reference/class_missing.html">class_missing()</a></code> will match an argument with no
+available value. Omitted arguments with defaults dispatch on the
+default’s class.</li>
 </ul>
 </div>
 </div>

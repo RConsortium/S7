@@ -58,8 +58,9 @@ For this reason, S7 only checks method compatibility in development:
 In development, S7 checks that:
 
 - The method has the same dispatch arguments as the generic.
-- If the generic lacks `...`, the method’s formals match the generic’s
-  exactly.
+- If the generic lacks `...`, the method’s formals match the generic’s,
+  except that defaults for dispatch arguments belong only in the
+  generic.
 - The method has all the non-dispatch arguments that the generic has.
 - The method’s default values match the generic’s.
 
@@ -401,7 +402,7 @@ class2 := new_class(class1, package = "foo", properties = list(b = class_any))
 class2@constructor
 #> function (a = NULL, b = NULL) 
 #> S7::new_object(class1(a = a), b = b)
-#> <environment: 0x560de284df30>
+#> <environment: 0x55c1fb32d940>
 ```
 
 Things are different when the parent lives in another package:

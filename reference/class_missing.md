@@ -1,9 +1,9 @@
 # Dispatch on a missing argument
 
-Use `class_missing` to dispatch when the user has not supplied an
-argument, i.e. it's missing in the sense of
-[`missing()`](https://rdrr.io/r/base/missing.html), not in the sense of
-[`is.na()`](https://rdrr.io/r/base/NA.html).
+Use `class_missing` to dispatch when no argument value is available.
+Omitted arguments with defaults dispatch on the default's class. Missing
+values detected by [`is.na()`](https://rdrr.io/r/base/NA.html) do not
+trigger `class_missing` dispatch.
 
 ## Usage
 

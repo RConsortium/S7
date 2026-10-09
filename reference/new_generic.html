@@ -122,6 +122,10 @@ one argument, it's said to use <strong>multiple dispatch</strong>.</p>
 <p>There are two restrictions on the dispatch arguments: they must be the first
 arguments to the generic and if the generic uses <code>...</code>, it must occur
 immediately after the dispatch arguments.</p>
+<p>Dispatch arguments can have defaults in the generic. If an argument is
+omitted, S7 evaluates its default and dispatches on that value's class.
+Arguments with no supplied value or default dispatch on <a href="class_missing.html">class_missing</a>.
+Methods must not define defaults for dispatch arguments.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
