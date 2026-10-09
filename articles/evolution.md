@@ -189,13 +189,13 @@ If you use lifecycle, the equivalent is:
 
 ``` r
 
-gen := new_generic("x", fun = function(x, verbose = deprecated(), ...) {
+gen := new_generic("x", fun = function(x, verbose = lifecycle::deprecated(), ...) {
   if (lifecycle::is_present(verbose)) {
     lifecycle::deprecate_warn("1.0.0", "gen(verbose)")
   }
   S7_dispatch()
 })
-method(gen, BClass) <- function(x, verbose = deprecated(), ...) "result"
+method(gen, BClass) <- function(x, verbose = lifecycle::deprecated(), ...) "result"
 . <- gen(BClass(), verbose = TRUE)
 #> Warning: The `verbose` argument of `gen()` is deprecated as of <NA> 1.0.0.
 #> This warning is displayed once per session.
@@ -258,8 +258,8 @@ gen1 := deprecated_generic(new = gen2, when = "2.0.0")
 
 [`deprecated_generic()`](https://rconsortium.github.io/S7/reference/deprecated_generic.md)
 returns an object that still counts as the generic, so method
-registration continues to work, but calls through the old name warn that
-it’s time to move on.
+registration continues to work without warning, but calls through the
+old name warn that it’s time to move on.
 
 ``` r
 
@@ -322,9 +322,9 @@ gen(BClass())
 #> [1] "result"
 ```
 
-Existing method registration will continue to work (with a warning),
-giving dependencies time to move away from the generic before you remove
-it in a future release.
+Existing method registration will continue to work without warning, but
+calls to the generic warn, giving dependencies time to move away from
+the generic before you remove it in a future release.
 
 So the process is:
 
@@ -401,7 +401,7 @@ class2 := new_class(class1, package = "foo", properties = list(b = class_any))
 class2@constructor
 #> function (a = NULL, b = NULL) 
 #> S7::new_object(class1(a = a), b = b)
-#> <environment: 0x558231524d20>
+#> <environment: 0x5574515c55b0>
 ```
 
 Things are different when the parent lives in another package:
@@ -411,7 +411,7 @@ Things are different when the parent lives in another package:
 class2 := new_class(foo::class1, properties = list(b = class_any))
 class2@constructor
 #> function (..., b = NULL) 
-#> S7::new_object(foo::class1(...), b = b)
+#> S7::new_object(S7::as_class(foo::class1)(...), b = b)
 ```
 
 Now the constructor of `class2` can’t inline the parent’s arguments,

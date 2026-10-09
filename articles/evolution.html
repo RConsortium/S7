@@ -268,13 +268,13 @@ supplied:</p>
 <span><span class="co">#&gt; and will be removed in a future release.</span></span></code></pre></div>
 <p>If you use lifecycle, the equivalent is:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"x"</span>, fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">verbose</span> <span class="op">=</span> <span class="fu">deprecated</span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">gen</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"x"</span>, fun <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">verbose</span> <span class="op">=</span> <span class="fu">lifecycle</span><span class="fu">::</span><span class="fu"><a href="https://lifecycle.r-lib.org/reference/deprecated.html" class="external-link">deprecated</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu">lifecycle</span><span class="fu">::</span><span class="fu"><a href="https://lifecycle.r-lib.org/reference/deprecated.html" class="external-link">is_present</a></span><span class="op">(</span><span class="va">verbose</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu">lifecycle</span><span class="fu">::</span><span class="fu"><a href="https://lifecycle.r-lib.org/reference/deprecate_soft.html" class="external-link">deprecate_warn</a></span><span class="op">(</span><span class="st">"1.0.0"</span>, <span class="st">"gen(verbose)"</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span>  <span class="fu"><a href="../reference/new_generic.html">S7_dispatch</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">gen</span>, <span class="va">BClass</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">verbose</span> <span class="op">=</span> <span class="fu">deprecated</span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span> <span class="st">"result"</span></span>
+<span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">gen</span>, <span class="va">BClass</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">verbose</span> <span class="op">=</span> <span class="fu">lifecycle</span><span class="fu">::</span><span class="fu"><a href="https://lifecycle.r-lib.org/reference/deprecated.html" class="external-link">deprecated</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span> <span class="st">"result"</span></span>
 <span><span class="va">.</span> <span class="op">&lt;-</span> <span class="fu">gen</span><span class="op">(</span><span class="fu">BClass</span><span class="op">(</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: The `verbose` argument of `gen()` is deprecated as of &lt;NA&gt; 1.0.0.</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once per session.</span></span></span>
@@ -331,8 +331,9 @@ old name as a deprecated alias for the new generic:</p>
 <span><span class="va">gen2</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_generic.html">new_generic</a></span><span class="op">(</span><span class="st">"x"</span><span class="op">)</span></span>
 <span><span class="va">gen1</span> <span class="op">:=</span> <span class="fu"><a href="../reference/deprecated_generic.html">deprecated_generic</a></span><span class="op">(</span>new <span class="op">=</span> <span class="va">gen2</span>, when <span class="op">=</span> <span class="st">"2.0.0"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/deprecated_generic.html">deprecated_generic()</a></code> returns an object that still counts
-as the generic, so method registration continues to work, but calls
-through the old name warn that it’s time to move on.</p>
+as the generic, so method registration continues to work without
+warning, but calls through the old name warn that it’s time to move
+on.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/method.html">method</a></span><span class="op">(</span><span class="va">gen1</span>, <span class="va">BClass</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span> <span class="st">"result"</span></span>
 <span><span class="fu">gen2</span><span class="op">(</span><span class="fu">BClass</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -385,9 +386,9 @@ argument:</p>
 <span><span class="fu">gen</span><span class="op">(</span><span class="fu">BClass</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in gen(BClass()): `gen()` was deprecated in version 2.0.0.</span></span>
 <span><span class="co">#&gt; [1] "result"</span></span></code></pre></div>
-<p>Existing method registration will continue to work (with a warning),
-giving dependencies time to move away from the generic before you remove
-it in a future release.</p>
+<p>Existing method registration will continue to work without warning,
+but calls to the generic warn, giving dependencies time to move away
+from the generic before you remove it in a future release.</p>
 <p>So the process is:</p>
 <ol style="list-style-type: decimal">
 <li>You replace the generic with <code><a href="../reference/deprecated_generic.html">deprecated_generic()</a></code>, and
@@ -453,13 +454,13 @@ parent’s arguments, so you can see every property it takes:</p>
 <span><span class="va">class2</span><span class="op">@</span><span class="va">constructor</span></span>
 <span><span class="co">#&gt; function (a = NULL, b = NULL) </span></span>
 <span><span class="co">#&gt; S7::new_object(class1(a = a), b = b)</span></span>
-<span><span class="co">#&gt; &lt;environment: 0x558231524d20&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; &lt;environment: 0x5574515c55b0&gt;</span></span></code></pre></div>
 <p>Things are different when the parent lives in another package:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">class2</span> <span class="op">:=</span> <span class="fu"><a href="../reference/new_class.html">new_class</a></span><span class="op">(</span><span class="fu">foo</span><span class="fu">::</span><span class="va">class1</span>, properties <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>b <span class="op">=</span> <span class="va">class_any</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">class2</span><span class="op">@</span><span class="va">constructor</span></span>
 <span><span class="co">#&gt; function (..., b = NULL) </span></span>
-<span><span class="co">#&gt; S7::new_object(foo::class1(...), b = b)</span></span></code></pre></div>
+<span><span class="co">#&gt; S7::new_object(S7::as_class(foo::class1)(...), b = b)</span></span></code></pre></div>
 <p>Now the constructor of <code>class2</code> can’t inline the parent’s
 arguments, because the parent’s properties (and hence its constructor)
 might change in a future version. Instead, it takes <code>...</code> and
