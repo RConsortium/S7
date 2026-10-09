@@ -161,13 +161,13 @@ method(gen, BClass) <- function(x, verbose = FALSE, ...) "result"
 If you use lifecycle, the equivalent is:
 
 ```{r}
-gen := new_generic("x", fun = function(x, verbose = deprecated(), ...) {
+gen := new_generic("x", fun = function(x, verbose = lifecycle::deprecated(), ...) {
   if (lifecycle::is_present(verbose)) {
     lifecycle::deprecate_warn("1.0.0", "gen(verbose)")
   }
   S7_dispatch()
 })
-method(gen, BClass) <- function(x, verbose = deprecated(), ...) "result"
+method(gen, BClass) <- function(x, verbose = lifecycle::deprecated(), ...) "result"
 . <- gen(BClass(), verbose = TRUE)
 ```
 
@@ -216,7 +216,7 @@ gen2 := new_generic("x")
 gen1 := deprecated_generic(new = gen2, when = "2.0.0")
 ```
 
-`deprecated_generic()` returns an object that still counts as the generic, so method registration continues to work, but calls through the old name warn that it's time to move on.
+`deprecated_generic()` returns an object that still counts as the generic, so method registration continues to work without warning, but calls through the old name warn that it's time to move on.
 
 ```{r}
 method(gen1, BClass) <- function(x, ...) "result"
@@ -260,7 +260,7 @@ method(gen, BClass) <- function(x, ...) "result"
 gen(BClass())
 ```
 
-Existing method registration will continue to work (with a warning), giving dependencies time to move away from the generic before you remove it in a future release.
+Existing method registration will continue to work without warning, but calls to the generic warn, giving dependencies time to move away from the generic before you remove it in a future release.
 
 So the process is:
 
@@ -327,7 +327,7 @@ Things are different when the parent lives in another package:
 class2 := new_class(foo::class1, properties = list(b = class_any))
 class2@constructor
 #> function (..., b = NULL) 
-#> S7::new_object(foo::class1(...), b = b)
+#> S7::new_object(S7::as_class(foo::class1)(...), b = b)
 ```
 
 Now the constructor of `class2` can't inline the parent's arguments, because the parent's properties (and hence its constructor) might change in a future version.
