@@ -84,14 +84,12 @@ new_constructor <- function(
 class_as_external <- function(class) {
   package <- class@package
   name <- class@name
-  if (
-    exists(
-      name,
-      envir = getNamespaceInfo(package, "exports"),
-      inherits = FALSE
-    ) &&
-      identical(getExportedValue(package, name), class)
-  ) {
+  name_is_exported <- exists(
+    name,
+    envir = getNamespaceInfo(package, "exports"),
+    inherits = FALSE
+  )
+  if (name_is_exported && identical(getExportedValue(package, name), class)) {
     return(new_external_class(package = package, name = name))
   }
 
