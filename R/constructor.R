@@ -11,7 +11,7 @@ new_constructor <- function(
       !is.null(parent@package) &&
       !identical(parent@package, package)
   ) {
-    parent <- new_external_class(package = parent@package, name = parent@name)
+    parent <- class_as_external(parent)
   }
 
   properties <- as_properties(properties)
@@ -78,6 +78,34 @@ new_constructor <- function(
   } else {
     constructor_forward(parent, properties, envir, package)
   }
+}
+
+# Internal names can differ from exports: ggplot2::class_ggplot is named "ggplot".
+class_as_external <- function(class) {
+  package <- class@package
+  name <- class@name
+  name_is_exported <- exists(
+    name,
+    envir = getNamespaceInfo(package, "exports"),
+    inherits = FALSE
+  )
+  if (name_is_exported && identical(getExportedValue(package, name), class)) {
+    return(new_external_class(package = package, name = name))
+  }
+
+  exports <- getNamespaceExports(package)
+  # Prefer the internal name when it is also an exported class binding.
+  candidates <- intersect(c(class@name, exports), exports)
+  for (name in candidates) {
+    exported <- getExportedValue(package, name)
+    if (is_deprecated_class(exported)) {
+      exported <- deprecated_target(exported)
+    }
+    if (identical(exported, class)) {
+      return(new_external_class(package = package, name = name))
+    }
+  }
+  stop2(sprintf("Package '%s' must export class <%s>.", package, class@name))
 }
 
 can_inline <- function(parent) {
