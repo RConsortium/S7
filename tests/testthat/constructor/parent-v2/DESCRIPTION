@@ -1,0 +1,7 @@
+Package: aliasedParent
+Title: Aliased Parent Test Fixture
+Version: 2.0.0
+Authors@R: person("Tomasz", "Kalinowski", role = c("aut", "cre"), email = "tomasz@posit.co")
+Description: Test runtime lookup of an exported class alias.
+License: MIT
+Imports: S7

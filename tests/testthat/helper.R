@@ -131,6 +131,9 @@ local_libpath <- function(frame = parent.frame()) {
 local_dev_S7_lib <- local({
   lib <- NULL
   function(frame = parent.frame()) {
+    if (identical(Sys.getenv("_R_CHECK_PACKAGE_NAME_"), "S7")) {
+      return(dirname(getNamespaceInfo(asNamespace("S7"), "path")))
+    }
     if (is.null(lib)) {
       dir.create(new_lib <- tempfile("S7-dev-lib-"))
       install.packages(

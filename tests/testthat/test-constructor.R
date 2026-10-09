@@ -251,6 +251,31 @@ test_that("foreign parent constructors are resolved at run time (#763)", {
   expect_equal(props(pkg$Child(x = 4L, y = 5)), list(x = 4L, y = 5))
 })
 
+test_that("installed foreign parents resolve exported aliases at run time", {
+  skip_if(quick_test())
+  s7_lib <- local_dev_S7_lib()
+  lib <- local_libpath()
+  fixtures <- test_path("constructor")
+  quick_install(file.path(fixtures, c("parent-v1", "child")), lib)
+
+  construct <- function(s7_lib) {
+    stopifnot(identical(
+      normalizePath(find.package("S7")),
+      normalizePath(file.path(s7_lib, "S7"))
+    ))
+    x <- aliasedChild::Child(value = 3L)
+    stopifnot(S7::S7_inherits(x, aliasedParent::class_Parent))
+    S7::prop(x, "value")
+  }
+  expect_identical(callr::r(construct, list(s7_lib), libpath = .libPaths()), 3L)
+
+  quick_install(file.path(fixtures, "parent-v2"), lib)
+  expect_identical(
+    callr::r(construct, list(s7_lib), libpath = .libPaths()),
+    13L
+  )
+})
+
 test_that("foreign abstract parent defaults are resolved at run time (#763)", {
   dep := local_package({
     Parent := new_class(
