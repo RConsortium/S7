@@ -1,0 +1,8 @@
+S7 0.2.2.9000
+f(): [1] "Can't find method for `f(MISSING)`."
+f(NULL): [1] "null method"
+g(1): [1] "argument \"cal\" is missing, with no default"
+g(1, cal='default'): [1] "cal= default"
+ggplot2 4.0.3
+direct class_ggplot parent: [1] "Package 'ggplot2' must export `ggplot` as an S7 class."
+explicit exported alias parent: [1] "class construction succeeded"

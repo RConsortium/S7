@@ -4,7 +4,7 @@
 * Email: <mailto:Chitu.Okoli@skema.edu>
 * GitHub mirror: <https://github.com/cran/ale>
 
-Run `revdepcheck::cloud_details(, "ale")` for more info
+Run `revdepcheck::revdep_details(, "ale")` for more info
 
 ## Newly broken
 
@@ -12,16 +12,122 @@ Run `revdepcheck::cloud_details(, "ale")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘rlang:::=’ when loading ‘ale’
-     See ‘/tmp/workdir/ale/new/ale.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ale/new/ale.Rcheck/00install.out’ for details.
      ```
 
+## In both
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+       +   6  19.84566 1.197411e-14     1    -1 -Inf  Inf 1.197373e-14 1.197457e-14     NA
+       and 53046 more ...
+       * Run `testthat::snapshot_accept("ALE-categorical", "testthat")` to accept the change.
+       * Run `testthat::snapshot_review("ALE-categorical", "testthat")` to review the change.
+       
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 30 | WARN 663 | SKIP 0 | PASS 92 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
+# anansi (1.2.0)
+
+* GitHub: <https://github.com/thomazbastiaanssen/anansi>
+* Email: <mailto:thomazbastiaanssen@gmail.com>
+
+Run `revdepcheck::revdep_details(, "anansi")` for more info
+
+## Newly broken
+
+*   checking whether package ‘anansi’ can be installed ... ERROR
+     ```
+     Installation failed.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/anansi/new/anansi.Rcheck/00install.out’ for details.
+     ```
+
+## Newly fixed
+
+*   checking running R code from vignettes ...
+     ```
+       ‘adjacency_matrices.Rmd’ using ‘UTF-8’... failed
+       ‘anansi.Rmd’ using ‘UTF-8’... OK
+       ‘differential_associations.Rmd’ using ‘UTF-8’... OK
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘adjacency_matrices.Rmd’
+       ...
+     Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y,  :
+       font family 'Arial Narrow' not found in PostScript font database
+     Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y,  :
+       font family 'Arial Narrow' not found in PostScript font database
+     Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y,  :
+       font family 'Arial Narrow' not found in PostScript font database
+     
+       When sourcing ‘adjacency_matrices.R’:
+     Error: invalid font type
+     Execution halted
+     ```
+
+## Installation
+
+### Devel
+
+```
+* installing *source* package ‘anansi’ ...
+** this is package ‘anansi’ version ‘1.2.0’
+** using staged installation
+** R
+** data
+** inst
+** byte-compile and prepare package for lazy loading
+Error: .onLoad failed in loadNamespace() for 'ggforce', details:
+  call: S7::S7_data(x)
+  error: `object` must be an <S7_object>, not a S3<ggplot2::mapping/uneval/gg/S7_object>.
+Execution halted
+ERROR: lazy loading failed for package ‘anansi’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/anansi/new/anansi.Rcheck/anansi’
+
+
+```
+### CRAN
+
+```
+* installing *source* package ‘anansi’ ...
+** this is package ‘anansi’ version ‘1.2.0’
+** using staged installation
+** R
+** data
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (anansi)
+
+
+```
 # apa7 (0.1.3)
 
 * GitHub: <https://github.com/wjschne/apa7>
 * Email: <mailto:w.joel.schneider@gmail.com>
 * GitHub mirror: <https://github.com/cran/apa7>
 
-Run `revdepcheck::cloud_details(, "apa7")` for more info
+Run `revdepcheck::revdep_details(, "apa7")` for more info
 
 ## Newly broken
 
@@ -29,7 +135,28 @@ Run `revdepcheck::cloud_details(, "apa7")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘rlang:::=’ when loading ‘apa7’
-     See ‘/tmp/workdir/apa7/new/apa7.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/apa7/new/apa7.Rcheck/00install.out’ for details.
+     ```
+
+## In both
+
+*   checking running R code from vignettes ...
+     ```
+       ‘apa7.qmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘apa7.qmd’
+       ...
+     Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y,  :
+       font family 'Roboto Condensed' not found in PostScript font database
+     Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y,  :
+       font family 'Roboto Condensed' not found in PostScript font database
+     Warning in grid.Call.graphics(C_text, as.graphicsAnnot(x$label), x$x, x$y,  :
+       font family 'Roboto Condensed' not found in PostScript font database
+     
+       When sourcing ‘apa7.R’:
+     Error: invalid font type
+     Execution halted
      ```
 
 # bidsr (0.1.1)
@@ -38,14 +165,14 @@ Run `revdepcheck::cloud_details(, "apa7")` for more info
 * Email: <mailto:dipterix.wang@gmail.com>
 * GitHub mirror: <https://github.com/cran/bidsr>
 
-Run `revdepcheck::cloud_details(, "bidsr")` for more info
+Run `revdepcheck::revdep_details(, "bidsr")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘bidsr’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/bidsr/new/bidsr.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/bidsr/new/bidsr.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -65,7 +192,7 @@ Error in S7::`method<-`(`*tmp*`, list(x = BIDSMap, name = S7::class_any),  :
 Error: unable to load R code in package ‘bidsr’
 Execution halted
 ERROR: lazy loading failed for package ‘bidsr’
-* removing ‘/tmp/workdir/bidsr/new/bidsr.Rcheck/bidsr’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/bidsr/new/bidsr.Rcheck/bidsr’
 
 
 ```
@@ -96,7 +223,7 @@ ERROR: lazy loading failed for package ‘bidsr’
 * Email: <mailto:garrick@adenbuie.com>
 * GitHub mirror: <https://github.com/cran/btw>
 
-Run `revdepcheck::cloud_details(, "btw")` for more info
+Run `revdepcheck::revdep_details(, "btw")` for more info
 
 ## Newly broken
 
@@ -130,30 +257,23 @@ Run `revdepcheck::cloud_details(, "btw")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        11.                     \-rlang::abort(msg, call = call)
-       -- Error ('test-tool-docs-news.R:136:3'): btw_tool_docs_package_news() when no news is found --
-       Error in `(S7::as_class(ellmer::ContentText))(text = text, ...)`: unused argument ("")
-       Backtrace:
-            x
-         1. +-testthat::expect_message(...) at test-tool-docs-news.R:136:3
-         2. | \-testthat:::expect_condition_matching_(...)
-         3. |   \-testthat:::quasi_capture(...)
-         4. |     +-testthat (local) .capture(...)
-         5. |     | \-base::withCallingHandlers(...)
-         6. |     \-rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
-         7. +-testthat::expect_s3_class(btw(package_news("R")), "btw::btw")
-         8. | \-testthat::quasi_label(enquo(object))
-         9. |   \-rlang::eval_bare(expr, quo_get_env(quo))
-        10. \-btw::btw(package_news("R"))
-        11.   \-btw:::BTW("")
-        12.     \-S7::new_object(...)
-        13.       \-S7:::check_parent(`_parent`, class)
-        14.         \-S7:::class_inherits(parent, parent_class)
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+         2.   \-btw:::map(...)
+         3.     \-base::lapply(.x, .f, ...)
+         4.       \-btw (local) FUN(X[[i]], ...)
+         5.         +-base::paste(map_chr(children, as.character), collapse = "\n")
+         6.         \-btw:::map_chr(children, as.character)
+         7.           \-btw:::.rlang_purrr_map_mold(.x, .f, character(1), ...)
+         8.             \-rlang::as_function(.f, env = global_env())
+         9.               \-rlang:::abort_coercion(x, "a function", arg = arg, call = call)
+        10.                 \-rlang::abort(msg, call = call)
        
-       [ FAIL 15 | WARN 2 | SKIP 154 | PASS 2082 ]
+       [ FAIL 16 | WARN 0 | SKIP 68 | PASS 2373 ]
        Error:
        ! Test failures.
        Execution halted
@@ -174,7 +294,7 @@ Run `revdepcheck::cloud_details(, "btw")` for more info
 * Email: <mailto:frederik@fabriciusbjerre.dk>
 * GitHub mirror: <https://github.com/cran/caugi>
 
-Run `revdepcheck::cloud_details(, "caugi")` for more info
+Run `revdepcheck::revdep_details(, "caugi")` for more info
 
 ## Newly broken
 
@@ -204,19 +324,12 @@ Run `revdepcheck::cloud_details(, "caugi")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        4.       └─S7:::check_parent(`_parent`, class)
-        5.         └─S7:::stop2(msg, call = call)
-       ── Error ('test-format-mermaid.R:166:3'): to_mermaid handles --o edges (#307) ──
-       <error/condition>
-       Error in `S7::new_object(caugi_export, content = content, format = "mermaid")`: `_parent` must be an instance of <caugi::caugi_export>, not <S7_class>.
-       Backtrace:
-           ▆
-        1. └─caugi::to_mermaid(cg) at test-format-mermaid.R:166:3
-        2.   └─caugi::caugi_mermaid(content = result)
-        3.     └─S7::new_object(caugi_export, content = content, format = "mermaid")
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
         4.       └─S7:::check_parent(`_parent`, class)
         5.         └─S7:::stop2(msg, call = call)
        ── Error ('test-plot-composition.R:203:3'): plot composition branches are covered ──
@@ -240,7 +353,7 @@ Run `revdepcheck::cloud_details(, "caugi")` for more info
 * Email: <mailto:krystian8207@gmail.com>
 * GitHub mirror: <https://github.com/cran/cohortBuilder>
 
-Run `revdepcheck::cloud_details(, "cohortBuilder")` for more info
+Run `revdepcheck::revdep_details(, "cohortBuilder")` for more info
 
 ## Newly broken
 
@@ -274,19 +387,12 @@ Run `revdepcheck::cloud_details(, "cohortBuilder")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        2.   └─cohortBuilder (local) constructor(...) at cohortBuilder/R/filter.R:905:3
-        3.     └─S7::new_object(...) at cohortBuilder/R/filter.R:125:5
-        4.       └─S7:::check_parent(`_parent`, class)
-        5.         └─S7:::stop2(msg, call = call)
-       
-       [ FAIL 78 | WARN 1 | SKIP 0 | PASS 133 ]
-       Deleting unused snapshots:
-       'source_tblist/date-range-breaks-argument-is-passed-properly.svg',
-       'source_tblist/date-range-extra-args-work.svg',
-       'source_tblist/date-range-no-data-case-works.svg',
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
        'source_tblist/datetime-range-breaks-arg-works.svg',
        'source_tblist/datetime-range-default-breaks-work.svg',
        'source_tblist/datetime-range-extra-args-work.svg',
@@ -304,74 +410,34 @@ Run `revdepcheck::cloud_details(, "cohortBuilder")` for more info
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
      ...
-       7.       │ └─base::withCallingHandlers(...)
-       8.       ├─purrr:::call_with_cleanup(...)
-       9.       └─cohortBuilder (local) .f(.x[[i]], ...)
-      10.         ├─base::do.call(cohortBuilder::filter, .)
-      11.         └─cohortBuilder (local) `<fn>`(...)
-      12.           └─cohortBuilder (local) constructor(...) at cohortBuilder/R/filter.R:905:3
-      13.             └─S7::new_object(...) at cohortBuilder/R/filter.R:188:5
-      14.               └─S7:::check_parent(`_parent`, class)
-      15.                 └─S7:::stop2(msg, call = call)
-      16.                   └─base::stop(...)
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     Execution halted
+     when running code in ‘managing-cohort.Rmd’
+       ...
      
-     Error: processing vignette 'source-intelligence.Rmd' failed with diagnostics:
-     ℹ In index: 1.
+     
+     > librarian_source <- set_source(as.tblist(librarian))
+     
+     > librarian_cohort <- cohort(librarian_source, step(filter("discrete", 
+     +     id = "author", dataset = "books", variable = "author", value = "Dan Brow ..." ... [TRUNCATED] 
+     
+       When sourcing ‘managing-cohort.R’:
+     Error: `_parent` must be an instance of <cohortBuilder::CbFilter>, not <S7_object>.
+     Execution halted
+     when running code in ‘source-intelligence.Rmd’
+       ...
+     > labelled_source <- autofilter(set_source(tblist(iris = iris), 
+     +     description = list(iris = list(Species = describe("the species of iris", 
+     +     .... [TRUNCATED] 
+     
+       When sourcing ‘source-intelligence.R’:
+     Error: ℹ In index: 1.
      ℹ With name: iris.Sepal.Length.
      Caused by error in `S7::new_object()` at cohortBuilder/R/filter.R:188:5:
      ! `_parent` must be an instance of <cohortBuilder::CbFilter>, not <S7_object>.
-     --- failed re-building ‘source-intelligence.Rmd’
-     
-     SUMMARY: processing the following files failed:
-       ‘binding-keys.Rmd’ ‘cohort-configuration.Rmd’ ‘cohortBuilder.Rmd’
-       ‘custom-filters.Rmd’ ‘managing-cohort.Rmd’ ‘source-intelligence.Rmd’
-     
-     Error: Vignette re-building failed.
      Execution halted
-     ```
-
-# covr (3.6.5)
-
-* GitHub: <https://github.com/r-lib/covr>
-* Email: <mailto:james.f.hester@gmail.com>
-* GitHub mirror: <https://github.com/cran/covr>
-
-Run `revdepcheck::cloud_details(, "covr")` for more info
-
-## Newly broken
-
-*   checking tests ... ERROR
-     ```
-     ...
-       > test-print.R: TestPrint Coverage: 0.00%
-       > test-print.R: TestPrint Coverage: 0.00%
-       > test-print.R: TestPrint Coverage: 66.67%
-       [ FAIL 1 | WARN 0 | SKIP 12 | PASS 367 ]
-       
-       ══ Skipped tests (12) ══════════════════════════════════════════════════════════
-       • On CRAN (10): 'test-Compiled.R:2:3', 'test-Compiled.R:35:3',
-         'test-Compiled.R:48:3', 'test-Compiled.R:64:3', 'test-Compiled.R:80:3',
-         'test-Compiled.R:87:3', 'test-Compiled.R:97:3', 'test-S7.R:1:1',
-         'test-record_tests.R:165:3', 'test-utils.R:44:3'
-       • empty test (1):
-       • getRversion() >= "4.0.0" is TRUE (1): 'test-utils.R:35:3'
-       
-       ══ Failed tests ════════════════════════════════════════════════════════════════
-       ── Failure ('test-S7.R:5:3'): S7 coverage is reported ──────────────────────────
-       Expected `cov$value` to equal `c(1, 1, 1, 2, 5, 0, 5, 0, 5, 1, 1, 2, 1, 1, 0)`.
-       Differences:
-         `actual[1:13]`: 0.0 0.0 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 and 3 more...
-       `expected[1:13]`: 1.0 1.0 1.0 2.0 5.0 0.0 5.0 0.0 5.0 1.0           ...
-       
-       
-       [ FAIL 1 | WARN 0 | SKIP 12 | PASS 367 ]
-       Error:
-       ! Test failures.
-       Execution halted
      ```
 
 # dcmstan (0.1.0)
@@ -380,7 +446,7 @@ Run `revdepcheck::cloud_details(, "covr")` for more info
 * Email: <mailto:wjakethompson@gmail.com>
 * GitHub mirror: <https://github.com/cran/dcmstan>
 
-Run `revdepcheck::cloud_details(, "dcmstan")` for more info
+Run `revdepcheck::revdep_details(, "dcmstan")` for more info
 
 ## Newly broken
 
@@ -414,19 +480,35 @@ Run `revdepcheck::cloud_details(, "dcmstan")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking running R code from vignettes ...
      ```
-     ...
-        3. │   └─S7::S7_inherits(x, class)
-        4. │     └─S7:::class_inherits(x, class)
-        5. ├─dcmstan::dino()
-        6. │ └─dcmstan:::DINO(model = "dino")
-        7. │   └─S7::new_object(...)
-        8. │     └─S7::`prop<-`(`*tmp*`, name, check = FALSE, value = prop_setter_vals[[name]])
-        9. └─dcmstan (local) `<DINO>@model`(`<dc::DINO>`, "dino")
-       ── Error ('test-zzz-methods-stan-data.R:179:3'): hdcm data objects are correct ──
-       Error: @model is read-only
-       Backtrace:
+       ‘dcmstan.Rmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘dcmstan.Rmd’
+       ...
+     10 8c                 0                      0               1
+     # ℹ 17 more rows
+     # ℹ 1 more variable: multiplicative_comparison <dbl>
+     
+     > spec <- dcm_specify(qmatrix = dtmr_qmatrix, identifier = "item", 
+     +     measurement_model = dina(), structural_model = bayesnet())
+     
+       When sourcing ‘dcmstan.R’:
+     Error: @model is read-only
+     Execution halted
+     ```
+
+## In both
+
+*   checking tests ...
+     ```
+       Running ‘spelling.R’
+       Comparing ‘spelling.Rout’ to ‘spelling.Rout.save’ ... OK
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
            ▆
         1. ├─dcmstan::dcm_specify(...) at test-zzz-methods-stan-data.R:179:3
         2. │ └─S7::check_is_S7(measurement_model, measurement)
@@ -438,40 +520,10 @@ Run `revdepcheck::cloud_details(, "dcmstan")` for more info
         8. │     └─S7::`prop<-`(`*tmp*`, name, check = FALSE, value = prop_setter_vals[[name]])
         9. └─dcmstan (local) `<LCDM>@model`(`<dc::LCDM>`, "lcdm")
        
-       [ FAIL 62 | WARN 0 | SKIP 4 | PASS 76 ]
+       [ FAIL 64 | WARN 0 | SKIP 0 | PASS 88 ]
        Error:
        ! Test failures.
        Execution halted
-     ```
-
-*   checking re-building of vignette outputs ... ERROR
-     ```
-     ...
-     Error:
-     ! @model is read-only
-     ---
-     Backtrace:
-         ▆
-      1. ├─dcmstan::dcm_specify(...)
-      2. │ └─S7::check_is_S7(measurement_model, measurement)
-      3. │   └─S7::S7_inherits(x, class)
-      4. │     └─S7:::class_inherits(x, class)
-      5. ├─dcmstan::dina()
-      6. │ └─dcmstan:::DINA(model = "dina")
-      7. │   └─S7::new_object(...)
-      8. │     └─S7::`prop<-`(`*tmp*`, name, check = FALSE, value = prop_setter_vals[[name]])
-      9. └─dcmstan (local) `<DINA>@model`(`<dc::DINA>`, "dina")
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     
-     Error: processing vignette 'dcmstan.Rmd' failed with diagnostics:
-     @model is read-only
-     --- failed re-building ‘dcmstan.Rmd’
-     
-     SUMMARY: processing the following file failed:
-       ‘dcmstan.Rmd’
-     
-     Error: Vignette re-building failed.
-     Execution halted
      ```
 
 # deltapif (0.4.5)
@@ -479,7 +531,7 @@ Run `revdepcheck::cloud_details(, "dcmstan")` for more info
 * Email: <mailto:rzepeda17@gmail.com>
 * GitHub mirror: <https://github.com/cran/deltapif>
 
-Run `revdepcheck::cloud_details(, "deltapif")` for more info
+Run `revdepcheck::revdep_details(, "deltapif")` for more info
 
 ## Newly broken
 
@@ -503,19 +555,12 @@ Run `revdepcheck::cloud_details(, "deltapif")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-           ▆
-        1. └─deltapif (local) make_paf(label = "te1") at test_covariance_generics_2.R:311:3
-        2.   └─deltapif::paf(...) at test_covariance_generics_2.R:14:3
-        3.     └─deltapif::pif(...)
-        4.       └─deltapif:::pif_atomic_class(...)
-        5.         └─S7::new_object(...)
-        6.           └─S7:::check_parent(`_parent`, class)
-        7.             └─S7:::stop2(msg, call = call)
-       ── Error ('test_covariance_generics_2.R:318:3'): covariance is consistent across hierarchy levels ──
-       <error/condition>
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
        Error in `S7::new_object(S7::S7_object(), conf_level = conf_level, type = type, label = label, link = link, link_inv = link_inv, link_deriv = link_deriv, p = p, p_cft = p_cft, beta = beta, var_p = var_p, var_beta = var_beta, rr_link = rr_link, rr_link_deriv = rr_link_deriv, upper_bound_p = upper_bound_p, upper_bound_beta = upper_bound_beta)`: `_parent` must be an instance of <deltapif::pif_class>, not <S7_object>.
        Backtrace:
            ▆
@@ -533,33 +578,33 @@ Run `revdepcheck::cloud_details(, "deltapif")` for more info
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
      ...
-     Quitting from Introduction.Rmd:61-65 [unnamed-chunk-2]
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     <error/rlang_error>
-     Error in `S7::new_object()`:
-     ! `_parent` must be an instance of <deltapif::pif_class>, not <S7_object>.
-     ---
-     Backtrace:
-         ▆
-      1. └─deltapif::paf(p = 0.085, beta = log(1.59), quiet = TRUE)
-      2.   └─deltapif::pif(...)
-      3.     └─deltapif:::pif_atomic_class(...)
-      4.       └─S7::new_object(...)
-      5.         └─S7:::check_parent(`_parent`, class)
-      6.           └─S7:::stop2(msg, call = call)
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     Errors in running code in vignettes:
+     when running code in ‘Examples.Rmd’
+       ...
+     10 Physical inactivity 0.3293037 0.092961816  62.8     68.6  56.6  73.2  61.3
+     11            Diabetes 0.4317824 0.075776055  28.6     41.0  44.1  37.2  25.4
+     12       Air pollution 0.0861777 0.009362766  22.8     44.4  55.2  41.3  17.2
      
-     Error: processing vignette 'Introduction.Rmd' failed with diagnostics:
-     `_parent` must be an instance of <deltapif::pif_class>, not <S7_object>.
-     --- failed re-building ‘Introduction.Rmd’
+     > paf_hispanic <- paf(p = 0.069, beta = 0.463734, var_beta = 0.0273858, 
+     +     var_p = 0, rr_link = exp, label = "Hispanic")
      
-     SUMMARY: processing the following files failed:
-       ‘Examples.Rmd’ ‘Introduction.Rmd’
+       When sourcing ‘Examples.R’:
+     Error: `_parent` must be an instance of <deltapif::pif_class>, not <S7_object>.
+     Execution halted
+     when running code in ‘Introduction.Rmd’
+       ...
      
-     Error: Vignette re-building failed.
+     > library(deltapif)
+     
+     > library(deltapif)
+     
+     > paf(p = 0.085, beta = log(1.59), quiet = TRUE)
+     
+       When sourcing ‘Introduction.R’:
+     Error: `_parent` must be an instance of <deltapif::pif_class>, not <S7_object>.
      Execution halted
      ```
 
@@ -586,15 +631,68 @@ Run `revdepcheck::cloud_details(, "deltapif")` for more info
 * Email: <mailto:hadley@posit.co>
 * GitHub mirror: <https://github.com/cran/ellmer>
 
-Run `revdepcheck::cloud_details(, "ellmer")` for more info
+Run `revdepcheck::revdep_details(, "ellmer")` for more info
 
 ## Newly broken
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+        32.                                       │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+        33.                                       │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler)
+        34.                                       │ └─base::force(expr)
+        35.                                       └─rlang::abort(...)
+       
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 8 | WARN 0 | SKIP 86 | PASS 1668 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
+*   checking running R code from vignettes ...
+     ```
+     ...
+     Errors in running code in vignettes:
+     when running code in ‘prompt-design.Rmd’
+       ...
+     > chat <- chat_anthropic()
+     Using model = "claude-sonnet-5".
+     
+     > chat$chat(question)
+     
+       When sourcing ‘prompt-design.R’:
+     Error: HTTP 400 Bad Request.
+     ℹ Your credit balance is too low to access the Anthropic API. Please go to
+       Plans & Billing to upgrade or purchase credits. [invalid_request_error]
+     Execution halted
+     when running code in ‘structured-data.Rmd’
+       ...
+     > chat <- chat_anthropic("Extract all characteristics of supplied character")
+     Using model = "claude-sonnet-5".
+     
+     > chat$chat_structured(text, type = type_characteristics)
+     
+       When sourcing ‘structured-data.R’:
+     Error: HTTP 400 Bad Request.
+     ℹ Your credit balance is too low to access the Anthropic API. Please go to
+       Plans & Billing to upgrade or purchase credits. [invalid_request_error]
+     Execution halted
+     ```
 
 *   checking whether package ‘ellmer’ can be installed ... WARNING
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘rlang:::=’ when loading ‘ellmer’
-     See ‘/tmp/workdir/ellmer/new/ellmer.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ellmer/new/ellmer.Rcheck/00install.out’ for details.
      ```
 
 *   checking for code/documentation mismatches ... WARNING
@@ -615,37 +713,10 @@ Run `revdepcheck::cloud_details(, "ellmer")` for more info
          Position: 2 Code: reason Docs: json
      ```
 
-## In both
+## Newly fixed
 
-*   checking tests ... ERROR
-     ```
-     ...
-         7.             ├─coro::is_exhausted(new <- .x())
-         8.             └─coro (local) .x()
-         9.               └─base::evalq(...)
-        10.                 └─base::evalq(...)
-        11.                   └─base::evalq(...)
-        12.                     └─base::evalq(...)
-        13.                       ├─coro::is_exhausted(elt <- iterator())
-        14.                       └─coro (local) iterator()
-        15.                         └─base::evalq(...)
-        16.                           └─base::evalq(...)
-        17.                             ├─base::evalq(...)
-        18.                             │ └─base::evalq(...)
-        19.                             │   └─coro (local) user(...)
-        20.                             │     ├─.last_value <<- eval_bare(substitute(expr), user_env)
-        21.                             │     │ └─rlang::env_poke(env, lhs, value, inherit = TRUE, create = FALSE)
-        22.                             │     └─rlang::eval_bare(substitute(expr), user_env)
-        23.                             └─ellmer:::chat_perform(...)
-        24.                               └─httr2::req_perform(req)
-        25.                                 └─httr2:::handle_resp(req, resp, error_call = error_call)
-        26.                                   └─rlang::cnd_signal(resp)
-       
-       [ FAIL 11 | WARN 0 | SKIP 290 | PASS 1253 ]
-       Error:
-       ! Test failures.
-       Execution halted
-     ```
+*   R CMD check timed out
+
 
 # filtro (0.2.0)
 
@@ -653,7 +724,7 @@ Run `revdepcheck::cloud_details(, "ellmer")` for more info
 * Email: <mailto:franceslinyc@gmail.com>
 * GitHub mirror: <https://github.com/cran/filtro>
 
-Run `revdepcheck::cloud_details(, "filtro")` for more info
+Run `revdepcheck::revdep_details(, "filtro")` for more info
 
 ## Newly broken
 
@@ -687,33 +758,33 @@ Run `revdepcheck::cloud_details(, "filtro")` for more info
      Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
      ...
-       
-       
-       processing file: forestimp.qmd
-       [31mError in `fit()`:[39m
-       ! could not find function "fit"
-       
-       Quitting from forestimp.qmd:86-94 [unnamed-chunk-5]
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[31m~~~~~~~~~~~[39m
-       <error/rlang_error>
-       Error in `fit()`:
-       ! could not find function "fit"
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[31m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[39m
-       
-       [31mExecution halted[39m
-       [33mWARN: Error encountered when rendering files[39m
-       
-     Caused by error in `processx::run()`:
-     ! System command 'quarto' failed
-     --- failed re-building ‘forestimp.qmd’
+     Errors in running code in vignettes:
+     when running code in ‘filtro.qmd’
+       ...
+     > ames <- modeldata::ames
      
-     SUMMARY: processing the following files failed:
-       ‘filtro.qmd’ ‘forestimp.qmd’
+     > ames <- dplyr::mutate(ames, Sale_Price = log10(Sale_Price))
      
-     Error: Vignette re-building failed.
+     > ames_aov_pval_res <- fit(score_aov_pval, Sale_Price ~ 
+     +     ., data = ames)
+     
+       When sourcing ‘filtro.R’:
+     Error: could not find function "fit"
+     Execution halted
+     when running code in ‘forestimp.qmd’
+       ...
+     > cells_subset <- dplyr::slice(modeldata::cells, 1:50)
+     
+     > cells_subset$case <- NULL
+     
+     > cells_imp_rf_res <- fit(score_imp_rf, class ~ ., data = cells_subset, 
+     +     seed = 42)
+     
+       When sourcing ‘forestimp.R’:
+     Error: could not find function "fit"
      Execution halted
      ```
 
@@ -723,7 +794,7 @@ Run `revdepcheck::cloud_details(, "filtro")` for more info
 * Email: <mailto:cole@colebrokamp.com>
 * GitHub mirror: <https://github.com/cran/fr>
 
-Run `revdepcheck::cloud_details(, "fr")` for more info
+Run `revdepcheck::revdep_details(, "fr")` for more info
 
 ## Newly broken
 
@@ -747,29 +818,22 @@ Run `revdepcheck::cloud_details(, "fr")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        3.     └─S7::new_object(...)
-        4.       └─S7:::validate_from(...)
-        5.         └─S7:::stop2(msg, call = call, class = "S7_error_validation_failed")
-       ── Error ('test-write_fr_tdr.R:3:3'): write_fr_tdr works ───────────────────────
-       <S7_error_validation_failed/error/condition>
-       Error in `(structure(function (.data = list(), row.names = NULL, name = character(0), path = character(0), version = character(0), title = character(0), homepage = character(0), description = character(0), schema = (function (fields = list(), missingValues = character(0), primaryKey = character(0), foreignKeys = character(0))  {     fields     missingValues     primaryKey     foreignKeys     S7::new_object(S7::S7_object(), fields = fields, missingValues = missingValues, primaryKey = primaryKey, foreignKeys = foreignKeys) })())  S7::new_object(new_data.frame(.data = .data, row.names = row.names), name = name, path = path, version = version, title = title, homepage = homepage, description = description, schema = schema), class = c("S7_class", "S7_object"), name = "fr_tdr", parent = structure(list(class = "data.frame", constructor = structure(function (.data = list(), row.names = NULL)  {     if (is.null(row.names)) {         list2DF(.data)     }     else {         out <- list2DF(.data, length(row.names))         attr(out, "row.names") <- row.names         out     } }, class = "S7_constructor"), validator = function (self)  {     if (!is.list(self)) {         return("Underlying data must be a <list>")     }     if (length(self) >= 1) {         col_lengths <- vapply(self, NROW, integer(1L), USE.NAMES = FALSE)         ns <- unique(c(col_lengths, .row_names_info(self, 2L)))         if (length(ns) > 1) {             return("All columns and row names must have the same length")         }         if (is.null(names(self))) {             return("Underlying data must be named")         }     } }, abstract = FALSE, default = data.frame(), attributes = c("names", "row.names")), class = "S7_S3_class"), properties = list(name = structure(list(name = "name", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), path = structure(list(name = "path", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), version = structure(list(name = "version", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), title = structure(list(name = "title", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), homepage = structure(list(name = "homepage", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), description = structure(list(name = "description", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), schema = structure(list(name = "schema", class = structure(function (fields = list(), missingValues = character(0), primaryKey = character(0), foreignKeys = character(0))  {     fields     missingValues     primaryKey     foreignKeys     S7::new_object(S7::S7_object(), fields = fields, missingValues = missingValues, primaryKey = primaryKey, foreignKeys = foreignKeys) }, class = c("S7_class", "S7_object"), name = "fr_schema", parent = structure(function ()  {     .Call(S7_object_) }, name = "S7_object", properties = list(), abstract = FALSE, constructor = function ()  {     .Call(S7_object_) }, validator = function (self)  {     if (!is_S7_type(self)) {         "Underlying data is corrupt"     } }, S7_class_name = "S7_object", S7_dispatch = "S7_object", S7_version = 1L, class = c("S7_class", "S7_object")), properties = list(fields = structure(list(name = "fields", class = structure(list(class = "list", constructor_name = "list", constructor = function (.data = list())  .data, validator = function (object)  if (base_class(object) != "list") {     sprintf("Underlying data must be <%s> not <%s>", "list", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), missingValues = structure(list(name = "missingValues", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), primaryKey = structure(list(name = "primaryKey", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property"), foreignKeys = structure(list(name = "foreignKeys", class = structure(list(class = "character", constructor_name = "character", constructor = function (.data = character(0))  .data, validator = function (object)  if (base_class(object) != "character") {     sprintf("Underlying data must be <%s> not <%s>", "character", base_class(object)) }), class = "S7_base_class"), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property")), abstract = FALSE, constructor = structure(function (fields = list(), missingValues = character(0), primaryKey = character(0), foreignKeys = character(0))  {     fields     missingValues     primaryKey     foreignKeys     S7::new_object(S7::S7_object(), fields = fields, missingValues = missingValues, primaryKey = primaryKey, foreignKeys = foreignKeys) }, class = "S7_constructor"), validator = function (self)  {     if (!length(self@fields) > 0) {         "@fields must have at least one field"     }     else if (!all(sapply(self@fields, is_fr_field))) {         "all items in @fields should be fr_field objects"     } }, S7_class_name = "fr_schema", S7_dispatch = c("fr_schema", "S7_object"), S7_version = 1L), getter = NULL, setter = NULL, validator = NULL, default = NULL), class = "S7_property")), abstract = FALSE, constructor = structure(function (.data = list(), row.names = NULL, name = character(0), path = character(0), version = character(0), title = character(0), homepage = character(0), description = character(0), schema = (function (fields = list(), missingValues = character(0), primaryKey = character(0),      foreignKeys = character(0))  {     fields     missingValues     primaryKey     foreignKeys     S7::new_object(S7::S7_object(), fields = fields, missingValues = missingValues, primaryKey = primaryKey, foreignKeys = foreignKeys) })())  S7::new_object(new_data.frame(.data = .data, row.names = row.names), name = name, path = path, version = version, title = title, homepage = homepage, description = description, schema = schema), class = "S7_constructor"), validator = function (self)  {     if (length(self@name) != 1) {         "@name must be length 1"     }     else if (!all(names(self@schema@fields) %in% names(S7::S7_data(self)))) {         "not all fields in the schema are columns in the data frame"     }     else if (!all(names(S7::S7_data(self)) %in% names(self@schema@fields))) {         "not all columns in the data frame are fields in the schema"     } }, S7_class_name = "fr_tdr", S7_dispatch = c("fr_tdr", "data.frame", "S7_object"), S7_version = 1L))(structure(list(mpg = c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 26, 30.4, 15.8, 19.7, 15, 21.4), cyl = c(6, 6, 4, 6, 8, 6, 8, 4, 4, 6, 6, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 8, 8, 8, 8, 4, 4, 4, 8, 6, 8, 4), disp = c(160, 160, 108, 258, 360, 225, 360, 146.7, 140.8, 167.6, 167.6, 275.8, 275.8, 275.8,  472, 460, 440, 78.7, 75.7, 71.1, 120.1, 318, 304, 350, 400, 79, 120.3, 95.1, 351, 145, 301, 121), hp = c(110, 110, 93, 110, 175, 105, 245, 62, 95, 123, 123, 180, 180, 180, 205, 215, 230, 66, 52, 65, 97, 150, 150, 245, 175, 66, 91, 113, 264, 175, 335, 109), drat = c(3.9, 3.9, 3.85, 3.08, 3.15, 2.76, 3.21, 3.69, 3.92, 3.92, 3.92, 3.07, 3.07, 3.07, 2.93, 3, 3.23, 4.08, 4.93, 4.22, 3.7, 2.76, 3.15, 3.73, 3.08, 4.08, 4.43, 3.77, 4.22, 3.62, 3.54, 4.11), wt = c(2.62, 2.875, 2.32, 3.215, 3.44, 3.46, 3.57,  3.19, 3.15, 3.44, 3.44, 4.07, 3.73, 3.78, 5.25, 5.424, 5.345, 2.2, 1.615, 1.835, 2.465, 3.52, 3.435, 3.84, 3.845, 1.935, 2.14, 1.513, 3.17, 2.77, 3.57, 2.78), qsec = c(16.46, 17.02, 18.61, 19.44, 17.02, 20.22, 15.84, 20, 22.9, 18.3, 18.9, 17.4, 17.6, 18, 17.98, 17.82, 17.42, 19.47, 18.52, 19.9, 20.01, 16.87, 17.3, 15.41, 17.05, 18.9, 16.7, 16.9, 14.5, 15.5, 14.6, 18.6), vs = c(0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1), am = c(1, 1, 1, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1), gear = c(4, 4, 4, 3, 3, 3, 3, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 5, 4), carb = c(4, 4, 1, 1, 2, 1, 4, 2, 2, 4, 4, 3, 3, 3, 4, 4, 4, 1, 2, 1, 1, 2, 2, 4, 2, 1, 2, 2, 4, 6, 8, 2)), row.names = c(NA, -32L), class = c("tbl_df", "tbl", "data.frame")), name = "my_mtcars", schema = <object>)`: <fr_tdr> object is invalid:
-       - All columns and row names must have the same length
-       Backtrace:
-           ▆
-        1. ├─fr::write_fr_tdr(as_fr_tdr(mtcars, name = "my_mtcars"), dir = tempdir()) at test-write_fr_tdr.R:3:3
-        2. └─fr::as_fr_tdr(mtcars, name = "my_mtcars")
-        3.   ├─S7::S7_dispatch()
-        4.   └─fr (local) `method(as_fr_tdr, new_S3_class("data.frame"))`(...)
-        5.     ├─base::do.call(fr_tdr, dots)
-        6.     └─fr (local) `<S7_class>`(`<tibble[,11]>`, name = "my_mtcars", schema = `<fr_schem>`)
-        7.       └─S7::new_object(...)
-        8.         └─S7:::validate_from(...)
-        9.           └─S7:::stop2(msg, call = call, class = "S7_error_validation_failed")
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+        1. ├─testthat::expect_s3_class(...) at test-read_fr_tdr.R:14:3
+        2. │ └─testthat::quasi_label(enquo(object))
+        3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
+        4. └─fr::read_fr_tdr("https://raw.githubusercontent.com/cole-brokamp/fr/main/inst/hamilton_poverty_2020/tabular-data-resource.yaml")
+        5.   └─fr:::fr_tdr(...)
+        6.     └─S7::new_object(...)
+        7.       └─S7:::validate_from(...)
+        8.         └─S7:::stop2(msg, call = call, class = "S7_error_validation_failed")
        
-       [ FAIL 13 | WARN 0 | SKIP 2 | PASS 20 ]
+       [ FAIL 14 | WARN 0 | SKIP 0 | PASS 22 ]
        Deleting unused snapshots: 'write_fr_tdr/my_mtcars.csv' and
        'write_fr_tdr/tabular-data-resource.yaml'
        Error:
@@ -777,33 +841,33 @@ Run `revdepcheck::cloud_details(, "fr")` for more info
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
      ...
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     <error/rlang_error>
-     Error in `fr_tdr()`:
-     ! <fr_tdr> object is invalid:
+     Errors in running code in vignettes:
+     when running code in ‘creating_a_tabular-data-resource.Rmd’
+       ...
+     3 A03   2013-08-15    15.6 best        19 TRUE 
+     
+     > d_tdr <- as_fr_tdr(d, name = "types_example", version = "0.1.0", 
+     +     title = "Example Data with Types", homepage = "https://geomarker.io", 
+     +     .... [TRUNCATED] 
+     
+       When sourcing ‘creating_a_tabular-data-resource.R’:
+     Error: <fr_tdr> object is invalid:
      - All columns and row names must have the same length
-     ---
-     Backtrace:
-         ▆
-      1. └─fr::read_fr_tdr(fs::path_package("fr", "hamilton_poverty_2020"))
-      2.   └─fr:::fr_tdr(...)
-      3.     └─S7::new_object(...)
-      4.       └─S7:::validate_from(...)
-      5.         └─S7:::stop2(msg, call = call, class = "S7_error_validation_failed")
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     Execution halted
+     when running code in ‘read_fr_tdr.Rmd’
+       ...
+     /Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/fr/new/fr.Rcheck/fr/hamilton_poverty_2020
+     ├── hamilton_poverty_2020.csv
+     └── tabular-data-resource.yaml
      
-     Error: processing vignette 'read_fr_tdr.Rmd' failed with diagnostics:
-     <fr_tdr> object is invalid:
+     > d_fr <- read_fr_tdr(fs::path_package("fr", "hamilton_poverty_2020"))
+     
+       When sourcing ‘read_fr_tdr.R’:
+     Error: <fr_tdr> object is invalid:
      - All columns and row names must have the same length
-     --- failed re-building ‘read_fr_tdr.Rmd’
-     
-     SUMMARY: processing the following files failed:
-       ‘creating_a_tabular-data-resource.Rmd’ ‘read_fr_tdr.Rmd’
-     
-     Error: Vignette re-building failed.
      Execution halted
      ```
 
@@ -824,7 +888,7 @@ Run `revdepcheck::cloud_details(, "fr")` for more info
 * Email: <mailto:schloerke@gmail.com>
 * GitHub mirror: <https://github.com/cran/GGally>
 
-Run `revdepcheck::cloud_details(, "GGally")` for more info
+Run `revdepcheck::revdep_details(, "GGally")` for more info
 
 ## Newly broken
 
@@ -832,7 +896,15 @@ Run `revdepcheck::cloud_details(, "GGally")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘rlang:::=’ when loading ‘GGally’
-     See ‘/tmp/workdir/GGally/new/GGally.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/GGally/new/GGally.Rcheck/00install.out’ for details.
+     ```
+
+## In both
+
+*   checking dependencies in R code ... NOTE
+     ```
+     The operation couldn’t be completed. Unable to locate a Java Runtime.
+     Please visit http://www.java.com for information on installing Java.
      ```
 
 # ggarrow (0.2.0)
@@ -841,7 +913,7 @@ Run `revdepcheck::cloud_details(, "GGally")` for more info
 * Email: <mailto:tahvdbrand@gmail.com>
 * GitHub mirror: <https://github.com/cran/ggarrow>
 
-Run `revdepcheck::cloud_details(, "ggarrow")` for more info
+Run `revdepcheck::revdep_details(, "ggarrow")` for more info
 
 ## Newly broken
 
@@ -875,19 +947,12 @@ Run `revdepcheck::cloud_details(, "ggarrow")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-         'test-linejoins.R:30:1', 'test-linejoins.R:47:1', 'test-linejoins.R:63:1',
-         'test-scale_arrow.R:103:1', 'test-scale_arrow.R:117:1',
-         'test-scale_arrow.R:132:1', 'test-scale_arrow.R:147:1',
-         'test-scale_arrow.R:163:1', 'test-scale_arrow.R:180:1',
-         'test-scale_arrow.R:197:1', 'test-shaping.R:11:1', 'test-shaping.R:23:1',
-         'test-shaping.R:37:1', 'test-shaping.R:51:1', 'test-shaping.R:67:1',
-         'test-shaping.R:87:1', 'test-shaping.R:102:1'
-       
-       ══ Failed tests ════════════════════════════════════════════════════════════════
-       ── Error ('test-theme_elements.R:2:3'): arrow theme elements looks like they should ──
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
        <getvarError/missingArgError/error/condition>
        Error in `S7::new_object(.parent = parent, linewidth_head = linewidth_head, linewidth_fins = linewidth_fins, stroke_colour = stroke_colour, stroke_width = stroke_width, arrow_head = arrow_head, arrow_fins = arrow_fins, arrow_mid = arrow_mid, length = length, length_head = length_head, length_mid = length_mid, length_fins = length_fins, resect = resect, resect_head = resect_head, resect_fins = resect_fins, justify = justify, force_arrow = force_arrow, mid_place = mid_place, linemitre = linemitre, distort = distort)`: argument "_parent" is missing, with no default
        Backtrace:
@@ -898,7 +963,7 @@ Run `revdepcheck::cloud_details(, "ggarrow")` for more info
         4. └─ggarrow::element_arrow(linewidth_head = 3, linewidth_fins = 0)
         5.   └─S7::new_object(...)
        
-       [ FAIL 1 | WARN 0 | SKIP 35 | PASS 39 ]
+       [ FAIL 1 | WARN 0 | SKIP 0 | PASS 79 ]
        Deleting unused snapshots: 'theme_elements/theme-lines-as-arrows.svg'
        Error:
        ! Test failures.
@@ -911,14 +976,41 @@ Run `revdepcheck::cloud_details(, "ggarrow")` for more info
 * Email: <mailto:w.joel.schneider@gmail.com>
 * GitHub mirror: <https://github.com/cran/ggdiagram>
 
-Run `revdepcheck::cloud_details(, "ggdiagram")` for more info
+Run `revdepcheck::revdep_details(, "ggdiagram")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘ggdiagram’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/ggdiagram/new/ggdiagram.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ggdiagram/new/ggdiagram.Rcheck/00install.out’ for details.
+     ```
+
+## Newly fixed
+
+*   checking tests ...
+     ```
+       Running ‘spelling.R’
+       Comparing ‘spelling.Rout’ to ‘spelling.Rout.save’ ... OK
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+         7. │       ├─purrr:::call_with_cleanup(...)
+         8. │       └─ggdiagram (local) .f(...)
+         9. │         └─pdftools::pdf_pagesize(f_pdf)
+        10. │           ├─pdftools:::poppler_pdf_pagesize(loadfile(pdf), opw, upw)
+        11. │           └─pdftools:::loadfile(pdf)
+        12. │             └─base::normalizePath(pdf, mustWork = TRUE)
+        13. └─base::.handleSimpleError(...)
+        14.   └─purrr (local) h(simpleError(msg, call))
+        15.     └─cli::cli_abort(...)
+        16.       └─rlang::abort(...)
+       
+       [ FAIL 1 | WARN 1 | SKIP 0 | PASS 2089 ]
+       Error:
+       ! Test failures.
+       Execution halted
      ```
 
 ## Installation
@@ -943,7 +1035,7 @@ Error : .onLoad failed in loadNamespace() for 'ggforce', details:
 Error: unable to load R code in package ‘ggdiagram’
 Execution halted
 ERROR: lazy loading failed for package ‘ggdiagram’
-* removing ‘/tmp/workdir/ggdiagram/new/ggdiagram.Rcheck/ggdiagram’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ggdiagram/new/ggdiagram.Rcheck/ggdiagram’
 
 
 ```
@@ -975,23 +1067,16 @@ ERROR: lazy loading failed for package ‘ggdiagram’
 * Email: <mailto:pwwang@pwwang.com>
 * GitHub mirror: <https://github.com/cran/gglogger>
 
-Run `revdepcheck::cloud_details(, "gglogger")` for more info
+Run `revdepcheck::revdep_details(, "gglogger")` for more info
 
 ## Newly broken
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-           ▆
-        1. └─p$logs$evaluate(env) at test-gglogger.R:101:5
-        2.   └─base::lapply(logs, function(log) log$evaluate(envir))
-        3.     └─gglogger (local) FUN(X[[i]], ...)
-        4.       └─log$evaluate(envir)
-        5.         └─base::eval(parse(text = code), envir = envir)
-        6.           └─base::eval(parse(text = code), envir = envir)
-       ── Failure ('test-gglogger.R:117:5'): gglogger gen_code works ──────────────────
-       Expected `code` to equal "library(ggplot2)\n\nggplot2::ggplot(ggplot2::mpg) +\n  geom_point(aes(x = displ, y = hwy))\n".
-       Differences:
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
        1/1 mismatches
        x[1]: "library(ggplot2)\n\nggplot2::ggplot(ggplot2::mpg) +\n  e2\n"
        y[1]: "library(ggplot2)\n\nggplot2::ggplot(ggplot2::mpg) +\n  geom_point(aes(x =
@@ -1015,14 +1100,14 @@ Run `revdepcheck::cloud_details(, "gglogger")` for more info
 * Email: <mailto:mrcaseb@gmail.com>
 * GitHub mirror: <https://github.com/cran/ggpath>
 
-Run `revdepcheck::cloud_details(, "ggpath")` for more info
+Run `revdepcheck::revdep_details(, "ggpath")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘ggpath’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/ggpath/new/ggpath.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ggpath/new/ggpath.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -1044,7 +1129,7 @@ Error in S7::new_class("element_path", parent = element_text, properties = list(
 Error: unable to load R code in package ‘ggpath’
 Execution halted
 ERROR: lazy loading failed for package ‘ggpath’
-* removing ‘/tmp/workdir/ggpath/new/ggpath.Rcheck/ggpath’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ggpath/new/ggpath.Rcheck/ggpath’
 
 
 ```
@@ -1069,60 +1154,20 @@ ERROR: lazy loading failed for package ‘ggpath’
 
 
 ```
-# ggplot2 (4.0.3)
-
-* GitHub: <https://github.com/tidyverse/ggplot2>
-* Email: <mailto:thomas.pedersen@posit.co>
-* GitHub mirror: <https://github.com/cran/ggplot2>
-
-Run `revdepcheck::cloud_details(, "ggplot2")` for more info
-
-## Newly broken
-
-*   checking tests ... ERROR
-     ```
-     ...
-       
-       [ FAIL 1 | WARN 0 | SKIP 270 | PASS 1781 ]
-       Deleting unused snapshots:
-       'geom-dotplot/2-na-values-bin-along-y-stack-center.svg',
-       'geom-dotplot/2-na-values-dot-density-binning-binwidth-4.svg',
-       'geom-dotplot/3-stackgroups-bin-y-histodot.svg',
-       'geom-dotplot/3-stackgroups-dot-density-with-aligned-bins.svg',
-       'geom-dotplot/3-stackgroups-histodot.svg',
-       'geom-dotplot/basic-dotplot-with-dot-density-binning-binwidth-4.svg',
-       'geom-dotplot/bin-along-y-stack-center.svg',
-       'geom-dotplot/bin-along-y-stack-centerwhole-histodot.svg',
-       'geom-dotplot/bin-along-y-stack-centerwhole.svg',
-       'geom-dotplot/bin-x-three-y-groups-stack-centerwhole.svg',
-       'geom-dotplot/bin-y-continous-x-axis-grouping-by-x.svg',
-       'geom-dotplot/bin-y-continous-x-axis-single-x-group.svg',
-       'geom-dotplot/bin-y-dodged-coord-flip.svg', 'geom-dotplot/bin-y-dodged.svg',
-       'geom-dotplot/bin-y-dodging-3-stackgroups-histodot.svg',
-       'geom-dotplot/bin-y-three-x-groups-bins-aligned-across-groups.svg',
-       'geom-dotplot/bin-y-three-x-groups-bins-aligned-coord-flip.svg',
-       'geom-dotplot/bin-y-three-x-groups-fill-and-dodge.svg', …,
-       'theme/vertical-legends-placed-apart.svg', and
-       'theme/width-is-3-times-height.svg'
-       Error:
-       ! Test failures.
-       Execution halted
-     ```
-
 # ggplotplus (0.5.7)
 
 * GitHub: <https://github.com/MAISRC/ggplotplus>
 * Email: <mailto:bajcz003@umn.edu>
 * GitHub mirror: <https://github.com/cran/ggplotplus>
 
-Run `revdepcheck::cloud_details(, "ggplotplus")` for more info
+Run `revdepcheck::revdep_details(, "ggplotplus")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘ggplotplus’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/ggplotplus/new/ggplotplus.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ggplotplus/new/ggplotplus.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -1142,7 +1187,7 @@ Error : Package 'ggplot2' must export `ggplot` as an S7 class.
 Error: unable to load R code in package ‘ggplotplus’
 Execution halted
 ERROR: lazy loading failed for package ‘ggplotplus’
-* removing ‘/tmp/workdir/ggplotplus/new/ggplotplus.Rcheck/ggplotplus’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/ggplotplus/new/ggplotplus.Rcheck/ggplotplus’
 
 
 ```
@@ -1168,53 +1213,13 @@ ERROR: lazy loading failed for package ‘ggplotplus’
 
 
 ```
-# ggside (0.4.1)
-
-* GitHub: <https://github.com/jtlandis/ggside>
-* Email: <mailto:jtlandis314@gmail.com>
-* GitHub mirror: <https://github.com/cran/ggside>
-
-Run `revdepcheck::cloud_details(, "ggside")` for more info
-
-## Newly broken
-
-*   checking tests ... ERROR
-     ```
-     ...
-       ── Error ('test_add_gg.R:51:3'): add_gg errors ─────────────────────────────────
-       Error in ``method(update_ggplot, list(class_any, ggplot2::ggplot))`(object = "", plot = <object>, ...)`: Can't add `e2` to a <ggplot> object.
-       Backtrace:
-            ▆
-         1. ├─testthat::expect_error(p + "", "Can't add `\"\"` to a") at test_add_gg.R:51:3
-         2. │ └─testthat:::expect_condition_matching_(...)
-         3. │   └─testthat:::quasi_capture(...)
-         4. │     ├─testthat (local) .capture(...)
-         5. │     │ └─base::withCallingHandlers(...)
-         6. │     └─rlang::eval_bare(quo_get_expr(.quo), quo_get_env(.quo))
-         7. └─S7:::Ops.S7_object(p, "")
-         8.   └─ggplot2 (local) `method(+, list(ggplot2::ggplot, class_any))`(...)
-         9.     └─ggplot2:::add_ggplot(e1, e2, e2name)
-        10.       ├─ggplot2::ggplot_add(object, p, objectname)
-        11.       └─ggplot2:::ggplot_add.default(object, p, objectname)
-        12.         └─ggplot2::update_ggplot(object = object, plot = plot, ...)
-        13.           ├─S7::S7_dispatch()
-        14.           └─ggplot2 (local) `method(update_ggplot, list(class_any, ggplot2::ggplot))`(object = `<chr>`, plot = `<ggplt2::>`, ...)
-        15.             └─cli::cli_abort("Can't add {.var {object_name}} to a {.cls ggplot} object.")
-        16.               └─rlang::abort(...)
-       
-       [ FAIL 1 | WARN 0 | SKIP 36 | PASS 115 ]
-       Error:
-       ! Test failures.
-       Execution halted
-     ```
-
 # ggtime (1.0.0)
 
 * GitHub: <https://github.com/mitchelloharawild/ggtime>
 * Email: <mailto:mail@mitchelloharawild.com>
 * GitHub mirror: <https://github.com/cran/ggtime>
 
-Run `revdepcheck::cloud_details(, "ggtime")` for more info
+Run `revdepcheck::revdep_details(, "ggtime")` for more info
 
 ## Newly broken
 
@@ -1248,21 +1253,12 @@ Run `revdepcheck::cloud_details(, "ggtime")` for more info
      Execution halted
      ```
 
-## In both
-
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        21.                                     └─self$scale$get_labels(breaks)
-        22.                                       └─ggtime (local) get_labels(..., self = self)
-        23.                                         └─ggproto_parent(ScaleContinuous, labelled)$get_labels(breaks)
-        24.                                           └─ggplot2 (local) get_labels(..., self = self)
-        25.                                             └─self$labels(breaks)
-        26.                                               └─ggtime (local) labels(...)
-        27.                                                 └─ggtime:::time_labels_at(x, chronon = granule)
-        28.                                                   ├─base::format(inject(mixtime::mixtime(!!!args)), attr = FALSE)
-        29.                                                   └─vecvec (local) `format.vecvec::vecvec`(inject(mixtime::mixtime(!!!args)), attr = FALSE)
-        30.                                                     ├─vctrs::vec_c(!!!lapply(x@x, format, ...), .ptype = character())
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
         31.                                                     │ └─rlang::list2(...) at vctrs/R/c.R:83:3
         32.                                                     └─base::lapply(x@x, format, ...)
         33.                                                       ├─base (local) FUN(X[[i]], ...)
@@ -1274,47 +1270,7 @@ Run `revdepcheck::cloud_details(, "ggtime")` for more info
         39.                                                               ├─S7::S7_dispatch()
         40.                                                               └─mixtime (local) `method(chronon_format_linear, list(mixtime::tu_day, class_any))`(...)
        
-       [ FAIL 15 | WARN 2 | SKIP 9 | PASS 578 ]
-       Error:
-       ! Test failures.
-       Execution halted
-     ```
-
-# GitAI (0.1.3)
-
-* GitHub: <https://github.com/r-world-devs/GitAI>
-* Email: <mailto:kamil.wais@gmail.com>
-* GitHub mirror: <https://github.com/cran/GitAI>
-
-Run `revdepcheck::cloud_details(, "GitAI")` for more info
-
-## Newly broken
-
-*   checking tests ... ERROR
-     ```
-     ...
-        2.   ├─rlang::exec(provider_method, !!!provider_args)
-        3.   └─GitAI (local) `<fn>`(model = "gpt-4o-mini", params = NULL, echo = "none")
-        4.     └─GitAI:::mock_chat_method(...) at ./setup.R:50:3
-        5.       └─ChatMocked$new(provider = provider, echo = echo) at ./setup.R:26:3
-        6.         └─ellmer (local) initialize(...)
-        7.           └─cli::cli_abort("{.arg model} is required.")
-        8.             └─rlang::abort(...)
-       ── Error ('test-set_llm.R:100:3'): setting system prompt ───────────────────────
-       Error in `initialize(...)`: `model` is required.
-       Backtrace:
-           ▆
-        1. ├─GitAI::set_prompt(set_llm(my_project), system_prompt = "You always return only 'Hi there!'") at test-set_llm.R:100:3
-        2. └─GitAI::set_llm(my_project)
-        3.   ├─rlang::exec(provider_method, !!!provider_args)
-        4.   └─GitAI (local) `<fn>`(model = "gpt-4o-mini", params = NULL, echo = "none")
-        5.     └─GitAI:::mock_chat_method(...) at ./setup.R:50:3
-        6.       └─ChatMocked$new(provider = provider, echo = echo) at ./setup.R:26:3
-        7.         └─ellmer (local) initialize(...)
-        8.           └─cli::cli_abort("{.arg model} is required.")
-        9.             └─rlang::abort(...)
-       
-       [ FAIL 4 | WARN 4 | SKIP 6 | PASS 36 ]
+       [ FAIL 14 | WARN 2 | SKIP 0 | PASS 589 ]
        Error:
        ! Test failures.
        Execution halted
@@ -1326,7 +1282,7 @@ Run `revdepcheck::cloud_details(, "GitAI")` for more info
 * Email: <mailto:felipe.elorrieta@usach.cl>
 * GitHub mirror: <https://github.com/cran/iAR>
 
-Run `revdepcheck::cloud_details(, "iAR")` for more info
+Run `revdepcheck::revdep_details(, "iAR")` for more info
 
 ## Newly broken
 
@@ -1347,33 +1303,22 @@ Run `revdepcheck::cloud_details(, "iAR")` for more info
      Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
-     ...
-     --- re-building ‘getting-started.Rmd’ using rmarkdown
+       ‘getting-started.Rmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘getting-started.Rmd’
+       ...
      
-     Quitting from getting-started.Rmd:53-62 [gentime]
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     <error/rlang_error>
-     Error:
-     ! Can't find method for `gentime(MISSING)`.
-     ---
-     Backtrace:
-         ▆
-      1. ├─iAR::gentime(n = 100)
-      2. │ └─S7::S7_dispatch()
-      3. └─S7:::method_lookup_error("gentime", `<list>`)
-      4.   └─S7:::stop2(msg, call = NULL, class = "S7_error_method_not_found")
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     > library(iAR)
      
-     Error: processing vignette 'getting-started.Rmd' failed with diagnostics:
-     Can't find method for `gentime(MISSING)`.
-     --- failed re-building ‘getting-started.Rmd’
+     > set.seed(2847)
      
-     SUMMARY: processing the following file failed:
-       ‘getting-started.Rmd’
+     > times <- gentime(n = 100)@times
      
-     Error: Vignette re-building failed.
+       When sourcing ‘getting-started.R’:
+     Error: Can't find method for `gentime(MISSING)`.
      Execution halted
      ```
 
@@ -1383,14 +1328,14 @@ Run `revdepcheck::cloud_details(, "iAR")` for more info
 * Email: <mailto:code@clayden.org>
 * GitHub mirror: <https://github.com/cran/imply>
 
-Run `revdepcheck::cloud_details(, "imply")` for more info
+Run `revdepcheck::revdep_details(, "imply")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘imply’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/imply/new/imply.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/imply/new/imply.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -1409,8 +1354,8 @@ checking whether we are cross compiling... no
 checking for suffix of object files... o
 checking whether the compiler supports GNU C++... yes
 ...
-g++ -std=gnu++20 -shared -L/opt/R/4.6.0/lib/R/lib -L/usr/local/lib -o imply.so RcppExports.o apply.o geometry.o narrow.o raster.o reduce.o sparse.o -fopenmp -L/opt/R/4.6.0/lib/R/lib -lR
-installing to /tmp/workdir/imply/new/imply.Rcheck/00LOCK-imply/00new/imply/libs
+clang++ -arch arm64 -std=gnu++20 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -L/Library/Frameworks/R.framework/Versions/4.6/Resources/lib -L/opt/R/arm64/lib -o imply.so RcppExports.o apply.o geometry.o narrow.o raster.o reduce.o sparse.o -F/Library/Frameworks/R.framework/Versions/4.6 -framework R
+installing to /Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/imply/new/imply.Rcheck/00LOCK-imply/00new/imply/libs
 ** R
 ** inst
 ** byte-compile and prepare package for lazy loading
@@ -1418,7 +1363,7 @@ Error : Class union has not been registered with S4; please call S4_register(new
 Error: unable to load R code in package ‘imply’
 Execution halted
 ERROR: lazy loading failed for package ‘imply’
-* removing ‘/tmp/workdir/imply/new/imply.Rcheck/imply’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/imply/new/imply.Rcheck/imply’
 
 
 ```
@@ -1455,7 +1400,7 @@ checking whether the compiler supports GNU C++... yes
 * Email: <mailto:eduard.bruell@zew.de>
 * GitHub mirror: <https://github.com/cran/joinery>
 
-Run `revdepcheck::cloud_details(, "joinery")` for more info
+Run `revdepcheck::revdep_details(, "joinery")` for more info
 
 ## Newly broken
 
@@ -1463,7 +1408,7 @@ Run `revdepcheck::cloud_details(, "joinery")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘data.table:::=’ when loading ‘joinery’
-     See ‘/tmp/workdir/joinery/new/joinery.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/joinery/new/joinery.Rcheck/00install.out’ for details.
      ```
 
 # marquee (1.2.1)
@@ -1472,7 +1417,7 @@ Run `revdepcheck::cloud_details(, "joinery")` for more info
 * Email: <mailto:thomas.pedersen@posit.co>
 * GitHub mirror: <https://github.com/cran/marquee>
 
-Run `revdepcheck::cloud_details(, "marquee")` for more info
+Run `revdepcheck::revdep_details(, "marquee")` for more info
 
 ## Newly broken
 
@@ -1488,7 +1433,7 @@ Run `revdepcheck::cloud_details(, "marquee")` for more info
 * Email: <mailto:wjakethompson@gmail.com>
 * GitHub mirror: <https://github.com/cran/measr>
 
-Run `revdepcheck::cloud_details(, "measr")` for more info
+Run `revdepcheck::revdep_details(, "measr")` for more info
 
 ## Newly broken
 
@@ -1512,20 +1457,25 @@ Run `revdepcheck::cloud_details(, "measr")` for more info
          Name: 'model_spec' Code: dcmstan::dcm_specification() Docs: NULL
      ```
 
+## In both
+
+*   R CMD check timed out
+
+
 # medfit (0.3.2)
 
 * GitHub: <https://github.com/data-wise/medfit>
 * Email: <mailto:dtofighi@gmail.com>
 * GitHub mirror: <https://github.com/cran/medfit>
 
-Run `revdepcheck::cloud_details(, "medfit")` for more info
+Run `revdepcheck::revdep_details(, "medfit")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘medfit’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/medfit/new/medfit.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/medfit/new/medfit.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -1544,7 +1494,7 @@ Error : Class union has not been registered with S4; please call S4_register(new
 Error: unable to load R code in package ‘medfit’
 Execution halted
 ERROR: lazy loading failed for package ‘medfit’
-* removing ‘/tmp/workdir/medfit/new/medfit.Rcheck/medfit’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/medfit/new/medfit.Rcheck/medfit’
 
 
 ```
@@ -1575,7 +1525,7 @@ ERROR: lazy loading failed for package ‘medfit’
 * Email: <mailto:oath@novonordisk.com>
 * GitHub mirror: <https://github.com/cran/mighty.metadata>
 
-Run `revdepcheck::cloud_details(, "mighty.metadata")` for more info
+Run `revdepcheck::revdep_details(, "mighty.metadata")` for more info
 
 ## Newly broken
 
@@ -1601,63 +1551,48 @@ Run `revdepcheck::cloud_details(, "mighty.metadata")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-           ▆
-        1. └─mighty.metadata::mighty_study(test_path("test_study")) at test-z_resolve.R:150:3
-        2.   └─mighty.metadata:::find_yml(path = path, name = "_mighty", schema = mighty_schema)
-        3.     ├─S7schema::validate_yaml(files, schema)
-        4.     └─S7schema:::validate_yaml.character(files, schema)
-        5.       ├─S7schema:::use_validator(...)
-        6.       └─S7schema:::validator(schema = schema)
-        7.         └─S7::new_object(.parent = S7::S7_object(), context = ctx)
-       ── Error ('test-z_resolve.R:177:3'): resolve_includes() - drops domains if not included (expression) ──
-       <getvarError/missingArgError/error/condition>
-       Error in `S7::new_object(.parent = S7::S7_object(), context = ctx)`: argument "_parent" is missing, with no default
-       Backtrace:
-           ▆
-        1. └─mighty.metadata::mighty_study(test_path("test_study")) at test-z_resolve.R:177:3
-        2.   └─mighty.metadata:::find_yml(path = path, name = "_mighty", schema = mighty_schema)
-        3.     ├─S7schema::validate_yaml(files, schema)
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
         4.     └─S7schema:::validate_yaml.character(files, schema)
         5.       ├─S7schema:::use_validator(...)
         6.       └─S7schema:::validator(schema = schema)
         7.         └─S7::new_object(.parent = S7::S7_object(), context = ctx)
        
-       [ FAIL 63 | WARN 0 | SKIP 1 | PASS 40 ]
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 64 | WARN 0 | SKIP 0 | PASS 40 ]
        Error:
        ! Test failures.
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
-     ...
-      2.   ├─S7::new_object(...)
-      3.   │ └─S7:::collect_dots(...)
-      4.   └─S7schema::S7schema(...)
-      5.     ├─S7schema::validate_yaml(file, schema)
-      6.     └─S7schema:::validate_yaml.character(file, schema)
-      7.       ├─S7schema:::use_validator(...)
-      8.       └─S7schema:::validator(schema = schema)
-      9.         └─S7::new_object(.parent = S7::S7_object(), context = ctx)
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       ‘adam-schema.Rmd’ using ‘UTF-8’... OK
+       ‘mighty-metadata.Rmd’ using ‘UTF-8’... failed
+       ‘mighty-schema.Rmd’ using ‘UTF-8’... OK
+       ‘study-schema.Rmd’ using ‘UTF-8’... OK
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘mighty-metadata.Rmd’
+       ...
      
-     Error: processing vignette 'mighty-metadata.Rmd' failed with diagnostics:
-     argument "_parent" is missing, with no default
-     --- failed re-building ‘mighty-metadata.Rmd’
+     > library(mighty.metadata)
      
-     --- re-building ‘mighty-schema.Rmd’ using rmarkdown
-     --- finished re-building ‘mighty-schema.Rmd’
+     > path <- system.file("examples", "advs.yml", package = "mighty.metadata")
      
-     --- re-building ‘study-schema.Rmd’ using rmarkdown
-     --- finished re-building ‘study-schema.Rmd’
+     > advs <- mighty_domain(path)
      
-     SUMMARY: processing the following file failed:
-       ‘mighty-metadata.Rmd’
-     
-     Error: Vignette re-building failed.
+       When sourcing ‘mighty-metadata.R’:
+     Error: argument "_parent" is missing, with no default
      Execution halted
      ```
 
@@ -1667,14 +1602,14 @@ Run `revdepcheck::cloud_details(, "mighty.metadata")` for more info
 * Email: <mailto:mail@mitchelloharawild.com>
 * GitHub mirror: <https://github.com/cran/mixtime>
 
-Run `revdepcheck::cloud_details(, "mixtime")` for more info
+Run `revdepcheck::revdep_details(, "mixtime")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘mixtime’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/mixtime/new/mixtime.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/mixtime/new/mixtime.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -1687,14 +1622,14 @@ Run `revdepcheck::cloud_details(, "mixtime")` for more info
 ** package ‘mixtime’ successfully unpacked and MD5 sums checked
 ** using staged installation
 ** libs
-using C++ compiler: ‘g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c cpp11.cpp -o cpp11.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c format.cpp -o format.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c timeastro.cpp -o timeastro.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c timeastro_lunar.cpp -o timeastro_lunar.o
+using C++ compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
+using SDK: ‘MacOSX27.0.sdk’
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/cpp11/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/tzdb/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c cpp11.cpp -o cpp11.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/cpp11/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/tzdb/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c format.cpp -o format.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/cpp11/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/tzdb/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c timeastro.cpp -o timeastro.o
 ...
-g++ -std=gnu++20 -shared -L/opt/R/4.6.0/lib/R/lib -L/usr/local/lib -o mixtime.so cpp11.o format.o timeastro.o timeastro_lunar.o timeastro_solar.o timezone-info.o -L/opt/R/4.6.0/lib/R/lib -lR
-installing to /tmp/workdir/mixtime/new/mixtime.Rcheck/00LOCK-mixtime/00new/mixtime/libs
+clang++ -arch arm64 -std=gnu++20 -dynamiclib -Wl,-headerpad_max_install_names -undefined dynamic_lookup -L/Library/Frameworks/R.framework/Versions/4.6/Resources/lib -L/opt/R/arm64/lib -o mixtime.so cpp11.o format.o timeastro.o timeastro_lunar.o timeastro_solar.o timezone-info.o -F/Library/Frameworks/R.framework/Versions/4.6 -framework R
+installing to /Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/mixtime/new/mixtime.Rcheck/00LOCK-mixtime/00new/mixtime/libs
 ** R
 ** inst
 ** byte-compile and prepare package for lazy loading
@@ -1702,7 +1637,7 @@ Error : Package 'vecvec' must export `vecvec` as an S7 class.
 Error: unable to load R code in package ‘mixtime’
 Execution halted
 ERROR: lazy loading failed for package ‘mixtime’
-* removing ‘/tmp/workdir/mixtime/new/mixtime.Rcheck/mixtime’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/mixtime/new/mixtime.Rcheck/mixtime’
 
 
 ```
@@ -1714,11 +1649,11 @@ ERROR: lazy loading failed for package ‘mixtime’
 ** package ‘mixtime’ successfully unpacked and MD5 sums checked
 ** using staged installation
 ** libs
-using C++ compiler: ‘g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c cpp11.cpp -o cpp11.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c format.cpp -o format.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c timeastro.cpp -o timeastro.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/include' -I'/tmp/r-deps/tzdb/include' -I/usr/local/include    -fpic  -g -O2   -c timeastro_lunar.cpp -o timeastro_lunar.o
+using C++ compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
+using SDK: ‘MacOSX27.0.sdk’
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/cpp11/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/tzdb/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c cpp11.cpp -o cpp11.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/cpp11/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/tzdb/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c format.cpp -o format.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/cpp11/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/mixtime/tzdb/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c timeastro.cpp -o timeastro.o
 ...
 ** help
 *** installing help indices
@@ -1739,14 +1674,14 @@ g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/cpp11/i
 * Email: <mailto:hajk-georg.drost@tuebingen.mpg.de>
 * GitHub mirror: <https://github.com/cran/myTAI>
 
-Run `revdepcheck::cloud_details(, "myTAI")` for more info
+Run `revdepcheck::revdep_details(, "myTAI")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘myTAI’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/myTAI/new/myTAI.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/myTAI/new/myTAI.Rcheck/00install.out’ for details.
      ```
 
 ## Installation
@@ -1759,11 +1694,11 @@ Run `revdepcheck::cloud_details(, "myTAI")` for more info
 ** package ‘myTAI’ successfully unpacked and MD5 sums checked
 ** using staged installation
 ** libs
-using C++ compiler: ‘g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/RcppArmadillo/include' -I'/tmp/r-deps/RcppThread/include' -I'/tmp/r-deps/Rcpp/include' -I/usr/local/include    -fpic  -g -O2   -c RcppExports.cpp -o RcppExports.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/RcppArmadillo/include' -I'/tmp/r-deps/RcppThread/include' -I'/tmp/r-deps/Rcpp/include' -I/usr/local/include    -fpic  -g -O2   -c null_txis.cpp -o null_txis.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/RcppArmadillo/include' -I'/tmp/r-deps/RcppThread/include' -I'/tmp/r-deps/Rcpp/include' -I/usr/local/include    -fpic  -g -O2   -c sc_txi.cpp -o sc_txi.o
-g++ -std=gnu++20 -shared -L/opt/R/4.6.0/lib/R/lib -L/usr/local/lib -o myTAI.so RcppExports.o null_txis.o sc_txi.o -latomic -L/opt/R/4.6.0/lib/R/lib -lR
+using C++ compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
+using SDK: ‘MacOSX27.0.sdk’
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppArmadillo/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppThread/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/Rcpp/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c RcppExports.cpp -o RcppExports.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppArmadillo/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppThread/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/Rcpp/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c null_txis.cpp -o null_txis.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppArmadillo/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppThread/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/Rcpp/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c sc_txi.cpp -o sc_txi.o
 ...
 Warning: namespace ‘myTAI’ is not available and has been replaced
 by .GlobalEnv when processing object ‘example_phyex_set_sc’
@@ -1774,7 +1709,7 @@ Error: .onLoad failed in loadNamespace() for 'ggforce', details:
   error: `object` must be an <S7_object>, not a S3<ggplot2::mapping/uneval/gg/S7_object>.
 Execution halted
 ERROR: lazy loading failed for package ‘myTAI’
-* removing ‘/tmp/workdir/myTAI/new/myTAI.Rcheck/myTAI’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/myTAI/new/myTAI.Rcheck/myTAI’
 
 
 ```
@@ -1786,11 +1721,11 @@ ERROR: lazy loading failed for package ‘myTAI’
 ** package ‘myTAI’ successfully unpacked and MD5 sums checked
 ** using staged installation
 ** libs
-using C++ compiler: ‘g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/RcppArmadillo/include' -I'/tmp/r-deps/RcppThread/include' -I'/tmp/r-deps/Rcpp/include' -I/usr/local/include    -fpic  -g -O2   -c RcppExports.cpp -o RcppExports.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/RcppArmadillo/include' -I'/tmp/r-deps/RcppThread/include' -I'/tmp/r-deps/Rcpp/include' -I/usr/local/include    -fpic  -g -O2   -c null_txis.cpp -o null_txis.o
-g++ -std=gnu++20 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG  -I'/tmp/r-deps/RcppArmadillo/include' -I'/tmp/r-deps/RcppThread/include' -I'/tmp/r-deps/Rcpp/include' -I/usr/local/include    -fpic  -g -O2   -c sc_txi.cpp -o sc_txi.o
-g++ -std=gnu++20 -shared -L/opt/R/4.6.0/lib/R/lib -L/usr/local/lib -o myTAI.so RcppExports.o null_txis.o sc_txi.o -latomic -L/opt/R/4.6.0/lib/R/lib -lR
+using C++ compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
+using SDK: ‘MacOSX27.0.sdk’
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppArmadillo/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppThread/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/Rcpp/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c RcppExports.cpp -o RcppExports.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppArmadillo/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppThread/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/Rcpp/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c null_txis.cpp -o null_txis.o
+clang++ -arch arm64 -std=gnu++20 -I"/Library/Frameworks/R.framework/Versions/4.6/Resources/include" -DNDEBUG  -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppArmadillo/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/RcppThread/include' -I'/Users/tomasz/github/RConsortium/S7/revdep/library.noindex/myTAI/Rcpp/include' -I/opt/R/arm64/include    -fPIC  -falign-functions=64 -Wall -g -O2   -c sc_txi.cpp -o sc_txi.o
 ...
 ** help
 *** installing help indices
@@ -1811,7 +1746,7 @@ g++ -std=gnu++20 -shared -L/opt/R/4.6.0/lib/R/lib -L/usr/local/lib -o myTAI.so R
 * Email: <mailto:mrcaseb@gmail.com>
 * GitHub mirror: <https://github.com/cran/nflplotR>
 
-Run `revdepcheck::cloud_details(, "nflplotR")` for more info
+Run `revdepcheck::revdep_details(, "nflplotR")` for more info
 
 ## Newly broken
 
@@ -1845,6 +1780,29 @@ Run `revdepcheck::cloud_details(, "nflplotR")` for more info
      Execution halted
      ```
 
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+         3. │   └─base::mget(args, envir = env)
+         4. └─nflplotR::element_nfl_logo()
+         5.   ├─S7::new_object((S7::as_class(ggpath::element_path))(...))
+         6.   │ └─S7:::check_parent(`_parent`, class)
+         7.   │   └─S7:::class_inherits(parent, parent_class)
+         8.   └─(S7::as_class(ggpath::element_path))(...)
+         9.     └─S7::new_object(...)
+        10.       └─S7:::check_parent(`_parent`, class)
+        11.         └─S7:::stop2(msg, call = call)
+       
+       [ FAIL 1 | WARN 0 | SKIP 0 | PASS 20 ]
+       Deleting unused snapshots: 'theme-elements/p1.svg' and 'theme-elements/p2.svg'
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
 *   checking for code/documentation mismatches ... WARNING
      ```
      ...
@@ -1875,19 +1833,86 @@ Run `revdepcheck::cloud_details(, "nflplotR")` for more info
          Position: 1 Code: ... Docs: alpha
      ```
 
+# parsermd (0.2.0)
+
+* GitHub: <https://github.com/rundel/parsermd>
+* Email: <mailto:rundel@gmail.com>
+* GitHub mirror: <https://github.com/cran/parsermd>
+
+Run `revdepcheck::revdep_details(, "parsermd")` for more info
+
+## Newly broken
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+       - "Caused by error:"
+       + "Caused by error in `<rmd_chunk>@engine`:"
+         "! <rmd_chunk>@engine must be <character>, not <double>"
+       
+       
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 1 | WARN 14 | SKIP 3 | PASS 7262 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
+## In both
+
+*   checking whether package ‘parsermd’ can be installed ... WARNING
+     ```
+     Found the following significant warnings:
+       /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/string.h:45:41: warning: 'char_traits<unsigned char>' is deprecated: char_traits<T> for T not equal to char, wchar_t, char8_t, char16_t or char32_t is non-standard and is provided for a temporary period. It will be removed in a future release, so please migrate off of it. [-Wdeprecated-declarations]
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/parsermd/new/parsermd.Rcheck/00install.out’ for details.
+     ```
+
 # PFIM (8.0)
 
 * Email: <mailto:pfim@inserm.fr>
 * GitHub mirror: <https://github.com/cran/PFIM>
 
-Run `revdepcheck::cloud_details(, "PFIM")` for more info
+Run `revdepcheck::revdep_details(, "PFIM")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘PFIM’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/PFIM/new/PFIM.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/PFIM/new/PFIM.Rcheck/00install.out’ for details.
+     ```
+
+## Newly fixed
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+       • src/init.c absent (installed tarball) (1): 'test-cpp-kernels.R:27:3'
+       • tests_PFIM/resultats_de_references not found (1):
+         'test-eval-opt-references.R:45:3'
+       
+       ══ Failed tests ════════════════════════════════════════════════════════════════
+       ── Failure ('test-example-pk-mm.R:130:3'): Model PK 1cpt : MichaelisMenten1BolusSingleDose_VmKm ──
+       Expected `detPopulationFim` to equal `valueDetPopulationFim`.
+       Differences:
+       actual != expected but don't know how to show the difference
+       
+       
+       [ FAIL 1 | WARN 0 | SKIP 7 | PASS 1216 ]
+       Error:
+       ! Test failures.
+       Execution halted
      ```
 
 ## Installation
@@ -1901,10 +1926,10 @@ Run `revdepcheck::cloud_details(, "PFIM")` for more info
 ** using staged installation
 ** libs
 specified C++17
-using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
-using C++ compiler: ‘g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
+using C compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
+using C++ compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
 using C++17
-g++ -std=gnu++17 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG -I../inst/include -DARMA_WARN_LEVEL=1 -I'/tmp/r-deps/Rcpp/include' -I'/tmp/r-deps/RcppArmadillo/include' -I/usr/local/include    -fpic  -g -O2   -c FedorovWynnAlgorithm.cpp -o FedorovWynnAlgorithm.o
+using SDK: ‘MacOSX27.0.sdk’
 ...
 * This warning will become an error in a future release.
 Warning in new_property(class_list, default = list()) :
@@ -1915,7 +1940,7 @@ Error : Class union has not been registered with S4; please call S4_register(new
 Error: unable to load R code in package ‘PFIM’
 Execution halted
 ERROR: lazy loading failed for package ‘PFIM’
-* removing ‘/tmp/workdir/PFIM/new/PFIM.Rcheck/PFIM’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/PFIM/new/PFIM.Rcheck/PFIM’
 
 
 ```
@@ -1928,10 +1953,10 @@ ERROR: lazy loading failed for package ‘PFIM’
 ** using staged installation
 ** libs
 specified C++17
-using C compiler: ‘gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
-using C++ compiler: ‘g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0’
+using C compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
+using C++ compiler: ‘Apple clang version 21.0.0 (clang-2100.3.34.2)’
 using C++17
-g++ -std=gnu++17 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG -I../inst/include -DARMA_WARN_LEVEL=1 -I'/tmp/r-deps/Rcpp/include' -I'/tmp/r-deps/RcppArmadillo/include' -I/usr/local/include    -fpic  -g -O2   -c FedorovWynnAlgorithm.cpp -o FedorovWynnAlgorithm.o
+using SDK: ‘MacOSX27.0.sdk’
 ...
 ** byte-compile and prepare package for lazy loading
 ** help
@@ -1946,15 +1971,121 @@ g++ -std=gnu++17 -I"/opt/R/4.6.0/lib/R/include" -DNDEBUG -I../inst/include -DARM
 
 
 ```
+# plyxp (1.6.1)
+
+* GitHub: <https://github.com/jtlandis/plyxp>
+* Email: <mailto:jtlandis314@gmail.com>
+
+Run `revdepcheck::revdep_details(, "plyxp")` for more info
+
+## Newly broken
+
+*   checking examples ... ERROR
+     ```
+     ...
+       1. ├─dplyr::mutate(...)
+       2. ├─plyxp:::mutate.PlySummarizedExperiment(...)
+       3. │ └─plyxp::plyxp(.data, mutate_se_impl, ...)
+       4. │   ├─rlang::try_fetch(...)
+       5. │   │ ├─base::tryCatch(...)
+       6. │   │ │ └─base (local) tryCatchList(expr, classes, parentenv, handlers)
+       7. │   │ │   └─base (local) tryCatchOne(expr, names, parentenv, handlers[[1L]])
+       8. │   │ │     └─base (local) doTryCatch(return(expr), name, parentenv, handler)
+       9. │   │ └─base::withCallingHandlers(...)
+      10. │   └─plyxp (local) .f(se(.data), ...)
+      11. │     └─mask$results()
+      12. │       └─self$apply(function(m) m$results(), .on_masks = .from_masks)
+      13. │         └─base::lapply(private$.masks[.on_masks], .f, ...)
+      14. │           └─plyxp (local) FUN(X[[i]], ...)
+      15. │             └─m$results()
+      16. │               └─base::lapply(added, self$unchop)
+      17. │                 └─plyxp (local) FUN(X[[i]], ...)
+      18. │                   └─plyxp::list_unchop(lapply(data, as.vector), indices = private$.indices)
+      19. │                     ├─S7::S7_dispatch()
+      20. │                     └─plyxp (local) `method(list_unchop, list(class_list, class_any))`(...)
+      21. │                       └─vctrs::list_unchop(x, indices = indices, ptype = ptype)
+      22. └─rlang (local) `<fn>`(`<evalErrr>`) at vctrs/R/list-unchop.R:85:3
+      23.   └─handlers[[2L]](cnd)
+      24.     └─rlang::abort(...)
+     Execution halted
+     ```
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+         2.   └─self$apply(function(m) m$results(), .on_masks = .from_masks)
+         3.     └─base::lapply(private$.masks[.on_masks], .f, ...)
+         4.       └─plyxp (local) FUN(X[[i]], ...)
+         5.         └─m$results()
+         6.           └─base::lapply(added, self$unchop)
+         7.             └─plyxp (local) FUN(X[[i]], ...)
+         8.               └─plyxp::list_unchop(lapply(data, as.vector), indices = private$.indices)
+         9.                 ├─S7::S7_dispatch()
+        10.                 └─plyxp (local) `method(list_unchop, list(class_list, class_any))`(...)
+        11.                   └─vctrs::list_unchop(x, indices = indices, ptype = ptype)
+       
+       [ FAIL 18 | WARN 0 | SKIP 0 | PASS 151 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
+## In both
+
+*   checking running R code from vignettes ...
+     ```
+       ‘plyxp.Rmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘plyxp.Rmd’
+       ...
+     > xp <- new_plyxp(airway)
+     
+     > mutate(xp, log_counts = log1p(counts), cols(treated = dex == 
+     +     "trt"), rows(new_id = paste0("gene-", gene_name)))
+     
+       When sourcing ‘plyxp.R’:
+     Error: 
+     Caused by error in `method(list_unchop, list(class_list, class_any))`:
+     ! argument "ptype" is missing, with no default
+     Execution halted
+     ```
+
 # querychat (0.4.1)
 
 * GitHub: <https://github.com/posit-dev/querychat>
 * Email: <mailto:garrick@posit.co>
 * GitHub mirror: <https://github.com/cran/querychat>
 
-Run `revdepcheck::cloud_details(, "querychat")` for more info
+Run `revdepcheck::revdep_details(, "querychat")` for more info
 
 ## Newly broken
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+       -   ! Can't construct an object from abstract class <HandoffGalleryItem>
+       +   ! Can't construct an object from abstract class <HandoffGalleryItem>.
+       * Run `testthat::snapshot_accept("handoff_types", "testthat")` to accept the change.
+       * Run `testthat::snapshot_review("handoff_types", "testthat")` to review the change.
+       
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 1 | WARN 21 | SKIP 1 | PASS 2193 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
 
 *   checking S3 generic/method consistency ... WARNING
      ```
@@ -1994,49 +2125,174 @@ Run `revdepcheck::cloud_details(, "querychat")` for more info
      Extensions’ manual.
      ```
 
+## In both
+
+*   R CMD check timed out
+
+
+# quickr (0.3.0)
+
+* GitHub: <https://github.com/t-kalinowski/quickr>
+* Email: <mailto:tomasz@posit.co>
+* GitHub mirror: <https://github.com/cran/quickr>
+
+Run `revdepcheck::revdep_details(, "quickr")` for more info
+
+## Newly broken
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+         5.     └─quickr:::new_fortran_subroutine(name, e)
+         6.       ├─quickr:::scope_set(scope, "return_names", unique(unname(closure_return_var_names(closure))))
+         7.       │ └─base::assign(name, value, envir = st)
+         8.       ├─base::unique(unname(closure_return_var_names(closure)))
+         9.       ├─base::unname(closure_return_var_names(closure))
+        10.       └─quickr:::closure_return_var_names(closure)
+        11.         └─quickr:::map_chr(args, as.character)
+        12.           └─base::vapply(X = .x, FUN = .f, FUN.VALUE = "", ...)
+        13.             └─base::match.fun(FUN)
+        14.               └─base::get(as.character(FUN), mode = "function", envir = envir)
+       
+       [ FAIL 26 | WARN 0 | SKIP 0 | PASS 1650 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
+# RMediation (1.6.1)
+
+* GitHub: <https://github.com/data-wise/rmediation>
+* Email: <mailto:dtofighi@gmail.com>
+* GitHub mirror: <https://github.com/cran/RMediation>
+
+Run `revdepcheck::revdep_details(, "RMediation")` for more info
+
+## Newly broken
+
+*   checking running R code from vignettes ...
+     ```
+       ‘getting-started.Rmd’ using ‘UTF-8’... OK
+       ‘methods-comparison.Rmd’ using ‘UTF-8’... OK
+       ‘serial-mediation-with-medfit.Rmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘serial-mediation-with-medfit.Rmd’
+       ...
+     > fit <- lavaan::sem(model, data = dat)
+     
+     > mu <- medfit::extract_mediation(fit, treatment = "X", 
+     +     mediator = c("M1", "M2"), outcome = "Y")
+     
+       When sourcing ‘serial-mediation-with-medfit.R’:
+     Error: .onLoad failed in loadNamespace() for 'medfit', details:
+       call: NULL
+       error: Class union has not been registered with S4; please call S4_register(new_union(class_integer, class_double)).
+     Execution halted
+     ```
+
+# roxygen2 (8.1.1)
+
+* GitHub: <https://github.com/r-lib/roxygen2>
+* Email: <mailto:hadley@posit.co>
+* GitHub mirror: <https://github.com/cran/roxygen2>
+
+Run `revdepcheck::revdep_details(, "roxygen2")` for more info
+
+## Newly broken
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+           [test.R:  1] @test 'a {' {parsed}
+         Code
+       * Run `testthat::snapshot_accept("tag-parser", "testthat")` to accept the change.
+       * Run `testthat::snapshot_review("tag-parser", "testthat")` to review the change.
+       
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 1 | WARN 0 | SKIP 1 | PASS 1260 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
 # rtemis (1.2.7)
 
 * GitHub: <https://github.com/rtemis-org/rtemis>
 * Email: <mailto:gennatas@gmail.com>
 * GitHub mirror: <https://github.com/cran/rtemis>
 
-Run `revdepcheck::cloud_details(, "rtemis")` for more info
+Run `revdepcheck::revdep_details(, "rtemis")` for more info
 
 ## Newly broken
 
 *   checking whether package ‘rtemis’ can be installed ... ERROR
      ```
      Installation failed.
-     See ‘/tmp/workdir/rtemis/new/rtemis.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/rtemis/new/rtemis.Rcheck/00install.out’ for details.
      ```
 
 ## Newly fixed
 
-*   checking tests ... ERROR
+*   checking examples ... ERROR
      ```
      ...
+     > res <- resample(dat)
+     2026-10-09 09:54:38 [0mInput contains more than one column; stratifying on last.[0m [resample]
+     2026-10-09 09:54:38 [0mUsing max n bins possible = 2.[0m [kfold]
+     > dat$Species <- factor(dat$Species)
+     > dat_train <- dat[res[[1]], ]
+     > dat_test <- dat[-res[[1]], ]
+     > 
+     > # Train GLM on a training/test split
+     > mod_c_glm <- train(
+     +   x = dat_train,
+     +   dat_test = dat_test,
+     +   algorithm = "glm"
+     + )
+     2026-10-09 09:54:38 [0mChecking data is ready for training... ✔ [check_supervised]
+     2026-10-09 09:54:38 [0m▶[0m [train]
+     2026-10-09 09:54:38 [0mTraining set: 90 cases x 4 features.[0m [summarize_supervised]
+     2026-10-09 09:54:38 [0m    Test set: 10 cases x 4 features.[0m [summarize_supervised]
+     2026-10-09 09:54:38 [0m// Max workers: c(`_R_CHECK_LIMIT_CORES_` = 1) { Algorithm: 1; Tuning: 1; Outer Resampling: 1 }[0m [get_n_workers]
+     2026-10-09 09:54:38 [0mTraining GLM Classification...[0m [train]
+     2026-10-09 09:54:38 [0mChecking data is ready for training... ✔ [check_supervised]
+     2026-10-09 09:54:38 ✖ rtemis_dependency_error[0m [auc]
+     Error in auc() : Please install the following dependency:
+         - lightAUC 
+     Calls: train ... classification_metrics -> auc -> check_dependencies -> abort
+     Execution halted
+     ```
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
        
-       2026-10-09 13:04:45 [0m[1;38;2;15;106;102m✓[0m Done in 0.14 seconds.[0m [train]
-       [ FAIL 1 | WARN 4 | SKIP 4 | PASS 356 ]
-       
-       ══ Skipped tests (4) ═══════════════════════════════════════════════════════════
-       • For local testing only; requires CSV file (3): 'test_ClusterConfig.R:19:3',
-         'test_DecomposeConfig.R:19:3', 'test_SuperConfig.R:48:3'
-       • empty test (1):
-       
-       ══ Failed tests ════════════════════════════════════════════════════════════════
-       ── Error ('test_Clustering.R:96:3'): cluster_DBSCAN() succeeds ─────────────────
-       Error: approx must be a single, finite, nonnegative number.
        Backtrace:
            ▆
-        1. └─rtemis::cluster(...) at test_Clustering.R:96:3
-        2.   └─rtemis:::cluster_(config = config, x = x, verbosity = verbosity)
-        3.     ├─S7::S7_dispatch()
-        4.     └─rtemis (local) `method(cluster_, rtemis::DBSCANConfig)`(...)
-        5.       └─dbscan::dbscan(...)
-        6.         └─dbscan:::.validate_nonnegative_scalar(extra$approx %||% 0, "approx")
+        1. └─rtemis::train(x = datc, algorithm = "glm") at test_to_json.R:70:1
+        2.   └─rtemis:::make_Supervised(...)
+        3.     └─rtemis:::Classification(...)
+        4.       └─rtemis::classification_metrics(...)
+        5.         └─rtemis:::auc(...)
+        6.           └─rtemis.core::check_dependencies("lightAUC")
+        7.             └─rtemis.core::abort(...)
        
-       [ FAIL 1 | WARN 4 | SKIP 4 | PASS 356 ]
+       [ FAIL 5 | WARN 0 | SKIP 4 | PASS 203 ]
        Error:
        ! Test failures.
        Execution halted
@@ -2065,7 +2321,7 @@ Error in new_class(name = "StratSubConfig", parent = ResamplerConfig,  :
 Error: unable to load R code in package ‘rtemis’
 Execution halted
 ERROR: lazy loading failed for package ‘rtemis’
-* removing ‘/tmp/workdir/rtemis/new/rtemis.Rcheck/rtemis’
+* removing ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/rtemis/new/rtemis.Rcheck/rtemis’
 
 
 ```
@@ -2098,7 +2354,7 @@ ERROR: lazy loading failed for package ‘rtemis’
 * Email: <mailto:gennatas@gmail.com>
 * GitHub mirror: <https://github.com/cran/rtemis.a3>
 
-Run `revdepcheck::cloud_details(, "rtemis.a3")` for more info
+Run `revdepcheck::revdep_details(, "rtemis.a3")` for more info
 
 ## Newly broken
 
@@ -2121,19 +2377,12 @@ Run `revdepcheck::cloud_details(, "rtemis.a3")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-       Error in `new_object(Metadata, uniprot_id = uniprot_id, description = description, reference = reference, organism = organism)`: `_parent` must be an instance of <rtemis.a3::Metadata>, not <S7_class>.
-       Backtrace:
-           ▆
-        1. └─rtemis.a3:::A3from_json(lst) at test_A3.R:674:3
-        2.   ├─rtemis.a3:::A3(...)
-        3.   └─rtemis.a3:::A3Metadata(...)
-        4.     └─S7::new_object(...)
-        5.       └─S7:::check_parent(`_parent`, class)
-        6.         └─S7:::stop2(msg, call = call)
-       ── Error ('test_A3.R:681:3'): read_A3json reports valid A3 version ─────────────
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
        <error/condition>
        Error in `new_object(Metadata, uniprot_id = uniprot_id, description = description, reference = reference, organism = organism)`: `_parent` must be an instance of <rtemis.a3::Metadata>, not <S7_class>.
        Backtrace:
@@ -2155,7 +2404,7 @@ Run `revdepcheck::cloud_details(, "rtemis.a3")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘data.table:::=’ when loading ‘rtemis.a3’
-     See ‘/tmp/workdir/rtemis.a3/new/rtemis.a3.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/rtemis.a3/new/rtemis.a3.Rcheck/00install.out’ for details.
      ```
 
 # rtemis.core (0.4.6)
@@ -2164,7 +2413,7 @@ Run `revdepcheck::cloud_details(, "rtemis.a3")` for more info
 * Email: <mailto:gennatas@gmail.com>
 * GitHub mirror: <https://github.com/cran/rtemis.core>
 
-Run `revdepcheck::cloud_details(, "rtemis.core")` for more info
+Run `revdepcheck::revdep_details(, "rtemis.core")` for more info
 
 ## Newly broken
 
@@ -2172,7 +2421,7 @@ Run `revdepcheck::cloud_details(, "rtemis.core")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘data.table:::=’ when loading ‘rtemis.core’
-     See ‘/tmp/workdir/rtemis.core/new/rtemis.core.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/rtemis.core/new/rtemis.core.Rcheck/00install.out’ for details.
      ```
 
 # rtemis.llm (0.8.7)
@@ -2181,7 +2430,7 @@ Run `revdepcheck::cloud_details(, "rtemis.core")` for more info
 * Email: <mailto:gennatas@gmail.com>
 * GitHub mirror: <https://github.com/cran/rtemis.llm>
 
-Run `revdepcheck::cloud_details(, "rtemis.llm")` for more info
+Run `revdepcheck::revdep_details(, "rtemis.llm")` for more info
 
 ## Newly broken
 
@@ -2189,7 +2438,7 @@ Run `revdepcheck::cloud_details(, "rtemis.llm")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘data.table:::=’ when loading ‘rtemis.llm’
-     See ‘/tmp/workdir/rtemis.llm/new/rtemis.llm.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/rtemis.llm/new/rtemis.llm.Rcheck/00install.out’ for details.
      ```
 
 # S7schema (0.1.2)
@@ -2198,7 +2447,7 @@ Run `revdepcheck::cloud_details(, "rtemis.llm")` for more info
 * Email: <mailto:oath@novonordisk.com>
 * GitHub mirror: <https://github.com/cran/S7schema>
 
-Run `revdepcheck::cloud_details(, "S7schema")` for more info
+Run `revdepcheck::revdep_details(, "S7schema")` for more info
 
 ## Newly broken
 
@@ -2224,19 +2473,12 @@ Run `revdepcheck::cloud_details(, "S7schema")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        6.       └─S7::new_object(.parent = S7::S7_object(), context = ctx)
-       ── Failure ('test-z_write.R:52:3'): object created in memory ───────────────────
-       Expected `S7schema(...)` not to throw any conditions.
-       Actually got a <getvarError> with message:
-         argument "_parent" is missing, with no default
-       ── Error ('test-z_write.R:58:3'): object created in memory ─────────────────────
-       <S7_error_method_not_found/error/condition>
-       Error: Can't find method for `write_config(<NULL>)`.
-       Backtrace:
-            ▆
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
          1. ├─testthat::expect_error(write_config(x), "`path` must be provided") at test-z_write.R:58:3
          2. │ └─testthat:::expect_condition_matching_(...)
          3. │   └─testthat:::quasi_capture(...)
@@ -2248,39 +2490,39 @@ Run `revdepcheck::cloud_details(, "S7schema")` for more info
          9. └─S7:::method_lookup_error("write_config", `<named list>`)
         10.   └─S7:::stop2(msg, call = NULL, class = "S7_error_method_not_found")
        
-       [ FAIL 27 | WARN 0 | SKIP 1 | PASS 61 ]
+       [ FAIL 27 | WARN 0 | SKIP 0 | PASS 63 ]
        Error:
        ! Test failures.
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
      ...
-     Error in `S7::new_object()`:
-     ! argument "_parent" is missing, with no default
-     ---
-     Backtrace:
-         ▆
-      1. └─my_config_class(file = config_path)
-      2.   ├─S7::new_object(...)
-      3.   │ └─S7:::collect_dots(...)
-      4.   └─S7schema::S7schema(...)
-      5.     ├─S7schema::validate_yaml(file, schema)
-      6.     └─S7schema:::validate_yaml.character(file, schema)
-      7.       ├─S7schema:::use_validator(...)
-      8.       └─S7schema:::validator(schema = schema)
-      9.         └─S7::new_object(.parent = S7::S7_object(), context = ctx)
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     Errors in running code in vignettes:
+     when running code in ‘S7schema.Rmd’
+       ...
      
-     Error: processing vignette 'use-in-package.Rmd' failed with diagnostics:
-     argument "_parent" is missing, with no default
-     --- failed re-building ‘use-in-package.Rmd’
+     > ex_config <- system.file("examples/config.yml", package = "S7schema")
      
-     SUMMARY: processing the following files failed:
-       ‘S7schema.Rmd’ ‘use-in-package.Rmd’
+     > ex_schema <- system.file("examples/schema.json", package = "S7schema")
      
-     Error: Vignette re-building failed.
+     > validate_yaml(file = ex_config, schema = ex_schema)
+     
+       When sourcing ‘S7schema.R’:
+     Error: argument "_parent" is missing, with no default
+     Execution halted
+     when running code in ‘use-in-package.Rmd’
+       ...
+     +         S7::new_obje .... [TRUNCATED] 
+     
+     > config_path <- system.file("examples/config.yml", 
+     +     package = "S7schema")
+     
+     > x <- my_config_class(file = config_path)
+     
+       When sourcing ‘use-in-package.R’:
+     Error: argument "_parent" is missing, with no default
      Execution halted
      ```
 
@@ -2290,7 +2532,7 @@ Run `revdepcheck::cloud_details(, "S7schema")` for more info
 * Email: <mailto:garrick@adenbuie.com>
 * GitHub mirror: <https://github.com/cran/shinychat>
 
-Run `revdepcheck::cloud_details(, "shinychat")` for more info
+Run `revdepcheck::revdep_details(, "shinychat")` for more info
 
 ## Newly broken
 
@@ -2315,7 +2557,7 @@ Run `revdepcheck::cloud_details(, "shinychat")` for more info
 * Email: <mailto:krystian8207@gmail.com>
 * GitHub mirror: <https://github.com/cran/shinyCohortBuilder>
 
-Run `revdepcheck::cloud_details(, "shinyCohortBuilder")` for more info
+Run `revdepcheck::revdep_details(, "shinyCohortBuilder")` for more info
 
 ## Newly broken
 
@@ -2349,63 +2591,56 @@ Run `revdepcheck::cloud_details(, "shinyCohortBuilder")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-        10. │       ├─base::do.call(cohortBuilder::filter, .)
-        11. │       └─cohortBuilder (local) `<fn>`(...)
-        12. │         └─cohortBuilder (local) constructor(...) at cohortBuilder/R/filter.R:905:3
-        13. │           └─S7::new_object(...) at cohortBuilder/R/filter.R:125:5
-        14. │             └─S7:::check_parent(`_parent`, class)
-        15. │               └─S7:::stop2(msg, call = call)
-        16. │                 └─base::stop(...)
-        17. └─purrr (local) `<fn>`(`<error>`)
-        18.   └─cli::cli_abort(...)
-        19.     └─rlang::abort(...)
-       ── Error ('test-source_tblist.R:115:3'): .available_filters_choices.tblist returns prepared choices ──
-       <error/condition>
-       Error in `S7::new_object(S7::S7_object(), type = "range", id = id, name = name, variable = variable, range = range, dataset = dataset, keep_na = keep_na, active = active, description = description, domain = domain, extra = list(...), private = list(input_param = "range"))`: `_parent` must be an instance of <cohortBuilder::CbFilter>, not <S7_object>.
-       Backtrace:
-           ▆
-        1. └─cohortBuilder::filter(...) at test-source_tblist.R:115:3
-        2.   └─cohortBuilder (local) constructor(...) at cohortBuilder/R/filter.R:905:3
-        3.     └─S7::new_object(...) at cohortBuilder/R/filter.R:188:5
-        4.       └─S7:::check_parent(`_parent`, class)
-        5.         └─S7:::stop2(msg, call = call)
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+       The following object is masked from ‘package:shiny’:
        
-       [ FAIL 65 | WARN 1 | SKIP 69 | PASS 254 ]
+           code
+       
+       The following objects are masked from ‘package:stats’:
+       
+           filter, step
+       
+       Error in S7::new_object(S7::S7_object(), type = "discrete", id = id, name = name,  : 
+         `_parent` must be an instance of <cohortBuilder::CbFilter>, not <S7_object>.
+       
+       [ FAIL 121 | WARN 1 | SKIP 13 | PASS 254 ]
        Error:
        ! Test failures.
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
      ...
-       9.       └─cohortBuilder (local) .f(.x[[i]], ...)
-      10.         ├─base::do.call(cohortBuilder::filter, .)
-      11.         └─cohortBuilder (local) `<fn>`(...)
-      12.           └─cohortBuilder (local) constructor(...) at cohortBuilder/R/filter.R:905:3
-      13.             └─S7::new_object(...) at cohortBuilder/R/filter.R:188:5
-      14.               └─S7:::check_parent(`_parent`, class)
-      15.                 └─S7:::stop2(msg, call = call)
-      16.                   └─base::stop(...)
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     Errors in running code in vignettes:
+     when running code in ‘gui-filter-layer.Rmd’
+       ...
      
-     Error: processing vignette 'shinyCohortBuilder.Rmd' failed with diagnostics:
-     ℹ In index: 1.
+     
+     > iris_source <- set_source(tblist(iris = iris))
+     
+     > species_filter <- filter(type = "discrete", id = "species", 
+     +     dataset = "iris", variable = "Species", value = "setosa")
+     
+       When sourcing ‘gui-filter-layer.R’:
+     Error: `_parent` must be an instance of <cohortBuilder::CbFilter>, not <S7_object>.
+     Execution halted
+     when running code in ‘shinyCohortBuilder.Rmd’
+       ...
+     > options(tibble.print_min = 5)
+     
+     > iris_source <- autofilter(set_source(tblist(iris = iris)))
+     
+       When sourcing ‘shinyCohortBuilder.R’:
+     Error: ℹ In index: 1.
      ℹ With name: iris.Sepal.Length.
      Caused by error in `S7::new_object()` at cohortBuilder/R/filter.R:188:5:
      ! `_parent` must be an instance of <cohortBuilder::CbFilter>, not <S7_object>.
-     --- failed re-building ‘shinyCohortBuilder.Rmd’
-     
-     --- re-building ‘updating-source.Rmd’ using rmarkdown
-     --- finished re-building ‘updating-source.Rmd’
-     
-     SUMMARY: processing the following files failed:
-       ‘gui-filter-layer.Rmd’ ‘shinyCohortBuilder.Rmd’
-     
-     Error: Vignette re-building failed.
      Execution halted
      ```
 
@@ -2415,23 +2650,16 @@ Run `revdepcheck::cloud_details(, "shinyCohortBuilder")` for more info
 * Email: <mailto:joshwlivingston@gmail.com>
 * GitHub mirror: <https://github.com/cran/shinyfilters>
 
-Run `revdepcheck::cloud_details(, "shinyfilters")` for more info
+Run `revdepcheck::revdep_details(, "shinyfilters")` for more info
 
 ## Newly broken
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-         3. ├─shiny::shinyApp(...)
-         4. │ └─shiny:::uiHttpHandler(ui, uiPattern)
-         5. │   └─base::force(ui)
-         6. ├─shiny::fluidPage(...)
-         7. │ ├─shiny::bootstrapPage(...)
-         8. │ │ └─rlang::list2(...)
-         9. │ └─htmltools::div(class = "container-fluid", ...)
-        10. │   └─rlang::dots_list(...)
-        11. ├─shiny::sidebarLayout(...)
-        12. ├─shiny::sidebarPanel(...)
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
         13. │ ├─htmltools::div(...)
         14. │ │ └─rlang::dots_list(...)
         15. │ └─tags$form(class = "well", role = "complementary", ...)
@@ -2443,39 +2671,29 @@ Run `revdepcheck::cloud_details(, "shinyfilters")` for more info
         21.       ├─base::stop(...)
         22.       └─base::sprintf(...)
        
-       [ FAIL 14 | WARN 51 | SKIP 2 | PASS 306 ]
+       [ FAIL 14 | WARN 51 | SKIP 0 | PASS 308 ]
        Error:
        ! Test failures.
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
-     ...
-     Quitting from filter-input-catalog.Rmd:142-150 [ex-radioButtons-list]
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     <error/rlang_error>
-     Error in `cls@name`:
-     ! no applicable method for `@` applied to an object of class "S7_base_class"
-     ---
-     Backtrace:
-         ▆
-      1. └─shinyfilters::filterInput(...)
-      2.   ├─S7::S7_dispatch()
-      3.   └─shinyfilters (local) `method(filterInput, class_list)`(x = `<list>`, ...)
-      4.     └─shinyfilters:::s7_check_is_valid_list_dispatch(x, function_name = "filterInput")
-      5.       ├─base::stop(...)
-      6.       └─base::sprintf(...)
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       ‘customizing-shinyfilters.Rmd’ using ‘UTF-8’... OK
+       ‘filter-input-catalog.Rmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘filter-input-catalog.Rmd’
+       ...
+         </label>
+       </div>
+     </div>
      
-     Error: processing vignette 'filter-input-catalog.Rmd' failed with diagnostics:
-     no applicable method for `@` applied to an object of class "S7_base_class"
-     --- failed re-building ‘filter-input-catalog.Rmd’
+     > filterInput(x = as.list(letters[1:10]), inputId = "id", 
+     +     label = "Pick a letter:", inline = TRUE, radio = TRUE)
      
-     SUMMARY: processing the following file failed:
-       ‘filter-input-catalog.Rmd’
-     
-     Error: Vignette re-building failed.
+       When sourcing ‘filter-input-catalog.R’:
+     Error: no applicable method for `@` applied to an object of class "S7_base_class"
      Execution halted
      ```
 
@@ -2485,7 +2703,7 @@ Run `revdepcheck::cloud_details(, "shinyfilters")` for more info
 * Email: <mailto:koningluka@gmail.com>
 * GitHub mirror: <https://github.com/cran/shinyOAuth>
 
-Run `revdepcheck::cloud_details(, "shinyOAuth")` for more info
+Run `revdepcheck::revdep_details(, "shinyOAuth")` for more info
 
 ## Newly broken
 
@@ -2493,7 +2711,7 @@ Run `revdepcheck::cloud_details(, "shinyOAuth")` for more info
      ```
      Found the following significant warnings:
        Warning: replacing previous import ‘S7:::=’ by ‘rlang:::=’ when loading ‘shinyOAuth’
-     See ‘/tmp/workdir/shinyOAuth/new/shinyOAuth.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/shinyOAuth/new/shinyOAuth.Rcheck/00install.out’ for details.
      ```
 
 # statim (0.1.0)
@@ -2502,7 +2720,7 @@ Run `revdepcheck::cloud_details(, "shinyOAuth")` for more info
 * Email: <mailto:joshua.marie.k@gmail.com>
 * GitHub mirror: <https://github.com/cran/statim>
 
-Run `revdepcheck::cloud_details(, "statim")` for more info
+Run `revdepcheck::revdep_details(, "statim")` for more info
 
 ## Newly broken
 
@@ -2528,19 +2746,12 @@ Run `revdepcheck::cloud_details(, "statim")` for more info
      Execution halted
      ```
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-         7.         └─statim (local) `method(conclude, statim::model_lazy)`(.x = `<sttm::m_>`, ...)
-         8.           └─statim:::inject_and_run(...)
-         9.             ├─rlang::exec(fn, !!!injected, !!!extra)
-        10.             └─statim (local) `<fn>`(.proc = `<named list>`)
-        11.               └─statim:::lm_to_lm_object(stats::lm(formula, data = data, ...))
-       ── Error ('test-write-models.R:189:5'): write_models() mixed var_id types each result is a cld_exec ──
-       Error in `class_lm_object(terms = fit$terms, fitted = unname(fit$fitted.values), residuals = unname(fit$residuals), beta = coef_tbl[, 1], std_beta = coef_tbl[, 2], df_residual = df_res, deviance = rss, dispersion = rss/df_res, family = "gaussian", x_mat = as.numeric(mm), x_assign = attr(mm, "assign"), x_levels = xlev)`: unused argument (family = "gaussian")
-       Backtrace:
-            ▆
-         1. └─statim::conclude(...) at test-write-models.R:189:5
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
          2.   ├─S7::S7_dispatch()
          3.   └─statim (local) `method(conclude, statim::multi_lazy)`(.x = `<sttm::m_>`, ...)
          4.     └─base::lapply(.x@models, conclude)
@@ -2558,33 +2769,22 @@ Run `revdepcheck::cloud_details(, "statim")` for more info
        Execution halted
      ```
 
-*   checking re-building of vignette outputs ... ERROR
+*   checking running R code from vignettes ...
      ```
-     ...
-     Error in `class_lm_object()`:
-     ! unused argument (family = "gaussian")
-     ---
-     Backtrace:
-         ▆
-      1. ├─statim::tidy(...)
-      2. │ └─S7::S7_dispatch()
-      3. └─statim::conclude(prepare(define_model(mtcars, mpg ~ .), LINEAR_REG))
-      4.   ├─S7::S7_dispatch()
-      5.   └─statim (local) `method(conclude, statim::model_lazy)`(.x = `<sttm::m_>`, ...)
-      6.     └─statim:::inject_and_run(...)
-      7.       ├─rlang::exec(fn, !!!injected, !!!extra)
-      8.       └─statim (local) `<fn>`(.proc = `<named list>`)
-      9.         └─statim:::lm_to_lm_object(stats::lm(formula, data = data, ...))
-     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       ‘statim.Rmd’ using ‘UTF-8’... failed
+      ERROR
+     Errors in running code in vignettes:
+     when running code in ‘statim.Rmd’
+       ...
+       group estimate t_stat    df  p_val lower_90 upper_90
+       <chr>    <dbl>  <dbl> <dbl>  <dbl>    <dbl>    <dbl>
+     1 group    -1.58  -1.86  17.8 0.0794    -3.05   -0.107
      
-     Error: processing vignette 'statim.Rmd' failed with diagnostics:
-     unused argument (family = "gaussian")
-     --- failed re-building ‘statim.Rmd’
+     > tidy(conclude(prepare(define_model(mtcars, mpg ~ .), 
+     +     LINEAR_REG)))
      
-     SUMMARY: processing the following file failed:
-       ‘statim.Rmd’
-     
-     Error: Vignette re-building failed.
+       When sourcing ‘statim.R’:
+     Error: unused argument (family = "gaussian")
      Execution halted
      ```
 
@@ -2592,7 +2792,7 @@ Run `revdepcheck::cloud_details(, "statim")` for more info
      ```
      Found the following significant warnings:
        Note: possible error in 'class_lm_object(terms = fit$terms, ': unused argument (family = "gaussian") 
-     See ‘/tmp/workdir/statim/new/statim.Rcheck/00install.out’ for details.
+     See ‘/Users/tomasz/github/RConsortium/S7/revdep/checks.noindex/statim/new/statim.Rcheck/00install.out’ for details.
      Information on the location(s) of code generating the ‘Note’s can be
      obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
      to ‘yes’.
@@ -2614,7 +2814,7 @@ Run `revdepcheck::cloud_details(, "statim")` for more info
 * Email: <mailto:eduard.bruell@zew.de>
 * GitHub mirror: <https://github.com/cran/tidyllm>
 
-Run `revdepcheck::cloud_details(, "tidyllm")` for more info
+Run `revdepcheck::revdep_details(, "tidyllm")` for more info
 
 ## Newly broken
 
@@ -2662,23 +2862,16 @@ Run `revdepcheck::cloud_details(, "tidyllm")` for more info
 * Email: <mailto:nicolas@cynkra.com>
 * GitHub mirror: <https://github.com/cran/typedjson>
 
-Run `revdepcheck::cloud_details(, "typedjson")` for more info
+Run `revdepcheck::revdep_details(, "typedjson")` for more info
 
 ## Newly broken
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-       Differences:
-       `actual`:   "s7/generator" "s7/generator-validator" "s7/generator-constructor"
-       `expected`:                                                                   
-       
-       ── Failure ('test-shapes.R:59:3'): a value survives in every position it can occupy ──
-       Expected `failed` to be identical to `character()`.
-       Differences:
-            actual                                   | expected                
-        [1] "s7/generator @ root"                    -                         
-        [2] "s7/generator @ object_value"            -                         
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
         [3] "s7/generator @ array_element"           -                         
         [4] "s7/generator @ two_object_values"       -                         
         [5] "s7/generator @ two_array_elements"      -                         
@@ -2702,23 +2895,16 @@ Run `revdepcheck::cloud_details(, "typedjson")` for more info
 * Email: <mailto:mail@mitchelloharawild.com>
 * GitHub mirror: <https://github.com/cran/vecvec>
 
-Run `revdepcheck::cloud_details(, "vecvec")` for more info
+Run `revdepcheck::revdep_details(, "vecvec")` for more info
 
 ## Newly broken
 
-*   checking tests ... ERROR
+*   checking tests ...
      ```
-     ...
-       Error in `get(as.character(FUN), mode = "function", envir = envir)`: object '.f' of mode 'function' was not found
-       Backtrace:
-            ▆
-         1. ├─testthat::expect_all_true(is.na(vec)) at test-vctrs.R:22:3
-         2. │ └─testthat::quasi_label(enquo(object))
-         3. │   └─rlang::eval_bare(expr, quo_get_env(quo))
-         4. ├─base::is.na(vec)
-         5. └─vecvec (local) `is.na.vecvec::vecvec`(vec)
-         6.   ├─vecvec::unvecvec(vecvec_apply(x, is.na), ptype = logical())
-         7.   │ └─vecvec::is_vecvec(x)
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
          8.   │   └─S7::S7_inherits(x, class_vecvec)
          9.   │     └─S7:::class_inherits(x, class)
         10.   └─vecvec::vecvec_apply(x, is.na)
@@ -2730,7 +2916,40 @@ Run `revdepcheck::cloud_details(, "vecvec")` for more info
         16.       └─base::match.fun(FUN)
         17.         └─base::get(as.character(FUN), mode = "function", envir = envir)
        
-       [ FAIL 12 | WARN 0 | SKIP 8 | PASS 495 ]
+       [ FAIL 12 | WARN 0 | SKIP 0 | PASS 503 ]
+       Error:
+       ! Test failures.
+       Execution halted
+     ```
+
+# waldo (0.6.2)
+
+* GitHub: <https://github.com/r-lib/waldo>
+* Email: <mailto:hadley@posit.co>
+* GitHub mirror: <https://github.com/cran/waldo>
+
+Run `revdepcheck::revdep_details(, "waldo")` for more info
+
+## Newly broken
+
+*   checking tests ...
+     ```
+       Running ‘testthat.R’
+      ERROR
+     Running the tests in ‘tests/testthat.R’ failed.
+     Last 13 lines of output:
+       +   `attr(new, '_S7_class')$class@parent@name`: "A"        
+       +   
+       and 30 more ...
+       
+       
+       ── Snapshots ───────────────────────────────────────────────────────────────────
+       To review and process snapshots locally:
+       * Locate check directory.
+       * Copy 'tests/testthat/_snaps' to local package.
+       * Run `testthat::snapshot_accept()` to accept all changes.
+       * Run `testthat::snapshot_review()` to review all changes.
+       [ FAIL 1 | WARN 1 | SKIP 0 | PASS 182 ]
        Error:
        ! Test failures.
        Execution halted
