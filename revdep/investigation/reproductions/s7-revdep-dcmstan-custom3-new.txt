@@ -1,0 +1,36 @@
+S7 0.2.2.9000
+Warning message:
+In new_property(class = class_list, default = list()) :
+  `default` should be a scalar or a quoted call, not a <list>.
+* Did you mean `default = quote(list())`?
+* This warning will become an error in a future release.
+parent constructor formals/body:
+$model
+[1] "parent"
+
+$model_args
+list()
+
+{
+    model
+    model_args
+    S7::new_object(S7::S7_object(), model = model, model_args = model_args)
+}
+child constructor formals/body:
+$model
+character(0)
+
+$model_args
+list()
+
+S7::new_object(Parent(model = model, model_args = model_args), 
+    model = model)
+child(model='child'):
+[1] "@model is read-only"
+custom direct constructor child_direct(model=child):
+<probe::ChildDirect>
+ @ model     : chr "child"
+ @ model_args: list()
+child() then assignment:
+Error: @model is read-only
+Execution halted

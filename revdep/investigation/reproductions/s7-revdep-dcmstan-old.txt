@@ -1,0 +1,4 @@
+S7 0.2.2
+generated Child constructor body:
+S7::new_object(Parent(model = model, model_args = model_args))
+Child(model='child'): [1] "success, model= child"
