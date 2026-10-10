@@ -44,6 +44,35 @@ jobs:
           )
         shell: Rscript {0}
 
+      - name: Test saved legacy mapping
+        run: |
+          library(S7)
+          library(ggplot2)
+
+          x <- readRDS("tests/testthat/fixtures/legacy-ggforce-mapping.rds")
+          data <- unclass(x)
+          check_is_S7(x)
+
+          stopifnot(
+            S7_inherits(x),
+            identical(S7_data(x), data)
+          )
+
+          y <- x
+          S7_data(y) <- list(colour = "red")
+          stopifnot(
+            identical(class(y), class(x)),
+            identical(S7_data(y), list(colour = "red"))
+          )
+
+          x["colour"] <- list(colour = "blue")
+          stopifnot(
+            identical(x$colour, "blue"),
+            identical(x$linewidth, data$linewidth),
+            S7_inherits(x, class_mapping)
+          )
+        shell: Rscript {0}
+
       - name: Test ggplot2 compatibility
         run: |
           library(S7)

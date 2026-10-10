@@ -1,23 +1,3 @@
-test_that("saved legacy mappings support data access and replacement", {
-  skip_if_not_installed("ggplot2", "4.0.0")
-  x <- readRDS(test_path("fixtures", "legacy-ggforce-mapping.rds"))
-  data <- unclass(x)
-
-  expect_identical(S7_inherits(x), TRUE)
-  expect_invisible(check_is_S7(x))
-  expect_identical(S7_data(x), data)
-
-  y <- x
-  S7_data(y) <- list(colour = "red")
-  expect_identical(class(y), class(x))
-  expect_identical(S7_data(y), list(colour = "red"))
-
-  x["colour"] <- list(colour = "blue")
-  expect_identical(x$colour, "blue")
-  expect_identical(x$linewidth, data$linewidth)
-  expect_identical(S7_inherits(x, ggplot2::class_mapping), TRUE)
-})
-
 test_that("saved legacy class metadata retains properties", {
   x <- readRDS(test_path("fixtures", "legacy-object.rds"))
   expect_identical(S7_inherits(x), TRUE)

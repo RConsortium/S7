@@ -34,7 +34,6 @@ Suggests:
     bench,
     callr,
     covr,
-    ggplot2 (>= 4.0.0),
     knitr,
     lifecycle,
     rmarkdown,
