@@ -214,6 +214,15 @@ test_that("catches invalid POSIXct", {
   expect_null(validate_POSIXct(Sys.time()))
 })
 
+test_that("data frame validation rejects environment data", {
+  Frame := new_class(
+    parent = class_data.frame,
+    constructor = function(.data) new_object(.data)
+  )
+  data <- structure(new.env(parent = emptyenv()), class = "data.frame")
+  expect_snapshot(Frame(.data = data), error = TRUE)
+})
+
 test_that("catches invalid data.frame", {
   expect_snapshot({
     validate_data.frame(1)
