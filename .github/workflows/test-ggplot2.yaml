@@ -49,7 +49,7 @@ jobs:
           library(S7)
           library(ggplot2)
 
-          x <- readRDS("tests/testthat/fixtures/legacy-ggforce-mapping.rds")
+          x <- readRDS("tests/testthat/fixtures/legacy-mapping.rds")
           data <- unclass(x)
           check_is_S7(x)
 
