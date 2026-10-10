@@ -47,11 +47,20 @@ S7_inherits <- function(x, class = NULL) {
 }
 
 has_S7_class <- function(x) {
-  # Reading the stored class is the cheapest test and covers every instance of
-  # a user-defined class, so it goes first.
+  # Reading the stored class is the cheapest test for current instances of
+  # user-defined classes, so it goes first.
   !is.null(.Call(S7_class_, x)) ||
     identical(class(x), "S7_object") ||
-    inherits(x, "S7_class")
+    inherits(x, "S7_class") ||
+    is_legacy_S7_object(x)
+}
+
+# BACKCOMPAT: installed ggforce packages can contain saved mappings with an
+# S7 class vector but no stored class. Once reverse dependencies regenerate
+# those objects, remove this helper and its call, along with the
+# legacy-mapping.rds fixture and its test.
+is_legacy_S7_object <- function(x) {
+  inherits(x, "S7_object")
 }
 
 #' @export
