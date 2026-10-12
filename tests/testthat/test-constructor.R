@@ -493,6 +493,28 @@ test_that("read-only properties filter only overridden constructor arguments", {
   expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
 })
 
+test_that("new read-only properties preserve inherited constructor arguments", {
+  Model := new_class(
+    properties = list(
+      intercept = class_numeric,
+      family = new_property(class_character, default = "gaussian")
+    )
+  )
+  Fit := new_class(
+    parent = Model,
+    properties = list(
+      coefficients = class_numeric,
+      ncoef = new_property(getter = function(self) length(self@coefficients))
+    )
+  )
+
+  expect_named(formals(Fit), c("intercept", "family", "coefficients"))
+  fit <- Fit(intercept = 1, family = "poisson", coefficients = c(2, 3))
+  expect_equal(fit@intercept, 1)
+  expect_equal(fit@family, "poisson")
+  expect_equal(fit@ncoef, 2L)
+})
+
 test_that("can create constructors with missing or lazy defaults", {
   Person := new_class(
     properties = list(
