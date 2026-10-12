@@ -42,9 +42,11 @@
 #'   The validator will be called after the `class` has been verified, so
 #'   your code can assume that `value` has known type.
 #' @param default When an object is created and the property is not supplied,
-#'   what should it default to? There are three options:
+#'   what should it default to? There are four options:
 #'
 #'   * A simple scalar (e.g. `1L`, `"x"`, `TRUE`).
+#'
+#'   * An empty list, `list()`.
 #'
 #'   * A `quote()`d call. This will be evaluated when the object is
 #'     constructed and should be used for any thing more complicated like
@@ -169,7 +171,7 @@ check_prop_default <- function(
   }
 
   if (class_inherits(default, class)) {
-    if (!is_scalar(default)) {
+    if (!is_scalar(default) && !identical(default, list())) {
       warn_prop_default_complex(default, default_expr, call)
     }
     return()
@@ -190,7 +192,7 @@ is_scalar <- function(x) {
 
 warn_prop_default_complex <- function(default, default_expr, call) {
   msg <- sprintf(
-    "`default` should be a scalar or a quoted call, not a %s.",
+    "`default` should be a scalar, an empty list, or a quoted call, not a %s.",
     obj_desc(default)
   )
   hint <- deparse1(default_expr)

@@ -432,6 +432,7 @@ test_that("new_property() validates getter and setter", {
 test_that("new_property() validates default", {
   expect_snapshot(error = TRUE, {
     new_property(class_integer, default = "x")
+    new_property(class_integer, default = list())
   })
 })
 
@@ -445,10 +446,15 @@ test_that("new_property() rejects invalid complex defaults without warning first
   )
 })
 
-test_that("new_property() warns if default is not a scalar or quoted call", {
+test_that("new_property() warns for complex evaluated defaults", {
   expect_snapshot({
     . <- new_property(class_integer, default = c(any = 1L))
     . <- new_property(class_POSIXct, default = Sys.time())
+    . <- new_property(class_list, default = list(a = 1L))
+    . <- new_property(
+      class_list,
+      default = structure(list(), names = character())
+    )
   })
 })
 
@@ -457,6 +463,12 @@ test_that("new_property() doesn't warn for scalar or quoted defaults", {
   expect_no_warning(new_property(class_integer, default = NA_integer_))
   expect_no_warning(new_property(class_integer, default = quote(foo())))
   expect_no_warning(new_property(class_integer, default = quote(x)))
+})
+
+test_that("new_property() accepts empty list defaults without warnings", {
+  expect_no_warning(new_property(class_list, default = list()))
+  expect_no_warning(new_property(class_any, default = list()))
+  expect_no_warning(new_property(class_list | class_integer, default = list()))
 })
 
 test_that("new_property() displays nicely", {

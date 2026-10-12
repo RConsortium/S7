@@ -1,3 +1,16 @@
+test_that("empty list property defaults construct and display as list()", {
+  Record := new_class(
+    properties = list(values = new_property(class_list, default = list()))
+  )
+  expect_identical(formals(Record)$values, list())
+  expect_identical(Record()@values, list())
+  expect_identical(Record(values = list(a = 1L))@values, list(a = 1L))
+  expect_identical(
+    deparse(args(Record)),
+    c("function (values = list()) ", "NULL")
+  )
+})
+
 test_that("generates correct arguments from parent + properties", {
   # No arguments
   args <- constructor_args(S7_object)

@@ -88,22 +88,41 @@
     Condition
       Error in `new_property()`:
       ! `default` must be an instance of <integer>, not a <character>.
+    Code
+      new_property(class_integer, default = list())
+    Condition
+      Error in `new_property()`:
+      ! `default` must be an instance of <integer>, not a <list>.
 
-# new_property() warns if default is not a scalar or quoted call
+# new_property() warns for complex evaluated defaults
 
     Code
       . <- new_property(class_integer, default = c(any = 1L))
     Condition
       Warning in `new_property()`:
-      `default` should be a scalar or a quoted call, not a <integer>.
+      `default` should be a scalar, an empty list, or a quoted call, not a <integer>.
       * Did you mean `default = quote(c(any = 1L))`?
       * This warning will become an error in a future release.
     Code
       . <- new_property(class_POSIXct, default = Sys.time())
     Condition
       Warning in `new_property()`:
-      `default` should be a scalar or a quoted call, not a S3<POSIXct/POSIXt>.
+      `default` should be a scalar, an empty list, or a quoted call, not a S3<POSIXct/POSIXt>.
       * Did you mean `default = quote(Sys.time())`?
+      * This warning will become an error in a future release.
+    Code
+      . <- new_property(class_list, default = list(a = 1L))
+    Condition
+      Warning in `new_property()`:
+      `default` should be a scalar, an empty list, or a quoted call, not a <list>.
+      * Did you mean `default = quote(list(a = 1L))`?
+      * This warning will become an error in a future release.
+    Code
+      . <- new_property(class_list, default = structure(list(), names = character()))
+    Condition
+      Warning in `new_property()`:
+      `default` should be a scalar, an empty list, or a quoted call, not a <list>.
+      * Did you mean `default = quote(structure(list(), names = character()))`?
       * This warning will become an error in a future release.
 
 # new_property() displays nicely
