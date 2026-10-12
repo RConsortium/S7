@@ -1,14 +1,35 @@
-test_that("empty list property defaults construct and display as list()", {
-  Record := new_class(
-    properties = list(values = new_property(class_list, default = list()))
+test_that("empty property defaults match implicit base defaults", {
+  classes <- list(
+    class_logical,
+    class_integer,
+    class_double,
+    class_complex,
+    class_character,
+    class_raw,
+    class_list,
+    class_expression
   )
-  expect_identical(formals(Record)$values, list())
-  expect_identical(Record()@values, list())
-  expect_identical(Record(values = list(a = 1L))@values, list(a = 1L))
-  expect_identical(
-    deparse(args(Record)),
-    c("function (values = list()) ", "NULL")
+  defaults <- list(
+    logical(),
+    integer(),
+    numeric(),
+    complex(),
+    character(),
+    raw(),
+    list(),
+    expression()
   )
+  for (i in seq_along(classes)) {
+    Explicit := new_class(
+      properties = list(
+        value = new_property(classes[[i]], default = defaults[[i]])
+      )
+    )
+    Implicit := new_class(properties = list(value = classes[[i]]))
+    expect_identical(formals(Explicit), formals(Implicit))
+    expect_identical(Explicit()@value, defaults[[i]])
+    expect_identical(Implicit()@value, defaults[[i]])
+  }
 })
 
 test_that("generates correct arguments from parent + properties", {

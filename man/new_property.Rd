@@ -51,7 +51,7 @@ your code can assume that \code{value} has known type.}
 what should it default to? There are four options:
 \itemize{
 \item A simple scalar (e.g. \code{1L}, \code{"x"}, \code{TRUE}).
-\item An empty list, \code{list()}.
+\item An empty vector without attributes (e.g. \code{integer()}, \code{list()}).
 \item A \code{quote()}d call. This will be evaluated when the object is
 constructed and should be used for any thing more complicated like
 a named vector or a function call.

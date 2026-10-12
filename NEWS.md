@@ -306,7 +306,7 @@
   as `class_factor` now enforce constraints that are not visible in `class()`
   (#401).
 
-* `new_property()` warns when `default` is a complex value, such as a named vector, that would be inlined into the constructor and could cause `R CMD check` failures. Wrap these defaults in `quote()`. Empty lists can be supplied directly as `list()`. This warning will become an error in a future release (#541).
+* `new_property()` warns when `default` is a complex value, such as a named vector, that would be inlined into the constructor and could cause `R CMD check` failures. Wrap these defaults in `quote()`. Empty vectors without attributes can be supplied directly, e.g. `integer()` or `list()`. This warning will become an error in a future release (#541).
 
 * `prop()` keeps objects usable after a custom getter signals an error (#520,
   #640, #638).

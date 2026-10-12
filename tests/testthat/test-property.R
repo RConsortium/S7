@@ -433,6 +433,7 @@ test_that("new_property() validates default", {
   expect_snapshot(error = TRUE, {
     new_property(class_integer, default = "x")
     new_property(class_integer, default = list())
+    new_property(class_integer, default = character())
   })
 })
 
@@ -455,6 +456,11 @@ test_that("new_property() warns for complex evaluated defaults", {
       class_list,
       default = structure(list(), names = character())
     )
+    . <- new_property(
+      class_double,
+      default = structure(numeric(), names = character())
+    )
+    . <- new_property(class_environment, default = new.env(parent = emptyenv()))
   })
 })
 
@@ -465,9 +471,21 @@ test_that("new_property() doesn't warn for scalar or quoted defaults", {
   expect_no_warning(new_property(class_integer, default = quote(x)))
 })
 
-test_that("new_property() accepts empty list defaults without warnings", {
-  expect_no_warning(new_property(class_list, default = list()))
-  expect_no_warning(new_property(class_any, default = list()))
+test_that("new_property() accepts empty vector defaults without warnings", {
+  defaults <- list(
+    logical(),
+    integer(),
+    numeric(),
+    complex(),
+    character(),
+    raw(),
+    list(),
+    expression()
+  )
+  for (default in defaults) {
+    expect_no_warning(new_property(class_any, default = default))
+    expect_no_warning(new_property(class_vector, default = default))
+  }
   expect_no_warning(new_property(class_list | class_integer, default = list()))
 })
 
