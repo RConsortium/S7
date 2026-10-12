@@ -57,8 +57,9 @@ has_S7_class <- function(x) {
 
 # BACKCOMPAT: installed ggforce packages can contain saved mappings with an
 # S7 class vector but no stored class. Once reverse dependencies regenerate
-# those objects, remove this helper and its call, along with the
-# legacy-mapping.rds fixture and its test.
+# those objects, remove this helper and references to it, the
+# class-vector-only test in test-data.R, and the S7_inherits(x)/check_is_S7(x)
+# assertions in test-inherits.R.
 is_legacy_S7_object <- function(x) {
   inherits(x, "S7_object")
 }

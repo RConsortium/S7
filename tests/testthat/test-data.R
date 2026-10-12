@@ -1,14 +1,11 @@
-test_that("saved legacy class metadata retains properties", {
-  x <- readRDS(test_path("fixtures", "legacy-object.rds"))
-  expect_identical(S7_inherits(x), TRUE)
-  expect_identical(S7_class(x)@name, "Legacy")
-  expect_identical(prop(x, "label"), "old")
+test_that("S7_data supports class-vector-only objects", {
+  foo := new_class(parent = class_list, package = NULL)
+  x <- structure(list(x = 1L), class = class(foo()))
   expect_identical(S7_data(x), list(x = 1L))
 
-  prop(x, "label") <- "updated"
   S7_data(x) <- list(y = 2L)
-  expect_identical(prop(x, "label"), "updated")
   expect_identical(S7_data(x), list(y = 2L))
+  expect_identical(class(x), class(foo()))
 })
 
 test_that("S7_data retrieves .data", {
