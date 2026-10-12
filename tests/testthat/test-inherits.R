@@ -26,6 +26,8 @@ test_that("S7_inherits() matches class-vector-only objects to S7 classes", {
   foo := new_class(parent = class_list, package = NULL)
   x <- structure(list(), class = class(foo()))
 
+  expect_identical(S7_inherits(x), TRUE)
+  expect_invisible(check_is_S7(x))
   expect_identical(S7_inherits(x, foo), TRUE)
 })
 

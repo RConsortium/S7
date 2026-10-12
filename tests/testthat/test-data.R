@@ -1,3 +1,13 @@
+test_that("S7_data supports class-vector-only objects", {
+  foo := new_class(parent = class_list, package = NULL)
+  x <- structure(list(x = 1L), class = class(foo()))
+  expect_identical(S7_data(x), list(x = 1L))
+
+  S7_data(x) <- list(y = 2L)
+  expect_identical(S7_data(x), list(y = 2L))
+  expect_identical(class(x), class(foo()))
+})
+
 test_that("S7_data retrieves .data", {
   text := new_class(class_character)
   x <- text("hi")
