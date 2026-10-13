@@ -1,3 +1,37 @@
+test_that("empty property defaults match implicit base defaults", {
+  classes <- list(
+    class_logical,
+    class_integer,
+    class_double,
+    class_complex,
+    class_character,
+    class_raw,
+    class_list,
+    class_expression
+  )
+  defaults <- list(
+    logical(),
+    integer(),
+    numeric(),
+    complex(),
+    character(),
+    raw(),
+    list(),
+    expression()
+  )
+  for (i in seq_along(classes)) {
+    Explicit := new_class(
+      properties = list(
+        value = new_property(classes[[i]], default = defaults[[i]])
+      )
+    )
+    Implicit := new_class(properties = list(value = classes[[i]]))
+    expect_identical(formals(Explicit), formals(Implicit))
+    expect_identical(Explicit()@value, defaults[[i]])
+    expect_identical(Implicit()@value, defaults[[i]])
+  }
+})
+
 test_that("generates correct arguments from parent + properties", {
   # No arguments
   args <- constructor_args(S7_object)
