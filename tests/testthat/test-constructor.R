@@ -505,7 +505,55 @@ test_that("overridden properties keep their position in the constructor", {
   expect_equal(props(foo2(1, 2, 3)), list(x = 1, y = 2, z = 3))
 })
 
-test_that("read-only overrides retain parent constructor arguments", {
+test_that("read-only properties preserve parent constructor arguments", {
+  foo := new_class(properties = list(x = class_character))
+  foo2 := new_class(
+    parent = foo,
+    properties = list(x = new_property(getter = function(self) "fixed"))
+  )
+  expect_named(formals(foo2), "x")
+  expect_equal(foo2()@x, "fixed")
+
+  Factor := new_class(
+    parent = class_factor,
+    properties = list(
+      levels = new_property(getter = function(self) levels(self))
+    )
+  )
+  expect_named(formals(Factor), c(".data", "levels"))
+
+  x <- Factor(c(1L, 2L), levels = c("a", "b"))
+  expect_equal(levels(x), c("a", "b"))
+  expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
+})
+
+test_that("subclasses can make parent properties read-only after construction", {
+  Parent := new_class(
+    properties = list(parent_prop = new_property(class_numeric, default = 1))
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      parent_prop = new_property(
+        class_numeric,
+        getter = \(self) self@parent_prop
+      )
+    )
+  )
+
+  expect_identical(formals(Child), formals(Parent))
+  expect_equal(Child()@parent_prop, 1)
+  child <- Child(parent_prop = 2)
+  expect_equal(child@parent_prop, 2)
+  expect_snapshot(error = TRUE, child@parent_prop <- 3)
+  expect_equal(child@parent_prop, 2)
+
+  parent <- Parent(parent_prop = 2)
+  parent@parent_prop <- 3
+  expect_equal(parent@parent_prop, 3)
+})
+
+test_that("read-only overrides preserve parent validation", {
   Parent := new_class(
     properties = list(
       parent_prop = new_property(class_numeric, default = 1),
@@ -520,24 +568,13 @@ test_that("read-only overrides retain parent constructor arguments", {
   Child := new_class(
     parent = Parent,
     properties = list(
-      parent_prop = new_property(class_numeric, getter = \(self) 2),
-      child_prop = class_numeric
+      parent_prop = new_property(class_numeric, getter = \(self) 2)
     )
   )
 
-  expect_identical(
-    formals(Child),
-    pairlist(parent_prop = 1, other_prop = 1, child_prop = integer())
-  )
-  expect_equal(Child()@parent_prop, 2)
-  child <- Child(parent_prop = 2, other_prop = 2, child_prop = 3)
-  expect_equal(
-    props(child),
-    list(parent_prop = 2, other_prop = 2, child_prop = 3)
-  )
-
+  child <- Child(parent_prop = 2, other_prop = 2)
+  expect_equal(props(child), list(parent_prop = 2, other_prop = 2))
   expect_snapshot(error = TRUE, Child(parent_prop = 1, other_prop = 2))
-  expect_snapshot(error = TRUE, child@parent_prop <- 3)
 })
 
 test_that("read-only overrides preserve forwarded parent arguments", {
@@ -579,20 +616,6 @@ test_that("read-only overrides preserve forwarded parent arguments", {
     expect_equal(child@other_prop, 3L)
     expect_equal(child@parent_prop, 2L)
   }
-})
-
-test_that("read-only properties preserve S3 constructor arguments", {
-  Factor := new_class(
-    parent = class_factor,
-    properties = list(
-      levels = new_property(getter = function(self) levels(self))
-    )
-  )
-  expect_named(formals(Factor), c(".data", "levels"))
-
-  x <- Factor(.data = c(1L, 2L), levels = c("a", "b"))
-  expect_equal(levels(x), c("a", "b"))
-  expect_equal(x@levels, c("a", "b"))
 })
 
 test_that("new read-only properties preserve inherited constructor arguments", {
