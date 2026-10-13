@@ -41,6 +41,41 @@ test_that("property retrieval evaluates dynamic properties", {
   expect_equal(obj@x, 1)
 })
 
+test_that("property getters can receive the property name", {
+  get_name <- \(self, name) name
+  named_property <- new_property(class_character, getter = get_name)
+  Named := new_class(
+    properties = list(first = named_property, second = named_property)
+  )
+
+  obj <- Named()
+  expect_identical(prop(obj, "first"), "first")
+  expect_identical(obj@second, "second")
+})
+
+test_that("named property getters can read their stored values", {
+  get_upper <- \(self, name) toupper(prop(self, name))
+  text_property <- new_property(
+    class_character,
+    getter = get_upper,
+    setter = function(self, name, value) {
+      prop(self, name) <- value
+      self
+    }
+  )
+  Label := new_class(
+    properties = list(title = text_property, subtitle = text_property)
+  )
+
+  obj <- Label(title = "hello", subtitle = "world")
+  expect_identical(prop(obj, "title"), "HELLO")
+  expect_identical(obj@subtitle, "WORLD")
+
+  obj@title <- "updated"
+  expect_identical(obj@title, "UPDATED")
+  expect_identical(obj@subtitle, "WORLD")
+})
+
 test_that("property retrieval falls back to `base::@` for non-S7 objects", {
   expect_error("foo"@blah, 'object of.+class.+"character"')
   expect_error(NULL@blah, 'object of.+class.+"NULL"')

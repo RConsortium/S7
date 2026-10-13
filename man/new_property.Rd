@@ -20,9 +20,18 @@ See \code{\link[=as_class]{as_class()}} for details.
 If you want to make a property optional, create a union with \code{NULL},
 e.g. \code{class_integer | NULL}.}
 
-\item{getter}{An optional function used to get the value. The function
-should take \code{self} as its sole argument and return the value. If you
-supply a \code{getter}, you are responsible for ensuring that it returns
+\item{getter}{An optional function used to get the value.
+There are two supported forms:
+\itemize{
+\item \verb{function(self)} is supplied the object.
+\item \verb{function(self, name)} also gets the property name being accessed,
+which makes it easy to reuse the same getter for multiple properties.
+}
+
+A getter can read its property's stored value with \code{prop(self, name)};
+this does not call the getter again.
+
+If you supply a \code{getter}, you are responsible for ensuring that it returns
 an object of the correct \code{class}; it will not be validated automatically.
 
 If a property has a getter but doesn't have a setter, it is read only.}

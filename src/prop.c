@@ -390,7 +390,14 @@ SEXP do_getter_call(SEXP getter, SEXP S7_class, SEXP name, SEXP object,
 
   object = protect_quote_if_needed(object, &n_protected);
 
-  SEXP call = PROTECT(Rf_lang2(fn_sym, object));
+  // Support both function(self) and function(self, name) signatures.
+  // `name` is a string, so it self-evaluates and needs no quoting.
+  SEXP call;
+  if (Rf_length(getClosureFormals(getter)) >= 2) {
+    call = PROTECT(Rf_lang3(fn_sym, object, name));
+  } else {
+    call = PROTECT(Rf_lang2(fn_sym, object));
+  }
   ++n_protected;
   call_data.call = call;
 

@@ -18,9 +18,17 @@
 #'
 #'   If you want to make a property optional, create a union with `NULL`,
 #'   e.g. `class_integer | NULL`.
-#' @param getter An optional function used to get the value. The function
-#'   should take `self` as its sole argument and return the value. If you
-#'   supply a `getter`, you are responsible for ensuring that it returns
+#' @param getter An optional function used to get the value.
+#'   There are two supported forms:
+#'
+#'   * `function(self)` is supplied the object.
+#'   * `function(self, name)` also gets the property name being accessed,
+#'      which makes it easy to reuse the same getter for multiple properties.
+#'
+#'   A getter can read its property's stored value with `prop(self, name)`;
+#'   this does not call the getter again.
+#'
+#'   If you supply a `getter`, you are responsible for ensuring that it returns
 #'   an object of the correct `class`; it will not be validated automatically.
 #'
 #'   If a property has a getter but doesn't have a setter, it is read only.
@@ -110,7 +118,7 @@ new_property <- function(
   check_prop_default(default, substitute(default), class)
 
   if (!is.null(getter)) {
-    check_function(getter, alist(self = ))
+    check_function(getter, list(alist(self = ), alist(self = , name = )))
   }
   if (!is.null(setter)) {
     check_function(
