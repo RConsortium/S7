@@ -88,3 +88,20 @@
       new_object(P(a = a, ...), a = a, b = b)
       <environment: 0x0>
 
+# subclasses can make parent properties read-only after construction
+
+    Code
+      child@parent_prop <- 3
+    Condition
+      Error in `<S7::Child>@parent_prop`:
+      ! Can't set read-only property.
+
+# read-only overrides preserve parent validation
+
+    Code
+      Child(parent_prop = 1, other_prop = 2)
+    Condition
+      Error in `Parent()`:
+      ! <S7::Parent> object is invalid:
+      - @other_prop must not exceed @parent_prop
+

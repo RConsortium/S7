@@ -505,14 +505,17 @@ test_that("overridden properties keep their position in the constructor", {
   expect_equal(props(foo2(1, 2, 3)), list(x = 1, y = 2, z = 3))
 })
 
-test_that("read-only properties filter only overridden constructor arguments", {
-  foo := new_class(properties = list(x = class_character))
+test_that("read-only properties preserve parent constructor arguments", {
+  foo := new_class(
+    properties = list(x = new_property(class_character, default = "fixed"))
+  )
   foo2 := new_class(
     parent = foo,
-    properties = list(x = new_property(getter = function(self) "fixed"))
+    properties = list(x = new_property(getter = \(self) self@x))
   )
-  expect_null(formals(foo2))
+  expect_named(formals(foo2), "x")
   expect_equal(foo2()@x, "fixed")
+  expect_equal(foo2(x = "custom_value")@x, "custom_value")
 
   Factor := new_class(
     parent = class_factor,
@@ -525,6 +528,97 @@ test_that("read-only properties filter only overridden constructor arguments", {
   x <- Factor(c(1L, 2L), levels = c("a", "b"))
   expect_equal(levels(x), c("a", "b"))
   expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
+})
+
+test_that("subclasses can make parent properties read-only after construction", {
+  Parent := new_class(
+    properties = list(parent_prop = new_property(class_numeric, default = 1))
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      parent_prop = new_property(
+        class_numeric,
+        getter = \(self) self@parent_prop
+      )
+    )
+  )
+
+  expect_identical(formals(Child), formals(Parent))
+  expect_equal(Child()@parent_prop, 1)
+  child <- Child(parent_prop = 2)
+  expect_equal(child@parent_prop, 2)
+  expect_snapshot(error = TRUE, child@parent_prop <- 3)
+  expect_equal(child@parent_prop, 2)
+
+  parent <- Parent(parent_prop = 2)
+  parent@parent_prop <- 3
+  expect_equal(parent@parent_prop, 3)
+})
+
+test_that("read-only overrides preserve parent validation", {
+  Parent := new_class(
+    properties = list(
+      parent_prop = new_property(class_numeric, default = 1),
+      other_prop = new_property(class_numeric, default = 1)
+    ),
+    validator = function(self) {
+      if (self@other_prop > self@parent_prop) {
+        "@other_prop must not exceed @parent_prop"
+      }
+    }
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      parent_prop = new_property(class_numeric, getter = \(self) 2)
+    )
+  )
+
+  child <- Child(parent_prop = 2, other_prop = 2)
+  expect_equal(props(child), list(parent_prop = 2, other_prop = 2))
+  expect_snapshot(error = TRUE, Child(parent_prop = 1, other_prop = 2))
+})
+
+test_that("read-only overrides preserve forwarded parent arguments", {
+  dep := local_package({
+    Parent := new_class(
+      properties = list(
+        parent_prop = class_integer,
+        other_prop = class_integer
+      ),
+      constructor = function(parent_prop = 1L) {
+        new_object(
+          S7_object(),
+          parent_prop = parent_prop,
+          other_prop = parent_prop
+        )
+      }
+    )
+  })
+  Child := new_class(
+    parent = dep$Parent,
+    package = NULL,
+    properties = list(
+      parent_prop = new_property(class_integer, getter = \(self) 2L)
+    )
+  )
+  pkg := local_package({
+    Child := new_class(
+      parent = dep::Parent,
+      properties = list(
+        parent_prop = new_property(class_integer, getter = \(self) 2L)
+      )
+    )
+  })
+
+  for (Class in list(Child, pkg$Child)) {
+    expect_named(formals(Class), "...")
+    expect_equal(Class()@other_prop, 1L)
+    child <- Class(parent_prop = 3L)
+    expect_equal(child@other_prop, 3L)
+    expect_equal(child@parent_prop, 2L)
+  }
 })
 
 test_that("new read-only properties preserve inherited constructor arguments", {

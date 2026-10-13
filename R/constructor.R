@@ -138,34 +138,20 @@ constructor_inline <- function(parent, properties, envir, package) {
     # user facing error in S7_class()
     stop2("Unsupported `parent` type.", call = NULL)
   }
-  parent_props <- attr(parent, "properties", exact = TRUE) %||% list()
-
   # We need to work out three things:
   # * The argument list for the constructor (`constr_args`)
   # * Which of those arguments is passed to the parent (`parent_args`)
   # * Which of those arguments is passed to new_object() (`self_args`)
 
-  # In constructor args, the subclass default replaces the parent default
+  # Writable child defaults replace parent defaults. Read-only overrides keep
+  # the parent's arguments and are not passed to new_object().
   arg_info <- constructor_args(parent, properties, envir, package)
   constr_args <- modify_list(arg_info$parent, arg_info$self)
 
   # The rest of the work is about moving args around not changing their values
   # so it's easier to work with their names
-  constr_nms <- names2(constr_args)
   self_nms <- names2(arg_info$self)
   parent_nms <- names2(arg_info$parent)
-  # We also need to figure out properties are overridden in the child
-  override_nms <- intersect(constr_nms, names2(parent_props))
-
-  # For overridden properties, we generally need to pass to both the parent
-  # and the child so that we can both override parent defaults and respect
-  # child setters. BUT we can't forward properties that are read-only in the
-  # child
-  read_only_nms <- names2(properties)[vlapply(properties, prop_is_read_only)]
-  read_only_override_nms <- intersect(read_only_nms, override_nms)
-  parent_nms <- setdiff(parent_nms, read_only_override_nms)
-  constr_nms <- setdiff(constr_nms, read_only_override_nms)
-  override_nms <- setdiff(override_nms, read_only_override_nms)
 
   # Now we can generate the parent and child calls
   parent_call <- new_call(parent_name, as_names(parent_nms))
@@ -176,7 +162,7 @@ constructor_inline <- function(parent, properties, envir, package) {
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
   new_S7_constructor(
-    new_function(constr_args[constr_nms], child_call),
+    new_function(constr_args, child_call),
     env = env
   )
 }
