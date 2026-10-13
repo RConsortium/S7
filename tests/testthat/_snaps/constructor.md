@@ -88,3 +88,20 @@
       new_object(P(a = a, ...), a = a, b = b)
       <environment: 0x0>
 
+# read-only overrides retain parent constructor arguments
+
+    Code
+      Child(parent_prop = 1, other_prop = 2)
+    Condition
+      Error in `Parent()`:
+      ! <S7::Parent> object is invalid:
+      - @other_prop must not exceed @parent_prop
+
+---
+
+    Code
+      child@parent_prop <- 3
+    Condition
+      Error in `<S7::Child>@parent_prop`:
+      ! Can't set read-only property.
+
