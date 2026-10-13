@@ -74,7 +74,7 @@
       new_property(getter = function(x) { })
     Condition
       Error in `new_property()`:
-      ! `getter` must be function(self), not function(x).
+      ! `getter` must be function(self) or function(self, name), not function(x).
     Code
       new_property(setter = function(x, y, z) { })
     Condition

@@ -66,8 +66,7 @@
   unnamed argument through `...` (#497). Its first argument is now named
   `_parent` to avoid clashes with property names (#423).
 
-* `new_property()` accepts a `setter` with arguments `self`, `name`, and
-  `value`, so the same setter can be reused for multiple properties (#552).
+* `new_property()` accepts an optional property name argument in getters (`function(self, name)`) and setters (`function(self, name, value)`), so the same accessor can be reused for multiple properties (#552).
 
 * `new_S3_class()` gains a `default` argument for supplying a quoted property
   default independently of its constructor (#755).
