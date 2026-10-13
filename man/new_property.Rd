@@ -48,9 +48,10 @@ The validator will be called after the \code{class} has been verified, so
 your code can assume that \code{value} has known type.}
 
 \item{default}{When an object is created and the property is not supplied,
-what should it default to? There are three options:
+what should it default to? There are four options:
 \itemize{
 \item A simple scalar (e.g. \code{1L}, \code{"x"}, \code{TRUE}).
+\item An empty vector without attributes (e.g. \code{integer()}, \code{list()}).
 \item A \code{quote()}d call. This will be evaluated when the object is
 constructed and should be used for any thing more complicated like
 a named vector or a function call.
