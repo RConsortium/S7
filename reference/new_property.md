@@ -72,9 +72,13 @@ new_property(
 - default:
 
   When an object is created and the property is not supplied, what
-  should it default to? There are three options:
+  should it default to? There are four options:
 
   - A simple scalar (e.g. `1L`, `"x"`, `TRUE`).
+
+  - An empty vector without attributes (e.g.
+    [`integer()`](https://rdrr.io/r/base/integer.html),
+    [`list()`](https://rdrr.io/r/base/list.html)).
 
   - A [`quote()`](https://rdrr.io/r/base/substitute.html)d call. This
     will be evaluated when the object is constructed and should be used
@@ -133,9 +137,9 @@ Clock := new_class(properties = list(
 ))
 my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
-#> [1] "2026-10-12 14:08:48 UTC"
+#> [1] "2026-10-13 12:27:04 UTC"
 my_clock@now
-#> [1] "2026-10-12 14:08:49 UTC"
+#> [1] "2026-10-13 12:27:05 UTC"
 # This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 #> Error in `<Clock>@now`() : Can't set read-only property.

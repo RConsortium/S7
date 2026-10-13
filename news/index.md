@@ -509,8 +509,11 @@
   warns when `default` is a complex value, such as a named vector, that
   would be inlined into the constructor and could cause `R CMD check`
   failures. Wrap these defaults in
-  [`quote()`](https://rdrr.io/r/base/substitute.html). This warning will
-  become an error in a future release
+  [`quote()`](https://rdrr.io/r/base/substitute.html). Empty vectors
+  without attributes can be supplied directly,
+  e.g. [`integer()`](https://rdrr.io/r/base/integer.html) or
+  [`list()`](https://rdrr.io/r/base/list.html). This warning will become
+  an error in a future release
   ([\#541](https://github.com/RConsortium/S7/issues/541)).
 
 - [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) keeps
