@@ -509,10 +509,11 @@ test_that("read-only properties preserve parent constructor arguments", {
   foo := new_class(properties = list(x = class_character))
   foo2 := new_class(
     parent = foo,
-    properties = list(x = new_property(getter = function(self) "fixed"))
+    properties = list(x = new_property(getter = \(self) self@x))
   )
   expect_named(formals(foo2), "x")
-  expect_equal(foo2()@x, "fixed")
+  expect_equal(foo2()@x, character())
+  expect_equal(foo2(x = "custom")@x, "custom")
 
   Factor := new_class(
     parent = class_factor,
