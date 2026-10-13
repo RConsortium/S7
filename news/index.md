@@ -110,8 +110,9 @@
   ([\#423](https://github.com/RConsortium/S7/issues/423)).
 
 - [`new_property()`](https://rconsortium.github.io/S7/reference/new_property.md)
-  accepts a `setter` with arguments `self`, `name`, and `value`, so the
-  same setter can be reused for multiple properties
+  accepts an optional property name argument in getters
+  (`function(self, name)`) and setters (`function(self, name, value)`),
+  so the same accessor can be reused for multiple properties
   ([\#552](https://github.com/RConsortium/S7/issues/552)).
 
 - [`new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.md)

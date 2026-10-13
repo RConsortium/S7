@@ -38,10 +38,21 @@ new_property(
 
 - getter:
 
-  An optional function used to get the value. The function should take
-  `self` as its sole argument and return the value. If you supply a
-  `getter`, you are responsible for ensuring that it returns an object
-  of the correct `class`; it will not be validated automatically.
+  An optional function used to get the value. There are two supported
+  forms:
+
+  - `function(self)` is supplied the object.
+
+  - `function(self, name)` also gets the property name being accessed,
+    which makes it easy to reuse the same getter for multiple
+    properties.
+
+  A getter can read its property's stored value with `prop(self, name)`;
+  this does not call the getter again.
+
+  If you supply a `getter`, you are responsible for ensuring that it
+  returns an object of the correct `class`; it will not be validated
+  automatically.
 
   If a property has a getter but doesn't have a setter, it is read only.
 
@@ -137,9 +148,9 @@ Clock := new_class(properties = list(
 ))
 my_clock <- Clock()
 my_clock@now; Sys.sleep(1)
-#> [1] "2026-10-13 13:10:44 UTC"
+#> [1] "2026-10-13 17:48:21 UTC"
 my_clock@now
-#> [1] "2026-10-13 13:10:45 UTC"
+#> [1] "2026-10-13 17:48:22 UTC"
 # This property is read only, because there is a 'getter' but not a 'setter'
 try(my_clock@now <- 10)
 #> Error in `<Clock>@now`() : Can't set read-only property.
