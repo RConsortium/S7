@@ -527,6 +527,34 @@ test_that("read-only properties filter only overridden constructor arguments", {
   expect_equal(Factor(c(1L, 2L), c("a", "b"))@levels, c("a", "b"))
 })
 
+test_that("new read-only properties preserve inherited constructor arguments", {
+  Parent := new_class(
+    properties = list(
+      parent_prop1 = class_numeric,
+      parent_prop2 = new_property(class_character, default = "default")
+    )
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      child_prop = class_numeric,
+      child_read_only_prop = new_property(getter = function(self) {
+        length(self@child_prop)
+      })
+    )
+  )
+
+  expect_named(formals(Child), c("parent_prop1", "parent_prop2", "child_prop"))
+  child <- Child(
+    parent_prop1 = 1,
+    parent_prop2 = "override",
+    child_prop = c(2, 3)
+  )
+  expect_equal(child@parent_prop1, 1)
+  expect_equal(child@parent_prop2, "override")
+  expect_equal(child@child_read_only_prop, 2L)
+})
+
 test_that("can create constructors with missing or lazy defaults", {
   Person := new_class(
     properties = list(
