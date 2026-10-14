@@ -79,7 +79,8 @@ S7_generic_call <- function(match = FALSE, skip = c("none", "super")) {
   idx <- generic_call_frame(skip)
   call <- sys.call(idx)
   if (isTRUE(match)) {
-    call <- match.call(sys.function(idx), call, envir = sys.frame(idx))
+    caller <- sys.frame(sys.parents()[idx])
+    call <- match.call(sys.function(idx), call, envir = caller)
   }
   call
 }

@@ -319,3 +319,66 @@ test_that("errors from dispatched methods have reasonable tracebacks", {
     function(x, y) get_call_stack()
   expect_snapshot(my_generic(3, 4))
 })
+
+test_that("errors from methods have calls that can be deparsed", {
+  Foo := new_class(package = NULL)
+  g := new_generic("x")
+  method(g, Foo) <- function(x) stop("boom")
+
+  cnd <- tryCatch(g(Foo()), error = identity)
+  expect_identical(conditionMessage(cnd), "boom")
+  expect_identical(
+    base::deparse1(conditionCall(cnd)),
+    "`method(g, Foo)`(...)"
+  )
+})
+
+test_that("formatting method errors does not evaluate unused arguments", {
+  Foo := new_class(package = NULL)
+  g := new_generic("x", function(x, unused) S7_dispatch())
+  method(g, Foo) <- function(x, unused) stop("boom")
+
+  cnd <- tryCatch(g(Foo(), stop("unused")), error = identity)
+  expect_identical(conditionMessage(cnd), "boom")
+  expect_identical(
+    base::deparse1(conditionCall(cnd)),
+    "`method(g, Foo)`(...)"
+  )
+})
+
+test_that("method calls are readable before a method returns", {
+  Foo := new_class(package = NULL)
+  g := new_generic("x")
+  method(g, Foo) <- function(x) {
+    list(base::deparse1(sys.call()), substitute(x))
+  }
+  expect_identical(g(Foo()), list("`method(g, Foo)`(...)", quote(Foo())))
+
+  method(g, Foo) <- function(x) warning("boom")
+  cnd <- tryCatch(g(Foo()), warning = identity)
+  expect_identical(conditionMessage(cnd), "boom")
+  expect_identical(base::deparse1(conditionCall(cnd)), "`method(g, Foo)`(...)")
+})
+
+test_that("dispatch preserves the generic's dots on return and error", {
+  Foo := new_class(package = NULL)
+  frame <- NULL
+  g := new_generic("x", function(x, ...) {
+    frame <<- environment()
+    before <- substitute(list(...))
+    out <- S7_dispatch()
+    list(before = before, out = out, after = substitute(list(...)))
+  })
+  method(g, Foo) <- function(x, ...) substitute(list(...))
+  expected <- quote(list(extra = stop("unused")))
+  out <- g(Foo(), extra = stop("unused"))
+  expect_identical(
+    out,
+    list(before = expected, out = expected, after = expected)
+  )
+
+  method(g, Foo) <- function(x, ...) stop("boom")
+  cnd <- tryCatch(g(Foo(), extra = stop("unused")), error = identity)
+  expect_identical(conditionMessage(cnd), "boom")
+  expect_identical(eval(quote(substitute(list(...))), frame), expected)
+})

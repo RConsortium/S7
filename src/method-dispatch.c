@@ -15,11 +15,13 @@ extern SEXP missing_call;
 extern SEXP R_TRUE;
 
 extern SEXP s7_proto_object;
+extern SEXP dots_proto;
 
 
 static inline
 void APPEND_NODE(SEXP node, SEXP tag, SEXP val) {
-  SEXP new_node = Rf_cons(val, R_NilValue);
+  SEXP new_node = Rf_shallow_duplicate(dots_proto);
+  SETCAR(new_node, val);
   SETCDR(node, new_node);
   SET_TAG(new_node, tag);
 }
@@ -175,6 +177,26 @@ SEXP S7_object_(void) {
   return Rf_shallow_duplicate(s7_proto_object);
 }
 
+struct method_call_data {
+  SEXP call;
+  SEXP envir;
+  SEXP dots;
+};
+
+static SEXP method_call_eval(void* data) {
+  struct method_call_data* info = data;
+  return Rf_eval(info->call, info->envir);
+}
+
+static void method_call_restore(void* data, Rboolean jump) {
+  struct method_call_data* info = data;
+  if (info->dots == R_UnboundValue) {
+    s7_clear_var_in_frame(info->envir, R_DotsSymbol);
+  } else {
+    Rf_defineVar(R_DotsSymbol, info->dots, info->envir);
+  }
+}
+
 SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
@@ -198,7 +220,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   // Allocate a list to store the classes for the arguments
   SEXP dispatch_classes = PROTECT(Rf_allocVector(VECSXP, n_dispatch));
 
-  // Allocate a pairlist to hold the arguments for when we call the method
+  // Allocate a dots list to forward the arguments to the method.
   SEXP mcall = PROTECT(Rf_lcons(R_NilValue, R_NilValue));
   SEXP mcall_tail = mcall;
 
@@ -234,8 +256,7 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
 
         if (Rf_inherits(val, "S7_super")) {
 
-          // Keep dispatch metadata in S7_dispatch()'s own frame. The method
-          // call is evaluated in the generic's frame (envir), not this frame.
+          // Keep dispatch metadata in S7_dispatch()'s own frame.
           Rf_defineVar(sym_u_dispatched_super, R_TRUE, env_);
 
           // Put the super() stored value into the method call.
@@ -262,7 +283,18 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
     } else {
       // other arguments not used for dispatch
       if (name == R_DotsSymbol) {
-        SETCDR(mcall_tail, Rf_cons(R_DotsSymbol, R_NilValue));
+        SEXP dots = Rf_findVarInFrame(envir, R_DotsSymbol);
+        if (dots != R_NilValue && dots != R_MissingArg && TYPEOF(dots) != DOTSXP) {
+          Rf_error("'...' used in an incorrect context");
+        }
+        if (dots != R_MissingArg) {
+          for (; dots != R_NilValue; dots = CDR(dots)) {
+            APPEND_NODE(mcall_tail, TAG(dots), CAR(dots));
+            mcall_tail = CDR(mcall_tail);
+          }
+        }
+        formals = CDR(formals);
+        continue;
       } else {
         // pass along the promise so substitute() works
         SEXP arg = Rf_findVarInFrame(envir, name);
@@ -286,20 +318,24 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   }
   REPROTECT(m, val_pi); // unnecessary, for rchk only
 
-  /// Inlining the method closure in the call like `SETCAR(mcall, m);`
-  /// leads to extremely verbose (unreadable) traceback()s. So,
-  /// for nicer tracebacks, we set a SYMSXP at the head.
+  // Use the method's name rather than inlining its closure in the call,
+  // which would make tracebacks unreadably verbose.
   SEXP method_name = Rf_getAttrib(m, sym_name);
   if (TYPEOF(method_name) != SYMSXP) {
-    // if name is missing, fallback to masking the `S7_dispatch` symbol.
-    // we could alternatively fallback to inlining m: SETCAR(mcall, m)
+    // If the name is missing, mask the S7_dispatch symbol.
     method_name = sym_S7_dispatch;
   }
 
+  // Forward the promises through ... so substitute() keeps their expressions,
+  // while the recorded call contains only symbols and can be safely deparsed.
+  SEXP dots = PROTECT(Rf_findVarInFrame(envir, R_DotsSymbol));
   Rf_defineVar(method_name, m, envir);
-  SETCAR(mcall, method_name);
+  Rf_defineVar(R_DotsSymbol, CDR(mcall), envir);
+  SEXP call = PROTECT(Rf_lang2(method_name, R_DotsSymbol));
 
-  SEXP out = Rf_eval(mcall, envir);
-  UNPROTECT(4);
+  struct method_call_data info = {call, envir, dots};
+  SEXP out = R_UnwindProtect(method_call_eval, &info,
+                            method_call_restore, &info, NULL);
+  UNPROTECT(6);
   return out;
 }

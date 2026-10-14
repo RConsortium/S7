@@ -315,6 +315,8 @@
 
 ### Errors and printing
 
+* Errors and warnings raised directly in S7 methods now record calls that can be deparsed without evaluating arguments, including on R 4.3 (#783).
+
 * Errors from S7 report the function where they occurred (#646).
 
 * `S7_error_method_not_found` has a correct class vector without a duplicate
