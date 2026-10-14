@@ -77,7 +77,7 @@
       S7::S7_dispatch()
       
       [[3]]
-      `method(my_generic, class_double)`(...)
+      `method(my_generic, class_double)`(x = 10, ...)
       
 
 ---
@@ -92,6 +92,7 @@
       S7::S7_dispatch()
       
       [[3]]
-      `method(my_generic, list(class_double, class_double))`(...)
+      `method(my_generic, list(class_double, class_double))`(x = 3, 
+          y = 4, ...)
       
 

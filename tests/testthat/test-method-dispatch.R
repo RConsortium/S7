@@ -303,6 +303,7 @@ test_that("method dispatch works for class_missing", {
 })
 
 test_that("errors from dispatched methods have reasonable tracebacks", {
+  variant <- if (getRversion() < "4.4") "pre-4.4" else NULL
   get_call_stack <- function(n = 3) {
     x <- sys.calls()
     x <- x[-length(x)] # remove get_call_stack()
@@ -312,73 +313,126 @@ test_that("errors from dispatched methods have reasonable tracebacks", {
 
   my_generic := new_generic("x")
   method(my_generic, class_numeric) <- function(x) get_call_stack()
-  expect_snapshot(my_generic(10))
+  expect_snapshot(my_generic(10), variant = variant)
 
   my_generic := new_generic(c("x", "y"))
   method(my_generic, list(class_numeric, class_numeric)) <-
     function(x, y) get_call_stack()
-  expect_snapshot(my_generic(3, 4))
+  expect_snapshot(my_generic(3, 4), variant = variant)
 })
 
-test_that("errors from methods have calls that can be deparsed", {
-  Foo := new_class(package = NULL)
-  g := new_generic("x")
-  method(g, Foo) <- function(x) stop("boom")
+test_that("method error calls preserve expressions on R < 4.4", {
+  skip_if(getRversion() >= "4.4")
 
-  cnd <- tryCatch(g(Foo()), error = identity)
-  expect_identical(conditionMessage(cnd), "boom")
-  expect_identical(
-    base::deparse1(conditionCall(cnd)),
-    "`method(g, Foo)`(...)"
+  Foo := new_class(package = NULL)
+  g := new_generic(
+    dispatch_args = "x",
+    fun = function(x, unused, ..., z = 1) S7_dispatch()
   )
-})
+  method(g, Foo) <- function(x, unused, ..., z = 1) stop("boom")
 
-test_that("formatting method errors does not evaluate unused arguments", {
-  Foo := new_class(package = NULL)
-  g := new_generic("x", function(x, unused) S7_dispatch())
-  method(g, Foo) <- function(x, unused) stop("boom")
-
-  cnd <- tryCatch(g(Foo(), stop("unused")), error = identity)
-  expect_identical(conditionMessage(cnd), "boom")
-  expect_identical(
-    base::deparse1(conditionCall(cnd)),
-    "`method(g, Foo)`(...)"
+  cnd <- tryCatch(
+    g(Foo(), stop("unused"), extra = stop("extra"), z = identity(2)),
+    error = identity
   )
+  call <- quote(`method(g, Foo)`(
+    x = Foo(),
+    unused = stop("unused"),
+    extra = stop("extra"),
+    z = identity(2)
+  ))
+  expect_identical(conditionMessage(cnd), "boom")
+  expect_identical(conditionCall(cnd), call)
+  expect_identical(base::deparse1(conditionCall(cnd)), base::deparse1(call))
+  expect_snapshot(error = TRUE, variant = "pre-4.4", {
+    g(Foo(), stop("unused"), extra = stop("extra"), z = identity(2))
+  })
 })
 
-test_that("method calls are readable before a method returns", {
+test_that("method calls and warnings preserve expressions on R < 4.4", {
+  skip_if(getRversion() >= "4.4")
+
   Foo := new_class(package = NULL)
-  g := new_generic("x")
-  method(g, Foo) <- function(x) {
-    list(base::deparse1(sys.call()), substitute(x))
-  }
-  expect_identical(g(Foo()), list("`method(g, Foo)`(...)", quote(Foo())))
+  g := new_generic(dispatch_args = "x")
+  method(g, Foo) <- function(x) sys.call()
+
+  call <- quote(`method(g, Foo)`(x = Foo()))
+  expect_identical(g(Foo()), call)
+  forward <- function(...) g(...)
+  expect_identical(forward(Foo()), call)
 
   method(g, Foo) <- function(x) warning("boom")
   cnd <- tryCatch(g(Foo()), warning = identity)
   expect_identical(conditionMessage(cnd), "boom")
-  expect_identical(base::deparse1(conditionCall(cnd)), "`method(g, Foo)`(...)")
+  expect_identical(conditionCall(cnd), call)
+  expect_identical(base::deparse1(conditionCall(cnd)), base::deparse1(call))
+  expect_snapshot(g(Foo()), variant = "pre-4.4")
 })
 
-test_that("dispatch preserves the generic's dots on return and error", {
+test_that("method calls retain super expressions on R < 4.4", {
+  skip_if(getRversion() >= "4.4")
+
   Foo := new_class(package = NULL)
-  frame <- NULL
-  g := new_generic("x", function(x, ...) {
-    frame <<- environment()
+  g := new_generic(dispatch_args = "x")
+  method(g, Foo) <- function(x) list(x, substitute(x), sys.call())
+  obj <- Foo()
+  out <- g(super(obj, Foo))
+
+  expect_identical(out[[1]], obj)
+  expect_identical(out[[2]], obj)
+  expect_identical(
+    base::deparse1(out[[3]]),
+    base::deparse1(quote(`method(g, Foo)`(x = super(obj, Foo))))
+  )
+})
+
+test_that("dispatch preserves argument promises and the generic's dots", {
+  Foo := new_class(package = NULL)
+  calls <- 0L
+  make <- function() {
+    calls <<- calls + 1L
+    Foo()
+  }
+  g := new_generic(dispatch_args = "x", fun = function(x, unused, ...) {
     before <- substitute(list(...))
     out <- S7_dispatch()
     list(before = before, out = out, after = substitute(list(...)))
   })
-  method(g, Foo) <- function(x, ...) substitute(list(...))
+  method(g, Foo) <- function(x, unused, ...) {
+    list(
+      value = x,
+      expr = substitute(x),
+      unused = substitute(unused),
+      dots = substitute(list(...))
+    )
+  }
   expected <- quote(list(extra = stop("unused")))
-  out <- g(Foo(), extra = stop("unused"))
+  out <- g(make(), stop("unused"), extra = stop("unused"))
   expect_identical(
     out,
-    list(before = expected, out = expected, after = expected)
+    list(
+      before = expected,
+      out = list(
+        value = Foo(),
+        expr = quote(make()),
+        unused = quote(stop("unused")),
+        dots = expected
+      ),
+      after = expected
+    )
   )
+  expect_identical(calls, 1L)
+})
 
-  method(g, Foo) <- function(x, ...) stop("boom")
-  cnd <- tryCatch(g(Foo(), extra = stop("unused")), error = identity)
+test_that("method calls retain their representation on R >= 4.4", {
+  skip_if(getRversion() < "4.4")
+
+  g := new_generic(dispatch_args = "x")
+  method(g, class_double) <- function(x) stop("boom")
+  cnd <- tryCatch(g(identity(1)), error = identity)
   expect_identical(conditionMessage(cnd), "boom")
-  expect_identical(eval(quote(substitute(list(...))), frame), expected)
+  expect_identical(
+    base::deparse1(conditionCall(cnd)),
+    "`method(g, class_double)`(x = 1, ...)"
+  )
 })

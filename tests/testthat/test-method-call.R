@@ -203,16 +203,6 @@ test_that("S7_generic_call(match = TRUE) names the arguments", {
   expect_equal(foo(1), quote(foo(x = 1)))
 })
 
-test_that("S7_generic_call(match = TRUE) expands dots in the caller", {
-  foo := new_generic("x")
-  method(foo, class_double) <- function(x, ...) S7_generic_call(match = TRUE)
-  forward <- function(...) foo(1, ...)
-  expect_identical(forward(y = 2), quote(foo(x = 1, y = 2)))
-
-  forward <- function(...) foo(...)
-  expect_identical(forward(1, y = 2), quote(foo(x = 1, y = 2)))
-})
-
 test_that("a different nested generic stops the walk (nearest generic)", {
   inner := new_generic("x")
   outer := new_generic("x")

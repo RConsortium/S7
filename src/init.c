@@ -83,7 +83,6 @@ SEXP ns_S7;
 
 SEXP R_TRUE, R_FALSE;
 SEXP s7_proto_object;
-SEXP dots_proto;
 static SEXP r_string_S7_object, s7_object_version;
 
 static SEXP make_s7_proto_object(void)
@@ -150,11 +149,6 @@ void R_init_S7(DllInfo *dll)
     prop_init();
     class_type_init();
     R_PreserveObject(s7_proto_object = make_s7_proto_object());
-    SEXP fn_dots = PROTECT(Rf_eval(Rf_install("dots_prototype"), ns_S7));
-    SEXP dots_call = PROTECT(Rf_lang2(fn_dots, R_NilValue));
-    R_PreserveObject(dots_proto = Rf_eval(dots_call, ns_S7));
-    SETCAR(dots_proto, R_NilValue);
-    UNPROTECT(2);
     SEXP fn_missing = PROTECT(Rf_eval(Rf_install("dispatch_arg_missing"), ns_S7));
     R_PreserveObject(missing_call = Rf_lang2(fn_missing, R_NilValue));
     UNPROTECT(1);

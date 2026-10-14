@@ -315,8 +315,6 @@
 
 ### Errors and printing
 
-* Errors and warnings raised directly in S7 methods now record calls that can be deparsed without evaluating arguments, including on R 4.3 (#783).
-
 * Errors from S7 report the function where they occurred (#646).
 
 * `S7_error_method_not_found` has a correct class vector without a duplicate
@@ -328,6 +326,8 @@
 * `prop()` and `prop<-()` report errors from getters and setters with a
   synthetic `<Class>@<prop>` call, identifying the property that triggered the
   error (#416, #536, #638).
+
+* `S7_dispatch()` preserves argument expressions in method calls on R < 4.4, so errors and warnings can be printed without evaluating argument promises (#783).
 
 * `S7_dispatch()` gives a clear error when called from a function that is not an
   S7 generic, such as `unclass(generic)()` (#684).

@@ -1,9 +1,6 @@
 # Called from C
 dispatch_arg_missing <- function(x) missing(x)
 
-# Called from C to create a DOTSXP prototype without a non-API allocator.
-dots_prototype <- function(...) get("...")
-
 # Called from C
 dispatch_not_generic_error <- function() {
   stop2(
