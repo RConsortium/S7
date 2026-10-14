@@ -241,7 +241,8 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
 
 is_down_cast <- function(x, class) {
   from_class <- S7_class(x)
-  # S7 objects may add S3 compatibility classes outside their declared ancestry.
+  # S7 downcasts follow declared ancestry. The target constructor determines
+  # the result's classes, so extra S3 classes on the source are not preserved.
   from_dispatch <- if (is_class(from_class)) {
     class_dispatch(from_class)
   } else {

@@ -113,7 +113,7 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
   expect_equal(bar@y, 3)
 })
 
-test_that("fallback convert can downcast S7 objects with additional S3 classes", {
+test_that("fallback downcasts use declared ancestry and drop extra S3 classes", {
   Parent := new_class(properties = list(x = class_double), package = NULL)
   Child := new_class(
     parent = Parent,
@@ -121,10 +121,11 @@ test_that("fallback convert can downcast S7 objects with additional S3 classes",
     package = NULL
   )
   parent <- Parent(x = 1)
-  class(parent) <- c("Parent", "legacy_parent", "S7_object", "legacy")
+  class(parent) <- c(class(parent), "extra_s3_class")
 
   child <- convert(parent, to = Child, y = 2)
   expect_identical(S7_class(child), Child)
+  expect_identical(class(child), c("Child", "Parent", "S7_object"))
   expect_equal(props(child), list(x = 1, y = 2))
 })
 
@@ -133,7 +134,7 @@ test_that("fallback convert rejects sibling S7 objects with additional S3 classe
   Child := new_class(parent = Parent, package = NULL)
   Sibling := new_class(parent = Parent, package = NULL)
   child <- Child()
-  class(child) <- c("Child", "legacy_child", "Parent", "S7_object", "legacy")
+  class(child) <- c(class(child), "extra_s3_class")
 
   expect_snapshot(convert(child, to = Sibling), error = TRUE)
 })
