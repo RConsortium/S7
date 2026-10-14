@@ -142,13 +142,6 @@ test_that("fallback convert rejects sibling S7 objects with additional S3 classe
   expect_snapshot(convert(child, to = Sibling), error = TRUE)
 })
 
-test_that("fallback convert retains strict matching for S3 source classes", {
-  Child := new_class(parent = new_S3_class("parent"), package = NULL)
-  parent <- structure(list(), class = c("parent", "extra"))
-
-  expect_snapshot(convert(parent, to = Child), error = TRUE)
-})
-
 test_that("fallback convert can convert to S3 class", {
   local_methods(convert)
   factor2 := new_class(

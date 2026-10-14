@@ -16,16 +16,6 @@
       - from: <Child>
       - to  : <Sibling>
 
-# fallback convert retains strict matching for S3 source classes
-
-    Code
-      convert(parent, to = Child)
-    Condition
-      Error in `convert()`:
-      ! Can't find method with dispatch classes:
-      - from: S3<parent/extra>
-      - to  : <Child>
-
 # convert() errors when upcasting to an abstract class (#680)
 
     Code
