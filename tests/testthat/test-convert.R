@@ -121,6 +121,9 @@ test_that("fallback downcasts use declared ancestry and drop extra S3 classes", 
     package = NULL
   )
   parent <- Parent(x = 1)
+  # ggplot2 appends "gg" to its S7 plot objects for S3 compatibility.
+  # This must not block ggplotplus from converting a plot to an S7 subclass:
+  # ancestry comes from the S7 class, and the target constructor sets its classes.
   class(parent) <- c(class(parent), "extra_s3_class")
 
   child <- convert(parent, to = Child, y = 2)
