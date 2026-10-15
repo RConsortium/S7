@@ -6,6 +6,16 @@
       Error in `as.double()`:
       ! cannot coerce type 'object' to vector of type 'double'
 
+# fallback convert rejects sibling S7 objects with additional S3 classes
+
+    Code
+      convert(child, to = Sibling)
+    Condition
+      Error in `convert()`:
+      ! Can't find method with dispatch classes:
+      - from: <Child>
+      - to  : <Sibling>
+
 # convert() errors when upcasting to an abstract class (#680)
 
     Code

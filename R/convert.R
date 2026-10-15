@@ -240,7 +240,15 @@ convert_up <- function(from, to, call = sys.call(-1L)) {
 }
 
 is_down_cast <- function(x, class) {
-  class_dispatch_extends(obj_dispatch(x), class_dispatch(class))
+  from_class <- S7_class(x)
+  # S7 downcasts follow declared ancestry. The target constructor determines
+  # the result's classes, so extra S3 classes on the source are not preserved.
+  from_dispatch <- if (is_class(from_class)) {
+    class_dispatch(from_class)
+  } else {
+    obj_dispatch(x)
+  }
+  class_dispatch_extends(from_dispatch, class_dispatch(class))
 }
 
 convert_down <- function(from, to, user_args = list()) {

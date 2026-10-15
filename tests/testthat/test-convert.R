@@ -113,6 +113,35 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
   expect_equal(bar@y, 3)
 })
 
+test_that("fallback downcasts use declared ancestry and drop extra S3 classes", {
+  Parent := new_class(properties = list(x = class_double), package = NULL)
+  Child := new_class(
+    parent = Parent,
+    properties = list(y = class_double),
+    package = NULL
+  )
+  parent <- Parent(x = 1)
+  # ggplot2 adds "gg" to its S7 plot objects for S3 compatibility.
+  # That extra tag previously blocked ggplotplus from converting plots
+  # to an S7 subclass, despite the declared parent-child relationship.
+  class(parent) <- c(class(parent), "extra_s3_class")
+
+  child <- convert(parent, to = Child, y = 2)
+  expect_identical(S7_class(child), Child)
+  expect_identical(class(child), c("Child", "Parent", "S7_object"))
+  expect_equal(props(child), list(x = 1, y = 2))
+})
+
+test_that("fallback convert rejects sibling S7 objects with additional S3 classes", {
+  Parent := new_class(package = NULL)
+  Child := new_class(parent = Parent, package = NULL)
+  Sibling := new_class(parent = Parent, package = NULL)
+  child <- Child()
+  class(child) <- c(class(child), "extra_s3_class")
+
+  expect_snapshot(convert(child, to = Sibling), error = TRUE)
+})
+
 test_that("fallback convert can convert to S3 class", {
   local_methods(convert)
   factor2 := new_class(
