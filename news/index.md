@@ -550,6 +550,11 @@
   [\#638](https://github.com/RConsortium/S7/issues/638)).
 
 - [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
+  preserves argument expressions in method calls on R \< 4.4, so errors
+  and warnings can be printed without evaluating argument promises
+  ([\#783](https://github.com/RConsortium/S7/issues/783)).
+
+- [`S7_dispatch()`](https://rconsortium.github.io/S7/reference/new_generic.md)
   gives a clear error when called from a function that is not an S7
   generic, such as `unclass(generic)()`
   ([\#684](https://github.com/RConsortium/S7/issues/684)).
