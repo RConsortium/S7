@@ -327,6 +327,8 @@
   synthetic `<Class>@<prop>` call, identifying the property that triggered the
   error (#416, #536, #638).
 
+* `S7_dispatch()` preserves argument expressions in method calls on R < 4.4, so errors and warnings can be printed without evaluating argument promises (#783).
+
 * `S7_dispatch()` gives a clear error when called from a function that is not an
   S7 generic, such as `unclass(generic)()` (#684).
 

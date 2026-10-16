@@ -175,6 +175,58 @@ SEXP S7_object_(void) {
   return Rf_shallow_duplicate(s7_proto_object);
 }
 
+#if R_VERSION < R_Version(4, 4, 0)
+static void append_legacy_argument(SEXP* call_tail, SEXP* args_tail,
+                                   SEXP name, SEXP arg, SEXP expr) {
+  APPEND_NODE(*args_tail, name, arg);
+  *args_tail = CDR(*args_tail);
+
+  // Forward the original promise, but record its expression in the call.
+  // Dots forwarding can introduce nested promises.
+  while (TYPEOF(expr) == PROMSXP) {
+    expr = PREXPR(expr);
+  }
+  // Literal values supplied by do.call() retain base R's deparse limitations.
+  APPEND_NODE(*call_tail, name, expr);
+  *call_tail = CDR(*call_tail);
+}
+
+static SEXP method_call_legacy(SEXP mcall, SEXP method, SEXP envir) {
+  SEXP call = PROTECT(Rf_lcons(CAR(mcall), R_NilValue));
+  SEXP args = PROTECT(Rf_cons(R_NilValue, R_NilValue));
+  SEXP call_tail = call;
+  SEXP args_tail = args;
+
+  for (SEXP node = CDR(mcall); node != R_NilValue; node = CDR(node)) {
+    if (CAR(node) == R_DotsSymbol && TAG(node) == R_NilValue) {
+      SEXP dots = Rf_findVarInFrame(envir, R_DotsSymbol);
+      if (dots != R_NilValue && dots != R_MissingArg && TYPEOF(dots) != DOTSXP) {
+        Rf_error("'...' used in an incorrect context");
+      }
+      if (dots != R_MissingArg) {
+        for (; dots != R_NilValue; dots = CDR(dots)) {
+          append_legacy_argument(&call_tail, &args_tail,
+                                 TAG(dots), CAR(dots), CAR(dots));
+        }
+      }
+    } else {
+      // super() forwards its underlying value, but its original promise is
+      // still bound in the generic and supplies the diagnostic expression.
+      SEXP expr = Rf_findVarInFrame(envir, TAG(node));
+      append_legacy_argument(&call_tail, &args_tail, TAG(node), CAR(node), expr);
+    }
+  }
+
+  // R < 4.4 cannot deparse bare S7 objects embedded in promises. Its exported
+  // applyClosure() separates the diagnostic call from the runtime arguments.
+  // Both applyClosure() and promise access are internal APIs; keep this
+  // compatibility path restricted to the older R versions that expose them.
+  SEXP out = Rf_applyClosure(call, method, CDR(args), envir, R_NilValue);
+  UNPROTECT(2);
+  return out;
+}
+#endif
+
 SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   args_ = CDR(args_);
   SEXP generic = CAR(args_); args_ = CDR(args_);
@@ -299,7 +351,11 @@ SEXP method_call_(SEXP call_, SEXP op_, SEXP args_, SEXP env_) {
   Rf_defineVar(method_name, m, envir);
   SETCAR(mcall, method_name);
 
+#if R_VERSION < R_Version(4, 4, 0)
+  SEXP out = method_call_legacy(mcall, m, envir);
+#else
   SEXP out = Rf_eval(mcall, envir);
+#endif
   UNPROTECT(4);
   return out;
 }
