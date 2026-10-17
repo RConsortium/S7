@@ -132,7 +132,11 @@ S4_registered_class <- function(x, S4_env, call = sys.call(-1L)) {
 }
 
 S4_union_class <- function(x, S4_env) {
-  if (identical(x, class_numeric)) {
+  # Saved unions can contain base class functions from an older S7 version.
+  if (
+    all(vlapply(x$classes, is_base_class)) &&
+      setequal(vcapply(x$classes, `[[`, "class"), c("integer", "double"))
+  ) {
     return("numeric")
   }
 
