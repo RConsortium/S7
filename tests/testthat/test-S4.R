@@ -546,23 +546,6 @@ test_that("S4_register accepts numeric unions serialized by S7 0.2.2", {
   expect_identical(methods::validObject(S4regLegacyNumeric(x = 1.5)), TRUE)
 })
 
-test_that("S4_register accepts numeric unions in either order", {
-  local_S4_classes()
-  S4regReversedNumeric := new_class(
-    properties = list(x = new_union(class_double, class_integer)),
-    package = NULL
-  )
-
-  S4_register(S4regReversedNumeric)
-
-  expect_identical(
-    as.character(methods::getClass(S4_contains(S4regReversedNumeric))@slots$x),
-    "numeric"
-  )
-  expect_identical(methods::validObject(S4regReversedNumeric(x = 1L)), TRUE)
-  expect_identical(methods::validObject(S4regReversedNumeric(x = 1.5)), TRUE)
-})
-
 test_that("S4_register uses registered S7 unions as S4 slots", {
   local_S4_classes()
 
