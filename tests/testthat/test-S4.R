@@ -527,6 +527,25 @@ test_that("S4_contains rejects properties with custom accessors", {
   )
 })
 
+test_that("S4_register accepts numeric unions serialized by S7 0.2.2", {
+  local_S4_classes()
+  # Generated with saveRDS(S7::class_numeric, ...) using S7 0.2.2.
+  numeric <- readRDS(test_path("S4", "class-numeric-0.2.2.rds"))
+  S4regLegacyNumeric := new_class(
+    properties = list(x = numeric),
+    package = NULL
+  )
+
+  S4_register(S4regLegacyNumeric)
+
+  expect_identical(
+    as.character(methods::getClass(S4_contains(S4regLegacyNumeric))@slots$x),
+    "numeric"
+  )
+  expect_identical(methods::validObject(S4regLegacyNumeric(x = 1L)), TRUE)
+  expect_identical(methods::validObject(S4regLegacyNumeric(x = 1.5)), TRUE)
+})
+
 test_that("S4_register uses registered S7 unions as S4 slots", {
   local_S4_classes()
 

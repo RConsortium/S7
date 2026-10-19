@@ -136,6 +136,17 @@ S4_union_class <- function(x, S4_env) {
     return("numeric")
   }
 
+  # BACKCOMPAT: packages built with older S7 versions can store base class
+  # functions that differ from the runtime objects. Once those builds no
+  # longer need support, remove this block, the S7 0.2.2 regression in
+  # test-S4.R, and tests/testthat/S4/class-numeric-0.2.2.rds.
+  if (
+    all(vlapply(x$classes, is_base_class)) &&
+      setequal(vcapply(x$classes, `[[`, "class"), c("integer", "double"))
+  ) {
+    return("numeric")
+  }
+
   name <- S4_union_name(x, S4_env)
   if (methods::isClass(name, where = S4_env)) {
     return(name)
