@@ -8,12 +8,12 @@
 #' import an S7 function in `NAMESPACE` (for example, `importFrom(S7, S7_class)`).
 #' This loads S7 before your package's compiled code uses the API.
 #'
-#' Include `<S7.c>` in exactly one C or C++ source file in your package. Call
+#' Include `<S7-init.h>` in your package's initialization source file. Call
 #' `S7_init_api()` from your package's `R_init_<pkg>()` routine to initialize the
 #' function pointers before using them. For example, in `src/init.c`:
 #'
 #' ```c
-#' #include <S7.c>
+#' #include <S7-init.h>
 #'
 #' void R_init_mypkg(DllInfo *dll) {
 #'   S7_init_api();

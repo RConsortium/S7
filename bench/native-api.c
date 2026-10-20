@@ -1,5 +1,5 @@
 #define R_NO_REMAP
-#include <S7.c>
+#include <S7-init.h>
 
 static SEXP native_class(SEXP object, SEXP iterations) {
   int n = Rf_asInteger(iterations);

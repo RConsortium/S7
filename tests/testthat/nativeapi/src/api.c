@@ -1,7 +1,9 @@
 #define R_NO_REMAP
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
-#include <S7.c>
+#include <S7-init.h>
+// Repeated inclusion must not redefine the API.
+#include <S7-init.h>
 
 static SEXP native_class(SEXP object) {
   return S7_get_class(object);

@@ -16,11 +16,11 @@ Add S7 to both \code{Imports} and \code{LinkingTo} in your package's \code{DESCR
 import an S7 function in \code{NAMESPACE} (for example, \code{importFrom(S7, S7_class)}).
 This loads S7 before your package's compiled code uses the API.
 
-Include \verb{<S7.c>} in exactly one C or C++ source file in your package. Call
+Include \verb{<S7-init.h>} in your package's initialization source file. Call
 \code{S7_init_api()} from your package's \verb{R_init_<pkg>()} routine to initialize the
 function pointers before using them. For example, in \code{src/init.c}:
 
-\if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7.c>
+\if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7-init.h>
 
 void R_init_mypkg(DllInfo *dll) \{
   S7_init_api();
