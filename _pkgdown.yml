@@ -48,6 +48,7 @@ reference:
   - S7_on_load
   - new_external_class
   - new_external_generic
+  - native-api
 
 - title: Deprecation
   desc: >

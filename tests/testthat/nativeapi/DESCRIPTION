@@ -1,0 +1,7 @@
+Package: nativeapi
+Title: Test S7's Native API
+Version: 0.0.0
+Description: A compiled consumer of S7's public native API.
+License: MIT
+Imports: S7
+LinkingTo: S7
