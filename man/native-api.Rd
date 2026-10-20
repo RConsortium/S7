@@ -7,82 +7,58 @@
 \alias{S7_get_prop}
 \title{Native API}
 \description{
-S7 provides a native API for retrieving an S7 class definition and reading
+S7 provides a stable native API for retrieving class definitions and reading
 properties without depending on how S7 stores them.
+}
+\details{
+\itemize{
+\item \verb{SEXP S7_get_class(SEXP object)} returns the stored S7 class definition, or
+\code{R_NilValue} if there is none. Unlike \code{\link[=S7_class]{S7_class()}}, it does not construct
+class specifications for base, S3, or S4 objects.
+\item \verb{SEXP S7_get_prop(SEXP object, SEXP name)} reads a property, including custom
+getters, as \code{\link[=prop]{prop()}} does. \code{name} must be a character vector of length one
+containing a non-missing string.
+}
 }
 \section{C and C++}{
 
-Add S7 to both \code{Imports} and \code{LinkingTo} in your package's \code{DESCRIPTION}, and
-import an S7 function in \code{NAMESPACE} (for example, \code{importFrom(S7, S7_class)}).
-This loads S7 before your package's compiled code uses the API.
+Add S7 to \code{Imports} and \code{LinkingTo} in \code{DESCRIPTION}. In \code{NAMESPACE}, add
+\code{importFrom(S7, S7_class)} and \code{useDynLib(mypkg, .registration = TRUE)}.
 
-Include \verb{<S7-init.h>} in your package's initialization source file. Call
-\code{S7_init_api()} from your package's \verb{R_init_<pkg>()} routine to initialize the
-function pointers before using them. For example, in \code{src/init.c}:
+This example \code{src/init.c} initializes the API and registers a \code{.Call} routine
+that reads the \code{value} property:
 
 \if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7-init.h>
 
-void R_init_mypkg(DllInfo *dll) \{
-  S7_init_api();
-  /* Keep your package's routine registration here. */
-\}
-}\if{html}{\out{</div>}}
-
-If the initialization routine is defined in C++, give it C linkage with
-\verb{extern "C"}. Other source files include \verb{<S7.h>}, which declares the shared
-function pointers:
-
-\if{html}{\out{<div class="sourceCode c">}}\preformatted{extern SEXP (*S7_get_class)(SEXP object);
-extern SEXP (*S7_get_prop)(SEXP object, SEXP name);
-}\if{html}{\out{</div>}}
-
-Initialization happens once when your package's DLL is loaded. Subsequent
-calls use these pointers directly, without an initialization check.
-
-\code{S7_get_class()} returns the S7 class definition stored on \code{object}, or
-\code{R_NilValue} if it has none. It resolves shared class references and supports
-objects created with older versions of S7. Unlike the R function \code{\link[=S7_class]{S7_class()}},
-it does not construct class specifications for base, S3, or S4 objects that
-have no S7 class definition.
-
-\code{S7_get_prop()} returns the value of a property, with the same getter and
-storage behavior as \code{\link[=prop]{prop()}}. Callers must supply \code{name} as a character vector
-of length one containing a non-missing string. The native API assumes this
-precondition is met; behavior for other inputs is unsupported.
-Partial matching is not performed. Non-S7 objects and unknown properties
-signal R errors. Errors from getters propagate to the caller.
-
-Both functions use R's usual memory protection rules. Keep arguments protected
-during the call, and protect a returned value before making further allocating
-R API calls. Returned values may be shared with the object; duplicate them
-before modifying them. Call these functions only on R's main thread.
-
-For example, a \code{.Call} routine can read a property as follows:
-
-\if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7.h>
-
-SEXP object_value(SEXP object) \{
+static SEXP object_value(SEXP object) \{
   SEXP name = PROTECT(Rf_mkString("value"));
-  SEXP value = PROTECT(S7_get_prop(object, name));
-  UNPROTECT(2);
+  SEXP value = S7_get_prop(object, name);
+  UNPROTECT(1);
   return value;
 \}
+
+static const R_CallMethodDef CallEntries[] = \{
+  \{"object_value", (DL_FUNC) &object_value, 1\},
+  \{NULL, NULL, 0\}
+\};
+
+void R_init_mypkg(DllInfo *dll) \{
+  S7_init_api();
+  R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+  R_useDynamicSymbols(dll, FALSE);
+  R_forceSymbols(dll, TRUE);
+\}
 }\if{html}{\out{</div>}}
+
+An R wrapper in the package can call \code{.Call(object_value, object)}.
+Other C/C++ source files include \verb{<S7.h>}. If the initialization routine is
+written in C++, declare it \verb{extern "C"}.
 }
 
 \section{Other native bindings}{
 
-The functions are registered with \code{R_RegisterCCallable()}. Bindings that do
-not use the header, such as Rust bindings, can retrieve them with
+Rust and other bindings can cache pointers from
 \code{R_GetCCallable("S7", "S7_get_class")} and
-\code{R_GetCCallable("S7", "S7_get_prop")}, using the function pointer types above
-and the C calling convention. S7's namespace must be loaded before looking
-them up. These bindings cache the pointers themselves and do not need
-\code{S7_init_api()}.
-These entry points can allocate and signal R errors, including errors from
-R code called by a getter. Use the binding's normal R error-handling mechanism.
-
-The registered names and signatures are public API. Future S7 releases will
-preserve them; an incompatible signature would use a new registered name.
-Other native routines in S7 are internal.
+\code{R_GetCCallable("S7", "S7_get_prop")} after loading S7, using the signatures
+above and the C calling convention.
 }
