@@ -62,13 +62,9 @@ test_that("native property access reports errors", {
   expect_snapshot(error = TRUE, api$get_prop(x, "missing"))
   expect_snapshot(error = TRUE, api$get_prop(x, "broken"))
   expect_snapshot(error = TRUE, api$get_prop(1, "value"))
-  expect_snapshot(error = TRUE, api$get_prop(x, NULL))
-  expect_snapshot(error = TRUE, api$get_prop(x, character()))
-  expect_snapshot(error = TRUE, api$get_prop(x, c("value", "broken")))
-  expect_snapshot(error = TRUE, api$get_prop(x, NA_character_))
 })
 
-test_that("the C++ header and registered functions expose the same API", {
+test_that("initialization shares the native API across C and C++", {
   api <- local_native_api()
   Foo := new_class(
     properties = list(
@@ -78,7 +74,7 @@ test_that("the C++ header and registered functions expose the same API", {
   )
   x <- Foo(value = 2)
 
-  for (interface in c("cpp", "registered")) {
+  for (interface in c("cpp", "c", "registered")) {
     expect_identical(api$get_class(x, interface), Foo)
     expect_identical(api$get_prop(x, "doubled", interface), 4)
   }

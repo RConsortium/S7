@@ -2,6 +2,7 @@
 % Please edit documentation in R/native-api.R
 \name{native-api}
 \alias{native-api}
+\alias{S7_init_api}
 \alias{S7_get_class}
 \alias{S7_get_prop}
 \title{Native API}
@@ -13,12 +14,30 @@ properties without depending on how S7 stores them.
 
 Add S7 to both \code{Imports} and \code{LinkingTo} in your package's \code{DESCRIPTION}, and
 import an S7 function in \code{NAMESPACE} (for example, \code{importFrom(S7, S7_class)}).
-This loads S7 before your package's compiled code uses the API. Include
-\verb{<S7.h>} to use:
+This loads S7 before your package's compiled code uses the API.
 
-\if{html}{\out{<div class="sourceCode c">}}\preformatted{SEXP S7_get_class(SEXP object);
-SEXP S7_get_prop(SEXP object, SEXP name);
+Include \verb{<S7.c>} in exactly one C or C++ source file in your package. Call
+\code{S7_init_api()} from your package's \verb{R_init_<pkg>()} routine to initialize the
+function pointers before using them. For example, in \code{src/init.c}:
+
+\if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7.c>
+
+void R_init_mypkg(DllInfo *dll) \{
+  S7_init_api();
+  /* Keep your package's routine registration here. */
+\}
 }\if{html}{\out{</div>}}
+
+If the initialization routine is defined in C++, give it C linkage with
+\verb{extern "C"}. Other source files include \verb{<S7.h>}, which declares the shared
+function pointers:
+
+\if{html}{\out{<div class="sourceCode c">}}\preformatted{extern SEXP (*S7_get_class)(SEXP object);
+extern SEXP (*S7_get_prop)(SEXP object, SEXP name);
+}\if{html}{\out{</div>}}
+
+Initialization happens once when your package's DLL is loaded. Subsequent
+calls use these pointers directly, without an initialization check.
 
 \code{S7_get_class()} returns the S7 class definition stored on \code{object}, or
 \code{R_NilValue} if it has none. It resolves shared class references and supports
@@ -27,10 +46,11 @@ it does not construct class specifications for base, S3, or S4 objects that
 have no S7 class definition.
 
 \code{S7_get_prop()} returns the value of a property, with the same getter and
-storage behavior as \code{\link[=prop]{prop()}}. \code{name} must be a character vector of length one
-containing a non-missing string; partial matching is not performed. Invalid
-names, non-S7 objects, and unknown properties signal R errors. Errors from
-getters propagate to the caller.
+storage behavior as \code{\link[=prop]{prop()}}. Callers must supply \code{name} as a character vector
+of length one containing a non-missing string. The native API assumes this
+precondition is met; behavior for other inputs is unsupported.
+Partial matching is not performed. Non-S7 objects and unknown properties
+signal R errors. Errors from getters propagate to the caller.
 
 Both functions use R's usual memory protection rules. Keep arguments protected
 during the call, and protect a returned value before making further allocating
@@ -55,8 +75,10 @@ SEXP object_value(SEXP object) \{
 The functions are registered with \code{R_RegisterCCallable()}. Bindings that do
 not use the header, such as Rust bindings, can retrieve them with
 \code{R_GetCCallable("S7", "S7_get_class")} and
-\code{R_GetCCallable("S7", "S7_get_prop")}, using the signatures above and the C
-calling convention. S7's namespace must be loaded before looking them up.
+\code{R_GetCCallable("S7", "S7_get_prop")}, using the function pointer types above
+and the C calling convention. S7's namespace must be loaded before looking
+them up. These bindings cache the pointers themselves and do not need
+\code{S7_init_api()}.
 These entry points can allocate and signal R errors, including errors from
 R code called by a getter. Use the binding's normal R error-handling mechanism.
 

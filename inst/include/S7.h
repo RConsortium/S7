@@ -9,19 +9,10 @@ extern "C" {
 #endif
 
 // See help("native-api", package = "S7") for the API contract.
-static inline SEXP S7_get_class(SEXP object) {
-  static SEXP (*fn)(SEXP) = NULL;
-  if (fn == NULL)
-    fn = (SEXP (*)(SEXP)) R_GetCCallable("S7", "S7_get_class");
-  return fn(object);
-}
+extern SEXP (*S7_get_class)(SEXP object);
+extern SEXP (*S7_get_prop)(SEXP object, SEXP name);
 
-static inline SEXP S7_get_prop(SEXP object, SEXP name) {
-  static SEXP (*fn)(SEXP, SEXP) = NULL;
-  if (fn == NULL)
-    fn = (SEXP (*)(SEXP, SEXP)) R_GetCCallable("S7", "S7_get_prop");
-  return fn(object, name);
-}
+void S7_init_api(void);
 
 #ifdef __cplusplus
 }

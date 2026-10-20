@@ -112,7 +112,7 @@
 
 ### Introspection and debugging
 
-* A native API lets C, C++, and Rust bindings retrieve S7 class definitions and read properties through their getters. C and C++ packages can include `<S7.h>`; other bindings can look up `S7_get_class` and `S7_get_prop` with `R_GetCCallable()` (#788).
+* A native API lets C, C++, and Rust bindings retrieve S7 class definitions and read properties through their getters. C and C++ packages include `<S7.c>` once, initialize with `S7_init_api()`, and use `<S7.h>` in other source files; other bindings can look up `S7_get_class` and `S7_get_prop` with `R_GetCCallable()` (#788).
 
 * `print()` for S7 classes now shows property defaults inline and marks
   read-only properties with `[read-only]` (#439).

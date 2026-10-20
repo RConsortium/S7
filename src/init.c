@@ -17,10 +17,6 @@ extern SEXP obj_addr_(SEXP);
 extern void prop_init(void);
 extern void class_type_init(void);
 
-/* Public native API */
-extern SEXP S7_get_class(SEXP);
-extern SEXP S7_get_prop(SEXP, SEXP);
-
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef CallEntries[] = {
@@ -108,8 +104,8 @@ void R_init_S7(DllInfo *dll)
     R_registerRoutines(dll, NULL, CallEntries, NULL, ExternalEntries);
     R_useDynamicSymbols(dll, FALSE);
 
-    R_RegisterCCallable("S7", "S7_get_class", (DL_FUNC) &S7_get_class);
-    R_RegisterCCallable("S7", "S7_get_prop", (DL_FUNC) &S7_get_prop);
+    R_RegisterCCallable("S7", "S7_get_class", (DL_FUNC) &S7_class_);
+    R_RegisterCCallable("S7", "S7_get_prop", (DL_FUNC) &prop_);
 
     sym_ANY = Rf_install("ANY");
     sym_S7_class = Rf_install("_S7_class");

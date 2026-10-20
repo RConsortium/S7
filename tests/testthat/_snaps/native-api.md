@@ -21,35 +21,3 @@
     Condition
       Error in `api$get_prop()`:
       ! `1` must be an <S7_object>, not a <double>.
-
----
-
-    Code
-      api$get_prop(x, NULL)
-    Condition
-      Error in `api$get_prop()`:
-      ! `name` must be a single, non-missing string.
-
----
-
-    Code
-      api$get_prop(x, character())
-    Condition
-      Error in `api$get_prop()`:
-      ! `name` must be a single, non-missing string.
-
----
-
-    Code
-      api$get_prop(x, c("value", "broken"))
-    Condition
-      Error in `api$get_prop()`:
-      ! `name` must be a single, non-missing string.
-
----
-
-    Code
-      api$get_prop(x, NA_character_)
-    Condition
-      Error in `api$get_prop()`:
-      ! `name` must be a single, non-missing string.

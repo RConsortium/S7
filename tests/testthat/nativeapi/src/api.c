@@ -1,7 +1,7 @@
 #define R_NO_REMAP
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
-#include <S7.h>
+#include <S7.c>
 
 static SEXP native_class(SEXP object) {
   return S7_get_class(object);
@@ -37,6 +37,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 void R_init_nativeapi(DllInfo *dll) {
+  S7_init_api();
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
   R_forceSymbols(dll, TRUE);
