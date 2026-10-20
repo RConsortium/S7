@@ -104,6 +104,9 @@ void R_init_S7(DllInfo *dll)
     R_registerRoutines(dll, NULL, CallEntries, NULL, ExternalEntries);
     R_useDynamicSymbols(dll, FALSE);
 
+    R_RegisterCCallable("S7", "S7_get_class", (DL_FUNC) &S7_class_);
+    R_RegisterCCallable("S7", "S7_get_prop", (DL_FUNC) &prop_);
+
     sym_ANY = Rf_install("ANY");
     sym_S7_class = Rf_install("_S7_class");
     // Legacy name used by objects created with an older version of S7.
