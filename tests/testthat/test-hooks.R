@@ -288,4 +288,55 @@ test_that("S7_on_build() strips foreign S3 and S4 generics from a real package (
   expect_false(exists("t3_s3", envir = ns, inherits = FALSE))
   expect_false(exists("t3_s4", envir = ns, inherits = FALSE))
   expect_false(exists("$", envir = ns, inherits = FALSE))
+
+  # The class recorded at build time gets its `@` method back on load.
+  if (getRversion() >= "4.3.0") {
+    expect_identical(base_at_method("t4::t4_class"), `@.S7_object`)
+  }
+})
+
+test_that("new_class() registers `@` directly for packaged classes", {
+  skip_if(getRversion() < "4.3.0")
+  pkg := local_package({
+    Foo := new_class(properties = list(x = class_double))
+    Bar := new_class(parent = Foo)
+  })
+  expect_identical(base_at_method("pkg::Foo"), `@.S7_object`)
+  expect_identical(base_at_method("pkg::Bar"), `@.S7_object`)
+  expect_equal(pkg$Bar(x = 1)@x, 1)
+})
+
+test_that("new_class() doesn't register `@` for classes without a package", {
+  skip_if(getRversion() < "4.3.0")
+  Unpackaged := new_class(package = NULL)
+  expect_null(base_at_method("Unpackaged"))
+})
+
+test_that("new_class() doesn't replace an existing `@` method", {
+  skip_if(getRversion() < "4.3.0")
+  table <- baseenv()[[".__S3MethodsTable__."]]
+  own <- function(object, name) "own"
+  assign("@.pkg::Foo", own, envir = table)
+  defer(rm(list = "@.pkg::Foo", envir = table))
+
+  pkg := local_package({
+    Foo := new_class(properties = list(x = class_double))
+  })
+  expect_identical(base_at_method("pkg::Foo"), own)
+  expect_equal(pkg$Foo(x = 1)@x, "own")
+})
+
+test_that("S7_on_load() re-registers `@` and S7_on_unload() removes it", {
+  skip_if(getRversion() < "4.3.0")
+  pkg := local_package({
+    Foo := new_class(properties = list(x = class_double))
+  })
+  expect_equal(at_method_classes("pkg"), "pkg::Foo")
+
+  S7_on_unload_(pkg)
+  expect_null(base_at_method("pkg::Foo"))
+  expect_equal(pkg$Foo(x = 1)@x, 1)
+
+  S7_on_load_(pkg)
+  expect_identical(base_at_method("pkg::Foo"), `@.S7_object`)
 })

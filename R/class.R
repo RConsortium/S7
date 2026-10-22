@@ -213,6 +213,11 @@ new_class <- function(
   class(object) <- c("S7_class", "S7_object")
   class_ref$class <- object
 
+  if (!is.null(package)) {
+    at_method_record(class_name, package, parent.frame())
+    at_method_register(class_name)
+  }
+
   if (S7_extends_S4(object)) {
     S4_register_subclass(object, env = parent.frame())
   }
