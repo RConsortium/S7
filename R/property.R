@@ -380,6 +380,49 @@ prop_call <- function(object, name) {
 #' @name prop
 `@.S7_object` <- prop
 
+# `x@name` reaches `@.S7_object` through S3 dispatch on `class(x)`, which misses
+# once per inheritance level before it reaches "S7_object". Registering the same
+# method for each packaged class makes the first lookup hit, so the cost of `@`
+# no longer grows with class depth. Behavior is unchanged: it is the same method.
+# The registration lives in base's S3 table, which is not saved with a package,
+# so `new_class()` records the class in the package's own table and
+# `S7_on_load()` re-registers it.
+at_method_register <- function(class_name) {
+  if (getRversion() < "4.3.0") {
+    return(invisible())
+  }
+  table <- baseenv()[[".__S3MethodsTable__."]]
+  method <- paste0("@.", class_name)
+  if (is.null(get0(method, envir = table, inherits = FALSE))) {
+    assign(method, `@.S7_object`, envir = table)
+  }
+  invisible()
+}
+
+at_method_unregister <- function(class_name) {
+  table <- baseenv()[[".__S3MethodsTable__."]]
+  method <- paste0("@.", class_name)
+  if (identical(get0(method, envir = table, inherits = FALSE), `@.S7_object`)) {
+    rm(list = method, envir = table)
+  }
+  invisible()
+}
+
+at_method_record <- function(class_name, package, env) {
+  ns <- topenv(env)
+  if (!isNamespace(ns) || !identical(getNamespaceName(ns)[[1]], package)) {
+    return(invisible())
+  }
+  tbl <- ns[[".__S3MethodsTable__."]]
+  attr(tbl, "S7at") <- union(attr(tbl, "S7at"), class_name)
+  invisible()
+}
+
+at_method_classes <- function(package) {
+  tbl <- asNamespace(package)[[".__S3MethodsTable__."]]
+  attr(tbl, "S7at") %||% character()
+}
+
 #' @export
 `@<-.S7_object` <- function(object, name, value) {
   if (isS4(object) && !name %in% names(S7_class(object)@properties)) {
