@@ -171,7 +171,7 @@
   with the depth of the class hierarchy: `new_class()` and `S7_on_load()`
   register the `@` method for each class directly, so S3 dispatch finds it on
   the first lookup. Reading a property is 1.3x faster for a class with two
-  ancestors and 2.2x faster for a class with eight (#XXX).
+  ancestors and 2.2x faster for a class with eight (#790).
 
 * `new_object()` is faster thanks to cached class names and dispatch vectors and
   faster class type detection. In benchmarks, construction is 1.4x faster for a
