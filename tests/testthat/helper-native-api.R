@@ -1,6 +1,7 @@
 local_native_api <- local({
   lib <- NULL
   function(frame = parent.frame()) {
+    skip_on_cran()
     local_dev_S7_lib(frame = frame)
     if (is.null(lib)) {
       dir.create(lib <<- tempfile("S7-native-api-"))
