@@ -8,7 +8,7 @@
 \title{Native API}
 \description{
 S7 provides a stable native API for retrieving class definitions and reading
-properties without depending on how S7 stores them.
+properties.
 }
 \details{
 \itemize{
@@ -25,17 +25,11 @@ containing a non-missing string.
 Add S7 to \code{Imports} and \code{LinkingTo} in \code{DESCRIPTION}. In \code{NAMESPACE}, add
 \code{importFrom(S7, S7_class)} and \code{useDynLib(mypkg, .registration = TRUE)}.
 
-This example \code{src/init.c} initializes the API and registers a \code{.Call} routine
-that reads the \code{value} property:
+In \code{src/init.c}, initialize the API and register the \code{.Call} routine:
 
 \if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7-init.h>
 
-static SEXP object_value(SEXP object) \{
-  SEXP name = PROTECT(Rf_mkString("value"));
-  SEXP value = S7_get_prop(object, name);
-  UNPROTECT(1);
-  return value;
-\}
+extern SEXP object_value(SEXP object);
 
 static const R_CallMethodDef CallEntries[] = \{
   \{"object_value", (DL_FUNC) &object_value, 1\},
@@ -50,9 +44,22 @@ void R_init_mypkg(DllInfo *dll) \{
 \}
 }\if{html}{\out{</div>}}
 
+In \code{src/value.c}, define the routine that reads the \code{value} property:
+
+\if{html}{\out{<div class="sourceCode c">}}\preformatted{#include <S7.h>
+
+SEXP object_value(SEXP object) \{
+  SEXP name = PROTECT(Rf_mkString("value"));
+  SEXP value = S7_get_prop(object, name);
+  UNPROTECT(1);
+  return value;
+\}
+}\if{html}{\out{</div>}}
+
 An R wrapper in the package can call \code{.Call(object_value, object)}.
-Other C/C++ source files include \verb{<S7.h>}. If the initialization routine is
-written in C++, declare it \verb{extern "C"}.
+Other C/C++ source files include \verb{<S7.h>}. In C++ files, use \verb{extern "C"}
+for the declaration and definition of \code{object_value()} and the definition
+of \code{R_init_mypkg()}.
 }
 
 \section{Other native bindings}{

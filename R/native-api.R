@@ -1,7 +1,7 @@
 #' Native API
 #'
 #' S7 provides a stable native API for retrieving class definitions and reading
-#' properties without depending on how S7 stores them.
+#' properties.
 #'
 #' * `SEXP S7_get_class(SEXP object)` returns the stored S7 class definition, or
 #'   `R_NilValue` if there is none. Unlike [S7_class()], it does not construct
@@ -14,18 +14,12 @@
 #' Add S7 to `Imports` and `LinkingTo` in `DESCRIPTION`. In `NAMESPACE`, add
 #' `importFrom(S7, S7_class)` and `useDynLib(mypkg, .registration = TRUE)`.
 #'
-#' This example `src/init.c` initializes the API and registers a `.Call` routine
-#' that reads the `value` property:
+#' In `src/init.c`, initialize the API and register the `.Call` routine:
 #'
 #' ```c
 #' #include <S7-init.h>
 #'
-#' static SEXP object_value(SEXP object) {
-#'   SEXP name = PROTECT(Rf_mkString("value"));
-#'   SEXP value = S7_get_prop(object, name);
-#'   UNPROTECT(1);
-#'   return value;
-#' }
+#' extern SEXP object_value(SEXP object);
 #'
 #' static const R_CallMethodDef CallEntries[] = {
 #'   {"object_value", (DL_FUNC) &object_value, 1},
@@ -40,9 +34,23 @@
 #' }
 #' ```
 #'
+#' In `src/value.c`, define the routine that reads the `value` property:
+#'
+#' ```c
+#' #include <S7.h>
+#'
+#' SEXP object_value(SEXP object) {
+#'   SEXP name = PROTECT(Rf_mkString("value"));
+#'   SEXP value = S7_get_prop(object, name);
+#'   UNPROTECT(1);
+#'   return value;
+#' }
+#' ```
+#'
 #' An R wrapper in the package can call `.Call(object_value, object)`.
-#' Other C/C++ source files include `<S7.h>`. If the initialization routine is
-#' written in C++, declare it `extern "C"`.
+#' Other C/C++ source files include `<S7.h>`. In C++ files, use `extern "C"`
+#' for the declaration and definition of `object_value()` and the definition
+#' of `R_init_mypkg()`.
 #'
 #' @section Other native bindings:
 #' Rust and other bindings can cache pointers from
