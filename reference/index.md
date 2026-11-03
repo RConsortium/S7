@@ -89,6 +89,11 @@ for more details.
   : Classes in other packages
 - [`new_external_generic()`](https://rconsortium.github.io/S7/reference/new_external_generic.md)
   : Generics in other packages
+- [`native-api`](https://rconsortium.github.io/S7/reference/native-api.md)
+  [`S7_init_api`](https://rconsortium.github.io/S7/reference/native-api.md)
+  [`S7_get_class`](https://rconsortium.github.io/S7/reference/native-api.md)
+  [`S7_get_prop`](https://rconsortium.github.io/S7/reference/native-api.md)
+  : Native API
 
 ## Deprecation
 
