@@ -564,6 +564,12 @@
   incompatible with the bare underlying type
   ([\#494](https://github.com/RConsortium/S7/issues/494)).
 
+- [`str()`](https://rdrr.io/r/utils/str.html) and
+  [`print()`](https://rdrr.io/r/base/print.html) handle R-devel’s
+  spacing convention, add missing spaces before plain lists, data
+  frames, and environments, and avoid extra spaces before inherited
+  logical data ([\#791](https://github.com/RConsortium/S7/issues/791)).
+
 - [`validate()`](https://rconsortium.github.io/S7/reference/validate.md)
   signals validation errors with class `S7_error_validation_failed`,
   allowing them to be caught with
