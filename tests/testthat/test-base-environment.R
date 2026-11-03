@@ -32,11 +32,15 @@ test_that("str() and print() work for environment-derived classes", {
     package = NULL
   )
   e <- Foo(new.env(parent = emptyenv()), name = "bob")
+  Box := new_class(properties = list(x = class_environment), package = NULL)
+  env <- structure(new.env(parent = emptyenv()), class = "example")
 
   expect_snapshot(
     {
       str(e)
       print(e)
+      str(Box(x = env))
+      str(Box(x = e))
     },
     transform = scrub_environment
   )

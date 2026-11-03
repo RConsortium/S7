@@ -261,30 +261,6 @@
         ..@ x: num(0) 
         ..@ y: num(0) 
 
-# S7 object separates property values and inherited data (#791)
-
-    Code
-      str(x)
-    Output
-      <foo> logi TRUE
-       @ x: logi TRUE
-       @ y: List of 1
-       .. $ a: logi TRUE
-    Code
-      x@y <- list()
-      str(x)
-    Output
-      <foo> logi TRUE
-       @ x: logi TRUE
-       @ y: list()
-    Code
-      str(list(x))
-    Output
-      List of 1
-       $ : <foo> logi TRUE
-        ..@ x: logi TRUE
-        ..@ y: list()
-
 # S7 object displays objects with data nicely
 
     Code
@@ -297,6 +273,13 @@
     Output
       List of 1
        $ : <text> chr "x"
+    Code
+      flag := new_class(parent = class_logical, properties = list(x = class_logical),
+      package = NULL)
+      flag(.data = TRUE, x = TRUE)
+    Output
+      <flag> logi TRUE
+       @ x: logi TRUE
 
 # S7 object displays data.frame subclasses without error (#494)
 

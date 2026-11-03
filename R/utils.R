@@ -160,12 +160,14 @@ str_inline <- function(object, ..., nest.lev = 0) {
   # Follow legacy str() conventions; custom methods keep their own formatting.
   needs_space <- if (!.str_legacy) {
     TRUE
+  } else if (is.environment(object)) {
+    !inherits(object, "S7_object")
   } else if (is.object(object)) {
     is.data.frame(object)
   } else if (is.list(object)) {
     length(object) > 0L
   } else {
-    is.function(object) || is.environment(object)
+    is.function(object)
   }
   if (needs_space) {
     cat(" ")

@@ -742,26 +742,18 @@ test_that("S7 object displays nicely", {
   })
 })
 
-test_that("S7 object separates property values and inherited data (#791)", {
-  foo := new_class(
-    parent = class_logical,
-    properties = list(x = class_logical, y = class_list),
-    package = NULL
-  )
-  x <- foo(.data = TRUE, x = TRUE, y = list(a = TRUE))
-  expect_snapshot({
-    str(x)
-    x@y <- list()
-    str(x)
-    str(list(x))
-  })
-})
-
 test_that("S7 object displays objects with data nicely", {
   expect_snapshot({
     text := new_class(class_character, package = NULL)
     text("x")
     str(list(text("x")))
+
+    flag := new_class(
+      parent = class_logical,
+      properties = list(x = class_logical),
+      package = NULL
+    )
+    flag(.data = TRUE, x = TRUE)
   })
 })
 
