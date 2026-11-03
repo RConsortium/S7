@@ -335,6 +335,9 @@
 * `str()` works for S7 objects that inherit from data.frame and other S3 classes
   whose `dim` attribute is incompatible with the bare underlying type (#494).
 
+* `str()` output for S7 objects is consistent across R versions, now that
+  R 4.7.0 no longer prints a leading space in nested `str()` output (#791).
+
 * `validate()` signals validation errors with class
   `S7_error_validation_failed`, allowing them to be caught with `tryCatch()`
   (#602, #605).

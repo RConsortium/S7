@@ -514,11 +514,9 @@ str.S7_object <- function(object, ..., nest.lev = 0) {
     # Can't use S7_data() with environments
     cat(" ", format.default(object), "\n", sep = "")
   } else if (!is_S7_type(object)) {
-    if (!typeof(object) %in% c("numeric", "integer", "character", "double")) {
-      cat(" ")
-    }
-
-    str(S7_data(object), nest.lev = nest.lev)
+    data <- S7_data(object)
+    str_space(data, nested = FALSE)
+    str(data, nest.lev = nest.lev)
   } else {
     cat("\n")
   }

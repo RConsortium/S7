@@ -139,7 +139,24 @@ str_nest <- function(
     if (is.function(xi)) {
       str_function(xi, nest.lev = nest.lev + 1)
     } else {
+      str_space(xi)
       str(xi, ..., nest.lev = nest.lev + 1)
+    }
+  }
+}
+
+# Print the space that separates a label from str() output. S7 methods print
+# their own space. Before R 4.7.0, base str() printed it for nested output and
+# for top-level atomic vectors (#791).
+str_space <- function(x, nested = TRUE) {
+  if (inherits(x, c("S7_object", "S7_class"))) {
+    return()
+  }
+  if (getRversion() >= "4.7.0") {
+    cat(" ")
+  } else if (!nested) {
+    if (!typeof(x) %in% c("integer", "double", "character")) {
+      cat(" ")
     }
   }
 }
