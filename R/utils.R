@@ -123,9 +123,11 @@ oxford_or <- function(x) {
   }
 }
 
+.str_legacy <- NULL
+
 str_leading_space <- function(nest.lev) {
   # R 4.7.0 and later supply the separator when calling nested str() methods.
-  if (nest.lev > 0 && getRversion() < "4.7.0") {
+  if (nest.lev > 0 && .str_legacy) {
     cat(" ")
   }
 }
@@ -155,11 +157,16 @@ str_inline <- function(object, ..., nest.lev = 0) {
     }
   }
 
-  out <- utils::capture.output(str(object, ..., nest.lev = nest.lev))
-  # str() methods differ in whether they supply a leading space. Normalize only
-  # the first line, preserving indentation on subsequent lines.
-  out <- sub("^ +", "", paste(out, collapse = "\n"))
-  cat(" ", out, "\n", sep = "")
+  # These base methods omit the leading space even on older R. Custom methods
+  # control their own whitespace; stream their output unchanged.
+  needs_space <- !.str_legacy ||
+    (!is.object(object) &&
+      (is.function(object) || (is.list(object) && length(object) > 0L))) ||
+    identical(class(object), "data.frame")
+  if (needs_space) {
+    cat(" ")
+  }
+  str(object, ..., nest.lev = nest.lev)
 }
 
 check_name <- function(

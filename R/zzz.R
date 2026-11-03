@@ -210,6 +210,7 @@ make_traceable <- function(class) {
 }
 
 .onLoad <- function(...) {
+  .str_legacy <<- getRversion() < "4.7.0"
   activate_backward_compatiblility()
 
   on_load_define_environment()

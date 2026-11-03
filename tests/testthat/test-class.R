@@ -751,9 +751,13 @@ test_that("S7 object separates property names from str output (#791)", {
     capture.output(str(foo(x = TRUE, y = list(a = TRUE)))),
     c("<foo>", " @ x: logi TRUE", " @ y: List of 1", " .. $ a: logi TRUE")
   )
+  expect_identical(
+    capture.output(str(foo(x = TRUE, y = list()))),
+    c("<foo>", " @ x: logi TRUE", " @ y: list()")
+  )
 })
 
-test_that("S7 object normalizes only the first line of property str output", {
+test_that("S7 object preserves custom property str output", {
   local_s3_method("str.spacing", function(object, ...) {
     cat(object$prefix, "value\n  continuation\n", sep = "")
   })
@@ -763,7 +767,11 @@ test_that("S7 object normalizes only the first line of property str output", {
     value <- structure(list(prefix = prefix), class = "spacing")
     expect_identical(
       capture.output(str(foo(x = value))),
-      c("<foo>", " @ x: value", "  continuation")
+      c(
+        "<foo>",
+        paste0(" @ x:", if (getRversion() >= "4.7.0") " ", prefix, "value"),
+        "  continuation"
+      )
     )
   }
 })
