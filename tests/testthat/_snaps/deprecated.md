@@ -782,3 +782,4 @@
       print(Cat)
     Output
       <S7_deprecated_class> `Cat()` was deprecated in S7 3.0.0.
+

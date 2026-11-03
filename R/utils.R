@@ -146,15 +146,23 @@ str_nest <- function(
 }
 
 # Print the space that separates a label from str() output. S7 methods print
-# their own space. Before R 4.7.0, base str() printed it for nested output and
-# for top-level atomic vectors (#791).
+# their own space. R 4.7.0 stopped printing it in nested str() output (#791);
+# older versions printed it for most, but not all, types.
 str_space <- function(x, nested = TRUE) {
   if (inherits(x, c("S7_object", "S7_class"))) {
     return()
   }
   if (getRversion() >= "4.7.0") {
     cat(" ")
-  } else if (!nested) {
+  } else if (nested) {
+    if (
+      is.environment(x) ||
+        is.data.frame(x) ||
+        (is.list(x) && !is.object(x) && length(x))
+    ) {
+      cat(" ")
+    }
+  } else {
     if (!typeof(x) %in% c("integer", "double", "character")) {
       cat(" ")
     }

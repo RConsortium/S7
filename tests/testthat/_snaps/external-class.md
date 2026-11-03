@@ -68,3 +68,4 @@
       Error:
       ! Can't find external class <dep::Animal>:
       * Package 'dep' needs version 2.0.0, but only 1.0.0 is available.
+

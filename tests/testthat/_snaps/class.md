@@ -17,7 +17,7 @@
        @ name       : chr "foo2"
        @ parent     : <foo1/S7_object> constructor
        @ package    : NULL
-       @ properties :List of 2
+       @ properties : List of 2
        .. $ x: <S7_property> 
        ..  ..$ name     : chr "x"
        ..  ..$ class    : <S7_base_class>: <integer>
@@ -295,7 +295,7 @@
         ..$ a: num 21
         ..$ b: num 22
        @ x: num 3
-       @ y:List of 2
+       @ y: List of 2
        .. $ a: num 41
        .. $ b: num 42
 
