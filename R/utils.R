@@ -159,10 +159,14 @@ str_inline <- function(object, ..., nest.lev = 0) {
 
   # These base methods omit the leading space even on older R. Custom methods
   # control their own whitespace; stream their output unchanged.
-  needs_space <- !.str_legacy ||
-    (!is.object(object) &&
-      (is.function(object) || (is.list(object) && length(object) > 0L))) ||
+  needs_space <- if (!.str_legacy) {
+    TRUE
+  } else if (is.object(object)) {
     identical(class(object), "data.frame")
+  } else {
+    is_nonempty_list <- is.list(object) && length(object) > 0L
+    is.function(object) || is_nonempty_list
+  }
   if (needs_space) {
     cat(" ")
   }
