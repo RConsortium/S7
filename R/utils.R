@@ -123,6 +123,13 @@ oxford_or <- function(x) {
   }
 }
 
+str_leading_space <- function(nest.lev) {
+  # R 4.7.0 and later supply the separator when calling nested str() methods.
+  if (nest.lev > 0 && getRversion() < "4.7.0") {
+    cat(" ")
+  }
+}
+
 str_nest <- function(
   object,
   prefix,
@@ -135,25 +142,24 @@ str_nest <- function(
   for (i in seq_along(object)) {
     cat(indent.str, prefix, " ", names[[i]], ":", sep = "")
 
-    xi <- object[[i]]
-    if (is.function(xi)) {
-      str_function(xi, nest.lev = nest.lev + 1)
-    } else {
-      str(xi, ..., nest.lev = nest.lev + 1)
-    }
+    str_inline(object[[i]], ..., nest.lev = nest.lev + 1)
   }
 }
 
-str_function <- function(object, ..., nest.lev = 0) {
-  attr(object, "srcref") <- NULL
-  # Display S7-generated constructors like any other function
-  if (inherits(object, "S7_constructor")) {
-    class(object) <- NULL
+str_inline <- function(object, ..., nest.lev = 0) {
+  if (is.function(object)) {
+    attr(object, "srcref") <- NULL
+    # Display S7-generated constructors like any other function
+    if (inherits(object, "S7_constructor")) {
+      class(object) <- NULL
+    }
   }
-  if (identical(class(object), "function")) {
-    cat(" ")
-  }
-  str(object, ..., nest.lev = nest.lev)
+
+  out <- utils::capture.output(str(object, ..., nest.lev = nest.lev))
+  # str() methods differ in whether they supply a leading space. Normalize only
+  # the first line, preserving indentation on subsequent lines.
+  out <- sub("^ +", "", paste(out, collapse = "\n"))
+  cat(" ", out, "\n", sep = "")
 }
 
 check_name <- function(
