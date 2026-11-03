@@ -1,0 +1,4 @@
+useDynLib(nativeapi, .registration = TRUE)
+importFrom(S7, S7_class)
+export(get_class)
+export(get_prop)
