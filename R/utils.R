@@ -148,60 +148,29 @@ str_nest <- function(
   }
 }
 
-str_inline <- local({
-  output <- NULL
-
-  function(object, ..., nest.lev = 0) {
-    if (is.function(object)) {
-      attr(object, "srcref") <- NULL
-      # Display S7-generated constructors like any other function
-      if (inherits(object, "S7_constructor")) {
-        class(object) <- NULL
-      }
+str_inline <- function(object, ..., nest.lev = 0) {
+  if (is.function(object)) {
+    attr(object, "srcref") <- NULL
+    # Display S7-generated constructors like any other function
+    if (inherits(object, "S7_constructor")) {
+      class(object) <- NULL
     }
-
-    # Reuse our active buffer so nested S7 objects don't consume more sinks or
-    # connections. A caller's own sink needs a separate capture context.
-    if (
-      !is.null(output) && identical(as.integer(stdout()), as.integer(output))
-    ) {
-      str_into(output, object, ..., nest.lev = nest.lev)
-      return(invisible())
-    }
-
-    text <- local({
-      previous <- output
-      defer(output <<- previous)
-      con <- rawConnection(raw(), "w+")
-      defer(close(con))
-      output <<- con
-      sink(con)
-      defer(sink())
-
-      str_into(con, object, ..., nest.lev = nest.lev)
-      rawToChar(rawConnectionValue(con))
-    })
-    writeLines(text, sep = "", useBytes = TRUE)
   }
-})
 
-str_into <- function(con, object, ..., nest.lev = 0) {
-  start <- seek(con)
+  # Follow legacy str() conventions; custom methods keep their own formatting.
+  needs_space <- if (!.str_legacy) {
+    TRUE
+  } else if (is.object(object)) {
+    is.data.frame(object)
+  } else if (is.list(object)) {
+    length(object) > 0L
+  } else {
+    is.function(object) || is.environment(object)
+  }
+  if (needs_space) {
+    cat(" ")
+  }
   str(object, ..., nest.lev = nest.lev)
-  end <- seek(con)
-
-  # Nested calls rewrite only their own suffix, so our starting position stays
-  # valid. Normalize the first line without changing continuation indentation.
-  seek(con, start)
-  text <- rawToChar(readBin(con, raw(), n = end - start))
-  seek(con, start)
-  truncate(con)
-  writeLines(
-    sub("^ *", " ", text, useBytes = TRUE),
-    con,
-    sep = if (endsWith(text, "\n")) "" else "\n",
-    useBytes = TRUE
-  )
 }
 
 check_name <- function(

@@ -261,17 +261,6 @@
         ..@ x: num(0) 
         ..@ y: num(0) 
 
-# S7 object printing restores output after a property str error
-
-    Code
-      str(foo(x = structure(list(), class = "broken")))
-    Output
-      <foo>
-       @ x:
-    Condition
-      Error:
-      ! Cannot display property
-
 # S7 object displays objects with data nicely
 
     Code

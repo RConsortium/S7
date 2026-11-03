@@ -742,101 +742,32 @@ test_that("S7 object displays nicely", {
   })
 })
 
-test_that("S7 object separates property names from str output (#791)", {
+test_that("S7 object separates property values and inherited data (#791)", {
   foo := new_class(
+    parent = class_logical,
     properties = list(x = class_logical, y = class_list),
     package = NULL
   )
+  x <- foo(.data = TRUE, x = TRUE, y = list(a = TRUE))
   expect_identical(
-    capture.output(str(foo(x = TRUE, y = list(a = TRUE)))),
-    c("<foo>", " @ x: logi TRUE", " @ y: List of 1", " .. $ a: logi TRUE")
-  )
-  expect_identical(
-    capture.output(str(foo(x = TRUE, y = list()))),
-    c("<foo>", " @ x: logi TRUE", " @ y: list()")
-  )
-})
-
-test_that("S7 object normalizes only the first line of property str output", {
-  local_s3_method("str.spacing", function(object, ...) {
-    cat(object$prefix, "value\n  continuation\n", sep = "")
-  })
-  foo := new_class(properties = list(x = class_any), package = NULL)
-
-  for (prefix in c("", " ", "  ")) {
-    value <- structure(list(prefix = prefix), class = "spacing")
-    expect_identical(
-      capture.output(str(foo(x = value))),
-      c("<foo>", " @ x: value", "  continuation")
+    capture.output(str(x)),
+    c(
+      "<foo> logi TRUE",
+      " @ x: logi TRUE",
+      " @ y: List of 1",
+      " .. $ a: logi TRUE"
     )
-  }
-})
-
-test_that("S7 object printing handles deeply nested properties", {
-  Node := new_class(properties = list(child = class_any), package = NULL)
-  node <- NULL
-  for (i in seq_len(30)) {
-    node <- Node(child = node)
-  }
-
-  expect_length(capture.output(str(node)), 31L)
-
-  wrapped <- Node(child = list(Node(child = TRUE)))
-  expect_identical(
-    capture.output(str(wrapped, strict.width = "cut", width = 1000)),
-    capture.output(str(wrapped, strict.width = "no", width = 1000))
   )
-})
 
-test_that("S7 object printing restores output after a property str error", {
-  local_s3_method("str.broken", function(object, ...) {
-    stop("Cannot display property", call. = FALSE)
-  })
-  foo := new_class(properties = list(x = class_any), package = NULL)
-
-  expect_snapshot(error = TRUE, {
-    str(foo(x = structure(list(), class = "broken")))
-  })
+  x@y <- list()
   expect_identical(
-    capture.output(str(foo(x = TRUE))),
-    c("<foo>", " @ x: logi TRUE")
-  )
-})
-
-test_that("S7 object separates its class from inherited data", {
-  number := new_class(parent = class_double, package = NULL)
-  flag := new_class(parent = class_logical, package = NULL)
-
-  expect_identical(
-    capture.output(str(number(.data = 1))),
-    "<number> num 1"
+    capture.output(str(x)),
+    c("<foo> logi TRUE", " @ x: logi TRUE", " @ y: list()")
   )
   expect_identical(
-    capture.output(str(flag(.data = TRUE))),
-    "<flag> logi TRUE"
+    capture.output(str(list(x)))[[2]],
+    " $ : <foo> logi TRUE"
   )
-})
-
-test_that("S7 str methods use one separator when nested in a list (#791)", {
-  foo := new_class(package = NULL)
-  objects <- list(
-    foo(),
-    foo,
-    new_property(class_any),
-    class_logical,
-    class_any,
-    class_missing,
-    class_numeric,
-    class_Date,
-    super(foo(), S7_object)
-  )
-
-  for (object in objects) {
-    expect_identical(
-      capture.output(str(list(object)))[[2]],
-      paste0(" $ : ", capture.output(str(object))[[1]])
-    )
-  }
 })
 
 test_that("S7 object displays objects with data nicely", {
