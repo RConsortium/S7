@@ -749,25 +749,12 @@ test_that("S7 object separates property values and inherited data (#791)", {
     package = NULL
   )
   x <- foo(.data = TRUE, x = TRUE, y = list(a = TRUE))
-  expect_identical(
-    capture.output(str(x)),
-    c(
-      "<foo> logi TRUE",
-      " @ x: logi TRUE",
-      " @ y: List of 1",
-      " .. $ a: logi TRUE"
-    )
-  )
-
-  x@y <- list()
-  expect_identical(
-    capture.output(str(x)),
-    c("<foo> logi TRUE", " @ x: logi TRUE", " @ y: list()")
-  )
-  expect_identical(
-    capture.output(str(list(x)))[[2]],
-    " $ : <foo> logi TRUE"
-  )
+  expect_snapshot({
+    str(x)
+    x@y <- list()
+    str(x)
+    str(list(x))
+  })
 })
 
 test_that("S7 object displays objects with data nicely", {
@@ -784,8 +771,6 @@ test_that("S7 object displays data.frame subclasses without error (#494)", {
 })
 
 test_that("S7 object displays list objects nicely", {
-  # The inherited data's inner list is printed by base R.
-  variant <- if (getRversion() < "4.7.0") "pre-4.7" else "r-4.7"
   foo1 := new_class(
     parent = class_list,
     properties = list(x = class_double, y = class_list),
@@ -800,7 +785,8 @@ test_that("S7 object displays list objects nicely", {
       x = 3,
       y = list(a = 41, b = 42)
     ),
-    variant = variant
+    # R < 4.7 omits this space in base R's nested-list output.
+    transform = \(x) sub("$ y:List of", "$ y: List of", x, fixed = TRUE)
   )
 })
 
