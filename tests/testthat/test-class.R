@@ -757,7 +757,7 @@ test_that("S7 object separates property names from str output (#791)", {
   )
 })
 
-test_that("S7 object preserves custom property str output", {
+test_that("S7 object normalizes only the first line of property str output", {
   local_s3_method("str.spacing", function(object, ...) {
     cat(object$prefix, "value\n  continuation\n", sep = "")
   })
@@ -767,13 +767,40 @@ test_that("S7 object preserves custom property str output", {
     value <- structure(list(prefix = prefix), class = "spacing")
     expect_identical(
       capture.output(str(foo(x = value))),
-      c(
-        "<foo>",
-        paste0(" @ x:", if (getRversion() >= "4.7.0") " ", prefix, "value"),
-        "  continuation"
-      )
+      c("<foo>", " @ x: value", "  continuation")
     )
   }
+})
+
+test_that("S7 object printing handles deeply nested properties", {
+  Node := new_class(properties = list(child = class_any), package = NULL)
+  node <- NULL
+  for (i in seq_len(30)) {
+    node <- Node(child = node)
+  }
+
+  expect_length(capture.output(str(node)), 31L)
+
+  wrapped <- Node(child = list(Node(child = TRUE)))
+  expect_identical(
+    capture.output(str(wrapped, strict.width = "cut", width = 1000)),
+    capture.output(str(wrapped, strict.width = "no", width = 1000))
+  )
+})
+
+test_that("S7 object printing restores output after a property str error", {
+  local_s3_method("str.broken", function(object, ...) {
+    stop("Cannot display property", call. = FALSE)
+  })
+  foo := new_class(properties = list(x = class_any), package = NULL)
+
+  expect_snapshot(error = TRUE, {
+    str(foo(x = structure(list(), class = "broken")))
+  })
+  expect_identical(
+    capture.output(str(foo(x = TRUE))),
+    c("<foo>", " @ x: logi TRUE")
+  )
 })
 
 test_that("S7 object separates its class from inherited data", {
@@ -826,6 +853,8 @@ test_that("S7 object displays data.frame subclasses without error (#494)", {
 })
 
 test_that("S7 object displays list objects nicely", {
+  # The inherited data's inner list is printed by base R.
+  variant <- if (getRversion() < "4.7.0") "pre-4.7" else "r-4.7"
   foo1 := new_class(
     parent = class_list,
     properties = list(x = class_double, y = class_list),
@@ -839,7 +868,8 @@ test_that("S7 object displays list objects nicely", {
       ),
       x = 3,
       y = list(a = 41, b = 42)
-    )
+    ),
+    variant = variant
   )
 })
 

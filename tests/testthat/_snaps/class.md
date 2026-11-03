@@ -261,6 +261,17 @@
         ..@ x: num(0) 
         ..@ y: num(0) 
 
+# S7 object printing restores output after a property str error
+
+    Code
+      str(foo(x = structure(list(), class = "broken")))
+    Output
+      <foo>
+       @ x:
+    Condition
+      Error:
+      ! Cannot display property
+
 # S7 object displays objects with data nicely
 
     Code
@@ -283,21 +294,6 @@
       <mydf> 'data.frame':	2 obs. of  2 variables:
        $ a: int  1 2
        $ b: int  1 2
-
-# S7 object displays list objects nicely
-
-    Code
-      foo1(list(x = 1, y = list(a = 21, b = 22)), x = 3, y = list(a = 41, b = 42))
-    Output
-      <foo1> List of 2
-       $ x: num 1
-       $ y:List of 2
-        ..$ a: num 21
-        ..$ b: num 22
-       @ x: num 3
-       @ y: List of 2
-       .. $ a: num 41
-       .. $ b: num 42
 
 # c(<S7_class>, ...) gives error
 

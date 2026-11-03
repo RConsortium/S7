@@ -335,7 +335,7 @@
 * `str()` works for S7 objects that inherit from data.frame and other S3 classes
   whose `dim` attribute is incompatible with the bare underlying type (#494).
 
-* `str()` and `print()` handle R-devel's updated spacing, including nested S7 objects, and fix missing spaces before list values and extra spaces before inherited data (#791).
+* `str()` and `print()` use consistent spacing before property values and inherited data, and avoid doubled spaces for S7 objects nested in lists on R-devel (#791).
 
 * `validate()` signals validation errors with class
   `S7_error_validation_failed`, allowing them to be caught with `tryCatch()`
