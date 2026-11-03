@@ -25,6 +25,17 @@
     Output
       <Foo> <environment: 0x0>
        @ name: chr "bob"
+    Code
+      str(Box(x = env))
+    Output
+      <Box>
+       @ x: Class 'example' <environment: 0x0> 
+    Code
+      str(Box(x = e))
+    Output
+      <Box>
+       @ x: <Foo> <environment: 0x0>
+       .. @ name: chr "bob"
 
 # can't upcast an environment
 

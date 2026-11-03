@@ -305,7 +305,7 @@ print.S7_class <- function(x, ...) {
 
 #' @export
 str.S7_class <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_leading_space(nest.lev)
   cat(
     "<",
     paste0(class_dispatch(object), collapse = "/"),
@@ -507,18 +507,14 @@ print.S7_object <- function(x, ...) {
 }
 #' @export
 str.S7_object <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_leading_space(nest.lev)
   cat(obj_desc(object))
 
   if (is.environment(object)) {
     # Can't use S7_data() with environments
     cat(" ", format.default(object), "\n", sep = "")
   } else if (!is_S7_type(object)) {
-    if (!typeof(object) %in% c("numeric", "integer", "character", "double")) {
-      cat(" ")
-    }
-
-    str(S7_data(object), nest.lev = nest.lev)
+    str_inline(S7_data(object), nest.lev = nest.lev)
   } else {
     cat("\n")
   }

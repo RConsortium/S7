@@ -123,6 +123,15 @@ oxford_or <- function(x) {
   }
 }
 
+.str_legacy <- NULL
+
+str_leading_space <- function(nest.lev) {
+  # R 4.7.0 and later supply the separator when calling nested str() methods.
+  if (nest.lev > 0 && .str_legacy) {
+    cat(" ")
+  }
+}
+
 str_nest <- function(
   object,
   prefix,
@@ -135,22 +144,32 @@ str_nest <- function(
   for (i in seq_along(object)) {
     cat(indent.str, prefix, " ", names[[i]], ":", sep = "")
 
-    xi <- object[[i]]
-    if (is.function(xi)) {
-      str_function(xi, nest.lev = nest.lev + 1)
-    } else {
-      str(xi, ..., nest.lev = nest.lev + 1)
-    }
+    str_inline(object[[i]], ..., nest.lev = nest.lev + 1)
   }
 }
 
-str_function <- function(object, ..., nest.lev = 0) {
-  attr(object, "srcref") <- NULL
-  # Display S7-generated constructors like any other function
-  if (inherits(object, "S7_constructor")) {
-    class(object) <- NULL
+str_inline <- function(object, ..., nest.lev = 0) {
+  if (is.function(object)) {
+    attr(object, "srcref") <- NULL
+    # Display S7-generated constructors like any other function
+    if (inherits(object, "S7_constructor")) {
+      class(object) <- NULL
+    }
   }
-  if (identical(class(object), "function")) {
+
+  # Follow legacy str() conventions; custom methods keep their own formatting.
+  needs_space <- if (!.str_legacy) {
+    TRUE
+  } else if (is.environment(object)) {
+    !inherits(object, "S7_object")
+  } else if (is.object(object)) {
+    is.data.frame(object)
+  } else if (is.list(object)) {
+    length(object) > 0L
+  } else {
+    is.function(object)
+  }
+  if (needs_space) {
     cat(" ")
   }
   str(object, ..., nest.lev = nest.lev)

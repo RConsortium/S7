@@ -747,6 +747,13 @@ test_that("S7 object displays objects with data nicely", {
     text := new_class(class_character, package = NULL)
     text("x")
     str(list(text("x")))
+
+    flag := new_class(
+      parent = class_logical,
+      properties = list(x = class_logical),
+      package = NULL
+    )
+    flag(.data = TRUE, x = TRUE)
   })
 })
 
@@ -769,7 +776,9 @@ test_that("S7 object displays list objects nicely", {
       ),
       x = 3,
       y = list(a = 41, b = 42)
-    )
+    ),
+    # R < 4.7 omits this space in base R's nested-list output.
+    transform = \(x) sub("$ y:List of", "$ y: List of", x, fixed = TRUE)
   )
 })
 

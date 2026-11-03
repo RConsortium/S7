@@ -134,7 +134,7 @@ print.S7_super <- function(x, ...) {
 }
 #' @export
 str.S7_super <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_leading_space(nest.lev)
   cat(
     "super(",
     obj_desc(object$object),
