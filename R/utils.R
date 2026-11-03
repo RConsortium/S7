@@ -145,15 +145,17 @@ str_nest <- function(
   }
 }
 
-# Print the space that separates a label from str() output. S7 methods print
-# their own space. R 4.7.0 stopped printing it in nested str() output (#791);
-# older versions printed it for most, but not all, types.
+# R 4.7.0 changed how str() spaces nested output (#791). It now prints the
+# space between a label and nested output itself, rather than leaving it to
+# the nested str() call. These helpers make S7's output the same on all
+# versions.
+
+# Called by a label printer (str_nest() or str.S7_object()) before str(x)
 str_space <- function(x, nested = TRUE) {
-  if (inherits(x, c("S7_object", "S7_class"))) {
-    return()
-  }
-  if (getRversion() >= "4.7.0") {
+  if (str_new_spacing()) {
     cat(" ")
+  } else if (inherits(x, c("S7_object", "S7_class"))) {
+    # S7 methods print their own space via str_self_space()
   } else if (nested) {
     if (
       is.environment(x) ||
@@ -169,13 +171,22 @@ str_space <- function(x, nested = TRUE) {
   }
 }
 
+# Called at the start of S7's str() methods
+str_self_space <- function(nest.lev) {
+  if (nest.lev > 0 && !str_new_spacing()) {
+    cat(" ")
+  }
+}
+
+str_new_spacing <- function() getRversion() >= "4.7.0"
+
 str_function <- function(object, ..., nest.lev = 0) {
   attr(object, "srcref") <- NULL
   # Display S7-generated constructors like any other function
   if (inherits(object, "S7_constructor")) {
     class(object) <- NULL
   }
-  if (identical(class(object), "function")) {
+  if (identical(class(object), "function") || str_new_spacing()) {
     cat(" ")
   }
   str(object, ..., nest.lev = nest.lev)

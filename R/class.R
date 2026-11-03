@@ -305,7 +305,7 @@ print.S7_class <- function(x, ...) {
 
 #' @export
 str.S7_class <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_self_space(nest.lev)
   cat(
     "<",
     paste0(class_dispatch(object), collapse = "/"),
@@ -507,7 +507,7 @@ print.S7_object <- function(x, ...) {
 }
 #' @export
 str.S7_object <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_self_space(nest.lev)
   cat(obj_desc(object))
 
   if (is.environment(object)) {

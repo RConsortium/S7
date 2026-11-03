@@ -117,7 +117,7 @@ print.S7_base_class <- function(x, ...) {
 
 #' @export
 str.S7_base_class <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_self_space(nest.lev)
   print(object, ..., nest.lev = nest.lev)
 }
 
