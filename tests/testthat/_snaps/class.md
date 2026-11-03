@@ -17,7 +17,7 @@
        @ name       : chr "foo2"
        @ parent     : <foo1/S7_object> constructor
        @ package    : NULL
-       @ properties :List of 2
+       @ properties : List of 2
        .. $ x: <S7_property> 
        ..  ..$ name     : chr "x"
        ..  ..$ class    : <S7_base_class>: <integer>
@@ -273,6 +273,13 @@
     Output
       List of 1
        $ : <text> chr "x"
+    Code
+      flag := new_class(parent = class_logical, properties = list(x = class_logical),
+      package = NULL)
+      flag(.data = TRUE, x = TRUE)
+    Output
+      <flag> logi TRUE
+       @ x: logi TRUE
 
 # S7 object displays data.frame subclasses without error (#494)
 
@@ -291,11 +298,11 @@
     Output
       <foo1> List of 2
        $ x: num 1
-       $ y:List of 2
+       $ y: List of 2
         ..$ a: num 21
         ..$ b: num 22
        @ x: num 3
-       @ y:List of 2
+       @ y: List of 2
        .. $ a: num 41
        .. $ b: num 42
 

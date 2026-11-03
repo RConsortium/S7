@@ -27,7 +27,7 @@ print.S7_missing <- function(x, ...) {
 }
 #' @export
 str.S7_missing <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_leading_space(nest.lev)
   print(object)
 }
 
@@ -56,6 +56,6 @@ print.S7_any <- function(x, ...) {
 }
 #' @export
 str.S7_any <- function(object, ..., nest.lev = 0) {
-  cat(if (nest.lev > 0) " ")
+  str_leading_space(nest.lev)
   print(object)
 }
