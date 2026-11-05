@@ -1,0 +1,7 @@
+S7 0.2.2.9000
+generated Child constructor body:
+S7::new_object(Parent(model = model, model_args = model_args), 
+    model = model)
+Child(model='child'): [1] "@model is read-only"
+custom parent-once constructor: [1] "success, model= child"
+post-construction mutation: [1] "@model is read-only"

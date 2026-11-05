@@ -1,0 +1,8 @@
+S7 0.2.2
+f(): [1] "null method"
+f(NULL): [1] "null method"
+g(1): [1] "cal= default"
+g(1, cal='default'): [1] "cal= default"
+ggplot2 4.0.3
+direct class_ggplot parent: [1] "class construction succeeded"
+explicit exported alias parent: [1] "could not find function \"new_external_class\""
