@@ -279,6 +279,8 @@
 * `method<-()` silently accepts re-registration of an identical method, avoiding
   spurious "Overwriting method" messages from `devtools::load_all()` (#474).
 
+* `method<-()` now emits the "Overwriting method" notice as a package startup message, so it can be silenced with `suppressPackageStartupMessages()` and does not cause an `R CMD check` NOTE when emitted during package loading.
+
 * `method<-()` checks method signatures for consistency with their generics only
   in development contexts: during `pkgload::load_all()`, when `R CMD check`
   checks a package involved in the registration, or when registering a method

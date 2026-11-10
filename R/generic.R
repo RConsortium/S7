@@ -233,7 +233,12 @@ generic_add_method <- function(generic, signature, method) {
     } else {
       existing <- p_tbl[[class_name]]
       if (!is.null(existing) && !identical(existing, method)) {
-        message("Overwriting method ", method_name(generic, signature))
+        # Allow overwrite notices during package loading to be suppressed,
+        # as base R does for S3 method overwrites.
+        packageStartupMessage(
+          "Overwriting method ",
+          method_name(generic, signature)
+        )
       }
       p_tbl[[class_name]] <- method
     }

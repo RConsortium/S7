@@ -22,6 +22,14 @@ test_that("re-registering an identical method is silent (#474)", {
   expect_length(methods(foo), 1)
 })
 
+test_that("method overwrite messages can be suppressed as startup messages", {
+  foo := new_generic("x")
+  method(foo, class_character) <- function(x) "c"
+  expect_no_message(suppressPackageStartupMessages(
+    method(foo, class_character) <- function(x) "C"
+  ))
+})
+
 test_that("method registration adds a method for each element of a union", {
   foo := new_generic("x")
   method(foo, class_numeric) <- function(x) "x"
