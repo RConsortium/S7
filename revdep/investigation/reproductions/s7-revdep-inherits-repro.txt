@@ -1,0 +1,6 @@
+old: version=0.2.2 inherits=TRUE
+list()
+
+new: version=0.2.2.9000 inherits=FALSE
+[1] "`object` must be an <S7_object>, not a S3<ggplot2::mapping/uneval/gg/S7_object>."
+

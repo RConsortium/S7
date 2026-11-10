@@ -1,0 +1,94 @@
+$`Named .parent constructor`
+$`Named .parent constructor`$`S7 0.2.2`
+<Foo>
+
+$`Named .parent constructor`$`S7 development`
+[1] "argument \"_parent\" is missing, with no default"
+
+
+$`Wrong concrete parent`
+$`Wrong concrete parent`$`S7 0.2.2`
+<Child>
+
+$`Wrong concrete parent`$`S7 development`
+[1] "`_parent` must be an instance of <Parent>, not <S7_object>."
+
+
+$`S3 class preservation`
+$`S3 class preservation`$`S7 0.2.2`
+[1] "list"
+
+$`S3 class preservation`$`S7 development`
+[1] "s3_base"
+
+
+$`Class-vector-only S7 recognition`
+$`Class-vector-only S7 recognition`$`S7 0.2.2`
+$`Class-vector-only S7 recognition`$`S7 0.2.2`$is_s7
+[1] TRUE
+
+$`Class-vector-only S7 recognition`$`S7 0.2.2`$data
+$`Class-vector-only S7 recognition`$`S7 0.2.2`$data$x
+[1] 1
+
+
+
+$`Class-vector-only S7 recognition`$`S7 development`
+[1] "`object` must be an <S7_object>, not a S3<mapping/S7_object>."
+
+
+$`Operator fixed-depth capture`
+$`Operator fixed-depth capture`$`S7 0.2.2`
+$`Operator fixed-depth capture`$`S7 0.2.2`$direct
+e2
+
+$`Operator fixed-depth capture`$`S7 0.2.2`$depth2
+identity(3)
+
+
+$`Operator fixed-depth capture`$`S7 development`
+$`Operator fixed-depth capture`$`S7 development`$direct
+identity(3)
+
+$`Operator fixed-depth capture`$`S7 development`$depth2
+e2
+
+
+
+$`fr public construction`
+$`fr public construction`$`S7 0.2.2`
+# A tibble: 3 × 1
+      x
+  <int>
+1     1
+2     2
+3     3
+
+$`fr public construction`$`S7 development`
+[1] "<fr_tdr> object is invalid:\n- All columns and row names must have the same length"
+
+
+$`Data.frame validator as.list override`
+$`Data.frame validator as.list override`$`S7 0.2.2`
+  x
+1 1
+2 2
+3 3
+
+$`Data.frame validator as.list override`$`S7 development`
+[1] "<Foo> object is invalid:\n- All columns and row names must have the same length"
+
+
+$`Defaulted dispatch argument`
+$`Defaulted dispatch argument`$`S7 0.2.2`
+$`Defaulted dispatch argument`$`S7 0.2.2`$omitted
+[1] "null method"
+
+$`Defaulted dispatch argument`$`S7 0.2.2`$explicit
+[1] "null method"
+
+
+$`Defaulted dispatch argument`$`S7 development`
+[1] "Can't find method for `f(MISSING)`."
+
+

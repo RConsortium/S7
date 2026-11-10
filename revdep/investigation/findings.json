@@ -1,0 +1,1856 @@
+[
+  {
+    "package": "bidsr",
+    "tested_version": "0.1.1",
+    "diagnosis": "New installation failure: S7 rejects the two-entry signature registered for extract_bracket.generic; the failing generic dispatches only on x. CRAN/old installs and tests passed.",
+    "suggested_fix": "Register the method on BIDSClassBase alone (remove the name dimension) and audit sibling bracket registrations. Small package patch, roughly 1–2 hours.",
+    "fix_owner": "bidsr",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-073",
+      "evidence.md#evidence-072",
+      "evidence.md#evidence-136"
+    ],
+    "validation": "Cloud old check Status: OK; new fails at lazy loading with signature must be length 1. Source confirms the two-dimensional signature.",
+    "upstream_status": "Fetched current bidsr HEAD retains the signature; no upstream fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘bidsr’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "imply",
+    "tested_version": "0.1.0",
+    "diagnosis": "New install fails while registering sparseImage with S4: its property uses S7::class_atomic, an S7 class union, and S4 registration traverses that union but reports it unregistered. The source does call S7::S4_register(sparseImage); the concrete missing registration is the union itself. Old CRAN install passed.",
+    "suggested_fix": "Small package migration (hours): register S7::class_atomic with S4 before registering sparseImage, and audit packedImage for the same requirement. S7 now exposes properties as S4 slots and documents explicit union registration; validate fresh-library installation and S4 methods.",
+    "fix_owner": "imply",
+    "confidence": "high for missing union registration",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-103",
+      "evidence.md#evidence-102",
+      "evidence.md#evidence-151",
+      "evidence.md#evidence-151",
+      "evidence.md#evidence-052"
+    ],
+    "validation": "Old install passed; new fails during lazy load with class union not registered. The class_atomic property and class registration calls are visible in source.",
+    "upstream_status": "Fetched current imply HEAD still uses class_atomic and registers only sparseImage/packedImage; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘imply’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "btw",
+    "tested_version": "1.5.0",
+    "diagnosis": "Two direct package incompatibilities are confirmed from exact tested btw 1.5.0 source. First, registration of method(as.character, BTW) without S7_on_build leaves an external-generic sentinel in the btw namespace; the vendored map_chr helper passes that list to rlang::as_function and fails. Second, btw() no-news branch calls BTW(\"\") positionally; with current S7 constructor formals (..., text, settings), the empty string is forwarded to ellmer::ContentText and errors as unused. Both are reproducible old-pass/new-fail with the tested source.",
+    "suggested_fix": "Add S7::S7_on_build() after method registrations to replace external-generic sentinels at package build time; change the no-news constructor call to BTW(text = \"\"). Small migration, roughly 1–3 hours plus package checks.",
+    "fix_owner": "btw migration; no core change indicated",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-074",
+      "evidence.md#evidence-137",
+      "evidence.md#evidence-137",
+      "evidence.md#evidence-138",
+      "evidence.md#evidence-057",
+      "evidence.md#evidence-054"
+    ],
+    "validation": "Installed exact btw_1.5.0 tarball into isolated old/new libraries. as.character in btw namespace is base builtin old and S7_generic_sentinel list new; BTW(\"\") succeeds old and errors unused argument new, while BTW(text = \"\") succeeds new. Cloud new log has test/example failures; exact no-news call is present in source.",
+    "upstream_status": "Fetched local btw clone retains both source patterns; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs, 1 NOTE",
+        "categories": [
+          [
+            "R code for possible problems",
+            "NOTE"
+          ],
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 15
+      }
+    }
+  },
+  {
+    "package": "covr",
+    "tested_version": "3.6.5",
+    "diagnosis": "Cloud old check passes; new adds one S7 coverage failure: coverage counts for property getter, setter, and validator code are zero where expected counts are nonzero. Isolated package_coverage() with exact covr 3.6.5 and the check fixture reproduces old expected counts and new zeros. covr traverses class/property metadata, while new S7 stores instance class identity through a class-reference environment. The exact missed-link mechanism (class-ref reachability versus closure replacement of copied metadata) remains to isolate.",
+    "suggested_fix": "Update covr S7 instrumentation to instrument the closures reached by instance property access, then validate the existing TestS7 fixture against both S7 libraries. Likely 0.5–2 days.",
+    "fix_owner": "covr integration; S7 only if the class-ref representation breaks an established instrumentation contract",
+    "confidence": "high for the new coverage regression; medium for class-ref as the exact cause",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-078",
+      "evidence.md#evidence-064",
+      "evidence.md#evidence-063",
+      "evidence.md#evidence-007",
+      "evidence.md#evidence-053",
+      "evidence.md#evidence-156"
+    ],
+    "validation": "Cloud old is OK; cloud new fails test-S7.R:5. Local exact-package reproduction gives old counts 1,1,1,2,5,0,5,0,5,1,1,2,1,1,0 and new gives zero for property getter/setter/validator lines. This is a local reproduction; no compiled/gcov failures are inherited in the cloud comparison.",
+    "upstream_status": "Current covr clone has S7 traversal in R/S7.R:46; no fix assessed.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 1
+      }
+    }
+  },
+  {
+    "package": "typedjson",
+    "tested_version": "0.1.1",
+    "diagnosis": "Cloud old tests pass; new tested typedjson 0.1.1 run has 29 failures around S7 class/object serialization. Exact tested source is now available from the CRAN mirror tag 0.1.1. With that exact source and an unscoped class, JSON round-trip is identical under old S7 but not new, although all.equal() and S7_data() agree. The new serialized graph includes .S7_class_ref inside the constructor closure environment, pointing back to the class, so the decoder reconstructs a different class identity.",
+    "suggested_fix": "Preserve the shared class-reference, constructor-environment, and class identity during decode, or rebuild through a public S7 class API that rebinds the reference. Validate the full 0.1.1 test-objects.R suite. Likely 1–3 days.",
+    "fix_owner": "typedjson/S7 interface; typedjson serialization most likely",
+    "confidence": "high for the focused tested-version reproduction; medium for broader 29-failure scope",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-125",
+      "evidence.md#evidence-130",
+      "evidence.md#evidence-127",
+      "evidence.md#evidence-131",
+      "evidence.md#evidence-053"
+    ],
+    "validation": "Fetched CRAN mirror tag 0.1.1 into a separate local tag ref, archived to /tmp, and installed in isolated old/new libraries. Foo <- new_class(\"Foo\", properties=list(x=class_double)); json_write_str/json_read_str is identical old and not new, all.equal and S7_data agree; new object stores _S7_class as an environment and serialized JSON contains .S7_class_ref. Exact 0.1.1 source confirmed; the focused roundtrip was not the full package suite.",
+    "upstream_status": "Exact tested typedjson 0.1.1 source retrieved from CRAN mirror tag; current clone remains 0.1.2. No fix assessed.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 29
+      }
+    }
+  },
+  {
+    "package": "vecvec",
+    "tested_version": "1.3.0",
+    "diagnosis": "Cloud old tests pass and new tested 1.3.0 run has 12 new failures: five array [<- operations lose dim and seven is.na/vctrs callback paths error because .f is not found. Exact v1.3.0 tag source installed in isolated old/new libraries reproduces dim retention old and dim=NULL new. `is.na(x)` reproduces `.f` lookup failure on the new S7 build, while direct `vecvec_apply(x, is.na)` succeeds; local old build also fails the nested lookup on R 4.6.1, so that subfailure is cloud-confirmed but not locally differential. The likely promise-context mechanism is S7 `@` invoking the C property getter before base::lapply resolves its symbolic FUN; forcing/matching `.f` before evaluating `x@x` is the focused package-side validation/fix candidate.",
+    "suggested_fix": "For dimensions, preserve the dim attribute across the S7 `[<-`/`@<-` update path and add the five observed array assignment cases. For callback lookup, eagerly resolve `.f` within vecvec_apply before the S7-backed x@x property access (for example match.fun(.f)), then run is.na and vctrs public tests. Moderate package work, roughly 0.5–2 days; investigate S7 call-stack semantics only if forcing .f does not restore the public contract.",
+    "fix_owner": "vecvec adaptation likely; S7 property/call semantics if callback forcing cannot preserve contract",
+    "confidence": "high for dim behavior and cloud failure grouping; medium for callback mechanism",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-126",
+      "evidence.md#evidence-046",
+      "evidence.md#evidence-047",
+      "evidence.md#evidence-048",
+      "evidence.md#evidence-049",
+      "evidence.md#evidence-156"
+    ],
+    "validation": "Installed exact vecvec 1.3.0 source from its v1.3.0 git tag in isolated libraries. On R 4.6.1, x <- array(vecvec(1:6), dim=c(2,3)); x[1,1] <- 99L retains dim old and drops it new. is.na(x) fails `.f` lookup new, but also fails locally old on this R; direct vecvec_apply(x,is.na) succeeds both. Cloud R check independently confirms the seven callback errors are new-only. Current clone v1.3.0.9000 was not used for this claim.",
+    "upstream_status": "Exact tested tag v1.3.0 inspected and installed; current clone is ahead at 1.3.0.9000. No fix assessed.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 12
+      }
+    }
+  },
+  {
+    "package": "shinyfilters",
+    "tested_version": "0.3.1",
+    "diagnosis": "Old tests passed; new has 14 list-input errors and vignette failure. All point to an error-message path dereferencing cls@name when cls is now an S7_base_class, which has no @ method.",
+    "suggested_fix": "Replace cls@name with S7::S7_class_desc(cls) in the shared diagnostic helper. Small package patch, about 1 hour.",
+    "fix_owner": "shinyfilters",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-122",
+      "evidence.md#evidence-121",
+      "evidence.md#evidence-042"
+    ],
+    "validation": "Cloud old tests passed (320); cloud new has 14 errors with cls@name and the vignette reaches the same helper. Local checks.noindex omitted shinyfilters.",
+    "upstream_status": "Fetched current shinyfilters HEAD still contains cls@name; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 14
+      }
+    }
+  },
+  {
+    "package": "caugi",
+    "tested_version": "1.3.0",
+    "diagnosis": "Old check passed; new examples and 37 of 38 tests fail because export constructors call S7::new_object(caugi_export, ...) with a class definition where the API requires a parent object. One additional test directly uses S7:::as_generic and internal generic sentinel details.",
+    "suggested_fix": "Construct with an instance of the parent class (for example caugi_export()) and replace tests’ internal S7 calls with public generic/method APIs. Small-to-moderate package patch, 2–4 hours.",
+    "fix_owner": "caugi",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-076",
+      "evidence.md#evidence-075",
+      "evidence.md#evidence-139",
+      "evidence.md#evidence-140"
+    ],
+    "validation": "Cloud old check passed. Cloud new example and most tests fail at export; one separate test calls S7:::as_generic. Local partial logs agree on those failure families.",
+    "upstream_status": "Fetched current caugi HEAD still passes the class definition to new_object; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 38
+      }
+    }
+  },
+  {
+    "package": "dcmstan",
+    "tested_version": "0.1.0",
+    "diagnosis": "Cloud old check passes; development S7 adds examples, tests, and vignette failures at the custom @model setter. dcmstan defines measurement/structural parent classes with a writable model property, then overrides that property on 12 child model classes with a setter that errors once self@model is non-NULL. Development S7's generated child constructor first constructs the parent with the requested model and then passes model again to new_object(), which invokes the child setter on an already initialized value. An isolated public S7 reproduction with the same parent property and setter passes on 0.2.2 and fails on 0.2.2.9000; a custom parent-once constructor passes on dev and later mutation still errors.",
+    "suggested_fix": "Small to medium (hours): add family-specific custom constructors for measurement and structural child classes. Each should call its parent constructor once with the final model/model_args, then promote/build the child with new_object(parent_object) without replaying model through the child setter. This preserves the strict read-only-after-initialization invariant. Verify all public factories (lcdm, dina, dino, crum, nida, nido, ncrum; unconstrained, independent, loglinear, hdcm, bayesnet), and assert post-construction model assignment still errors.",
+    "fix_owner": "dcmstan",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-080",
+      "evidence.md#evidence-079",
+      "evidence.md#evidence-079",
+      "evidence.md#evidence-079",
+      "evidence.md#evidence-141",
+      "evidence.md#evidence-141",
+      "evidence.md#evidence-141",
+      "evidence.md#evidence-141",
+      "evidence.md#evidence-141",
+      "evidence.md#evidence-008",
+      "evidence.md#evidence-054",
+      "evidence.md#evidence-054",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud old check Status OK. Cloud new has 3 ERROR categories: examples, tests, and vignette rebuilding. Repro script /tmp/s7-revdep-dcmstan-repro.R: old constructor succeeds; dev generated constructor errors; custom parent-once constructor succeeds on dev and a later model mutation is still rejected. No dcmstan source was changed.",
+    "upstream_status": "The current dcmstan clone is 0.1.0.9000 and retains the same setter and child property overrides as tested 0.1.0; no constructor workaround is present.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 62
+      }
+    }
+  },
+  {
+    "package": "filtro",
+    "tested_version": "0.2.0",
+    "diagnosis": "Old check passes; new examples and two rebuilt vignettes fail with could not find function fit. filtro imports fit from generics, registers six S7 methods on that external generic, and its .onLoad only calls methods_register(), not S7_on_build(). The source evidence points to the S7 external-generic sentinel migration: the fit binding is missing from the installed evaluation namespace. This is a package namespace migration finding, distinct from a generic documentation mistake.",
+    "suggested_fix": "Call S7::S7_on_build() from the package build hook/namespace setup so the external generic sentinel is stripped and the imported generics::fit binding is visible; verify installed exports and rerun examples/vignettes. Small migration, 1–3 hours.",
+    "fix_owner": "filtro migration; S7 sentinel lifecycle if S7_on_build does not restore the imported binding",
+    "confidence": "medium-high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-084",
+      "evidence.md#evidence-013",
+      "evidence.md#evidence-014",
+      "evidence.md#evidence-015",
+      "evidence.md#evidence-057"
+    ],
+    "validation": "Cloud old passes; new examples/vignettes error on unqualified fit. NAMESPACE imports generics::fit; source registers S7::method(fit, ...) across score classes; .onLoad only calls methods_register. No package source changes or package load reproduction in this last pass.",
+    "upstream_status": "Fetched local filtro HEAD retains these registrations and lacks S7_on_build; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "fr",
+    "tested_version": "0.5.2",
+    "diagnosis": "The cloud run has three new error categories: examples, tests, and vignettes. S7 data.frame validation uses vapply(self, NROW, ...), which coerces the classed object through its as.list() method. fr_tdr defines as.list() to return frictionless metadata, so validation counts metadata entries rather than data-frame columns. This is a confirmed S7 validation defect, rather than malformed compact row names.",
+    "suggested_fix": "Small S7 change (hours): validate the underlying data-frame columns without dispatching to the subclass as.list() method. Add a public-API regression using a data.frame subclass with a metadata as.list() method; verify fr::as_fr_tdr() and its examples after the fix.",
+    "fix_owner": "S7",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-086",
+      "evidence.md#evidence-085",
+      "evidence.md#evidence-142",
+      "evidence.md#evidence-142",
+      "evidence.md#evidence-051",
+      "evidence.md#evidence-129"
+    ],
+    "validation": "Exact fr 0.5.2 source loaded with pkgload: fr::as_fr_tdr(data.frame(x = 1:3), name = \"example\") succeeds with S7 0.2.2 and fails with development S7. A minimal public S7 subclass with a metadata as.list() override produces the same old/new difference.",
+    "upstream_status": "Local fr HEAD still defines fr_tdr as class_data.frame subclass and same as_fr_tdr construction; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "1 NOTE",
+        "categories": [
+          [
+            "DESCRIPTION meta-information",
+            "NOTE"
+          ]
+        ],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs, 1 NOTE",
+        "categories": [
+          [
+            "DESCRIPTION meta-information",
+            "NOTE"
+          ],
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 13
+      }
+    }
+  },
+  {
+    "package": "ggplot2",
+    "tested_version": "4.0.3",
+    "diagnosis": "The cloud run has old Status OK and exactly one new failed test: S7_data(aes) has class gg while the expected list is bare. Development S7 deliberately preserves the S3 parent class in S7_data(), as documented and covered by S7 tests. The separate later local run additionally has inherited graphics failures, operator-expression snapshot differences, and a changed element_text condition snapshot; those are not cloud failures.",
+    "suggested_fix": "Small package update (hours): make the aes expectation assert the intended underlying values and retained S3 parent class. For the additional local operator failures, migrate plot/theme methods from caller_env(2) to direct substitute(e2), preserving user expressions. Review the element_text condition snapshot against the new diagnostic contract; handle graphics/rendering differences separately.",
+    "fix_owner": "ggplot2",
+    "confidence": "high for cloud cause; local condition change needs snapshot review",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-094",
+      "evidence.md#evidence-093",
+      "evidence.md#evidence-147",
+      "evidence.md#evidence-148",
+      "evidence.md#evidence-149",
+      "evidence.md#evidence-055",
+      "evidence.md#evidence-157",
+      "evidence.md#evidence-129"
+    ],
+    "validation": "Cloud old check passes; cloud new test-aes.R:69 is the sole failed test. A public S7 subclass of an S3 parent returns a bare list from S7_data() on 0.2.2 and a list with the S3 parent class on development S7.",
+    "upstream_status": "Current local ggplot2 checkout inspected; these checks are for tested 4.0.3 and no current-head validation run.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 1
+      }
+    }
+  },
+  {
+    "package": "ggarrow",
+    "tested_version": "0.2.0",
+    "diagnosis": "Old check passed; new examples and test fail because element_arrow calls new_object(.parent = parent), but current API formal is _parent; .parent is ignored by ... and required _parent stays missing.",
+    "suggested_fix": "Rename `.parent` to `_parent` in constructor; add focused constructor test. Tiny package patch, under an hour.",
+    "fix_owner": "ggarrow",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-088",
+      "evidence.md#evidence-087",
+      "evidence.md#evidence-143",
+      "evidence.md#evidence-053"
+    ],
+    "validation": "Cloud old check passed; example and one test fail at same missing _parent argument.",
+    "upstream_status": "Fetched current ggarrow HEAD still uses .parent at theme_elements.R:322; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 1
+      }
+    }
+  },
+  {
+    "package": "ggside",
+    "tested_version": "0.4.1",
+    "diagnosis": "Cloud old check passes; new has one failure in the add_gg error message: the operand is rendered as e2 instead of the expected caller expression. ggplot2 plot/theme + methods use a fixed caller_env(2) depth, which no longer identifies the original operand after the S7 operator stack change. The additional helper/rendering failures in the later local run are separate.",
+    "suggested_fix": "Small dependency migration (hours): fix expression capture in ggplot2 plot/theme + methods using direct substitute(e2), then rerun the ggside error-message test. Preserve the assertion that the user sees the actual operand.",
+    "fix_owner": "ggplot2; verify ggside afterward",
+    "confidence": "high for observed stack change and source; dependent rerun needed",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-097",
+      "evidence.md#evidence-096",
+      "evidence.md#evidence-150",
+      "evidence.md#evidence-146",
+      "evidence.md#evidence-129"
+    ],
+    "validation": "Cloud old Status OK, cloud new one test failure. The public operator reproduction confirms why the fixed depth retrieves e2 under development S7.",
+    "upstream_status": "Fetched current ggside HEAD has same test expectation; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 1
+      }
+    }
+  },
+  {
+    "package": "gglogger",
+    "tested_version": "0.1.8",
+    "diagnosis": "Cloud old tests pass; new has 25 failures in captured plot/theme expressions and their later evaluation. The methods use substitute(e2, env = caller_env(2)). Development S7 changes the operator dispatch stack and now preserves the original expression directly in substitute(e2); the fixed caller depth instead retrieves the symbol e2.",
+    "suggested_fix": "Small package change (hours): use direct substitute(e2) in both ggplot and theme + methods. Retain expression-capture and evaluation tests. If both S7 generations must remain supported, make that compatibility requirement explicit before selecting an implementation.",
+    "fix_owner": "gglogger",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-091",
+      "evidence.md#evidence-090",
+      "evidence.md#evidence-144",
+      "evidence.md#evidence-059",
+      "evidence.md#evidence-129"
+    ],
+    "validation": "A public operator method reproduces the reversal: old S7 gives e2 for direct substitute() and the original expression at caller_env(2); development S7 gives the original expression directly and e2 at that fixed frame depth.",
+    "upstream_status": "Fetched current gglogger HEAD still uses caller_env(2) and substitute(e2); no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 25
+      }
+    }
+  },
+  {
+    "package": "GitAI",
+    "tested_version": "0.1.3",
+    "diagnosis": "Cloud old check passes; cloud new has four set_llm test errors because its ChatMocked subclass reaches ellmer initialization without the required model. The later local run also has PAT-dependent failures in both versions; those are not inherited failures in the cloud report.",
+    "suggested_fix": "Supply the required model in ChatMocked initialization or update the mock to current ellmer constructor requirements; PAT failures are inherited environment setup. Small test-only patch, 1–2 hours.",
+    "fix_owner": "GitAI tests/ellmer API",
+    "confidence": "high for failure site; medium for full constructor interaction",
+    "evidence": [
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-067",
+      "evidence.md#evidence-066",
+      "evidence.md#evidence-132"
+    ],
+    "validation": "Cloud old Status OK; cloud new has four failed tests. Source defines the affected ChatMocked test subclass. Exact mock construction across both versions has not been isolated beyond the check/source evidence.",
+    "upstream_status": "Fetched current GitAI HEAD still has ChatMocked$new(provider, echo) without model; no fix visible.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 4
+      }
+    }
+  },
+  {
+    "package": "cohortBuilder",
+    "tested_version": "1.0.0",
+    "diagnosis": "Cloud old check passed; new check has examples, tests, and vignette errors from custom child constructors for CbFilter subclasses passing S7::S7_object() as _parent. Current S7 requires an instance of the declared parent. The many test errors share this one constructor defect.",
+    "suggested_fix": "Small to medium (hours): update each custom filter constructor to construct/forward a CbFilter parent object before calling new_object(); check all seven constructors and rerun package checks.",
+    "fix_owner": "cohortBuilder",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-077",
+      "evidence.md#evidence-006",
+      "evidence.md#evidence-006",
+      "evidence.md#evidence-053"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 3 ERROR categories (examples, tests, vignette rebuilding). No rerun performed.",
+    "upstream_status": "The available clone is still 1.0.0 and contains the failing S7_object() parent calls; no fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 78
+      }
+    }
+  },
+  {
+    "package": "shinyCohortBuilder",
+    "tested_version": "1.0.0",
+    "diagnosis": "Cloud old check passed; new examples, tests, and vignette rebuilding fail while shinyCohortBuilder calls cohortBuilder::filter(). The underlying failure is cohortBuilder's invalid CbFilter parent construction, so this is inherited rather than a direct shinyCohortBuilder defect.",
+    "suggested_fix": "Small for shinyCohortBuilder: no direct change is indicated by the trace. Fix cohortBuilder's parent constructors, then rerun these dependent examples/tests; add a compatibility update only if failures remain.",
+    "fix_owner": "cohortBuilder",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-118",
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-006"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 3 ERROR categories (examples, tests, vignette rebuilding). The stack enters cohortBuilder::filter().",
+    "upstream_status": "The available clone remains 1.0.0; no shinyCohortBuilder-specific change is indicated by the failing stack.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 65
+      }
+    }
+  },
+  {
+    "package": "mighty.metadata",
+    "tested_version": "0.1.0",
+    "diagnosis": "Cloud old check passed; new examples, tests, and vignette rebuilding fail because S7schema's internal constructors call new_object(.parent=...), but this S7 version renamed the first argument to _parent. mighty.metadata also uses .parent in its own constructors, so fixing only S7schema may expose the same error downstream. list_columns(<NULL>) failures are cascades from failed object creation.",
+    "suggested_fix": "Small (hours): migrate .parent to _parent throughout S7schema and mighty.metadata, then rerun both packages. S7's NEWS documents this intentional argument rename.",
+    "fix_owner": "S7schema and mighty.metadata",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-108",
+      "evidence.md#evidence-002",
+      "evidence.md#evidence-029",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 3 ERROR categories (examples, tests, vignette rebuilding).",
+    "upstream_status": "mighty.metadata clone is 0.1.0.9015 and still contains .parent calls; S7schema clone is 0.1.2 and still contains .parent calls. No migration is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 63
+      }
+    }
+  },
+  {
+    "package": "S7schema",
+    "tested_version": "0.1.2",
+    "diagnosis": "Cloud old check passed; new examples, tests, and vignette rebuilding fail at construct_validator() because it calls S7::new_object(.parent=...). The current argument is _parent. The write_config(<NULL>) test error follows failed construction and is downstream.",
+    "suggested_fix": "Small (hours): change all S7schema new_object(.parent=...) calls to _parent and rerun its public examples/tests; then verify mighty.metadata callers.",
+    "fix_owner": "S7schema",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-069",
+      "evidence.md#evidence-002",
+      "evidence.md#evidence-003",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 3 ERROR categories (examples, tests, vignette rebuilding).",
+    "upstream_status": "The available 0.1.2 clone retains .parent calls; no fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 27
+      }
+    }
+  },
+  {
+    "package": "deltapif",
+    "tested_version": "0.4.5",
+    "diagnosis": "Cloud old check passed; new examples, tests, and vignette rebuilding fail because child classes such as pif_atomic_class call new_object(S7_object()) while declaring pif_class as their parent. The new parent check rejects the unrelated base S7_object. A separate R-code NOTE reports unimported stats::coef and is not the constructor cause.",
+    "suggested_fix": "Medium (hours to a day): audit the five custom class constructors in 01-classes.R and pass the actual parent object; add stats::coef to Imports/NAMESPACE as appropriate to clear the separate NOTE.",
+    "fix_owner": "deltapif",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-081",
+      "evidence.md#evidence-009",
+      "evidence.md#evidence-009",
+      "evidence.md#evidence-053",
+      "evidence.md#evidence-081"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 3 ERROR categories plus 1 NOTE.",
+    "upstream_status": "The available 0.4.5 clone retains the S7_object() parent constructors; no fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs, 1 NOTE",
+        "categories": [
+          [
+            "R code for possible problems",
+            "NOTE"
+          ],
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 271
+      }
+    }
+  },
+  {
+    "package": "iAR",
+    "tested_version": "1.3.4",
+    "diagnosis": "Confirmed new S7 dispatch behavior breaks gentime(n=...): its custom generic declares x = NULL and registers only a NULL method, but development S7 dispatches an omitted defaulted x as class_missing. Exact old/new isolated public-generic reproduction returns the NULL method under S7 0.2.2 and fails with gentime(MISSING) under 0.2.2.9000; explicitly passing NULL works on both. The package API documents omission as equivalent to NULL. This is a direct S7 regression exposed by iAR, not an unchanged no-default missing-dispatch case.",
+    "suggested_fix": "Small (hours): fix S7 dispatch to evaluate a declared default before dispatch (while preserving true required-missing dispatch); alternatively iAR can add a class_missing method forwarding to the NULL path as a workaround. Verify gentime(), gentime(NULL, ...), and required-missing generics on old/dev S7.",
+    "fix_owner": "S7 (iAR workaround available)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-101",
+      "evidence.md#evidence-100",
+      "evidence.md#evidence-021",
+      "evidence.md#evidence-021",
+      "evidence.md#evidence-155",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud old: examples/tests/vignettes pass. Cloud new: examples and vignette fail at gentime(n=...) while tests pass. Isolated Rscript using the exact custom generic signature and NULL method reproduced old pass/new MISSING failure; f(NULL) passed both.",
+    "upstream_status": "Current iAR clone is 1.3.4 and retains x=NULL plus only a NULL method. No iAR fix is evident; a minimal workaround is a class_missing method.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "statim",
+    "tested_version": "0.1.0",
+    "diagnosis": "Cloud old check passed; new examples, tests, and vignette rebuilding fail because lm_to_lm_object() passes family=\"gaussian\" to class_lm_object(), whose properties do not include family and whose constructor rejects the argument. This is the same root cause as the package-install WARNING and code NOTE; it is a statim caller/class mismatch, not a separate failure.",
+    "suggested_fix": "Small (hours): remove the unsupported family argument if unused, or add a family property and validate/store it if behavior depends on it; check all lm conversion paths.",
+    "fix_owner": "statim",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-123",
+      "evidence.md#evidence-043",
+      "evidence.md#evidence-043",
+      "evidence.md#evidence-154"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 3 ERROR categories, 1 install WARNING, and 1 NOTE, all traced to the unsupported family argument.",
+    "upstream_status": "Current clone is 0.1.0.9000 and still passes family=\"gaussian\" at the conversion call; no fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "3 ERRORs, 1 WARNING, 1 NOTE",
+        "categories": [
+          [
+            "whether package ‘statim’ can be installed",
+            "WARNING"
+          ],
+          [
+            "R code for possible problems",
+            "NOTE"
+          ],
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ],
+          [
+            "re-building of vignette outputs",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 103
+      }
+    }
+  },
+  {
+    "package": "ggdiagram",
+    "tested_version": "0.2.0",
+    "diagnosis": "New package installation fails through ggforce .onLoad() while updating GeomArc0 default aesthetics. The mapping stored in the installed ggforce lazy-load database is a legacy class-vector-only ggplot2 mapping; development S7 rejects it in S7_data(), while old S7 accepts that representation. ggdiagram also has a separate warning for an unquoted ob_point property default.",
+    "suggested_fix": "Address legacy serialized-object compatibility in S7, using the installed ggforce mapping as the public regression case. Rebuilding ggforce is a workaround to verify, not a root repair. Focused compatibility work (hours), followed by ggdiagram, myTAI, and anansi installation checks. Also quote the ob_point property default.",
+    "fix_owner": "S7 legacy-object compatibility; ggdiagram default warning",
+    "confidence": "high for shared failure; compatibility repair requires actual saved-object regression",
+    "evidence": [
+      "evidence.md#evidence-089",
+      "evidence.md#evidence-016",
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-159",
+      "evidence.md#evidence-160",
+      "evidence.md#evidence-160"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR. The failing call is in ggforce .onLoad, not ggdiagram code.",
+    "upstream_status": "The 0.2.0 clone retains the unquoted default. ggforce source was not among the assigned clones; no dependency fix was verified.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘ggdiagram’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "ggpath",
+    "tested_version": "1.1.1",
+    "diagnosis": "Cloud old check passed; new install fails for two related S7 parent-contract violations: element_path widens inherited element_text@size to include grid units, and its custom constructor passes S7_object() instead of an element_text parent object. The property override is not a narrowing of the declared parent property. This terminal failure is property-type narrowing during class definition, not a #364 external-generic placeholder failure; ggpath declares no new_external_generic.",
+    "suggested_fix": "Medium (one to several days): redesign element_path's size representation so it respects element_text's property type while preserving unit sizing at render time, and construct from a valid element_text parent. This is more than renaming an argument. ggpath has a separate S7_on_build gap only if it retains external-generic registrations after class construction is fixed; this is not the reported install blocker.",
+    "fix_owner": "ggpath",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-092",
+      "evidence.md#evidence-145",
+      "evidence.md#evidence-145",
+      "evidence.md#evidence-145",
+      "evidence.md#evidence-053",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR.",
+    "upstream_status": "Available 1.1.1 clone still widens size to a unit union and passes S7_object() to new_object(); no fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘ggpath’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "ggplotplus",
+    "tested_version": "0.5.7",
+    "diagnosis": "Cloud old check passed; new install fails when ggplotplus subclasses ggplot2::class_ggplot. S7 resolves the external class by its internal name ggplot, but ggplot2 exports the class object as class_ggplot and exports ggplot as a function, so the required binding is not an S7 class. This is not the #364 temporary external-generic placeholder issue: neither package declares new_external_generic for the failing class construction, and ggplotplus has no S7_on_build() call; mixtime has external generics but class construction fails first.",
+    "suggested_fix": "Small (hours): work around the S7 alias-resolution regression with explicit S7 external-class references to the exported aliases class_ggplot and class_ggplot_built as parent classes, then verify package installation and plot-building APIs.",
+    "fix_owner": "S7 (package workaround available)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-095",
+      "evidence.md#evidence-020",
+      "evidence.md#evidence-020",
+      "evidence.md#evidence-056",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR. Diagnosis follows the exported binding names in source and S7's external-class resolver. The reported terminal error is external class name/export resolution, not a generic-placeholder sentinel; S7_on_build() would not address this first failure. Public package-boundary repro with ggplot2 class_ggplot passes on S7 0.2.2, fails on 0.2.2.9000, and an explicit exported-alias reference passes on dev.",
+    "upstream_status": "The 0.5.7 clone still uses class_ggplot and class_ggplot_built directly as parents; no alias-aware reference is present.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘ggplotplus’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "mixtime",
+    "tested_version": "0.3.0",
+    "diagnosis": "Cloud old check passed; new install fails while mixtime subclasses vecvec::class_vecvec. The class object has internal name vecvec but is exported as class_vecvec; S7's external-class resolution looks for vecvec and finds the constructor function instead. This is the same exported-alias pattern as ggplotplus. This is not the #364 temporary external-generic placeholder issue: neither package declares new_external_generic for the failing class construction, and ggplotplus has no S7_on_build() call; mixtime has external generics but class construction fails first.",
+    "suggested_fix": "Small (hours): refer to vecvec's exported class binding explicitly with an external-class reference to class_vecvec, or adjust vecvec's exported class identity contract; verify downstream ggtime after installation.",
+    "fix_owner": "S7 (package workaround available)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-109",
+      "evidence.md#evidence-030",
+      "evidence.md#evidence-045",
+      "evidence.md#evidence-044",
+      "evidence.md#evidence-056",
+      "evidence.md#evidence-050"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR. The reported terminal error is external class name/export resolution, not a generic-placeholder sentinel; S7_on_build() would not address this first failure. Public package-boundary repro with ggplot2 class_ggplot passes on S7 0.2.2, fails on 0.2.2.9000, and an explicit exported-alias reference passes on dev.",
+    "upstream_status": "mixtime clone 0.3.0.9000 still parents from class_vecvec; vecvec clone exports vecvec as a function and class_vecvec as the S7 class binding.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘mixtime’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "myTAI",
+    "tested_version": "2.3.7",
+    "diagnosis": "New package installation fails through ggforce .onLoad() while updating GeomArc0 default aesthetics. The mapping stored in the installed ggforce lazy-load database is a legacy class-vector-only ggplot2 mapping; development S7 rejects it in S7_data(), while old S7 accepts that representation.",
+    "suggested_fix": "Address legacy serialized-object compatibility in S7, using the installed ggforce mapping as the public regression case. Rebuilding ggforce is a workaround to verify, not a root repair. Focused compatibility work (hours), followed by ggdiagram, myTAI, and anansi installation checks.",
+    "fix_owner": "S7 legacy-object compatibility",
+    "confidence": "high for shared failure; compatibility repair requires actual saved-object regression",
+    "evidence": [
+      "evidence.md#evidence-110",
+      "evidence.md#evidence-033",
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-159",
+      "evidence.md#evidence-160",
+      "evidence.md#evidence-160"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR. Error call belongs to ggforce .onLoad.",
+    "upstream_status": "myTAI clone is 2.3.7; no package-side fix is indicated. ggforce source was not among the assigned clones.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘myTAI’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "PFIM",
+    "tested_version": "8.0",
+    "diagnosis": "Cloud old check passed; new install fails because S4-registered PFIM classes use a union property type NULL | Fim without registering that union with S4. The diagnostic names new_union(NULL, PFIM::Fim). There is also a nonfatal warning that list() should be quoted as a property default.",
+    "suggested_fix": "Small to medium (hours): register the union type used by the S4-facing properties before S4 method registration (or choose an S4-compatible property type), then quote list() defaults and rerun install/check.",
+    "fix_owner": "PFIM",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-068",
+      "evidence.md#evidence-133",
+      "evidence.md#evidence-134",
+      "evidence.md#evidence-135"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR. Install output also contains the list-default warning.",
+    "upstream_status": "The 8.0 clone still uses NULL | Fim in properties and replays S4 class registration without registering that union; no fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘PFIM’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "medfit",
+    "tested_version": "0.3.2",
+    "diagnosis": "Cloud old check passed; new install fails because an S7 union (class_integer | class_double | NULL) used by an S4-facing class is not registered with S4. Registering the enclosing classes does not register the union type itself.",
+    "suggested_fix": "Small to medium (hours): identify S4-facing union property types and register each union with S4 before methods_register(), or replace those slots with an S4-compatible type. Validate install from a fresh library.",
+    "fix_owner": "medfit",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-107",
+      "evidence.md#evidence-152",
+      "evidence.md#evidence-152",
+      "evidence.md#evidence-028"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 install ERROR.",
+    "upstream_status": "Current clone is 0.5.0 and still defines nullable union properties in classes registered with S4; its .onLoad registers classes but no union, so a fix is not evident. Not reinstalled.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘medfit’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "nflplotR",
+    "tested_version": "1.7.0",
+    "diagnosis": "Cloud old check passed; new examples fail through ggpath::element_path(), whose custom constructor passes S7_object() despite element_text being its parent. This is inherited from ggpath. Separately, the code/documentation WARNING says generated element_nfl_* constructors take ... while their docs list element_path arguments.",
+    "suggested_fix": "Medium (one to several days): fix ggpath's element_path constructor/type contract first; nflplotR should then rerun examples. Small follow-up: update element_nfl_* usage docs or provide matching constructors to clear the codoc warning.",
+    "fix_owner": "ggpath for example error; nflplotR for docs warning",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-111",
+      "evidence.md#evidence-111",
+      "evidence.md#evidence-019",
+      "evidence.md#evidence-034"
+    ],
+    "validation": "Cloud full check: old Status OK; new has 1 example ERROR and 1 codoc WARNING.",
+    "upstream_status": "nflplotR clone remains 1.7.0 with inherited ggpath use and stale docs; no package-side error fix is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 ERROR, 1 WARNING",
+        "categories": [
+          [
+            "for code/documentation mismatches",
+            "WARNING"
+          ],
+          [
+            "examples",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "ggtime",
+    "tested_version": "1.0.0",
+    "diagnosis": "Cloud old check has one unrelated DST test failure and examples pass. New adds an examples ERROR and 14 additional test failures (15 total): mixtime::chronon_format_linear() dispatches on x and cal, with cal = time_calendar(x), but current S7 dispatch sees the omitted defaulted cal as class_missing and no calendar-specific method applies. The same exact old/new defaulted-dispatch behavior was reproduced directly. Thus the new failures are an S7 defaulted-argument dispatch regression exposed through mixtime; the old DST assertion remains inherited.",
+    "suggested_fix": "S7 fix (small to medium, hours): preserve default evaluation for omitted dispatch arguments, then rerun mixtime and ggtime. A mixtime workaround must explicitly supply cal at every omitted-cal call or add suitable class_missing dispatch methods; estimate medium (hours to a day) due many formatter call paths. Keep the pre-existing DST failure separate.",
+    "fix_owner": "S7 (mixtime workaround available)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-099",
+      "evidence.md#evidence-099",
+      "evidence.md#evidence-098",
+      "evidence.md#evidence-098",
+      "evidence.md#evidence-031",
+      "evidence.md#evidence-032",
+      "evidence.md#evidence-155"
+    ],
+    "validation": "Cloud old: examples OK, tests have one pre-existing DST failure. Cloud new: examples ERROR plus 15 test failures; 14 test failures share missing cal and the one DST failure is unchanged. Isolated Rscript with the exact two-dispatch-argument generic/default pattern passed omitted-cal dispatch on old S7 and failed as MISSING on dev; explicit cal works.",
+    "upstream_status": "Current mixtime clone 0.3.0.9000 retains cal = time_calendar(x) and default call chronon_format_linear(chronon); no workaround is evident.",
+    "cloud_comparison": {
+      "old": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 1
+      },
+      "new": {
+        "status": "2 ERRORs",
+        "categories": [
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 15
+      }
+    }
+  },
+  {
+    "package": "anansi",
+    "tested_version": "1.2.0",
+    "diagnosis": "The cloud report has an empty pre-installation failure, so its original preparation failure cannot be diagnosed from the downloaded cloud log. The later local new run gives a concrete installation failure in ggforce .onLoad(): S7_data() rejects a saved class-vector-only ggplot2 mapping while updating GeomArc0 defaults. The local old run gets past installation and instead has an unrelated font/vignette error. Public old/new S7 API comparisons reproduce acceptance versus rejection of the legacy mapping representation.",
+    "suggested_fix": "S7 should add backward compatibility for the pre-versioned serialized object representation in S7_data()/check_is_S7(), with a public regression covering an old-format ggplot2 mapping; expected effort 2–4 hours including representation review and regression coverage. Rebuilding ggforce against the new S7 is a short-term workaround, but not a package-specific root fix. The font failure needs an environment-independent vignette font choice.",
+    "fix_owner": "S7 for legacy serialized-object compatibility; ggforce rebuild as a short-term workaround; anansi for the unrelated font-sensitive vignette",
+    "confidence": "medium-high",
+    "evidence": [
+      "evidence.md#evidence-061",
+      "evidence.md#evidence-061",
+      "evidence.md#evidence-062",
+      "evidence.md#evidence-062",
+      "evidence.md#evidence-058",
+      "evidence.md#evidence-055",
+      "evidence.md#evidence-018",
+      "evidence.md#evidence-128",
+      "evidence.md#evidence-128",
+      "evidence.md#evidence-018",
+      "evidence.md#evidence-017",
+      "evidence.md#evidence-017",
+      "evidence.md#evidence-158",
+      "evidence.md#evidence-158",
+      "evidence.md#evidence-158",
+      "evidence.md#evidence-159",
+      "evidence.md#evidence-159",
+      "evidence.md#evidence-160",
+      "evidence.md#evidence-160"
+    ],
+    "validation": "Cloud old/new completed check logs are unavailable for anansi. The local new 00install.out identifies ggforce and S7_data; the local old install succeeds. Public old/new legacy-representation comparison is saved with the reproductions. The original cloud preparation failure remains unexplained.",
+    "upstream_status": "No anansi-side change found in current Bioconductor clone. Current ggforce source still defines GeomArc0 default_aes with aes() and registers geom defaults at load time; the check uses ggforce 0.5.0 with ggplot2 4.0.3 and S7 0.2.2.9000. A current ggforce rebuild would construct fresh defaults, but the checked artifact fails while loading its saved legacy default mapping.",
+    "cloud_comparison": {
+      "old": {
+        "status": "no completed check log",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "no completed check log",
+        "categories": [],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "ale",
+    "tested_version": "0.5.3",
+    "diagnosis": "New install WARNING is a namespace collision: ale imports all of S7 and explicitly imports rlang:::=; S7 0.2.2.9000 newly exports :=, so rlang replaces the earlier S7 binding during namespace load. Old check is OK.",
+    "suggested_fix": "Exclude := from ale's S7 import (or replace the broad import with explicit S7 imports). Small NAMESPACE/roxygen edit, about 10–20 minutes plus package check.",
+    "fix_owner": "ale",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-070",
+      "evidence.md#evidence-004",
+      "evidence.md#evidence-004",
+      "evidence.md#evidence-153"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING. Current ale source still has both imports; no package check rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘ale’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "apa7",
+    "tested_version": "0.1.3",
+    "diagnosis": "New install WARNING is the same S7/rlang := collision as ale: broad import(S7) plus importFrom(rlang, ':='). Old check is OK.",
+    "suggested_fix": "Exclude := from the S7 import or use explicit imports. Small namespace/documentation update, about 10–20 minutes plus package check.",
+    "fix_owner": "apa7",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-071",
+      "evidence.md#evidence-005",
+      "evidence.md#evidence-005",
+      "evidence.md#evidence-153"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING. Current source retains both imports; no package check rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘apa7’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "ellmer",
+    "tested_version": "0.5.0",
+    "diagnosis": "Two newly broken check categories: install WARNING from import(S7) colliding with import(rlang) on :=; codoc WARNING because AssistantPartialTurn now has code formals (..., reason) while Turn.Rd documents all inherited AssistantTurn properties explicitly. The 11 test failures are inherited: both old and new runs fail provider tests on HTTP requests/cassette lookup, unrelated to S7.",
+    "suggested_fix": "Exclude := from the S7 import. Update the class documentation to show ... forwarded to AssistantTurn and re-document. Together this is a small NAMESPACE/docs patch, roughly 30–60 minutes. The provider-test errors need network/cassette test-environment work, not an S7 fix.",
+    "fix_owner": "ellmer for namespace/docs; ellmer test harness or external provider environment for inherited provider failures",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-082",
+      "evidence.md#evidence-082",
+      "evidence.md#evidence-083",
+      "evidence.md#evidence-082",
+      "evidence.md#evidence-010",
+      "evidence.md#evidence-010",
+      "evidence.md#evidence-011",
+      "evidence.md#evidence-012"
+    ],
+    "validation": "Cloud old/new full logs show new install/codoc warnings; tests fail in both runs (11 HTTP/cassette errors). Current clone retains the import collision and docs mismatch. No rerun.",
+    "upstream_status": "Not fixed in current ellmer clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 11
+      },
+      "new": {
+        "status": "1 ERROR, 2 WARNINGs",
+        "categories": [
+          [
+            "whether package ‘ellmer’ can be installed",
+            "WARNING"
+          ],
+          [
+            "for code/documentation mismatches",
+            "WARNING"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 11
+      }
+    }
+  },
+  {
+    "package": "GGally",
+    "tested_version": "2.4.0",
+    "diagnosis": "New install WARNING is caused by import(S7) and importFrom(rlang, ':='); the new S7 export collides with rlang's binding. Old check is OK.",
+    "suggested_fix": "Exclude := from the S7 import or use explicit imports. Small namespace change, about 10–20 minutes plus check.",
+    "fix_owner": "GGally",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-065",
+      "evidence.md#evidence-001",
+      "evidence.md#evidence-001",
+      "evidence.md#evidence-153"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING. Current clone retains both imports; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘GGally’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "joinery",
+    "tested_version": "1.0.1",
+    "diagnosis": "New install WARNING is an import collision between broad imports of S7 and data.table, both of which export :=. rlang already excludes :=. Old check is OK.",
+    "suggested_fix": "Exclude := from import(S7), matching the existing import(rlang, except = :=) pattern. Small namespace edit, about 10–20 minutes plus check.",
+    "fix_owner": "joinery",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-104",
+      "evidence.md#evidence-022",
+      "evidence.md#evidence-022",
+      "evidence.md#evidence-022"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING. Current clone retains S7/data.table broad imports; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘joinery’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "marquee",
+    "tested_version": "1.2.1",
+    "diagnosis": "New NOTE says S7 is declared in DESCRIPTION Imports but is not imported in NAMESPACE. Code calls S7:: functions explicitly, so this is a dependency declaration/NAMESPACE consistency note, not a runtime failure.",
+    "suggested_fix": "Declare the needed S7 imports in NAMESPACE (or otherwise make the Imports declaration consistent with package policy). Small metadata edit, about 10–20 minutes plus check.",
+    "fix_owner": "marquee",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-105",
+      "evidence.md#evidence-023",
+      "evidence.md#evidence-024",
+      "evidence.md#evidence-025"
+    ],
+    "validation": "Cloud old check OK; new check reports one NOTE. Current source still declares S7 in Imports and has no S7 NAMESPACE import; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 NOTE",
+        "categories": [
+          [
+            "dependencies in R code",
+            "NOTE"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "measr",
+    "tested_version": "2.0.1",
+    "diagnosis": "New codoc WARNING: generated measrdcm() code has model_spec = dcmstan::dcm_specification(), while Rd says NULL. Source declares a typed property and default = NULL; under S7, NULL means use the property's class constructor default, so the generated formal matches current S7 behavior. This is a downstream documentation/default-intent mismatch.",
+    "suggested_fix": "If the class constructor default is intended, update roxygen/Rd to dcmstan::dcm_specification() and re-document. If literal NULL is intended, use default = quote(NULL) and check the constructor behavior. Small docs/code fix, 15–30 minutes.",
+    "fix_owner": "measr",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-106",
+      "evidence.md#evidence-026",
+      "evidence.md#evidence-026",
+      "evidence.md#evidence-027",
+      "evidence.md#evidence-060"
+    ],
+    "validation": "Cloud old check OK; new check reports one codoc WARNING. Current clone retains Rd NULL with the same S7 class default; no rerun.",
+    "upstream_status": "Not fixed in current clone; current dev code and docs preserve the mismatch.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "for code/documentation mismatches",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "querychat",
+    "tested_version": "0.4.1",
+    "diagnosis": "All six new check categories (2 WARNINGs, 4 NOTEs) repeat the same namespace warning while loading ellmer: S7:::= is replaced by rlang:::=. They are cascade diagnostics, not six independent querychat defects.",
+    "suggested_fix": "Fix ellmer's S7/rlang import collision; no querychat source change is indicated by these logs. This is covered by the small ellmer namespace patch.",
+    "fix_owner": "ellmer (dependency)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-112",
+      "evidence.md#evidence-112",
+      "evidence.md#evidence-112",
+      "evidence.md#evidence-112",
+      "evidence.md#evidence-112",
+      "evidence.md#evidence-112",
+      "evidence.md#evidence-010",
+      "evidence.md#evidence-010"
+    ],
+    "validation": "Cloud old check OK; new log shows the same ellmer warning under dependencies, S3 consistency, foreign calls, possible problems, codoc and Rd usage. Current ellmer source still imports both namespaces.",
+    "upstream_status": "Await ellmer namespace fix; querychat itself has no demonstrated issue.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 WARNINGs, 4 NOTEs",
+        "categories": [
+          [
+            "dependencies in R code",
+            "NOTE"
+          ],
+          [
+            "S3 generic/method consistency",
+            "WARNING"
+          ],
+          [
+            "foreign function calls",
+            "NOTE"
+          ],
+          [
+            "R code for possible problems",
+            "NOTE"
+          ],
+          [
+            "for code/documentation mismatches",
+            "WARNING"
+          ],
+          [
+            "Rd \\usage sections",
+            "NOTE"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "rtemis",
+    "tested_version": "1.2.7",
+    "diagnosis": "New install ERROR is a class property type violation: tested StratSubConfig declares @n as integer or NULL while parent ResamplerConfig@n is integer, so the child widens rather than narrows the parent contract. Old run instead failed one DBSCAN test because dbscan rejected approx; the report marks that old test failure newly fixed, while installation is newly broken.",
+    "suggested_fix": "At the 1.2.7 source, align the parent/child property types: decide whether n is nullable and declare that consistently, or remove NULL from the child. Add/retain a class-construction check. Likely a small schema change (30–90 minutes). Current clone has moved to a different resampler schema, so no equivalent patch is obvious there.",
+    "fix_owner": "rtemis",
+    "confidence": "high for tested-version cause; medium for current-version status",
+    "evidence": [
+      "evidence.md#evidence-116",
+      "evidence.md#evidence-117",
+      "evidence.md#evidence-154",
+      "evidence.md#evidence-038",
+      "evidence.md#evidence-038",
+      "evidence.md#evidence-037"
+    ],
+    "validation": "Cloud old/new logs distinguish old test ERROR from new install ERROR. Current GitHub clone is substantially newer (1.4.2 series) and defines n_resamples rather than the reported n property; no check rerun.",
+    "upstream_status": "Likely resolved by later schema redesign in current clone; verify with a check before treating as confirmed.",
+    "cloud_comparison": {
+      "old": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 1
+      },
+      "new": {
+        "status": "1 ERROR",
+        "categories": [
+          [
+            "whether package ‘rtemis’ can be installed",
+            "ERROR"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "rtemis.a3",
+    "tested_version": "0.5.3",
+    "diagnosis": "New examples and tests fail because the custom A3Metadata constructor calls new_object(Metadata, ...), passing the S7 class object as _parent instead of an instance. The new public contract requires an instance of the declared parent. A separate install WARNING is the S7/data.table := import collision.",
+    "suggested_fix": "Pass Metadata() as _parent (or use the default parent construction) and exclude := from the broad S7 import. One-line constructor correction plus a public constructor test and small namespace edit; about 30–60 minutes.",
+    "fix_owner": "rtemis.a3",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-113",
+      "evidence.md#evidence-113",
+      "evidence.md#evidence-035",
+      "evidence.md#evidence-035",
+      "evidence.md#evidence-035",
+      "evidence.md#evidence-053",
+      "evidence.md#evidence-053"
+    ],
+    "validation": "Cloud old check OK; new check has an install WARNING, example ERROR, and test ERROR. Current clone still passes the class object to new_object; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 ERRORs, 1 WARNING",
+        "categories": [
+          [
+            "whether package ‘rtemis.a3’ can be installed",
+            "WARNING"
+          ],
+          [
+            "examples",
+            "ERROR"
+          ],
+          [
+            "tests",
+            "ERROR"
+          ]
+        ],
+        "test_failures": 9
+      }
+    }
+  },
+  {
+    "package": "rtemis.core",
+    "tested_version": "0.4.6",
+    "diagnosis": "New install WARNING is the S7/data.table := collision from broad imports. No other new category is reported for this package.",
+    "suggested_fix": "Exclude := from import(S7) (data.table remains the intended binding). Small namespace edit, about 10–20 minutes plus check.",
+    "fix_owner": "rtemis.core",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-114",
+      "evidence.md#evidence-036",
+      "evidence.md#evidence-036"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING. Current clone retains both broad imports; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘rtemis.core’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "rtemis.llm",
+    "tested_version": "0.8.7",
+    "diagnosis": "New install WARNING is the S7/data.table := collision reported while loading rtemis.core. It is inherited through the rtemis.core dependency; this log shows no separate runtime failure.",
+    "suggested_fix": "Exclude := from rtemis.core's broad S7 import; no independent rtemis.llm fix is indicated. Small dependency namespace patch.",
+    "fix_owner": "rtemis.core (dependency)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-115",
+      "evidence.md#evidence-036",
+      "evidence.md#evidence-036"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING through rtemis.core. No rerun.",
+    "upstream_status": "Await rtemis.core namespace fix; no independent llm source defect found.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘rtemis.llm’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "shinychat",
+    "tested_version": "0.5.0",
+    "diagnosis": "New codoc WARNING: generated ContentSlashCommand formals are (..., command, user_text), while its Rd topic documents text, command, and user_text. This matches S7's forwarding-constructor shape for a subclass of ellmer::ContentText; parent arguments are accepted through ... .",
+    "suggested_fix": "Document ... as forwarded to ContentText and re-document. Small docs-only correction, about 15–30 minutes.",
+    "fix_owner": "shinychat",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-120",
+      "evidence.md#evidence-040",
+      "evidence.md#evidence-040",
+      "evidence.md#evidence-041",
+      "evidence.md#evidence-054"
+    ],
+    "validation": "Cloud old check OK; new check reports only one codoc WARNING. Current clone still has the stale Rd usage; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "for code/documentation mismatches",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "shinyOAuth",
+    "tested_version": "0.6.1",
+    "diagnosis": "New install WARNING is the S7/rlang := import collision; old check is OK.",
+    "suggested_fix": "Exclude := from shinyOAuth's broad S7 import or use explicit imports. Small namespace edit, about 10–20 minutes plus check.",
+    "fix_owner": "shinyOAuth",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-119",
+      "evidence.md#evidence-039",
+      "evidence.md#evidence-153"
+    ],
+    "validation": "Cloud old check OK; new check reports one install WARNING. Current clone still broadly imports S7; no rerun.",
+    "upstream_status": "Not fixed in current clone.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "1 WARNING",
+        "categories": [
+          [
+            "whether package ‘shinyOAuth’ can be installed",
+            "WARNING"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  },
+  {
+    "package": "tidyllm",
+    "tested_version": "0.7.0",
+    "diagnosis": "All six new check categories (2 WARNINGs, 4 NOTEs) repeat the same := collision while loading ellmer. They are dependency-propagated diagnostics, not six independent tidyllm defects.",
+    "suggested_fix": "Fix ellmer's broad S7/rlang import collision; no tidyllm source change is indicated by these logs. This is the same small ellmer patch needed for querychat.",
+    "fix_owner": "ellmer (dependency)",
+    "confidence": "high",
+    "evidence": [
+      "evidence.md#evidence-124",
+      "evidence.md#evidence-124",
+      "evidence.md#evidence-124",
+      "evidence.md#evidence-124",
+      "evidence.md#evidence-124",
+      "evidence.md#evidence-124",
+      "evidence.md#evidence-010",
+      "evidence.md#evidence-010"
+    ],
+    "validation": "Cloud old check OK; new check shows the same ellmer warning across dependency/S3/Rd checks. Current ellmer source still has broad imports; no rerun.",
+    "upstream_status": "Await ellmer namespace fix; no independent tidyllm defect found.",
+    "cloud_comparison": {
+      "old": {
+        "status": "OK",
+        "categories": [],
+        "test_failures": null
+      },
+      "new": {
+        "status": "2 WARNINGs, 4 NOTEs",
+        "categories": [
+          [
+            "dependencies in R code",
+            "NOTE"
+          ],
+          [
+            "S3 generic/method consistency",
+            "WARNING"
+          ],
+          [
+            "foreign function calls",
+            "NOTE"
+          ],
+          [
+            "R code for possible problems",
+            "NOTE"
+          ],
+          [
+            "for code/documentation mismatches",
+            "WARNING"
+          ],
+          [
+            "Rd \\usage sections",
+            "NOTE"
+          ]
+        ],
+        "test_failures": null
+      }
+    }
+  }
+]
