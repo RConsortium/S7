@@ -360,7 +360,7 @@ S4_register_class <- function(class, env = parent.frame()) {
   old_classes <- S4_reified_old_classes(class)
   methods::setOldClass(old_classes, S4Class = class_name, where = where)
   S4_set_S3_class_prototype(class_name, old_classes, where)
-  methods::setValidity(class_name, S4_validate_class, where = where)
+  methods::setValidity(class_name, S4_validity(class_name), where = where)
   methods::setMethod("initialize", class_name, S4_initialize, where = where)
 
   class_name
@@ -388,25 +388,30 @@ S4_reified_old_classes <- function(class) {
   class_dispatch(class)
 }
 
-S4_validate_class <- function(object) {
-  class_name <- class(object)[1L]
-  class <- S7_class(object)
+# Capture the registered class name because, since R 4.7, validObject()
+# passes the original object to validity methods of simple superclasses.
+S4_validity <- function(class_name) {
+  force(class_name)
 
-  if (identical(S7_class_name(class), class_name)) {
-    return(S4_validate(object))
-  }
-  while (is_class(class@parent)) {
-    class <- class@parent
+  function(object) {
+    class <- S7_class(object)
+
     if (identical(S7_class_name(class), class_name)) {
-      return(TRUE)
+      return(S4_validate(object))
     }
-  }
+    while (is_class(class@parent)) {
+      class <- class@parent
+      if (identical(S7_class_name(class), class_name)) {
+        return(TRUE)
+      }
+    }
 
-  sprintf(
-    "object with S7 class %s does not match S4 class %s",
-    dQuote(S7_class_name(S7_class(object))),
-    dQuote(class_name)
-  )
+    sprintf(
+      "object with S7 class %s does not match S4 class %s",
+      dQuote(S7_class_name(S7_class(object))),
+      dQuote(class_name)
+    )
+  }
 }
 
 S4_validate <- function(object) {

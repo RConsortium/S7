@@ -331,7 +331,7 @@ test_that("S4_register constructs S4 subclasses of S7 classes that extend S4 cla
   expect_error(methods::validObject(invalid), "bad status")
 })
 
-test_that("S4_validate_class validates only matching S7 classes for S4 upcasts", {
+test_that("S4 validity validates only matching S7 classes for S4 upcasts", {
   local_S4_classes()
 
   setClass("S4regShimRoot", slots = list(root = "numeric"))
