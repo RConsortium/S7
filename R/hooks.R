@@ -54,6 +54,10 @@ S7_on_load_ <- function(env) {
   hooks <- hooks_add(package)
   hooks_run_loaded(hooks) # run hooks for loaded packages
 
+  for (class_name in at_method_classes(package)) {
+    at_method_register(class_name)
+  }
+
   invisible()
 }
 
@@ -66,6 +70,10 @@ S7_on_unload <- function() {
 S7_on_unload_ <- function(env) {
   package <- packageName(env)
   hooks_remove(package)
+
+  for (class_name in at_method_classes(package)) {
+    at_method_unregister(class_name)
+  }
 
   tbl <- S7_methods_table(package)
   for (x in tbl) {
