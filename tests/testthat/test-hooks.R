@@ -15,6 +15,18 @@ test_that("S7_on_load() doesn't accumulate hooks across repeated loads", {
   expect_length(package_hooks("upstream"), 1)
 })
 
+test_that("S7_on_load() silently re-registers an identical method", {
+  upstream := local_package({
+    gen := new_generic("x")
+  })
+  downstream := local_package({
+    gen := new_external_generic("upstream", dispatch_args = "x")
+    method(gen, class_character) <- \(x) "dispatched"
+  })
+  expect_no_message(S7_on_load_(downstream))
+  expect_equal(upstream$gen("x"), "dispatched")
+})
+
 test_that("S7_on_load() warns instead of erroring when a generic no longer exists (#729)", {
   upstream := local_package()
   downstream := local_package()
