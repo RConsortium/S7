@@ -71,6 +71,24 @@ test_that("validate runs class validators for non-base type properties", {
   expect_snapshot(error = TRUE, validate(obj))
 })
 
+test_that("validate treats stored NULL properties as NULL", {
+  Foo := new_class(
+    properties = list(
+      x = class_double | NULL,
+      expr = new_property(
+        class = class_any,
+        validator = function(value) if (!is.symbol(value)) "must be a symbol"
+      )
+    )
+  )
+  object <- Foo(x = 1, expr = quote(x))
+  object@x <- NULL
+
+  expect_null(object@x)
+  expect_identical(object@expr, quote(x))
+  expect_identical(validate(object), object)
+})
+
 test_that("validate checks the type of setters", {
   foo := new_class(
     package = NULL,
