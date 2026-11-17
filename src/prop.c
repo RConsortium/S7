@@ -467,11 +467,15 @@ void prop_validate(SEXP property, SEXP value, SEXP object, SEXP name) {
   if (prop_validate == NULL)
     prop_validate = ns_get("prop_validate");
 
-  SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value, object));
+  int n_protected = 0;
+  SEXP value_arg = protect_quote_if_needed(value, &n_protected);
+  SEXP object_arg = protect_quote_if_needed(object, &n_protected);
+  SEXP errmsg = eval_here(Rf_lang4(prop_validate, property, value_arg, object_arg));
   if (errmsg != R_NilValue) {
     PROTECT(errmsg);
     signal_prop_error(CHAR(STRING_ELT(errmsg, 0)), object, name);
   }
+  UNPROTECT(n_protected);
 }
 
 static inline

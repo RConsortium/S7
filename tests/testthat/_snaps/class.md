@@ -228,6 +228,22 @@
       ! <foo> object is invalid:
       - x must be positive
 
+# new_object() reports its call for unnamed properties
+
+    Code
+      Foo(1)
+    Condition
+      Error in `new_object()`:
+      ! All arguments to `...` must be named.
+
+---
+
+    Code
+      Foo(list(1))
+    Condition
+      Error in `new_object()`:
+      ! All elements of `..1` must be named.
+
 # new_object() runs each parent validator exactly once
 
     Code

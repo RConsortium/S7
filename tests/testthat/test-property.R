@@ -289,11 +289,40 @@ test_that("set_props() can set a property named `call`", {
   expect_identical(set_props(Foo(), call = expr)@call, expr)
 })
 
+test_that("custom property setters preserve call values", {
+  Foo := new_class(
+    parent = class_call,
+    properties = list(
+      call = new_property(
+        class = class_call,
+        setter = function(self, value) {
+          self@call <- value
+          self
+        }
+      )
+    )
+  )
+  data <- quote(f(x))
+  initial <- quote(g(x))
+  obj <- Foo(.data = data, call = initial)
+  expect_identical(obj@call, initial)
+
+  replacement <- quote(h(x))
+  obj@call <- replacement
+  expect_identical(obj@call, replacement)
+  expect_identical(S7_data(obj), data)
+})
+
 test_that("props<- set_props() accepts a single unnamed list (#497)", {
   Foo := new_class(properties = list(x = class_double, y = class_double))
   obj <- set_props(Foo(1, 2), list(x = 3, y = 4))
   expect_equal(obj@x, 3)
   expect_equal(obj@y, 4)
+})
+
+test_that("set_props() reports its call for unnamed properties", {
+  Foo := new_class(properties = list(x = class_double))
+  expect_snapshot(set_props(Foo(), 1), error = TRUE)
 })
 
 test_that("props<- set_props() skips validation with `.check = FALSE`", {

@@ -718,6 +718,16 @@ test_that("new_object() accepts a single unnamed named list of properties (#497)
   expect_equal(obj@y, 2)
 })
 
+test_that("new_object() reports its call for unnamed properties", {
+  Foo := new_class(
+    properties = list(x = class_double),
+    constructor = function(...) new_object(S7_object(), ...)
+  )
+
+  expect_snapshot(Foo(1), error = TRUE)
+  expect_snapshot(Foo(list(1)), error = TRUE)
+})
+
 test_that("new_object() runs each parent validator exactly once", {
   A := new_class(validator = function(self) cat("A "))
   B := new_class(parent = A, validator = function(self) cat("B "))

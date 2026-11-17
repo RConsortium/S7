@@ -59,6 +59,14 @@
       ! <S7::foo> object is invalid:
       - bad
 
+# set_props() reports its call for unnamed properties
+
+    Code
+      set_props(Foo(), 1)
+    Condition
+      Error in `set_props()`:
+      ! All arguments to `...` must be named.
+
 # props<- set_props() skips validation with `.check = FALSE`
 
     Code

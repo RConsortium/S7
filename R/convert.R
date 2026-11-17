@@ -126,7 +126,7 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    dots <- collect_dots(...)
+    dots <- collect_dots(list(...), call = sys.call())
     convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
@@ -257,7 +257,7 @@ convert_down <- function(from, to, user_args = list()) {
   if (!is_class(from_class)) {
     # `from` is a base or S3 object; pass it as `.data` to the constructor
     user_args$.data <- from
-    return(do.call(to, user_args))
+    return(call_constructor(to, user_args))
   }
 
   # Use `from` as a prototype/seed when constructing `to`: copy over property
@@ -279,7 +279,20 @@ convert_down <- function(from, to, user_args = list()) {
   from_prop_values <- props(from, from_prop_names)
   constructor_args <- c(from_prop_values, user_args)
 
-  do.call(to, constructor_args)
+  call_constructor(to, constructor_args)
+}
+
+call_constructor <- function(constructor, args) {
+  # Pass language objects as values. Leave ordinary arguments and explicit
+  # missing arguments intact for constructors that inspect their expressions.
+  args <- lapply(args, function(arg) {
+    if (is.call(arg) || (is.symbol(arg) && !identical(arg, quote(expr = )))) {
+      enquote(arg)
+    } else {
+      arg
+    }
+  })
+  do.call(constructor, args, envir = parent.frame())
 }
 
 s4_to_name <- function(x) {

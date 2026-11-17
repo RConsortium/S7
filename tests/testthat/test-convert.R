@@ -113,6 +113,49 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
   expect_equal(bar@y, 3)
 })
 
+test_that("convert() reports its call for unnamed overrides", {
+  Parent := new_class()
+  Child := new_class(parent = Parent, properties = list(x = class_double))
+  expect_snapshot(convert(Parent(), Child, 1), error = TRUE)
+})
+
+test_that("downcasts preserve calls copied from S7 objects or supplied as overrides", {
+  Parent := new_class(properties = list(call = class_call))
+  Child := new_class(parent = Parent)
+  expr <- quote(f(x))
+  override <- quote(g(x))
+  parent <- Parent(call = expr)
+
+  expect_identical(convert(parent, Child)@call, expr)
+  expect_identical(convert(parent, Child, call = override)@call, override)
+})
+
+test_that("downcasts from base classes preserve language-valued overrides", {
+  Child := new_class(
+    parent = class_double,
+    properties = list(call = class_call, symbol = class_any)
+  )
+  expr <- quote(f(x))
+  symbol <- quote(x)
+  obj <- convert(1, Child, list(call = expr, symbol = symbol))
+
+  expect_identical(obj@call, expr)
+  expect_identical(obj@symbol, symbol)
+})
+
+test_that("downcasts preserve ordinary and missing constructor arguments", {
+  Parent := new_class()
+  Child := new_class(
+    parent = Parent,
+    properties = list(x = class_any),
+    constructor = function(x = 1L) new_object(Parent(), x = substitute(x))
+  )
+  parent <- Parent()
+
+  expect_identical(convert(parent, Child, x = 2L)@x, 2L)
+  expect_identical(convert(parent, Child, alist(x = ))@x, 1L)
+})
+
 test_that("fallback downcasts use declared ancestry and drop extra S3 classes", {
   Parent := new_class(properties = list(x = class_double), package = NULL)
   Child := new_class(

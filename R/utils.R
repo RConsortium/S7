@@ -86,12 +86,10 @@ names2 <- function(x) {
   }
 }
 
-# Collect `...` into a named list. As a convenience, a single unnamed list is
+# Validate the names of collected property arguments. A single unnamed list is
 # spliced in so its elements become the values, making it easy to supply
 # values programmatically. All values must be named.
-collect_dots <- function(...) {
-  args <- list(...)
-
+collect_dots <- function(args, call) {
   is_single_list <- length(args) == 1L &&
     !nzchar(names2(args)) &&
     is.list(args[[1L]])
@@ -99,10 +97,10 @@ collect_dots <- function(...) {
   if (is_single_list) {
     args <- args[[1L]]
     if ("" %in% names2(args)) {
-      stop2("All elements of `..1` must be named.", call = sys.call(-1L))
+      stop2("All elements of `..1` must be named.", call = call)
     }
   } else if ("" %in% names2(args)) {
-    stop2("All arguments to `...` must be named.", call = sys.call(-1L))
+    stop2("All arguments to `...` must be named.", call = call)
   }
   args
 }
