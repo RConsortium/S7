@@ -161,6 +161,9 @@ constructor_inline <- function(parent, properties, envir, package) {
   # And finally the constructor itself
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
+  if (any(c(".data", "...") %in% parent_nms)) {
+    attr(env, "S7_constructor_parent") <- parent
+  }
   new_S7_constructor(
     new_function(constr_args, child_call),
     env = env
@@ -237,6 +240,7 @@ constructor_forward <- function(parent, properties, envir, package) {
   if (!is.null(name)) {
     env[[name]] <- fun
   }
+  attr(env, "S7_constructor_parent") <- parent
   new_S7_constructor(new_function(constr_args, child_call), env = env)
 }
 

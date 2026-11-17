@@ -30,6 +30,9 @@
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
+#'    For value-based S7 objects with base or S3 data, it also uses [S7_data()]
+#'    to supply `.data` when the constructor accepts an underlying data argument.
+#'    Supply `.data` explicitly to override it.
 #' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
 #'    neither of the above apply, it calls the corresponding `as.*()` function
 #'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
@@ -279,7 +282,55 @@ convert_down <- function(from, to, user_args = list()) {
   from_prop_values <- props(from, from_prop_names)
   constructor_args <- c(from_prop_values, user_args)
 
+  if (
+    !".data" %in% names(constructor_args) &&
+      !is.environment(from) &&
+      constructor_accepts_data(to)
+  ) {
+    base <- base_parent(from_class)
+    if (is_base_class(base) || is_S3_class(base)) {
+      constructor_args[".data"] <- list(S7_data(from))
+    }
+  }
+
   call_constructor(to, constructor_args)
+}
+
+constructor_accepts_data <- function(class) {
+  constructor <- class_constructor(class)
+  args <- names(formals(constructor))
+  has_data_arg <- ".data" %in% args
+  if (!is_class(class)) {
+    return(has_data_arg)
+  }
+
+  property <- class@properties[[".data"]]
+  if (!is.null(property) && !prop_is_read_only(property)) {
+    return(FALSE)
+  }
+  if (!is_default_constructor(class@constructor)) {
+    return(has_data_arg)
+  }
+
+  # Use the parent chosen by the generated constructor, which may contain
+  # an external reference even if the declared parent is an S7 class.
+  parent <- attr(
+    parent.env(environment(constructor)),
+    "S7_constructor_parent",
+    exact = TRUE
+  )
+  if (is.null(parent)) {
+    # Older generated constructors can only forward data here if they expose
+    # the inherited argument explicitly.
+    if (!has_data_arg) {
+      return(FALSE)
+    }
+    parent <- class@parent
+  }
+  if (is_external_class(parent)) {
+    parent <- resolve_external_class_req(parent, package = class@package)
+  }
+  constructor_accepts_data(parent)
 }
 
 call_constructor <- function(constructor, args) {

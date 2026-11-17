@@ -242,6 +242,8 @@
 
 ### Conversion and underlying data
 
+* `convert()` passes underlying data to subclass constructors that accept `.data` when downcasting a value-based S7 object with base or S3 data.
+
 * `convert()` preserves calls and other language objects supplied as property values when downcasting.
 
 * `convert()` returns `from` unchanged when it already has the target class.

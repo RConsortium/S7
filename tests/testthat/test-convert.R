@@ -156,6 +156,122 @@ test_that("downcasts preserve ordinary and missing constructor arguments", {
   expect_identical(convert(parent, Child, alist(x = ))@x, 1L)
 })
 
+test_that("downcasts pass underlying data and honor explicit overrides", {
+  Parent := new_class(
+    parent = class_double,
+    properties = list(label = class_character)
+  )
+  Child := new_class(parent = Parent)
+  data <- c(a = 1, b = 2)
+  parent <- Parent(.data = data, label = "source")
+
+  child <- convert(parent, Child)
+  expect_identical(S7_data(child), data)
+  expect_identical(child@label, "source")
+  expect_identical(S7_data(convert(parent, Child, .data = 3)), 3)
+})
+
+test_that("downcasts pass S3 objects and calls as underlying data", {
+  FactorParent := new_class(parent = class_factor)
+  FactorChild := new_class(parent = FactorParent)
+  values <- factor(c("a", "b"), levels = c("b", "a", "c"))
+  expect_identical(S7_data(convert(FactorParent(values), FactorChild)), values)
+
+  CallParent := new_class(parent = class_call)
+  CallChild := new_class(parent = CallParent)
+  expr <- quote(f(x))
+  expect_identical(S7_data(convert(CallParent(expr), CallChild)), expr)
+})
+
+test_that("downcasts use the current constructor of an external parent", {
+  dep := local_package({
+    Parent := new_class(parent = class_double)
+  })
+  Child := new_class(parent = dep$Parent, package = "extension")
+  Grandchild := new_class(parent = Child, package = "extension")
+  expect_identical(S7_data(convert(dep$Parent(1), Child)), 1)
+  expect_identical(S7_data(convert(dep$Parent(1), Grandchild)), 1)
+
+  evalq(
+    {
+      Parent := new_class(
+        parent = class_double,
+        constructor = function(x = 4) new_object(x)
+      )
+    },
+    dep
+  )
+  expect_identical(S7_data(convert(dep$Parent(1), Child)), 4)
+  expect_identical(S7_data(convert(dep$Parent(1), Grandchild)), 4)
+})
+
+test_that("downcasts leave data to custom constructors without a data argument", {
+  Parent := new_class(parent = class_double)
+  Custom := new_class(
+    parent = Parent,
+    properties = list(label = class_character),
+    constructor = function(...) new_object(Parent(2), ...)
+  )
+
+  child <- convert(Parent(1), Custom, label = "child")
+  expect_identical(S7_data(child), 2)
+  expect_identical(child@label, "child")
+})
+
+test_that("downcasts keep the default for a property named `.data`", {
+  Parent := new_class(parent = class_double)
+  Child := new_class(
+    parent = Parent,
+    properties = list(.data = new_property(class_double, default = 2))
+  )
+
+  child <- convert(Parent(1), Child)
+  expect_identical(child@.data, 2)
+})
+
+test_that("downcasts can pass data when a `.data` property is read-only", {
+  Parent := new_class(parent = class_double)
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      .data = new_property(class_integer, getter = function(self) length(self))
+    )
+  )
+  data <- c(1, 2, 3)
+
+  child <- convert(Parent(data), Child)
+  expect_identical(S7_data(child), data)
+  expect_identical(child@.data, 3L)
+})
+
+test_that("downcasts keep inherited `.data` property defaults under a getter", {
+  Base := new_class(parent = class_double)
+  Parent := new_class(
+    parent = Base,
+    properties = list(.data = new_property(class_double, default = 2))
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      .data = new_property(class_double, getter = function(self) sum(self))
+    )
+  )
+
+  child <- convert(Base(1), Child)
+  expect_identical(S7_data(child), 2)
+  expect_identical(child@.data, 2)
+})
+
+test_that("downcasts construct a subclass without reusing the source environment", {
+  Parent := new_class(parent = class_environment)
+  Child := new_class(parent = Parent)
+  parent <- Parent()
+
+  child <- convert(parent, Child)
+  expect_identical(S7_class(child), Child)
+  expect_identical(S7_class(parent), Parent)
+})
+
 test_that("fallback downcasts use declared ancestry and drop extra S3 classes", {
   Parent := new_class(properties = list(x = class_double), package = NULL)
   Child := new_class(
