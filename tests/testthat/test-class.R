@@ -688,6 +688,12 @@ test_that("new_object() can set a property named `.parent` (#423)", {
   expect_equal(obj@.parent, 1)
 })
 
+test_that("new_object() can set a property named `call`", {
+  Foo := new_class(properties = list(call = class_call))
+  expr <- quote(f(x))
+  expect_identical(Foo(call = expr)@call, expr)
+})
+
 test_that("new_object() validates object", {
   foo := new_class(
     properties = list(x = new_property(class_double)),

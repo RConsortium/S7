@@ -283,6 +283,12 @@ test_that("props<- set_props() can set a property named `object` (#423)", {
   expect_equal(obj@object, 2)
 })
 
+test_that("set_props() can set a property named `call`", {
+  Foo := new_class(properties = list(call = class_any))
+  expr <- quote(g(x))
+  expect_identical(set_props(Foo(), call = expr)@call, expr)
+})
+
 test_that("props<- set_props() accepts a single unnamed list (#497)", {
   Foo := new_class(properties = list(x = class_double, y = class_double))
   obj <- set_props(Foo(1, 2), list(x = 3, y = 4))
