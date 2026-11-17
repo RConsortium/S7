@@ -235,6 +235,10 @@ SEXP prop_get_storage(SEXP object, SEXP name_sym) {
   return value == pseudo_null() ? R_NilValue : value;
 }
 
+SEXP prop_get_storage_(SEXP object, SEXP name) {
+  return prop_get_storage(object, Rf_installTrChar(STRING_ELT(name, 0)));
+}
+
 static inline
 SEXP prop_set_storage(SEXP object, SEXP name_sym, SEXP value) {
   if (value == R_NilValue)
