@@ -242,7 +242,7 @@
 
 ### Conversion and underlying data
 
-* `convert()` preserves calls and other language objects supplied as property values when downcasting. It forwards named arguments to the constructor, so `substitute()` sees the caller's expressions (#798).
+* `convert()` preserves calls and symbols supplied as property values when downcasting (#798).
 
 * `convert()` returns `from` unchanged when it already has the target class.
   When upcasting a more specific subclass, dispatch is restricted to classes

@@ -126,12 +126,8 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    constructor <- downcast_constructor(from, to)
-    if (sum(nzchar(...names())) == ...length()) {
-      return(constructor(...))
-    }
     dots <- collect_dots(...)
-    do.call(constructor, dots, quote = TRUE)
+    convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
   } else if (is_S4_coerce(from, to)) {
@@ -181,7 +177,7 @@ convert_lazy <- function(from, to, ...) {
   if (class_inherits(from, to)) {
     from
   } else {
-    convert(from = from, to = to, ...)
+    convert(from, to, ...)
   }
 }
 
@@ -255,14 +251,13 @@ is_down_cast <- function(x, class) {
   class_dispatch_extends(from_dispatch, class_dispatch(class))
 }
 
-downcast_constructor <- function(from, to) {
+convert_down <- function(from, to, user_args = list()) {
   from_class <- S7_class(from)
 
   if (!is_class(from_class)) {
-    # A base or S3 source supplies .data, even when it occurs in the overrides.
-    return(function(..., .data) {
-      do.call(to, c(list(.data = enquote(from)), quote(...)))
-    })
+    # `from` is a base or S3 object; pass it as `.data` to the constructor
+    user_args$.data <- from
+    return(call_constructor(to, user_args))
   }
 
   # Use `from` as a prototype/seed when constructing `to`: copy over property
@@ -278,11 +273,26 @@ downcast_constructor <- function(from, to) {
     from_prop_names <- intersect(from_prop_names, to_constructor_arg_names)
   }
 
-  function(...) {
-    # Quote stored values and forward the caller's promises to the constructor.
-    copied <- props(from, setdiff(from_prop_names, ...names()))
-    do.call(to, c(lapply(copied, enquote), quote(...)))
-  }
+  # Drop properties overridden by user-supplied arguments
+  from_prop_names <- setdiff(from_prop_names, names(user_args))
+
+  from_prop_values <- props(from, from_prop_names)
+  constructor_args <- c(from_prop_values, user_args)
+
+  call_constructor(to, constructor_args)
+}
+
+call_constructor <- function(constructor, args) {
+  # Pass language objects as values. Leave ordinary arguments and explicit
+  # missing arguments intact for constructors that inspect their expressions.
+  args <- lapply(args, function(arg) {
+    if (is.call(arg) || (is.symbol(arg) && !identical(arg, quote(expr = )))) {
+      enquote(arg)
+    } else {
+      arg
+    }
+  })
+  do.call(constructor, args, envir = parent.frame())
 }
 
 s4_to_name <- function(x) {
