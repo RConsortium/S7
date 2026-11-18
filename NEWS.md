@@ -23,7 +23,8 @@
 
 * `new_class()` now calls constructors of S7 parents from other packages at run time when the subclass is defined in a package, so subclasses use the installed parent constructor without needing `new_external_class()`. Such subclass constructors now accept parent arguments through `...` (#763).
 
-* `new_class()` now reserves property names beginning with `_` for internal use. Rename any properties that use this prefix (#579, #798).
+* `new_class()` now reserves property names beginning with `_` for internal use.
+  Rename any properties that use this prefix (#579).
 
 * `new_object()` and `set_props()` now name their first arguments `_parent` and
   `_object`, respectively. Update calls that name these arguments, or pass the
@@ -313,7 +314,8 @@
 * `prop()` keeps objects usable after a custom getter signals an error (#520,
   #640, #638).
 
-* `prop<-()` supports assigning calls and symbols to properties, including properties with custom setters (#511, #633, #638).
+* `prop<-()` supports assigning calls and symbols to properties (#511, #633,
+  #638).
 
 ### Errors and printing
 

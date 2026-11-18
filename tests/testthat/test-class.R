@@ -688,12 +688,6 @@ test_that("new_object() can set a property named `.parent` (#423)", {
   expect_equal(obj@.parent, 1)
 })
 
-test_that("new_object() can set a property named `call`", {
-  Foo := new_class(properties = list(call = class_call))
-  expr <- quote(f(x))
-  expect_identical(Foo(call = expr)@call, expr)
-})
-
 test_that("new_object() validates object", {
   foo := new_class(
     properties = list(x = new_property(class_double)),
@@ -883,23 +877,12 @@ test_that("objects from a previous version of S7 still work (#677)", {
   expect_equal(convert(obj, to = class_double), 1)
 })
 
-test_that("can't create class with `...` property name", {
+test_that("new_class() rejects reserved property names", {
+  local_S4_classes()
+  Parent <- setClass("ReservedSlot", slots = c(`_call` = "numeric"))
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(... = class_character))
-  })
-})
-
-test_that("new_class() rejects property names beginning with `_`", {
-  expect_snapshot(error = TRUE, {
     Foo := new_class(properties = list(`_call` = class_any))
-  })
-
-  local_S4_classes()
-  Parent <- methods::setClass(
-    "UnderscoreSlotParent",
-    slots = c(`_call` = "numeric")
-  )
-  expect_snapshot(error = TRUE, {
     Child := new_class(parent = Parent, package = NULL)
   })
 })

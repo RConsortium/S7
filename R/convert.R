@@ -127,13 +127,11 @@ convert <- function(from, to, ...) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
     constructor <- downcast_constructor(from, to)
-    nms <- ...names()
-    if (is.null(nms) || "" %in% nms) {
-      args <- collect_dots(...)
-      do.call(constructor, args, quote = TRUE)
-    } else {
-      constructor(...)
+    if (sum(nzchar(...names())) == ...length()) {
+      return(constructor(...))
     }
+    dots <- collect_dots(...)
+    do.call(constructor, dots, quote = TRUE)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
   } else if (is_S4_coerce(from, to)) {
