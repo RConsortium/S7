@@ -203,6 +203,10 @@ test_that("downcasts use the current constructor of an external parent", {
   )
   expect_identical(S7_data(convert(dep$Parent(1), Child)), 4)
   expect_identical(S7_data(convert(dep$Parent(1), Grandchild)), 4)
+
+  LaterChild := new_class(parent = dep$Parent, package = "extension")
+  evalq(Parent := new_class(parent = class_double), dep)
+  expect_identical(S7_data(convert(dep$Parent(.data = 7), LaterChild)), 7)
 })
 
 test_that("downcasts leave data to custom constructors without a data argument", {
