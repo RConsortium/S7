@@ -283,10 +283,9 @@ convert_down <- function(from, to, user_args = list()) {
 }
 
 call_constructor <- function(constructor, args) {
-  # Pass language objects as values. Leave ordinary arguments and explicit
-  # missing arguments intact for constructors that inspect their expressions.
+  # Quote selectively so substitute() in the constructor sees ordinary values.
   args <- lapply(args, function(arg) {
-    if (is.call(arg) || (is.symbol(arg) && !identical(arg, quote(expr = )))) {
+    if (is.call(arg) || is.symbol(arg)) {
       enquote(arg)
     } else {
       arg

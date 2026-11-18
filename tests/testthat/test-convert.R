@@ -113,6 +113,14 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
   expect_equal(bar@y, 3)
 })
 
+test_that("downcasts distinguish omitted overrides from supplied missing values", {
+  capture <- \(.data, x = 1L) new_object(list(x = x))
+  Box := new_class(parent = class_list, constructor = capture)
+
+  expect_identical(S7_data(convert(list(), Box, list())), list(x = 1L))
+  expect_identical(S7_data(convert(list(), Box, alist(x = ))), alist(x = ))
+})
+
 test_that("downcasts quote calls and symbols and pass ordinary values through", {
   Parent := new_class(
     parent = class_double,
