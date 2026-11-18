@@ -218,6 +218,17 @@ test_that("downcasts leave data to custom constructors without a data argument",
   expect_identical(child@label, "child")
 })
 
+test_that("downcasts from property-only classes leave constructor data defaults alone", {
+  Parent := new_class()
+  Child := new_class(
+    parent = Parent,
+    properties = list(label = class_character),
+    constructor = function(.data = "child") new_object(Parent(), label = .data)
+  )
+
+  expect_identical(convert(Parent(), Child)@label, "child")
+})
+
 test_that("downcasts keep the default for a property named `.data`", {
   Parent := new_class(parent = class_double)
   Child := new_class(

@@ -297,40 +297,30 @@ convert_down <- function(from, to, user_args = list()) {
 }
 
 constructor_accepts_data <- function(class) {
-  constructor <- class_constructor(class)
-  args <- names(formals(constructor))
-  has_data_arg <- ".data" %in% args
-  if (!is_class(class)) {
-    return(has_data_arg)
-  }
-
-  property <- class@properties[[".data"]]
-  if (!is.null(property) && !prop_is_read_only(property)) {
-    return(FALSE)
-  }
-  if (!is_default_constructor(class@constructor)) {
-    return(has_data_arg)
-  }
-
-  # Use the parent chosen by the generated constructor, which may contain
-  # an external reference even if the declared parent is an S7 class.
-  parent <- attr(
-    parent.env(environment(constructor)),
-    "S7_constructor_parent",
-    exact = TRUE
-  )
-  if (is.null(parent)) {
-    # Older generated constructors can only forward data here if they expose
-    # the inherited argument explicitly.
-    if (!has_data_arg) {
+  while (is_class(class)) {
+    property <- class@properties[[".data"]]
+    if (!is.null(property) && !prop_is_read_only(property)) {
       return(FALSE)
     }
-    parent <- class@parent
+    if (!is_default_constructor(class@constructor)) {
+      break
+    }
+    env <- parent.env(environment(class))
+    parent <- attr(env, "S7_external_parent", exact = TRUE) %||% class@parent
+    # Older cross-package wrappers can lack the runtime export reference.
+    if (
+      is_foreign_parent(parent, class@package) &&
+        !".data" %in% names(formals(class))
+    ) {
+      return(FALSE)
+    }
+    class <- if (is_external_class(parent)) {
+      resolve_external_class_req(parent, package = class@package)
+    } else {
+      parent
+    }
   }
-  if (is_external_class(parent)) {
-    parent <- resolve_external_class_req(parent, package = class@package)
-  }
-  constructor_accepts_data(parent)
+  ".data" %in% names(formals(class_constructor(class)))
 }
 
 call_constructor <- function(constructor, args) {

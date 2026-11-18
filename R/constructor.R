@@ -5,12 +5,7 @@ new_constructor <- function(
   package = NULL
 ) {
   # Package classes look up constructors owned by another package at run time.
-  if (
-    is_class(parent) &&
-      !is.null(package) &&
-      !is.null(parent@package) &&
-      !identical(parent@package, package)
-  ) {
+  if (is_foreign_parent(parent, package)) {
     parent <- class_as_external(parent)
   }
 
@@ -78,6 +73,13 @@ new_constructor <- function(
   } else {
     constructor_forward(parent, properties, envir, package)
   }
+}
+
+is_foreign_parent <- function(parent, package) {
+  is_class(parent) &&
+    !is.null(package) &&
+    !is.null(parent@package) &&
+    !identical(parent@package, package)
 }
 
 # Internal names can differ from exports: ggplot2::class_ggplot is named "ggplot".
@@ -161,9 +163,6 @@ constructor_inline <- function(parent, properties, envir, package) {
   # And finally the constructor itself
   env <- new.env(parent = envir)
   env[[parent_name]] <- parent_fun
-  if (any(c(".data", "...") %in% parent_nms)) {
-    attr(env, "S7_constructor_parent") <- parent
-  }
   new_S7_constructor(
     new_function(constr_args, child_call),
     env = env
@@ -240,7 +239,9 @@ constructor_forward <- function(parent, properties, envir, package) {
   if (!is.null(name)) {
     env[[name]] <- fun
   }
-  attr(env, "S7_constructor_parent") <- parent
+  if (is_external_class(parent)) {
+    attr(env, "S7_external_parent") <- parent
+  }
   new_S7_constructor(new_function(constr_args, child_call), env = env)
 }
 
