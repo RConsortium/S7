@@ -126,7 +126,7 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    dots <- collect_dots(list(...), call = sys.call())
+    dots <- collect_dots(...)
     convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)

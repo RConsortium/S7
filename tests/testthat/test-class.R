@@ -718,16 +718,6 @@ test_that("new_object() accepts a single unnamed named list of properties (#497)
   expect_equal(obj@y, 2)
 })
 
-test_that("new_object() reports its call for unnamed properties", {
-  Foo := new_class(
-    properties = list(x = class_double),
-    constructor = function(...) new_object(S7_object(), ...)
-  )
-
-  expect_snapshot(Foo(1), error = TRUE)
-  expect_snapshot(Foo(list(1)), error = TRUE)
-})
-
 test_that("new_object() runs each parent validator exactly once", {
   A := new_class(validator = function(self) cat("A "))
   B := new_class(parent = A, validator = function(self) cat("B "))
@@ -896,6 +886,21 @@ test_that("objects from a previous version of S7 still work (#677)", {
 test_that("can't create class with `...` property name", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(... = class_character))
+  })
+})
+
+test_that("new_class() rejects property names beginning with `_`", {
+  expect_snapshot(error = TRUE, {
+    Foo := new_class(properties = list(`_call` = class_any))
+  })
+
+  local_S4_classes()
+  Parent <- methods::setClass(
+    "UnderscoreSlotParent",
+    slots = c(`_call` = "numeric")
+  )
+  expect_snapshot(error = TRUE, {
+    Child := new_class(parent = Parent, package = NULL)
   })
 })
 

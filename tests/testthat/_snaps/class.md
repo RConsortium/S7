@@ -228,22 +228,6 @@
       ! <foo> object is invalid:
       - x must be positive
 
-# new_object() reports its call for unnamed properties
-
-    Code
-      Foo(1)
-    Condition
-      Error in `new_object()`:
-      ! All arguments to `...` must be named.
-
----
-
-    Code
-      Foo(list(1))
-    Condition
-      Error in `new_object()`:
-      ! All elements of `..1` must be named.
-
 # new_object() runs each parent validator exactly once
 
     Code
@@ -337,6 +321,22 @@
     Condition
       Error in `new_class()`:
       ! Properties can't be named "...".
+
+# new_class() rejects property names beginning with `_`
+
+    Code
+      Foo := new_class(properties = list(`_call` = class_any))
+    Condition
+      Error in `new_class()`:
+      ! Property names can't start with `_`.
+
+---
+
+    Code
+      Child := new_class(parent = Parent, package = NULL)
+    Condition
+      Error in `new_class()`:
+      ! Property names can't start with `_`.
 
 # S7_class() gives informative error if no S7 spec available
 

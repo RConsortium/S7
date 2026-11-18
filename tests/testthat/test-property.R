@@ -320,11 +320,6 @@ test_that("props<- set_props() accepts a single unnamed list (#497)", {
   expect_equal(obj@y, 4)
 })
 
-test_that("set_props() reports its call for unnamed properties", {
-  Foo := new_class(properties = list(x = class_double))
-  expect_snapshot(set_props(Foo(), 1), error = TRUE)
-})
-
 test_that("props<- set_props() skips validation with `.check = FALSE`", {
   foo := new_class(
     properties = list(x = class_double, y = class_double),

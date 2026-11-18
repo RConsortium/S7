@@ -113,12 +113,6 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
   expect_equal(bar@y, 3)
 })
 
-test_that("convert() reports its call for unnamed overrides", {
-  Parent := new_class()
-  Child := new_class(parent = Parent, properties = list(x = class_double))
-  expect_snapshot(convert(Parent(), Child, 1), error = TRUE)
-})
-
 test_that("downcasts preserve calls copied from S7 objects or supplied as overrides", {
   Parent := new_class(properties = list(call = class_call))
   Child := new_class(parent = Parent)
