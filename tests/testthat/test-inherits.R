@@ -31,6 +31,15 @@ test_that("S7_inherits() matches class-vector-only objects to S7 classes", {
   expect_identical(S7_inherits(x, foo), TRUE)
 })
 
+test_that("S7_inherits() respects replacement of the S3 class vector", {
+  Mapping := new_class(parent = class_list)
+  x <- Mapping()
+  class(x) <- "uneval"
+
+  expect_identical(S7_inherits(x), FALSE)
+  expect_identical(S7_inherits(x, Mapping), FALSE)
+})
+
 test_that("accepts any class specification (#556)", {
   # base
   expect_true(S7_inherits(1L, class_integer))

@@ -30,7 +30,7 @@ S7_data <- function(object) {
 
   out <- zap_attr(object, c(prop_storage_names(object), S7_object_attrs))
 
-  # Objects accepted by is_legacy_S7_object() have no parent metadata to restore.
+  # Older ggforce mappings have an S7 class vector but no stored parent.
   base <- base_parent(S7_class(object))
   if (is_S3_class(base)) {
     class(out) <- base$class
