@@ -126,31 +126,35 @@ local_libpath <- function(frame = parent.frame()) {
   lib
 }
 
-# Install the development S7 into a session-scoped library (built once per
-# test process) and prepend that library to .libPaths() until `frame` exits.
+# Give child R sessions the S7 being tested. A source checkout needs to be
+# installed once per test process. R CMD check already has an installation.
 local_dev_S7_lib <- local({
   lib <- NULL
   function(frame = parent.frame()) {
     if (is.null(lib)) {
-      dir.create(new_lib <- tempfile("S7-dev-lib-"))
-      install.packages(
-        pkgs = normalizePath(test_path("..", "..")),
-        lib = new_lib,
-        repos = NULL,
-        type = "source",
-        quiet = TRUE,
-        INSTALL_opts = c(
-          "--data-compress=none",
-          "--no-byte-compile",
-          "--no-data",
-          "--no-demo",
-          "--no-docs",
-          "--no-help",
-          "--no-html",
-          "--use-vanilla"
+      path <- getNamespaceInfo("S7", "path")
+      if (file.exists(file.path(path, "Meta", "package.rds"))) {
+        lib <<- dirname(path)
+      } else {
+        dir.create(new_lib <- tempfile("S7-dev-lib-"))
+        callr::rcmd(
+          "INSTALL",
+          c(
+            "-l",
+            new_lib,
+            "--data-compress=none",
+            "--no-byte-compile",
+            "--no-data",
+            "--no-demo",
+            "--no-docs",
+            "--no-help",
+            "--no-html",
+            "--use-vanilla",
+            path
+          )
         )
-      )
-      lib <<- new_lib
+        lib <<- new_lib
+      }
     }
 
     old <- .libPaths()
