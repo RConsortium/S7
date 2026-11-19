@@ -1,3 +1,7 @@
+# S7 (development version)
+
+* `S7_inherits()` now returns `FALSE` after an S3 class replaces the S7 class vector. This restores compatibility with ggforce and geomtextpath layers that reclassify aesthetic mappings (#786).
+
 # S7 1.0.0
 
 ## Breaking changes
