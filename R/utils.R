@@ -89,7 +89,7 @@ names2 <- function(x) {
 # Collect `...` into a named list. As a convenience, a single unnamed list is
 # spliced in so its elements become the values, making it easy to supply
 # values programmatically. All values must be named.
-collect_dots <- function(..., `_call` = sys.call(-1)) {
+collect_dots <- function(...) {
   args <- list(...)
 
   is_single_list <- length(args) == 1L &&
@@ -99,10 +99,10 @@ collect_dots <- function(..., `_call` = sys.call(-1)) {
   if (is_single_list) {
     args <- args[[1L]]
     if ("" %in% names2(args)) {
-      stop2("All elements of `..1` must be named.", call = `_call`)
+      stop2("All elements of `..1` must be named.", call = sys.call(-1L))
     }
   } else if ("" %in% names2(args)) {
-    stop2("All arguments to `...` must be named.", call = `_call`)
+    stop2("All arguments to `...` must be named.", call = sys.call(-1L))
   }
   args
 }
