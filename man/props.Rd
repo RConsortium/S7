@@ -26,9 +26,9 @@ only after all replacements are performed.}
 
 \item{_object}{The object to modify.}
 
-\item{...}{Name-value pairs given property to modify and new value. As a
-convenience, you can supply a single unnamed list instead of individual
-name-value pairs, which makes it easy to set properties programmatically.}
+\item{...}{Name-value pairs giving the properties to modify and their new
+values. As a convenience, you can supply a plain list of named values as a
+single unnamed argument.}
 }
 \value{
 A named list of property values.

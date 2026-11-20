@@ -103,6 +103,15 @@ test_that("fallback convert can convert to subclass", {
   expect_error(convert(foo, Unrelated), "Can't find method")
 })
 
+test_that("downcasts only splice plain lists of property values", {
+  Box := new_class(parent = class_integer, properties = list(x = class_any))
+  df <- data.frame(x = 2L)
+
+  expect_snapshot(convert(1L, Box, df), error = TRUE)
+  expect_identical(convert(1L, Box, as.list(df))@x, df$x)
+  expect_identical(convert(1L, Box, x = df)@x, df)
+})
+
 test_that("fallback convert accepts a single unnamed list of overrides when downcasting (#497)", {
   local_methods(convert)
   Foo := new_class(properties = list(x = class_numeric))

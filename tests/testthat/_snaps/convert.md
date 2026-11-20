@@ -6,6 +6,14 @@
       Error in `as.double()`:
       ! cannot coerce type 'object' to vector of type 'double'
 
+# downcasts only splice plain lists of property values
+
+    Code
+      convert(1L, Box, df)
+    Condition
+      Error in `convert()`:
+      ! All arguments to `...` must be named.
+
 # fallback convert rejects sibling S7 objects with additional S3 classes
 
     Code

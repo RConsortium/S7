@@ -170,12 +170,12 @@ new_class <- function(
 
   parent_props <- class_properties(parent_resolved)
   new_props <- as_properties(properties)
-  check_prop_names(new_props)
-  check_prop_overrides(new_props, parent_props, name, parent)
 
   # Combine properties from parent, overriding as needed
   all_props <- parent_props
   all_props[names(new_props)] <- new_props
+  check_prop_names(all_props)
+  check_prop_overrides(new_props, parent_props, name, parent)
 
   if (is.null(constructor)) {
     constructor_props <- if (is_S4_class(parent)) all_props else new_props
@@ -403,8 +403,8 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #'   For S3 parents, [new_S3_class()] can declare the attributes to preserve.
 #'   Attributes of underlying base data are preserved.
 #'
-#'   As a convenience, if `...` is a single unnamed list, then the elements of
-#'   that list are used as the properties. This makes it easy to
+#'   As a convenience, if you pass a plain list as a single unnamed argument,
+#'   the elements of that list are used as the properties. This makes it easy to
 #'   programmatically construct an object from a list of property values.
 #' @rdname new_class
 #' @export
@@ -599,6 +599,9 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   # `...` can't be a property name because it's special syntax
   if ("..." %in% nms) {
     stop2("Properties can't be named \"...\".", call = call)
+  }
+  if (any(startsWith(nms, "_"))) {
+    stop2("Property names can't start with `_`.", call = call)
   }
 }
 
