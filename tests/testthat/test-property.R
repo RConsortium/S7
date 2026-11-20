@@ -812,9 +812,14 @@ test_that("custom getters don't evaulate call objects", {
 
 
 test_that("custom setters don't evaulate call objects", {
+  set_call <- function(self, value) {
+    self@call <- value
+    self
+  }
   Call := new_class(
     class_call,
     properties = list(
+      call = new_property(class_call, setter = set_call),
       name = new_property(
         getter = function(self) {
           stopifnot(is.call(self))
@@ -843,11 +848,15 @@ test_that("custom setters don't evaulate call objects", {
       )
     ),
     constructor = function(name, ...) {
-      new_object(as.call(c(as.name(name), ...)))
+      cl <- as.call(c(as.name(name), ...))
+      new_object(cl, call = cl)
     }
   )
 
   cl <- Call("stop", "boom")
+  expect_identical(cl@call, quote(stop("boom")))
+  cl <- set_props(cl, call = quote(f(x)))
+  expect_identical(cl@call, quote(f(x)))
   expect_identical(cl@name, "stop")
   expect_identical(cl@args, list("boom"))
 
