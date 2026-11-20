@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `convert()` passes the underlying base or S3 data as `.data` when downcasting a value-based S7 object through generated constructors (#799).
+
 * `convert()` preserves calls and symbols supplied as property values when downcasting, and `new_object()` and `set_props()` preserve properties named `call` (#798).
 
 * `convert()`, `new_object()`, and `set_props()` now require a plain list when property values are passed as a single unnamed argument. To use the columns of a data frame, pass `as.list(df)` (#808).

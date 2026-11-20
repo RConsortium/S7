@@ -30,6 +30,10 @@
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
+#'    For value-based S7 objects with base or S3 data, `convert()` also uses
+#'    [S7_data()] to supply `.data` if the subclass and all its S7 parents use
+#'    generated constructors. A writable `.data` property or an explicit
+#'    `.data` argument takes precedence.
 #' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
 #'    neither of the above apply, it calls the corresponding `as.*()` function
 #'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
@@ -279,7 +283,42 @@ convert_down <- function(from, to, user_args = list()) {
   from_prop_values <- props(from, from_prop_names)
   constructor_args <- c(from_prop_values, user_args)
 
+  if (
+    !".data" %in% names(constructor_args) &&
+      !is.environment(from) &&
+      constructor_forwards_data(to)
+  ) {
+    base <- base_parent(from_class)
+    if (is_base_class(base) || is_S3_class(base)) {
+      constructor_args[".data"] <- list(S7_data(from))
+    }
+  }
+
   call_constructor(to, constructor_args)
+}
+
+constructor_forwards_data <- function(class) {
+  while (is_class(class) && is_default_constructor(class@constructor)) {
+    property <- class@properties[[".data"]]
+    if (!is.null(property) && !prop_is_read_only(property)) {
+      return(FALSE)
+    }
+    env <- parent.env(environment(class))
+    parent <- attr(env, "S7_external_parent", exact = TRUE) %||% class@parent
+    # Older cross-package wrappers can lack the runtime export reference.
+    if (
+      is_foreign_parent(parent, class@package) &&
+        !".data" %in% names(formals(class))
+    ) {
+      return(FALSE)
+    }
+    class <- if (is_external_class(parent)) {
+      resolve_external_class_req(parent, package = class@package)
+    } else {
+      parent
+    }
+  }
+  is_base_class(class) || is_S3_class(class)
 }
 
 call_constructor <- function(constructor, args) {
