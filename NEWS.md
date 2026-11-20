@@ -1,3 +1,5 @@
+# S7 (development version)
+
 # S7 1.0.0
 
 ## Breaking changes
