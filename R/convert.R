@@ -30,9 +30,10 @@
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
-#'    For value-based S7 objects with base or S3 data, it also uses [S7_data()]
-#'    to supply `.data` when the constructor accepts an underlying data argument.
-#'    Supply `.data` explicitly to override it.
+#'    For value-based S7 objects with base or S3 data, `convert()` also uses
+#'    [S7_data()] to supply `.data` if the subclass and all its S7 parents use
+#'    generated constructors. A writable `.data` property or an explicit
+#'    `.data` argument takes precedence.
 #' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
 #'    neither of the above apply, it calls the corresponding `as.*()` function
 #'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
@@ -285,7 +286,7 @@ convert_down <- function(from, to, user_args = list()) {
   if (
     !".data" %in% names(constructor_args) &&
       !is.environment(from) &&
-      constructor_accepts_data(to)
+      constructor_forwards_data(to)
   ) {
     base <- base_parent(from_class)
     if (is_base_class(base) || is_S3_class(base)) {
@@ -296,14 +297,11 @@ convert_down <- function(from, to, user_args = list()) {
   call_constructor(to, constructor_args)
 }
 
-constructor_accepts_data <- function(class) {
-  while (is_class(class)) {
+constructor_forwards_data <- function(class) {
+  while (is_class(class) && is_default_constructor(class@constructor)) {
     property <- class@properties[[".data"]]
     if (!is.null(property) && !prop_is_read_only(property)) {
       return(FALSE)
-    }
-    if (!is_default_constructor(class@constructor)) {
-      break
     }
     env <- parent.env(environment(class))
     parent <- attr(env, "S7_external_parent", exact = TRUE) %||% class@parent
@@ -320,7 +318,7 @@ constructor_accepts_data <- function(class) {
       parent
     }
   }
-  ".data" %in% names(formals(class_constructor(class)))
+  is_base_class(class) || is_S3_class(class)
 }
 
 call_constructor <- function(constructor, args) {

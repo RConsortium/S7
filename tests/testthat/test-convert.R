@@ -208,6 +208,23 @@ test_that("downcasts leave data to custom constructors without a data argument",
   expect_identical(child@label, "child")
 })
 
+test_that("downcasts stop forwarding `.data` at a custom S7 constructor", {
+  Parent := new_class(parent = class_double)
+  FromTable := new_class(
+    parent = Parent,
+    constructor = function(.data = data.frame(value = 0)) {
+      new_object(Parent(.data = .data$value))
+    }
+  )
+  Child := new_class(parent = FromTable)
+  from <- Parent(.data = 7)
+
+  expect_identical(S7_data(convert(from, FromTable)), 0)
+  expect_identical(S7_data(convert(from, Child)), 0)
+  override <- data.frame(value = 3)
+  expect_identical(S7_data(convert(from, Child, .data = override)), 3)
+})
+
 test_that("downcasts from property-only classes leave constructor data defaults alone", {
   Parent := new_class()
   Child := new_class(

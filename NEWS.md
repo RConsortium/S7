@@ -1,6 +1,6 @@
 # S7 (development version)
 
-* `convert()` passes underlying data to subclass constructors that accept `.data` when downcasting a value-based S7 object with base or S3 data (#799).
+* `convert()` passes the underlying base or S3 data as `.data` when downcasting a value-based S7 object through generated constructors (#799).
 
 * `convert()` preserves calls and symbols supplied as property values when downcasting, and `new_object()` and `set_props()` preserve properties named `call` (#798).
 
