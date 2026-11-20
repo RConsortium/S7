@@ -89,6 +89,10 @@ names2 <- function(x) {
 # Collect `...` into a named list. As a convenience, a single unnamed list is
 # spliced in so its elements become the values, making it easy to supply
 # values programmatically. All values must be named.
+#
+# Keep `...` as the only formal so names like `call` pass through.
+# Errors use sys.call(-1L), so call this directly from the function
+# whose call should appear in the error.
 collect_dots <- function(...) {
   args <- list(...)
 
