@@ -128,9 +128,10 @@ new_object(`_parent`, ...)
   can declare the attributes to preserve. Attributes of underlying base
   data are preserved.
 
-  As a convenience, if `...` is a single unnamed list, then the elements
-  of that list are used as the properties. This makes it easy to
-  programmatically construct an object from a list of property values.
+  As a convenience, if you pass a plain list as a single unnamed
+  argument, the elements of that list are used as the properties. This
+  makes it easy to programmatically construct an object from a list of
+  property values.
 
 ## Value
 

@@ -11,6 +11,18 @@
   preserve properties named `call`
   ([\#798](https://github.com/RConsortium/S7/issues/798)).
 
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md),
+  [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md),
+  and
+  [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
+  now require a plain list when property values are passed as a single
+  unnamed argument. To use the columns of a data frame, pass
+  `as.list(df)` ([\#808](https://github.com/RConsortium/S7/issues/808)).
+
+- [`new_class()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  now rejects property names that start with `_`, including inherited S4
+  slot names ([\#808](https://github.com/RConsortium/S7/issues/808)).
+
 ## S7 1.0.0
 
 CRAN release: 2026-11-19
