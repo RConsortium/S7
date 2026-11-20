@@ -284,7 +284,7 @@ convert_down <- function(from, to, user_args = list()) {
 
 call_constructor <- function(constructor, args) {
   # Quote selectively so substitute() in the constructor sees ordinary values.
-  args <- lapply(args, function(arg) {
+  args <- lapply(unclass(args), function(arg) {
     if (is.call(arg) || is.symbol(arg)) {
       enquote(arg)
     } else {
