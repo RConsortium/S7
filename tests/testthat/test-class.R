@@ -688,12 +688,6 @@ test_that("new_object() can set a property named `.parent` (#423)", {
   expect_equal(obj@.parent, 1)
 })
 
-test_that("new_object() can set a property named `call`", {
-  Foo := new_class(properties = list(call = class_call))
-  expr <- quote(f(x))
-  expect_identical(Foo(call = expr)@call, expr)
-})
-
 test_that("new_object() validates object", {
   foo := new_class(
     properties = list(x = new_property(class_double)),
@@ -716,16 +710,6 @@ test_that("new_object() accepts a single unnamed named list of properties (#497)
   obj <- Foo(list(x = 1, y = 2))
   expect_equal(obj@x, 1)
   expect_equal(obj@y, 2)
-})
-
-test_that("new_object() reports its call for unnamed properties", {
-  Foo := new_class(
-    properties = list(x = class_double),
-    constructor = function(...) new_object(S7_object(), ...)
-  )
-
-  expect_snapshot(Foo(1), error = TRUE)
-  expect_snapshot(Foo(list(1)), error = TRUE)
 })
 
 test_that("new_object() runs each parent validator exactly once", {

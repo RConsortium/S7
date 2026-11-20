@@ -24,7 +24,7 @@ For example, take (a simple version of) `update_props()`
 
 ```r
 update_props <- function(`_object`, ...) {
-  props(`_object`) <- collect_dots(list(...), call = sys.call())
+  props(`_object`) <- collect_dots(...)
   `_object`
 }
 
@@ -45,7 +45,7 @@ backtick-quoted** everywhere they appear:
 
 ```r
 set_props <- function(`_object`, ..., .check = TRUE) {
-  props(`_object`, check = .check) <- collect_dots(list(...), call = sys.call())
+  props(`_object`, check = .check) <- collect_dots(...)
   `_object`
 }
 ```
@@ -63,17 +63,18 @@ Apply the convention when:
 
 ## Collecting the dots with `collect_dots()`
 
-`collect_dots(list(...), call = sys.call())` returns a named list of property
-values. If `...` is a single unnamed list, its elements are used. It errors if
-any property value is unnamed. The caller supplies the diagnostic call
-separately so `...` can contain a property named `call`.
+`collect_dots(...)` returns a named list of the `...` values. As a convenience,
+if `...` is a single unnamed list, its elements are used instead, which makes
+it easy to build the values programmatically. It errors if any value is
+unnamed.
 
 ```r
-collect_dots(list(x = 1, y = 2), call = NULL)       # list(x = 1, y = 2)
-collect_dots(list(list(x = 1, y = 2)), call = NULL) # list(x = 1, y = 2)
-collect_dots(list(1), call = NULL)                  # unnamed argument
-collect_dots(list(list(1)), call = NULL)            # unnamed list element
+collect_dots(x = 1, y = 2)      # list(x = 1, y = 2)
+collect_dots(list(x = 1, y = 2)) # list(x = 1, y = 2) -- spliced
+collect_dots(1)                  # error: All arguments to `...` must be named.
+collect_dots(list(1))            # error: All elements of `..1` must be named.
 ```
+Use `collect_dots()` instead of `list(...)`.
 
 ## Documenting it
 

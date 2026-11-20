@@ -438,7 +438,7 @@ new_object <- function(`_parent`, ...) {
     check_parent(`_parent`, class)
   }
 
-  args <- collect_dots(list(...), call = sys.call())
+  args <- collect_dots(...)
 
   has_setter <- vlapply(class_props[names(args)], prop_has_setter)
   self_attrs <- args[!has_setter]

@@ -129,7 +129,7 @@ convert <- function(from, to, ...) {
   } else if (class_inherits(from, to)) {
     convert_up(from, to)
   } else if (is_down_cast(from, to)) {
-    dots <- collect_dots(list(...), call = sys.call())
+    dots <- collect_dots(...)
     convert_down(from, to, dots)
   } else if (is_base_class(to)) {
     base_coerce(from, to, ...)
@@ -324,10 +324,9 @@ constructor_accepts_data <- function(class) {
 }
 
 call_constructor <- function(constructor, args) {
-  # Pass language objects as values. Leave ordinary arguments and explicit
-  # missing arguments intact for constructors that inspect their expressions.
-  args <- lapply(args, function(arg) {
-    if (is.call(arg) || (is.symbol(arg) && !identical(arg, quote(expr = )))) {
+  # Quote selectively so substitute() in the constructor sees ordinary values.
+  args <- lapply(unclass(args), function(arg) {
+    if (is.call(arg) || is.symbol(arg)) {
       enquote(arg)
     } else {
       arg

@@ -283,46 +283,11 @@ test_that("props<- set_props() can set a property named `object` (#423)", {
   expect_equal(obj@object, 2)
 })
 
-test_that("set_props() can set a property named `call`", {
-  Foo := new_class(properties = list(call = class_any))
-  expr <- quote(g(x))
-  expect_identical(set_props(Foo(), call = expr)@call, expr)
-})
-
-test_that("custom property setters preserve call values", {
-  Foo := new_class(
-    parent = class_call,
-    properties = list(
-      call = new_property(
-        class = class_call,
-        setter = function(self, value) {
-          self@call <- value
-          self
-        }
-      )
-    )
-  )
-  data <- quote(f(x))
-  initial <- quote(g(x))
-  obj <- Foo(.data = data, call = initial)
-  expect_identical(obj@call, initial)
-
-  replacement <- quote(h(x))
-  obj@call <- replacement
-  expect_identical(obj@call, replacement)
-  expect_identical(S7_data(obj), data)
-})
-
 test_that("props<- set_props() accepts a single unnamed list (#497)", {
   Foo := new_class(properties = list(x = class_double, y = class_double))
   obj <- set_props(Foo(1, 2), list(x = 3, y = 4))
   expect_equal(obj@x, 3)
   expect_equal(obj@y, 4)
-})
-
-test_that("set_props() reports its call for unnamed properties", {
-  Foo := new_class(properties = list(x = class_double))
-  expect_snapshot(set_props(Foo(), 1), error = TRUE)
 })
 
 test_that("props<- set_props() skips validation with `.check = FALSE`", {
@@ -847,9 +812,14 @@ test_that("custom getters don't evaulate call objects", {
 
 
 test_that("custom setters don't evaulate call objects", {
+  set_call <- function(self, value) {
+    self@call <- value
+    self
+  }
   Call := new_class(
     class_call,
     properties = list(
+      call = new_property(class_call, setter = set_call),
       name = new_property(
         getter = function(self) {
           stopifnot(is.call(self))
@@ -878,11 +848,15 @@ test_that("custom setters don't evaulate call objects", {
       )
     ),
     constructor = function(name, ...) {
-      new_object(as.call(c(as.name(name), ...)))
+      cl <- as.call(c(as.name(name), ...))
+      new_object(cl, call = cl)
     }
   )
 
   cl <- Call("stop", "boom")
+  expect_identical(cl@call, quote(stop("boom")))
+  cl <- set_props(cl, call = quote(f(x)))
+  expect_identical(cl@call, quote(f(x)))
   expect_identical(cl@name, "stop")
   expect_identical(cl@args, list("boom"))
 

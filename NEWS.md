@@ -1,3 +1,9 @@
+# S7 (development version)
+
+* `convert()` passes underlying data to subclass constructors that accept `.data` when downcasting a value-based S7 object with base or S3 data (#799).
+
+* `convert()` preserves calls and symbols supplied as property values when downcasting, and `new_object()` and `set_props()` preserve properties named `call` (#798).
+
 # S7 1.0.0
 
 ## Breaking changes
@@ -242,10 +248,6 @@
 
 ### Conversion and underlying data
 
-* `convert()` passes underlying data to subclass constructors that accept `.data` when downcasting a value-based S7 object with base or S3 data.
-
-* `convert()` preserves calls and other language objects supplied as property values when downcasting.
-
 * `convert()` returns `from` unchanged when it already has the target class.
   When upcasting a more specific subclass, dispatch is restricted to classes
   more specific than `to`, so an inherited downcasting method is not selected in
@@ -316,7 +318,8 @@
 * `prop()` keeps objects usable after a custom getter signals an error (#520,
   #640, #638).
 
-* `prop<-()` supports assigning calls and symbols to properties, including properties with custom setters (#511, #633, #638).
+* `prop<-()` supports assigning calls and symbols to properties (#511, #633,
+  #638).
 
 ### Errors and printing
 

@@ -113,47 +113,33 @@ test_that("fallback convert accepts a single unnamed list of overrides when down
   expect_equal(bar@y, 3)
 })
 
-test_that("convert() reports its call for unnamed overrides", {
-  Parent := new_class()
-  Child := new_class(parent = Parent, properties = list(x = class_double))
-  expect_snapshot(convert(Parent(), Child, 1), error = TRUE)
+test_that("downcasts distinguish omitted overrides from supplied missing values", {
+  capture <- \(.data, x = 1L) new_object(list(x = x))
+  Box := new_class(parent = class_list, constructor = capture)
+
+  expect_identical(S7_data(convert(list(), Box, list())), list(x = 1L))
+  expect_identical(S7_data(convert(list(), Box, alist(x = ))), alist(x = ))
 })
 
-test_that("downcasts preserve calls copied from S7 objects or supplied as overrides", {
-  Parent := new_class(properties = list(call = class_call))
-  Child := new_class(parent = Parent)
-  expr <- quote(f(x))
-  override <- quote(g(x))
-  parent <- Parent(call = expr)
-
-  expect_identical(convert(parent, Child)@call, expr)
-  expect_identical(convert(parent, Child, call = override)@call, override)
-})
-
-test_that("downcasts from base classes preserve language-valued overrides", {
-  Child := new_class(
+test_that("downcasts quote calls and symbols and pass ordinary values through", {
+  Parent := new_class(
     parent = class_double,
-    properties = list(call = class_call, symbol = class_any)
+    properties = list(call = class_call, x = class_any)
   )
-  expr <- quote(f(x))
-  symbol <- quote(x)
-  obj <- convert(1, Child, list(call = expr, symbol = symbol))
+  label <- new_property(default = quote(deparse(substitute(x))))
+  Child := new_class(parent = Parent, properties = list(label = label))
+  values <- list(call = quote(f(x)), x = quote(x))
+  parent <- convert(1, Parent, c(values, list(.data = 2)))
 
-  expect_identical(obj@call, expr)
-  expect_identical(obj@symbol, symbol)
-})
+  expect_identical(S7_data(parent), 1)
+  expect_identical(S7_data(convert(1, Parent, .data = 2)), 1)
+  expect_identical(props(parent), values)
+  expect_identical(props(convert(parent, Child), names(values)), values)
 
-test_that("downcasts preserve ordinary and missing constructor arguments", {
-  Parent := new_class()
-  Child := new_class(
-    parent = Parent,
-    properties = list(x = class_any),
-    constructor = function(x = 1L) new_object(Parent(), x = substitute(x))
-  )
-  parent <- Parent()
-
-  expect_identical(convert(parent, Child, x = 2L)@x, 2L)
-  expect_identical(convert(parent, Child, alist(x = ))@x, 1L)
+  y <- 2L
+  child <- convert(parent, Child, call = quote(g(x)), x = y)
+  expect_identical(child@call, quote(g(x)))
+  expect_identical(child@label, "2L")
 })
 
 test_that("downcasts pass underlying data and honor explicit overrides", {
