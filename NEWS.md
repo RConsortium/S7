@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `convert()` preserves calls and symbols supplied as property values when downcasting (#798).
+
 # S7 1.0.0
 
 ## Breaking changes
@@ -243,8 +245,6 @@
   accessing the attribute directly (#677).
 
 ### Conversion and underlying data
-
-* `convert()` preserves calls and symbols supplied as property values when downcasting (#798).
 
 * `convert()` returns `from` unchanged when it already has the target class.
   When upcasting a more specific subclass, dispatch is restricted to classes
