@@ -15,8 +15,8 @@ Two problems show up whenever `...` carries property values:
 1. A fixed argument can shadow a property of the same name. If `set_props()`
    had a formal called `object`, then `set_props(x, object = 1)` would bind
    `object` to the formal instead of treating it as the property `object`.
-2. Callers sometimes want to supply property values programmatically, as a
-   single list, rather than as individual `name = value` pairs.
+2. Callers sometimes want to supply property values programmatically in a
+   plain list passed as a single unnamed argument.
 
 `collect_dots()` and the underscore naming convention solve these.
 
@@ -64,7 +64,7 @@ Apply the convention when:
 ## Collecting the dots with `collect_dots()`
 
 `collect_dots(...)` returns a named list of the `...` values. As a convenience,
-if `...` is a single unnamed list, its elements are used instead, which makes
+it unpacks a plain list passed as a single unnamed argument, which makes
 it easy to build the values programmatically. It errors if any value is
 unnamed.
 
@@ -78,12 +78,11 @@ Use `collect_dots()` instead of `list(...)`.
 
 ## Documenting it
 
-In the `@param` for `...`, mention the single-list shortcut:
+In the `@param` for `...`, describe how to supply a plain list.
 
 ```r
 #' @param ... Name-value pairs of properties to set. As a convenience, you can
-#'   supply a single unnamed list instead of individual name-value pairs, which
-#'   makes it easy to set properties programmatically.
+#'   supply a plain list of named values as a single unnamed argument.
 ```
 
 roxygen handles `@param _object` and a backtick-quoted formal fine.
