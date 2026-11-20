@@ -308,7 +308,7 @@ test_that("fallback convert can convert to S3 class", {
     parent = class_factor,
     properties = list(x = class_double)
   )
-  obj <- factor2(.data = 1, levels = "x", x = 1)
+  obj <- factor2(.data = 1L, levels = "x", x = 1)
   attr(obj, "S7_version") <- "user"
   obj <- convert(obj, to = class_factor)
   expect_equal(class(obj), "factor")
