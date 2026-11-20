@@ -1,5 +1,7 @@
 # Changelog
 
+## S7 (development version)
+
 ## S7 1.0.0
 
 CRAN release: 2026-11-19
