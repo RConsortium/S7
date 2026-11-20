@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `convert()` preserves calls and symbols supplied as property values when downcasting, and `new_object()` and `set_props()` preserve properties named `call` (#798).
+
 # S7 1.0.0
 
 ## Breaking changes
