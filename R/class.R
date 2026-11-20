@@ -403,8 +403,8 @@ check_parent <- function(parent, class, call = sys.call(-1L)) {
 #'   For S3 parents, [new_S3_class()] can declare the attributes to preserve.
 #'   Attributes of underlying base data are preserved.
 #'
-#'   When a plain list is passed as a single unnamed argument, the elements of
-#'   that list are used as the properties. This makes it easy to
+#'   As a convenience, if you pass a plain list as a single unnamed argument,
+#'   the elements of that list are used as the properties. This makes it easy to
 #'   programmatically construct an object from a list of property values.
 #' @rdname new_class
 #' @export

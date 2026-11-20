@@ -91,8 +91,8 @@ attributes corresponding to its properties are copied from \verb{_parent}.
 For S3 parents, \code{\link[=new_S3_class]{new_S3_class()}} can declare the attributes to preserve.
 Attributes of underlying base data are preserved.
 
-When a plain list is passed as a single unnamed argument, the elements of
-that list are used as the properties. This makes it easy to
+As a convenience, if you pass a plain list as a single unnamed argument,
+the elements of that list are used as the properties. This makes it easy to
 programmatically construct an object from a list of property values.}
 }
 \value{
