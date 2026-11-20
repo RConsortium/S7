@@ -2,6 +2,15 @@
 
 ## S7 (development version)
 
+- [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
+  preserves calls and symbols supplied as property values when
+  downcasting, and
+  [`new_object()`](https://rconsortium.github.io/S7/reference/new_class.md)
+  and
+  [`set_props()`](https://rconsortium.github.io/S7/reference/props.md)
+  preserve properties named `call`
+  ([\#798](https://github.com/RConsortium/S7/issues/798)).
+
 ## S7 1.0.0
 
 CRAN release: 2026-11-19
