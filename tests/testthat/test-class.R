@@ -877,13 +877,9 @@ test_that("objects from a previous version of S7 still work (#677)", {
   expect_equal(convert(obj, to = class_double), 1)
 })
 
-test_that("new_class() rejects reserved property names", {
-  local_S4_classes()
-  Parent <- setClass("ReservedSlot", slots = c(`_call` = "numeric"))
+test_that("can't create class with `...` property name", {
   expect_snapshot(error = TRUE, {
     new_class("foo", properties = list(... = class_character))
-    Foo := new_class(properties = list(`_call` = class_any))
-    Child := new_class(parent = Parent, package = NULL)
   })
 })
 

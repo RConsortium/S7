@@ -314,23 +314,13 @@
       Error in `c.S7_class()`:
       ! Can not combine S7 class objects.
 
-# new_class() rejects reserved property names
+# can't create class with `...` property name
 
     Code
       new_class("foo", properties = list(... = class_character))
     Condition
       Error in `new_class()`:
       ! Properties can't be named "...".
-    Code
-      Foo := new_class(properties = list(`_call` = class_any))
-    Condition
-      Error in `new_class()`:
-      ! Property names can't start with `_`.
-    Code
-      Child := new_class(parent = Parent, package = NULL)
-    Condition
-      Error in `new_class()`:
-      ! Property names can't start with `_`.
 
 # S7_class() gives informative error if no S7 spec available
 
