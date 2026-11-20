@@ -2,6 +2,8 @@
 
 ## S7 1.0.0
 
+CRAN release: 2026-11-19
+
 ### Breaking changes
 
 - [`convert()`](https://rconsortium.github.io/S7/reference/convert.md)
