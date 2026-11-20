@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `new_class()` now rejects property names that start with `_`, including inherited S4 slot names.
+
 # S7 1.0.0
 
 ## Breaking changes
