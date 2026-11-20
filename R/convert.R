@@ -49,7 +49,7 @@
 #' @param to An S7 class specification, passed to [as_class()].
 #' @param ... Other arguments passed to custom `convert()` methods. For
 #'   downcasting, these can be used to override existing properties or set new
-#'   ones. As a convenience, you can supply a single unnamed list instead of
+#'   ones. You can supply a plain list as a single unnamed argument instead of
 #'   individual name-value pairs, which makes it easy to override properties
 #'   programmatically.
 #' @return Either `from` coerced to class `to`, or an error if the coercion

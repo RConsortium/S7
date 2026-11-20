@@ -1,5 +1,7 @@
 # S7 (development version)
 
+* `convert()`, `new_object()`, and `set_props()` now require a plain list when property values are passed as a single unnamed argument. To use the columns of a data frame, pass `as.list(df)`.
+
 * `new_class()` now rejects property names that start with `_`, including inherited S4 slot names.
 
 # S7 1.0.0

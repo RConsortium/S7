@@ -13,7 +13,7 @@ convert(from, to, ...)
 
 \item{...}{Other arguments passed to custom \code{convert()} methods. For
 downcasting, these can be used to override existing properties or set new
-ones. As a convenience, you can supply a single unnamed list instead of
+ones. You can supply a plain list as a single unnamed argument instead of
 individual name-value pairs, which makes it easy to override properties
 programmatically.}
 }

@@ -86,7 +86,7 @@ names2 <- function(x) {
   }
 }
 
-# Collect `...` into a named list. As a convenience, a single unnamed list is
+# Collect `...` into a named list. A single unnamed plain list is
 # spliced in so its elements become the values, making it easy to supply
 # values programmatically. All values must be named.
 collect_dots <- function(..., call = sys.call(-1)) {
@@ -94,7 +94,7 @@ collect_dots <- function(..., call = sys.call(-1)) {
 
   is_single_list <- length(args) == 1L &&
     !nzchar(names2(args)) &&
-    is.list(args[[1L]])
+    is_plain_list(args[[1L]])
 
   if (is_single_list) {
     args <- args[[1L]]
