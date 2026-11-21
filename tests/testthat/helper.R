@@ -351,3 +351,9 @@ is_altrep_preserved <- function(x) {
   out <- utils::capture.output(internal(inspect(x)))
   any(grepl("compact|wrapper", out))
 }
+
+# The `@` method registered in base's S3 table for an S7 class name, if any.
+base_at_method <- function(class_name) {
+  table <- baseenv()[[".__S3MethodsTable__."]]
+  get0(paste0("@.", class_name), envir = table, inherits = FALSE)
+}
