@@ -125,7 +125,8 @@ void S7_method_lookup_error(SEXP generic, SEXP envir) {
   SEXP S7_method_lookup_error_call = PROTECT(Rf_lang3(Rf_install("method_lookup_error"), name, args));
   Rf_eval(S7_method_lookup_error_call, ns_S7);
 
-  while(1);
+  UNPROTECT(1);
+  Rf_error("Internal error: method_lookup_error() returned");
 }
 
 static inline

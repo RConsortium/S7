@@ -92,9 +92,8 @@ void signal_is_not_S7(SEXP object) {
   if (check_is_S7 == NULL)
     check_is_S7 = ns_get("check_is_S7");
 
-  // will signal error
   eval_here(Rf_lang2(check_is_S7, object));
-  while(1);
+  Rf_error("Internal error: native and R checks disagree on whether the object is S7");
 }
 
 
@@ -111,7 +110,7 @@ void signal_prop_error(const char* msg, SEXP object, SEXP name) {
   object = protect_quote_if_needed(object, &n_protected);
   eval_here(Rf_lang4(signal_prop_error, msg_string, object, name));
   UNPROTECT(n_protected);
-  while(1);
+  Rf_error("Internal error: signal_prop_error() returned");
 }
 
 static __attribute__((noreturn))
@@ -176,25 +175,8 @@ SEXP prop_storage_rename_(SEXP names) {
 
 
 static inline
-SEXP object_class(SEXP object) {
-  if (Rf_isS4(object)) {
-    static SEXP sym_dot_S3Class = NULL;
-    if (sym_dot_S3Class == NULL)
-      sym_dot_S3Class = Rf_install(".S3Class");
-
-    return R_has_slot(object, sym_dot_S3Class) ?
-      R_do_slot(object, sym_dot_S3Class) :
-      R_NilValue;
-  }
-
-  return Rf_getAttrib(object, R_ClassSymbol);
-}
-
-static inline
-Rboolean inherits2(SEXP object, const char* name) {
-  // like inherits in R, but iterates over the class STRSXP vector
-  // in reverse, since S7_* is typically at the tail.
-  SEXP klass = object_class(object);
+Rboolean class_contains(SEXP klass, const char* name) {
+  // S7 classes are typically at the tail of the class vector.
   if (TYPEOF(klass) == STRSXP) {
     for (int i = Rf_length(klass)-1; i >= 0; i--) {
       if (strcmp(CHAR(STRING_ELT(klass, i)), name) == 0)
@@ -202,6 +184,20 @@ Rboolean inherits2(SEXP object, const char* name) {
     }
   }
   return FALSE;
+}
+
+static inline
+Rboolean inherits2(SEXP object, const char* name) {
+  if (class_contains(Rf_getAttrib(object, R_ClassSymbol), name))
+    return TRUE;
+  if (!Rf_isS4(object))
+    return FALSE;
+
+  // Formal S4 subclasses store their inherited S7 classes in .S3Class.
+  static SEXP sym_dot_S3Class = NULL;
+  if (sym_dot_S3Class == NULL)
+    sym_dot_S3Class = Rf_install(".S3Class");
+  return class_contains(Rf_getAttrib(object, sym_dot_S3Class), name);
 }
 
 static inline
@@ -594,7 +590,7 @@ void signal_setter_error(SEXP value, SEXP object, SEXP name) {
   object = protect_quote_if_needed(object, &n_protected);
   eval_here(Rf_lang4(signal_setter_error, value, object, name));
   UNPROTECT(n_protected);
-  while(1);
+  Rf_error("Internal error: signal_setter_error() returned");
 }
 
 SEXP prop_set_(SEXP object, SEXP name, SEXP check_sexp, SEXP value) {
