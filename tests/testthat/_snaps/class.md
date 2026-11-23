@@ -332,6 +332,29 @@
       Error in `new_class()`:
       ! Property names can't start with `_`.
 
+# new_class() reserves .data for the underlying data
+
+    Code
+      Direct := new_class(parent = class_double, properties = stored)
+    Condition
+      Error in `new_class()`:
+      ! Can't name a property `.data`. The <double> constructor uses it for the underlying data.
+    Code
+      Child := new_class(parent = Number, properties = computed)
+    Condition
+      Error in `new_class()`:
+      ! Can't name a property `.data`. The <double> constructor uses it for the underlying data.
+    Code
+      Frame := new_class(parent = class_data.frame, properties = stored)
+    Condition
+      Error in `new_class()`:
+      ! Can't name a property `.data`. The S3<data.frame> constructor uses it for the underlying data.
+    Code
+      Quantity := new_class(parent = quantity, properties = stored)
+    Condition
+      Error in `new_class()`:
+      ! Can't name a property `.data`. The S3<quantity> constructor uses it for the underlying data.
+
 # S7_class() gives informative error if no S7 spec available
 
     Code

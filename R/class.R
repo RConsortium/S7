@@ -70,6 +70,8 @@ S7_object_attrs <- c("class", "_S7_class", "_S7_version", "S7_class")
 #'   belong to each instance of the class. Each element of the list can
 #'   either be a type specification (processed by [as_class()]) or a
 #'   full property specification created [new_property()].
+#'   Classes that inherit from a base type or an S3 class reserve `.data`
+#'   for the constructor's underlying data argument.
 #' @section S4 compatibility:
 #' `new_class()` can use an S4 class definition or class generator as its
 #' `parent`. S4 parent slots become S7 properties, the class is registered with
@@ -174,7 +176,7 @@ new_class <- function(
   # Combine properties from parent, overriding as needed
   all_props <- parent_props
   all_props[names(new_props)] <- new_props
-  check_prop_names(all_props)
+  check_prop_names(all_props, parent_resolved)
   check_prop_overrides(new_props, parent_props, name, parent)
 
   if (is.null(constructor)) {
@@ -593,7 +595,7 @@ get_class_ref <- function(env, default = NULL) {
 }
 
 
-check_prop_names <- function(properties, call = sys.call(-1L)) {
+check_prop_names <- function(properties, parent, call = sys.call(-1L)) {
   nms <- names2(properties)
 
   # `...` can't be a property name because it's special syntax
@@ -602,6 +604,16 @@ check_prop_names <- function(properties, call = sys.call(-1L)) {
   }
   if (any(startsWith(nms, "_"))) {
     stop2("Property names can't start with `_`.", call = call)
+  }
+  if (".data" %in% nms) {
+    base <- base_parent(parent)
+    if (is_base_class(base) || is_S3_class(base)) {
+      msg <- sprintf(
+        "Can't name a property `.data`. The %s constructor uses it for the underlying data.",
+        class_desc(base)
+      )
+      stop2(msg, call = call)
+    }
   }
 }
 

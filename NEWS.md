@@ -8,6 +8,8 @@
 
 * `new_class()` now rejects property names that start with `_`, including inherited S4 slot names (#808).
 
+* `new_class()` now rejects properties named `.data` in subclasses of base types and S3 classes. Their constructors use `.data` for the underlying data (#799).
+
 * `prop()` and `prop<-()` can again read and set properties on S7 objects marked as S4 with `asS4()` (#805).
 
 * `S7_data()` preserves declared S3 attributes exposed by properties and rejects objects with reference semantics (#799).

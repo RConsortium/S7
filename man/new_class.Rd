@@ -50,7 +50,9 @@ exported. Learn more in \code{vignette("packages")}.}
 \item{properties}{A named list specifying the properties (data) that
 belong to each instance of the class. Each element of the list can
 either be a type specification (processed by \code{\link[=as_class]{as_class()}}) or a
-full property specification created \code{\link[=new_property]{new_property()}}.}
+full property specification created \code{\link[=new_property]{new_property()}}.
+Classes that inherit from a base type or an S3 class reserve \code{.data}
+for the constructor's underlying data argument.}
 
 \item{abstract}{Is this an abstract class? An abstract class can not be
 instantiated.}

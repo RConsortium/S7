@@ -296,8 +296,8 @@ constructor_forwards_data <- function(class) {
   # Handwritten constructors can use `.data` for a different kind of input.
   while (is_class(class) && is_default_constructor(class@constructor)) {
     props <- class@properties
-    # A .data property can shadow the base argument, and a setter can modify
-    # the data. Let those constructors rebuild from their usual arguments.
+    # Older packages can still have a `.data` property. A setter may already
+    # have modified the stored data.
     if (".data" %in% names(props) || any(vlapply(props, prop_has_setter))) {
       return(FALSE)
     }

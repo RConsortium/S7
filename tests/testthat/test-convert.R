@@ -346,23 +346,6 @@ test_that("downcasts from property-only classes leave constructor data defaults 
   expect_identical(convert(Parent(), Child)@label, "child")
 })
 
-test_that("a .data property keeps the generated constructor's default", {
-  Parent := new_class(parent = class_double)
-  parent <- Parent(.data = 1)
-  Child := new_class(
-    parent = Parent,
-    properties = list(.data = new_property(class = class_double, default = 2))
-  )
-  expect_identical(convert(parent, Child)@.data, 2)
-
-  Getter := new_class(
-    parent = Parent,
-    properties = list(.data = new_property(getter = \(self) length(self)))
-  )
-  expect_identical(S7_data(convert(parent, Getter)), numeric())
-  expect_identical(convert(parent, Getter, .data = 3)@.data, 1L)
-})
-
 test_that("downcasts construct a subclass without reusing the source environment", {
   Parent := new_class(parent = class_environment)
   Child := new_class(parent = Parent)
