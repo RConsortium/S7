@@ -148,7 +148,9 @@ new_S3_class <- function(
     validator = validator,
     abstract = abstract,
     default = default,
-    attributes = attributes
+    attributes = attributes,
+    # Older bundled constructors embedded in packages could discard S3 attributes.
+    accepts_classed_data = !abstract && inherits(constructor, "S7_constructor")
   )
   class(out) <- "S7_S3_class"
   out
@@ -398,7 +400,14 @@ class_Date <- new_S3_class(
 #' @order 3
 class_POSIXct <- new_S3_class(
   c("POSIXct", "POSIXt"),
-  constructor = new_S7_constructor(function(.data = double(), tz = "") {
+  constructor = new_S7_constructor(function(
+    .data = double(),
+    tz = if (inherits(.data, "POSIXct")) {
+      attr(.data, "tzone", exact = TRUE)
+    } else {
+      ""
+    }
+  ) {
     .POSIXct(.data, tz = tz)
   }),
   validator = validate_POSIXct,
@@ -412,7 +421,14 @@ class_POSIXct <- new_S3_class(
 #' @order 3
 class_POSIXlt <- new_S3_class(
   c("POSIXlt", "POSIXt"),
-  constructor = new_S7_constructor(function(.data = NULL, tz = "") {
+  constructor = new_S7_constructor(function(
+    .data = NULL,
+    tz = if (inherits(.data, "POSIXlt")) {
+      attr(.data, "tzone", exact = TRUE)
+    } else {
+      ""
+    }
+  ) {
     as.POSIXlt(.data, tz = tz)
   }),
   validator = validate_POSIXlt,
@@ -433,7 +449,12 @@ class_POSIXt <- new_S3_class("POSIXt") # abstract class
 class_data.frame <- new_S3_class(
   "data.frame",
   constructor = new_S7_constructor(function(.data = list(), row.names = NULL) {
-    if (is.null(row.names)) {
+    if (is.data.frame(.data)) {
+      if (!is.null(row.names)) {
+        row.names(.data) <- row.names
+      }
+      .data
+    } else if (is.null(row.names)) {
       list2DF(.data)
     } else {
       out <- list2DF(.data, length(row.names))
