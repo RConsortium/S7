@@ -23,6 +23,11 @@
   now rejects property names that start with `_`, including inherited S4
   slot names ([\#808](https://github.com/RConsortium/S7/issues/808)).
 
+- [`prop()`](https://rconsortium.github.io/S7/reference/prop.md) and
+  `prop<-()` can again read and set properties on S7 objects marked as
+  S4 with [`asS4()`](https://rdrr.io/r/base/isS4.html)
+  ([\#805](https://github.com/RConsortium/S7/issues/805)).
+
 ## S7 1.0.0
 
 CRAN release: 2026-11-19
