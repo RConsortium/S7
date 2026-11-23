@@ -26,10 +26,7 @@
 #' S7_data(MyDF(data.frame(x = 1, y = 2)))
 S7_data <- function(object) {
   check_is_S7(object)
-  check_not_environment(object, "S7_data()")
-  if (typeof(object) %in% c("externalptr", "weakref")) {
-    stop2("Can't extract data from an object with reference semantics.")
-  }
+  check_not_reference(object, "S7_data()")
 
   # Objects accepted by is_legacy_S7_object() have no parent metadata to restore.
   base <- base_parent(S7_class(object))
@@ -74,7 +71,7 @@ base_parent <- function(class) {
 #' @rdname S7_data
 `S7_data<-` <- function(object, check = TRUE, value) {
   check_is_S7(object)
-  check_not_environment(object, "S7_data<-")
+  check_not_reference(object, "S7_data<-")
 
   for (name in s7_data_attrs(object)) {
     attr(value, name) <- attr(object, name, exact = TRUE)

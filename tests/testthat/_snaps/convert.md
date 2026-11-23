@@ -20,7 +20,17 @@
       S7_data(parent)
     Condition
       Error in `S7_data()`:
-      ! Can't extract data from an object with reference semantics.
+      ! Can't call `S7_data()` on <externalptr> objects with reference semantics.
+    Code
+      S7_data(parent) <- fresh_pointer()
+    Condition
+      Error in `S7_data<-`:
+      ! Can't call `S7_data<-` on <externalptr> objects with reference semantics.
+    Code
+      convert(child, Handle)
+    Condition
+      Error in `convert()`:
+      ! Can't call `convert()` on <externalptr> objects with reference semantics.
 
 # downcasts start with fresh accessor and validation state
 

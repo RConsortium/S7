@@ -4,14 +4,12 @@
       S7_data(e)
     Condition
       Error in `S7_data()`:
-      ! Can't call `S7_data()` on an environment.
-      See ?class_environment for details.
+      ! Can't call `S7_data()` on <environment> objects with reference semantics.
     Code
       S7_data(e) <- new.env()
     Condition
       Error in `S7_data<-`:
-      ! Can't call `S7_data<-` on an environment.
-      See ?class_environment for details.
+      ! Can't call `S7_data<-` on <environment> objects with reference semantics.
 
 # str() and print() work for environment-derived classes
 
@@ -43,6 +41,5 @@
       convert(Child(), Parent)
     Condition
       Error in `convert()`:
-      ! Can't call `convert()` on an environment.
-      See ?class_environment for details.
+      ! Can't call `convert()` on <environment> objects with reference semantics.
 

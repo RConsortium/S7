@@ -232,8 +232,13 @@ test_that("downcasts preserve external-pointer sources", {
   child <- convert(parent, Child)
   expect_identical(S7_class(parent), Handle)
   expect_identical(S7_class(child), Child)
-  expect_snapshot(error = TRUE, S7_data(parent))
+  expect_snapshot(error = TRUE, {
+    S7_data(parent)
+    S7_data(parent) <- fresh_pointer()
+    convert(child, Handle)
+  })
   expect_identical(S7_class(parent), Handle)
+  expect_identical(S7_class(child), Child)
 })
 
 test_that("downcasts let inherited setters rebuild their data once", {

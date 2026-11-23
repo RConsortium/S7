@@ -212,7 +212,7 @@ convert_method <- function(from, to) {
 }
 
 convert_up <- function(from, to, call = sys.call(-1L)) {
-  check_not_environment(from, "convert()", call = call)
+  check_not_reference(from, "convert()", call = call)
 
   from_class <- S7_class(from)
   if (is_class(from_class)) {
@@ -291,7 +291,7 @@ convert_down <- function(from, to, user_args = list()) {
 
   if (
     !is_S7_type(from) &&
-      !typeof(from) %in% c("environment", "externalptr", "weakref") &&
+      !is_reference_object(from) &&
       !".data" %in% names(constructor_args) &&
       constructor_forwards_data(to, from_class)
   ) {
