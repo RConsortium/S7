@@ -167,32 +167,20 @@ test_that("downcasts pass underlying data and honor explicit overrides", {
 })
 
 test_that("downcasts pass S3 objects and calls as underlying data", {
-  FactorParent := new_class(parent = class_factor)
+  FactorParent := new_class(
+    parent = class_factor,
+    properties = list(levels = new_property(getter = \(self) levels(self)))
+  )
   FactorChild := new_class(parent = FactorParent)
   values <- factor(c("a", "b"), levels = c("b", "a", "c"))
-  expect_identical(
-    S7_data(convert(FactorParent(.data = values), FactorChild)),
-    values
-  )
+  child <- convert(FactorParent(.data = values), FactorChild)
+  expect_identical(S7_data(child), values)
+  expect_identical(child@levels, levels(values))
 
   CallParent := new_class(parent = class_call)
   CallChild := new_class(parent = CallParent)
   expr <- quote(f(x))
   expect_identical(S7_data(convert(CallParent(.data = expr), CallChild)), expr)
-})
-
-test_that("downcasts keep S3 attributes exposed by getters", {
-  Factor := new_class(
-    parent = class_factor,
-    properties = list(
-      levels = new_property(getter = \(self) levels(self))
-    )
-  )
-  Child := new_class(parent = Factor)
-  parent <- Factor(.data = 1L, levels = c("a", "b"))
-  child <- convert(parent, Child)
-  expect_identical(child@levels, c("a", "b"))
-  expect_identical(S7_data(child), factor("a", levels = c("a", "b")))
 })
 
 test_that("downcasts leave input to handwritten S3 constructors", {
@@ -208,16 +196,6 @@ test_that("downcasts leave input to handwritten S3 constructors", {
   parent <- Quantity(.data = 1)
   expect_identical(as.double(convert(parent, Child)), 0)
   expect_identical(as.double(convert(parent, Child, .data = 3)), 3)
-})
-
-test_that("downcasts keep the default for S3 constructors embedded by S7 1.0.0", {
-  old_frame <- class_data.frame
-  old_frame$accepts_classed_data <- NULL
-  Parent := new_class(parent = old_frame)
-  Child := new_class(parent = Parent)
-
-  parent <- Parent(.data = list(x = 1))
-  expect_identical(S7_data(convert(parent, Child)), data.frame())
 })
 
 test_that("downcasts preserve external-pointer sources", {
@@ -241,7 +219,7 @@ test_that("downcasts preserve external-pointer sources", {
   expect_identical(S7_class(child), Child)
 })
 
-test_that("downcasts let inherited setters rebuild their data once", {
+test_that("downcasts let constructors with setters rebuild their data", {
   Base := new_class(parent = class_list)
   Journal := new_class(
     parent = Base,
@@ -257,7 +235,9 @@ test_that("downcasts let inherited setters rebuild their data once", {
     )
   )
   Child := new_class(parent = Journal)
-  parent <- convert(Base(.data = list("first")), Journal, last = "a")
+  base <- Base(.data = list("first"))
+  expect_identical(S7_data(convert(base, Journal, last = "a")), list("a"))
+  parent <- convert(base, Journal, .data = S7_data(base), last = "a")
   expect_identical(S7_data(parent), list("first", "a"))
   child <- convert(parent, Child)
   expect_identical(S7_data(child), list("a"))
@@ -366,48 +346,21 @@ test_that("downcasts from property-only classes leave constructor data defaults 
   expect_identical(convert(Parent(), Child)@label, "child")
 })
 
-test_that("downcasts keep the default for a property named `.data`", {
+test_that("a .data property keeps the generated constructor's default", {
   Parent := new_class(parent = class_double)
+  parent <- Parent(.data = 1)
   Child := new_class(
     parent = Parent,
     properties = list(.data = new_property(class = class_double, default = 2))
   )
+  expect_identical(convert(parent, Child)@.data, 2)
 
-  child <- convert(Parent(.data = 1), Child)
-  expect_identical(child@.data, 2)
-})
-
-test_that("downcasts can pass data when a `.data` property is read-only", {
-  Parent := new_class(parent = class_double)
-  Child := new_class(
+  Getter := new_class(
     parent = Parent,
-    properties = list(
-      .data = new_property(class_integer, getter = \(self) length(self))
-    )
+    properties = list(.data = new_property(getter = \(self) length(self)))
   )
-  data <- c(1, 2, 3)
-
-  child <- convert(Parent(.data = data), Child)
-  expect_identical(S7_data(child), data)
-  expect_identical(child@.data, 3L)
-})
-
-test_that("downcasts keep inherited `.data` property defaults under a getter", {
-  Base := new_class(parent = class_double)
-  Parent := new_class(
-    parent = Base,
-    properties = list(.data = new_property(class = class_double, default = 2))
-  )
-  Child := new_class(
-    parent = Parent,
-    properties = list(
-      .data = new_property(class_double, getter = \(self) sum(self))
-    )
-  )
-
-  child <- convert(Base(.data = 1), Child)
-  expect_identical(S7_data(child), 2)
-  expect_identical(child@.data, 2)
+  expect_identical(S7_data(convert(parent, Getter)), numeric())
+  expect_identical(convert(parent, Getter, .data = 3)@.data, 1L)
 })
 
 test_that("downcasts construct a subclass without reusing the source environment", {

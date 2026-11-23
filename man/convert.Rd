@@ -49,16 +49,7 @@ possesses that \code{to} does not (upcasting).
 \item When \code{to} inherits from \code{from}, it creates a new object of class \code{to},
 copying over existing properties from \code{from} and initializing new
 properties of \code{to} (downcasting).
-For value-based objects with base or built-in S3 data, \code{convert()} also
-supplies \code{\link[=S7_data]{S7_data()}} as \code{.data} when all S7 constructors are generated.
-A writable \code{.data} property or an explicit \code{.data} argument takes
-precedence. If the source class defines or inherits a setter, the
-constructor rebuilds from properties. A custom \code{convert()} method can
-preserve additional underlying data in that case.
-Packages built with S7 1.0.0 must be rebuilt to pick up the updated
-built-in S3 constructors. For an older subclass built with
-\code{parent = pkg::Class}, rebuild the package defining it or supply
-\code{.data = S7_data(from)} explicitly to forward the data.
+Generated constructors can also preserve the \link[=S7_data]{underlying data}.
 \item When \code{to} is a base type (e.g. \link{class_integer} or \link{class_character}) and
 neither of the above apply, it calls the corresponding \verb{as.*()} function
 (e.g. \code{as.integer()} or \code{as.character()}). This mirrors the convention

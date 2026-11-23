@@ -30,16 +30,7 @@
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
-#'    For value-based objects with base or built-in S3 data, `convert()` also
-#'    supplies [S7_data()] as `.data` when all S7 constructors are generated.
-#'    A writable `.data` property or an explicit `.data` argument takes
-#'    precedence. If the source class defines or inherits a setter, the
-#'    constructor rebuilds from properties. A custom `convert()` method can
-#'    preserve additional underlying data in that case.
-#'    Packages built with S7 1.0.0 must be rebuilt to pick up the updated
-#'    built-in S3 constructors. For an older subclass built with
-#'    `parent = pkg::Class`, rebuild the package defining it or supply
-#'    `.data = S7_data(from)` explicitly to forward the data.
+#'    Generated constructors can also preserve the [underlying data][S7_data()].
 #' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
 #'    neither of the above apply, it calls the corresponding `as.*()` function
 #'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
@@ -293,50 +284,37 @@ convert_down <- function(from, to, user_args = list()) {
     !is_S7_type(from) &&
       !is_reference_object(from) &&
       !".data" %in% names(constructor_args) &&
-      constructor_forwards_data(to, from_class)
+      constructor_forwards_data(to)
   ) {
-    base <- base_parent(from_class)
-    if (is_base_class(base) || is_S3_class(base)) {
-      constructor_args[".data"] <- list(S7_data(from))
-    }
+    constructor_args[".data"] <- list(S7_data(from))
   }
 
   call_constructor(to, constructor_args)
 }
 
-constructor_forwards_data <- function(class, from_class) {
-  # A custom S7 constructor may transform `.data` before storing it. Even for
-  # a pass-through, callers supply `.data` explicitly to reuse the stored value.
-  source_classes <- class_dispatch(from_class)
+constructor_forwards_data <- function(class) {
+  # Handwritten constructors can use `.data` for a different kind of input.
   while (is_class(class) && is_default_constructor(class@constructor)) {
-    properties <- attr(class, "properties", exact = TRUE)
-    property <- properties[[".data"]]
-    if (!is.null(property) && !prop_is_read_only(property)) {
+    props <- class@properties
+    # A .data property can shadow the base argument, and a setter can modify
+    # the data. Let those constructors rebuild from their usual arguments.
+    if (".data" %in% names(props) || any(vlapply(props, prop_has_setter))) {
       return(FALSE)
     }
-    # An inherited setter may already have modified the stored value. Rebuilding
-    # from properties alone lets the setter apply its update once.
-    inherited <- S7_class_name(class) %in% source_classes
-    if (inherited && any(vlapply(properties, prop_has_setter))) {
-      return(FALSE)
-    }
-    env <- parent.env(environment(class))
-    parent <- attr(env, "S7_external_parent", exact = TRUE) %||% class@parent
-    # Older cross-package wrappers can lack the runtime export reference.
-    if (
-      is_foreign_parent(parent, class@package) &&
-        !".data" %in% names(formals(class))
-    ) {
-      return(FALSE)
+    parent <- class@parent
+    if (is_foreign_parent(parent, class@package)) {
+      # Follow the export the constructor calls. Older wrappers lack this
+      # reference, so the walk ends at NULL.
+      parent <- attr(parent.env(environment(class)), "S7_external_parent", TRUE)
     }
     class <- if (is_external_class(parent)) {
-      resolve_external_class_req(parent, package = class@package)
+      resolve_external_class_req(parent, class@package)
     } else {
       parent
     }
   }
   is_base_class(class) ||
-    (is_S3_class(class) && isTRUE(class$accepts_classed_data))
+    (is_S3_class(class) && is_default_constructor(class$constructor))
 }
 
 call_constructor <- function(constructor, args) {

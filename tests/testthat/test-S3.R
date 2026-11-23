@@ -214,38 +214,33 @@ test_that("catches invalid POSIXct", {
   expect_null(validate_POSIXct(Sys.time()))
 })
 
-test_that("downcasts preserve data-frame columns, row names, and time zones", {
+test_that("downcasts preserve data-frame columns and row names", {
   Frame := new_class(parent = class_data.frame)
   FrameChild := new_class(parent = Frame)
   frame <- data.frame(x = 1:2, row.names = c("a", "b"))
   frame$matrix <- matrix(1:4, nrow = 2)
-  parent <- Frame()
-  S7_data(parent) <- frame
+  parent <- Frame(.data = frame)
   expect_identical(S7_data(convert(parent, FrameChild)), frame)
-  expect_identical(S7_data(Frame(.data = frame)), frame)
   row.names(frame) <- c("c", "d")
   expect_identical(
     S7_data(convert(parent, FrameChild, row.names = row.names(frame))),
     frame
   )
-
-  Time := new_class(parent = class_POSIXct)
-  TimeChild := new_class(parent = Time)
-  time <- Time(.data = 1, tz = "Europe/Warsaw")
-  expect_identical(S7_data(convert(time, TimeChild)), S7_data(time))
-  expect_identical(
-    S7_data(convert(time, TimeChild, tz = "UTC")),
-    .POSIXct(1, tz = "UTC")
-  )
 })
 
-test_that("POSIX constructors preserve a supplied object's time zone", {
+test_that("POSIX constructors carry the input time zone through a downcast", {
   Time := new_class(parent = class_POSIXct)
-  LocalTime := new_class(parent = class_POSIXlt)
-  utc <- .POSIXct(1)
-  local <- as.POSIXlt(.POSIXct(1, tz = "Europe/Warsaw"))
+  Child := new_class(parent = Time)
+  time <- Time(.data = 1, tz = "Europe/Warsaw")
+  expect_identical(S7_data(convert(time, Child)), S7_data(time))
+  expect_identical(
+    S7_data(convert(time, Child, tz = "UTC")),
+    .POSIXct(1, tz = "UTC")
+  )
+  expect_identical(S7_data(Time(.data = .POSIXct(1))), .POSIXct(1, tz = ""))
 
-  expect_identical(S7_data(Time(.data = utc)), utc)
+  LocalTime := new_class(parent = class_POSIXlt)
+  local <- as.POSIXlt(S7_data(time))
   expect_identical(S7_data(LocalTime(.data = local)), local)
 })
 

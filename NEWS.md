@@ -1,6 +1,6 @@
 # S7 (development version)
 
-* `convert()` can now carry underlying base or built-in S3 data into a generated subclass constructor. Objects with custom setters are rebuilt from their properties (#799).
+* `convert()` can now preserve the underlying base or S3 data when downcasting to a generated subclass (#799).
 
 * `convert()` preserves calls and symbols supplied as property values when downcasting, and `new_object()` and `set_props()` preserve properties named `call` (#798).
 
@@ -10,7 +10,7 @@
 
 * `prop()` and `prop<-()` can again read and set properties on S7 objects marked as S4 with `asS4()` (#805).
 
-* `S7_data()` keeps declared S3 attributes exposed by S7 properties, drops temporary accessor and validation state, and reports an error when extracting data would modify a shared pointer (#799).
+* `S7_data()` preserves declared S3 attributes exposed by properties and rejects objects with reference semantics (#799).
 
 # S7 1.0.0
 
