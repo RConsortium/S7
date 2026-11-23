@@ -126,49 +126,55 @@ local_libpath <- function(frame = parent.frame()) {
   lib
 }
 
-# Give child R sessions the S7 being tested. A source checkout needs to be
-# installed once per test process. R CMD check already has an installation.
-local_dev_S7_lib <- local({
+installed_S7_path <- local({
   installed_path <- NULL
-  function(frame = parent.frame()) {
-    if (is.null(installed_path)) {
-      path <- getNamespaceInfo("S7", "path")
-      if (file.exists(file.path(path, "Meta", "package.rds"))) {
-        installed_path <<- path
-      } else {
-        dir.create(new_lib <- tempfile("S7-dev-lib-"))
-        callr::rcmd(
-          "INSTALL",
-          c(
-            "-l",
-            new_lib,
-            "--data-compress=none",
-            "--no-byte-compile",
-            "--no-data",
-            "--no-demo",
-            "--no-docs",
-            "--no-help",
-            "--no-html",
-            "--use-vanilla",
-            path
-          ),
-          fail_on_status = TRUE
-        )
-        installed_path <<- normalizePath(file.path(new_lib, "S7"), "/")
-      }
+  function() {
+    if (!is.null(installed_path)) {
+      return(installed_path)
     }
 
-    old <- .libPaths()
-    # An explicit lib.loc looks up S7 as a fresh R session would.
-    found <- find.package("S7", lib.loc = old, quiet = TRUE)
-    lib <- dirname(installed_path)
-    if (!identical(normalizePath(found, "/"), installed_path)) {
-      .libPaths(c(lib, old))
-      defer(.libPaths(old), frame = frame)
+    path <- getNamespaceInfo("S7", "path")
+    # R CMD check installs S7 before running the tests, so we can reuse that copy.
+    if (file.exists(file.path(path, "Meta", "package.rds"))) {
+      installed_path <<- path
+    } else {
+      dir.create(new_lib <- tempfile("S7-dev-lib-"))
+      callr::rcmd(
+        "INSTALL",
+        c(
+          "-l",
+          new_lib,
+          "--data-compress=none",
+          "--no-byte-compile",
+          "--no-data",
+          "--no-demo",
+          "--no-docs",
+          "--no-help",
+          "--no-html",
+          "--use-vanilla",
+          path
+        ),
+        fail_on_status = TRUE
+      )
+      installed_path <<- normalizePath(file.path(new_lib, "S7"), "/")
     }
-    lib
+    installed_path
   }
 })
+
+# Give child R sessions the S7 being tested.
+local_dev_S7_lib <- function(frame = parent.frame()) {
+  installed_path <- installed_S7_path()
+  old <- .libPaths()
+  # An explicit lib.loc looks up S7 as a fresh R session would.
+  found <- find.package("S7", lib.loc = old, quiet = TRUE)
+  lib <- dirname(installed_path)
+  if (!identical(normalizePath(found, "/"), installed_path)) {
+    .libPaths(c(lib, old))
+    defer(.libPaths(old), frame = frame)
+  }
+  lib
+}
 
 # Install the package at `path` into `lib`, attach it, and detach (and unload)
 # it when `frame` exits. The package name is taken from `basename(path)`.
