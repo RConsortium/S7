@@ -191,11 +191,12 @@ static inline
 Rboolean inherits2(SEXP object, const char* name) {
   if (class_contains(Rf_getAttrib(object, R_ClassSymbol), name))
     return TRUE;
-  if (!Rf_isS4(object))
-    return FALSE;
 
-  // Formal S4 subclasses store their inherited S7 classes in .S3Class.
-  return class_contains(Rf_getAttrib(object, sym_dot_S3Class), name);
+  if (Rf_isS4(object)) {
+    // Formal S4 subclasses store their inherited S7 classes in .S3Class.
+    return class_contains(Rf_getAttrib(object, sym_dot_S3Class), name);
+  }
+  return FALSE;
 }
 
 static inline
