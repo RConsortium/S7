@@ -5,6 +5,7 @@
 extern SEXP sym_S7_class;
 extern SEXP sym_S7_class_legacy;
 extern SEXP sym_class;
+extern SEXP sym_dot_S3Class;
 
 extern SEXP sym_name;
 extern SEXP sym_parent;
@@ -194,9 +195,6 @@ Rboolean inherits2(SEXP object, const char* name) {
     return FALSE;
 
   // Formal S4 subclasses store their inherited S7 classes in .S3Class.
-  static SEXP sym_dot_S3Class = NULL;
-  if (sym_dot_S3Class == NULL)
-    sym_dot_S3Class = Rf_install(".S3Class");
   return class_contains(Rf_getAttrib(object, sym_dot_S3Class), name);
 }
 
