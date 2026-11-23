@@ -41,6 +41,7 @@ SEXP sym_ANY;
 SEXP sym_S7_class;
 SEXP sym_S7_class_legacy;
 SEXP sym_class;
+SEXP sym_dot_S3Class;
 static SEXP sym_S7_version;
 
 SEXP sym_name;
@@ -113,6 +114,7 @@ void R_init_S7(DllInfo *dll)
     sym_S7_class_legacy = Rf_install("S7_class");
     sym_S7_version = Rf_install("_S7_version");
     sym_class = Rf_install("class");
+    sym_dot_S3Class = Rf_install(".S3Class");
     sym_name = Rf_install("name");
     sym_parent = Rf_install("parent");
     sym_package = Rf_install("package");

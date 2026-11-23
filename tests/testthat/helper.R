@@ -126,20 +126,24 @@ local_libpath <- function(frame = parent.frame()) {
   lib
 }
 
-# Install the development S7 into a session-scoped library (built once per
-# test process) and prepend that library to .libPaths() until `frame` exits.
-local_dev_S7_lib <- local({
-  lib <- NULL
-  function(frame = parent.frame()) {
-    if (is.null(lib)) {
+installed_S7_path <- local({
+  installed_path <- NULL
+  function() {
+    if (!is.null(installed_path)) {
+      return(installed_path)
+    }
+
+    path <- getNamespaceInfo("S7", "path")
+    # R CMD check installs S7 before running the tests, so we can reuse that copy.
+    if (file.exists(file.path(path, "Meta", "package.rds"))) {
+      installed_path <<- path
+    } else {
       dir.create(new_lib <- tempfile("S7-dev-lib-"))
-      install.packages(
-        pkgs = normalizePath(test_path("..", "..")),
-        lib = new_lib,
-        repos = NULL,
-        type = "source",
-        quiet = TRUE,
-        INSTALL_opts = c(
+      callr::rcmd(
+        "INSTALL",
+        c(
+          "-l",
+          new_lib,
           "--data-compress=none",
           "--no-byte-compile",
           "--no-data",
@@ -147,18 +151,30 @@ local_dev_S7_lib <- local({
           "--no-docs",
           "--no-help",
           "--no-html",
-          "--use-vanilla"
-        )
+          "--use-vanilla",
+          path
+        ),
+        fail_on_status = TRUE
       )
-      lib <<- new_lib
+      installed_path <<- normalizePath(file.path(new_lib, "S7"), "/")
     }
-
-    old <- .libPaths()
-    .libPaths(c(lib, old))
-    defer(.libPaths(old), frame = frame)
-    lib
+    installed_path
   }
 })
+
+# Give child R sessions the S7 being tested.
+local_dev_S7_lib <- function(frame = parent.frame()) {
+  installed_path <- installed_S7_path()
+  old <- .libPaths()
+  # An explicit lib.loc looks up S7 as a fresh R session would.
+  found <- find.package("S7", lib.loc = old, quiet = TRUE)
+  lib <- dirname(installed_path)
+  if (!identical(normalizePath(found, "/"), installed_path)) {
+    .libPaths(c(lib, old))
+    defer(.libPaths(old), frame = frame)
+  }
+  lib
+}
 
 # Install the package at `path` into `lib`, attach it, and detach (and unload)
 # it when `frame` exits. The package name is taken from `basename(path)`.
