@@ -298,6 +298,8 @@ convert_down <- function(from, to, user_args = list()) {
 }
 
 constructor_forwards_data <- function(class) {
+  # A custom S7 constructor may transform `.data` before storing it. Even for
+  # a pass-through, callers supply `.data` explicitly to reuse the stored value.
   while (is_class(class) && is_default_constructor(class@constructor)) {
     property <- class@properties[[".data"]]
     if (!is.null(property) && !prop_is_read_only(property)) {
