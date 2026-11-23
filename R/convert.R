@@ -30,10 +30,16 @@
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
-#'    For value-based S7 objects with base or S3 data, `convert()` also uses
-#'    [S7_data()] to supply `.data` if the subclass and all its S7 parents use
-#'    generated constructors. A writable `.data` property or an explicit
-#'    `.data` argument takes precedence.
+#'    For value-based objects with base or built-in S3 data, `convert()` also
+#'    supplies [S7_data()] as `.data` when all S7 constructors are generated.
+#'    A writable `.data` property or an explicit `.data` argument takes
+#'    precedence. If the source class defines or inherits a setter, the
+#'    constructor rebuilds from properties. A custom `convert()` method can
+#'    preserve additional underlying data in that case.
+#'    Packages built with S7 1.0.0 must be rebuilt to pick up the updated
+#'    built-in S3 constructors. For an older subclass built with
+#'    `parent = pkg::Class`, rebuild the package defining it or supply
+#'    `.data = S7_data(from)` explicitly to forward the data.
 #' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
 #'    neither of the above apply, it calls the corresponding `as.*()` function
 #'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
@@ -284,9 +290,10 @@ convert_down <- function(from, to, user_args = list()) {
   constructor_args <- c(from_prop_values, user_args)
 
   if (
-    !".data" %in% names(constructor_args) &&
-      !is.environment(from) &&
-      constructor_forwards_data(to)
+    !is_S7_type(from) &&
+      !typeof(from) %in% c("environment", "externalptr", "weakref") &&
+      !".data" %in% names(constructor_args) &&
+      constructor_forwards_data(to, from_class)
   ) {
     base <- base_parent(from_class)
     if (is_base_class(base) || is_S3_class(base)) {
@@ -297,12 +304,20 @@ convert_down <- function(from, to, user_args = list()) {
   call_constructor(to, constructor_args)
 }
 
-constructor_forwards_data <- function(class) {
+constructor_forwards_data <- function(class, from_class) {
   # A custom S7 constructor may transform `.data` before storing it. Even for
   # a pass-through, callers supply `.data` explicitly to reuse the stored value.
+  source_classes <- class_dispatch(from_class)
   while (is_class(class) && is_default_constructor(class@constructor)) {
-    property <- class@properties[[".data"]]
+    properties <- attr(class, "properties", exact = TRUE)
+    property <- properties[[".data"]]
     if (!is.null(property) && !prop_is_read_only(property)) {
+      return(FALSE)
+    }
+    # An inherited setter may already have modified the stored value. Rebuilding
+    # from properties alone lets the setter apply its update once.
+    inherited <- S7_class_name(class) %in% source_classes
+    if (inherited && any(vlapply(properties, prop_has_setter))) {
       return(FALSE)
     }
     env <- parent.env(environment(class))
@@ -320,7 +335,8 @@ constructor_forwards_data <- function(class) {
       parent
     }
   }
-  is_base_class(class) || is_S3_class(class)
+  is_base_class(class) ||
+    (is_S3_class(class) && isTRUE(class$accepts_classed_data))
 }
 
 call_constructor <- function(constructor, args) {

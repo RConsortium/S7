@@ -64,6 +64,10 @@ bench_calls <- function() {
 
   Wide0 <- wide_class(0)
   Wide2 <- wide_class(2)
+  WideChild := new_class(
+    parent = Wide2,
+    properties = list(extra = class_integer)
+  )
   Wide10 <- wide_class(10)
   Wide50 <- wide_class(50)
   args10 <- wide_args(10)
@@ -106,6 +110,7 @@ bench_calls <- function() {
     oneshot5 = quote(OneShot()),
     wide0 = quote(Wide0()),
     wide2 = quote(Wide2(p1 = 1, p2 = 2)),
+    downcast = quote(convert(obj2, WideChild)),
     wide10 = quote(do.call(Wide10, args10)),
     wide50 = quote(do.call(Wide50, args50)),
     setter = quote(WithSetter(x = 1, y = 2)),

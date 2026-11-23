@@ -27,15 +27,28 @@
 S7_data <- function(object) {
   check_is_S7(object)
   check_not_environment(object, "S7_data()")
-
-  out <- zap_attr(object, c(prop_storage_names(object), S7_object_attrs))
+  if (typeof(object) %in% c("externalptr", "weakref")) {
+    stop2("Can't extract data from an object with reference semantics.")
+  }
 
   # Objects accepted by is_legacy_S7_object() have no parent metadata to restore.
   base <- base_parent(S7_class(object))
+  out <- zap_attr(object, c(s7_data_attrs(object, base), S7_transient_attrs))
   if (is_S3_class(base)) {
     class(out) <- base$class
   }
   out
+}
+
+S7_transient_attrs <- c(".getting_prop", ".setting_prop", ".should_validate")
+
+s7_data_attrs <- function(object, base = base_parent(S7_class(object))) {
+  storage <- prop_storage_names(object)
+  # A getter can expose an attribute that belongs to the underlying S3 object.
+  if (is_S3_class(base)) {
+    storage <- setdiff(storage, base$attributes)
+  }
+  c(storage, S7_object_attrs)
 }
 
 # Walk up the @parent chain to the first non-S7 ancestor (or S7_object),
@@ -63,8 +76,7 @@ base_parent <- function(class) {
   check_is_S7(object)
   check_not_environment(object, "S7_data<-")
 
-  s7_attrs <- c(prop_storage_names(object), S7_object_attrs)
-  for (name in s7_attrs) {
+  for (name in s7_data_attrs(object)) {
     attr(value, name) <- attr(object, name, exact = TRUE)
   }
   if (isTRUE(check)) {
