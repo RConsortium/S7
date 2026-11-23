@@ -6,6 +6,8 @@
 
 * `new_class()` now rejects property names that start with `_`, including inherited S4 slot names (#808).
 
+* `prop()` and `prop<-()` can again read and set properties on S7 objects marked as S4 with `asS4()` (#805).
+
 # S7 1.0.0
 
 ## Breaking changes

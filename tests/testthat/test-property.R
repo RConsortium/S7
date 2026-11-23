@@ -13,6 +13,19 @@ test_that("property retrieval retrieves the properties that exist & errors other
   })
 })
 
+test_that("properties can be read and set on S7 objects with the S4 bit set", {
+  Foo := new_class(properties = list(bar = class_numeric))
+  x <- asS4(Foo(bar = 1))
+
+  expect_identical(prop(x, "bar"), 1)
+  prop(x, "bar") <- 2
+  expect_identical(prop(x, "bar"), 2)
+
+  WithS3Class := new_class(properties = list(.S3Class = class_character))
+  x <- asS4(WithS3Class(.S3Class = "value"))
+  expect_identical(prop(x, ".S3Class"), "value")
+})
+
 test_that("S7 functions expose their registered S4 data slot", {
   generic := new_generic("x")
   method(generic, class_integer) <- function(x) x
