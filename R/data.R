@@ -39,11 +39,21 @@ S7_data <- function(object) {
 
 S7_transient_attrs <- c(".getting_prop", ".setting_prop", ".should_validate")
 
-s7_data_attrs <- function(object, base = base_parent(S7_class(object))) {
+s7_data_attrs <- function(
+  object,
+  base = base_parent(S7_class(object)),
+  replacing = FALSE
+) {
   storage <- prop_storage_names(object)
-  # A getter can expose an attribute that belongs to the underlying S3 object.
   if (is_S3_class(base)) {
-    storage <- setdiff(storage, base$attributes)
+    data_attrs <- base$attributes
+    if (replacing) {
+      # Writable properties keep their stored values when the data is replaced.
+      props <- class_properties(S7_class(object))
+      read_only <- vlapply(props, prop_is_read_only)
+      data_attrs <- intersect(data_attrs, storage[read_only])
+    }
+    storage <- setdiff(storage, data_attrs)
   }
   c(storage, S7_object_attrs)
 }
@@ -73,7 +83,7 @@ base_parent <- function(class) {
   check_is_S7(object)
   check_not_reference(object, "S7_data<-")
 
-  for (name in s7_data_attrs(object)) {
+  for (name in s7_data_attrs(object, replacing = TRUE)) {
     attr(value, name) <- attr(object, name, exact = TRUE)
   }
   if (isTRUE(check)) {
