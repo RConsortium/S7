@@ -14,6 +14,36 @@
       Error in `convert()`:
       ! All arguments to `...` must be named.
 
+# downcasts preserve external-pointer sources
+
+    Code
+      S7_data(parent)
+    Condition
+      Error in `S7_data()`:
+      ! Can't call `S7_data()` on <externalptr> objects with reference semantics.
+    Code
+      S7_data(parent) <- fresh_pointer()
+    Condition
+      Error in `S7_data<-`:
+      ! Can't call `S7_data<-` on <externalptr> objects with reference semantics.
+    Code
+      convert(child, Handle)
+    Condition
+      Error in `convert()`:
+      ! Can't call `convert()` on <externalptr> objects with reference semantics.
+
+# downcasts start with fresh accessor and validation state
+
+    Code
+      valid_eventually(parent, function(x) {
+        convert(x, Invalid)
+        x
+      })
+    Condition
+      Error:
+      ! <S7::Invalid> object is invalid:
+      - invalid child
+
 # fallback convert rejects sibling S7 objects with additional S3 classes
 
     Code

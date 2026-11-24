@@ -49,6 +49,7 @@ possesses that \code{to} does not (upcasting).
 \item When \code{to} inherits from \code{from}, it creates a new object of class \code{to},
 copying over existing properties from \code{from} and initializing new
 properties of \code{to} (downcasting).
+Generated constructors can also preserve the \link[=S7_data]{underlying data}.
 \item When \code{to} is a base type (e.g. \link{class_integer} or \link{class_character}) and
 neither of the above apply, it calls the corresponding \verb{as.*()} function
 (e.g. \code{as.integer()} or \code{as.character()}). This mirrors the convention

@@ -114,6 +114,13 @@ resolve_signature <- function(signature, package = NULL) {
   signature
 }
 
+resolve_parent <- function(parent, package) {
+  if (is_external_class(parent)) {
+    resolve_external_class_req(parent, package)
+  } else {
+    parent
+  }
+}
 
 # Errors if the external class can't be resolved
 # * The package isn't installed
@@ -155,10 +162,10 @@ resolve_external_class_req <- function(x, package = NULL) {
 
   ns <- asNamespace(x$package)
   same_package <- identical(package, x$package)
-  if (same_package || x$name %in% getNamespaceExports(ns)) {
-    obj <- get0(x$name, envir = ns, inherits = FALSE)
-  } else {
-    obj <- NULL
+  obj <- if (same_package) {
+    get0(x$name, envir = ns, inherits = FALSE)
+  } else if (x$name %in% getNamespaceExports(ns)) {
+    getExportedValue(ns, x$name)
   }
 
   if (is_deprecated_class(obj)) {

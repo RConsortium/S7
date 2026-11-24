@@ -887,6 +887,26 @@ test_that("new_class() rejects reserved property names", {
   })
 })
 
+test_that("new_class() reserves .data for the underlying data", {
+  Number := new_class(parent = class_double, constructor = \(x) new_object(x))
+  quantity <- new_S3_class(
+    class = "quantity",
+    constructor = \(.data) structure(.data, class = "quantity")
+  )
+  stored <- list(.data = class_integer)
+  computed <- list(.data = new_property(getter = \(self) length(self)))
+  expect_snapshot(error = TRUE, {
+    Direct := new_class(parent = class_double, properties = stored)
+    Child := new_class(parent = Number, properties = computed)
+    Frame := new_class(parent = class_data.frame, properties = stored)
+    Quantity := new_class(parent = quantity, properties = stored)
+  })
+
+  Plain := new_class(properties = stored)
+  PlainChild := new_class(parent = Plain)
+  expect_identical(PlainChild(.data = 1L)@.data, 1L)
+})
+
 test_that("S7_class() returns a usable spec for any object (#559)", {
   # base types
   expect_equal(S7_class(1L), class_integer)

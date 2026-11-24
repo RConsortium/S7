@@ -6,9 +6,9 @@
 #' }}
 #'
 #' `class_environment` is the [base][base_classes] wrapper for environments.
-#' Unlike all other R objects, environments have reference semantics, i.e., they
-#' are modified in place. It's not clear what all the implications of this are
-#' for S7, so we are marking the use of `class_environment` as experimental.
+#' Environments have reference semantics and are modified in place. It's not
+#' clear what all the implications of this are for S7, so we are marking the use
+#' of `class_environment` as experimental.
 #'
 #' Its use is subject to the following caveats:
 #'
@@ -31,16 +31,19 @@
 #' counter$n
 class_environment <- NULL
 
-check_not_environment <- function(object, fn, call = sys.call(-1L)) {
-  if (!is.environment(object)) {
-    return(invisible())
-  }
+is_reference_object <- function(x) {
+  typeof(x) %in% c("environment", "externalptr", "weakref")
+}
 
-  msg <- paste_c(
-    sprintf("Can't call `%s` on an environment.\n", fn),
-    "See ?class_environment for details."
-  )
-  stop2(msg, call = call)
+check_not_reference <- function(object, fn, call = sys.call(-1L)) {
+  if (is_reference_object(object)) {
+    msg <- sprintf(
+      "Can't call `%s` on <%s> objects with reference semantics.",
+      fn,
+      typeof(object)
+    )
+    stop2(msg, call = call)
+  }
 }
 
 # Define onload to avoid dependencies between files

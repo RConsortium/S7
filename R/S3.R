@@ -398,8 +398,11 @@ class_Date <- new_S3_class(
 #' @order 3
 class_POSIXct <- new_S3_class(
   c("POSIXct", "POSIXt"),
-  constructor = new_S7_constructor(function(.data = double(), tz = "") {
-    .POSIXct(.data, tz = tz)
+  constructor = new_S7_constructor(function(
+    .data = double(),
+    tz = attr(.data, "tzone", exact = TRUE)
+  ) {
+    .POSIXct(.data, tz = tz %||% "")
   }),
   validator = validate_POSIXct,
   default = quote(.POSIXct(numeric(), tz = "")),
@@ -412,8 +415,11 @@ class_POSIXct <- new_S3_class(
 #' @order 3
 class_POSIXlt <- new_S3_class(
   c("POSIXlt", "POSIXt"),
-  constructor = new_S7_constructor(function(.data = NULL, tz = "") {
-    as.POSIXlt(.data, tz = tz)
+  constructor = new_S7_constructor(function(
+    .data = NULL,
+    tz = attr(.data, "tzone", exact = TRUE)
+  ) {
+    as.POSIXlt(.data, tz = tz %||% "")
   }),
   validator = validate_POSIXlt,
   default = quote(as.POSIXlt(NULL, tz = "")),

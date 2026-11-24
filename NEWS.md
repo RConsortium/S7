@@ -1,12 +1,18 @@
 # S7 (development version)
 
+* `convert()` can now preserve the underlying base or S3 data when downcasting to a generated subclass (#799).
+
 * `convert()` preserves calls and symbols supplied as property values when downcasting, and `new_object()` and `set_props()` preserve properties named `call` (#798).
 
 * `convert()`, `new_object()`, and `set_props()` now require a plain list when property values are passed as a single unnamed argument. To use the columns of a data frame, pass `as.list(df)` (#808).
 
 * `new_class()` now rejects property names that start with `_`, including inherited S4 slot names (#808).
 
+* `new_class()` now rejects properties named `.data` in subclasses of base types and S3 classes. Their constructors use `.data` for the underlying data (#799).
+
 * `prop()` and `prop<-()` can again read and set properties on S7 objects marked as S4 with `asS4()` (#805).
+
+* `S7_data()` preserves declared S3 attributes exposed by properties and rejects objects with reference semantics (#799).
 
 # S7 1.0.0
 

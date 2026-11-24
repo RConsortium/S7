@@ -12,9 +12,9 @@ class_environment
 }}
 
 \code{class_environment} is the \link[=base_classes]{base} wrapper for environments.
-Unlike all other R objects, environments have reference semantics, i.e., they
-are modified in place. It's not clear what all the implications of this are
-for S7, so we are marking the use of \code{class_environment} as experimental.
+Environments have reference semantics and are modified in place. It's not
+clear what all the implications of this are for S7, so we are marking the use
+of \code{class_environment} as experimental.
 
 Its use is subject to the following caveats:
 \itemize{

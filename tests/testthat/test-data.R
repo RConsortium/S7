@@ -102,6 +102,30 @@ test_that("S7_data preserves S3 class from grandparent", {
   expect_equal(S7_data(mydf2(df)), df)
 })
 
+test_that("S7_data can replace an S3 attribute exposed by a getter", {
+  Factor := new_class(
+    parent = class_factor,
+    properties = list(levels = new_property(getter = \(self) levels(self)))
+  )
+  x <- Factor(.data = 1L, levels = "a")
+  S7_data(x) <- factor("b")
+  expect_identical(x@levels, "b")
+  expect_identical(S7_data(x), factor("b"))
+})
+
+test_that("S7_data preserves a stored property that is also an S3 attribute", {
+  Factor := new_class(
+    parent = class_factor,
+    properties = list(levels = class_character)
+  )
+  x <- Factor(.data = 1L, levels = "a")
+
+  S7_data(x) <- factor("b")
+  expect_identical(x@levels, "a")
+  S7_data(x) <- c(1L, 1L)
+  expect_identical(S7_data(x), factor(c("a", "a")))
+})
+
 test_that("S7_data preserves S3 class from an external parent", {
   dep := local_package({
     MyDF := new_class(parent = class_data.frame)

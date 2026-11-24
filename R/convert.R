@@ -30,6 +30,7 @@
 #' 2. When `to` inherits from `from`, it creates a new object of class `to`,
 #'    copying over existing properties from `from` and initializing new
 #'    properties of `to` (downcasting).
+#'    Generated constructors can also preserve the [underlying data][S7_data()].
 #' 3. When `to` is a base type (e.g. [class_integer] or [class_character]) and
 #'    neither of the above apply, it calls the corresponding `as.*()` function
 #'    (e.g. `as.integer()` or `as.character()`). This mirrors the convention
@@ -202,7 +203,7 @@ convert_method <- function(from, to) {
 }
 
 convert_up <- function(from, to, call = sys.call(-1L)) {
-  check_not_environment(from, "convert()", call = call)
+  check_not_reference(from, "convert()", call = call)
 
   from_class <- S7_class(from)
   if (is_class(from_class)) {
@@ -279,7 +280,37 @@ convert_down <- function(from, to, user_args = list()) {
   from_prop_values <- props(from, from_prop_names)
   constructor_args <- c(from_prop_values, user_args)
 
+  if (
+    !is_S7_type(from) &&
+      !is_reference_object(from) &&
+      !".data" %in% names(constructor_args) &&
+      constructor_forwards_data(to)
+  ) {
+    constructor_args[".data"] <- list(S7_data(from))
+  }
+
   call_constructor(to, constructor_args)
+}
+
+constructor_forwards_data <- function(class) {
+  # Handwritten constructors can use `.data` for a different kind of input.
+  while (is_class(class) && is_default_constructor(class@constructor)) {
+    props <- class@properties
+    # A `.data` property may predate the name restriction or a change in the
+    # parent's base type. A setter may already have modified the stored data.
+    if (".data" %in% names(props) || any(vlapply(props, prop_has_setter))) {
+      return(FALSE)
+    }
+    parent <- class@parent
+    if (is_foreign_parent(parent, class@package)) {
+      # Follow the export the constructor calls. Older wrappers lack this
+      # reference, so the walk ends at NULL.
+      parent <- attr(parent.env(environment(class)), "S7_external_parent", TRUE)
+    }
+    class <- resolve_parent(parent, class@package)
+  }
+  is_base_class(class) ||
+    (is_S3_class(class) && is_default_constructor(class$constructor))
 }
 
 call_constructor <- function(constructor, args) {

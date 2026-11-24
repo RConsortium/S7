@@ -151,6 +151,226 @@ test_that("downcasts quote calls and symbols and pass ordinary values through", 
   expect_identical(child@label, "2L")
 })
 
+test_that("downcasts pass underlying data and honor explicit overrides", {
+  Parent := new_class(
+    parent = class_double,
+    properties = list(label = class_character)
+  )
+  Child := new_class(parent = Parent)
+  data <- c(a = 1, b = 2)
+  parent <- Parent(.data = data, label = "source")
+
+  child <- convert(parent, Child)
+  expect_identical(S7_data(child), data)
+  expect_identical(child@label, "source")
+  expect_identical(S7_data(convert(parent, Child, .data = 3)), 3)
+})
+
+test_that("downcasts pass S3 objects and calls as underlying data", {
+  FactorParent := new_class(
+    parent = class_factor,
+    properties = list(levels = new_property(getter = \(self) levels(self)))
+  )
+  FactorChild := new_class(parent = FactorParent)
+  values <- factor(c("a", "b"), levels = c("b", "a", "c"))
+  child <- convert(FactorParent(.data = values), FactorChild)
+  expect_identical(S7_data(child), values)
+  expect_identical(child@levels, levels(values))
+
+  CallParent := new_class(parent = class_call)
+  CallChild := new_class(parent = CallParent)
+  expr <- quote(f(x))
+  expect_identical(S7_data(convert(CallParent(.data = expr), CallChild)), expr)
+})
+
+test_that("downcasts leave input to handwritten S3 constructors", {
+  quantity <- new_S3_class(
+    class = "quantity",
+    constructor = function(.data = 0) {
+      stopifnot(!is.object(.data))
+      structure(.data, class = "quantity")
+    }
+  )
+  Quantity := new_class(parent = quantity)
+  Child := new_class(parent = Quantity)
+  parent <- Quantity(.data = 1)
+  expect_identical(as.double(convert(parent, Child)), 0)
+  expect_identical(as.double(convert(parent, Child, .data = 3)), 3)
+})
+
+test_that("downcasts preserve external-pointer sources", {
+  fresh_pointer <- \() unserialize(serialize(methods::new("externalptr"), NULL))
+  handle <- new_S3_class(
+    class = "handle",
+    constructor = \(.data = fresh_pointer()) structure(.data, class = "handle")
+  )
+  Handle := new_class(parent = handle)
+  Child := new_class(parent = Handle)
+  parent <- Handle()
+  child <- convert(parent, Child)
+  expect_identical(S7_class(parent), Handle)
+  expect_identical(S7_class(child), Child)
+  expect_snapshot(error = TRUE, {
+    S7_data(parent)
+    S7_data(parent) <- fresh_pointer()
+    convert(child, Handle)
+  })
+  expect_identical(S7_class(parent), Handle)
+  expect_identical(S7_class(child), Child)
+})
+
+test_that("downcasts let constructors with setters rebuild their data", {
+  Base := new_class(parent = class_list)
+  Journal := new_class(
+    parent = Base,
+    properties = list(
+      last = new_property(
+        class = class_character,
+        setter = function(self, value) {
+          self@last <- value
+          S7_data(self, check = FALSE) <- c(S7_data(self), list(value))
+          self
+        }
+      )
+    )
+  )
+  Child := new_class(parent = Journal)
+  base <- Base(.data = list("first"))
+  expect_identical(S7_data(convert(base, Journal, last = "a")), list("a"))
+  parent <- convert(base, Journal, .data = S7_data(base), last = "a")
+  expect_identical(S7_data(parent), list("first", "a"))
+  child <- convert(parent, Child)
+  expect_identical(S7_data(child), list("a"))
+  expect_identical(child@last, "a")
+  changed <- convert(parent, Child, last = "b")
+  expect_identical(S7_data(changed), list("b"))
+  expect_identical(changed@last, "b")
+})
+
+test_that("downcasts start with fresh accessor and validation state", {
+  Parent := new_class(
+    parent = class_double,
+    properties = list(
+      view = new_property(getter = \(self) convert(self, Child))
+    )
+  )
+  Child := new_class(
+    parent = Parent,
+    properties = list(
+      view = new_property(getter = \(self) "child")
+    )
+  )
+  parent <- Parent(.data = 1)
+  expect_identical(parent@view@view, "child")
+
+  Invalid := new_class(parent = Parent, validator = \(self) "invalid child")
+  expect_snapshot(
+    error = TRUE,
+    valid_eventually(parent, function(x) {
+      convert(x, Invalid)
+      x
+    })
+  )
+})
+
+test_that("downcasts use the current constructor of an external parent", {
+  dep := local_package({
+    Parent := new_class(parent = class_double)
+  })
+  Child := new_class(parent = dep$Parent, package = "extension")
+  Grandchild := new_class(parent = Child, package = "extension")
+  expect_identical(S7_data(convert(dep$Parent(.data = 1), Child)), 1)
+  expect_identical(S7_data(convert(dep$Parent(.data = 1), Grandchild)), 1)
+
+  evalq(
+    {
+      Parent := new_class(
+        parent = class_double,
+        constructor = \(x = 4) new_object(x)
+      )
+    },
+    dep
+  )
+  expect_identical(S7_data(convert(dep$Parent(x = 1), Child)), 4)
+  expect_identical(S7_data(convert(dep$Parent(x = 1), Grandchild)), 4)
+
+  LaterChild := new_class(parent = dep$Parent, package = "extension")
+  evalq(Parent := new_class(parent = class_double), dep)
+  expect_identical(S7_data(convert(dep$Parent(.data = 7), LaterChild)), 7)
+
+  # The same export can move from the namespace into its imports.
+  assign("Parent", dep$Parent, envir = parent.env(dep))
+  rm("Parent", envir = dep)
+  parent <- getExportedValue("dep", "Parent")(.data = 5)
+  expect_identical(S7_data(convert(parent, Child)), 5)
+})
+
+test_that("downcasts preserve a .data property when an external parent gains base data", {
+  dep := local_package({
+    Root := new_class()
+  })
+  Parent := new_class(parent = dep$Root, package = "extension")
+  Child := new_class(
+    parent = Parent,
+    package = "extension",
+    properties = list(.data = new_property(class = class_double, default = 2))
+  )
+
+  evalq(Root := new_class(parent = class_double), dep)
+  expect_identical(convert(Parent(.data = 7), Child)@.data, 2)
+})
+
+test_that("downcasts leave data to custom constructors without a data argument", {
+  Parent := new_class(parent = class_double)
+  Custom := new_class(
+    parent = Parent,
+    properties = list(label = class_character),
+    constructor = \(...) new_object(Parent(.data = 2), ...)
+  )
+
+  child <- convert(Parent(.data = 1), Custom, label = "child")
+  expect_identical(S7_data(child), 2)
+  expect_identical(child@label, "child")
+})
+
+test_that("downcasts stop forwarding `.data` at a custom S7 constructor", {
+  Parent := new_class(parent = class_double)
+  FromTable := new_class(
+    parent = Parent,
+    constructor = function(.data = data.frame(value = 0)) {
+      new_object(Parent(.data = .data$value))
+    }
+  )
+  Child := new_class(parent = FromTable)
+  from <- Parent(.data = 7)
+
+  expect_identical(S7_data(convert(from, FromTable)), 0)
+  expect_identical(S7_data(convert(from, Child)), 0)
+  override <- data.frame(value = 3)
+  expect_identical(S7_data(convert(from, Child, .data = override)), 3)
+})
+
+test_that("downcasts from property-only classes leave constructor data defaults alone", {
+  Parent := new_class()
+  Child := new_class(
+    parent = Parent,
+    properties = list(label = class_character),
+    constructor = \(.data = "child") new_object(Parent(), label = .data)
+  )
+
+  expect_identical(convert(Parent(), Child)@label, "child")
+})
+
+test_that("downcasts construct a subclass without reusing the source environment", {
+  Parent := new_class(parent = class_environment)
+  Child := new_class(parent = Parent)
+  parent <- Parent()
+
+  child <- convert(parent, Child)
+  expect_identical(S7_class(child), Child)
+  expect_identical(S7_class(parent), Parent)
+})
+
 test_that("fallback downcasts use declared ancestry and drop extra S3 classes", {
   Parent := new_class(properties = list(x = class_double), package = NULL)
   Child := new_class(

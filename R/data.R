@@ -26,16 +26,36 @@
 #' S7_data(MyDF(data.frame(x = 1, y = 2)))
 S7_data <- function(object) {
   check_is_S7(object)
-  check_not_environment(object, "S7_data()")
-
-  out <- zap_attr(object, c(prop_storage_names(object), S7_object_attrs))
+  check_not_reference(object, "S7_data()")
 
   # Objects accepted by is_legacy_S7_object() have no parent metadata to restore.
   base <- base_parent(S7_class(object))
+  out <- zap_attr(object, c(s7_data_attrs(object, base), S7_transient_attrs))
   if (is_S3_class(base)) {
     class(out) <- base$class
   }
   out
+}
+
+S7_transient_attrs <- c(".getting_prop", ".setting_prop", ".should_validate")
+
+s7_data_attrs <- function(
+  object,
+  base = base_parent(S7_class(object)),
+  replacing = FALSE
+) {
+  storage <- prop_storage_names(object)
+  if (is_S3_class(base)) {
+    data_attrs <- base$attributes
+    if (replacing) {
+      # Writable properties keep their stored values when the data is replaced.
+      props <- class_properties(S7_class(object))
+      read_only <- vlapply(props, prop_is_read_only)
+      data_attrs <- intersect(data_attrs, storage[read_only])
+    }
+    storage <- setdiff(storage, data_attrs)
+  }
+  c(storage, S7_object_attrs)
 }
 
 # Walk up the @parent chain to the first non-S7 ancestor (or S7_object),
@@ -46,13 +66,7 @@ base_parent <- function(class) {
     if (is.null(parent)) {
       break
     }
-    if (is_external_class(parent)) {
-      parent <- resolve_external_class_req(
-        parent,
-        package = attr(class, "package", exact = TRUE)
-      )
-    }
-    class <- parent
+    class <- resolve_parent(parent, attr(class, "package", exact = TRUE))
   }
   class
 }
@@ -61,10 +75,9 @@ base_parent <- function(class) {
 #' @rdname S7_data
 `S7_data<-` <- function(object, check = TRUE, value) {
   check_is_S7(object)
-  check_not_environment(object, "S7_data<-")
+  check_not_reference(object, "S7_data<-")
 
-  s7_attrs <- c(prop_storage_names(object), S7_object_attrs)
-  for (name in s7_attrs) {
+  for (name in s7_data_attrs(object, replacing = TRUE)) {
     attr(value, name) <- attr(object, name, exact = TRUE)
   }
   if (isTRUE(check)) {
