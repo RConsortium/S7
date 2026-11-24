@@ -142,11 +142,7 @@ new_class <- function(
   # We have to resolve at build-time to validate the properties we know.
   # But we otherwise avoid embedding the resolved parent because its definition
   # may have changed in between package build time and run time.
-  if (is_external_class(parent)) {
-    parent_resolved <- resolve_external_class_req(parent, package)
-  } else {
-    parent_resolved <- parent
-  }
+  parent_resolved <- resolve_parent(parent, package)
 
   # Don't check arguments for S7_object
   if (!is.null(parent)) {

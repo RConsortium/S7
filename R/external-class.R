@@ -114,6 +114,13 @@ resolve_signature <- function(signature, package = NULL) {
   signature
 }
 
+resolve_parent <- function(parent, package) {
+  if (is_external_class(parent)) {
+    resolve_external_class_req(parent, package)
+  } else {
+    parent
+  }
+}
 
 # Errors if the external class can't be resolved
 # * The package isn't installed

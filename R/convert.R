@@ -307,11 +307,7 @@ constructor_forwards_data <- function(class) {
       # reference, so the walk ends at NULL.
       parent <- attr(parent.env(environment(class)), "S7_external_parent", TRUE)
     }
-    class <- if (is_external_class(parent)) {
-      resolve_external_class_req(parent, class@package)
-    } else {
-      parent
-    }
+    class <- resolve_parent(parent, class@package)
   }
   is_base_class(class) ||
     (is_S3_class(class) && is_default_constructor(class$constructor))

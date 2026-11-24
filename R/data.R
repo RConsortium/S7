@@ -66,13 +66,7 @@ base_parent <- function(class) {
     if (is.null(parent)) {
       break
     }
-    if (is_external_class(parent)) {
-      parent <- resolve_external_class_req(
-        parent,
-        package = attr(class, "package", exact = TRUE)
-      )
-    }
-    class <- parent
+    class <- resolve_parent(parent, attr(class, "package", exact = TRUE))
   }
   class
 }
