@@ -305,6 +305,21 @@ test_that("downcasts use the current constructor of an external parent", {
   expect_identical(S7_data(convert(parent, Child)), 5)
 })
 
+test_that("downcasts preserve a .data property when an external parent gains base data", {
+  dep := local_package({
+    Root := new_class()
+  })
+  Parent := new_class(parent = dep$Root, package = "extension")
+  Child := new_class(
+    parent = Parent,
+    package = "extension",
+    properties = list(.data = new_property(class = class_double, default = 2))
+  )
+
+  evalq(Root := new_class(parent = class_double), dep)
+  expect_identical(convert(Parent(.data = 7), Child)@.data, 2)
+})
+
 test_that("downcasts leave data to custom constructors without a data argument", {
   Parent := new_class(parent = class_double)
   Custom := new_class(
